@@ -259,3 +259,12 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+# my stuff
+**/src/**/*.js
+**/src/**/*.map
+**/src/**/*.d.ts
+
+**/dist/**/*.js
+**/dist/**/*.map
+**/dist/**/*.d.ts

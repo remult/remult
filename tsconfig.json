@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": true,
+    "stripInternal": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": ".",
+  //  "outDir": "dist",
+    "sourceMap": true,
+    "inlineSources": true,
+    "target": "es5",
+    "skipLibCheck": true,
+    "lib": [ "es2015", "dom" ],
+    "paths": {
+      "@angular/core": [ "node_modules/@angular/core" ],
+      "rxjs/*": [ "node_modules/rxjs/*" ]
+    }
+
+
+  }
+}
