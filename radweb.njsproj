@@ -33,6 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="dist\package.json" />
+    <Content Include="tsconfig.release.json" />
     <Content Include="tsconfig.json">
       <SubType>Code</SubType>
     </Content>

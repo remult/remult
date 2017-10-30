@@ -5,5 +5,9 @@
   "main": "app.js",
   "author": {
     "name": "Noam Honig"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.release.json --w",
+    "publish": "cd dist && npm publish"
   }
 }
