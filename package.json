@@ -1,0 +1,9 @@
+{
+  "name": "radweb",
+  "version": "0.0.0",
+  "description": "radweb",
+  "main": "app.js",
+  "author": {
+    "name": "Noam Honig"
+  }
+}
