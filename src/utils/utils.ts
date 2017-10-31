@@ -1,7 +1,9 @@
+import { FormsModule } from '@angular/forms';
 import { rowButton, rowButtonBase } from './utils';
 
-import { Component, Input, OnChanges, Type } from '@angular/core';
+import { Component, Input, OnChanges, Type, NgModule } from '@angular/core';
 import { Routes } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 
 
@@ -1822,3 +1824,17 @@ export interface IRelation {
     to: entity;
     on: iFilter[] | iFilter;
 }
+
+@NgModule({
+    imports: [
+       FormsModule,CommonModule
+    ],
+    declarations:
+      [ DataGridComponent, DataAreaCompnent, DataControlComponent, ColumnDesigner, SelectPopupComponent]
+    ,
+    providers: [],
+    bootstrap: [],
+    exports:[DataGridComponent, DataAreaCompnent,  SelectPopupComponent]
+
+  })
+  export class radWebModule { }

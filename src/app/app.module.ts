@@ -1,4 +1,4 @@
-import { DataGridComponent, DataAreaCompnent, DataControlComponent, SelectPopupComponent, ColumnDesigner } from './../utils/utils';
+import { radWebModule } from './../utils/utils';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -13,10 +13,10 @@ import { NoamCompComponent } from './noam-comp/noam-comp.component';
 
 @NgModule({
   imports: [
-    BrowserModule, FormsModule
+    BrowserModule, FormsModule,radWebModule
   ],
   declarations:
-    [AppComponent,NoamCompComponent, DataGridComponent, DataAreaCompnent, DataControlComponent, ColumnDesigner, SelectPopupComponent]
+    [AppComponent,NoamCompComponent]
   ,
   providers: [],
   bootstrap: [AppComponent]
