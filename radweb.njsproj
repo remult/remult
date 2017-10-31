@@ -38,6 +38,8 @@
     <Content Include="src\app\noam-comp\noam-comp.component.css" />
     <Content Include="src\app\noam-comp\noam-comp.component.html" />
     <Content Include="src\index.html" />
+    <Content Include="src\utils\data-grid.component.html" />
+    <Content Include="src\utils\utils.css" />
     <Content Include="tsconfig.release.json" />
     <Content Include="tsconfig.json">
       <SubType>Code</SubType>
@@ -60,6 +62,8 @@
       <SubType>Code</SubType>
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="src\utils\data.ts" />
+    <TypeScriptCompile Include="src\utils\utils.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dist\" />
@@ -69,6 +73,7 @@
     <Folder Include="Scripts\typings\node\" />
     <Folder Include="src\app\" />
     <Folder Include="src\app\noam-comp\" />
+    <Folder Include="src\utils\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
