@@ -33,14 +33,26 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="dist\package.json" />
+    <Content Include="src\app\app.component.css" />
+    <Content Include="src\app\app.component.html" />
+    <Content Include="src\app\noam-comp\noam-comp.component.css" />
+    <Content Include="src\app\noam-comp\noam-comp.component.html" />
+    <Content Include="src\index.html" />
     <Content Include="tsconfig.release.json" />
     <Content Include="tsconfig.json">
       <SubType>Code</SubType>
     </Content>
+    <TypeScriptCompile Include="src\app\app.component.spec.ts" />
+    <TypeScriptCompile Include="src\app\app.component.ts" />
+    <TypeScriptCompile Include="src\app\app.module.ts" />
+    <TypeScriptCompile Include="src\app\noam-comp\noam-comp.component.spec.ts" />
+    <TypeScriptCompile Include="src\app\noam-comp\noam-comp.component.ts" />
     <TypeScriptCompile Include="src\index.ts" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
+    <TypeScriptCompile Include="src\main.ts" />
+    <TypeScriptCompile Include="src\test.ts" />
     <TypeScriptCompile Include="src\testit.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -55,6 +67,8 @@
     <Folder Include="Scripts\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\node\" />
+    <Folder Include="src\app\" />
+    <Folder Include="src\app\noam-comp\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

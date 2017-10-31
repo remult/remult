@@ -268,3 +268,7 @@ __pycache__/
 **/dist/**/*.js
 **/dist/**/*.map
 **/dist/**/*.d.ts
+
+**/e2e/**/*.js
+**/e2e/**/*.map
+**/e2e/**/*.d.ts
