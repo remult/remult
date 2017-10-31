@@ -8,8 +8,7 @@
     "name": "Noam Honig"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.release.json --w",
-    "publish": "cd dist && npm publish",
+    "publish": "tsc -p tsconfig.release.json --w",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build --prod",

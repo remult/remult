@@ -1,3 +1,4 @@
+import { rowButton, rowButtonBase } from './utils';
 
 import { Component, Input, OnChanges, Type } from '@angular/core';
 import { Routes } from '@angular/router';
@@ -13,12 +14,12 @@ export class ColumnCollection<rowType> {
                     this.allowDesignMode = true;
         }
     }
-    private settingsByKey:any = {};
+    private settingsByKey: any = {};
     _optionalKeys() {
         if (!this.currentRow())
             return [];
         let r = this.currentRow();
-        let result:Array<any> = [];
+        let result: Array<any> = [];
         Object.keys(r).forEach(key => {
             if (typeof (r[key]) != 'function')
 
@@ -26,9 +27,9 @@ export class ColumnCollection<rowType> {
         });
         return result;
     }
-    private allowDesignMode: boolean;
-    add(...columns: ColumnSetting<rowType>[]):void;
-    add(...columns: string[]):void;
+    allowDesignMode: boolean;
+    add(...columns: ColumnSetting<rowType>[]): void;
+    add(...columns: string[]): void;
     add(...columns: any[]) {
         for (let c of columns) {
             let s: ColumnSetting<rowType>;
@@ -254,7 +255,7 @@ export class ColumnCollection<rowType> {
         if (r.__modelState) {
             let m = <ModelState<any>>r.__modelState();
             if (m.modelState) {
-                let errors = m.modelState[col.key] ;
+                let errors = m.modelState[col.key];
                 if (errors && errors.length > 0)
                     return errors[0];
             }
@@ -323,8 +324,8 @@ export class ColumnCollection<rowType> {
     private nonGridColumns: ColumnSetting<any>[];
     numOfColumnsInGrid = 5;
 
-    private _lastColumnCount:number;
-    private _lastNumOfColumnsInGrid:number;
+    private _lastColumnCount: number;
+    private _lastNumOfColumnsInGrid: number;
     private _initColumnsArrays() {
         if (this._lastColumnCount != this.items.length || this._lastNumOfColumnsInGrid != this.numOfColumnsInGrid) {
             this._lastNumOfColumnsInGrid = this.numOfColumnsInGrid;
@@ -362,7 +363,7 @@ export interface dataAreaSettings {
     template: `
 
 <div class="form-horizontal" *ngIf="settings.columns&&settings.columns.currentRow()" >
-    
+
         <div class="{{getColumnsClass()}}" *ngFor="let col of theColumns()">
             <div class="form-group {{settings.columns._getColumnClass(map,settings.columns.currentRow())}}" *ngFor="let map of col" >
                 <div class="col-sm-{{labelWidth}}">
@@ -441,12 +442,12 @@ export class DataAreaCompnent implements OnChanges {
             </div>
             <input class="form-control"  [(ngModel)]="record[map.key]" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" />
             <div class="input-group-addon" *ngIf="showDescription()">{{settings._getColValue(map,record)}}</div>
-            
+
         </div>
         <div *ngIf="isSelect()">
             <select  class="form-control" [(ngModel)]="record[map.key]" (ngModelChange)="settings._colValueChanged(map,record)" >
                 <option *ngFor="let v of map.dropDown.items" value="{{v.id}}">{{v.caption}}</option>
-                
+
             </select>
         </div>
     <span class="help-block" *ngIf="settings._getError(map,record)">{{settings._getError(map,record)}}</span>
@@ -473,7 +474,7 @@ export class DataControlComponent {
     }
     @Input() settings: ColumnCollection<any>;
 }
-declare var $:any;
+declare var $: any;
 export class SelectPopup<rowType> {
     constructor(
         private modalList: DataSettings<rowType>, settings?: SelectPopupSettings) {
@@ -487,19 +488,19 @@ export class SelectPopup<rowType> {
         if (!this.title)
             this.title = "Select " + modalList.caption;
     }
-    private title: string;
+    title: string;
     private search() {
-        let s :any= {};
+        let s: any = {};
         s[this.searchColumn] = this.searchText + "*";
 
         this.modalList.get({
             isEqualTo: <rowType>s
         });
     }
-    private searchText: string;
+    searchText: string;
     private searchColumn: string;
 
-    private modalId: string = "myModal";
+    modalId: string = "myModal";
     private onSelect: (selected: rowType) => void;
     modalSelect() {
         this.onSelect(this.modalList.currentRow);
@@ -623,13 +624,13 @@ export interface dropDownItem {
             <option value="checkbox">checkbox</option>
         </select>
     </div>
-    
+
     <div class="checkbox">
 
         Readonly <input type="checkbox"  [(ngModel)]="map.readonly">
     </div>
-                    
-                   
+
+
     <div class="form-group">
 
         <button class="btn btn-success glyphicon glyphicon-ok pull-left" (click)="settings.designColumn(map)"></button>
@@ -646,7 +647,7 @@ export interface dropDownItem {
 </span>
 `
 })
-class ColumnDesigner {
+export class ColumnDesigner {
     @Input() map: ColumnSetting<any>;
     @Input() settings: ColumnCollection<any>;
 }
@@ -654,7 +655,8 @@ class ColumnDesigner {
 
 @Component({
     selector: 'data-grid',
-    templateUrl: './scripts/app/lib/data-grid.component.html'
+    templateUrl: './data-grid.component.html',
+    styleUrls: ['./utils.css'],
 })
 
 
@@ -663,10 +665,18 @@ export class DataGridComponent implements OnChanges {
 
     // Inspired by  https://medium.com/@ct7/building-a-reusable-table-layout-for-your-angular-2-project-adf6bba3b498
 
-    @Input() records: Iterable<any>;
+    @Input() records: any;
     @Input() settings: DataSettings<any>;
     @Input() dataView: dataView;
 
+    getButtonCssClass(b: rowButtonBase, row: any) {
+        if (!b.cssClass)
+            return "";
+        if (isFunction(b.cssClass))
+            return (<((row: any) => string)>b.cssClass)(row);
+        return b.cssClass.toString();
+
+    }
     rowButtons: rowButtonBase[] = [];
     keys: string[] = [];
     private addButton(b: rowButtonBase) {
@@ -678,14 +688,14 @@ export class DataGridComponent implements OnChanges {
             b.cssClass = r => "btn";
         else if (!isFunction(b.cssClass)) {
             let x = b.cssClass;
-            b.cssClass = <any>((r:any) => x);
+            b.cssClass = <any>((r: any) => x);
         }
 
         this.rowButtons.push(b);
         return b;
 
     }
-    rowClicked(row:any) {
+    rowClicked(row: any) {
         this.settings.setCurrentRow(row);
     }
 
@@ -700,7 +710,7 @@ export class DataGridComponent implements OnChanges {
     }
 
     catchErrors(what: any, r: any) {
-        what.catch((e:any) => e.json().then((e:any) => {
+        what.catch((e: any) => e.json().then((e: any) => {
             console.log(e);
             let s = new ModelState(r);
             r.__modelState = () => s;
@@ -775,10 +785,11 @@ export class DataGridComponent implements OnChanges {
                 click: r => this.catchErrors(r.delete(), r),
                 cssClass: "btn-danger glyphicon glyphicon-trash"
             });
-        for (let b of this.settings._buttons) {
-            this.addButton(b);
-        }
-        if (!this.records) {
+        if (this.settings._buttons)
+            for (let b of this.settings._buttons) {
+                this.addButton(b);
+            }
+        if (!this.records&&this.settings) {
             this.settings.getRecords().then(r => {
                 this.records = r;
 
@@ -827,11 +838,11 @@ export class DataAreaSettings<rowType>
 export class Lookup<lookupType> {
 
     constructor(url: string) {
-        this.restList = new RestList < lookupType>(url);
+        this.restList = new RestList<lookupType>(url);
     }
 
     private restList: RestList<lookupType>;
-    private cache:any= {};
+    private cache: any = {};
 
     get(filter: lookupType): lookupType {
         return this.getInternal(filter).value;
@@ -893,7 +904,7 @@ export class DataSettings<rowType>  {
 
 
 
-    private popupSettings: SelectPopup<rowType>;
+    popupSettings: SelectPopup<rowType>;
     showSelectPopup(onSelect: (selected: rowType) => void) {
 
 
@@ -905,7 +916,7 @@ export class DataSettings<rowType>  {
         throw new Error("Method not implemented.");
     }
     private addNewRow() {
-        let r:any = this.restList.add();
+        let r: any = this.restList.add();
         this.columns.items.forEach(item => {
             if (item.defaultValue) {
                 let result = item.defaultValue(r);
@@ -1004,7 +1015,7 @@ export class DataSettings<rowType>  {
     allowUpdate = false;
     allowInsert = false;
     allowDelete = false;
-    private hideDataArea = false;
+    hideDataArea = false;
 
 
     _buttons: rowButtonBase[] = [];
@@ -1075,7 +1086,7 @@ export class DataSettings<rowType>  {
 
 
 
-    private page = 1;
+    page = 1;
     nextPage() {
         this.page++;
         return this.getRecords();
@@ -1213,7 +1224,7 @@ export class ModelState<rowType> {
         this.isValid = false;
         this.message = message;
     }
-    modelState:any = {};
+    modelState: any = {};
 }
 
 export type rowEvent<T> = (row: T, doInScope: ((what: (() => void)) => void)) => void;
@@ -1252,7 +1263,7 @@ export interface rowButton<rowType> extends rowButtonBase {
     cssClass?: (string | ((row: rowType) => string));
 
 }
-function isFunction(functionToCheck:any) {
+function isFunction(functionToCheck: any) {
     var getType = {};
     return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 }
@@ -1319,7 +1330,7 @@ export class RestList<T extends hasId> implements Iterable<T>{
 
         return myFetch(url.url).then(r => {
             let x: T[] = r;
-            let result = r.map((x:any) => this.map(x));
+            let result = r.map((x: any) => this.map(x));
             if (getId == this.lastGetId)
                 this.items = result;
             return result;
@@ -1330,7 +1341,7 @@ export class RestList<T extends hasId> implements Iterable<T>{
         this.items.push(this.map(x as any as T));
         return x as any as T;
     }
-    replaceRow(originalRow:any, newRow:any) {
+    replaceRow(originalRow: any, newRow: any) {
         newRow = this.map(newRow);
         this.items[this.items.indexOf(originalRow)] = newRow;
         this._rowReplacedListeners.forEach(x => x(originalRow, newRow));
@@ -1480,7 +1491,7 @@ export function dateFromDataString(date: string) {
     let from = date.split('-');
     return new Date(+from[2], +from[1] - 1, +from[0]);
 }
-export function dateToDataString(date:string) {
+export function dateToDataString(date: string) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
         day = '' + d.getDate(),
@@ -1639,7 +1650,7 @@ class andFilter implements iFilter {
 
 
 export class dataView {
-    forEach(what: ()=>void): any {
+    forEach(what: () => void): any {
         this.initDataSettings();
         this.dataSettings.items.forEach(r => {
             this.dataSettings.__scopeToRow(r, what);
@@ -1712,8 +1723,7 @@ export class dataView {
         this.dataSettings = result;
     }
 }
-interface hasIndex
-{
+interface hasIndex {
     [key: string]: any;
 }
 function applyWhereToGet(where: iFilter[] | iFilter, options: getOptions<any>) {
