@@ -14,7 +14,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "build": "ngc -p tsconfig.release.json ",
-    "version": "echo testing"
+
   },
   "dependencies": {
     "@angular/animations": "^4.2.4",
