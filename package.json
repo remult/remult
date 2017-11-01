@@ -1,6 +1,6 @@
 {
   "name": "radweb",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "radweb",
   "license": "MIT",
   "main": "app.js",
@@ -14,7 +14,6 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "build": "ngc -p tsconfig.release.json "
-
   },
   "dependencies": {
     "@angular/animations": "^4.2.4",
