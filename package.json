@@ -13,7 +13,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build": "ngc -p tsconfig.release.json "
+    "build": "ngc -p tsconfig.release.json",
+    "publish": "cd dist && npm publish"
   },
   "dependencies": {
     "@angular/animations": "^4.2.4",
