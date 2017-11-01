@@ -1,6 +1,6 @@
 {
   "name": "radweb",
-  "version": "0.0.18",
+  "version": "0.0.20",
   "description": "radweb",
   "license": "MIT",
   "main": "app.js",
@@ -14,8 +14,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "build": "ngc -p tsconfig.release.json",
-    "copyPackage":"copyfiles package.json dist",
-    "addVersion":"npm version minor",
+    "addVersion": "npm version patch",
+    "copyPackage": "copyfiles package.json dist",
     "publish-to-npm": "cd dist && npm publish"
   },
   "dependencies": {
