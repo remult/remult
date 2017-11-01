@@ -1,6 +1,6 @@
 {
   "name": "radweb",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "radweb",
   "license": "MIT",
   "main": "index.js",
@@ -8,7 +8,7 @@
     "name": "Noam Honig"
   },
   "scripts": {
-    "package":"rollup -c",
+    "package": "rollup -c",
     "start": "ng serve",
     "test": "ng test",
     "lint": "ng lint",
