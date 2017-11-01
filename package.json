@@ -1,6 +1,6 @@
 {
   "name": "radweb",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "radweb",
   "license": "MIT",
   "main": "app.js",
@@ -8,15 +8,13 @@
     "name": "Noam Honig"
   },
   "scripts": {
-
     "ng": "ng",
     "start": "ng serve",
-
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build":"ngc -p tsconfig.release.json ",
-    "version":"echo testing"
+    "build": "ngc -p tsconfig.release.json ",
+    "version": "echo testing"
   },
   "dependencies": {
     "@angular/animations": "^4.2.4",
