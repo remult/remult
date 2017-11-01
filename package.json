@@ -16,7 +16,7 @@
     "build": "ngc -p tsconfig.release.json",
     "addVersion": "npm version patch",
     "copyPackage": "copyfiles package.json dist",
-    "publish-to-npm": "npm run build && npm run addVersion && npm run copyPackage&& npm run publish-to-npm && cd dist && npm publish"
+    "publish-to-npm": "npm run build && npm run addVersion && npm run copyPackage&&  cd dist && npm publish"
   },
   "dependencies": {
     "@angular/animations": "^4.2.4",
