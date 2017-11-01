@@ -14,8 +14,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "build": "ngc -p tsconfig.release.json",
-    "addVersion":"npm version minor",
     "copyPackage":"copyfiles package.json dist",
+    "addVersion":"npm version minor",
     "publish-to-npm": "cd dist && npm publish"
   },
   "dependencies": {
