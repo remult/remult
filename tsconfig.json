@@ -8,7 +8,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "rootDir": ".",
-  //  "outDir": "dist",
+    "outDir": "dist",
     "sourceMap": true,
     "inlineSources": true,
     "target": "es5",
@@ -20,5 +20,7 @@
     }
 
 
-  }
+  },
+  "files":["./src/index.ts"],
+  "angularCompilerOptions": { "strictMetadataEmit": true }
 }

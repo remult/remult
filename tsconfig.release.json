@@ -7,7 +7,6 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "rootDir": ".",
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": true,
@@ -18,9 +17,8 @@
     "paths": {
       "@angular/core": [ "node_modules/@angular/core" ],
       "rxjs/*": [ "node_modules/rxjs/*" ]
-    },
-    "files": ["index.ts"]
-
-
-  }
+    }
+  },
+  "files":["./src/index.ts"],
+  "angularCompilerOptions": { "strictMetadataEmit": true }
 }
