@@ -5,13 +5,14 @@
     "stripInternal": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,
-    "module": "commonjs",
+    "target":"es5",
+    "module": "es2015",
     "moduleResolution": "node",
     "rootDir": ".",
     "outDir": "dist",
     "sourceMap": true,
     "inlineSources": true,
-    "target": "es5",
+
     "skipLibCheck": true,
     "lib": [ "es2015", "dom" ],
     "paths": {

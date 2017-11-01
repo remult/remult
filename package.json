@@ -8,7 +8,7 @@
     "name": "Noam Honig"
   },
   "scripts": {
-    "ng": "ng",
+    "package":"rollup -c",
     "start": "ng serve",
     "test": "ng test",
     "lint": "ng lint",
