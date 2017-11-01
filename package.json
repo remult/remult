@@ -13,7 +13,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build": "ngc -p tsconfig.release.json ",
+    "build": "ngc -p tsconfig.release.json "
 
   },
   "dependencies": {
