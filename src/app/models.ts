@@ -1,7 +1,7 @@
 import * as utils from '../utils/utils';
 
 
-export class categories extends utils.entity {
+export class Category extends utils.entity {
   id = new utils.numberColumn('CategoryID');
   categoryName = new utils.textColumn('CategoryName');
   description = new utils.textColumn('Description');

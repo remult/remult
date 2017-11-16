@@ -1,6 +1,6 @@
 import { TestBed, async } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-describe('AppComponent', () => {
+/*describe('AppComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
@@ -28,3 +28,4 @@ describe('AppComponent', () => {
     expect(1 + 1).toBe(2);
   });
 });
+*/

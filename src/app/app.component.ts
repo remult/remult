@@ -10,7 +10,7 @@ import * as utils from '../utils/utils';
 
 })
 export class AppComponent {
-   categories = new models.categories();
+   categories = new models.Category();
   dv = new utils.dataView({
     from: this.categories,
 
