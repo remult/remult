@@ -1476,13 +1476,12 @@ export class RestList<T extends hasId> implements Iterable<T>{
     }
     private save(id: any, c: restListItem & T) {
 
-
+        let h = new Headers();
+        h.append('Content-type', "application/json");
         if (isNewRow(c))
             return myFetch(this.url, {
                 method: 'post',
-                headers: {
-                    'Content-type': "application/json"
-                },
+                headers: h,
                 body: JSON.stringify(c)
             }).then(response => {
                 this.replaceRow(c, response);
@@ -1491,9 +1490,7 @@ export class RestList<T extends hasId> implements Iterable<T>{
 
             return myFetch(this.url + '/' + id, {
                 method: 'put',
-                headers: {
-                    'Content-type': "application/json"
-                },
+                headers: h,
                 body: JSON.stringify(c)
             }).then(response => {
 
