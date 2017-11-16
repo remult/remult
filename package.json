@@ -13,10 +13,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "myTest:build":"tsc -p src/tsconfig.mytest.json",
-    "myTest":"npm run myTest:build && jasmine dist/src/utils/newTests.spec.js",
-
-    "myTest:watch":"watch src/utils/newTests.spec.ts -c \"npm run myTest\"" ,
+    "myTest:build": "tsc -p src/tsconfig.mytest.json",
+    "myTest": "npm run myTest:build && jasmine dist/src/utils/newTests.spec.js",
+    "myTest:watch": "watch src/utils/newTests.spec.ts -c \"npm run myTest\"",
     "build": "ngc -p tsconfig.release.json",
     "addVersion": "npm version patch",
     "copyPackage": "copyfiles package.json dist",
@@ -58,7 +57,7 @@
     "rollup": "^0.50.0",
     "ts-node": "~3.2.0",
     "tslint": "~5.7.0",
-    "typescript": "^2.5.3",
+    "typescript": "^2.3.4",
     "uglify-js": "^3.1.6"
   }
 }
