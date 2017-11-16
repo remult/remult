@@ -11,10 +11,10 @@ import * as utils from '../utils/utils';
 })
 export class AppComponent {
    categories = new models.categories();
-   dv = new utils.dataView({
-     from: this.categories,
+  dv = new utils.dataView({
+    from: this.categories,
 
-   });
+  });
   title = 'app';
   anotherTitle = 'noam';
   doSomething() {
