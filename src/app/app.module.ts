@@ -4,7 +4,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
-import { NoamCompComponent } from './noam-comp/noam-comp.component';
 
 
 
@@ -16,7 +15,7 @@ import { NoamCompComponent } from './noam-comp/noam-comp.component';
     BrowserModule, FormsModule,radWebModule
   ],
   declarations:
-    [AppComponent,NoamCompComponent]
+    [AppComponent]
   ,
   providers: [],
   bootstrap: [AppComponent]

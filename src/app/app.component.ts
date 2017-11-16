@@ -22,6 +22,6 @@ export class AppComponent {
 
   }
   constructor() {
-      this.title = "123";
+
   }
 }
