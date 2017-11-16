@@ -16,9 +16,19 @@ function itAsync(name: string, runAsync: () => Promise<any>) {
   });
 }
 class MockDataHelper implements DataHelper {
+  insert: (data: any) => Promise<any>;
   update: (id: any, data: any) => Promise<any>;
   delete: (id: any) => Promise<void>;
-  insert: (data: any) => Promise<any>;
+  constructor(args?: MDHInterface) {
+    if (args)
+      Object.assign(this, args);
+
+  }
+}
+export interface MDHInterface {
+  update?(id: any, data: any): Promise<any>;
+  delete?(id: any): Promise<void>;
+  insert?(data: any): Promise<any>;
 }
 
 describe('this is my test', () => {
@@ -61,13 +71,13 @@ describe('this is my test', () => {
   });
 
   itAsync("updates it's data on save", async () => {
-    let mdh = new MockDataHelper();
-    mdh.update = (id, data) => {
-      expect(id).toBe(1);
-      expect(data.id).toBe(3);
-
-      return Promise.resolve({ id: 3, categoryName: 'yael' });
-    }
+    let mdh = new MockDataHelper({
+      update: async (id, data) => {
+        expect(id).toBe(1);
+        expect(data.id).toBe(3);
+        return { id: 3, categoryName: 'yael' };
+      }
+    });
     var x = new Category();
     x.__setOriginalData(mdh, { id: 1, categoryName: 'noam' });
     x.id.value = 3;
@@ -77,25 +87,28 @@ describe('this is my test', () => {
   });
 
   itAsync("test Insert", async () => {
-    let mdh = new MockDataHelper();
-    mdh.insert = (data) => {
-      expect(data.categoryName).toBe('noam');
-      console.log('in insert');
-      return Promise.resolve({
-        id: 1,
-        categoryName: 'noam'
-      });
-    };
-    mdh.update = (id, data) => {
-      expect(id).toBe(1);
-      return Promise.resolve(data);
-    };
+    let mdh = new MockDataHelper({
+      insert: async (data) => {
+        expect(data.categoryName).toBe('noam');
+        return { id: 1, categoryName: 'noam' };
+
+      },
+    });
     var r = new Category();
     r.__setOriginalData(mdh, undefined);
     r.categoryName.value = 'noam';
     await r.save();
-    console.log('on end');
     expect(r.id.value).toBe(1);
     expect(r.categoryName.value).toBe('noam');
+  });
+  itAsync("test reset", async () => {
+    var r = new Category();
+    r.__setOriginalData(new MockDataHelper(), { id: 3, categoryName: 'noam' });
+    expect(r.categoryName.value).toBe('noam');
+    r.categoryName.value = 'yael';
+    expect(r.categoryName.value).toBe('yael');
+    r.reset();
+    expect(r.categoryName.value).toBe('noam');
+
   });
 });

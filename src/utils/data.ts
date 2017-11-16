@@ -26,6 +26,9 @@ export class entity {
     return this._entityData.save();
 
   }
+  reset()  {
+    this._entityData.reset();
+  }
 
   private applyColumn(y: column<any>) {
     if (!y.caption)
@@ -35,15 +38,17 @@ export class entity {
 
 }
 class EntityValueProvider implements columnValueProvider {
+  reset(): any {
+    this.data = JSON.parse(JSON.stringify(this.originalData));
+  }
   save(): Promise<void> {
     if (this.newRow) {
       return this._dataHelper.insert(this.data).then(newData => {
-        this.data = newData;
-        this.id = newData.id;
+        this.__setData(newData);
       });
     } else {
       return this._dataHelper.update(this.id,this.data).then(newData => {
-        this.data = newData;
+        this.__setData(newData);
       });
 
     }
@@ -51,17 +56,22 @@ class EntityValueProvider implements columnValueProvider {
   private id: any;
   private newRow=true;
   private data: any = {};
+  private originalData: any = {};
    _dataHelper:DataHelper;
   setData(errorDataHelper: ErrorDataHelper, data: any) {
-    if (!data)
-      data = {};
-    if (data.id) {
-      this.id = data.id;
-      this.newRow = false;
-    }
-
-    this.data = data;
     this._dataHelper = errorDataHelper;
+    this.__setData(data);
+  }
+  private __setData(data: any) {
+    if (!data)
+    data = {};
+  if (data.id) {
+    this.id = data.id;
+    this.newRow = false;
+  }
+
+  this.data = data;
+  this.originalData = JSON.parse(JSON.stringify(this.data));
   }
   getValue(key: string) {
     return this.data[key];
