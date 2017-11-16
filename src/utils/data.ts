@@ -1,11 +1,14 @@
-﻿import { isFunction, makeTitle } from './common';
+﻿
+import { isFunction, makeTitle } from './common';
+import { INTERNAL_BROWSER_PLATFORM_PROVIDERS } from '@angular/platform-browser/src/browser';
 export class entity {
   constructor(public __restUrl: string) {
 
   }
-  private _entityData = new entityValueProvider();
-  __setData(item: any) {
-    this._entityData.setData(item);
+  private _entityData = new EntityValueProvider();
+  /** @internal */
+  __setOriginalData(dataHelper: DataHelper,item: any) {
+    this._entityData.setData(dataHelper,item);
   }
   protected initColumns() {
     let x = <any>this;
@@ -19,6 +22,10 @@ export class entity {
       }
     }
   }
+  save() {
+    return this._entityData.save();
+
+  }
 
   private applyColumn(y: column<any>) {
     if (!y.caption)
@@ -27,10 +34,34 @@ export class entity {
   }
 
 }
-class entityValueProvider implements columnValueProvider {
-  data: any = {};
-  setData(data: any) {
+class EntityValueProvider implements columnValueProvider {
+  save(): Promise<void> {
+    if (this.newRow) {
+      return this._dataHelper.insert(this.data).then(newData => {
+        this.data = newData;
+        this.id = newData.id;
+      });
+    } else {
+      return this._dataHelper.update(this.id,this.data).then(newData => {
+        this.data = newData;
+      });
+
+    }
+  }
+  private id: any;
+  private newRow=true;
+  private data: any = {};
+   _dataHelper:DataHelper;
+  setData(errorDataHelper: ErrorDataHelper, data: any) {
+    if (!data)
+      data = {};
+    if (data.id) {
+      this.id = data.id;
+      this.newRow = false;
+    }
+
     this.data = data;
+    this._dataHelper = errorDataHelper;
   }
   getValue(key: string) {
     return this.data[key];
@@ -39,6 +70,27 @@ class entityValueProvider implements columnValueProvider {
     this.data[key] = value;
   }
 }
+export interface DataHelper {
+  update(id: any, data: any):Promise<any>;
+  delete(id: any): Promise<void>;
+  insert(data: any): Promise<any>;
+}
+class ErrorDataHelper implements DataHelper{
+
+
+    public update(id: any, data: any): Promise<any> {
+        throw new Error('Entity not initialized.');
+    }
+
+    public delete(id: any): Promise<void> {
+        throw new Error('Entity not initialized.');
+    }
+
+    public insert(data: any): Promise<any> {
+        throw new Error('Entity not initialized.');
+    }
+}
+
 export class column<dataType>  {
   key: string;
   caption: string;
@@ -114,6 +166,7 @@ export class filter implements iFilter {
 }
 
 export interface iFilter {
+
   __addToUrl(add: (name: string, val: any) => void): void;
 }
 
