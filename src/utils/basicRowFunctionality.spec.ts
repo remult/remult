@@ -1,5 +1,5 @@
 import { itAsync, MockDataHelper } from './testHelper';
-import { DataHelper } from './data';
+import { DataHelper } from './dataInterfaces';
 import { Category } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 

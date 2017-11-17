@@ -1,7 +1,8 @@
 import { makeTitle, isFunction } from './common';
 import { FormsModule } from '@angular/forms';
 import { rowButton, rowButtonBase } from './utils';
-import { column, Entity, iDataColumnSettings, FilterBase, columnValueProvider } from './data'
+import { column, Entity} from './data'
+import { iDataColumnSettings, FilterBase, columnValueProvider } from './DataInterfaces';
 
 import { Component, Input, OnChanges, Type, NgModule } from '@angular/core';
 import { Routes } from '@angular/router';

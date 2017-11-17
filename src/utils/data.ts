@@ -1,18 +1,13 @@
 ﻿
 import { dataAreaSettings } from './utils';
-import { FilterBase, DataProviderFactory } from './data';
+import { FilterBase, DataProviderFactory,DataProvider ,DataHelper,columnValueProvider,iDataColumnSettings } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';
 import { INTERNAL_BROWSER_PLATFORM_PROVIDERS } from '@angular/platform-browser/src/browser';
 import { error } from 'util';
 
-export interface DataProvider<T extends Entity> {
-  find(where: FilterBase, orderBy: Sort): Promise<T[]>;
-  createNewItem(): T;
-  Insert(item: T): Promise<void>;
 
-}
 export class Sort {
 
 }
@@ -41,9 +36,7 @@ export class EntitySource<T extends Entity>
   }
 }
 
-export interface DataProviderFactory {
-  provideFor<T extends Entity>(name: string, factory: () => T): DataProvider<T>;
-}
+
 
 export class InMemoryDataProvider implements DataProviderFactory {
   public provideFor<T extends Entity>(name: string, factory: () => T): DataProvider<T> {
@@ -189,11 +182,7 @@ export class __EntityValueProvider implements columnValueProvider {
     this.data[key] = value;
   }
 }
-export interface DataHelper {
-  update(id: any, data: any): Promise<any>;
-  delete(id: any): Promise<void>;
-  insert(data: any): Promise<any>;
-}
+
 class ErrorDataHelper implements DataHelper {
 
 
@@ -249,10 +238,7 @@ export class column<dataType>  {
   }
   set value(value: dataType) { this.__valueProvider.setValue(this.key, value); }
 }
-export interface columnValueProvider {
-  getValue(key: string): any;
-  setValue(key: string, value: any): void;
-}
+
 class dummyColumnStorage implements columnValueProvider {
 
   private _val: string;
@@ -264,12 +250,7 @@ class dummyColumnStorage implements columnValueProvider {
     this._val = value;
   }
 }
-export interface iDataColumnSettings {
-  key?: string;
-  caption?: string;
-  readonly?: boolean;
-  inputType?: string;
-}
+
 
 export class Filter implements FilterBase {
   constructor(private apply: (add: (name: string, val: any) => void) => void) {
@@ -284,10 +265,7 @@ export class Filter implements FilterBase {
   }
 }
 
-export interface FilterBase {
 
-  __addToUrl(add: (name: string, val: any) => void): void;
-}
 
 class andFilter implements FilterBase {
   constructor(private a: FilterBase, private b: FilterBase) {

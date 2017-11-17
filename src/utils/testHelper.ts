@@ -1,4 +1,4 @@
-import { DataHelper } from './data';
+import { DataHelper } from './dataInterfaces';
 
 export function itAsync(name: string, runAsync: () => Promise<any>) {
   it(name, (done: DoneFn) => {
