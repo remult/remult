@@ -29,7 +29,7 @@ describe('Test basic row functionality', () => {
 
   it("works with prepared Data", () => {
     let x = new Category();
-    x.__setOriginalData(new MockDataHelper(), {
+    x.__entityData.setData({
       id: 1,
       categoryName: 'noam'
     });
@@ -47,7 +47,7 @@ describe('Test basic row functionality', () => {
       }
     });
     var x = new Category();
-    x.__setOriginalData(mdh, { id: 1, categoryName: 'noam' });
+    x.__entityData.setHelper(mdh, { id: 1, categoryName: 'noam' });
     x.id.value = 3;
     await x.save();
     expect(x.id.value).toBe(3);
@@ -63,7 +63,7 @@ describe('Test basic row functionality', () => {
       },
     });
     var r = new Category();
-    r.__setOriginalData(mdh, undefined);
+    r.__entityData.setHelper(mdh, undefined);
     r.categoryName.value = 'noam';
     await r.save();
     expect(r.id.value).toBe(1);
@@ -71,7 +71,7 @@ describe('Test basic row functionality', () => {
   });
   itAsync("test reset", async () => {
     var r = new Category();
-    r.__setOriginalData(new MockDataHelper(), { id: 3, categoryName: 'noam' });
+    r.__entityData.setHelper(new MockDataHelper(), { id: 3, categoryName: 'noam' });
     expect(r.categoryName.value).toBe('noam');
     r.categoryName.value = 'yael';
     expect(r.categoryName.value).toBe('yael');

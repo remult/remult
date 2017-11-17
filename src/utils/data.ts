@@ -13,6 +13,7 @@ export interface DataProvider<T extends Entity> {
 export class Sort {
 
 }
+
 export class InMemoryDataProvider<T extends Entity> implements DataProvider<T> {
   private myDataSaver: InMemoryDataSaver;
 
@@ -27,8 +28,12 @@ export class InMemoryDataProvider<T extends Entity> implements DataProvider<T> {
 
   createNewItem(): T {
     var r = this.factory();
-    r.__setOriginalData(this.myDataSaver, undefined);
+    r.__entityData.setHelper(this.myDataSaver);
     return r;
+  }
+  Insert(item: T): Promise<void> {
+    item.__entityData.setHelper(this.myDataSaver);
+    return item.save();
   }
 }
 class InMemoryDataSaver implements DataHelper {
@@ -38,7 +43,7 @@ class InMemoryDataSaver implements DataHelper {
   find(where?: FilterBase, orderBy?: Sort): Array<any> {
     return this.rows.map(i => {
       let r = this.factory();
-      r.__setOriginalData(this, JSON.parse(JSON.stringify(i)))
+      r.__entityData.setHelper(this, JSON.parse(JSON.stringify(i)));
       return r;
     });
   }
@@ -67,11 +72,9 @@ export class Entity {
   constructor(public __restUrl: string) {
 
   }
-  private _entityData = new EntityValueProvider();
+  __entityData = new __EntityValueProvider();
   /** @internal */
-  __setOriginalData(dataHelper: DataHelper, item: any) {
-    this._entityData.setData(dataHelper, item);
-  }
+
   protected initColumns() {
     let x = <any>this;
     for (let c in x) {
@@ -85,32 +88,32 @@ export class Entity {
     }
   }
   save() {
-    return this._entityData.save();
+    return this.__entityData.save();
 
   }
   reset() {
-    this._entityData.reset();
+    this.__entityData.reset();
   }
 
   private applyColumn(y: column<any>) {
     if (!y.caption)
       y.caption = makeTitle(y.key);
-    y.__valueProvider = this._entityData;
+    y.__valueProvider = this.__entityData;
   }
 
 }
-class EntityValueProvider implements columnValueProvider {
+export class __EntityValueProvider implements columnValueProvider {
   reset(): any {
     this.data = JSON.parse(JSON.stringify(this.originalData));
   }
   save(): Promise<void> {
     if (this.newRow) {
       return this._dataHelper.insert(this.data).then(newData => {
-        this.__setData(newData);
+        this.setData(newData);
       });
     } else {
       return this._dataHelper.update(this.id, this.data).then(newData => {
-        this.__setData(newData);
+        this.setData(newData);
       });
 
     }
@@ -119,12 +122,17 @@ class EntityValueProvider implements columnValueProvider {
   private newRow = true;
   private data: any = {};
   private originalData: any = {};
-  _dataHelper: DataHelper;
-  setData(errorDataHelper: ErrorDataHelper, data: any) {
+  _dataHelper: DataHelper = new ErrorDataHelper();
+  setHelper(errorDataHelper: DataHelper, data?: any) {
+    if (!(this._dataHelper instanceof ErrorDataHelper)) {
+      throw "this entity is already associated with a data helper";
+    }
     this._dataHelper = errorDataHelper;
-    this.__setData(data);
+    if (data)
+      this.setData(data);
+
   }
-  private __setData(data: any) {
+  setData(data: any) {
     if (!data)
       data = {};
     if (data.id) {

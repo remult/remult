@@ -6,7 +6,7 @@ import { TestBed, async } from '@angular/core/testing';
 
 
 describe("test row provider", () => {
-  itAsync("test1",async () => {
+  itAsync("Insert",async () => {
     let x = new InMemoryDataProvider(() => new Category());
     let rows = await x.find();
     expect(rows.length).toBe(0);
@@ -19,4 +19,19 @@ describe("test row provider", () => {
     expect(rows[0].id.value).toBe(1);
     expect(rows[0].categoryName.value).toBe('noam');
   });
+
+  itAsync("Insert another way",async () => {
+    let x = new InMemoryDataProvider(() => new Category());
+    let rows = await x.find();
+    expect(rows.length).toBe(0);
+    var c = new Category();
+    c.id.value = 1;
+    c.categoryName.value = 'noam';
+    await x.Insert(c);
+    rows = await x.find();
+    expect(rows.length).toBe(1);
+    expect(rows[0].id.value).toBe(1);
+    expect(rows[0].categoryName.value).toBe('noam');
+  });
+
 });
