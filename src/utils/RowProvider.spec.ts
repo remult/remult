@@ -36,10 +36,10 @@ describe("test row provider", () => {
 
   itAsync("one more insert", async () => {
     let x = new Categories();
-    var c = new Category();
+    var c = x.createNewItem();
     c.id.value = 1;
     c.categoryName.value = 'noam';
-    x.insertItem(c);
+    c.save();
     var r = await x.find();
     expect(r[0].categoryName.value).toBe('noam');
   });
