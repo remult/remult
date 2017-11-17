@@ -1,44 +1,12 @@
+import { itAsync, MockDataHelper } from './testHelper';
 import { DataHelper } from './data';
 import { Category } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
-import { promise } from 'selenium-webdriver';
-
-function itAsync(name: string, runAsync: () => Promise<any>) {
-  it(name, (done: DoneFn) => {
-    runAsync().catch(e => {
-      fail(e);
-      done();
-    })
-      .then(done, e => {
-        fail(e);
-        done();
-      });
-  });
-}
-class MockDataHelper implements DataHelper {
-  insert: (data: any) => Promise<any>;
-  update: (id: any, data: any) => Promise<any>;
-  delete: (id: any) => Promise<void>;
-  constructor(args?: MDHInterface) {
-    if (args)
-      Object.assign(this, args);
-
-  }
-}
-export interface MDHInterface {
-  update?(id: any, data: any): Promise<any>;
-  delete?(id: any): Promise<void>;
-  insert?(data: any): Promise<any>;
-}
-
-describe('this is my test', () => {
 
 
-  it("my tests", () => {
-    expect(1 + 1).toBe(2);
-  });
 
 
+describe('Test basic row functionality', () => {
   it("object assign works", () => {
     let a: any = {};
     let b: any = {};
@@ -109,6 +77,5 @@ describe('this is my test', () => {
     expect(r.categoryName.value).toBe('yael');
     r.reset();
     expect(r.categoryName.value).toBe('noam');
-
   });
 });

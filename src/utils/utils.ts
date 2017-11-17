@@ -1,7 +1,7 @@
 import { makeTitle, isFunction } from './common';
 import { FormsModule } from '@angular/forms';
 import { rowButton, rowButtonBase } from './utils';
-import { column, entity, iDataColumnSettings, iFilter, columnValueProvider } from './data'
+import { column, Entity, iDataColumnSettings, FilterBase, columnValueProvider } from './data'
 
 import { Component, Input, OnChanges, Type, NgModule } from '@angular/core';
 import { Routes } from '@angular/router';
@@ -109,7 +109,7 @@ export class ColumnCollection<rowType> {
             }
             else if (s.dropDown.source instanceof RestList) {
               s.dropDown.source.get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
-            } else if (s.dropDown.source instanceof entity) {
+            } else if (s.dropDown.source instanceof Entity) {
               new RestList(s.dropDown.source.__restUrl).get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
             }
             else {
@@ -596,7 +596,7 @@ export class SelectPopupComponent {
 export interface dropDownOptions {
 
   items?: dropDownItem[] | string[] | any[];
-  source?: Promise<any> | RestList<any> | string | DataSettings<any> | entity;
+  source?: Promise<any> | RestList<any> | string | DataSettings<any> | Entity;
   idKey?: string;
   captionKey?: string;
 }
@@ -1742,7 +1742,7 @@ export class dataView {
 interface hasIndex {
   [key: string]: any;
 }
-function applyWhereToGet(where: iFilter[] | iFilter, options: getOptions<any>) {
+function applyWhereToGet(where: FilterBase[] | FilterBase, options: getOptions<any>) {
   if (!options.otherUrlParameters)
     options.otherUrlParameters = {};
   if (where instanceof Array) {
@@ -1751,7 +1751,7 @@ function applyWhereToGet(where: iFilter[] | iFilter, options: getOptions<any>) {
     });
   }
   else {
-    let y = where as iFilter;
+    let y = where as FilterBase;
     if (y && y.__addToUrl)
       y.__addToUrl((k, v) => { options.otherUrlParameters[k] = v });
   }
@@ -1790,7 +1790,7 @@ class dataSettingsColumnValueProvider implements columnValueProvider {
 class relationColumnValueProvider implements columnValueProvider {
 
   currentRow: () => any;
-  constructor(to: entity, on: iFilter | iFilter[], ds: dataSettingsColumnValueProvider) {
+  constructor(to: Entity, on: FilterBase | FilterBase[], ds: dataSettingsColumnValueProvider) {
 
 
 
@@ -1822,11 +1822,11 @@ class relationColumnValueProvider implements columnValueProvider {
   }
 }
 export interface IdataViewSettings {
-  from: entity;
+  from: Entity;
   numOfColumnsInGrid?: number;
   relations?: IRelation | IRelation[];
   displayColumns?: ColumnSetting<any>[];
-  where?: iFilter[] | iFilter;
+  where?: FilterBase[] | FilterBase;
   onEnterRow?: () => void;
   onNewRow?: () => void;
   onSavingRow?: (modelState: ModelState<any>) => void;
@@ -1835,8 +1835,8 @@ export interface IdataViewSettings {
   allowDelete?: boolean,
 }
 export interface IRelation {
-  to: entity;
-  on: iFilter[] | iFilter;
+  to: Entity;
+  on: FilterBase[] | FilterBase;
 }
 
 @NgModule({
