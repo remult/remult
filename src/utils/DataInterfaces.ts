@@ -1,4 +1,10 @@
-import { Entity,Sort } from './data';
+import { Entity, Sort } from './data';
+
+
+
+
+
+
 export interface DataProvider<T extends Entity> {
   find(where: FilterBase, orderBy: Sort): Promise<T[]>;
   createNewItem(): T;
@@ -15,7 +21,7 @@ export interface DataHelper {
   insert(data: any): Promise<any>;
 }
 
-export interface columnValueProvider {
+export interface ColumnValueProvider {
   getValue(key: string): any;
   setValue(key: string, value: any): void;
 }
@@ -29,6 +35,5 @@ export interface iDataColumnSettings {
 
 
 export interface FilterBase {
-
-    __addToUrl(add: (name: string, val: any) => void): void;
-  }
+  __addToUrl(add: (name: string, val: any) => void): void;
+}
