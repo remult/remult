@@ -1,5 +1,6 @@
-﻿import { dataAreaSettings } from './utils';
-import { FilterBase } from './data';
+﻿
+import { dataAreaSettings } from './utils';
+import { FilterBase, DataProviderFactory } from './data';
 
 
 import { isFunction, makeTitle } from './common';
@@ -9,12 +10,50 @@ import { error } from 'util';
 export interface DataProvider<T extends Entity> {
   find(where: FilterBase, orderBy: Sort): Promise<T[]>;
   createNewItem(): T;
+  Insert(item: T): Promise<void>;
+
 }
 export class Sort {
 
 }
+export class EntitySource<T extends Entity>
+{
+  private _provider: DataProvider<T>;
+  constructor(name: string, factory: () => T, dataProvider: DataProviderFactory) {
+    this._provider = dataProvider.provideFor(name, factory);
+  }
+  find(where?: FilterBase, orderBy?: Sort): Promise<T[]> {
+    return this._provider.find(where, orderBy);
+  }
 
-export class InMemoryDataProvider<T extends Entity> implements DataProvider<T> {
+  createNewItem(): T {
+    return this._provider.createNewItem();
+  }
+
+  insertItem(item:T) {
+    return this._provider.Insert(item);
+  }
+
+  Insert(doOnRow:(item:T)=>void): Promise<void> {
+      var i = this.createNewItem();
+      doOnRow(i);
+    return i.save();
+  }
+}
+
+export interface DataProviderFactory {
+  provideFor<T extends Entity>(name: string, factory: () => T): DataProvider<T>;
+}
+
+export class InMemoryDataProvider implements DataProviderFactory {
+  public provideFor<T extends Entity>(name: string, factory: () => T): DataProvider<T> {
+    return new ActualInMemoryDataProvider(factory);
+  }
+}
+
+
+
+class ActualInMemoryDataProvider<T extends Entity> implements DataProvider<T> {
   private myDataSaver: InMemoryDataSaver;
 
 
@@ -69,7 +108,7 @@ class InMemoryDataSaver implements DataHelper {
 }
 
 export class Entity {
-  constructor(public __restUrl: string) {
+  constructor(public __DELETEME_resturl?: string) {
 
   }
   __entityData = new __EntityValueProvider();
