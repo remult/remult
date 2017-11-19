@@ -1,4 +1,4 @@
-import { DataHelper } from './dataInterfaces';
+
 
 export function itAsync(name: string, runAsync: () => Promise<any>) {
   it(name, (done: DoneFn) => {
@@ -12,16 +12,7 @@ export function itAsync(name: string, runAsync: () => Promise<any>) {
       });
   });
 }
-export class MockDataHelper implements DataHelper {
-  insert: (data: any) => Promise<any>;
-  update: (id: any, data: any) => Promise<any>;
-  delete: (id: any) => Promise<void>;
-  constructor(args?: MDHInterface) {
-    if (args)
-      Object.assign(this, args);
 
-  }
-}
 export interface MDHInterface {
   update?(id: any, data: any): Promise<any>;
   delete?(id: any): Promise<void>;

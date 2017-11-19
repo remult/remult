@@ -1,5 +1,5 @@
-import {  Entity,  EntitySource, InMemoryDataProvider } from './../utils/data';
-import {  DataProvider,DataProviderFactory} from './../utils/DataInterfaces';
+import { Entity, EntitySource, InMemoryDataProvider } from './../utils/data';
+import { DataProvider, DataProviderFactory } from './../utils/DataInterfaces';
 import * as utils from '../utils/utils';
 
 export class Category extends utils.Entity {
@@ -8,12 +8,7 @@ export class Category extends utils.Entity {
   description = new utils.textColumn('Description');
 
   constructor() {
-    super();
+    super(() => new Category());
     this.initColumns();
-  }
-}
-export class Categories extends EntitySource<Category> {
-  constructor(dataProvider?: DataProviderFactory) {
-    super('categories', () => new Category(), dataProvider ?dataProvider: new InMemoryDataProvider());
   }
 }

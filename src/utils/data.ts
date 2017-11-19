@@ -1,10 +1,11 @@
 ﻿import { Entity } from './Entity';
 
 import { dataAreaSettings } from './utils';
-import { FilterBase, DataProviderFactory,DataProvider ,DataHelper,ColumnValueProvider,iDataColumnSettings } from './dataInterfaces';
+import { FilterBase, DataProviderFactory,DataProvider ,ColumnValueProvider,iDataColumnSettings } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';
+
 
 
 export * from './Entity';
@@ -14,71 +15,28 @@ export class Sort {
 }
 
 
-export class EntitySource<T extends Entity>
-{
-  private _provider: DataProvider<T>;
-  constructor(name: string, factory: () => T, dataProvider: DataProviderFactory) {
-    this._provider = dataProvider.provideFor(name, factory);
-  }
-  find(where?: FilterBase, orderBy?: Sort): Promise<T[]> {
-    return this._provider.find(where, orderBy);
-  }
-
-  createNewItem(): T {
-    return this._provider.createNewItem();
-  }
-
-  insertItem(item:T) {
-    return this._provider.Insert(item);
-  }
-
-  Insert(doOnRow:(item:T)=>void): Promise<void> {
-      var i = this.createNewItem();
-      doOnRow(i);
-    return i.save();
-  }
-}
-
 
 export class InMemoryDataProvider implements DataProviderFactory {
-  public provideFor<T extends Entity>(name: string, factory: () => T): DataProvider<T> {
-    return new ActualInMemoryDataProvider(factory);
+  public provideFor<T extends Entity>(name: string): DataProvider {
+    return new ActualInMemoryDataProvider();
   }
 }
 
 
 
-class ActualInMemoryDataProvider<T extends Entity> implements DataProvider<T> {
-  private myDataSaver: InMemoryDataSaver;
+class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
 
 
-  constructor(private factory: () => T) {
-    this.myDataSaver = new InMemoryDataSaver(factory);
-  }
 
-  async find(where?: FilterBase, orderBy?: Sort): Promise<T[]> {
-    return this.myDataSaver.find(where, orderBy);
-  }
-
-  createNewItem(): T {
-    var r = this.factory();
-    r.__entityData.setHelper(this.myDataSaver);
-    return r;
-  }
-  Insert(item: T): Promise<void> {
-    item.__entityData.setHelper(this.myDataSaver);
-    return item.save();
-  }
-}
-class InMemoryDataSaver implements DataHelper {
-  constructor(private factory: () => Entity) {
+  constructor() {
 
   }
-  find(where?: FilterBase, orderBy?: Sort): Array<any> {
+
+  async find(where?: FilterBase, orderBy?: Sort): Promise<any[]> {
     return this.rows.map(i => {
-      let r = this.factory();
-      r.__entityData.setHelper(this, JSON.parse(JSON.stringify(i)));
-      return r;
+
+      return JSON.parse(JSON.stringify(i));
+
     });
   }
 
@@ -89,7 +47,13 @@ class InMemoryDataSaver implements DataHelper {
   }
 
   public delete(id: any): Promise<void> {
-    throw new Error('Not implemented yet.');
+    for (let i = 0; i < this.rows.length; i++) {
+      if (id == this.rows[i].id) {
+        this.rows.splice(i, 1);
+        return Promise.resolve();
+      }
+      throw new Error("could'nt find id to delete: " + id);
+    }
   }
 
   public insert(data: any): Promise<any> {
@@ -101,6 +65,7 @@ class InMemoryDataSaver implements DataHelper {
     return Promise.resolve(JSON.parse(JSON.stringify(data)));
   }
 }
+
 
 
 

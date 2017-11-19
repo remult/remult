@@ -111,7 +111,7 @@ export class ColumnCollection<rowType> {
             else if (s.dropDown.source instanceof RestList) {
               s.dropDown.source.get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
             } else if (s.dropDown.source instanceof Entity) {
-              new RestList(s.dropDown.source.__DELETEME_resturl).get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
+              new RestList(s.dropDown.source.name).get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
             }
             else {
               let x = s.dropDown.source as Promise<any>;
@@ -1718,7 +1718,7 @@ export class dataView {
     }
     if (this.settings.numOfColumnsInGrid != undefined)
       dataSettings.numOfColumnsInGrid = this.settings.numOfColumnsInGrid;
-    let result = new DataSettings(this.settings.from.__DELETEME_resturl, dataSettings);
+    let result = new DataSettings(this.settings.from.name, dataSettings);
     let cvp = new dataSettingsColumnValueProvider(result);
     for (let key in this.settings.from) {
       let col = (<hasIndex>this.settings.from)[key];
@@ -1803,7 +1803,7 @@ class relationColumnValueProvider implements ColumnValueProvider {
 
     }
 
-    let l = new DataSettings(to.__DELETEME_resturl).lookup;
+    let l = new DataSettings(to.name).lookup;
     this.currentRow = () => {
       let get: getOptions<any> = {};
       applyWhereToGet(on, get);
