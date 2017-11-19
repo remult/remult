@@ -1,4 +1,4 @@
-import { Entity, EntitySource, InMemoryDataProvider } from './../utils/data';
+import { Entity, EntitySource } from './../utils/data';
 import { DataProvider, DataProviderFactory } from './../utils/DataInterfaces';
 import * as utils from '../utils/utils';
 

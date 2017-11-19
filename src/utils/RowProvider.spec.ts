@@ -1,5 +1,6 @@
 
-import { Entity, InMemoryDataProvider, Column,Sort } from './data';
+import { Entity, Column, Sort } from './data';
+import { InMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper';
 
 import { Category } from './../app/models';
@@ -94,7 +95,7 @@ describe("test row provider", () => {
     r = await c.source.find();
     expect(r[0].categoryName.value).toBe('yael');
   });
-  let insertFourRows =async () => {
+  let insertFourRows = async () => {
     let c = new Category();
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(x => {
@@ -120,7 +121,7 @@ describe("test row provider", () => {
     return c;
   };
   itAsync("test filter", async () => {
-    let c =await insertFourRows();
+    let c = await insertFourRows();
 
     let rows = await c.source.find();
     expect(rows.length).toBe(4);
