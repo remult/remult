@@ -43,7 +43,13 @@ class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
 
   private rows: any[] = [];
   public update(id: any, data: any): Promise<any> {
-    throw new Error('Not implemented yet.');
+    for (let i = 0; i < this.rows.length; i++) {
+      if (id == this.rows[i].id) {
+        this.rows[i] = Object.assign({}, this.rows[i], data);
+        return Promise.resolve(this.rows[i]);
+      }
+      throw new Error("could'nt find id to delete: " + id);
+    }
   }
 
   public delete(id: any): Promise<void> {
@@ -65,10 +71,6 @@ class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
     return Promise.resolve(JSON.parse(JSON.stringify(data)));
   }
 }
-
-
-
-
 
 
 

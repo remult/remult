@@ -81,6 +81,19 @@ describe("test row provider", () => {
     expect(rows.length).toBe(0);
 
   });
+  itAsync("test update", async () => {
+    let c = new Category();
+    c.setSource(new InMemoryDataProvider());
+    c.id.value = 5;
+    c.categoryName.value = 'noam';
+    c.save();
+    let r = await c.source.find();
+    expect(r[0].categoryName.value).toBe('noam');
+    c.categoryName.value = 'yael';
+    c.save();
+    r = await c.source.find();
+    expect(r[0].categoryName.value).toBe('yael');
+  });
 
 });
 
