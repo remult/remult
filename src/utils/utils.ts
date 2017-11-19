@@ -1,7 +1,7 @@
 import { makeTitle, isFunction } from './common';
 import { FormsModule } from '@angular/forms';
 import { rowButton, rowButtonBase } from './utils';
-import { column, Entity} from './data'
+import { Column, Entity} from './data'
 import { iDataColumnSettings, FilterBase, ColumnValueProvider } from './DataInterfaces';
 
 import { Component, Input, OnChanges, Type, NgModule } from '@angular/core';
@@ -224,7 +224,7 @@ export class ColumnCollection<rowType> {
     if (col.getValue) {
       this.scopeToRow(row, () => {
         r = col.getValue(row)
-        if (r instanceof column)
+        if (r instanceof Column)
           r = r.value;
       });
 
@@ -1369,7 +1369,7 @@ export interface ColumnSetting<rowType> {
   onUserChangedValue?: (row: rowType) => void;
   click?: rowEvent<rowType>;
   dropDown?: dropDownOptions;
-  column?: column<any>
+  column?: Column<any>
 }
 
 
@@ -1641,12 +1641,12 @@ export function init<T>(item: T, doInit: (i: T) => void): T {
 
 
 
-export class textColumn extends column<string>{
+export class textColumn extends Column<string>{
   constructor(settingsOrCaption: iDataColumnSettings | string) {
     super(settingsOrCaption);
   }
 }
-export class dateColumn extends column<string>{
+export class dateColumn extends Column<string>{
   constructor(settingsOrCaption: iDataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
@@ -1655,7 +1655,7 @@ export class dateColumn extends column<string>{
 
 
 }
-export class numberColumn extends column<number>{
+export class numberColumn extends Column<number>{
   constructor(settingsOrCaption: iDataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
@@ -1722,7 +1722,7 @@ export class dataView {
     let cvp = new dataSettingsColumnValueProvider(result);
     for (let key in this.settings.from) {
       let col = (<hasIndex>this.settings.from)[key];
-      if (col instanceof column) {
+      if (col instanceof Column) {
         col.__valueProvider = cvp;
       }
 
@@ -1797,7 +1797,7 @@ class relationColumnValueProvider implements ColumnValueProvider {
 
     for (let key in to) {
       let col = (<hasIndex>to)[key];
-      if (col instanceof column) {
+      if (col instanceof Column) {
         col.__valueProvider = this;
       }
 

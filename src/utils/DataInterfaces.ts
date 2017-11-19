@@ -1,11 +1,16 @@
+import { FindOptions } from './DataInterfaces';
 import { Entity, Sort } from './data';
 
 
 export interface DataProvider {
-  find(where: FilterBase, orderBy: Sort): Promise<Array<any>>;
+  find(options?: FindOptions): Promise<Array<any>>;
   update(id: any, data: any): Promise<any>;
   delete(id: any): Promise<void>;
   insert(data: any): Promise<any>;
+}
+export interface FindOptions {
+  where?: FilterBase;
+  orderBy?: Sort;
 }
 
 export interface DataProviderFactory {
@@ -22,6 +27,7 @@ export interface iDataColumnSettings {
   readonly?: boolean;
   inputType?: string;
 }
+
 
 
 export interface FilterBase {

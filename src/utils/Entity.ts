@@ -1,8 +1,6 @@
-
-
-import { column,Sort } from './data';
+import { Column,Sort } from './data';
 import { isFunction, makeTitle } from './common';
-import { FilterBase, DataProviderFactory, DataProvider,  ColumnValueProvider, iDataColumnSettings } from './dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider,  ColumnValueProvider, iDataColumnSettings,FindOptions } from './dataInterfaces';
 
 
 export class Entity {
@@ -17,7 +15,7 @@ export class Entity {
     for (let c in x) {
       let y = x[c];
 
-      if (y instanceof column) {
+      if (y instanceof Column) {
         if (!y.key)
           y.key = c;
         this.applyColumn(y);
@@ -38,7 +36,7 @@ export class Entity {
     this.__entityData.reset();
   }
   source: EntitySource<this>;
-  private applyColumn(y: column<any>) {
+  private applyColumn(y: Column<any>) {
     if (!y.caption)
       y.caption = makeTitle(y.key);
     y.__valueProvider = this.__entityData;
@@ -46,14 +44,15 @@ export class Entity {
 
 }
 
+
 export class EntitySource<T extends Entity>
 {
   private _provider: DataProvider;
   constructor(name: string, private factory: () => T, dataProvider: DataProviderFactory) {
     this._provider = dataProvider.provideFor(name);
  }
-  find(where?: FilterBase, orderBy?: Sort): Promise<T[]> {
-    return this._provider.find(where, orderBy)
+  find(options?:FindOptions): Promise<T[]> {
+    return this._provider.find(options)
       .then(arr => {
         return arr.map(i => {
           let r = this.factory();

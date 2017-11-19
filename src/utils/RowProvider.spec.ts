@@ -1,5 +1,5 @@
 
-import { Entity, InMemoryDataProvider } from './data';
+import { Entity, InMemoryDataProvider, Column,Sort } from './data';
 import { itAsync } from './testHelper';
 
 import { Category } from './../app/models';
@@ -94,40 +94,58 @@ describe("test row provider", () => {
     r = await c.source.find();
     expect(r[0].categoryName.value).toBe('yael');
   });
-  itAsync("test filter", async () => {
+  let insertFourRows =async () => {
     let c = new Category();
     c.setSource(new InMemoryDataProvider());
-    c.source.Insert(x => {
+    await c.source.Insert(x => {
       x.id.value = 1;
       x.categoryName.value = 'noam';
       x.description.value = 'x';
     });
-    c.source.Insert(x => {
+    await c.source.Insert(x => {
       x.id.value = 4;
       x.categoryName.value = 'yael';
       x.description.value = 'x';
     });
-    c.source.Insert(x => {
+    await c.source.Insert(x => {
       x.id.value = 2;
       x.categoryName.value = 'yoni';
       x.description.value = 'y';
     });
-    c.source.Insert(x => {
+    await c.source.Insert(x => {
       x.id.value = 3;
       x.categoryName.value = 'maayan';
       x.description.value = 'y';
     });
+    return c;
+  };
+  itAsync("test filter", async () => {
+    let c =await insertFourRows();
+
     let rows = await c.source.find();
     expect(rows.length).toBe(4);
-    rows = await c.source.find(c.description.isEqualTo('x'));
+    rows = await c.source.find({ where: c.description.isEqualTo('x') });
     expect(rows.length).toBe(2);
-    rows = await c.source.find(c.id.isEqualTo(4));
+    rows = await c.source.find({ where: c.id.isEqualTo(4) });
     expect(rows.length).toBe(1);
     expect(rows[0].categoryName.value).toBe('yael');
-    rows = await c.source.find(c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')));
+    rows = await c.source.find({ where: c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
+  });
+  itAsync("sort", async () => {
+    let c = await insertFourRows();
+    let rows = await c.source.find({ orderBy: new Sort({ column: c.id }) });
+    expect(rows[0].id.value).toBe(1);
+    expect(rows[1].id.value).toBe(2);
+    expect(rows[2].id.value).toBe(3);
+    expect(rows[3].id.value).toBe(4);
 
+    rows = await c.source.find({ orderBy: new Sort({ column: c.categoryName, descending: true }) });
+    expect(rows[0].id.value).toBe(2);
+    expect(rows[1].id.value).toBe(4);
+    expect(rows[2].id.value).toBe(1);
+    expect(rows[3].id.value).toBe(3);
   });
 
 });

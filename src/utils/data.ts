@@ -1,7 +1,9 @@
-﻿import { Entity } from './Entity';
+﻿
+
+import { Entity } from './Entity';
 
 import { dataAreaSettings } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings } from './dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings, FindOptions } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';
@@ -11,8 +13,16 @@ import { isFunction, makeTitle } from './common';
 export * from './Entity';
 
 export class Sort {
-
+  constructor(...segments: SortSegment[]) {
+    this.Segments = segments;
+  }
+  Segments: SortSegment[];
 }
+export interface SortSegment {
+  column: Column<any>,
+  descending?: boolean
+}
+
 
 
 
@@ -32,16 +42,42 @@ class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
 
   }
 
-  async find(where?: FilterBase, orderBy?: Sort): Promise<any[]> {
-    return this.rows.filter(i => {
-      let ok = true;
-      if (where)
-        where.__addToUrl((key, val) => {
-          if (i[key] != val)
-            ok = false;
+  async find(options?: FindOptions): Promise<any[]> {
+
+    let rows = this.rows;
+    if (options) {
+      if (options.where) {
+        rows = rows.filter(i => {
+          let ok = true;
+          options.where.__addToUrl((key, val) => {
+            if (i[key] != val)
+              ok = false;
+          });
+          return ok;
         });
-      return ok;
-    }).map(i => {
+      }
+      if (options.orderBy) {
+        rows = rows.sort((a: any, b: any) => {
+          let r = 0;
+          for (let i = 0; i < options.orderBy.Segments.length; i++) {
+            let seg = options.orderBy.Segments[i];
+            let left = a[seg.column.key];
+            let right = b[seg.column.key];
+            if (left > right)
+              r = 1;
+            else if (left < right)
+              r = -1;
+            if (r != 0) {
+              if (seg.descending)
+                r *= -1;
+              return r;
+            }
+          }
+          return r;
+        });
+      }
+    }
+    return rows.map(i => {
 
       return JSON.parse(JSON.stringify(i));
 
@@ -82,7 +118,7 @@ class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
 
 
 
-export class column<dataType>  {
+export class Column<dataType>  {
   key: string;
   caption: string;
   constructor(settingsOrCaption?: iDataColumnSettings | string) {
@@ -104,12 +140,12 @@ export class column<dataType>  {
   }
   readonly: boolean;
   inputType: string;
-  isEqualTo(value: column<dataType> | dataType) {
+  isEqualTo(value: Column<dataType> | dataType) {
 
 
     let val: dataType;
 
-    if (value instanceof column)
+    if (value instanceof Column)
       val = value.value;
     else
       val = value;
