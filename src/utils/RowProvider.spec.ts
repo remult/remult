@@ -1,6 +1,6 @@
 
-import { Entity,InMemoryDataProvider } from './data';
-import { itAsync} from './testHelper';
+import { Entity, InMemoryDataProvider } from './data';
+import { itAsync } from './testHelper';
 
 import { Category } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
@@ -93,6 +93,41 @@ describe("test row provider", () => {
     c.save();
     r = await c.source.find();
     expect(r[0].categoryName.value).toBe('yael');
+  });
+  itAsync("test filter", async () => {
+    let c = new Category();
+    c.setSource(new InMemoryDataProvider());
+    c.source.Insert(x => {
+      x.id.value = 1;
+      x.categoryName.value = 'noam';
+      x.description.value = 'x';
+    });
+    c.source.Insert(x => {
+      x.id.value = 4;
+      x.categoryName.value = 'yael';
+      x.description.value = 'x';
+    });
+    c.source.Insert(x => {
+      x.id.value = 2;
+      x.categoryName.value = 'yoni';
+      x.description.value = 'y';
+    });
+    c.source.Insert(x => {
+      x.id.value = 3;
+      x.categoryName.value = 'maayan';
+      x.description.value = 'y';
+    });
+    let rows = await c.source.find();
+    expect(rows.length).toBe(4);
+    rows = await c.source.find(c.description.isEqualTo('x'));
+    expect(rows.length).toBe(2);
+    rows = await c.source.find(c.id.isEqualTo(4));
+    expect(rows.length).toBe(1);
+    expect(rows[0].categoryName.value).toBe('yael');
+    rows = await c.source.find(c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')));
+    expect(rows.length).toBe(1);
+    expect(rows[0].id.value).toBe(2);
+
   });
 
 });

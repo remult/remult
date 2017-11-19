@@ -1,7 +1,7 @@
 ﻿import { Entity } from './Entity';
 
 import { dataAreaSettings } from './utils';
-import { FilterBase, DataProviderFactory,DataProvider ,ColumnValueProvider,iDataColumnSettings } from './dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';
@@ -33,7 +33,15 @@ class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
   }
 
   async find(where?: FilterBase, orderBy?: Sort): Promise<any[]> {
-    return this.rows.map(i => {
+    return this.rows.filter(i => {
+      let ok = true;
+      if (where)
+        where.__addToUrl((key, val) => {
+          if (i[key] != val)
+            ok = false;
+        });
+      return ok;
+    }).map(i => {
 
       return JSON.parse(JSON.stringify(i));
 
@@ -96,16 +104,18 @@ export class column<dataType>  {
   }
   readonly: boolean;
   inputType: string;
-  isEqualTo(value: column<dataType> | (() => dataType)) {
-
-    let getValue: (() => dataType);
-    if (isFunction(value))
-      getValue = <(() => dataType)>value;
-    else if (value instanceof column)
-      getValue = () => value.value;
+  isEqualTo(value: column<dataType> | dataType) {
 
 
-    return new Filter(apply => apply(this.key, getValue()));
+    let val: dataType;
+
+    if (value instanceof column)
+      val = value.value;
+    else
+      val = value;
+
+
+    return new Filter(apply => apply(this.key, value));
   }
   __valueProvider: ColumnValueProvider = new dummyColumnStorage();
   get value() {
