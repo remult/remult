@@ -11,6 +11,8 @@ export interface DataProvider {
 export interface FindOptions {
   where?: FilterBase;
   orderBy?: Sort;
+  limit?: number;
+  page?: number;
 }
 
 export interface DataProviderFactory {
@@ -28,6 +30,11 @@ export interface iDataColumnSettings {
   inputType?: string;
 }
 
+export interface RowEvents {
+  rowDeleted?: () => void;
+  rowSaved?: (newRow: boolean) => void;
+  rowReset?: (newRow: boolean) => void;
+}
 
 
 export interface FilterBase {

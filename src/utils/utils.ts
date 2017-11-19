@@ -1,8 +1,11 @@
+import { EntitySource } from './Entity';
+
 import { makeTitle, isFunction } from './common';
 import { FormsModule } from '@angular/forms';
-import { rowButton, rowButtonBase } from './utils';
-import { Column, Entity} from './data'
-import { iDataColumnSettings, FilterBase, ColumnValueProvider } from './DataInterfaces';
+
+import { Column, Entity, Sort } from './data'
+import { iDataColumnSettings, FilterBase, ColumnValueProvider, FindOptions } from './DataInterfaces';
+import { RestList } from './restList';
 
 import { Component, Input, OnChanges, Type, NgModule } from '@angular/core';
 import { Routes } from '@angular/router';
@@ -102,23 +105,8 @@ export class ColumnCollection<rowType> {
             populateBasedOnArray(orig);
           }
           if (s.dropDown.source) {
-            if (typeof (s.dropDown.source) == "string") {
-              new RestList(s.dropDown.source).get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
-            }
-            else if (s.dropDown.source instanceof DataSettings) {
-              s.dropDown.source.get({ limit: 5000 }).then(arr => populateBasedOnArray(arr.items));
-            }
-            else if (s.dropDown.source instanceof RestList) {
-              s.dropDown.source.get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
-            } else if (s.dropDown.source instanceof Entity) {
-              new RestList(s.dropDown.source.name).get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
-            }
-            else {
-              let x = s.dropDown.source as Promise<any>;
-              if (x.then) {
-                x.then(arr => populateBasedOnArray(arr));
-              }
-            }
+
+            new RestList(s.dropDown.source.source).get({ limit: 5000 }).then(arr => populateBasedOnArray(arr));
           }
         }
         if (existing) {
@@ -482,7 +470,7 @@ export class DataControlComponent {
   @Input() settings: ColumnCollection<any>;
 }
 declare var $: any;
-export class SelectPopup<rowType> {
+export class SelectPopup<rowType extends Entity> {
   constructor(
     private modalList: DataSettings<rowType>, settings?: SelectPopupSettings) {
     this.modalId = makeid();
@@ -499,10 +487,6 @@ export class SelectPopup<rowType> {
   private search() {
     let s: any = {};
     s[this.searchColumn] = this.searchText + "*";
-
-    this.modalList.get({
-      isEqualTo: <rowType>s
-    });
   }
   searchText: string;
   private searchColumn: string;
@@ -597,7 +581,7 @@ export class SelectPopupComponent {
 export interface dropDownOptions {
 
   items?: dropDownItem[] | string[] | any[];
-  source?: Promise<any> | RestList<any> | string | DataSettings<any> | Entity;
+  source?: Entity;
   idKey?: string;
   captionKey?: string;
 }
@@ -803,7 +787,7 @@ export class DataGridComponent implements OnChanges {
   @Input() settings: DataSettings<any>;
   @Input() dataView: dataView;
 
-  getButtonCssClass(b: rowButtonBase, row: any) {
+  getButtonCssClass(b: RowButton<any>, row: any) {
     if (!b.cssClass)
       return "";
     if (isFunction(b.cssClass))
@@ -811,9 +795,9 @@ export class DataGridComponent implements OnChanges {
     return b.cssClass.toString();
 
   }
-  rowButtons: rowButtonBase[] = [];
+  rowButtons: RowButton<any>[] = [];
   keys: string[] = [];
-  private addButton(b: rowButtonBase) {
+  private addButton(b: RowButton<any>) {
     if (!b.click)
       b.click = (r) => { };
     if (!b.visible)
@@ -924,7 +908,7 @@ export class DataGridComponent implements OnChanges {
         this.addButton(b);
       }
     if (!this.records && this.settings) {
-      this.settings.getRecords().then(r => {
+      this.settings.getRecords().then((r: any) => {
         this.records = r;
 
       });
@@ -963,39 +947,30 @@ export class DataAreaSettings<rowType>
   }
 }
 
-export class Lookup<lookupType> {
+export class Lookup<lookupType extends Entity> {
 
-  constructor(url: string) {
-    this.restList = new RestList<lookupType>(url);
+  constructor(source: EntitySource<lookupType>) {
+    this.restList = new RestList<lookupType>(source);
   }
 
   private restList: RestList<lookupType>;
   private cache: any = {};
 
-  get(filter: lookupType): lookupType {
+  get(filter: FilterBase): lookupType {
     return this.getInternal(filter).value;
   }
-  found(filter: lookupType): boolean {
+  found(filter: FilterBase): boolean {
     return this.getInternal(filter).found;
   }
 
-  private getInternal(filter: lookupType): lookupRowInfo<lookupType> {
-    if (filter) {
-      let filterHasMember = false;
-      for (let member in filter) {
-        if (filter[member] != undefined)
-          filterHasMember = true;
-      }
-      if (!filterHasMember)
-        filter = undefined;
-    }
-    let find: getOptions<lookupType> = {};
-    find.isEqualTo = filter;
+  private getInternal(filter: FilterBase): lookupRowInfo<lookupType> {
+    let find: FindOptions = {};
+    find.where = filter;
 
     return this._internalGetByOptions(find);
   }
 
-  _internalGetByOptions(find: getOptions<lookupType>): lookupRowInfo<lookupType> {
+  _internalGetByOptions(find: FindOptions): lookupRowInfo<lookupType> {
     let key = JSON.stringify(find);
     if (this.cache == undefined)
       this.cache = {};
@@ -1021,14 +996,14 @@ export class Lookup<lookupType> {
     }
   }
 
-  whenGet(r: lookupType) {
+  whenGet(r: FilterBase) {
     return this.getInternal(r).promise.then(r => r.value);
   }
 }
 
 
 
-export class DataSettings<rowType>  {
+export class DataSettings<rowType extends Entity>  {
 
 
 
@@ -1120,10 +1095,10 @@ export class DataSettings<rowType>  {
       return;
     this.currentRowAsRestListItemRow().delete();
   }
-  currentRowAsRestListItemRow(): restListItem {
+  currentRowAsRestListItemRow() {
     if (!this.currentRow)
       return undefined;
-    return <any>this.currentRow as restListItem;
+    return <any>this.currentRow ;
   }
   cancelCurrentRowChanges() {
     if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().reset)
@@ -1146,7 +1121,7 @@ export class DataSettings<rowType>  {
   hideDataArea = false;
 
 
-  _buttons: rowButtonBase[] = [];
+  _buttons: RowButton<Entity>[] = [];
 
   rowClass?: (row: any) => string;
   onSavingRow?: (s: ModelState<any>) => void;
@@ -1159,13 +1134,13 @@ export class DataSettings<rowType>  {
   }
   caption: string;
   lookup: Lookup<rowType>;
-  constructor(restUrl?: string, settings?: IDataSettings<rowType>) {
-    this.restList = new RestList<rowType>(restUrl);
+  constructor(entitySource?: EntitySource<rowType>, settings?: IDataSettings<rowType>) {
+    this.restList = new RestList<rowType>(entitySource);
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
         this.setCurrentRow(curr);
     });
-    this.lookup = new Lookup<rowType>(restUrl);
+    this.lookup = new Lookup<rowType>(entitySource);
     if (settings) {
       if (settings.columnKeys)
         this.columns.add(...settings.columnKeys);
@@ -1200,9 +1175,7 @@ export class DataSettings<rowType>  {
       this.getOptions = settings.get;
 
     }
-    if (!this.caption && restUrl) {
-      this.caption = makeTitle(restUrl.substring(restUrl.lastIndexOf('/') + 1));
-    }
+
     this.popupSettings = new SelectPopup(this);
   }
   columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, (userFilter) => {
@@ -1225,44 +1198,50 @@ export class DataSettings<rowType>  {
     this.page--;
     return this.getRecords();
   }
-  get(options: getOptions<rowType>) {
+  get(options: FindOptions) {
     this.getOptions = options;
     this.page = 1;
     return this.getRecords();
   }
-  sort(key: string) {
+  sort(column: Column<any>) {
     if (!this.getOptions)
       this.getOptions = {};
-    if (this.getOptions.orderBy == key && this.getOptions.orderByDir == undefined) {
-      this.getOptions.orderByDir = 'd';
+    if (this.getOptions.orderBy && this.getOptions.orderBy.Segments.length > 0) {
+      if (this.getOptions.orderBy.Segments[0].column == column) {
+        this.getOptions.orderBy.Segments[0].descending = !this.getOptions.orderBy.Segments[0].descending;
+        return;
+      }
     }
-    else {
-      this.getOptions.orderBy = key;
-      this.getOptions.orderByDir = undefined;
-    }
+    this.getOptions.orderBy = new Sort({ column: column });
     this.getRecords();
   }
-  sortedAscending(key: string) {
+  sortedAscending(column: Column<any>) {
     if (!this.getOptions)
       return false;
-    if (!key || key == '')
+    if (!column)
       return false;
-    return this.getOptions.orderBy == key && !this.getOptions.orderByDir;
+
+    return this.getOptions.orderBy.Segments.length > 0 &&
+      this.getOptions.orderBy.Segments[0].column == column &&
+      !this.getOptions.orderBy.Segments[0].descending;
   }
-  sortedDescending(key: string) {
+  sortedDescending(column: Column<any>) {
     if (!this.getOptions)
-      return false;
-    if (!key || key == '')
-      return false;
-    return this.getOptions.orderBy == key && this.getOptions.orderByDir && this.getOptions.orderByDir.toLowerCase().startsWith('d');
+    return false;
+  if (!column)
+    return false;
+
+  return this.getOptions.orderBy.Segments.length > 0 &&
+    this.getOptions.orderBy.Segments[0].column == column &&
+    this.getOptions.orderBy.Segments[0].descending;
   }
 
   private extraFitler: rowType;
 
-  private getOptions: getOptions<rowType>;
+  private getOptions: FindOptions;
   getRecords() {
 
-    let opt: getOptions<rowType> = {};
+    let opt: FindOptions = {};
     if (this.getOptions)
       opt = JSON.parse(JSON.stringify(this.getOptions));
     if (!opt.limit)
@@ -1270,12 +1249,12 @@ export class DataSettings<rowType>  {
     if (this.page > 1)
       opt.page = this.page;
     if (this.extraFitler) {
-      if (!opt.isEqualTo)
-        opt.isEqualTo = <rowType>{};
-      for (let val in this.extraFitler) {
-        if (opt.isEqualTo[val] == undefined)
-          opt.isEqualTo[val] = this.extraFitler[val];
-      }
+      /* if (!opt.isEqualTo)
+         opt.isEqualTo = <rowType>{};
+       for (let val in this.extraFitler) {
+         if (opt.isEqualTo[val] == undefined)
+           opt.isEqualTo[val] = this.extraFitler[val];
+       }*/
     }
 
     return this.restList.get(opt).then(() => {
@@ -1307,7 +1286,7 @@ export class DataSettings<rowType>  {
 
 
 }
-export interface IDataSettings<rowType> {
+export interface IDataSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
@@ -1317,8 +1296,8 @@ export interface IDataSettings<rowType> {
   areas?: { [areaKey: string]: ColumnSetting<any>[] },
   columnKeys?: string[],
   rowCssClass?: (row: rowType) => string;
-  rowButtons?: rowButton<rowType>[],
-  get?: getOptions<rowType>,
+  rowButtons?: RowButton<rowType>[],
+  get?: FindOptions,
   onSavingRow?: (s: ModelState<rowType>) => void;
   onEnterRow?: (r: rowType) => void;
   onNewRow?: (r: rowType) => void;
@@ -1377,15 +1356,9 @@ export interface ColumnSetting<rowType> {
 export interface FilteredColumnSetting<rowType> extends ColumnSetting<rowType> {
   _showFilter?: boolean;
 }
-export interface rowButtonBase {
 
+export interface RowButton<rowType extends Entity> {
   name?: string;
-  visible?: (r: any) => boolean;
-  click?: (r: any) => void;
-  cssClass?: (string | ((row: any) => string));
-
-}
-export interface rowButton<rowType> extends rowButtonBase {
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
   cssClass?: (string | ((row: rowType) => string));
@@ -1394,137 +1367,8 @@ export interface rowButton<rowType> extends rowButtonBase {
 
 
 
-export class RestList<T extends hasId> implements Iterable<T>{
-  [Symbol.iterator](): Iterator<T> {
-    return this.items[Symbol.iterator]();
-  }
 
 
-  items: (restListItem & T)[] = [];
-  constructor(private url: string) {
-
-  }
-  _rowReplacedListeners: ((oldRow: T, newRow: T) => void)[] = [];
-
-  private map(item: T): restListItem & T {
-
-    let x = <any>item;
-    let id = x.id;
-    let orig = JSON.stringify(item);
-    x.__wasChanged = () => orig != JSON.stringify(item) || isNewRow(item);
-    x.reset = () => {
-      if (isNewRow(item)) {
-        this.items.splice(this.items.indexOf(x), 1);
-        this._rowReplacedListeners.forEach(y => y(x, undefined));
-      }
-      else
-        this.replaceRow(item, JSON.parse(orig));
-    }
-
-    x.save = () => this.save(id, x);
-    x.delete = () => {
-      return fetch(this.url + '/' + id, { method: 'delete', credentials: 'include' }).then(() => { }, onError).then(() => {
-        this.items.splice(this.items.indexOf(x), 1);
-        this._rowReplacedListeners.forEach(y => y(x, undefined));
-      });
-
-    }
-    return <restListItem & T>x;
-  }
-  lastGetId = 0;
-  get(options?: getOptions<T>) {
-
-    let url = new urlBuilder(this.url);
-    if (options) {
-      url.addObject({
-        _limit: options.limit,
-        _page: options.page,
-        _sort: options.orderBy,
-        _order: options.orderByDir
-      });
-      url.addObject(options.isEqualTo);
-      url.addObject(options.isGreaterOrEqualTo, "_gte");
-      url.addObject(options.isLessOrEqualTo, "_lte");
-      url.addObject(options.isGreaterThan, "_gt");
-      url.addObject(options.isLessThan, "_lt");
-      url.addObject(options.isDifferentFrom, "_ne");
-      url.addObject(options.otherUrlParameters);
-    }
-
-    let getId = ++this.lastGetId;
-
-    return myFetch(url.url).then(r => {
-      let x: T[] = r;
-      let result = r.map((x: any) => this.map(x));
-      if (getId == this.lastGetId)
-        this.items = result;
-      return result;
-    });
-  }
-  add(): T {
-    let x: newItemInList = { newRow: true };
-    this.items.push(this.map(x as any as T));
-    return x as any as T;
-  }
-  replaceRow(originalRow: any, newRow: any) {
-    newRow = this.map(newRow);
-    this.items[this.items.indexOf(originalRow)] = newRow;
-    this._rowReplacedListeners.forEach(x => x(originalRow, newRow));
-  }
-  private save(id: any, c: restListItem & T) {
-
-    let h = new Headers();
-    h.append('Content-type', "application/json");
-    if (isNewRow(c))
-      return myFetch(this.url, {
-        method: 'post',
-        headers: h,
-        body: JSON.stringify(c)
-      }).then(response => {
-        this.replaceRow(c, response);
-      });
-    else {
-
-      return myFetch(this.url + '/' + id, {
-        method: 'put',
-        headers: h,
-        body: JSON.stringify(c)
-      }).then(response => {
-
-        this.replaceRow(c, response);
-      });
-    }
-  }
-
-}
-class urlBuilder {
-  constructor(public url: string) {
-  }
-  add(key: string, value: any) {
-    if (value == undefined)
-      return;
-    if (this.url.indexOf('?') >= 0)
-      this.url += '&';
-    else
-      this.url += '?';
-    this.url += encodeURIComponent(key) + '=' + encodeURIComponent(value);
-  }
-  addObject(object: any, suffix = '') {
-    if (object != undefined)
-      for (var key in object) {
-        this.add(key + suffix, object[key]);
-      }
-  }
-}
-function myFetch(url: string, init?: RequestInit): Promise<any> {
-  if (!init)
-    init = {};
-  init.credentials = 'include';
-  return fetch(url, init).then(onSuccess, error => {
-
-  });
-
-}
 function onSuccess(response: Response) {
 
   if (response.status >= 200 && response.status < 300)
@@ -1534,33 +1378,6 @@ function onSuccess(response: Response) {
 }
 function onError(error: any) {
   throw error;
-}
-interface newItemInList {
-  newRow: boolean;
-}
-export interface hasId {
-  id?: any;
-}
-
-export interface restListItem {
-  save: () => void;
-  delete: () => void;
-  __wasChanged: () => boolean;
-  reset: () => void;
-}
-export interface getOptions<T> {
-  isEqualTo?: T;
-  isGreaterOrEqualTo?: T;
-  isLessOrEqualTo?: T;
-  orderBy?: string;
-  orderByDir?: string;
-  page?: number;
-  limit?: number;
-  isGreaterThan?: T;
-  isLessThan?: T;
-  isDifferentFrom?: T;
-  otherUrlParameters?: any;
-
 }
 
 
@@ -1572,62 +1389,10 @@ export class lookupRowInfo<type> {
   promise: Promise<lookupRowInfo<type>>
 
 }
-export class AppHelper {
-  constructor() {
 
-  }
-  Routes: Routes =
-    [
-    ];
-  menues: MenuEntry[] = [];
-
-  Components: Type<any>[] = [DataGridComponent, DataAreaCompnent, DataControlComponent, ColumnDesigner, SelectPopupComponent];
-
-  Register(component: Type<any>) {
-    this.Components.push(component);
-    let name = component.name;
-    if (this.Routes.length == 0)
-      this.Routes.push({ path: '', redirectTo: '/' + name, pathMatch: 'full' });
-    this.Routes.splice(0, 0, { path: name, component: component });
-    this.menues.push({
-      path: '/' + name,
-      text: name
-    });
-  }
-  Add(c: Type<any>) {
-    this.Components.push(c);
-  }
-
-}
-export interface MenuEntry {
-  path: string,
-  text: string
-}
-export function getDayOfWeek(date: string) {
-  return dateFromDataString(date).getDay();
-}
-export function getDayOfWeekName(date: string) {
-  return dateFromDataString(date).toLocaleDateString("en-us", { weekday: "long" });
-}
-export function dateFromDataString(date: string) {
-  let from = date.split('-');
-  return new Date(+from[2], +from[1] - 1, +from[0]);
-}
-export function dateToDataString(date: string) {
-  var d = new Date(date),
-    month = '' + (d.getMonth() + 1),
-    day = '' + d.getDate(),
-    year = d.getFullYear();
-
-  if (month.length < 2) month = '0' + month;
-  if (day.length < 2) day = '0' + day;
-
-  return [year, month, day].join('-');
-}
-function isNewRow(r: any) {
+function isNewRow(r: Entity) {
   if (r) {
-    let nr: newItemInList = r as any as newItemInList;
-    return (nr.newRow)
+    r.__entityData.isNewRow();
   }
   return false;
 }
@@ -1675,7 +1440,7 @@ export class dataView {
   }
   refreshData(): any {
     this.initDataSettings();
-    let getOptions = {} as getOptions<any>;
+    let getOptions = {} as FindOptions;
     applyWhereToGet(this.settings.where, getOptions);
     this.dataSettings.get(getOptions);
   }
@@ -1718,7 +1483,7 @@ export class dataView {
     }
     if (this.settings.numOfColumnsInGrid != undefined)
       dataSettings.numOfColumnsInGrid = this.settings.numOfColumnsInGrid;
-    let result = new DataSettings(this.settings.from.name, dataSettings);
+    let result = new DataSettings(this.settings.from.source, dataSettings);
     let cvp = new dataSettingsColumnValueProvider(result);
     for (let key in this.settings.from) {
       let col = (<hasIndex>this.settings.from)[key];
@@ -1743,19 +1508,8 @@ export class dataView {
 interface hasIndex {
   [key: string]: any;
 }
-function applyWhereToGet(where: FilterBase[] | FilterBase, options: getOptions<any>) {
-  if (!options.otherUrlParameters)
-    options.otherUrlParameters = {};
-  if (where instanceof Array) {
-    where.forEach(w => {
-      w.__addToUrl((k, v) => { options.otherUrlParameters[k] = v });
-    });
-  }
-  else {
-    let y = where as FilterBase;
-    if (y && y.__addToUrl)
-      y.__addToUrl((k, v) => { options.otherUrlParameters[k] = v });
-  }
+function applyWhereToGet(where: FilterBase[] | FilterBase, options: FindOptions) {
+  where = options.where;
 
 }
 
@@ -1803,9 +1557,9 @@ class relationColumnValueProvider implements ColumnValueProvider {
 
     }
 
-    let l = new DataSettings(to.name).lookup;
+    let l = new DataSettings(to.source).lookup;
     this.currentRow = () => {
-      let get: getOptions<any> = {};
+      let get: FindOptions = {};
       applyWhereToGet(on, get);
       return l._internalGetByOptions(get).value;
     }
@@ -1853,3 +1607,4 @@ export interface IRelation {
 
 })
 export class radWebModule { }
+
