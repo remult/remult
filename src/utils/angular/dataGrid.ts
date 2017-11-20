@@ -28,7 +28,7 @@ import { isFunction } from '../common';
             <span (click)="settings.sort(map.column)">{{map.caption}}</span>
 
 
-            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="settings.columns.filterHelper.isFiltered(map)"
+            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="isFiltered(map)"
               (click)="settings.columns.showFilterDialog(map)"></span>
             <div class="filterDialog col-sm-4" *ngIf="settings.columns._shouldShowFilterDialog(map)">
               <div class="form-group">
@@ -143,7 +143,9 @@ export class DataGridComponent implements OnChanges {
 
   @Input() records: any;
   @Input() settings: DataSettings<any>;
-
+  isFiltered(Column<any>c) {
+    this.settings.columns.filterHelper.isFiltered(c);
+   }
 
   getButtonCssClass(b: RowButton<any>, row: any) {
     if (!b.cssClass)

@@ -611,12 +611,12 @@ export function isNewRow(r: Entity) {
 
 
 
-export class textColumn extends Column<string>{
+export class StringColumn extends Column<string>{
   constructor(settingsOrCaption: iDataColumnSettings | string) {
     super(settingsOrCaption);
   }
 }
-export class dateColumn extends Column<string>{
+export class DateColumn extends Column<string>{
   constructor(settingsOrCaption: iDataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
@@ -625,11 +625,18 @@ export class dateColumn extends Column<string>{
 
 
 }
-export class numberColumn extends Column<number>{
+export class NumberColumn extends Column<number>{
   constructor(settingsOrCaption: iDataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
+  }
+}
+export class BoolColumn extends Column<boolean>{
+  constructor(settingsOrCaption: iDataColumnSettings | string) {
+    super(settingsOrCaption);
+    if (!this.inputType)
+      this.inputType = 'checkbox';
   }
 }
 

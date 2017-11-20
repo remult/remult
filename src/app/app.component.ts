@@ -10,7 +10,7 @@ import * as utils from '../utils/utils';
 
 })
 export class AppComponent {
-  categories = new models.Category();
+  categories = new models.Categories();
   settings = new utils.DataSettings(this.categories.source, {
     allowUpdate:true,
     columnSettings: [

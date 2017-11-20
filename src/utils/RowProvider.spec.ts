@@ -3,7 +3,7 @@ import { Entity, Column, Sort } from './data';
 import { InMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
 
-import { Category } from './../app/models';
+import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 
 
@@ -12,7 +12,7 @@ describe("test row provider", () => {
   itAsync("Insert", async () => {
 
 
-    var cat = new Category();
+    var cat = new Categories();
 
     cat.setSource(new InMemoryDataProvider());
 
@@ -29,11 +29,11 @@ describe("test row provider", () => {
   });
 
   itAsync("Insert another way", async () => {
-    let x = new Category();
+    let x = new Categories();
     x.setSource(new InMemoryDataProvider());
     let rows = await x.source.find();
     expect(rows.length).toBe(0);
-    var c = new Category();
+    var c = new Categories();
     c.id.value = 1;
     c.categoryName.value = 'noam';
     c.source = x.source;
@@ -45,7 +45,7 @@ describe("test row provider", () => {
   });
 
   itAsync("one more insert", async () => {
-    let x = new Category();
+    let x = new Categories();
     x.setSource(new InMemoryDataProvider());
     var c = x.source.createNewItem();
     c.id.value = 1;
@@ -55,7 +55,7 @@ describe("test row provider", () => {
     expect(r[0].categoryName.value).toBe('noam');
   });
   itAsync("Yet Another Test", async () => {
-    let x = new Category();
+    let x = new Categories();
     x.setSource(new InMemoryDataProvider());
     let rows = await x.source.find();
     expect(rows.length).toBe(0);
@@ -69,7 +69,7 @@ describe("test row provider", () => {
     expect(rows[0].categoryName.value).toBe('noam');
   });
   itAsync("test  delete", async () => {
-    let c = new Category();
+    let c = new Categories();
     c.setSource(new InMemoryDataProvider());
     c.id.value = 5;
     c.categoryName.value = 'noam';
@@ -83,7 +83,7 @@ describe("test row provider", () => {
 
   });
   itAsync("test update", async () => {
-    let c = new Category();
+    let c = new Categories();
     c.setSource(new InMemoryDataProvider());
     c.id.value = 5;
     c.categoryName.value = 'noam';
@@ -96,7 +96,7 @@ describe("test row provider", () => {
     expect(r[0].categoryName.value).toBe('yael');
   });
   let insertFourRows = async () => {
-    let c = new Category();
+    let c = new Categories();
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(x => {
       x.id.value = 1;

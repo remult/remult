@@ -1,6 +1,6 @@
 import { itAsync } from './testHelper.spec';
 
-import { Category } from './../app/models';
+import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 
 describe('Test basic row functionality', () => {
@@ -14,19 +14,19 @@ describe('Test basic row functionality', () => {
   });
 
   it("object is autonemous", () => {
-    let x = new Category();
-    let y = new Category();
+    let x = new Categories();
+    let y = new Categories();
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
     expect(x.categoryName.value).toBe('noam');
     expect(y.categoryName.value).toBe('yael');
   })
   it("find the col value", () => {
-    let x = new Category();
-    let y = new Category();
+    let x = new Categories();
+    let y = new Categories();
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
-    expect(y.__getCol(x.categoryName).value).toBe('yael');
+    expect(y.__getColumn(x.categoryName).value).toBe('yael');
 
 
   });
