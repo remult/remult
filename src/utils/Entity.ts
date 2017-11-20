@@ -1,13 +1,15 @@
 
 
+
 import { Column, Sort } from './data';
 import { isFunction, makeTitle } from './common';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings, FindOptions, RowEvents } from './dataInterfaces';
 
 
 export class Entity {
-  constructor(private factory: () => Entity, public name?: string) {
+  constructor(private factory: () => Entity,source:DataProviderFactory, public name?: string) {
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
+    this.setSource(source);
   }
   __entityData: __EntityValueProvider;
   /** @internal */

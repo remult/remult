@@ -10,11 +10,9 @@ import * as utils from '../utils/utils';
 
 })
 export class AppComponent {
-   categories = new models.Category();
-  dv = new utils.dataView({
-    from: this.categories,
+  categories = new models.Category();
+  settings = new utils.DataSettings(this.categories.source);
 
-  });
   title = 'app';
   anotherTitle = 'noam';
   doSomething() {

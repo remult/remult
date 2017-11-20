@@ -1,7 +1,7 @@
 
 import { Entity, Column, Sort } from './data';
 import { InMemoryDataProvider } from './inMemoryDatabase'
-import { itAsync } from './testHelper';
+import { itAsync } from './testHelper.spec';
 
 import { Category } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';

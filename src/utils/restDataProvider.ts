@@ -1,7 +1,11 @@
+import { Sort } from './data';
 import { DataProvider, DataProviderFactory, FindOptions } from './DataInterfaces';
 export class RestDataProvider implements DataProviderFactory {
+  constructor(private url: string) {
+
+  }
   public provideFor(name: string): DataProvider {
-    throw new Error('Not implemented yet.');
+    return new ActualRestDataProvider(this.url + '/' + name);
   }
 }
 class ActualRestDataProvider implements DataProvider {
@@ -10,7 +14,34 @@ class ActualRestDataProvider implements DataProvider {
 
   }
   public find(options: FindOptions): Promise<Array<any>> {
-    throw new Error('Not implemented yet.');
+    let url = new UrlBuilder(this.url);
+    if (options) {
+      if (options.where) {
+        options.where.__addToUrl((key, val) => url.add(key, val));
+      }
+      if (options.orderBy && options.orderBy.Segments) {
+        let sort = '';
+        let order = '';
+        options.orderBy.Segments.forEach(c => {
+          if (sort.length > 0) {
+            sort += ", ";
+            order += ", ";
+          }
+          sort += c.column.key;
+          order += c.descending ? "desc" : "asc";
+
+        });
+        url.add('_sort', sort);
+        url.add('_order', order);
+      }
+      if (options.limit)
+        url.add('_limit', options.limit);
+      if (options.page)
+        url.add('_page', options.page);
+    }
+    return myFetch(url.url).then(r => {
+      return r;
+    });
   }
 
   public update(id: any, data: any): Promise<any> {
@@ -57,7 +88,7 @@ function onSuccess(response: Response) {
 function onError(error: any) {
   throw error;
 }
-class urlBuilder {
+class UrlBuilder {
   constructor(public url: string) {
   }
   add(key: string, value: any) {
