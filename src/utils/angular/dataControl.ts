@@ -1,4 +1,5 @@
-import { ColumnCollection,ColumnSetting } from '../utils';
+import { ColumnSetting } from '../utils';
+import {ColumnCollection} from '../ColumnCollection'
 
 import { Component, Input } from '@angular/core';
 @Component({
