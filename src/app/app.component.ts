@@ -11,7 +11,13 @@ import * as utils from '../utils/utils';
 })
 export class AppComponent {
   categories = new models.Category();
-  settings = new utils.DataSettings(this.categories.source);
+  settings = new utils.DataSettings(this.categories.source, {
+    columnSettings: [
+      this.categories.id,
+      this.categories.categoryName,
+      this.categories.description
+    ]
+  });
 
   title = 'app';
   anotherTitle = 'noam';

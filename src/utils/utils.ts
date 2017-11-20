@@ -222,7 +222,7 @@ export class DataSettings<rowType extends Entity>  {
       this.extraFitler = userFilter;
       this.page = 1;
       this.getRecords();
-    }, (r, andDo) => this.__scopeToRow(r, andDo));
+    });
     col.numOfColumnsInGrid = 0;
 
     return new DataAreaSettings<rowType>(col, settings);
@@ -361,7 +361,7 @@ export class DataSettings<rowType extends Entity>  {
     this.extraFitler = userFilter;
     this.page = 1;
     this.getRecords();
-  }, (r, andDo) => this.__scopeToRow(r, andDo));
+  });
 
 
 
@@ -577,10 +577,6 @@ export function isNewRow(r: Entity) {
 }
 
 
-export function init<T>(item: T, doInit: (i: T) => void): T {
-  doInit(item);
-  return item;
-}
 
 
 

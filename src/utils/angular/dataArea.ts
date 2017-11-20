@@ -66,7 +66,7 @@ export class DataAreaCompnent implements OnChanges {
     }
     return this.lastCols;
   }
-  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, null, (r, andDo) => andDo()) };
+  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined) };
   @Input() labelWidth = 4;
   @Input() columns = 1;
 }

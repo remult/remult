@@ -5,7 +5,7 @@ import { makeTitle, isFunction } from './common';
 import { ColumnSetting, dropDownItem, FilteredColumnSetting, ModelState } from './utils';
 
 export class ColumnCollection<rowType extends Entity> {
-  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, private _filterData: (f: rowType) => void, private scopeToRow: (r: rowType, andDo: () => void) => void) {
+  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, private _filterData: (f: rowType) => void) {
 
     if (this.allowDesignMode == undefined) {
       if (location.search)
@@ -97,27 +97,22 @@ export class ColumnCollection<rowType extends Entity> {
     return !col.readonly;
   }
   _click(col: ColumnSetting<any>, row: any) {
-
-    this.scopeToRow(row, () => {
       col.click(row, what => {
-        this.scopeToRow(row, what);
+        what();
       });
-    });
-
-
   }
 
   _getColValue(col: ColumnSetting<any>, row: rowType) {
     let r;
     if (col.getValue) {
-      this.scopeToRow(row, () => {
+
         r = col.getValue(row)
         if (r instanceof Column)
           r = r.value;
-      });
+
     }
     else if (col.column) {
-      r = row.__getCol(col.column).value;
+      r = row.__getColumn(col.column).value;
     }
 
 
