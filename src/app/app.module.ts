@@ -1,4 +1,5 @@
-import { radWebModule } from './../utils/utils';
+import { RadWebModule } from './../utils/angular/radWebModule';
+
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +13,7 @@ import { AppComponent } from './app.component';
 
 @NgModule({
   imports: [
-    BrowserModule, FormsModule,radWebModule
+    BrowserModule, FormsModule,RadWebModule
   ],
   declarations:
     [AppComponent]
