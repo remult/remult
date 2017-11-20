@@ -8,9 +8,16 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
+            "name": "Debug Tests",
             "url": "http://localhost:9876/debug.html",
             "webRoot": "${workspaceRoot}"
-        }
+        },
+        {
+          "type": "chrome",
+          "request": "launch",
+          "name": "Debug app",
+          "url": "http://localhost:4200/",
+          "webRoot": "${workspaceRoot}"
+      }
     ]
 }

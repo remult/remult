@@ -1,5 +1,5 @@
 import { ColumnSetting } from '../utils';
-import {ColumnCollection} from '../ColumnCollection'
+import {ColumnCollection} from '../columnCollection'
 
 import { Input, Component } from '@angular/core';
 @Component({
@@ -10,12 +10,7 @@ import { Input, Component } from '@angular/core';
         <input type="text" class="form-control" [(ngModel)]="map.caption">
     </div>
     <label>Key</label>
-    <div class="form-group">
-        <select class="form-control" [(ngModel)]="map.key">
-            <option value="" selected></option>
-            <option  selected *ngFor="let k of settings._optionalKeys()">{{k}}</option>
-        </select>
-    </div>
+
     <label>Input Type</label>
     <div class="form-group">
         <select class="form-control" [(ngModel)]="map.inputType" placeholder="inputType">

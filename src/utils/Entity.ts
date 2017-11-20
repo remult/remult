@@ -7,7 +7,7 @@ import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDa
 
 
 export class Entity {
-  constructor(private factory: () => Entity,source:DataProviderFactory, public name?: string) {
+  constructor(private factory: () => Entity, source: DataProviderFactory, public name?: string) {
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
     this.setSource(source);
   }
@@ -42,14 +42,21 @@ export class Entity {
   wasChanged() {
     return this.__entityData.wasChanged();
   }
+
   source: EntitySource<this>;
   private applyColumn(y: Column<any>) {
     if (!y.caption)
       y.caption = makeTitle(y.key);
     y.__valueProvider = this.__entityData;
+    this.__columns.push(y);
   }
-
+  __columns: Column<any>[] = [];
+  __getCol<T>(col:Column<T>){
+    let any: any = this;
+    return any[col.key];
+    }
 }
+
 
 
 export class EntitySource<T extends Entity>
@@ -90,7 +97,7 @@ export class EntitySource<T extends Entity>
 }
 
 export class __EntityValueProvider implements ColumnValueProvider {
-  listeners: RowEvents[]=[];
+  listeners: RowEvents[] = [];
   register(listener: RowEvents) {
     this.listeners.push(listener);
   }
@@ -109,7 +116,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
     return this.newRow;
   }
   wasChanged() {
-    return JSON.stringify(this.originalData) != JSON.stringify(this.data)||this.newRow;
+    return JSON.stringify(this.originalData) != JSON.stringify(this.data) || this.newRow;
 
   }
   reset(): void {

@@ -24,10 +24,10 @@ import { isFunction } from '../common';
       <thead>
         <tr>
           <th *ngFor="let map of settings.columns.getGridColumns()" class="headerWithFilter">
-            <span (click)="settings.sort(map.key)">{{map.caption}}</span>
+            <span (click)="settings.sort(map.column)">{{map.caption}}</span>
 
 
-            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="settings.columns.userFilter[map.key]"
+            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="false"
               (click)="settings.columns.showFilterDialog(map)"></span>
             <div class="filterDialog col-sm-4" *ngIf="settings.columns._shouldShowFilterDialog(map)">
               <div class="form-group">
@@ -37,8 +37,8 @@ import { isFunction } from '../common';
               <button class="btn glyphicon glyphicon-remove btn-primary" (click)="settings.columns.clearFilter(map)"></button>
 
             </div>
-            <span class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedAscending(map.key)"></span>
-            <span class="glyphicon glyphicon-chevron-up pull-right" *ngIf="settings.sortedDescending(map.key)"></span>
+            <span class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedAscending(map.column)"></span>
+            <span class="glyphicon glyphicon-chevron-up pull-right" *ngIf="settings.sortedDescending(map.column)"></span>
             <column-designer [settings]="settings.columns" [map]="map"></column-designer>
 
 

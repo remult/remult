@@ -21,6 +21,15 @@ describe('Test basic row functionality', () => {
     expect(x.categoryName.value).toBe('noam');
     expect(y.categoryName.value).toBe('yael');
   })
+  it("find the col value", () => {
+    let x = new Category();
+    let y = new Category();
+    x.categoryName.value = 'noam';
+    y.categoryName.value = 'yael';
+    expect(y.__getCol(x.categoryName).value).toBe('yael');
+
+
+  });
 
 
 });

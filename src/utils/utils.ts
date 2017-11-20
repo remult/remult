@@ -53,20 +53,20 @@ export class SelectPopup<rowType extends Entity> {
   show(onSelect: (selected: rowType) => void) {
     if (!this.searchColumn) {
       for (let col of this.modalList.columns.items) {
-        if (col.key != "id" && (!col.inputType || col.inputType == "text")) {
-          this.searchColumn = col.key;
-          break;
-        }
+        //if (col.key != "id" && (!col.inputType || col.inputType == "text")) {
+        //  this.searchColumn = col.key;
+//          break;
+  //      }
       }
     }
     this.onSelect = onSelect;
     $("#" + this.modalId).modal('show');
   }
   searchColumnCaption() {
-    for (let item of this.modalList.columns.items) {
+    /*for (let item of this.modalList.columns.items) {
       if (item.key == this.searchColumn)
         return item.caption;
-    }
+    }*/
     return this.searchColumn;
   }
 }
@@ -115,7 +115,7 @@ export interface IDataAreaSettings<rowType> {
   labelWidth?: number;
 }
 
-export class DataAreaSettings<rowType>
+export class DataAreaSettings<rowType extends Entity>
 {
 
   constructor(public columns: ColumnCollection<rowType>, public settings: IDataAreaSettings<rowType>) {
@@ -201,8 +201,9 @@ export class DataSettings<rowType extends Entity>  {
     this.columns.items.forEach(item => {
       if (item.defaultValue) {
         let result = item.defaultValue(r);
-        if (result != undefined)
-          r[item.key] = result;
+        if (result != undefined) {
+          //r[item.key] = result;
+        }
 
       }
     });
@@ -515,7 +516,7 @@ export class ModelState<rowType> {
 export type rowEvent<T> = (row: T, doInScope: ((what: (() => void)) => void)) => void;
 
 export interface ColumnSetting<rowType> {
-  key?: string;
+
   caption?: string;
   readonly?: boolean;
   inputType?: string;

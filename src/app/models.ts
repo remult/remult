@@ -11,7 +11,7 @@ export class Category extends utils.Entity {
 
   constructor() {
 
-    super(() => new Category(),environment.dataSource,'categories');
+    super(() => new Category(), environment.dataSource, 'categories');
     this.initColumns();
 
 
