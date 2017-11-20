@@ -228,7 +228,7 @@ export class DataGridComponent implements OnChanges {
       this.addButton({
         name: "",
         cssClass: "glyphicon glyphicon-ok btn-success",
-        visible: r => r.__wasChanged(),
+        visible: r => r.wasChanged(),
         click: r => {
           let s = new ModelState(r);
           r.__modelState = () => s;
@@ -244,7 +244,7 @@ export class DataGridComponent implements OnChanges {
       this.addButton({
         name: "",
         cssClass: "btn btn-danger glyphicon glyphicon-ban-circle",
-        visible: r => r.__wasChanged(),
+        visible: r => r.wasChanged(),
         click: r => {
           r.reset();
         }

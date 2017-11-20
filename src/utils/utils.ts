@@ -55,8 +55,8 @@ export class SelectPopup<rowType extends Entity> {
       for (let col of this.modalList.columns.items) {
         //if (col.key != "id" && (!col.inputType || col.inputType == "text")) {
         //  this.searchColumn = col.key;
-//          break;
-  //      }
+        //          break;
+        //      }
       }
     }
     this.onSelect = onSelect;
@@ -277,7 +277,7 @@ export class DataSettings<rowType extends Entity>  {
   currentRowAsRestListItemRow() {
     if (!this.currentRow)
       return undefined;
-    return <any>this.currentRow ;
+    return <any>this.currentRow;
   }
   cancelCurrentRowChanges() {
     if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().reset)
@@ -385,13 +385,14 @@ export class DataSettings<rowType extends Entity>  {
   sort(column: Column<any>) {
     if (!this.getOptions)
       this.getOptions = {};
+    let done = false;;
     if (this.getOptions.orderBy && this.getOptions.orderBy.Segments.length > 0) {
       if (this.getOptions.orderBy.Segments[0].column == column) {
         this.getOptions.orderBy.Segments[0].descending = !this.getOptions.orderBy.Segments[0].descending;
-        return;
+        done = true;
       }
-    }
-    this.getOptions.orderBy = new Sort({ column: column });
+    } if (!done)
+      this.getOptions.orderBy = new Sort({ column: column });
     this.getRecords();
   }
   sortedAscending(column: Column<any>) {
@@ -406,13 +407,13 @@ export class DataSettings<rowType extends Entity>  {
   }
   sortedDescending(column: Column<any>) {
     if (!this.getOptions)
-    return false;
-  if (!column)
-    return false;
+      return false;
+    if (!column)
+      return false;
 
-  return this.getOptions.orderBy.Segments.length > 0 &&
-    this.getOptions.orderBy.Segments[0].column == column &&
-    this.getOptions.orderBy.Segments[0].descending;
+    return this.getOptions.orderBy.Segments.length > 0 &&
+      this.getOptions.orderBy.Segments[0].column == column &&
+      this.getOptions.orderBy.Segments[0].descending;
   }
 
   private extraFitler: rowType;
@@ -421,8 +422,9 @@ export class DataSettings<rowType extends Entity>  {
   getRecords() {
 
     let opt: FindOptions = {};
-    if (this.getOptions)
-      opt = JSON.parse(JSON.stringify(this.getOptions));
+    if (this.getOptions) {
+      opt = Object.assign(opt, this.getOptions);
+    }
     if (!opt.limit)
       opt.limit = 7;
     if (this.page > 1)
