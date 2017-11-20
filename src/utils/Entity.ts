@@ -51,10 +51,10 @@ export class Entity {
     this.__columns.push(y);
   }
   __columns: Column<any>[] = [];
-  __getCol<T>(col:Column<T>){
+  __getColumn<T>(col: Column<T>) {
     let any: any = this;
     return any[col.key];
-    }
+  }
 }
 
 

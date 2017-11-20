@@ -14,12 +14,12 @@ import { Component, Input } from '@angular/core';
             <div class="input-group-btn" *ngIf="map.click">
                 <button type="button" class="btn btn-default" (click)="settings._click(map,record)" > <span class="glyphicon glyphicon-chevron-down"></span></button>
             </div>
-            <input class="form-control"  [(ngModel)]="record.__getCol(map.column).value" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" />
+            <input class="form-control"  [(ngModel)]="_getColumn().value" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" />
             <div class="input-group-addon" *ngIf="showDescription()">{{settings._getColValue(map,record)}}</div>
 
         </div>
         <div *ngIf="isSelect()">
-            <select  class="form-control" [(ngModel)]="record.__getCol(map.column).value" (ngModelChange)="settings._colValueChanged(map,record)" >
+            <select  class="form-control" [(ngModel)]="_getColumn().value" (ngModelChange)="settings._colValueChanged(map,record)" >
                 <option *ngFor="let v of map.dropDown.items" value="{{v.id}}">{{v.caption}}</option>
 
             </select>
@@ -37,6 +37,9 @@ export class DataControlComponent {
   showDescription() {
 
     return (this.map.column) && this.map.getValue;
+  }
+  _getColumn() {
+    return this.record.__getColumn(this.map.column);
   }
   _getEditable() {
     if (this.notReadonly)
