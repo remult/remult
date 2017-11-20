@@ -24,14 +24,15 @@ import { isFunction } from '../common';
       <thead>
         <tr>
           <th *ngFor="let map of settings.columns.getGridColumns()" class="headerWithFilter">
+
             <span (click)="settings.sort(map.column)">{{map.caption}}</span>
 
 
-            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="false"
+            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="settings.columns.filterHelper.isFiltered(map)"
               (click)="settings.columns.showFilterDialog(map)"></span>
             <div class="filterDialog col-sm-4" *ngIf="settings.columns._shouldShowFilterDialog(map)">
               <div class="form-group">
-                <data-control [settings]="settings.columns" [map]="map" [record]="settings.columns.userFilter" [notReadonly]="true"></data-control>
+                <data-control [settings]="settings.columns" [map]="map" [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
               </div>
               <button class="btn glyphicon glyphicon-ok btn-success" (click)="settings.columns.filterRows(map)"></button>
               <button class="btn glyphicon glyphicon-remove btn-primary" (click)="settings.columns.clearFilter(map)"></button>

@@ -88,7 +88,7 @@ export class Filter implements FilterBase {
 
   }
   and(filter: FilterBase): FilterBase {
-    return new andFilter(this, filter);
+    return new AndFilter(this, filter);
   }
 
   public __addToUrl(add: (name: string, val: any) => void): void {
@@ -98,7 +98,7 @@ export class Filter implements FilterBase {
 
 
 
-class andFilter implements FilterBase {
+export class AndFilter implements FilterBase {
   constructor(private a: FilterBase, private b: FilterBase) {
 
   }

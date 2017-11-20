@@ -2,10 +2,10 @@ import { Entity } from './Entity';
 import { Column } from './data';
 import { RestList } from './restList';
 import { makeTitle, isFunction } from './common';
-import { ColumnSetting, dropDownItem, FilteredColumnSetting, ModelState } from './utils';
+import { ColumnSetting, dropDownItem, FilteredColumnSetting, ModelState, FilterHelper } from './utils';
 
 export class ColumnCollection<rowType extends Entity> {
-  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, private _filterData: (f: rowType) => void) {
+  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper:FilterHelper<rowType>) {
 
     if (this.allowDesignMode == undefined) {
       if (location.search)
@@ -61,15 +61,14 @@ export class ColumnCollection<rowType extends Entity> {
 
 
   }
-  userFilter: any = {};
+
   filterRows(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this._filterData(this.userFilter);
+    this.filterHelper.filterColumn(col.column,false);
   }
   clearFilter(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    //this.userFilter[col.key] = undefined;
-    this._filterData(this.userFilter);
+    this.filterHelper.filterColumn(col.column,true);
   }
   _shouldShowFilterDialog(col: FilteredColumnSetting<any>) {
     return col && col._showFilter;
@@ -138,9 +137,9 @@ export class ColumnCollection<rowType extends Entity> {
     if (r.__modelState) {
       let m = <ModelState<any>>r.__modelState();
       if (m.modelState) {
-        //let errors = m.modelState[col.key];
-        //if (errors && errors.length > 0)
-        //  return errors[0];
+        let errors = m.modelState[col.column.key];
+        if (errors && errors.length > 0)
+          return errors[0];
       }
       return "";
 

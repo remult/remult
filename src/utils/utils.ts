@@ -3,9 +3,10 @@ import { EntitySource } from './Entity';
 
 import { makeTitle, isFunction } from './common';
 
-import { Column, Entity, Sort } from './data'
+import { Column, Entity, Sort, AndFilter } from './data'
 import { iDataColumnSettings, FilterBase, ColumnValueProvider, FindOptions } from './DataInterfaces';
 import { RestList } from './restList';
+
 export * from './data';
 
 
@@ -217,12 +218,9 @@ export class DataSettings<rowType extends Entity>  {
   __scopeToRow(r: rowType, andDo: () => void) {
     andDo();
   }
+
   addArea(settings: IDataAreaSettings<rowType>) {
-    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, (userFilter) => {
-      this.extraFitler = userFilter;
-      this.page = 1;
-      this.getRecords();
-    });
+    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper);
     col.numOfColumnsInGrid = 0;
 
     return new DataAreaSettings<rowType>(col, settings);
@@ -313,8 +311,17 @@ export class DataSettings<rowType extends Entity>  {
   }
   caption: string;
   lookup: Lookup<rowType>;
+  private filterHelper = new FilterHelper<rowType>(() => {
+    this.page = 1;
+    this.getRecords();
+  });
   constructor(entitySource?: EntitySource<rowType>, settings?: IDataSettings<rowType>) {
     this.restList = new RestList<rowType>(entitySource);
+    if (entitySource)
+      this.filterHelper.filterRow = entitySource.createNewItem();
+
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper)
+
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
         this.setCurrentRow(curr);
@@ -357,11 +364,7 @@ export class DataSettings<rowType extends Entity>  {
 
     this.popupSettings = new SelectPopup(this);
   }
-  columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, (userFilter) => {
-    this.extraFitler = userFilter;
-    this.page = 1;
-    this.getRecords();
-  });
+  columns: ColumnCollection<rowType>;
 
 
 
@@ -416,9 +419,12 @@ export class DataSettings<rowType extends Entity>  {
       this.getOptions.orderBy.Segments[0].descending;
   }
 
-  private extraFitler: rowType;
+
 
   private getOptions: FindOptions;
+
+
+
   getRecords() {
 
     let opt: FindOptions = {};
@@ -429,14 +435,7 @@ export class DataSettings<rowType extends Entity>  {
       opt.limit = 7;
     if (this.page > 1)
       opt.page = this.page;
-    if (this.extraFitler) {
-      /* if (!opt.isEqualTo)
-         opt.isEqualTo = <rowType>{};
-       for (let val in this.extraFitler) {
-         if (opt.isEqualTo[val] == undefined)
-           opt.isEqualTo[val] = this.extraFitler[val];
-       }*/
-    }
+    this.filterHelper.addToFindOptions(opt);
 
     return this.restList.get(opt).then(() => {
 
@@ -466,6 +465,35 @@ export class DataSettings<rowType extends Entity>  {
 
 
 
+}
+
+export class FilterHelper<rowType extends Entity> {
+  filterRow: rowType;
+  filterColumns: Column<any>[] = [];
+  constructor(private reloadData: () => void) {
+
+  }
+  isFiltered(column: Column<any>) {
+    return this.filterColumns.indexOf(column) >= 0;
+  }
+  filterColumn(column: Column<any>, clearFilter: boolean) {
+    if (!column)
+      return;
+    if (clearFilter)
+      this.filterColumns.splice(this.filterColumns.indexOf(column, 1));
+    else if (this.filterColumns.indexOf(column) < 0)
+      this.filterColumns.push(column);
+    this.reloadData();
+  }
+  addToFindOptions(opt: FindOptions) {
+    this.filterColumns.forEach(c => {
+      if (opt.where) {
+        opt.where = new AndFilter(opt.where, c.isEqualTo(this.filterRow.__getColumn(c).value));
+
+      }
+      else opt.where = c.isEqualTo(this.filterRow.__getColumn(c).value);
+    });
+  }
 }
 export interface IDataSettings<rowType extends Entity> {
   allowUpdate?: boolean,
