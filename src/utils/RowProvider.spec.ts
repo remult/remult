@@ -1,6 +1,6 @@
 
 import { Entity, Column, Sort } from './data';
-import { DataSettings } from './utils';
+import { DataSettings ,Lookup} from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
 
@@ -192,7 +192,15 @@ describe("test row provider", () => {
       expect(c.categoryName.value).toBe('yael');
     }
   });
+  itAsync("filter should return none", async () => {
 
+    let c = await insertFourRows();
+    let n = c.source.createNewItem();
+    let lookup = new Lookup(c.source);
+    let r = await lookup.whenGet(c.categoryName.isEqualTo(undefined));
+    expect(r.categoryName.value).toBe(undefined);
+
+  });
 });
 
 

@@ -154,7 +154,7 @@ export class Lookup<lookupType extends Entity> {
 
     let key = "";
     if (find.where)
-      find.where.__addToUrl((k, v) => { key += k + ':' + v + '|' });
+      find.where.__addToUrl((k, v) => { key += k + ':' + (v ? v : '') + '|' });
     if (this.cache == undefined)
       this.cache = {};
     if (this.cache[key]) {
@@ -162,7 +162,7 @@ export class Lookup<lookupType extends Entity> {
     } else {
       let res = new lookupRowInfo<lookupType>();
       this.cache[key] = res;
-      if (find == undefined) {
+      if (find == undefined || key == undefined) {
         res.loading = false;
         res.found = false;
         return res;

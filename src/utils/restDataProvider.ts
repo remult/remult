@@ -92,8 +92,6 @@ class UrlBuilder {
   constructor(public url: string) {
   }
   add(key: string, value: any) {
-    if (value == undefined)
-      return;
     if (this.url.indexOf('?') >= 0)
       this.url += '&';
     else

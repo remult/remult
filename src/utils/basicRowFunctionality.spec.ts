@@ -27,9 +27,8 @@ describe('Test basic row functionality', () => {
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
     expect(y.__getColumn(x.categoryName).value).toBe('yael');
-
-
   });
+
 
 
 });
