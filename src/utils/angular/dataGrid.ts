@@ -1,4 +1,4 @@
-import { DataSettings, RowButton, ModelState, isNewRow,Column } from '../utils';
+import { DataSettings, RowButton, ModelState, isNewRow, Column } from '../utils';
 import { Component, OnChanges, Input } from '@angular/core';
 import { isFunction } from '../common';
 @Component({
@@ -143,9 +143,9 @@ export class DataGridComponent implements OnChanges {
 
   @Input() records: any;
   @Input() settings: DataSettings<any>;
-  isFiltered(c:Column<any>) {
+  isFiltered(c: Column<any>) {
     this.settings.columns.filterHelper.isFiltered(c);
-   }
+  }
 
   getButtonCssClass(b: RowButton<any>, row: any) {
     if (!b.cssClass)
@@ -188,15 +188,21 @@ export class DataGridComponent implements OnChanges {
   }
 
   catchErrors(what: any, r: any) {
-    what.catch((e: any) => e.json().then((e: any) => {
-      console.log(e);
-      let s = new ModelState(r);
-      r.__modelState = () => s;
-      s.message = e.Message;
-      s.modelState = e.ModelState;
-      this.showError(s.message, s.modelState);
+    what.catch((e: Promise<any>) => {
+      e.then(e => {
+        console.log(e);
+        let s = new ModelState(r);
+        r.__modelState = () => s;
+        if (e.message)
+          s.message = e.message;
+        else if (e.Message)
+          s.message = e.Message;
+        else s.message = e;
+        s.modelState = e.ModelState;
+        this.showError(s.message, s.modelState);
 
-    }));
+      });
+    });
 
   }
   private showError(message: string, state: any) {

@@ -74,7 +74,7 @@ function myFetch(url: string, init?: RequestInit): Promise<any> {
     init = {};
   init.credentials = 'include';
   return fetch(url, init).then(onSuccess, error => {
-
+    throw Promise.resolve( error);
   });
 
 }
@@ -82,7 +82,7 @@ function onSuccess(response: Response) {
 
   if (response.status >= 200 && response.status < 300)
     return response.json();
-  else throw response;
+  else throw response.json();
 
 }
 function onError(error: any) {

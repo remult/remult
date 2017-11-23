@@ -12,7 +12,8 @@ import * as utils from '../utils/utils';
 export class AppComponent {
   categories = new models.Categories();
   settings = new utils.DataSettings(this.categories.source, {
-    allowUpdate:true,
+    allowUpdate: true,
+    allowInsert:true,
     columnSettings: [
       this.categories.id,
       this.categories.categoryName,

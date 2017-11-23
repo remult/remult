@@ -1,10 +1,13 @@
 
 import { Entity, Column, Sort } from './data';
-import { InMemoryDataProvider } from './inMemoryDatabase'
+import { DataSettings } from './utils';
+import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
+import { error } from 'util';
+
 
 
 
@@ -148,7 +151,54 @@ describe("test row provider", () => {
     expect(rows[2].id.value).toBe(1);
     expect(rows[3].id.value).toBe(3);
   });
+  itAsync("test grid update", async () => {
+    let c = await insertFourRows();
+    let ds = new DataSettings<Categories>(c.source, {
+      get: {
+        orderBy: new Sort({ column: c.id })
+      }
+    });
+    await ds.getRecords();
+    expect(ds.items.length).toBe(4);
+    expect(ds.items[0].categoryName.value).toBe('noam');
+    ds.items[0].categoryName.value = 'noam honig';
+    await ds.items[0].save();
+    expect(ds.items[0].categoryName.value).toBe('noam honig');
+  });
+  itAsync("test that it fails nicely", async () => {
+    let c = await insertFourRows();
+    c.id.value = 1;
+    c.categoryName.value = 'bla bla';
+    try {
+      c.save();
+      fail("Shouldnt have reached this");
+    }
+    catch (err) {
+
+    }
+    expect(c.categoryName.value).toBe('bla bla');
+  });
+  itAsync("update should fail nicely", async () => {
+    let c = new Categories();
+    c.setSource({ provideFor: () => new myDp<Categories>() });
+    c.id.value = 1;
+    c.categoryName.value = 'noam';
+    await c.save();
+    c.categoryName.value = 'yael';
+    try {
+      await c.save();
+      fail("shouldnt be here");
+    } catch (err) {
+      expect(c.categoryName.value).toBe('yael');
+    }
+  });
 
 });
 
+
+class myDp<T extends Entity> extends ActualInMemoryDataProvider<T> {
+  public update(id: any, data: any): Promise<any> {
+    throw new Error("what");
+  }
+}
 

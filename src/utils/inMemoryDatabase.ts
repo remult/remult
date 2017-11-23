@@ -15,7 +15,7 @@ export class InMemoryDataProvider implements DataProviderFactory {
 
 
 
-class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
+export class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
 
 
 
@@ -73,7 +73,7 @@ class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
         this.rows[i] = Object.assign({}, this.rows[i], data);
         return Promise.resolve(this.rows[i]);
       }
-      throw new Error("could'nt find id to delete: " + id);
+      throw new Error("could'nt find id to update: " + id);
     }
   }
 

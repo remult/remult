@@ -5,7 +5,7 @@ import { makeTitle, isFunction } from './common';
 import { ColumnSetting, dropDownItem, FilteredColumnSetting, ModelState, FilterHelper } from './utils';
 
 export class ColumnCollection<rowType extends Entity> {
-  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper:FilterHelper<rowType>) {
+  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>) {
 
     if (this.allowDesignMode == undefined) {
       if (location.search)
@@ -64,11 +64,11 @@ export class ColumnCollection<rowType extends Entity> {
 
   filterRows(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column,false);
+    this.filterHelper.filterColumn(col.column, false);
   }
   clearFilter(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column,true);
+    this.filterHelper.filterColumn(col.column, true);
   }
   _shouldShowFilterDialog(col: FilteredColumnSetting<any>) {
     return col && col._showFilter;
@@ -96,18 +96,18 @@ export class ColumnCollection<rowType extends Entity> {
     return !col.readonly;
   }
   _click(col: ColumnSetting<any>, row: any) {
-      col.click(row, what => {
-        what();
-      });
+    col.click(row, what => {
+      what();
+    });
   }
 
   _getColValue(col: ColumnSetting<any>, row: rowType) {
     let r;
     if (col.getValue) {
 
-        r = col.getValue(row)
-        if (r instanceof Column)
-          r = r.value;
+      r = col.getValue(row)
+      if (r instanceof Column)
+        r = r.value;
 
     }
     else if (col.column) {
@@ -165,7 +165,8 @@ export class ColumnCollection<rowType extends Entity> {
   _colValueChanged(col: ColumnSetting<any>, r: any) {
     if (r.__modelState) {
       let m = <ModelState<any>>r.__modelState();
-      m.modelState[col.column.key] = undefined;
+      if (m && m.modelState)
+        m.modelState[col.column.key] = undefined;
     }
     if (col.onUserChangedValue)
       col.onUserChangedValue(r);
