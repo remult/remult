@@ -1,4 +1,4 @@
-import { DataSettings, RowButton, ModelState, isNewRow } from '../utils';
+import { DataSettings, RowButton, ModelState, isNewRow,Column } from '../utils';
 import { Component, OnChanges, Input } from '@angular/core';
 import { isFunction } from '../common';
 @Component({
@@ -143,7 +143,7 @@ export class DataGridComponent implements OnChanges {
 
   @Input() records: any;
   @Input() settings: DataSettings<any>;
-  isFiltered(Column<any>c) {
+  isFiltered(c:Column<any>) {
     this.settings.columns.filterHelper.isFiltered(c);
    }
 
