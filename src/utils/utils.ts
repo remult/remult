@@ -128,8 +128,9 @@ export class DataAreaSettings<rowType extends Entity>
 
 export class Lookup<lookupType extends Entity> {
 
-  constructor(source: EntitySource<lookupType>) {
+  constructor(private source: EntitySource<lookupType>) {
     this.restList = new RestList<lookupType>(source);
+
   }
 
   private restList: RestList<lookupType>;
@@ -150,7 +151,10 @@ export class Lookup<lookupType extends Entity> {
   }
 
   _internalGetByOptions(find: FindOptions): lookupRowInfo<lookupType> {
-    let key = JSON.stringify(find);
+
+    let key = "";
+    if (find.where)
+      find.where.__addToUrl((k, v) => { key += k + ':' + v + '|' });
     if (this.cache == undefined)
       this.cache = {};
     if (this.cache[key]) {
@@ -162,7 +166,8 @@ export class Lookup<lookupType extends Entity> {
         res.loading = false;
         res.found = false;
         return res;
-      } else
+      } else {
+        res.value = this.source.createNewItem();
         res.promise = this.restList.get(find).then(r => {
           res.loading = false;
           if (r.length > 0) {
@@ -171,6 +176,7 @@ export class Lookup<lookupType extends Entity> {
           }
           return res;
         });
+      }
       return res;
     }
   }

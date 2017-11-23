@@ -1,7 +1,8 @@
-import { ColumnSetting } from './../utils/utils';
+import { ColumnSetting, Lookup } from './../utils/utils';
 import { Component } from '@angular/core';
 import * as models from './models';
 import * as utils from '../utils/utils';
+
 
 @Component({
   selector: 'app-root',
@@ -10,14 +11,25 @@ import * as utils from '../utils/utils';
 
 })
 export class AppComponent {
-  categories = new models.Categories();
-  settings = new utils.DataSettings(this.categories.source, {
+  orders = new models.Orders();
+  customers = new models.Customers();
+  cs = new Lookup(this.customers.source);
+  settings = new utils.DataSettings(this.orders.source, {
+    numOfColumnsInGrid: 4,
     allowUpdate: true,
-    allowInsert:true,
+    allowInsert: true,
     columnSettings: [
-      this.categories.id,
-      this.categories.categoryName,
-      this.categories.description
+      { column: this.orders.id, caption: 'Order ID' },
+      {
+        column: this.orders.customerID, getValue:
+          o =>  this.cs.get(this.customers.id.isEqualTo(o.customerID.value)).companyName
+      },
+      this.orders.orderDate,
+      this.orders.shipVia,
+      this.orders.requiredDate,
+      this.orders.shippedDate,
+      this.orders.shipAddress,
+      this.orders.shipCity
     ]
   });
 
