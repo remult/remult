@@ -5,7 +5,7 @@
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
       <li class="active"><a href="#tab1" data-toggle="tab">Ship Info</a></li>
-      <li><a href="#tab2" data-toggle="tab">Tab 2</a></li>
+      <li><a href="#tab2" data-toggle="tab">Order Details {{getOrderTotal()}}</a></li>
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
@@ -13,7 +13,7 @@
         <data-area [settings]="shipInfoArea"></data-area>
       </div>
       <div  class="tab-pane" id="tab2">
-          Tab 2 Info
+          <data-grid [settings]="orderDetailsSettings"></data-grid>
       </div>
   </div>
 </div>

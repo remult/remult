@@ -61,7 +61,7 @@ export class Column<dataType>  {
       val = value;
 
 
-    return new Filter(apply => apply(this.key, value));
+    return new Filter(apply => apply(this.key, val));
   }
   __valueProvider: ColumnValueProvider = new dummyColumnStorage();
   get value() {

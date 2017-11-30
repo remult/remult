@@ -4,6 +4,7 @@ import * as models from './models';
 import * as utils from '../utils/utils';
 
 
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -12,8 +13,26 @@ import * as utils from '../utils/utils';
 })
 export class AppComponent {
   orders = new models.Orders();
+  orderDetails = new models.Order_details();
+  products = new models.Products();
+  orderDetailsSettings = new utils.DataSettings(this.orderDetails.source, {
+    allowDelete: true,
+    allowUpdate: true,
+    allowInsert: true,
+    columnSettings: [
+      { column: this.orderDetails.productID, dropDown: { source: this.products} },
+      this.orderDetails.unitPrice,
+      this.orderDetails.quantity,
+      {caption:'row total',getValue:od=>od.unitPrice.value*od.quantity.value}
+    ],
+    onNewRow: od => {
+      od.orderID.value = this.orders.id.value;
+      od.unitPrice.value = 1;
+    }
+  });
   customers = new models.Customers();
   cs = new Lookup(this.customers.source);
+
   customersForSelect = new models.Customers();
   customersSelect = new utils.DataSettings(this.customersForSelect.source, {
     numOfColumnsInGrid: 4,
@@ -32,6 +51,7 @@ export class AppComponent {
     numOfColumnsInGrid: 4,
     allowUpdate: true,
     allowInsert: true,
+    onEnterRow: o => this.orderDetailsSettings.get({ where: this.orderDetails.orderID.isEqualTo(o.id) }),
     columnSettings: [
       { column: this.orders.id, caption: 'Order ID' },
       {
@@ -52,11 +72,10 @@ export class AppComponent {
       this.orders.shipCity
     ]
   });
-  title = 'app';
-  anotherTitle = 'noam';
-  doSomething() {
-    alert('noam the red');
-
+  getOrderTotal() {
+    let r = 0;
+    this.orderDetailsSettings.items.forEach(od => r += od.unitPrice.value * od.quantity.value);
+    return r;
   }
   constructor() {
 
