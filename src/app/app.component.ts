@@ -1,3 +1,4 @@
+import { environment } from '../environments/environment';
 import { ColumnSetting, Lookup } from './../utils/utils';
 import { Component } from '@angular/core';
 import * as models from './models';
@@ -15,12 +16,18 @@ export class AppComponent {
   orders = new models.Orders();
   orderDetails = new models.Order_details();
   products = new models.Products();
+  pForLookup = new models.Products();
+  pLookUp = new utils.Lookup(this.pForLookup.source);
   orderDetailsSettings = new utils.DataSettings(this.orderDetails.source, {
     allowDelete: true,
     allowUpdate: true,
     allowInsert: true,
     columnSettings: [
-      { column: this.orderDetails.productID, dropDown: { source: this.products} },
+      {
+        column: this.orderDetails.productID,
+        dropDown: { source: this.products },
+        onUserChangedValue: od => this.pLookUp.whenGet(this.pForLookup.id.isEqualTo(od.productID)).then(p => od.unitPrice.value = p.unitPrice.value)
+      },
       this.orderDetails.unitPrice,
       this.orderDetails.quantity,
       {caption:'row total',getValue:od=>od.unitPrice.value*od.quantity.value}
@@ -56,7 +63,7 @@ export class AppComponent {
       { column: this.orders.id, caption: 'Order ID' },
       {
         column: this.orders.customerID, getValue:
-          o => this.cs.get(this.customers.id.isEqualTo(o.customerID.value)).companyName,
+          o => this.cs.get(this.customers.id.isEqualTo(o.customerID)).companyName,
         click: o => this.customersSelect.showSelectPopup(c => o.customerID.value = c.id.value)
       },
       this.orders.orderDate,
@@ -76,6 +83,9 @@ export class AppComponent {
     let r = 0;
     this.orderDetailsSettings.items.forEach(od => r += od.unitPrice.value * od.quantity.value);
     return r;
+  }
+  printOrder() {
+    window.open(environment.serverUrl+ 'home/print/' + this.settings.currentRow.id.value, '_blank');
   }
   constructor() {
 
