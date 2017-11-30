@@ -1,5 +1,5 @@
-import { Entity } from './../Entity';
-import { Column } from './../data';
+
+import { Column,Entity } from './../data';
 import { ColumnSetting } from '../utils';
 import {ColumnCollection} from '../columnCollection'
 

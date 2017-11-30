@@ -1,4 +1,4 @@
-import { Entity } from './Entity';
+import { Entity } from './Data';
 
 import { dataAreaSettings } from './utils';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings, FindOptions } from './dataInterfaces';
@@ -8,8 +8,9 @@ import { isFunction, makeTitle } from './common';
 
 
 export class InMemoryDataProvider implements DataProviderFactory {
+  rows: any[]=[];
   public provideFor<T extends Entity>(name: string): DataProvider {
-    return new ActualInMemoryDataProvider();
+    return new ActualInMemoryDataProvider(this.rows);
   }
 }
 
@@ -19,8 +20,9 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
 
 
 
-  constructor() {
-
+  constructor(private rows?: any[]) {
+    if (!rows)
+      rows = [];
   }
 
   async find(options?: FindOptions): Promise<any[]> {
@@ -66,7 +68,7 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
   }
 
 
-  private rows: any[] = [];
+
   public update(id: any, data: any): Promise<any> {
     for (let i = 0; i < this.rows.length; i++) {
       if (id == this.rows[i].id) {

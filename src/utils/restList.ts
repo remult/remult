@@ -1,4 +1,4 @@
-import { Entity, EntitySource } from './Entity';
+import { Entity, EntitySource } from './Data';
 import { FindOptions } from './dataInterfaces';
 export class RestList<T extends Entity> implements Iterable<T>{
   [Symbol.iterator](): Iterator<T> {

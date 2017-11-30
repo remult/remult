@@ -28,6 +28,16 @@ describe('Test basic row functionality', () => {
     y.categoryName.value = 'yael';
     expect(y.__getColumn(x.categoryName).value).toBe('yael');
   });
+  it("can be saved to a pojo", () => {
+    let x = new Categories();
+    x.id.value = 1;
+    x.categoryName.value = 'noam';
+    let y = x.__toPojo();
+    expect(y.id).toBe(1);
+    expect(y.categoryName).toBe('noam');
+
+
+  });
 
 
 

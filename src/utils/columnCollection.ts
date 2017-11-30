@@ -1,5 +1,5 @@
-import { Entity } from './Entity';
-import { Column } from './data';
+
+import { Column,Entity } from './data';
 import { RestList } from './restList';
 import { makeTitle, isFunction } from './common';
 import { ColumnSetting, DropDownItem, FilteredColumnSetting, ModelState, FilterHelper } from './utils';

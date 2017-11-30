@@ -1,5 +1,5 @@
 import { ColumnCollection } from './columnCollection';
-import { EntitySource } from './Entity';
+import { EntitySource } from './Data';
 
 import { makeTitle, isFunction } from './common';
 
