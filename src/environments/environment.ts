@@ -1,5 +1,6 @@
 import { DataProviderFactory } from './../utils/DataInterfaces';
 import { RestDataProvider } from './../utils/restDataProvider';
+import { InMemoryDataProvider } from './../utils/inMemoryDatabase';
 // The file contents for the current environment will overwrite these during build.
 // The build system defaults to the dev environment which uses `environment.ts`, but if you do
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
@@ -9,5 +10,6 @@ const serverUrl= 'http://localhost:56557/';
 export const environment = {
   production: false,
   serverUrl,
-  dataSource : new RestDataProvider(serverUrl+ 'dataapi') as DataProviderFactory
+  dataSource: new InMemoryDataProvider() as DataProviderFactory
+// dataSource : new RestDataProvider(serverUrl+ 'dataapi') as DataProviderFactory
 };

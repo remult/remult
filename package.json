@@ -61,6 +61,7 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "nodemon": "^1.12.1",
     "protractor": "~5.1.2",
+    "reflect-metadata": "^0.1.10",
     "rollup": "^0.50.0",
     "ts-node": "~3.2.0",
     "tslint": "~5.7.0",
