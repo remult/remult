@@ -13,8 +13,11 @@ import * as utils from '../utils/utils';
 export class AppComponent {
   orders = new models.Orders();
   customers = new models.Customers();
-  shippers = new models.Shippers();
   cs = new Lookup(this.customers.source);
+  customersForSelect = new models.Customers();
+  customersSelect = new utils.DataSettings(this.customersForSelect.source);
+
+  shippers = new models.Shippers();
   settings = new utils.DataSettings(this.orders.source, {
     numOfColumnsInGrid: 4,
     allowUpdate: true,
@@ -23,7 +26,8 @@ export class AppComponent {
       { column: this.orders.id, caption: 'Order ID' },
       {
         column: this.orders.customerID, getValue:
-          o =>  this.cs.get(this.customers.id.isEqualTo(o.customerID.value)).companyName
+          o => this.cs.get(this.customers.id.isEqualTo(o.customerID.value)).companyName,
+        click: o => this.customersSelect.showSelectPopup(c => o.customerID.value = c.id.value)
       },
       this.orders.orderDate,
       { column: this.orders.shipVia, dropDown: {source:this.shippers}},
