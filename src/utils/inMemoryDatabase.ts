@@ -78,8 +78,8 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
         this.rows[i] = Object.assign({}, this.rows[i], data);
         return Promise.resolve(this.rows[i]);
       }
-      throw new Error("could'nt find id to update: " + id);
     }
+    throw new Error("couldn't find id to update: " + id);
   }
 
   public delete(id: any): Promise<void> {
@@ -88,8 +88,8 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
         this.rows.splice(i, 1);
         return Promise.resolve();
       }
-      throw new Error("could'nt find id to delete: " + id);
     }
+    throw new Error("couldn't find id to delete: " + id);
   }
 
   public insert(data: any): Promise<any> {

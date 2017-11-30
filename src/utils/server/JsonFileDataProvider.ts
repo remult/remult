@@ -1,3 +1,5 @@
+
+
 import { ActualInMemoryDataProvider } from '../inMemoryDatabase';
 import { Entity } from '../Data';
 import * as path from 'path';
@@ -19,17 +21,35 @@ export class JsonFileDataProvider implements DataProviderFactory {
   }
 }
 class JsonFileImpl<T extends Entity> implements DataProvider {
+
+
   find(options?: FindOptions): Promise<any[]> {
-    return new ActualInMemoryDataProvider(JSON.parse(fs.readFileSync('./appData/categories.json').toString())).find(options);
+    return this.doWork((dp, save) => dp.find(options));
   }
+  doWork<T>(what: (dp: DataProvider, save: () => void) => T): T {
+    let data = JSON.parse(fs.readFileSync(this.filePath).toString());
+    let dp = new ActualInMemoryDataProvider(data);
+    return what(dp, () => fs.writeFileSync(this.filePath, JSON.stringify(data, undefined, 2)));
+  }
+
   update(id: any, data: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    return this.doWork((dp, save) => dp.update(id, data).then(x => {
+      save();
+      return x;
+    }))
+
   }
   delete(id: any): Promise<void> {
-    throw new Error("Method not implemented.");
+    return this.doWork((dp, save) => dp.delete(id).then(x => {
+      save();
+      return x;
+    }))
   }
   insert(data: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    return this.doWork((dp, save) => dp.insert(data).then(x => {
+      save();
+      return x;
+    }))
   }
   constructor(private filePath: string) {
 
