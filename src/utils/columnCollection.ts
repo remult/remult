@@ -2,7 +2,7 @@ import { Entity } from './Entity';
 import { Column } from './data';
 import { RestList } from './restList';
 import { makeTitle, isFunction } from './common';
-import { ColumnSetting, dropDownItem, FilteredColumnSetting, ModelState, FilterHelper } from './utils';
+import { ColumnSetting, DropDownItem, FilteredColumnSetting, ModelState, FilterHelper } from './utils';
 
 export class ColumnCollection<rowType extends Entity> {
   constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>) {
@@ -33,14 +33,75 @@ export class ColumnCollection<rowType extends Entity> {
       if (x.getValue) {
         s = x;
       }
-      else {
 
+      else {
+        this.buildDropDown(x);
       }
       this.items.push(x);
 
 
     }
   }
+  async buildDropDown(s: ColumnSetting<any>) {
+    if (s.dropDown) {
+      let orig = s.dropDown.items;
+      let result: DropDownItem[] = [];
+      s.dropDown.items = result;
+      let populateBasedOnArray = (arr: Array<any>) => {
+        for (let item of arr) {
+          let type = typeof (item);
+          if (type == "string" || type == "number")
+            result.push({ id: item, caption: item });
+          else if (item instanceof Entity) {
+            let col: Column<any>;
+            if (!s.dropDown.idColumn) {
+              if (col = item.__getColumnByKey('id'))
+                s.dropDown.idColumn = col ;
+              else {
+                for (let colInEntity of item.__iterateColumns()) {
+                  s.dropDown.idColumn = colInEntity;
+                  break;
+                }
+              }
+            }
+            if (!s.dropDown.captionColumn) {
+              if (col = item.__getColumnByKey('caption'))
+                s.dropDown.captionColumn = col;
+              else {
+                for (let keyInItem of item.__iterateColumns()) {
+                  if ( keyInItem != item.__getColumn( s.dropDown.idColumn) ){
+                    s.dropDown.captionColumn = keyInItem;
+                    break;
+                  }
+                }
+              }
+            }
+            let p = { id: item.__getColumn(s.dropDown.idColumn).value, caption: item.__getColumn(s.dropDown.captionColumn).value };
+            if (p.id instanceof Column) {
+              p.id = p.id.value;
+            }
+            if (p.caption instanceof Column)
+              p.caption = p.caption.value;
+            if (!p.caption)
+              p.caption = p.id;
+            result.push(p);
+          }
+        }
+      };
+      if (orig instanceof Array) {
+        populateBasedOnArray(orig);
+      }
+      if (s.dropDown.source) {
+        if (s.dropDown.source instanceof Entity) {
+          return new RestList(s.dropDown.source.source).get({ limit: 5000 }).then(arr =>
+            populateBasedOnArray(arr));
+        }
+
+      }
+    }
+    return Promise.resolve();
+  }
+
   designMode: false;
   colListChanged() {
     this._lastNumOfColumnsInGrid = -1;
@@ -150,7 +211,7 @@ export class ColumnCollection<rowType extends Entity> {
     if (this.items.length == 0) {
       let r = this.currentRow();
       if (r) {
-        this.add(...r.__columns);
+        this.add(...r.__iterateColumns());
 
       }
     }

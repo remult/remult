@@ -90,15 +90,15 @@ function makeid() {
 
 
 
-export interface dropDownOptions {
+export interface DropDownOptions {
 
-  items?: dropDownItem[] | string[] | any[];
+  items?: DropDownItem[] | string[] | any[];
   source?: Entity;
-  idKey?: string;
-  captionKey?: string;
+  idColumn?: Column<any>;
+  captionColumn?: Column<any>;
 }
 
-export interface dropDownItem {
+export interface DropDownItem {
   id?: any;
   caption?: any;
 }
@@ -562,7 +562,7 @@ export interface ColumnSetting<rowType> {
   defaultValue?: (row: rowType) => any;
   onUserChangedValue?: (row: rowType) => void;
   click?: rowEvent<rowType>;
-  dropDown?: dropDownOptions;
+  dropDown?: DropDownOptions;
   column?: Column<any>
 }
 
@@ -632,7 +632,7 @@ export class DateColumn extends Column<string>{
 
 }
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption: iDataColumnSettings | string) {
+  constructor(settingsOrCaption?: iDataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';

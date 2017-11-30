@@ -13,6 +13,7 @@ import * as utils from '../utils/utils';
 export class AppComponent {
   orders = new models.Orders();
   customers = new models.Customers();
+  shippers = new models.Shippers();
   cs = new Lookup(this.customers.source);
   settings = new utils.DataSettings(this.orders.source, {
     numOfColumnsInGrid: 4,
@@ -25,7 +26,7 @@ export class AppComponent {
           o =>  this.cs.get(this.customers.id.isEqualTo(o.customerID.value)).companyName
       },
       this.orders.orderDate,
-      this.orders.shipVia,
+      { column: this.orders.shipVia, dropDown: {source:this.shippers}},
       this.orders.requiredDate,
       this.orders.shippedDate,
       this.orders.shipAddress,

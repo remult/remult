@@ -50,12 +50,21 @@ export class Entity {
     y.__valueProvider = this.__entityData;
     this.__columns.push(y);
   }
-  __columns: Column<any>[] = [];
+  private __columns: Column<any>[] = [];
   __getColumn<T>(col: Column<T>) {
+
+    return this.__getColumnByKey(col.key);
+  }
+  __getColumnByKey(key: string):Column<any> {
     let any: any = this;
-    return any[col.key];
+    return any[key];
+  }
+  __iterateColumns() {
+    return this.__columns;
+
   }
 }
+
 
 
 

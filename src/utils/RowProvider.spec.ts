@@ -1,12 +1,14 @@
+import { NumberColumn } from '../';
 
 import { Entity, Column, Sort } from './data';
-import { DataSettings ,Lookup} from './utils';
+import { DataSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
+import { ColumnCollection } from './columnCollection';
 
 
 
@@ -201,6 +203,27 @@ describe("test row provider", () => {
     expect(r.categoryName.value).toBe(undefined);
 
   });
+  itAsync("column drop down", async () => {
+    let c = new Categories();
+    c.setSource(new InMemoryDataProvider());
+    await c.source.Insert(c => {
+      c.id.value = 1;
+      c.categoryName.value = 'noam'
+    });
+    await c.source.Insert(c => {
+      c.id.value = 2;
+      c.categoryName.value = 'yael';
+    });
+    let cc = new ColumnCollection(() => c, () => true, undefined);
+    let cs = {  dropDown: { source: c } } as ColumnSetting<Categories>
+    await cc.buildDropDown(cs);
+    expect(cs.dropDown.items.length).toBe(2);
+    expect(cs.dropDown.items[0].id).toBe(1);
+    expect(cs.dropDown.items[1].id).toBe(2);
+    expect(cs.dropDown.items[0].caption).toBe('noam');
+    expect(cs.dropDown.items[1].caption).toBe('yael');
+
+  });
 });
 
 
@@ -209,4 +232,5 @@ class myDp<T extends Entity> extends ActualInMemoryDataProvider<T> {
     throw new Error("what");
   }
 }
+
 
