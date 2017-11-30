@@ -30,7 +30,7 @@ export class AppComponent {
       },
       this.orderDetails.unitPrice,
       this.orderDetails.quantity,
-      {caption:'row total',getValue:od=>od.unitPrice.value*od.quantity.value}
+      { caption: 'row total', getValue: od => od.unitPrice.value * od.quantity.value }
     ],
     onNewRow: od => {
       od.orderID.value = this.orders.id.value;
@@ -60,7 +60,7 @@ export class AppComponent {
     allowInsert: true,
     onEnterRow: o => this.orderDetailsSettings.get({ where: this.orderDetails.orderID.isEqualTo(o.id) }),
     columnSettings: [
-      { column: this.orders.id, caption: 'Order ID' },
+      this.orders.id,
       {
         column: this.orders.customerID, getValue:
           o => this.cs.get(this.customers.id.isEqualTo(o.customerID)).companyName,
@@ -85,7 +85,7 @@ export class AppComponent {
     return r;
   }
   printOrder() {
-    window.open(environment.serverUrl+ 'home/print/' + this.settings.currentRow.id.value, '_blank');
+    window.open(environment.serverUrl + 'home/print/' + this.settings.currentRow.id.value, '_blank');
   }
   constructor() {
 
