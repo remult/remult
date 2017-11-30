@@ -31,19 +31,19 @@ export class SelectPopup<rowType extends Entity> {
     if (settings) {
       if (settings.title)
         this.title = settings.title;
-      if (settings.searchColumnKey)
-        this.searchColumn = settings.searchColumnKey;
+      if (settings.searchColumn)
+        this.searchColumn = settings.searchColumn;
     }
     if (!this.title)
       this.title = "Select " + modalList.caption;
   }
   title: string;
   private search() {
-    let s: any = {};
-    s[this.searchColumn] = this.searchText + "*";
+    this.modalList.get({ where: this.searchColumn.isEqualTo(this.searchText + "*") });
+
   }
   searchText: string;
-  private searchColumn: string;
+  private searchColumn: Column<any>;
 
   modalId: string = "myModal";
   private onSelect: (selected: rowType) => void;
@@ -54,10 +54,10 @@ export class SelectPopup<rowType extends Entity> {
   show(onSelect: (selected: rowType) => void) {
     if (!this.searchColumn) {
       for (let col of this.modalList.columns.items) {
-        //if (col.key != "id" && (!col.inputType || col.inputType == "text")) {
-        //  this.searchColumn = col.key;
-        //          break;
-        //      }
+        if (col.column && col.column.key != "id" && (!col.inputType || col.inputType == "text")) {
+          this.searchColumn = col.column;
+          break;
+        }
       }
     }
     this.onSelect = onSelect;
@@ -68,12 +68,14 @@ export class SelectPopup<rowType extends Entity> {
       if (item.key == this.searchColumn)
         return item.caption;
     }*/
-    return this.searchColumn;
+    if (this.searchColumn)
+      return this.searchColumn.caption;
+    return "";
   }
 }
 export interface SelectPopupSettings {
   title?: string;
-  searchColumnKey?: string;
+  searchColumn?: Column<any>;
 }
 
 function makeid() {
@@ -364,6 +366,9 @@ export class DataSettings<rowType extends Entity>  {
         this.onNewRow = settings.onNewRow;
       if (settings.caption)
         this.caption = settings.caption;
+      if (!this.caption && entitySource) {
+        this.caption = entitySource.createNewItem().name;
+      }
       this.getOptions = settings.get;
 
     }
@@ -407,9 +412,10 @@ export class DataSettings<rowType extends Entity>  {
   sortedAscending(column: Column<any>) {
     if (!this.getOptions)
       return false;
+      if (!this.getOptions.orderBy)
+        return false;
     if (!column)
       return false;
-
     return this.getOptions.orderBy.Segments.length > 0 &&
       this.getOptions.orderBy.Segments[0].column == column &&
       !this.getOptions.orderBy.Segments[0].descending;
@@ -417,9 +423,10 @@ export class DataSettings<rowType extends Entity>  {
   sortedDescending(column: Column<any>) {
     if (!this.getOptions)
       return false;
+      if (!this.getOptions.orderBy)
+        return false;
     if (!column)
       return false;
-
     return this.getOptions.orderBy.Segments.length > 0 &&
       this.getOptions.orderBy.Segments[0].column == column &&
       this.getOptions.orderBy.Segments[0].descending;

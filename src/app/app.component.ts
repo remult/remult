@@ -15,7 +15,17 @@ export class AppComponent {
   customers = new models.Customers();
   cs = new Lookup(this.customers.source);
   customersForSelect = new models.Customers();
-  customersSelect = new utils.DataSettings(this.customersForSelect.source);
+  customersSelect = new utils.DataSettings(this.customersForSelect.source, {
+    numOfColumnsInGrid: 4,
+    columnSettings: [
+      this.customersForSelect.id,
+      this.customersForSelect.companyName,
+      this.customersForSelect.contactName,
+      this.customersForSelect.country,
+      this.customersForSelect.address,
+      this.customersForSelect.city
+    ]
+  });
 
   shippers = new models.Shippers();
   settings = new utils.DataSettings(this.orders.source, {
@@ -30,7 +40,7 @@ export class AppComponent {
         click: o => this.customersSelect.showSelectPopup(c => o.customerID.value = c.id.value)
       },
       this.orders.orderDate,
-      { column: this.orders.shipVia, dropDown: {source:this.shippers}},
+      { column: this.orders.shipVia, dropDown: { source: this.shippers } },
       this.orders.requiredDate,
       this.orders.shippedDate,
       this.orders.shipAddress,
