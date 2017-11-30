@@ -8,11 +8,14 @@ import { isFunction, makeTitle } from './common';
 
 
 export class InMemoryDataProvider implements DataProviderFactory {
-  rows: any[]=[];
+  rows: any = {};
   public provideFor<T extends Entity>(name: string): DataProvider {
-    return new ActualInMemoryDataProvider(this.rows);
+    if (!this.rows[name])
+      this.rows[name] = [];
+    return new ActualInMemoryDataProvider(this.rows[name]);
   }
 }
+
 
 
 
@@ -98,3 +101,5 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
     return Promise.resolve(JSON.parse(JSON.stringify(data)));
   }
 }
+
+

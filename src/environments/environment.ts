@@ -1,3 +1,4 @@
+import { DataProviderFactory } from './../utils/DataInterfaces';
 import { RestDataProvider } from './../utils/restDataProvider';
 // The file contents for the current environment will overwrite these during build.
 // The build system defaults to the dev environment which uses `environment.ts`, but if you do
@@ -8,5 +9,5 @@ const serverUrl= 'http://localhost:56557/';
 export const environment = {
   production: false,
   serverUrl,
-  dataSource : new RestDataProvider(serverUrl+ 'dataapi')
+  dataSource : new RestDataProvider(serverUrl+ 'dataapi') as DataProviderFactory
 };
