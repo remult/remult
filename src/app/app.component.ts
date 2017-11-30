@@ -40,14 +40,18 @@ export class AppComponent {
         click: o => this.customersSelect.showSelectPopup(c => o.customerID.value = c.id.value)
       },
       this.orders.orderDate,
-      { column: this.orders.shipVia, dropDown: { source: this.shippers } },
+      { column: this.orders.shipVia, dropDown: { source: this.shippers } }
+
+    ]
+  });
+  shipInfoArea = this.settings.addArea({
+    columnSettings: [
       this.orders.requiredDate,
       this.orders.shippedDate,
       this.orders.shipAddress,
       this.orders.shipCity
     ]
   });
-
   title = 'app';
   anotherTitle = 'noam';
   doSomething() {
