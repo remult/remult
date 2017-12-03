@@ -228,6 +228,9 @@ describe("test row provider", () => {
 
 
 class myDp<T extends Entity> extends ActualInMemoryDataProvider<T> {
+  constructor() {
+    super([]);
+  }
   public update(id: any, data: any): Promise<any> {
     throw new Error("what");
   }
