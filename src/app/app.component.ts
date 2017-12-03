@@ -3,6 +3,7 @@ import { ColumnSetting, Lookup } from './../utils/utils';
 import { Component } from '@angular/core';
 import * as models from './models';
 import * as utils from '../utils/utils';
+import * as db from '../utils/localStorageDataProvider';
 
 
 
@@ -87,7 +88,7 @@ export class AppComponent {
   printOrder() {
     window.open(environment.serverUrl + 'home/print/' + this.settings.currentRow.id.value, '_blank');
   }
-  constructor() {
+  test() {
 
   }
 }

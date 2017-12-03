@@ -63,11 +63,13 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
         });
       }
     }
-    return rows.map(i => {
+    if (rows)
+      return rows.map(i => {
 
-      return JSON.parse(JSON.stringify(i));
+        return JSON.parse(JSON.stringify(i));
 
-    });
+      });
+
   }
 
 
