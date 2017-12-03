@@ -35,8 +35,8 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
       if (options.where) {
         rows = rows.filter(i => {
           let ok = true;
-          options.where.__addToUrl((key, val) => {
-            if (i[key] != val)
+          options.where.__addToUrl((col, val) => {
+            if (i[col.key] != val)
               ok = false;
           });
           return ok;

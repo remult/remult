@@ -5,13 +5,13 @@ import { DataProvider, DataProviderFactory } from './../utils/DataInterfaces';
 import * as radweb from '../utils/utils';
 
 export class Categories extends radweb.Entity {
-  id = new radweb.NumberColumn({dbName:'categoryID'});
+  id = new radweb.NumberColumn({ dbName: 'categoryID' });
   categoryName = new radweb.StringColumn('CategoryName');
   description = new radweb.StringColumn('Description');
 
   constructor() {
-      super(() => new Categories(), environment.dataSource, 'Categories');
-      this.initColumns();
+    super(() => new Categories(), environment.dataSource, 'Categories');
+    this.initColumns();
   }
 }
 
@@ -34,7 +34,7 @@ export class Orders extends radweb.Entity {
   constructor() {
     super(() => new Orders(), environment.dataSource, 'Orders');
 
-      this.initColumns();
+    this.initColumns();
   }
 
 
@@ -49,8 +49,8 @@ export class Order_details extends radweb.Entity {
   id = new radweb.StringColumn('id');
 
   constructor() {
-      super(() => new Order_details(), environment.dataSource, 'Order_details');
-      this.initColumns();
+    super(() => new Order_details(), environment.dataSource, 'Order_details');
+    this.initColumns();
   }
 }
 
@@ -69,8 +69,8 @@ export class Customers extends radweb.Entity {
   fax = new radweb.StringColumn('Fax');
 
   constructor() {
-      super(() => new Customers(), environment.dataSource, 'Customers');
-      this.initColumns();
+    super(() => new Customers(), environment.dataSource, 'Customers');
+    this.initColumns();
   }
 }
 
@@ -87,8 +87,8 @@ export class Products extends radweb.Entity {
   discontinued = new radweb.BoolColumn('Discontinued');
 
   constructor() {
-      super(() => new Products(), environment.dataSource, 'Products');
-      this.initColumns();
+    super(() => new Products(), environment.dataSource, 'Products');
+    this.initColumns();
   }
 }
 
@@ -98,7 +98,7 @@ export class Shippers extends radweb.Entity {
   phone = new radweb.StringColumn('Phone');
 
   constructor() {
-      super(() => new Shippers(), environment.dataSource, 'Shippers');
-      this.initColumns();
+    super(() => new Shippers(), environment.dataSource, 'Shippers');
+    this.initColumns();
   }
 }

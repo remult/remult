@@ -1,3 +1,4 @@
+import { Column } from './utils';
 import { FindOptions } from './DataInterfaces';
 import { Entity, Sort } from './data';
 
@@ -39,6 +40,6 @@ export interface RowEvents {
 
 
 export interface FilterBase {
-  __addToUrl(add: (name: string, val: any) => void): void;
+  __addToUrl(add: (name: Column<any>, val: any) => void): void;
 }
 

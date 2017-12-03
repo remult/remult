@@ -17,35 +17,51 @@ export class SQLServerDataProvider implements DataProviderFactory {
 
 
   provideFor<T extends Entity>(name: string, factory: () => T): DataProvider {
-    return new ActualSQLServerDataProvider(factory, name,this.pool,factory);
+    return new ActualSQLServerDataProvider(factory, name, this.pool, factory);
   }
 }
 
 class ActualSQLServerDataProvider<T extends Entity> implements DataProvider {
-  constructor(private entity: ()=>Entity, private name: string,private sql:sql.ConnectionPool,private factory: () => T) {
+  constructor(private entity: () => Entity, private name: string, private sql: sql.ConnectionPool, private factory: () => T) {
 
   }
   find(options?: FindOptions): Promise<any[]> {
     let e = this.factory();
-    let cols = '';
+    let select = 'select ';
     let colKeys: string[] = [];
     e.__iterateColumns().forEach(x => {
 
-      if (cols.length > 0)
-        cols += ', ';
-      cols += x.dbName;
+      if (colKeys.length > 0)
+        select  += ', ';
+      select  += x.__getDbName();
       colKeys.push(x.key);
-     });
+    });
+    select += ' from ' + this.name;
     let r = new sql.Request(this.sql);
-    return r.query('select '+cols+' from categories').then(r => {
+    if (options) {
+      if (options.where) {
+        let addedWhere = false;
+        options.where.__addToUrl((col, value) => {
+          if (!addedWhere) {
+            addedWhere = true;
+            select += ' where ';
+          } else select += ' and ';
+          select += col.__getDbName() + ' = @' + col.__getDbName();
+          r.input(col.__getDbName(), value);
+        });
+
+      }
+    }
+
+    return r.query(select).then(r => {
 
       return r.recordset.map(y => {
-        let result:any = {};
+        let result: any = {};
         for (let x in r.recordset.columns) {
           result[colKeys[r.recordset.columns[x].index]] = y[x];
         }
         return result;
-       });
+      });
     });
   }
   update(id: any, data: any): Promise<any> {

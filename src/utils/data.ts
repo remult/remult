@@ -54,6 +54,11 @@ export class Column<dataType>  {
 
 
   }
+  __getDbName() {
+    if (this.dbName)
+      return this.dbName;
+    return this.key;
+   }
   readonly: boolean;
   inputType: string;
   isEqualTo(value: Column<dataType> | dataType) {
@@ -67,7 +72,7 @@ export class Column<dataType>  {
       val = value;
 
 
-    return new Filter(apply => apply(this.key, val));
+    return new Filter(apply => apply(this, val));
   }
   __valueProvider: ColumnValueProvider = new dummyColumnStorage();
   get value() {
@@ -93,14 +98,14 @@ class dummyColumnStorage implements ColumnValueProvider {
 
 
 export class Filter implements FilterBase {
-  constructor(private apply: (add: (name: string, val: any) => void) => void) {
+  constructor(private apply: (add: (name: Column<any>, val: any) => void) => void) {
 
   }
   and(filter: FilterBase): FilterBase {
     return new AndFilter(this, filter);
   }
 
-  public __addToUrl(add: (name: string, val: any) => void): void {
+  public __addToUrl(add: (name: Column<any>, val: any) => void): void {
     this.apply(add);
   }
 }
@@ -113,7 +118,7 @@ export class AndFilter implements FilterBase {
   }
 
 
-  public __addToUrl(add: (name: string, val: any) => void): void {
+  public __addToUrl(add: (name: Column<any>, val: any) => void): void {
     this.a.__addToUrl(add);
     this.b.__addToUrl(add);
   }
@@ -135,8 +140,7 @@ export class Entity {
       if (y instanceof Column) {
         if (!y.key)
           y.key = c;
-        if (!y.dbName)
-          y.dbName = y.key;
+
         this.applyColumn(y);
       }
     }

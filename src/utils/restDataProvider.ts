@@ -17,7 +17,7 @@ class ActualRestDataProvider implements DataProvider {
     let url = new UrlBuilder(this.url);
     if (options) {
       if (options.where) {
-        options.where.__addToUrl((key, val) => url.add(key, val));
+        options.where.__addToUrl((col, val) => url.add(col.key, val));
       }
       if (options.orderBy && options.orderBy.Segments) {
         let sort = '';
