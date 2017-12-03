@@ -1,7 +1,7 @@
 import { Entity } from './Data';
 
 import { dataAreaSettings } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings, FindOptions } from './dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';

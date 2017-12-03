@@ -4,7 +4,7 @@ import { EntitySource } from './Data';
 import { makeTitle, isFunction } from './common';
 
 import { Column, Entity, Sort, AndFilter } from './data'
-import { iDataColumnSettings, FilterBase, ColumnValueProvider, FindOptions } from './DataInterfaces';
+import { DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions } from './DataInterfaces';
 import { RestList } from './restList';
 
 export * from './data';
@@ -625,12 +625,12 @@ export function isNewRow(r: Entity) {
 
 
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption: iDataColumnSettings | string) {
+  constructor(settingsOrCaption: DataColumnSettings | string) {
     super(settingsOrCaption);
   }
 }
 export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption: iDataColumnSettings | string) {
+  constructor(settingsOrCaption: DataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -639,14 +639,14 @@ export class DateColumn extends Column<string>{
 
 }
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: iDataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
   }
 }
 export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption: iDataColumnSettings | string) {
+  constructor(settingsOrCaption: DataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';

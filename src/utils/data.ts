@@ -4,7 +4,7 @@
 
 
 import { dataAreaSettings } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings, FindOptions } from './dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';
@@ -32,7 +32,8 @@ export interface SortSegment {
 export class Column<dataType>  {
   key: string;
   caption: string;
-  constructor(settingsOrCaption?: iDataColumnSettings | string) {
+  dbName: string;
+  constructor(settingsOrCaption?: DataColumnSettings | string) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
@@ -45,9 +46,13 @@ export class Column<dataType>  {
           this.readonly = settingsOrCaption.readonly;
         if (settingsOrCaption.inputType)
           this.inputType = settingsOrCaption.inputType;
+        if (settingsOrCaption.dbName)
+          this.dbName = settingsOrCaption.dbName;
       }
 
     }
+
+
   }
   readonly: boolean;
   inputType: string;
@@ -130,6 +135,8 @@ export class Entity {
       if (y instanceof Column) {
         if (!y.key)
           y.key = c;
+        if (!y.dbName)
+          y.dbName = y.key;
         this.applyColumn(y);
       }
     }
@@ -150,14 +157,14 @@ export class Entity {
   wasChanged() {
     return this.__entityData.wasChanged();
   }
-  __toPojo() :any{
+  __toPojo(): any {
     let r = {};
     this.__iterateColumns().forEach(c => {
       c.__addToPojo(r);
     });
     return r;
 
-   }
+  }
 
   source: EntitySource<this>;
   private applyColumn(y: Column<any>) {
@@ -171,7 +178,7 @@ export class Entity {
 
     return this.__getColumnByKey(col.key);
   }
-  __getColumnByKey(key: string):Column<any> {
+  __getColumnByKey(key: string): Column<any> {
     let any: any = this;
     return any[key];
   }
@@ -188,7 +195,7 @@ export class EntitySource<T extends Entity>
 {
   private _provider: DataProvider;
   constructor(name: string, private factory: () => T, dataProvider: DataProviderFactory) {
-    this._provider = dataProvider.provideFor(name,factory);
+    this._provider = dataProvider.provideFor(name, factory);
   }
   find(options?: FindOptions): Promise<T[]> {
     return this._provider.find(options)

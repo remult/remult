@@ -23,11 +23,12 @@ export interface ColumnValueProvider {
   setValue(key: string, value: any): void;
 }
 
-export interface iDataColumnSettings {
+export interface DataColumnSettings {
   key?: string;
   caption?: string;
   readonly?: boolean;
   inputType?: string;
+  dbName?: string;
 }
 
 export interface RowEvents {

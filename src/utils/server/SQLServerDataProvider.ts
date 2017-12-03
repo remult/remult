@@ -1,6 +1,6 @@
 import { Entity } from './../data';
 import * as sql from 'mssql';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, iDataColumnSettings, FindOptions } from '../dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from '../dataInterfaces';
 
 export class SQLServerDataProvider implements DataProviderFactory {
 
@@ -17,18 +17,35 @@ export class SQLServerDataProvider implements DataProviderFactory {
 
 
   provideFor<T extends Entity>(name: string, factory: () => T): DataProvider {
-    return new ActualSQLServerDataProvider(factory, name,this.pool);
+    return new ActualSQLServerDataProvider(factory, name,this.pool,factory);
   }
 }
 
-class ActualSQLServerDataProvider implements DataProvider {
-  constructor(private entity: ()=>Entity, private name: string,private sql:sql.ConnectionPool) {
+class ActualSQLServerDataProvider<T extends Entity> implements DataProvider {
+  constructor(private entity: ()=>Entity, private name: string,private sql:sql.ConnectionPool,private factory: () => T) {
 
   }
   find(options?: FindOptions): Promise<any[]> {
+    let e = this.factory();
+    let cols = '';
+    let colKeys: string[] = [];
+    e.__iterateColumns().forEach(x => {
+
+      if (cols.length > 0)
+        cols += ', ';
+      cols += x.dbName;
+      colKeys.push(x.key);
+     });
     let r = new sql.Request(this.sql);
-    return r.query('select * from categories').then(r => {
-      return r.recordset;
+    return r.query('select '+cols+' from categories').then(r => {
+
+      return r.recordset.map(y => {
+        let result:any = {};
+        for (let x in r.recordset.columns) {
+          result[colKeys[r.recordset.columns[x].index]] = y[x];
+        }
+        return result;
+       });
     });
   }
   update(id: any, data: any): Promise<any> {
