@@ -30,7 +30,7 @@ export interface SortSegment {
 
 
 export class Column<dataType>  {
-  key: string;
+  jsonName: string;
   caption: string;
   dbName: string;
   constructor(settingsOrCaption?: DataColumnSettings | string) {
@@ -38,8 +38,8 @@ export class Column<dataType>  {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
       } else {
-        if (settingsOrCaption.key)
-          this.key = settingsOrCaption.key;
+        if (settingsOrCaption.jsonName)
+          this.jsonName = settingsOrCaption.jsonName;
         if (settingsOrCaption.caption)
           this.caption = settingsOrCaption.caption;
         if (settingsOrCaption.readonly)
@@ -57,7 +57,7 @@ export class Column<dataType>  {
   __getDbName() {
     if (this.dbName)
       return this.dbName;
-    return this.key;
+    return this.jsonName;
    }
   readonly: boolean;
   inputType: string;
@@ -76,11 +76,11 @@ export class Column<dataType>  {
   }
   __valueProvider: ColumnValueProvider = new dummyColumnStorage();
   get value() {
-    return this.__valueProvider.getValue(this.key);
+    return this.__valueProvider.getValue(this.jsonName);
   }
-  set value(value: dataType) { this.__valueProvider.setValue(this.key, value); }
+  set value(value: dataType) { this.__valueProvider.setValue(this.jsonName, value); }
   __addToPojo(pojo: any) {
-    pojo[this.key] = this.value;
+    pojo[this.jsonName] = this.value;
   }
 }
 
@@ -138,8 +138,8 @@ export class Entity {
       let y = x[c];
 
       if (y instanceof Column) {
-        if (!y.key)
-          y.key = c;
+        if (!y.jsonName)
+          y.jsonName = c;
 
         this.applyColumn(y);
       }
@@ -173,14 +173,14 @@ export class Entity {
   source: EntitySource<this>;
   private applyColumn(y: Column<any>) {
     if (!y.caption)
-      y.caption = makeTitle(y.key);
+      y.caption = makeTitle(y.jsonName);
     y.__valueProvider = this.__entityData;
     this.__columns.push(y);
   }
   private __columns: Column<any>[] = [];
   __getColumn<T>(col: Column<T>) {
 
-    return this.__getColumnByKey(col.key);
+    return this.__getColumnByKey(col.jsonName);
   }
   __getColumnByKey(key: string): Column<any> {
     let any: any = this;

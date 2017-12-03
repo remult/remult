@@ -36,7 +36,7 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
         rows = rows.filter(i => {
           let ok = true;
           options.where.__addToUrl((col, val) => {
-            if (i[col.key] != val)
+            if (i[col.jsonName] != val)
               ok = false;
           });
           return ok;
@@ -47,8 +47,8 @@ export class ActualInMemoryDataProvider<T extends Entity> implements DataProvide
           let r = 0;
           for (let i = 0; i < options.orderBy.Segments.length; i++) {
             let seg = options.orderBy.Segments[i];
-            let left = a[seg.column.key];
-            let right = b[seg.column.key];
+            let left = a[seg.column.jsonName];
+            let right = b[seg.column.jsonName];
             if (left > right)
               r = 1;
             else if (left < right)

@@ -54,7 +54,7 @@ export class SelectPopup<rowType extends Entity> {
   show(onSelect: (selected: rowType) => void) {
     if (!this.searchColumn) {
       for (let col of this.modalList.columns.items) {
-        if (col.column && col.column.key != "id" && (!col.inputType || col.inputType == "text")) {
+        if (col.column && col.column.jsonName != "id" && (!col.inputType || col.inputType == "text")) {
           this.searchColumn = col.column;
           break;
         }

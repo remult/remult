@@ -25,7 +25,7 @@ export interface ColumnValueProvider {
 }
 
 export interface DataColumnSettings {
-  key?: string;
+  jsonName?: string;
   caption?: string;
   readonly?: boolean;
   inputType?: string;

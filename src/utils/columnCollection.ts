@@ -198,7 +198,7 @@ export class ColumnCollection<rowType extends Entity> {
     if (r.__modelState) {
       let m = <ModelState<any>>r.__modelState();
       if (m.modelState) {
-        let errors = m.modelState[col.column.key];
+        let errors = m.modelState[col.column.jsonName];
         if (errors && errors.length > 0)
           return errors[0];
       }
@@ -227,7 +227,7 @@ export class ColumnCollection<rowType extends Entity> {
     if (r.__modelState) {
       let m = <ModelState<any>>r.__modelState();
       if (m && m.modelState)
-        m.modelState[col.column.key] = undefined;
+        m.modelState[col.column.jsonName] = undefined;
     }
     if (col.onUserChangedValue)
       col.onUserChangedValue(r);

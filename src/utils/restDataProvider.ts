@@ -17,7 +17,7 @@ class ActualRestDataProvider implements DataProvider {
     let url = new UrlBuilder(this.url);
     if (options) {
       if (options.where) {
-        options.where.__addToUrl((col, val) => url.add(col.key, val));
+        options.where.__addToUrl((col, val) => url.add(col.jsonName, val));
       }
       if (options.orderBy && options.orderBy.Segments) {
         let sort = '';
@@ -27,7 +27,7 @@ class ActualRestDataProvider implements DataProvider {
             sort += ", ";
             order += ", ";
           }
-          sort += c.column.key;
+          sort += c.column.jsonName;
           order += c.descending ? "desc" : "asc";
 
         });

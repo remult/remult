@@ -34,7 +34,7 @@ class ActualSQLServerDataProvider<T extends Entity> implements DataProvider {
       if (colKeys.length > 0)
         select  += ', ';
       select  += x.__getDbName();
-      colKeys.push(x.key);
+      colKeys.push(x.jsonName);
     });
     select += ' from ' + this.name;
     let r = new sql.Request(this.sql);
