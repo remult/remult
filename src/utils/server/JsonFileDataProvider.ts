@@ -1,6 +1,4 @@
 import { JsonStorageDataProvider,JsonStorage } from './../JsonStorageDataProvider';
-
-
 import { ActualInMemoryDataProvider } from '../inMemoryDatabase';
 import { Entity } from '../Data';
 import * as path from 'path';

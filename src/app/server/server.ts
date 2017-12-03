@@ -1,3 +1,4 @@
+import { SQLServerDataProvider } from '../../utils/server/SQLServerDataProvider';
 import { environment } from './../../environments/environment';
 import { JsonFileDataProvider } from './../../utils/server/JsonFileDataProvider';
 import { InMemoryDataProvider } from './../../utils/inMemoryDatabase';
@@ -10,6 +11,7 @@ import * as fs from 'fs';
 let app = express();
 let port = 3000;
 environment.dataSource = new JsonFileDataProvider('./appData');
+environment.dataSource = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
 
 
 app.use(bodyParser.urlencoded({ extended: true }));

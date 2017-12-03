@@ -32,9 +32,12 @@ export class Orders extends radweb.Entity {
   shipCountry = new radweb.StringColumn('ShipCountry');
 
   constructor() {
-      super(() => new Orders(), environment.dataSource, 'Orders');
+    super(() => new Orders(), environment.dataSource, 'Orders');
+
       this.initColumns();
   }
+
+
 }
 
 export class Order_details extends radweb.Entity {

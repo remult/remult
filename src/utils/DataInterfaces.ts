@@ -16,7 +16,7 @@ export interface FindOptions {
 }
 
 export interface DataProviderFactory {
-  provideFor<T extends Entity>(name: string): DataProvider;
+  provideFor<T extends Entity>(name: string,factory: () => T): DataProvider;
 }
 export interface ColumnValueProvider {
   getValue(key: string): any;

@@ -188,7 +188,7 @@ export class EntitySource<T extends Entity>
 {
   private _provider: DataProvider;
   constructor(name: string, private factory: () => T, dataProvider: DataProviderFactory) {
-    this._provider = dataProvider.provideFor(name);
+    this._provider = dataProvider.provideFor(name,factory);
   }
   find(options?: FindOptions): Promise<T[]> {
     return this._provider.find(options)

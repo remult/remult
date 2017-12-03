@@ -34,7 +34,7 @@ export class AppComponent {
       { caption: 'row total', getValue: od => od.unitPrice.value * od.quantity.value }
     ],
     onNewRow: od => {
-      od.orderID.value = this.orders.id.value;
+      od.orderID.value = this.settings.currentRow.id.value;
       od.unitPrice.value = 1;
     }
   });
@@ -63,8 +63,9 @@ export class AppComponent {
     columnSettings: [
       this.orders.id,
       {
-        column: this.orders.customerID, getValue:
-          o => this.cs.get(this.customers.id.isEqualTo(o.customerID)).companyName,
+        column: this.orders.customerID,
+
+        getValue: o => this.cs.get(this.customers.id.isEqualTo(o.customerID)).companyName,
         click: o => this.customersSelect.showSelectPopup(c => o.customerID.value = c.id.value)
       },
       this.orders.orderDate,
@@ -89,6 +90,13 @@ export class AppComponent {
     window.open(environment.serverUrl + 'home/print/' + this.settings.currentRow.id.value, '_blank');
   }
   test() {
-
+    this.orders.source.find().then(o => { o.forEach(o => { o.orderDate.value + 1; o.save(); }) });
   }
+}
+
+
+class myClass {
+  order = new models.Orders();
+  customers = new models.Customers();
+
 }
