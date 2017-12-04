@@ -1,6 +1,6 @@
 import { NumberColumn } from '../';
 
-import { Entity, Column, Sort } from './data';
+import { Entity, Column, Sort } from './utils';
 import { DataSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
@@ -8,7 +8,7 @@ import { itAsync } from './testHelper.spec';
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
-import { ColumnCollection } from './columnCollection';
+import { ColumnCollection } from './utils';
 
 
 
@@ -155,7 +155,7 @@ describe("test row provider", () => {
   });
   itAsync("test grid update", async () => {
     let c = await insertFourRows();
-    let ds = new DataSettings<Categories>(c.source, {
+    let ds = new DataSettings(c, {
       get: {
         orderBy: new Sort({ column: c.id })
       }
@@ -227,7 +227,7 @@ describe("test row provider", () => {
 });
 
 
-class myDp<T extends Entity> extends ActualInMemoryDataProvider<T> {
+class myDp<T extends Entity<any>> extends ActualInMemoryDataProvider<T> {
   constructor() {
     super([]);
   }
