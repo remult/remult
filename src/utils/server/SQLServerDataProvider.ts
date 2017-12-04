@@ -1,4 +1,4 @@
-import { Entity } from './../data';
+import { Entity } from './../utils';
 import * as sql from 'mssql';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from '../dataInterfaces';
 
@@ -16,13 +16,13 @@ export class SQLServerDataProvider implements DataProviderFactory {
   }
 
 
-  provideFor<T extends Entity>(name: string, factory: () => T): DataProvider {
+  provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
     return new ActualSQLServerDataProvider(factory, name, this.pool, factory);
   }
 }
 
-class ActualSQLServerDataProvider<T extends Entity> implements DataProvider {
-  constructor(private entity: () => Entity, private name: string, private sql: sql.ConnectionPool, private factory: () => T) {
+class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
+  constructor(private entity: () => Entity<any>, private name: string, private sql: sql.ConnectionPool, private factory: () => T) {
 
   }
   find(options?: FindOptions): Promise<any[]> {

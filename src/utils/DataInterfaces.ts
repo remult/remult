@@ -1,6 +1,6 @@
-import { Column } from './utils';
+import { Column,Entity, Sort } from './utils';
 import { FindOptions } from './DataInterfaces';
-import { Entity, Sort } from './data';
+
 
 
 export interface DataProvider {
@@ -15,9 +15,15 @@ export interface FindOptions {
   limit?: number;
   page?: number;
 }
+export interface FindOptionsPerEntity<rowType extends Entity<any>> {
+  where?: (rowType: rowType) => FilterBase;
+  orderBy?: (rowType: rowType) => Sort;
+  limit?: number;
+  page?: number;
+}
 
 export interface DataProviderFactory {
-  provideFor<T extends Entity>(name: string,factory: () => T): DataProvider;
+  provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider;
 }
 export interface ColumnValueProvider {
   getValue(key: string): any;

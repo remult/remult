@@ -1,6 +1,6 @@
 import { ActualInMemoryDataProvider } from './inMemoryDatabase';
 import { JsonStorageDataProvider, JsonStorage } from './JsonStorageDataProvider';
-import { Entity } from './data';
+import { Entity } from './utils';
 import { DataProviderFactory, DataProvider } from './DataInterfaces';
 
 
@@ -8,7 +8,7 @@ export class LocalStorageDataProvider implements DataProviderFactory {
   constructor() {
 
   }
-  public provideFor<T extends Entity>(name: string): DataProvider {
+  public provideFor<T extends Entity<any>>(name: string): DataProvider {
     return new JsonStorageDataProvider<T>(new LocalJsonStorage(name));
   }
 }

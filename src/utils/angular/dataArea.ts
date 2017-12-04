@@ -1,6 +1,6 @@
 
-import { DataAreaSettings, dataAreaSettings,  ColumnSetting } from '../utils';
-import {ColumnCollection} from '../columnCollection'
+import {ColumnCollection, DataAreaSettings, dataAreaSettings,  ColumnSetting } from '../utils';
+
 import { Component, OnChanges, Input } from '@angular/core';
 @Component({
   selector: 'data-area',

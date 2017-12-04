@@ -14,23 +14,22 @@ import * as db from '../utils/localStorageDataProvider';
 
 })
 export class AppComponent {
-  orders = new models.Orders();
-  orderDetails = new models.Order_details();
-  products = new models.Products();
+
+
   pForLookup = new models.Products();
   pLookUp = new utils.Lookup(this.pForLookup.source);
-  orderDetailsSettings = new utils.DataSettings(this.orderDetails.source, {
+  orderDetailsSettings = new utils.DataSettings(new models.Order_details(), {
     allowDelete: true,
     allowUpdate: true,
     allowInsert: true,
-    columnSettings: [
+    columnSettings: orderDetails => [
       {
-        column: this.orderDetails.productID,
-        dropDown: { source: this.products },
+        column: orderDetails.productID,
+        dropDown: { source: new models.Products() },
         onUserChangedValue: od => this.pLookUp.whenGet(this.pForLookup.id.isEqualTo(od.productID)).then(p => od.unitPrice.value = p.unitPrice.value)
       },
-      this.orderDetails.unitPrice,
-      this.orderDetails.quantity,
+      orderDetails.unitPrice,
+      orderDetails.quantity,
       { caption: 'row total', getValue: od => od.unitPrice.value * od.quantity.value }
     ],
     onNewRow: od => {
@@ -41,44 +40,49 @@ export class AppComponent {
   customers = new models.Customers();
   cs = new Lookup(this.customers.source);
 
-  customersForSelect = new models.Customers();
-  customersSelect = new utils.DataSettings(this.customersForSelect.source, {
+
+  customersSelect = new utils.DataSettings(new models.Customers(), {
     numOfColumnsInGrid: 4,
-    columnSettings: [
-      this.customersForSelect.id,
-      this.customersForSelect.companyName,
-      this.customersForSelect.contactName,
-      this.customersForSelect.country,
-      this.customersForSelect.address,
-      this.customersForSelect.city
+    columnSettings: customers => [
+      customers.id,
+      customers.companyName,
+      customers.contactName,
+      customers.country,
+      customers.address,
+      customers.city
     ]
   });
 
-  shippers = new models.Shippers();
-  settings = new utils.DataSettings(this.orders.source, {
+
+  settings = new utils.DataSettings(new models.Orders(), {
     numOfColumnsInGrid: 4,
     allowUpdate: true,
     allowInsert: true,
-    onEnterRow: o => this.orderDetailsSettings.get({ where: this.orderDetails.orderID.isEqualTo(o.id) }),
-    columnSettings: [
-      this.orders.id,
+    onEnterRow: o => this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id) }),
+    columnSettings: orders => [
+      orders.id,
       {
-        column: this.orders.customerID,
+        column: orders.customerID,
 
-        getValue: o => this.cs.get(this.customers.id.isEqualTo(o.customerID)).companyName,
+        getValue: o => o.lookup(new models.Customers(), c => c.id.isEqualTo(o.customerID)).companyName,
+        //getValue: o => o.lookup(new models.Customers(), o.customerID).companyName,
         click: o => this.customersSelect.showSelectPopup(c => o.customerID.value = c.id.value)
       },
-      this.orders.orderDate,
-      { column: this.orders.shipVia, dropDown: { source: this.shippers } }
+      orders.orderDate,
+      {
+        column: orders.shipVia, dropDown: {
+          source: new models.Shippers()
+        }
+      }
 
     ]
   });
   shipInfoArea = this.settings.addArea({
-    columnSettings: [
-      this.orders.requiredDate,
-      this.orders.shippedDate,
-      this.orders.shipAddress,
-      this.orders.shipCity
+    columnSettings: orders => [
+      orders.requiredDate,
+      orders.shippedDate,
+      orders.shipAddress,
+      orders.shipCity
     ]
   });
   getOrderTotal() {
@@ -90,13 +94,6 @@ export class AppComponent {
     window.open(environment.serverUrl + 'home/print/' + this.settings.currentRow.id.value, '_blank');
   }
   test() {
-    this.orders.source.find().then(o => { o.forEach(o => { o.orderDate.value + 1; o.save(); }) });
+
   }
-}
-
-
-class myClass {
-  order = new models.Orders();
-  customers = new models.Customers();
-
 }

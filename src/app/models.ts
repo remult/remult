@@ -1,21 +1,21 @@
 import { environment } from './../environments/environment';
 
-import { Entity, EntitySource } from './../utils/data';
+import { Entity, EntitySource } from './../utils/utils';
 import { DataProvider, DataProviderFactory } from './../utils/DataInterfaces';
 import * as radweb from '../utils/utils';
 
-export class Categories extends radweb.Entity {
+export class Categories extends radweb.Entity<number> {
   id = new radweb.NumberColumn({ dbName: 'categoryID' });
   categoryName = new radweb.StringColumn('CategoryName');
   description = new radweb.StringColumn('Description');
 
   constructor() {
     super(() => new Categories(), environment.dataSource, 'Categories');
-    this.initColumns();
+    this.initColumns(this.id);
   }
 }
 
-export class Orders extends radweb.Entity {
+export class Orders extends radweb.Entity<number> {
   id = new radweb.NumberColumn('OrderID');
   customerID = new radweb.StringColumn('CustomerID');
   employeeID = new radweb.NumberColumn('EmployeeID');
@@ -34,13 +34,13 @@ export class Orders extends radweb.Entity {
   constructor() {
     super(() => new Orders(), environment.dataSource, 'Orders');
 
-    this.initColumns();
+    this.initColumns(this.id);
   }
 
 
 }
 
-export class Order_details extends radweb.Entity {
+export class Order_details extends radweb.Entity<string> {
   orderID = new radweb.NumberColumn('OrderID');
   productID = new radweb.NumberColumn('ProductID');
   unitPrice = new radweb.NumberColumn('UnitPrice');
@@ -50,12 +50,12 @@ export class Order_details extends radweb.Entity {
 
   constructor() {
     super(() => new Order_details(), environment.dataSource, 'Order_details');
-    this.initColumns();
+    this.initColumns(this.id);
   }
 }
 
 
-export class Customers extends radweb.Entity {
+export class Customers extends radweb.Entity<string> {
   id = new radweb.StringColumn('CustomerID');
   companyName = new radweb.StringColumn('CompanyName');
   contactName = new radweb.StringColumn('ContactName');
@@ -70,11 +70,11 @@ export class Customers extends radweb.Entity {
 
   constructor() {
     super(() => new Customers(), environment.dataSource, 'Customers');
-    this.initColumns();
+    this.initColumns(this.id);
   }
 }
 
-export class Products extends radweb.Entity {
+export class Products extends radweb.Entity<number> {
   id = new radweb.NumberColumn('ProductID');
   productName = new radweb.StringColumn('ProductName');
   supplierID = new radweb.NumberColumn('SupplierID');
@@ -88,17 +88,17 @@ export class Products extends radweb.Entity {
 
   constructor() {
     super(() => new Products(), environment.dataSource, 'Products');
-    this.initColumns();
+    this.initColumns(this.id);
   }
 }
 
-export class Shippers extends radweb.Entity {
+export class Shippers extends radweb.Entity<number> {
   id = new radweb.NumberColumn('ShipperID');
   companyName = new radweb.StringColumn('CompanyName');
   phone = new radweb.StringColumn('Phone');
 
   constructor() {
     super(() => new Shippers(), environment.dataSource, 'Shippers');
-    this.initColumns();
+    this.initColumns(this.id);
   }
 }

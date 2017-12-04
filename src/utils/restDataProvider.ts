@@ -1,4 +1,4 @@
-import { Sort } from './data';
+import { Sort } from './utils';
 import { DataProvider, DataProviderFactory, FindOptions } from './DataInterfaces';
 export class RestDataProvider implements DataProviderFactory {
   constructor(private url: string) {

@@ -1,7 +1,6 @@
 
-import { Column,Entity } from './../data';
-import { ColumnSetting } from '../utils';
-import {ColumnCollection} from '../columnCollection'
+import {ColumnCollection, ColumnSetting,Column,Entity } from '../utils';
+
 
 import { Component, Input } from '@angular/core';
 @Component({
@@ -31,7 +30,7 @@ import { Component, Input } from '@angular/core';
 })
 export class DataControlComponent {
   @Input() map: ColumnSetting<any>;
-  @Input() record: Entity;
+  @Input() record: Entity<any>;
   @Input() notReadonly: false;
 
   showDescription() {

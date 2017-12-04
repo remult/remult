@@ -1,6 +1,6 @@
-import { Entity } from './Data';
 
-import { dataAreaSettings } from './utils';
+
+import { dataAreaSettings,Entity } from './utils';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from './dataInterfaces';
 
 
@@ -9,7 +9,7 @@ import { isFunction, makeTitle } from './common';
 
 export class InMemoryDataProvider implements DataProviderFactory {
   rows: any = {};
-  public provideFor<T extends Entity>(name: string): DataProvider {
+  public provideFor<T extends Entity<any>>(name: string): DataProvider {
     if (!this.rows[name])
       this.rows[name] = [];
     return new ActualInMemoryDataProvider(this.rows[name]);
@@ -19,7 +19,7 @@ export class InMemoryDataProvider implements DataProviderFactory {
 
 
 
-export class ActualInMemoryDataProvider<T extends Entity> implements DataProvider {
+export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataProvider {
 
 
 

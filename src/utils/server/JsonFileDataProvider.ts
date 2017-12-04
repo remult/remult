@@ -1,6 +1,6 @@
 import { JsonStorageDataProvider,JsonStorage } from './../JsonStorageDataProvider';
 import { ActualInMemoryDataProvider } from '../inMemoryDatabase';
-import { Entity } from '../Data';
+import { Entity } from '../utils';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -15,7 +15,7 @@ export class JsonFileDataProvider implements DataProviderFactory {
   constructor(private folderPath: string) {
 
   }
-  public provideFor<T extends Entity>(name: string): DataProvider {
+  public provideFor<T extends Entity<any>>(name: string): DataProvider {
     return new JsonStorageDataProvider<T>(new FileJsonStorage(path.join(this.folderPath, name) + '.json'));
   }
 }

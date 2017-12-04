@@ -1,13 +1,8 @@
-import { ColumnCollection } from './columnCollection';
-import { EntitySource } from './Data';
-
 import { makeTitle, isFunction } from './common';
 
-import { Column, Entity, Sort, AndFilter } from './data'
-import { DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions } from './DataInterfaces';
-import { RestList } from './restList';
+import { DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity,RowEvents, DataProvider, DataProviderFactory } from './DataInterfaces';
 
-export * from './data';
+
 
 
 
@@ -24,7 +19,7 @@ export interface dataAreaSettings {
 
 
 declare var $: any;
-export class SelectPopup<rowType extends Entity> {
+export class SelectPopup<rowType extends Entity<any>> {
   constructor(
     private modalList: DataSettings<rowType>, settings?: SelectPopupSettings) {
     this.modalId = makeid();
@@ -39,7 +34,7 @@ export class SelectPopup<rowType extends Entity> {
   }
   title: string;
   private search() {
-    this.modalList.get({ where: this.searchColumn.isEqualTo(this.searchText + "*") });
+    this.modalList.get({ where: x => this.searchColumn.isEqualTo(this.searchText + "*") });
 
   }
   searchText: string;
@@ -95,7 +90,7 @@ function makeid() {
 export interface DropDownOptions {
 
   items?: DropDownItem[] | string[] | any[];
-  source?: Entity;
+  source?: Entity<any>;
   idColumn?: Column<any>;
   captionColumn?: Column<any>;
 }
@@ -113,85 +108,77 @@ export interface DropDownItem {
 
 
 export interface IDataAreaSettings<rowType> {
-  columnSettings?: ColumnSetting<rowType>[];
+  columnSettings?: (rowType: rowType) => ColumnSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
 }
 
-export class DataAreaSettings<rowType extends Entity>
+export class DataAreaSettings<rowType extends Entity<any>>
 {
 
-  constructor(public columns: ColumnCollection<rowType>, public settings: IDataAreaSettings<rowType>) {
+  constructor(public columns: ColumnCollection<rowType>, entity: rowType, public settings: IDataAreaSettings<rowType>) {
     if (settings.columnSettings)
-      columns.add(...settings.columnSettings);
+      columns.add(...settings.columnSettings(entity));
 
   }
 }
 
-export class Lookup<lookupType extends Entity> {
 
-  constructor(private source: EntitySource<lookupType>) {
-    this.restList = new RestList<lookupType>(source);
 
-  }
 
-  private restList: RestList<lookupType>;
-  private cache: any = {};
 
-  get(filter: FilterBase): lookupType {
-    return this.getInternal(filter).value;
-  }
-  found(filter: FilterBase): boolean {
-    return this.getInternal(filter).found;
-  }
+export class DataSettings<rowType extends Entity<any>>  {
+  constructor(private entity?: rowType, settings?: IDataSettings<rowType>) {
+    this.restList = new RestList<rowType>(entity.source);
+    if (entity)
+      this.filterHelper.filterRow = entity.source.createNewItem();
 
-  private getInternal(filter: FilterBase): lookupRowInfo<lookupType> {
-    let find: FindOptions = {};
-    find.where = filter;
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper)
 
-    return this._internalGetByOptions(find);
-  }
+    this.restList._rowReplacedListeners.push((old, curr) => {
+      if (old == this.currentRow)
+        this.setCurrentRow(curr);
+    });
 
-  _internalGetByOptions(find: FindOptions): lookupRowInfo<lookupType> {
+    if (settings) {
 
-    let key = "";
-    if (find.where)
-      find.where.__addToUrl((k, v) => { key += k + ':' + (v ? v : '') + '|' });
-    if (this.cache == undefined)
-      this.cache = {};
-    if (this.cache[key]) {
-      return this.cache[key];
-    } else {
-      let res = new lookupRowInfo<lookupType>();
-      this.cache[key] = res;
-      if (find == undefined || key == undefined) {
-        res.loading = false;
-        res.found = false;
-        return res;
-      } else {
-        res.value = this.source.createNewItem();
-        res.promise = this.restList.get(find).then(r => {
-          res.loading = false;
-          if (r.length > 0) {
-            res.value = r[0];
-            res.found = true;
-          }
-          return res;
-        });
+      if (settings.columnSettings)
+        this.columns.add(...settings.columnSettings(entity));
+
+      if (settings.allowUpdate)
+        this.allowUpdate = true;
+      if (settings.allowDelete)
+        this.allowDelete = true;
+      if (settings.allowInsert)
+        this.allowInsert = true;
+      if (settings.hideDataArea)
+        this.hideDataArea = settings.hideDataArea;
+      if (settings.numOfColumnsInGrid != undefined)
+        this.columns.numOfColumnsInGrid = settings.numOfColumnsInGrid;
+
+      if (settings.rowButtons)
+        this._buttons = settings.rowButtons;
+
+
+      if (settings.rowCssClass)
+        this.rowClass = settings.rowCssClass;
+      if (settings.onSavingRow)
+        this.onSavingRow = settings.onSavingRow;
+      if (settings.onEnterRow)
+        this.onEnterRow = settings.onEnterRow;
+      if (settings.onNewRow)
+        this.onNewRow = settings.onNewRow;
+      if (settings.caption)
+        this.caption = settings.caption;
+      if (!this.caption && entity) {
+        this.caption = entity.source.createNewItem().name;
       }
-      return res;
+      this.getOptions = settings.get;
+
     }
+
+    this.popupSettings = new SelectPopup(this);
   }
-
-  whenGet(r: FilterBase) {
-    return this.getInternal(r).promise.then(r => r.value);
-  }
-}
-
-
-
-export class DataSettings<rowType extends Entity>  {
-
 
 
   popupSettings: SelectPopup<rowType>;
@@ -231,7 +218,7 @@ export class DataSettings<rowType extends Entity>  {
     let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper);
     col.numOfColumnsInGrid = 0;
 
-    return new DataAreaSettings<rowType>(col, settings);
+    return new DataAreaSettings<rowType>(col, this.entity, settings);
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {
@@ -306,7 +293,7 @@ export class DataSettings<rowType extends Entity>  {
   hideDataArea = false;
 
 
-  _buttons: RowButton<Entity>[] = [];
+  _buttons: RowButton<Entity<any>>[] = [];
 
   rowClass?: (row: any) => string;
   onSavingRow?: (s: ModelState<any>) => void;
@@ -318,63 +305,12 @@ export class DataSettings<rowType extends Entity>  {
         () => this.onSavingRow(s));
   }
   caption: string;
-  lookup: Lookup<rowType>;
+
   private filterHelper = new FilterHelper<rowType>(() => {
     this.page = 1;
     this.getRecords();
   });
-  constructor(entitySource?: EntitySource<rowType>, settings?: IDataSettings<rowType>) {
-    this.restList = new RestList<rowType>(entitySource);
-    if (entitySource)
-      this.filterHelper.filterRow = entitySource.createNewItem();
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper)
-
-    this.restList._rowReplacedListeners.push((old, curr) => {
-      if (old == this.currentRow)
-        this.setCurrentRow(curr);
-    });
-    this.lookup = new Lookup<rowType>(entitySource);
-    if (settings) {
-      if (settings.columnKeys)
-        this.columns.add(...settings.columnKeys);
-      if (settings.columnSettings)
-        this.columns.add(...settings.columnSettings);
-
-      if (settings.allowUpdate)
-        this.allowUpdate = true;
-      if (settings.allowDelete)
-        this.allowDelete = true;
-      if (settings.allowInsert)
-        this.allowInsert = true;
-      if (settings.hideDataArea)
-        this.hideDataArea = settings.hideDataArea;
-      if (settings.numOfColumnsInGrid != undefined)
-        this.columns.numOfColumnsInGrid = settings.numOfColumnsInGrid;
-
-      if (settings.rowButtons)
-        this._buttons = settings.rowButtons;
-
-
-      if (settings.rowCssClass)
-        this.rowClass = settings.rowCssClass;
-      if (settings.onSavingRow)
-        this.onSavingRow = settings.onSavingRow;
-      if (settings.onEnterRow)
-        this.onEnterRow = settings.onEnterRow;
-      if (settings.onNewRow)
-        this.onNewRow = settings.onNewRow;
-      if (settings.caption)
-        this.caption = settings.caption;
-      if (!this.caption && entitySource) {
-        this.caption = entitySource.createNewItem().name;
-      }
-      this.getOptions = settings.get;
-
-    }
-
-    this.popupSettings = new SelectPopup(this);
-  }
   columns: ColumnCollection<rowType>;
 
 
@@ -391,8 +327,16 @@ export class DataSettings<rowType extends Entity>  {
     this.page--;
     return this.getRecords();
   }
-  get(options: FindOptions) {
-    this.getOptions = options;
+  get(options: FindOptionsPerEntity<rowType>) {
+    this.getOptions = {};
+    if (options.where)
+      this.getOptions.where = options.where(this.entity);
+    if (options.orderBy)
+      this.getOptions.orderBy = options.orderBy(this.entity);
+    if (options.limit)
+      this.getOptions.limit = options.limit;
+    if (options.page)
+      this.getOptions.page = options.page;
     this.page = 1;
     return this.getRecords();
   }
@@ -412,8 +356,8 @@ export class DataSettings<rowType extends Entity>  {
   sortedAscending(column: Column<any>) {
     if (!this.getOptions)
       return false;
-      if (!this.getOptions.orderBy)
-        return false;
+    if (!this.getOptions.orderBy)
+      return false;
     if (!column)
       return false;
     return this.getOptions.orderBy.Segments.length > 0 &&
@@ -423,8 +367,8 @@ export class DataSettings<rowType extends Entity>  {
   sortedDescending(column: Column<any>) {
     if (!this.getOptions)
       return false;
-      if (!this.getOptions.orderBy)
-        return false;
+    if (!this.getOptions.orderBy)
+      return false;
     if (!column)
       return false;
     return this.getOptions.orderBy.Segments.length > 0 &&
@@ -480,7 +424,7 @@ export class DataSettings<rowType extends Entity>  {
 
 }
 
-export class FilterHelper<rowType extends Entity> {
+export class FilterHelper<rowType extends Entity<any>> {
   filterRow: rowType;
   filterColumns: Column<any>[] = [];
   constructor(private reloadData: () => void) {
@@ -508,15 +452,15 @@ export class FilterHelper<rowType extends Entity> {
     });
   }
 }
-export interface IDataSettings<rowType extends Entity> {
+export interface IDataSettings<rowType extends Entity<any>> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
   hideDataArea?: boolean,
 
-  columnSettings?: ColumnSetting<rowType>[],
+  columnSettings?: (row: rowType) => ColumnSetting<rowType>[],
   areas?: { [areaKey: string]: ColumnSetting<any>[] },
-  columnKeys?: string[],
+
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[],
   get?: FindOptions,
@@ -579,7 +523,7 @@ export interface FilteredColumnSetting<rowType> extends ColumnSetting<rowType> {
   _showFilter?: boolean;
 }
 
-export interface RowButton<rowType extends Entity> {
+export interface RowButton<rowType extends Entity<any>> {
   name?: string;
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
@@ -604,15 +548,9 @@ function onError(error: any) {
 
 
 
-export class lookupRowInfo<type> {
-  found = false;
-  loading = true;
-  value: type = {} as type;
-  promise: Promise<lookupRowInfo<type>>
 
-}
 
-export function isNewRow(r: Entity) {
+export function isNewRow(r: Entity<any>) {
   if (r) {
     r.__entityData.isNewRow();
   }
@@ -624,34 +562,7 @@ export function isNewRow(r: Entity) {
 
 
 
-export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption: DataColumnSettings | string) {
-    super(settingsOrCaption);
-  }
-}
-export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption: DataColumnSettings | string) {
-    super(settingsOrCaption);
-    if (!this.inputType)
-      this.inputType = 'date';
-  }
 
-
-}
-export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
-    super(settingsOrCaption);
-    if (!this.inputType)
-      this.inputType = 'number';
-  }
-}
-export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption: DataColumnSettings | string) {
-    super(settingsOrCaption);
-    if (!this.inputType)
-      this.inputType = 'checkbox';
-  }
-}
 
 interface hasIndex {
   [key: string]: any;
@@ -691,3 +602,728 @@ class dataSettingsColumnValueProvider implements ColumnValueProvider {
   }
 }
 
+export class RestList<T extends Entity<any>> implements Iterable<T>{
+  [Symbol.iterator](): Iterator<T> {
+    return this.items[Symbol.iterator]();
+  }
+
+
+  items: T[] = [];
+  constructor(private source: EntitySource<T>) {
+
+  }
+  _rowReplacedListeners: ((oldRow: T, newRow: T) => void)[] = [];
+
+  private map(item: T): T {
+
+    item.__entityData.register({
+      rowReset: (newRow) => {
+        if (newRow)
+          this.items.splice(this.items.indexOf(item), 1);
+
+      },
+      rowDeleted: () => { this.items.splice(this.items.indexOf(item)) }
+    });
+    return item;
+  }
+  lastGetId = 0;
+  get(options?: FindOptions) {
+
+    let getId = ++this.lastGetId;
+
+    return this.source.find(options).then(r => {
+      let x: T[] = r;
+      let result = r.map((x: any) => this.map(x));
+      if (getId == this.lastGetId)
+        this.items = result;
+      return result;
+    });
+  }
+  add(): T {
+    let x = this.map(this.source.createNewItem());
+    this.items.push(x);
+    return x;
+  }
+  replaceRow(originalRow: any, newRow: any) {
+    newRow = this.map(newRow);
+    this.items[this.items.indexOf(originalRow)] = newRow;
+    this._rowReplacedListeners.forEach(x => x(originalRow, newRow));
+  }
+}
+export class Sort {
+  constructor(...segments: SortSegment[]) {
+
+    this.Segments = segments;
+  }
+  Segments: SortSegment[];
+}
+export interface SortSegment {
+  column: Column<any>,
+  descending?: boolean
+}
+
+export class Lookup<lookupType extends Entity<any>> {
+
+  constructor(private source: EntitySource<lookupType>) {
+    this.restList = new RestList<lookupType>(source);
+
+  }
+
+  private restList: RestList<lookupType>;
+  private cache: any = {};
+
+  get(filter: FilterBase): lookupType {
+    return this.getInternal(filter).value;
+  }
+  found(filter: FilterBase): boolean {
+    return this.getInternal(filter).found;
+  }
+
+  private getInternal(filter: FilterBase): lookupRowInfo<lookupType> {
+    let find: FindOptions = {};
+    find.where = filter;
+
+    return this._internalGetByOptions(find);
+  }
+
+  _internalGetByOptions(find: FindOptions): lookupRowInfo<lookupType> {
+
+    let key = "";
+    if (find.where)
+      find.where.__addToUrl((k, v) => { key += k.jsonName + ':' + (v ? v : '') + '|' });
+
+    if (this.cache == undefined)
+      this.cache = {};
+    if (this.cache[key]) {
+      return this.cache[key];
+    } else {
+      let res = new lookupRowInfo<lookupType>();
+      this.cache[key] = res;
+
+      if (find == undefined || key == undefined) {
+        res.loading = false;
+        res.found = false;
+        return res;
+      } else {
+        res.value = this.source.createNewItem();
+        res.promise = this.restList.get(find).then(r => {
+          res.loading = false;
+          if (r.length > 0) {
+            res.value = r[0];
+            res.found = true;
+          }
+          return res;
+        });
+      }
+      return res;
+    }
+  }
+
+  whenGet(r: FilterBase) {
+    return this.getInternal(r).promise.then(r => r.value);
+  }
+}
+
+
+export class lookupRowInfo<type> {
+  found = false;
+  loading = true;
+  value: type = {} as type;
+  promise: Promise<lookupRowInfo<type>>
+
+}
+
+export class Column<dataType>  {
+  jsonName: string;
+  caption: string;
+  dbName: string;
+  constructor(settingsOrCaption?: DataColumnSettings | string) {
+    if (settingsOrCaption) {
+      if (typeof (settingsOrCaption) === "string") {
+        this.caption = settingsOrCaption;
+      } else {
+        if (settingsOrCaption.jsonName)
+          this.jsonName = settingsOrCaption.jsonName;
+        if (settingsOrCaption.caption)
+          this.caption = settingsOrCaption.caption;
+        if (settingsOrCaption.readonly)
+          this.readonly = settingsOrCaption.readonly;
+        if (settingsOrCaption.inputType)
+          this.inputType = settingsOrCaption.inputType;
+        if (settingsOrCaption.dbName)
+          this.dbName = settingsOrCaption.dbName;
+      }
+
+    }
+
+
+  }
+  __getDbName() {
+    if (this.dbName)
+      return this.dbName;
+    return this.jsonName;
+  }
+  readonly: boolean;
+  inputType: string;
+  isEqualTo(value: Column<dataType> | dataType) {
+
+
+    let val: dataType;
+
+    if (value instanceof Column)
+      val = value.value;
+    else
+      val = value;
+
+
+    return new Filter(apply => apply(this, val));
+  }
+  __valueProvider: ColumnValueProvider = new dummyColumnStorage();
+  get value() {
+    return this.__valueProvider.getValue(this.jsonName);
+  }
+  set value(value: dataType) { this.__valueProvider.setValue(this.jsonName, value); }
+  __addToPojo(pojo: any) {
+    pojo[this.jsonName] = this.value;
+  }
+}
+
+class dummyColumnStorage implements ColumnValueProvider {
+
+  private _val: string;
+  public getValue(key: string): any {
+    return this._val;
+  }
+
+  public setValue(key: string, value: string): void {
+    this._val = value;
+  }
+}
+
+
+export class Filter implements FilterBase {
+  constructor(private apply: (add: (name: Column<any>, val: any) => void) => void) {
+
+  }
+  and(filter: FilterBase): FilterBase {
+    return new AndFilter(this, filter);
+  }
+
+  public __addToUrl(add: (name: Column<any>, val: any) => void): void {
+    this.apply(add);
+  }
+}
+
+
+
+export class AndFilter implements FilterBase {
+  constructor(private a: FilterBase, private b: FilterBase) {
+
+  }
+
+
+  public __addToUrl(add: (name: Column<any>, val: any) => void): void {
+    this.a.__addToUrl(add);
+    this.b.__addToUrl(add);
+  }
+}
+
+export class Entity<idType> {
+  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, public name?: string) {
+    this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
+    this.setSource(source);
+  }
+  __entityData: __EntityValueProvider;
+  /** @internal */
+
+  private __idColumn: Column<idType>;
+  protected initColumns(idColumn: Column<idType>) {
+    this.__idColumn = idColumn;
+    let x = <any>this;
+    for (let c in x) {
+      let y = x[c];
+
+      if (y instanceof Column) {
+        if (!y.jsonName)
+          y.jsonName = c;
+
+        this.applyColumn(y);
+      }
+    }
+  }
+
+  setSource(dp: DataProviderFactory) {
+    this.source = new EntitySource<this>(this.name, () => <this>this.factory(), dp);
+  }
+  save() {
+    return this.__entityData.save();
+  }
+  delete() {
+    return this.__entityData.delete();
+
+  }
+  reset() {
+    this.__entityData.reset();
+  }
+  wasChanged() {
+    return this.__entityData.wasChanged();
+  }
+  __toPojo(): any {
+    let r = {};
+    this.__iterateColumns().forEach(c => {
+      c.__addToPojo(r);
+    });
+    return r;
+
+  }
+
+  source: EntitySource<this>;
+  private applyColumn(y: Column<any>) {
+    if (!y.caption)
+      y.caption = makeTitle(y.jsonName);
+    y.__valueProvider = this.__entityData;
+    this.__columns.push(y);
+  }
+  private __columns: Column<any>[] = [];
+  __getColumn<T>(col: Column<T>) {
+
+    return this.__getColumnByKey(col.jsonName);
+  }
+  __getColumnByKey(key: string): Column<any> {
+    let any: any = this;
+    return any[key];
+  }
+  __iterateColumns() {
+    return this.__columns;
+
+  }
+
+  lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
+
+    let key = lookupEntity.constructor.name;
+    let lookup: Lookup<entityType>;
+    this.source.__lookupCache.forEach(l => {
+      if (l.key == key)
+        lookup = l.lookup;
+    });
+    if (!lookup) {
+      lookup = new Lookup(lookupEntity.source);
+      this.source.__lookupCache.push({ key, lookup });
+    }
+    if (filter instanceof Column)
+      return lookup.get(lookupEntity.__idColumn.isEqualTo(filter));
+    else if (isFunction(filter)) {
+
+      return lookup.get(filter(lookupEntity));
+    }
+  }
+
+}
+export interface LookupCache<T extends Entity<any>> {
+  key: string;
+  lookup: Lookup<T>;
+}
+
+
+
+
+export class EntitySource<T extends Entity<any>>
+{
+  private _provider: DataProvider;
+  constructor(name: string, private factory: () => T, dataProvider: DataProviderFactory) {
+    this._provider = dataProvider.provideFor(name, factory);
+  }
+  find(options?: FindOptions): Promise<T[]> {
+    return this._provider.find(options)
+      .then(arr => {
+        return arr.map(i => {
+          let r = this.factory();
+          r.__entityData.setData(i);
+          r.source = this;
+          return r;
+        })
+      });
+  }
+  __lookupCache: LookupCache<any>[] = [];
+
+
+
+  __getDataProvider() {
+    return this._provider;
+  }
+
+  createNewItem(): T {
+    let r = this.factory();
+    r.source = this;
+    return r;
+  }
+
+  Insert(doOnRow: (item: T) => void): Promise<void> {
+    var i = this.createNewItem();
+    doOnRow(i);
+    return i.save();
+  }
+}
+
+export class __EntityValueProvider implements ColumnValueProvider {
+  listeners: RowEvents[] = [];
+  register(listener: RowEvents) {
+    this.listeners.push(listener);
+  }
+  delete() {
+    return this.getDataProvider().delete(this.id).then(() => {
+      this.listeners.forEach(x => {
+        if (x.rowDeleted)
+          x.rowDeleted();
+      });
+    });
+  }
+  constructor(private getDataProvider: () => DataProvider) {
+
+  }
+  isNewRow(): boolean {
+    return this.newRow;
+  }
+  wasChanged() {
+    return JSON.stringify(this.originalData) != JSON.stringify(this.data) || this.newRow;
+
+  }
+  reset(): void {
+    this.data = JSON.parse(JSON.stringify(this.originalData));
+    this.listeners.forEach(x => {
+      if (x.rowReset)
+        x.rowReset(this.newRow);
+    });
+  }
+  save(): Promise<void> {
+    if (this.newRow) {
+      return this.getDataProvider().insert(this.data).then((newData: any) => {
+        this.setData(newData);
+        this.listeners.forEach(x => {
+          if (x.rowSaved)
+            x.rowSaved(true);
+        });
+      });
+    } else {
+      return this.getDataProvider().update(this.id, this.data).then((newData: any) => {
+        this.setData(newData);
+        this.listeners.forEach(x => {
+          if (x.rowSaved)
+            x.rowSaved(false);
+        });
+      });
+
+    }
+  }
+  private id: any;
+  private newRow = true;
+  private data: any = {};
+  private originalData: any = {};
+
+
+  setData(data: any) {
+    if (!data)
+      data = {};
+    if (data.id) {
+      this.id = data.id;
+      this.newRow = false;
+    }
+
+    this.data = data;
+    this.originalData = JSON.parse(JSON.stringify(this.data));
+  }
+  getValue(key: string) {
+    return this.data[key];
+  }
+  setValue(key: string, value: any): void {
+    this.data[key] = value;
+  }
+}
+export class StringColumn extends Column<string>{
+  constructor(settingsOrCaption: DataColumnSettings | string) {
+    super(settingsOrCaption);
+  }
+}
+export class DateColumn extends Column<string>{
+  constructor(settingsOrCaption: DataColumnSettings | string) {
+    super(settingsOrCaption);
+    if (!this.inputType)
+      this.inputType = 'date';
+  }
+
+
+}
+export class NumberColumn extends Column<number>{
+  constructor(settingsOrCaption?: DataColumnSettings | string) {
+    super(settingsOrCaption);
+    if (!this.inputType)
+      this.inputType = 'number';
+  }
+}
+export class BoolColumn extends Column<boolean>{
+  constructor(settingsOrCaption: DataColumnSettings | string) {
+    super(settingsOrCaption);
+    if (!this.inputType)
+      this.inputType = 'checkbox';
+  }
+}
+export class ColumnCollection<rowType extends Entity<any>> {
+  constructor(public currentRow: () => Entity<any>, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>) {
+
+    if (this.allowDesignMode == undefined) {
+      if (location.search)
+        if (location.search.toLowerCase().indexOf('design=y') >= 0)
+          this.allowDesignMode = true;
+    }
+  }
+  private settingsByKey: any = {};
+
+  allowDesignMode: boolean;
+  add(...columns: ColumnSetting<rowType>[]): void;
+  add(...columns: string[]): void;
+  add(...columns: any[]) {
+    for (let c of columns) {
+      let s: ColumnSetting<rowType>;
+      let x = c as ColumnSetting<rowType>;
+      if (!x.column && c instanceof Column) {
+        x.column = c;
+      } else
+        if (x.column) {
+          if (!x.caption && x.column.caption)
+            x.caption = x.column.caption;
+        }
+
+      if (x.getValue) {
+        s = x;
+      }
+
+      else {
+        this.buildDropDown(x);
+      }
+      this.items.push(x);
+
+
+    }
+  }
+  async buildDropDown(s: ColumnSetting<any>) {
+    if (s.dropDown) {
+      let orig = s.dropDown.items;
+      let result: DropDownItem[] = [];
+      s.dropDown.items = result;
+      let populateBasedOnArray = (arr: Array<any>) => {
+        for (let item of arr) {
+          let type = typeof (item);
+          if (type == "string" || type == "number")
+            result.push({ id: item, caption: item });
+          else if (item instanceof Entity) {
+            let col: Column<any>;
+            if (!s.dropDown.idColumn) {
+              if (col = item.__getColumnByKey('id'))
+                s.dropDown.idColumn = col;
+              else {
+                for (let colInEntity of item.__iterateColumns()) {
+                  s.dropDown.idColumn = colInEntity;
+                  break;
+                }
+              }
+            }
+            if (!s.dropDown.captionColumn) {
+              if (col = item.__getColumnByKey('caption'))
+                s.dropDown.captionColumn = col;
+              else {
+                for (let keyInItem of item.__iterateColumns()) {
+                  if (keyInItem != item.__getColumn(s.dropDown.idColumn)) {
+                    s.dropDown.captionColumn = keyInItem;
+                    break;
+                  }
+                }
+              }
+            }
+            let p = { id: item.__getColumn(s.dropDown.idColumn).value, caption: item.__getColumn(s.dropDown.captionColumn).value };
+            if (p.id instanceof Column) {
+              p.id = p.id.value;
+            }
+            if (p.caption instanceof Column)
+              p.caption = p.caption.value;
+            if (!p.caption)
+              p.caption = p.id;
+            result.push(p);
+          }
+        }
+      };
+      if (orig instanceof Array) {
+        populateBasedOnArray(orig);
+      }
+      if (s.dropDown.source) {
+        if (s.dropDown.source instanceof Entity) {
+          return new RestList(s.dropDown.source.source).get({ limit: 5000 }).then(arr =>
+            populateBasedOnArray(arr));
+        }
+
+      }
+    }
+    return Promise.resolve();
+  }
+
+  designMode: false;
+  colListChanged() {
+    this._lastNumOfColumnsInGrid = -1;
+    this._colListChangeListeners.forEach(x => x());
+  };
+  _colListChangeListeners: (() => void)[] = [];
+  onColListChange(action: (() => void)) {
+    this._colListChangeListeners.push(action);
+  }
+  moveCol(col: ColumnSetting<any>, move: number) {
+    let currentIndex = this.items.indexOf(col);
+    let newIndex = currentIndex + move;
+    if (newIndex < 0 || newIndex >= this.items.length)
+      return;
+    this.items.splice(currentIndex, 1);
+    this.items.splice(newIndex, 0, col);
+    this.colListChanged();
+
+
+  }
+
+  filterRows(col: FilteredColumnSetting<any>) {
+    col._showFilter = false;
+    this.filterHelper.filterColumn(col.column, false);
+  }
+  clearFilter(col: FilteredColumnSetting<any>) {
+    col._showFilter = false;
+    this.filterHelper.filterColumn(col.column, true);
+  }
+  _shouldShowFilterDialog(col: FilteredColumnSetting<any>) {
+    return col && col._showFilter;
+  }
+  showFilterDialog(col: FilteredColumnSetting<any>) {
+    col._showFilter = !col._showFilter;
+  }
+  deleteCol(col: ColumnSetting<any>) {
+    this.items.splice(this.items.indexOf(col), 1);
+    this.colListChanged();
+  }
+  addCol(col: ColumnSetting<any>) {
+    this.items.splice(this.items.indexOf(col) + 1, 0, { designMode: true });
+    this.colListChanged();
+  }
+  designColumn(col: ColumnSetting<any>) {
+    col.designMode = !col.designMode;
+  }
+
+  _getEditable(col: ColumnSetting<any>) {
+    if (!this.allowUpdate())
+      return false;
+    if (!col.column)
+      return false
+    return !col.readonly;
+  }
+  _click(col: ColumnSetting<any>, row: any) {
+    col.click(row, what => {
+      what();
+    });
+  }
+
+  _getColValue(col: ColumnSetting<any>, row: rowType) {
+    let r;
+    if (col.getValue) {
+
+      r = col.getValue(row)
+      if (r instanceof Column)
+        r = r.value;
+
+    }
+    else if (col.column) {
+      r = row.__getColumn(col.column).value;
+    }
+
+
+    return r;
+  }
+  _getColDataType(col: ColumnSetting<any>, row: any) {
+    if (col.inputType)
+      return col.inputType;
+    return "text";
+  }
+  _getColumnClass(col: ColumnSetting<any>, row: any) {
+
+    if (col.cssClass)
+      if (isFunction(col.cssClass)) {
+        let anyFunc: any = col.cssClass;
+        return anyFunc(row);
+      }
+      else return col.cssClass;
+    return '';
+
+  }
+  _getError(col: ColumnSetting<any>, r: any) {
+    if (r.__modelState) {
+      let m = <ModelState<any>>r.__modelState();
+      if (m.modelState) {
+        let errors = m.modelState[col.column.jsonName];
+        if (errors && errors.length > 0)
+          return errors[0];
+      }
+      return "";
+
+    }
+    return undefined;
+  }
+  autoGenerateColumnsBasedOnData() {
+    if (this.items.length == 0) {
+      let r = this.currentRow();
+      if (r) {
+        this.add(...r.__iterateColumns());
+
+      }
+    }
+
+
+
+  }
+  columnSettingsTypeScript() {
+    let result = `columnSettings:[`;
+    return result;
+  }
+  _colValueChanged(col: ColumnSetting<any>, r: any) {
+    if (r.__modelState) {
+      let m = <ModelState<any>>r.__modelState();
+      if (m && m.modelState)
+        m.modelState[col.column.jsonName] = undefined;
+    }
+    if (col.onUserChangedValue)
+      col.onUserChangedValue(r);
+
+  }
+  items: ColumnSetting<any>[] = [];
+  private gridColumns: ColumnSetting<any>[];
+  private nonGridColumns: ColumnSetting<any>[];
+  numOfColumnsInGrid = 5;
+
+  private _lastColumnCount: number;
+  private _lastNumOfColumnsInGrid: number;
+  private _initColumnsArrays() {
+    if (this._lastColumnCount != this.items.length || this._lastNumOfColumnsInGrid != this.numOfColumnsInGrid) {
+      this._lastNumOfColumnsInGrid = this.numOfColumnsInGrid;
+      this._lastColumnCount = this.items.length;
+      this.gridColumns = [];
+      this.nonGridColumns = [];
+      let i = 0;
+      for (let c of this.items) {
+        if (i++ < this._lastNumOfColumnsInGrid)
+          this.gridColumns.push(c);
+        else
+          this.nonGridColumns.push(c);
+      }
+    }
+  }
+  getGridColumns() {
+    this._initColumnsArrays();
+    return this.gridColumns;
+  }
+  getNonGridColumns() {
+    this._initColumnsArrays();
+    return this.nonGridColumns;
+  }
+}
