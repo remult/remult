@@ -786,6 +786,11 @@ export class Column<dataType>  {
   __addToPojo(pojo: any) {
     pojo[this.jsonName] = this.value;
   }
+  __loadFromToPojo(pojo: any) {
+    let x = pojo[this.jsonName];
+    if (x)
+      this.value = x;
+  }
 }
 
 class dummyColumnStorage implements ColumnValueProvider {
@@ -874,6 +879,14 @@ export class Entity<idType> {
       c.__addToPojo(r);
     });
     return r;
+
+  }
+  __fromPojo(r:any): any {
+    
+    this.__iterateColumns().forEach(c => {
+      c.__loadFromToPojo(r);
+    });
+    
 
   }
 

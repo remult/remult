@@ -16,7 +16,8 @@ environment.dataSource = new JsonFileDataProvider('./appData');
 
 let c = new Categories();
 let api = new DataApi(c);
-class ResponseBridgeToDataApiResponse implements DataApiResponse {
+
+class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   constructor(private r: express.Response) {
 
   }
@@ -29,7 +30,7 @@ class ResponseBridgeToDataApiResponse implements DataApiResponse {
     this.r.sendStatus(404);
   }
 
-  public error(data:DataApiError): void {
+  public error(data: DataApiError): void {
     this.r.status(500).json(data);
   }
 }
@@ -37,28 +38,17 @@ class ResponseBridgeToDataApiResponse implements DataApiResponse {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.route('/').get((req, res) => {
-  let rb = new ResponseBridgeToDataApiResponse(res);
+  let rb = new ExpressResponseBridgeToDataApiResponse(res);
   let c = new Categories();
   return c.source.find().then(x => res.json(x.map(y => y.__toPojo())));
 });
 app.route('/:id').get((req, res) => {
 
-  if (1+1==2) {
-    api.get( req.params.id, new ResponseBridgeToDataApiResponse(res));
-  } else {
-    let c = new Categories();
-    return c.source.find({ where: c.id.isEqualTo(req.params.id) }).then(
-      x => res.json(x.map(y => y.__toPojo())[0]));
-  }
-}).put(async (req, res) => {
+  api.get(new ExpressResponseBridgeToDataApiResponse(res), req.params.id);
 
-  let c = new Categories();
-  c = (await c.source.find({ where: c.id.isEqualTo(req.params.id) }))[0];
-  c.id.value = req.body.id
-  c.categoryName.value = req.body.categoryName;
-  c.description.value = req.body.description;
-  await c.save();
-  res.json(c.__toPojo());
+}).put(async (req, res) => {
+  api.put(new ExpressResponseBridgeToDataApiResponse(res), req.params.id, req.body);
+
 }).post(async (req, res) => {
 
   let c = new Categories();

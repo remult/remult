@@ -9,13 +9,13 @@ import { TestBed, async } from '@angular/core/testing';
 
 class TestDataApiResponse implements DataApiResponse {
   success(data: any): void {
-    fail('didnt expect success: '+JSON.stringify(data));
+    fail('didnt expect success: ' + JSON.stringify(data));
   }
   notFound(): void {
     fail('not found');
   }
-  error(data: DataApiError) { 
-    fail('error: ' + JSON.stringify( data));
+  error(data: DataApiError) {
+    fail('error: ' + JSON.stringify(data));
   }
 }
 
@@ -84,18 +84,47 @@ describe("data api", () => {
       expect(data.categoryName).toBe('noam');
       d.ok();
     };
-    await api.get(1, t)
+    await api.get(t, 1)
     d.test();
   });
+
   itAsync("get based on id can fail", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
-    await api.get(2,  t);
+    await api.get(t, 2);
     d.test();
   });
+});
+
+itAsync("put fails when not found", async () => {
+  
+  let c = await createData(async insert => insert(1, 'noam'));
+  var api = new DataApi(c);
+  let t = new TestDataApiResponse();
+  let d = new Done();
+  t.notFound = () => d.ok();
+  await api.put(t, 2, {});
+  d.test();
+});
+itAsync("put updates", async () => {
+  let c = await createData(async insert => insert(1, 'noam'));
+  var api = new DataApi(c);
+  let t = new TestDataApiResponse();
+  let d = new Done();
+  t.success = async (data: any) => {
+    expect(data.id).toBe(1);
+    expect(data.categoryName).toBe('noam 1');
+    console.log(data);
+    d.ok();
+  };
+  await api.put(t, 1, {
+    categoryName: 'noam 1' 
+  });
+  d.test();
+  var x = await c.source.find({ where: c.id.isEqualTo(1) });
+  expect(x[0].categoryName.value).toBe('noam 1');
 });
 
