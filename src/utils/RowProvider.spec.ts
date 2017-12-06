@@ -3,7 +3,7 @@ import { NumberColumn } from '../';
 import { Entity, Column, Sort } from './utils';
 import { DataSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
-import { itAsync } from './testHelper.spec';
+import {  itAsync } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
@@ -12,6 +12,29 @@ import { ColumnCollection } from './utils';
 
 
 
+export async function createData(doInsert: (insert: (id: number, name: string, description?: string) => Promise<void>)=>Promise<void>) {
+  
+    let c = new Categories();
+    c.setSource(new InMemoryDataProvider());
+    await doInsert(async (id, name, description) => {
+      await c.source.Insert(c => {
+        c.id.value = id;
+        c.categoryName.value = name;
+        c.description.value = description;
+       });
+    });
+    return c;
+  }
+
+async function insertFourRows() {
+  
+  return   createData(async i => {
+    await i(1, 'noam', 'x');
+    await i(4, 'yael', 'x');
+    await i(2, 'yoni', 'y');
+    await i(3, 'maayan', 'y');
+   });
+};
 
 describe("test row provider", () => {
   itAsync("Insert", async () => {
@@ -100,31 +123,7 @@ describe("test row provider", () => {
     r = await c.source.find();
     expect(r[0].categoryName.value).toBe('yael');
   });
-  let insertFourRows = async () => {
-    let c = new Categories();
-    c.setSource(new InMemoryDataProvider());
-    await c.source.Insert(x => {
-      x.id.value = 1;
-      x.categoryName.value = 'noam';
-      x.description.value = 'x';
-    });
-    await c.source.Insert(x => {
-      x.id.value = 4;
-      x.categoryName.value = 'yael';
-      x.description.value = 'x';
-    });
-    await c.source.Insert(x => {
-      x.id.value = 2;
-      x.categoryName.value = 'yoni';
-      x.description.value = 'y';
-    });
-    await c.source.Insert(x => {
-      x.id.value = 3;
-      x.categoryName.value = 'maayan';
-      x.description.value = 'y';
-    });
-    return c;
-  };
+  
   itAsync("test filter", async () => {
     let c = await insertFourRows();
 

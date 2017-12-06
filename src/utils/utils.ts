@@ -834,9 +834,9 @@ export class Entity<idType> {
     this.setSource(source);
   }
   __entityData: __EntityValueProvider;
-  /** @internal */
 
-  private __idColumn: Column<idType>;
+
+  __idColumn: Column<idType>;
   protected initColumns(idColumn: Column<idType>) {
     this.__idColumn = idColumn;
     let x = <any>this;

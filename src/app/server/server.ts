@@ -1,3 +1,4 @@
+import { DataApi, DataApiResponse, DataApiError } from './../../utils/DataApi';
 import { SQLServerDataProvider } from '../../utils/server/SQLServerDataProvider';
 import { environment } from './../../environments/environment';
 import { JsonFileDataProvider } from './../../utils/server/JsonFileDataProvider';
@@ -11,19 +12,44 @@ import * as fs from 'fs';
 let app = express();
 let port = 3000;
 environment.dataSource = new JsonFileDataProvider('./appData');
-environment.dataSource = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
+//environment.dataSource = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
 
+let c = new Categories();
+let api = new DataApi(c);
+class ResponseBridgeToDataApiResponse implements DataApiResponse {
+  constructor(private r: express.Response) {
+
+  }
+
+  public success(data: any): void {
+    this.r.json(data);
+  }
+
+  public notFound(): void {
+    this.r.sendStatus(404);
+  }
+
+  public error(data:DataApiError): void {
+    this.r.status(500).json(data);
+  }
+}
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.route('/').get((req, res) => {
+  let rb = new ResponseBridgeToDataApiResponse(res);
   let c = new Categories();
   return c.source.find().then(x => res.json(x.map(y => y.__toPojo())));
 });
 app.route('/:id').get((req, res) => {
-  let c = new Categories();
-  return c.source.find({ where: c.id.isEqualTo(req.params.id) }).then(
-    x => res.json(x.map(y => y.__toPojo())[0]));
+
+  if (1+1==2) {
+    api.get( req.params.id, new ResponseBridgeToDataApiResponse(res));
+  } else {
+    let c = new Categories();
+    return c.source.find({ where: c.id.isEqualTo(req.params.id) }).then(
+      x => res.json(x.map(y => y.__toPojo())[0]));
+  }
 }).put(async (req, res) => {
 
   let c = new Categories();

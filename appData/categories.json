@@ -38,5 +38,10 @@
     "id": 8,
     "categoryName": "Seafood",
     "description": "Seaweed ans"
+  },
+  {
+    "id": 10,
+    "categoryName": "Beverages",
+    "description": "Soft dri3"
   }
 ]

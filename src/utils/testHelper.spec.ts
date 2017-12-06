@@ -1,3 +1,5 @@
+import { InMemoryDataProvider } from './inMemoryDatabase';
+import { Categories } from './../app/models';
 
 
 export function itAsync(name: string, runAsync: () => Promise<any>) {
@@ -5,8 +7,7 @@ export function itAsync(name: string, runAsync: () => Promise<any>) {
     runAsync().catch(e => {
       fail(e);
       done();
-    })
-      .then(done, e => {
+    }).then(done, e => {
         fail(e);
         done();
       });
@@ -18,6 +19,5 @@ export interface MDHInterface {
   delete?(id: any): Promise<void>;
   insert?(data: any): Promise<any>;
 }
-
 
 
