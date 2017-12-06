@@ -43,26 +43,13 @@ app.route('/').get((req, res) => {
   return c.source.find().then(x => res.json(x.map(y => y.__toPojo())));
 });
 app.route('/:id').get((req, res) => {
-
   api.get(new ExpressResponseBridgeToDataApiResponse(res), req.params.id);
-
 }).put(async (req, res) => {
   api.put(new ExpressResponseBridgeToDataApiResponse(res), req.params.id, req.body);
-
 }).post(async (req, res) => {
-
-  let c = new Categories();
-  c.id.value = req.body.id
-  c.categoryName.value = req.body.categoryName;
-  c.description.value = req.body.description;
-  await c.save();
-  res.json(c.__toPojo());
+  api.post(new ExpressResponseBridgeToDataApiResponse(res), req.body);
 }).delete(async (req, res) => {
-
-  let c = new Categories();
-  c = (await c.source.find({ where: c.id.isEqualTo(req.params.id) }))[0];
-  await c.delete();
-  res.end();
+  api.delete(new ExpressResponseBridgeToDataApiResponse(res), req.params.id);
 });
 
 console.log('working 13');

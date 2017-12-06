@@ -27,6 +27,25 @@ export class DataApi {
       response.success(row.__toPojo());
     });
   }
+  async delete(response: DataApiResponse, id: any) {
+    await this.doOnId(response, id, async row => {
+      row.delete();
+      response.success({});
+    });
+  }
+  async post(response: DataApiResponse, body: any) {
+    try {
+
+      let r = await this.rowType.source.Insert(r => r.__fromPojo(body))
+      response.success(r.__toPojo());
+    } catch (err) {
+      let p = err as Promise<any>;
+      if (p.then) { 
+        err = await p;
+      }
+      response.error(err);
+    }
+  }
 
 }
 export interface DataApiResponse {

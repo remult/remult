@@ -15,7 +15,7 @@ class TestDataApiResponse implements DataApiResponse {
     fail('not found');
   }
   error(data: DataApiError) {
-    fail('error: ' + JSON.stringify(data));
+    fail('error: ' + data + " " + JSON.stringify(data));
   }
 }
 
@@ -97,34 +97,90 @@ describe("data api", () => {
     await api.get(t, 2);
     d.test();
   });
-});
 
-itAsync("put fails when not found", async () => {
-  
-  let c = await createData(async insert => insert(1, 'noam'));
-  var api = new DataApi(c);
-  let t = new TestDataApiResponse();
-  let d = new Done();
-  t.notFound = () => d.ok();
-  await api.put(t, 2, {});
-  d.test();
-});
-itAsync("put updates", async () => {
-  let c = await createData(async insert => insert(1, 'noam'));
-  var api = new DataApi(c);
-  let t = new TestDataApiResponse();
-  let d = new Done();
-  t.success = async (data: any) => {
-    expect(data.id).toBe(1);
-    expect(data.categoryName).toBe('noam 1');
-    console.log(data);
-    d.ok();
-  };
-  await api.put(t, 1, {
-    categoryName: 'noam 1' 
+  itAsync("put fails when not found", async () => {
+
+    let c = await createData(async insert => insert(1, 'noam'));
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.notFound = () => d.ok();
+    await api.put(t, 2, {});
+    d.test();
   });
-  d.test();
-  var x = await c.source.find({ where: c.id.isEqualTo(1) });
-  expect(x[0].categoryName.value).toBe('noam 1');
-});
+  itAsync("put updates", async () => {
+    let c = await createData(async insert => insert(1, 'noam'));
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      expect(data.id).toBe(1);
+      expect(data.categoryName).toBe('noam 1');
+      console.log(data);
+      d.ok();
+    };
+    await api.put(t, 1, {
+      categoryName: 'noam 1'
+    });
+    d.test();
+    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam 1');
+  });
+  itAsync("delete fails when not found", async () => {
 
+    let c = await createData(async insert => insert(1, 'noam'));
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.notFound = () => d.ok();
+    await api.delete(t, 2);
+    d.test();
+  });
+  itAsync("delete works ", async () => {
+
+    let c = await createData(async insert => insert(1, 'noam'));
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = () => d.ok();
+    await api.delete(t, 1);
+
+    let r = await c.source.find();
+    expect(r.length).toBe(0);
+  });
+  itAsync("post works", async () => {
+
+
+    let c = await createData(async () => { });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      expect(data.id).toBe(1);
+      expect(data.categoryName).toBe('noam');
+      d.ok();
+    };
+    await api.post(t, { id: 1, categoryName: 'noam' });
+    d.test();
+  });
+  itAsync("post fails on duplicate index", async () => {
+
+
+    let c = await createData(async (i) => { i(1, 'noam'); });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = err => {
+      if (!err.message)
+        fail('no message');
+      d.ok();
+    };
+    await api.post(t, { id: 1, categoryName: 'noam' });
+    d.test();
+  });
+
+
+
+});
