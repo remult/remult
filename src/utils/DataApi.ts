@@ -7,8 +7,13 @@ export class DataApi {
 
   }
   async get(response: DataApiResponse, id: any) {
-
     await this.doOnId(response, id, async row => response.success(row.__toPojo()));
+  }
+  async getArray(response: DataApiResponse, request: DataApiRequest) {
+    await this.rowType.source.find()
+    .then(r => {
+      response.success(r.map(y=>y.__toPojo()));
+    });
   }
   private async doOnId(response: DataApiResponse, id: any, what: (row: Entity<any>) => Promise<void>) {
     await this.rowType.source.find({ where: this.rowType.__idColumn.isEqualTo(id) })
@@ -52,6 +57,9 @@ export interface DataApiResponse {
   success(data: any): void;
   notFound(): void;
   error(data: DataApiError): void;
+}
+export interface DataApiRequest { 
+  get(key: string): string;
 }
 
 export interface DataApiError {

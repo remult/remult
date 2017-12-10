@@ -181,6 +181,26 @@ describe("data api", () => {
     d.test();
   });
 
+  itAsync("getArray works", async () => {
+    let c = await createData(async (i) => { 
+      i(1, 'noam');
+      i(2, 'yael');
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(1);
+      d.ok();
+    };
+    await api.getArray(t, undefined);
+    d.test();
+  });
+
+
+   
+
 
 
 });
