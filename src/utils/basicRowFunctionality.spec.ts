@@ -182,7 +182,7 @@ describe("data api", () => {
   });
 
   itAsync("getArray works", async () => {
-    let c = await createData(async (i) => { 
+    let c = await createData(async (i) => {
       i(1, 'noam');
       i(2, 'yael');
     });
@@ -198,7 +198,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("getArray works with filter", async () => {
-    let c = await createData(async (i) => { 
+    let c = await createData(async (i) => {
       i(1, 'noam');
       i(2, 'yael');
     });
@@ -215,12 +215,42 @@ describe("data api", () => {
         if (x == "id")
           return "2";
         return undefined;
-     }});
+      }
+    });
+    d.test();
+  });
+  itAsync("getArray works with sort", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'a');
+      i(2, 'c');
+      i(3, 'b');
+      i(4, 'c');
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(4);
+      expect(data[0].id).toBe(1);
+      expect(data[1].id).toBe(3);
+      expect(data[2].id).toBe(4);
+      expect(data[3].id).toBe(2);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "_sort")
+          return "categoryName,id";
+        if (x == "_order")
+          return "asc,desc";
+        return undefined;
+      }
+    });
     d.test();
   });
 
 
-   
+
 
 
 

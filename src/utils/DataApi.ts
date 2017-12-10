@@ -1,6 +1,6 @@
 import { DataApiError } from './DataApi';
 
-import { Entity, AndFilter } from './utils';
+import { Entity, AndFilter, Sort } from './utils';
 import { FindOptions } from './DataInterfaces';
 
 export class DataApi {
@@ -14,7 +14,7 @@ export class DataApi {
     try {
       let findOptions: FindOptions = {};
       if (request) {
-        
+
 
         this.rowType.__iterateColumns().forEach(col => {
           let val = request.get(col.jsonName);
@@ -25,16 +25,33 @@ export class DataApi {
             else
               findOptions.where = f;
           }
-      
-      
         });
+      
+        let sort = request.get("_sort");
+        if (sort != undefined) { 
+          let dir = request.get('_order');
+          let dirItems:string[] = [];
+          if (dir)
+            dirItems = dir.split(',');
+          findOptions.orderBy = new Sort();
+          sort.split(',').forEach((name,i) => { 
+            let col = this.rowType.__getColumnByKey(name);
+            if (col) { 
+              findOptions.orderBy.Segments.push({
+                column: col,
+                descending:i<dirItems.length&&dirItems[i].toLowerCase().startsWith("d")
+              });
+            }
+          });
+        }  
+
       }
       await this.rowType.source.find(findOptions)
         .then(r => {
           response.success(r.map(y => y.__toPojo()));
         });
     }
-    catch (err) { 
+    catch (err) {
       response.error({ message: err.message });
     }
   }
@@ -68,7 +85,7 @@ export class DataApi {
       response.success(r.__toPojo());
     } catch (err) {
       let p = err as Promise<any>;
-      if (p.then) { 
+      if (p.then) {
         err = await p;
       }
       response.error(err);
@@ -81,7 +98,7 @@ export interface DataApiResponse {
   notFound(): void;
   error(data: DataApiError): void;
 }
-export interface DataApiRequest { 
+export interface DataApiRequest {
   get(key: string): string;
 }
 
