@@ -1,6 +1,7 @@
 import { DataApiError } from './DataApi';
 
-import { Entity } from './utils';
+import { Entity, AndFilter } from './utils';
+import { FindOptions } from './DataInterfaces';
 
 export class DataApi {
   constructor(private rowType: Entity<any>) {
@@ -10,10 +11,32 @@ export class DataApi {
     await this.doOnId(response, id, async row => response.success(row.__toPojo()));
   }
   async getArray(response: DataApiResponse, request: DataApiRequest) {
-    await this.rowType.source.find()
-    .then(r => {
-      response.success(r.map(y=>y.__toPojo()));
-    });
+    try {
+      let findOptions: FindOptions = {};
+      if (request) {
+        
+
+        this.rowType.__iterateColumns().forEach(col => {
+          let val = request.get(col.jsonName);
+          if (val != undefined) {
+            let f = col.isEqualTo(val);
+            if (findOptions.where)
+              findOptions.where = new AndFilter(findOptions.where, f);
+            else
+              findOptions.where = f;
+          }
+      
+      
+        });
+      }
+      await this.rowType.source.find(findOptions)
+        .then(r => {
+          response.success(r.map(y => y.__toPojo()));
+        });
+    }
+    catch (err) { 
+      response.error({ message: err.message });
+    }
   }
   private async doOnId(response: DataApiResponse, id: any, what: (row: Entity<any>) => Promise<void>) {
     await this.rowType.source.find({ where: this.rowType.__idColumn.isEqualTo(id) })

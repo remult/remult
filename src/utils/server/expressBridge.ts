@@ -13,7 +13,12 @@ export class ExpressBridge {
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);
     this.app.route(myRoute).get((req, res) => {
-      api.getArray(new ExpressResponseBridgeToDataApiResponse(res), undefined);
+      
+      api.getArray(new ExpressResponseBridgeToDataApiResponse(res), {
+        get: key => { 
+          return req.query[key]
+        }
+      });
     }).post(async (req, res) => {
       api.post(new ExpressResponseBridgeToDataApiResponse(res), req.body);
     });
