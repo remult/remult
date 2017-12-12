@@ -337,6 +337,8 @@ export class DataSettings<rowType extends Entity<any>>  {
       this.getOptions.limit = options.limit;
     if (options.page)
       this.getOptions.page = options.page;
+    if (options.additionalUrlParameters)
+      this.getOptions.additionalUrlParameters = options.additionalUrlParameters;  
     this.page = 1;
     return this.getRecords();
   }
@@ -895,7 +897,8 @@ export class Entity<idType> {
     if (!y.caption)
       y.caption = makeTitle(y.jsonName);
     y.__valueProvider = this.__entityData;
-    this.__columns.push(y);
+    if (this.__columns.indexOf(y)<0)
+      this.__columns.push(y);
   }
   private __columns: Column<any>[] = [];
   __getColumn<T>(col: Column<T>) {

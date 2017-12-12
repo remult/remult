@@ -56,14 +56,18 @@ export class DataApi {
     }
   }
   private async doOnId(response: DataApiResponse, id: any, what: (row: Entity<any>) => Promise<void>) {
-    await this.rowType.source.find({ where: this.rowType.__idColumn.isEqualTo(id) })
-      .then(r => {
-        if (r.length == 0)
-          response.notFound();
-        else if (r.length > 1)
-          response.error({ message: "id is not unique" });
-        else what(r[0]);
-      });
+    try {
+      await this.rowType.source.find({ where: this.rowType.__idColumn.isEqualTo(id) })
+        .then(r => {
+          if (r.length == 0)
+            response.notFound();
+          else if (r.length > 1)
+            response.error({ message: "id is not unique" });
+          else what(r[0]);
+        });
+    } catch (err) { 
+      response.error({ message: err.message });
+    }
   }
   async put(response: DataApiResponse, id: any, body: any) {
     await this.doOnId(response, id, async row => {

@@ -58,7 +58,7 @@ export class AppComponent {
     numOfColumnsInGrid: 4,
     allowUpdate: true,
     allowInsert: true,
-    onEnterRow: o => this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id) }),
+    onEnterRow: o => this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id), additionalUrlParameters: {cust:o.customerID} }),
     columnSettings: orders => [
       orders.id,
       {

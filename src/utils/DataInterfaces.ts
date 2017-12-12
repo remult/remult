@@ -14,12 +14,14 @@ export interface FindOptions {
   orderBy?: Sort;
   limit?: number;
   page?: number;
+  additionalUrlParameters?: any;
 }
 export interface FindOptionsPerEntity<rowType extends Entity<any>> {
   where?: (rowType: rowType) => FilterBase;
   orderBy?: (rowType: rowType) => Sort;
   limit?: number;
   page?: number;
+  additionalUrlParameters?: any;
 }
 
 export interface DataProviderFactory {

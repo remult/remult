@@ -1,4 +1,4 @@
-import { Sort } from './utils';
+import { Sort, Column } from './utils';
 import { DataProvider, DataProviderFactory, FindOptions } from './DataInterfaces';
 export class RestDataProvider implements DataProviderFactory {
   constructor(private url: string) {
@@ -39,6 +39,9 @@ class ActualRestDataProvider implements DataProvider {
       if (options.page)
         url.add('_page', options.page);
     }
+    
+    if (options.additionalUrlParameters)
+      url.addObject(options.additionalUrlParameters);
     return myFetch(url.url).then(r => {
       return r;
     });
@@ -74,7 +77,7 @@ function myFetch(url: string, init?: RequestInit): Promise<any> {
     init = {};
   init.credentials = 'include';
   return fetch(url, init).then(onSuccess, error => {
-    throw Promise.resolve( error);
+    throw Promise.resolve(error);
   });
 
 }
@@ -101,7 +104,10 @@ class UrlBuilder {
   addObject(object: any, suffix = '') {
     if (object != undefined)
       for (var key in object) {
-        this.add(key + suffix, object[key]);
+        let val = object[key];
+        if (val instanceof Column)
+          val = val.value;
+        this.add(key + suffix, val);
       }
   }
 }

@@ -16,7 +16,7 @@ export class Categories extends radweb.Entity<number> {
 }
 
 export class Orders extends radweb.Entity<number> {
-  id = new radweb.NumberColumn('OrderID');
+  id = new radweb.NumberColumn({dbName:"OrderId"});
   customerID = new radweb.StringColumn('CustomerID');
   employeeID = new radweb.NumberColumn('EmployeeID');
   orderDate = new radweb.DateColumn('OrderDate');
@@ -56,7 +56,7 @@ export class Order_details extends radweb.Entity<string> {
 
 
 export class Customers extends radweb.Entity<string> {
-  id = new radweb.StringColumn('CustomerID');
+  id = new radweb.StringColumn({caption: 'CustomerID',dbName:'CustomerID'});
   companyName = new radweb.StringColumn('CompanyName');
   contactName = new radweb.StringColumn('ContactName');
   contactTitle = new radweb.StringColumn('ContactTitle');
@@ -75,7 +75,7 @@ export class Customers extends radweb.Entity<string> {
 }
 
 export class Products extends radweb.Entity<number> {
-  id = new radweb.NumberColumn('ProductID');
+  id = new radweb.NumberColumn({ dbName: 'ProductID' });
   productName = new radweb.StringColumn('ProductName');
   supplierID = new radweb.NumberColumn('SupplierID');
   categoryID = new radweb.NumberColumn('CategoryID');

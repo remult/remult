@@ -12,5 +12,5 @@ export const environment = {
   production: false,
   serverUrl,
   //dataSource: new LocalStorageDataProvider() as DataProviderFactory
- dataSource : new RestDataProvider(serverUrl+ 'dataapi') as DataProviderFactory
+  dataSource : new RestDataProvider(serverUrl+ 'dataapi') as DataProviderFactory
 };

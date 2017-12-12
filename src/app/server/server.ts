@@ -14,7 +14,7 @@ import { ExpressBridge } from './../../utils/server/expressBridge';
 let app = express();
 let port = 3000;
 environment.dataSource = new JsonFileDataProvider('./appData');
-//environment.dataSource = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
+environment.dataSource = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

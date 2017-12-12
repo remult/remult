@@ -30,7 +30,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let select = 'select ';
     let colKeys: string[] = [];
     e.__iterateColumns().forEach(x => {
-
+      
       if (colKeys.length > 0)
         select  += ', ';
       select  += x.__getDbName();
@@ -52,12 +52,13 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
 
       }
     }
-
+    
     return r.query(select).then(r => {
 
       return r.recordset.map(y => {
         let result: any = {};
         for (let x in r.recordset.columns) {
+          
           result[colKeys[r.recordset.columns[x].index]] = y[x];
         }
         return result;

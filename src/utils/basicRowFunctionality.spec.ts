@@ -249,7 +249,11 @@ describe("data api", () => {
     d.test();
   });
 
+  it("columnsAreOk", () => { 
+    let c = new Categories();
+    expect(c.__iterateColumns().length).toBe(3);
 
+  });
 
 
 
