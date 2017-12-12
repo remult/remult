@@ -1,6 +1,6 @@
-import { Entity } from './../utils';
+import { Entity, Column } from './../utils';
 import * as sql from 'mssql';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from '../dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from '../dataInterfaces';
 
 export class SQLServerDataProvider implements DataProviderFactory {
 
@@ -30,35 +30,28 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let select = 'select ';
     let colKeys: string[] = [];
     e.__iterateColumns().forEach(x => {
-      
+
       if (colKeys.length > 0)
-        select  += ', ';
-      select  += x.__getDbName();
+        select += ', ';
+      select += x.__getDbName();
       colKeys.push(x.jsonName);
     });
     select += ' from ' + this.name;
     let r = new sql.Request(this.sql);
     if (options) {
       if (options.where) {
-        let addedWhere = false;
-        options.where.__addToUrl((col, value) => {
-          if (!addedWhere) {
-            addedWhere = true;
-            select += ' where ';
-          } else select += ' and ';
-          select += col.__getDbName() + ' = @' + col.__getDbName();
-          r.input(col.__getDbName(), value);
-        });
-
+        let where = new FilterConsumerBridgeToSqlRequest(r);
+        options.where.__applyToConsumer(where);
+        select += where.where;
       }
     }
-    
+
     return r.query(select).then(r => {
 
       return r.recordset.map(y => {
         let result: any = {};
         for (let x in r.recordset.columns) {
-          
+
           result[colKeys[r.recordset.columns[x].index]] = y[x];
         }
         return result;
@@ -76,3 +69,35 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
   }
 
 }
+class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
+  where = " ";
+  constructor(private r: sql.Request) { }
+  IsEqualTo(col: Column<any>, val: any): void {
+    this.add(col, val, "=");
+  }
+  IsDifferentFrom(col: Column<any>, val: any): void {
+    this.add(col, val, "<>");
+  }
+  IsGreaterOrEqualTo(col: Column<any>, val: any): void {
+    this.add(col, val, ">=");
+  }
+  IsGreaterThan(col: Column<any>, val: any): void {
+    this.add(col, val, ">");
+  }
+  IsLessOrEqualTo(col: Column<any>, val: any): void {
+    this.add(col, val, "<=");
+  }
+  IsLessThan(col: Column<any>, val: any): void {
+    this.add(col, val, "<");
+  }
+  private add(col: Column<any>, val: any, operator: string) {
+    if (this.where.length == 0) {
+
+      this.where += ' where ';
+    } else this.where += ' and ';
+    this.where += col.__getDbName() + ' ' + operator + ' @' + col.__getDbName();
+    this.r.input(col.__getDbName(), val);
+  }
+
+}
+

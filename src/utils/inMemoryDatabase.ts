@@ -1,6 +1,7 @@
+import { FilterConsumer } from './DataInterfaces';
 
 
-import { dataAreaSettings,Entity } from './utils';
+import { dataAreaSettings, Entity, Column } from './utils';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from './dataInterfaces';
 
 
@@ -34,12 +35,9 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
     if (options) {
       if (options.where) {
         rows = rows.filter(i => {
-          let ok = true;
-          options.where.__addToUrl((col, val) => {
-            if (i[col.jsonName] != val)
-              ok = false;
-          });
-          return ok;
+          let x = new FilterConsumerBridgeToObject(i);
+          options.where.__applyToConsumer(x);
+          return x.ok;
         });
       }
       if (options.orderBy) {
@@ -103,5 +101,38 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
     return Promise.resolve(JSON.parse(JSON.stringify(data)));
   }
 }
+class FilterConsumerBridgeToObject implements FilterConsumer {
 
+  ok = true;
+  constructor(private row: any) { }
+  public IsEqualTo(col: Column<any>, val: any): void {
+    if (this.row[col.jsonName] != val)
+      this.ok = false;
+  }
+
+  public IsDifferentFrom(col: Column<any>, val: any): void {
+    if (this.row[col.jsonName] == val)
+      this.ok = false;
+  }
+
+  public IsGreaterOrEqualTo(col: Column<any>, val: any): void {
+    if (this.row[col.jsonName] < val)
+      this.ok = false;
+  }
+
+  public IsGreaterThan(col: Column<any>, val: any): void {
+    if (this.row[col.jsonName] <= val)
+      this.ok = false;
+  }
+
+  public IsLessOrEqualTo(col: Column<any>, val: any): void {
+    if (this.row[col.jsonName] > val)
+      this.ok = false;
+  }
+
+  public IsLessThan(col: Column<any>, val: any): void {
+    if (this.row[col.jsonName] >= val)
+      this.ok = false;
+  }
+}
 

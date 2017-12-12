@@ -48,6 +48,14 @@ export interface RowEvents {
 
 
 export interface FilterBase {
-  __addToUrl(add: (name: Column<any>, val: any) => void): void;
+  __applyToConsumer(add: FilterConsumer): void;
+}
+export interface FilterConsumer { 
+  IsEqualTo(col: Column<any>, val: any): void;
+  IsDifferentFrom(col: Column<any>, val: any): void;
+  IsGreaterOrEqualTo(col: Column<any>, val: any): void;
+  IsGreaterThan(col: Column<any>, val: any): void;
+  IsLessOrEqualTo(col: Column<any>, val: any): void;
+  IsLessThan(col: Column<any>, val: any): void;
 }
 

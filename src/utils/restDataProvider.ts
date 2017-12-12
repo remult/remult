@@ -1,4 +1,5 @@
-import { Sort, Column } from './utils';
+
+import { Sort, Column, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { DataProvider, DataProviderFactory, FindOptions } from './DataInterfaces';
 export class RestDataProvider implements DataProviderFactory {
   constructor(private url: string) {
@@ -17,7 +18,7 @@ class ActualRestDataProvider implements DataProvider {
     let url = new UrlBuilder(this.url);
     if (options) {
       if (options.where) {
-        options.where.__addToUrl((col, val) => url.add(col.jsonName, val));
+        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
       }
       if (options.orderBy && options.orderBy.Segments) {
         let sort = '';
@@ -91,23 +92,5 @@ function onSuccess(response: Response) {
 function onError(error: any) {
   throw error;
 }
-class UrlBuilder {
-  constructor(public url: string) {
-  }
-  add(key: string, value: any) {
-    if (this.url.indexOf('?') >= 0)
-      this.url += '&';
-    else
-      this.url += '?';
-    this.url += encodeURIComponent(key) + '=' + encodeURIComponent(value);
-  }
-  addObject(object: any, suffix = '') {
-    if (object != undefined)
-      for (var key in object) {
-        let val = object[key];
-        if (val instanceof Column)
-          val = val.value;
-        this.add(key + suffix, val);
-      }
-  }
-}
+
+

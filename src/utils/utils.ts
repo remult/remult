@@ -1,6 +1,6 @@
 import { makeTitle, isFunction } from './common';
 
-import { DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity,RowEvents, DataProvider, DataProviderFactory } from './DataInterfaces';
+import { DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer } from './DataInterfaces';
 
 
 
@@ -173,7 +173,7 @@ export class DataSettings<rowType extends Entity<any>>  {
       if (!this.caption && entity) {
         this.caption = entity.source.createNewItem().name;
       }
-      this.getOptions = settings.get;
+      this.getOptions = this.translateOptions( settings.get);
 
     }
 
@@ -329,18 +329,26 @@ export class DataSettings<rowType extends Entity<any>>  {
   }
   get(options: FindOptionsPerEntity<rowType>) {
     this.getOptions = {};
-    if (options.where)
-      this.getOptions.where = options.where(this.entity);
-    if (options.orderBy)
-      this.getOptions.orderBy = options.orderBy(this.entity);
-    if (options.limit)
-      this.getOptions.limit = options.limit;
-    if (options.page)
-      this.getOptions.page = options.page;
-    if (options.additionalUrlParameters)
-      this.getOptions.additionalUrlParameters = options.additionalUrlParameters;  
+
     this.page = 1;
     return this.getRecords();
+
+  }
+  translateOptions(options: FindOptionsPerEntity<rowType>) {
+    if (!options)
+      return undefined;  
+    let getOptions: FindOptions = {};
+    if (options.where)
+      getOptions.where = options.where(this.entity);
+    if (options.orderBy)
+      getOptions.orderBy = options.orderBy(this.entity);
+    if (options.limit)
+      getOptions.limit = options.limit;
+    if (options.page)
+      getOptions.page = options.page;
+    if (options.additionalUrlParameters)
+      getOptions.additionalUrlParameters = options.additionalUrlParameters;
+    return getOptions;
   }
   sort(column: Column<any>) {
     if (!this.getOptions)
@@ -465,7 +473,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
 
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[],
-  get?: FindOptions,
+  get?: FindOptionsPerEntity<rowType>,
   onSavingRow?: (s: ModelState<rowType>) => void;
   onEnterRow?: (r: rowType) => void;
   onNewRow?: (r: rowType) => void;
@@ -691,8 +699,10 @@ export class Lookup<lookupType extends Entity<any>> {
   _internalGetByOptions(find: FindOptions): lookupRowInfo<lookupType> {
 
     let key = "";
+    let url = new UrlBuilder("");
     if (find.where)
-      find.where.__addToUrl((k, v) => { key += k.jsonName + ':' + (v ? v : '') + '|' });
+      find.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+    key = url.url;
 
     if (this.cache == undefined)
       this.cache = {};
@@ -726,6 +736,56 @@ export class Lookup<lookupType extends Entity<any>> {
   }
 }
 
+export class UrlBuilder {
+  constructor(public url: string) {
+  }
+  add(key: string, value: any) {
+    if (this.url.indexOf('?') >= 0)
+      this.url += '&';
+    else
+      this.url += '?';
+    this.url += encodeURIComponent(key) + '=' + encodeURIComponent(value);
+  }
+  addObject(object: any, suffix = '') {
+    if (object != undefined)
+      for (var key in object) {
+        let val = object[key];
+        if (val instanceof Column)
+          val = val.value;
+        this.add(key + suffix, val);
+      }
+  }
+}
+
+export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
+  constructor(private url: UrlBuilder) {
+
+  }
+
+  public IsEqualTo(col: Column<any>, val: any): void {
+    this.url.add(col.jsonName, val);
+  }
+
+  public IsDifferentFrom(col: Column<any>, val: any): void {
+    this.url.add(col.jsonName + '_ne', val);
+  }
+
+  public IsGreaterOrEqualTo(col: Column<any>, val: any): void {
+    this.url.add(col.jsonName + '_gte', val);
+  }
+
+  public IsGreaterThan(col: Column<any>, val: any): void {
+    this.url.add(col.jsonName + '_gt', val);
+  }
+
+  public IsLessOrEqualTo(col: Column<any>, val: any): void {
+    this.url.add(col.jsonName + '_lte', val);
+  }
+
+  public IsLessThan(col: Column<any>, val: any): void {
+    this.url.add(col.jsonName + '_lt', val);
+  }
+}
 
 export class lookupRowInfo<type> {
   found = false;
@@ -768,17 +828,30 @@ export class Column<dataType>  {
   readonly: boolean;
   inputType: string;
   isEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.IsEqualTo(this, this.getVal(value)));
+  }
+  IsDifferentFrom(value: Column<dataType> | dataType) {
+    return new Filter(add => add.IsDifferentFrom(this, this.getVal(value)));
+  }
+  IsGreaterOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.IsGreaterOrEqualTo(this, this.getVal(value)));
+  }
+  IsGreaterThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.IsEqualTo(this, this.getVal(value)));
+  }
+  IsLessOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.IsLessOrEqualTo(this, this.getVal(value)));
+  }
+  IsLessThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.IsLessThan(this, this.getVal(value)));
+  }
+  private getVal(value: Column<dataType> | dataType): dataType {
 
-
-    let val: dataType;
 
     if (value instanceof Column)
-      val = value.value;
+      return value.value;
     else
-      val = value;
-
-
-    return new Filter(apply => apply(this, val));
+      return value;
   }
   __valueProvider: ColumnValueProvider = new dummyColumnStorage();
   get value() {
@@ -809,14 +882,14 @@ class dummyColumnStorage implements ColumnValueProvider {
 
 
 export class Filter implements FilterBase {
-  constructor(private apply: (add: (name: Column<any>, val: any) => void) => void) {
+  constructor(private apply: (add: FilterConsumer) => void) {
 
   }
   and(filter: FilterBase): FilterBase {
     return new AndFilter(this, filter);
   }
 
-  public __addToUrl(add: (name: Column<any>, val: any) => void): void {
+  public __applyToConsumer(add: FilterConsumer): void {
     this.apply(add);
   }
 }
@@ -829,9 +902,9 @@ export class AndFilter implements FilterBase {
   }
 
 
-  public __addToUrl(add: (name: Column<any>, val: any) => void): void {
-    this.a.__addToUrl(add);
-    this.b.__addToUrl(add);
+  public __applyToConsumer(add: FilterConsumer): void {
+    this.a.__applyToConsumer(add);
+    this.b.__applyToConsumer(add);
   }
 }
 
@@ -883,12 +956,12 @@ export class Entity<idType> {
     return r;
 
   }
-  __fromPojo(r:any): any {
-    
+  __fromPojo(r: any): any {
+
     this.__iterateColumns().forEach(c => {
       c.__loadFromToPojo(r);
     });
-    
+
 
   }
 
@@ -897,7 +970,7 @@ export class Entity<idType> {
     if (!y.caption)
       y.caption = makeTitle(y.jsonName);
     y.__valueProvider = this.__entityData;
-    if (this.__columns.indexOf(y)<0)
+    if (this.__columns.indexOf(y) < 0)
       this.__columns.push(y);
   }
   private __columns: Column<any>[] = [];

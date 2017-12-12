@@ -58,6 +58,7 @@ export class AppComponent {
     numOfColumnsInGrid: 4,
     allowUpdate: true,
     allowInsert: true,
+    get: {where:o=>o.orderDate.IsGreaterOrEqualTo("1997")},
     onEnterRow: o => this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id), additionalUrlParameters: {cust:o.customerID} }),
     columnSettings: orders => [
       orders.id,
