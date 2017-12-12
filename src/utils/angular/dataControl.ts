@@ -14,7 +14,7 @@ import { Component, Input } from '@angular/core';
                 <button type="button" class="btn btn-default" (click)="settings._click(map,record)" > <span class="glyphicon glyphicon-chevron-down"></span></button>
             </div>
             <input class="form-control"  [(ngModel)]="_getColumn().value" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" />
-            <div class="input-group-addon" *ngIf="showDescription()">{{settings._getColValue(map,record)}}</div>
+            <div class="input-group-addon" style="width:60%;text-align:left" *ngIf="showDescription()">{{settings._getColValue(map,record)}}</div>
 
         </div>
         <div *ngIf="isSelect()">
