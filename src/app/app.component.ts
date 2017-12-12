@@ -58,8 +58,9 @@ export class AppComponent {
     numOfColumnsInGrid: 4,
     allowUpdate: true,
     allowInsert: true,
-    get: {where:o=>o.orderDate.IsGreaterOrEqualTo("1997")},
-    onEnterRow: o => this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id), additionalUrlParameters: {cust:o.customerID} }),
+    get: { where: o => o.orderDate.IsGreaterOrEqualTo("1997") },
+    
+    onEnterRow: o => this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id), additionalUrlParameters: { cust: o.customerID } }),
     columnSettings: orders => [
       orders.id,
       {
@@ -95,6 +96,6 @@ export class AppComponent {
     window.open(environment.serverUrl + 'home/print/' + this.settings.currentRow.id.value, '_blank');
   }
   test() {
-
+    this.settings.currentRow.id.error = '4312';
   }
 }

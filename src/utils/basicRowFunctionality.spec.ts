@@ -1,3 +1,4 @@
+import { __EntityValueProvider } from './utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './DataApi';
 import { InMemoryDataProvider } from './inMemoryDatabase';
@@ -257,5 +258,29 @@ describe("data api", () => {
 
 
 
+
+});
+
+describe("column validation", () => { 
+  it("validation clears on reset", () => { 
+    let c = new Categories();
+    expect(c.isValid()).toBe(true);
+    c.id.error = "x";
+    expect(c.id.error).toBe("x");
+    expect(c.isValid()).toBe(false);
+    c.reset();
+    expect(c.id.error).toBe(undefined);
+    expect(c.isValid()).toBe(true);
+  });
+  it("validation clears on change", () => { 
+    let c = new Categories();
+    expect(c.isValid()).toBe(true);
+    c.id.error = "x";
+    expect(c.isValid()).toBe(false);
+    expect(c.id.error).toBe("x");
+    c.id.value = 1;
+    expect(c.isValid()).toBe(true);
+    expect(c.id.error).toBe(undefined);
+  });
 
 });

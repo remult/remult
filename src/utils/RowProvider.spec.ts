@@ -156,7 +156,7 @@ describe("test row provider", () => {
     let c = await insertFourRows();
     let ds = new DataSettings(c, {
       get: {
-        orderBy: new Sort({ column: c.id })
+        orderBy: c=>new Sort({ column: c.id })
       }
     });
     await ds.getRecords();

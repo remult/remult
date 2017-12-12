@@ -173,7 +173,7 @@ export class DataSettings<rowType extends Entity<any>>  {
       if (!this.caption && entity) {
         this.caption = entity.source.createNewItem().name;
       }
-      this.getOptions = this.translateOptions( settings.get);
+      this.getOptions = this.translateOptions(settings.get);
 
     }
 
@@ -204,15 +204,11 @@ export class DataSettings<rowType extends Entity<any>>  {
       }
     });
     if (this.onNewRow)
-      this.__scopeToRow(r, () =>
-        this.onNewRow(r));
+      this.onNewRow(r);
     this.setCurrentRow(r);
   }
 
   noam: string;
-  __scopeToRow(r: rowType, andDo: () => void) {
-    andDo();
-  }
 
   addArea(settings: IDataAreaSettings<rowType>) {
     let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper);
@@ -224,8 +220,8 @@ export class DataSettings<rowType extends Entity<any>>  {
   setCurrentRow(row: rowType) {
     this.currentRow = row;
     if (this.onEnterRow && row) {
-      this.__scopeToRow(this.currentRow, () =>
-        this.onEnterRow(row));
+      
+        this.onEnterRow(row);
     }
 
   }
@@ -296,13 +292,12 @@ export class DataSettings<rowType extends Entity<any>>  {
   _buttons: RowButton<Entity<any>>[] = [];
 
   rowClass?: (row: any) => string;
-  onSavingRow?: (s: ModelState<any>) => void;
+  onSavingRow?: (row: any) => void;
   onEnterRow: (row: rowType) => void;
   onNewRow: (row: rowType) => void;
-  _doSavingRow(s: ModelState<any>) {
+  _doSavingRow(s: rowType) {
     if (this.onSavingRow)
-      this.__scopeToRow(s.row,
-        () => this.onSavingRow(s));
+      this.onSavingRow(s);
   }
   caption: string;
 
@@ -336,7 +331,7 @@ export class DataSettings<rowType extends Entity<any>>  {
   }
   translateOptions(options: FindOptionsPerEntity<rowType>) {
     if (!options)
-      return undefined;  
+      return undefined;
     let getOptions: FindOptions = {};
     if (options.where)
       getOptions.where = options.where(this.entity);
@@ -474,41 +469,14 @@ export interface IDataSettings<rowType extends Entity<any>> {
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[],
   get?: FindOptionsPerEntity<rowType>,
-  onSavingRow?: (s: ModelState<rowType>) => void;
+  onSavingRow?: (r: rowType) => void;
   onEnterRow?: (r: rowType) => void;
   onNewRow?: (r: rowType) => void;
   numOfColumnsInGrid?: number;
   caption?: string;
 
 }
-export class ModelState<rowType> {
-  row: rowType;
-  constructor(private _row: any) {
-    this.row = _row;
-  }
 
-
-  isValid = true;
-  message: string;
-  addError(key: string, message: string) {
-    this.isValid = false;
-    let current = this.modelState[key];
-    if (!current) {
-      current = this.modelState[key] = [];
-    }
-    current.push(message);
-  }
-  required(key: string, message = 'Required') {
-    let value = this._row[key];
-    if (value == undefined || value == null || value == "" || value == 0)
-      this.addError(key, message);
-  }
-  addErrorMessage(message: string) {
-    this.isValid = false;
-    this.message = message;
-  }
-  modelState: any = {};
-}
 
 export type rowEvent<T> = (row: T, doInScope: ((what: (() => void)) => void)) => void;
 
@@ -582,35 +550,7 @@ function applyWhereToGet(where: FilterBase[] | FilterBase, options: FindOptions)
 
 }
 
-class dataSettingsColumnValueProvider implements ColumnValueProvider {
-  constructor(private ds: DataSettings<any>) {
-    this.currentRow = () => ds.currentRow;
-    ds.noam = "yeah";
-    ds.__scopeToRow = (r, andDo) => {
-      let prev = this.currentRow;
-      this.currentRow = () => r;
-      try {
-        andDo();
-      }
-      finally {
-        this.currentRow = prev;
-      }
-    };
-  }
-  currentRow: () => any;
 
-
-  getValue(key: string) {
-    let r = this.currentRow();
-    if (!r)
-      return undefined;
-
-    return r[key];
-  }
-  setValue(key: string, value: any): void {
-    this.currentRow()[key] = value;
-  }
-}
 
 export class RestList<T extends Entity<any>> implements Iterable<T>{
   [Symbol.iterator](): Iterator<T> {
@@ -796,6 +736,10 @@ export class lookupRowInfo<type> {
 }
 
 export class Column<dataType>  {
+
+  __entityReset(): any {
+    this.error = undefined;
+  }
   jsonName: string;
   caption: string;
   dbName: string;
@@ -820,6 +764,7 @@ export class Column<dataType>  {
 
 
   }
+  error: string;
   __getDbName() {
     if (this.dbName)
       return this.dbName;
@@ -857,7 +802,10 @@ export class Column<dataType>  {
   get value() {
     return this.__valueProvider.getValue(this.jsonName);
   }
-  set value(value: dataType) { this.__valueProvider.setValue(this.jsonName, value); }
+  set value(value: dataType) {
+    this.__valueProvider.setValue(this.jsonName, value);
+    this.error = undefined;
+  }
   __addToPojo(pojo: any) {
     pojo[this.jsonName] = this.value;
   }
@@ -915,7 +863,7 @@ export class Entity<idType> {
   }
   __entityData: __EntityValueProvider;
 
-
+  error: string;
   __idColumn: Column<idType>;
   protected initColumns(idColumn: Column<idType>) {
     this.__idColumn = idColumn;
@@ -931,6 +879,14 @@ export class Entity<idType> {
       }
     }
   }
+  isValid() {
+    let ok = true;
+    this.__iterateColumns().forEach(c => {
+      if (c.error)
+        ok = false;
+    });
+    return ok;
+  }
 
   setSource(dp: DataProviderFactory) {
     this.source = new EntitySource<this>(this.name, () => <this>this.factory(), dp);
@@ -944,6 +900,8 @@ export class Entity<idType> {
   }
   reset() {
     this.__entityData.reset();
+    this.__iterateColumns().forEach(c => c.__entityReset());
+    this.error = "";
   }
   wasChanged() {
     return this.__entityData.wasChanged();
@@ -976,9 +934,9 @@ export class Entity<idType> {
   private __columns: Column<any>[] = [];
   __getColumn<T>(col: Column<T>) {
 
-    return this.__getColumnByKey(col.jsonName);
+    return this.__getColumnByJsonName(col.jsonName);
   }
-  __getColumnByKey(key: string): Column<any> {
+  __getColumnByJsonName(key: string): Column<any> {
     let any: any = this;
     return any[key];
   }
@@ -1208,7 +1166,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
           else if (item instanceof Entity) {
             let col: Column<any>;
             if (!s.dropDown.idColumn) {
-              if (col = item.__getColumnByKey('id'))
+              if (col = item.__getColumnByJsonName('id'))
                 s.dropDown.idColumn = col;
               else {
                 for (let colInEntity of item.__iterateColumns()) {
@@ -1218,7 +1176,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
               }
             }
             if (!s.dropDown.captionColumn) {
-              if (col = item.__getColumnByKey('caption'))
+              if (col = item.__getColumnByJsonName('caption'))
                 s.dropDown.captionColumn = col;
               else {
                 for (let keyInItem of item.__iterateColumns()) {
@@ -1347,18 +1305,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return '';
 
   }
-  _getError(col: ColumnSetting<any>, r: any) {
-    if (r.__modelState) {
-      let m = <ModelState<any>>r.__modelState();
-      if (m.modelState) {
-        let errors = m.modelState[col.column.jsonName];
-        if (errors && errors.length > 0)
-          return errors[0];
-      }
-      return "";
-
-    }
-    return undefined;
+  _getError(col: ColumnSetting<any>, r: Entity<any>) {
+    return r.__getColumn(col.column).error;
   }
   autoGenerateColumnsBasedOnData() {
     if (this.items.length == 0) {
@@ -1377,11 +1325,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return result;
   }
   _colValueChanged(col: ColumnSetting<any>, r: any) {
-    if (r.__modelState) {
-      let m = <ModelState<any>>r.__modelState();
-      if (m && m.modelState)
-        m.modelState[col.column.jsonName] = undefined;
-    }
+    
     if (col.onUserChangedValue)
       col.onUserChangedValue(r);
 

@@ -35,7 +35,7 @@ export class DataApi {
             dirItems = dir.split(',');
           findOptions.orderBy = new Sort();
           sort.split(',').forEach((name,i) => { 
-            let col = this.rowType.__getColumnByKey(name);
+            let col = this.rowType.__getColumnByJsonName(name);
             if (col) { 
               findOptions.orderBy.Segments.push({
                 column: col,

@@ -1,4 +1,5 @@
-import { DataSettings, RowButton, ModelState, isNewRow, Column } from '../utils';
+import { Entity } from './../utils';
+import { DataSettings, RowButton, isNewRow, Column } from '../utils';
 import { Component, OnChanges, Input } from '@angular/core';
 import { isFunction } from '../common';
 @Component({
@@ -187,40 +188,49 @@ export class DataGridComponent implements OnChanges {
     this.page--;
   }
 
-  catchErrors(what: any, r: any) {
+  catchErrors(what: any, r: Entity<any>) {
     what.catch((e: Promise<any>) => {
       e.then(e => {
         console.log(e);
-        let s = new ModelState(r);
-        r.__modelState = () => s;
+
         if (e.message)
-          s.message = e.message;
+          r.error = e.message;
         else if (e.Message)
-          s.message = e.Message;
-        else s.message = e;
-        s.modelState = e.ModelState;
-        this.showError(s.message, s.modelState);
+          r.error = e.Message;
+        else r.error = e;
+        let s = e.modelState;
+        if (!s)
+          s = e.ModelState;
+        if (s) {
+          Object.keys(s).forEach(k => {
+            let c = r.__getColumnByJsonName(k);
+            if (c)
+              c.error = s[k];
+
+          });
+        }
+        this.showError(r);
 
       });
     });
 
   }
-  private showError(message: string, state: any) {
+  private showError(row: Entity<any>) {
+    let message = row.error;
     if (!message)
       message = "";
-    if (state) {
-      for (let x in state) {
-
-        let m = x + ": ";
-        for (var i = 0; i < state[x].length; i++) {
-          m += state[x][i];
+    let foundStateErrors = false;
+    row.__iterateColumns().forEach(c => {
+      if (c.error) {
+        if (!foundStateErrors) {
+          foundStateErrors = true;
+          message = "";
         }
-        if (m != message)
-          message += "\n" + m;
+        let m = c.caption + ": ";
+        m += c.error;
+        message += m + "\n";
       }
-
-    }
-
+    });
     alert(message);
   }
 
@@ -239,14 +249,13 @@ export class DataGridComponent implements OnChanges {
         cssClass: "glyphicon glyphicon-ok btn-success",
         visible: r => r.wasChanged(),
         click: r => {
-          let s = new ModelState(r);
-          r.__modelState = () => s;
-          this.settings._doSavingRow(s);
+          r.error = undefined;
+          this.settings._doSavingRow(r);
 
-          if (s.isValid)
+          if (r.isValid())
             this.catchErrors(r.save(), r);
           else
-            this.showError(s.message, s.modelState);
+            this.showError(r);
         },
 
       });
