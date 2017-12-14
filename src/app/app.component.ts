@@ -22,7 +22,7 @@ export class AppComponent {
     allowDelete: true,
     allowUpdate: true,
     allowInsert: true,
-    columnSettings: orderDetails => [ 
+    columnSettings: orderDetails => [
       {
         column: orderDetails.productID,
         dropDown: { source: new models.Products() },
@@ -59,13 +59,16 @@ export class AppComponent {
     allowUpdate: true,
     allowInsert: true,
     get: { where: o => o.orderDate.IsGreaterOrEqualTo("1997") },
-    
+
     onEnterRow: o => {
-      
+
       this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id), additionalUrlParameters: { cust: o.customerID } })
     },
     columnSettings: orders => [
-      orders.id,
+      {
+        column: orders.id,
+        caption: 'order id'
+      },
       {
         column: orders.customerID,
 

@@ -9,8 +9,6 @@ import { Input, Component } from '@angular/core';
     <div class="form-group">
         <input type="text" class="form-control" [(ngModel)]="map.caption">
     </div>
-    <label>Key</label>
-
     <label>Input Type</label>
     <div class="form-group">
         <select class="form-control" [(ngModel)]="map.inputType" placeholder="inputType">

@@ -1,39 +1,39 @@
 import { NumberColumn } from '../';
 
-import { Entity, Column, Sort } from './utils';
+import { Entity, Column, Sort, ColumnCollection } from './utils';
 import { DataSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
-import {  itAsync } from './testHelper.spec';
+import { itAsync } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
-import { ColumnCollection } from './utils';
 
 
 
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string) => Promise<void>)=>Promise<void>) {
-  
-    let c = new Categories();
-    c.setSource(new InMemoryDataProvider());
-    await doInsert(async (id, name, description) => {
-      await c.source.Insert(c => {
-        c.id.value = id;
-        c.categoryName.value = name;
-        c.description.value = description;
-       });
+
+export async function createData(doInsert: (insert: (id: number, name: string, description?: string) => Promise<void>) => Promise<void>) {
+
+  let c = new Categories();
+  c.setSource(new InMemoryDataProvider());
+  await doInsert(async (id, name, description) => {
+    await c.source.Insert(c => {
+      c.id.value = id;
+      c.categoryName.value = name;
+      c.description.value = description;
     });
-    return c;
-  }
+  });
+  return c;
+}
 
 async function insertFourRows() {
-  
-  return   createData(async i => {
+
+  return createData(async i => {
     await i(1, 'noam', 'x');
     await i(4, 'yael', 'x');
     await i(2, 'yoni', 'y');
     await i(3, 'maayan', 'y');
-   });
+  });
 };
 
 describe("test row provider", () => {
@@ -123,7 +123,7 @@ describe("test row provider", () => {
     r = await c.source.find();
     expect(r[0].categoryName.value).toBe('yael');
   });
-  
+
   itAsync("test filter", async () => {
     let c = await insertFourRows();
 
@@ -156,7 +156,7 @@ describe("test row provider", () => {
     let c = await insertFourRows();
     let ds = new DataSettings(c, {
       get: {
-        orderBy: c=>new Sort({ column: c.id })
+        orderBy: c => new Sort({ column: c.id })
       }
     });
     await ds.getRecords();
@@ -214,7 +214,7 @@ describe("test row provider", () => {
       c.categoryName.value = 'yael';
     });
     let cc = new ColumnCollection(() => c, () => true, undefined);
-    let cs = {  dropDown: { source: c } } as ColumnSetting<Categories>
+    let cs = { dropDown: { source: c } } as ColumnSetting<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
@@ -223,6 +223,30 @@ describe("test row provider", () => {
     expect(cs.dropDown.items[1].caption).toBe('yael');
 
   });
+
+});
+describe("column collection", () => {
+  it("uses a saparate column", () => {
+    let c = new Categories();
+    var cc = new ColumnCollection(() => c, () => false, undefined);
+    cc.add(c.categoryName);
+    expect(cc.items[0] === c.categoryName).toBe(false);
+    expect(cc.items[0] === cc.items[0].column).toBe(false);
+    expect(cc.items[0].caption == c.categoryName.caption);
+    expect(cc.items[0].readonly == c.categoryName.readonly);
+    expect(cc.items[0].inputType == c.categoryName.inputType);
+  })
+  it("jsonSaverIsNice", () => {
+    let c = new Categories();
+    var cc = new ColumnCollection(() => c, () => false, undefined);
+    cc.add(c.categoryName);
+    expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe("x.categoryName");
+    cc.items[0].caption = 'name';
+    expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe(`{
+    column: x.categoryName, 
+    caption: 'name'
+  }`);
+  })
 });
 
 

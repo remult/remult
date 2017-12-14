@@ -12,10 +12,9 @@ import { isFunction } from '../common';
   </div>
 
   <div *ngIf="settings&&settings.columns&& settings.columns.designMode">
-
-    <pre>
-  {{settings.columns.columnSettingsTypeScript()}}
-  </pre>
+<pre>
+{{settings.columns.__columnSettingsTypeScript()}}
+</pre>
 
 
   </div>

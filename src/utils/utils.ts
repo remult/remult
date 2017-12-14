@@ -1,6 +1,8 @@
+
 import { makeTitle, isFunction } from './common';
 
 import { DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer } from './DataInterfaces';
+import { unescapeIdentifier } from '@angular/compiler';
 
 
 
@@ -220,8 +222,8 @@ export class DataSettings<rowType extends Entity<any>>  {
   setCurrentRow(row: rowType) {
     this.currentRow = row;
     if (this.onEnterRow && row) {
-      
-        this.onEnterRow(row);
+
+      this.onEnterRow(row);
     }
 
   }
@@ -745,6 +747,7 @@ export class Column<dataType>  {
   jsonName: string;
   caption: string;
   dbName: string;
+  __getMemberName() { return this.jsonName; }
   constructor(settingsOrCaption?: DataColumnSettings | string) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
@@ -1136,7 +1139,14 @@ export class ColumnCollection<rowType extends Entity<any>> {
       let s: ColumnSetting<rowType>;
       let x = c as ColumnSetting<rowType>;
       if (!x.column && c instanceof Column) {
-        x.column = c;
+        x = {
+          column: c,
+          readonly: c.readonly,
+          caption: c.caption,
+          inputType: c.inputType
+
+        }
+
       } else
         if (x.column) {
           if (!x.caption && x.column.caption)
@@ -1215,7 +1225,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return Promise.resolve();
   }
 
-  designMode: false;
+  designMode = true;
   colListChanged() {
     this._lastNumOfColumnsInGrid = -1;
     this._colListChangeListeners.forEach(x => x());
@@ -1322,12 +1332,64 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
 
   }
-  columnSettingsTypeScript() {
-    let result = `columnSettings:[`;
+  __columnSettingsTypeScript() {
+    let memberName = 'x';
+    if (this.currentRow())
+      memberName = this.currentRow().name;
+    memberName = memberName[0].toLocaleLowerCase() + memberName.substring(1);
+    let result = ''
+
+    this.items.forEach(c => {
+      if (result.length > 0)
+        result += ',\n';
+
+      result += '  ' + this.__columnTypeScriptDescription(c, memberName);
+
+    });
+    result = `columnSettings: ${memberName} => [\n` + result + "\n]";
     return result;
   }
+  __columnTypeScriptDescription(c: ColumnSetting<any>, memberName: string) {
+    let properties = "";
+    function addToProperties(name: string, value: any) {
+      if (properties.length > 0)
+        properties += ', ';
+      properties += "\n    " + name + ": " + value;
+    }
+    function addString(name: string, value: string) {
+      addToProperties(name, "'" + value + "'");
+
+    }
+    let columnMember = '';
+    if (c.column) {
+      columnMember += memberName + "." + c.column.__getMemberName();
+      if (c == c.column)
+        columnMember += '/*equal*/';
+      if (c.caption != c.column.caption) {
+        addString('caption', c.caption)
+      }
+      if (c.readonly != undefined && c.readonly != c.column.readonly && (c.readonly || c.column.readonly)) {
+        addToProperties('readonly', c.readonly);
+      }
+
+
+    } else {
+      addString('caption', c.caption);
+    }
+    if (properties.length > 0) {
+      if (columnMember != '') {
+        properties = '\n    column: ' + columnMember + ', ' + properties;
+      }
+    }
+    let whatToAdd = '';
+    if (properties.length > 0)
+      whatToAdd = "{" + properties + "\n  }";
+    else if (columnMember != '')
+      whatToAdd = columnMember;
+    return whatToAdd;
+  }
   _colValueChanged(col: ColumnSetting<any>, r: any) {
-    
+
     if (col.onUserChangedValue)
       col.onUserChangedValue(r);
 
