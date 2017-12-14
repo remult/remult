@@ -1,3 +1,4 @@
+import { ColumnSetting } from './utils';
 
 import { makeTitle, isFunction } from './common';
 
@@ -494,7 +495,8 @@ export interface ColumnSetting<rowType> {
   onUserChangedValue?: (row: rowType) => void;
   click?: rowEvent<rowType>;
   dropDown?: DropDownOptions;
-  column?: Column<any>
+  column?: Column<any>;
+  width?: string;
 }
 
 
@@ -1129,6 +1131,16 @@ export class ColumnCollection<rowType extends Entity<any>> {
           this.allowDesignMode = true;
     }
   }
+  __dataControlStyle(map: ColumnSetting<any>): string {
+
+    if (map.width && map.width.trim().length > 0) {
+      if ((+map.width).toString() == map.width)
+        return map.width + "px";
+      return map.width;
+    }
+    return undefined;
+
+  }
   private settingsByKey: any = {};
 
   allowDesignMode: boolean;
@@ -1225,7 +1237,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return Promise.resolve();
   }
 
-  designMode = true;
+  designMode = false;
   colListChanged() {
     this._lastNumOfColumnsInGrid = -1;
     this._colListChangeListeners.forEach(x => x());
@@ -1376,6 +1388,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
     } else {
       addString('caption', c.caption);
     }
+    if (c.width && c.width.length > 0)
+      addString('width', c.width);
     if (properties.length > 0) {
       if (columnMember != '') {
         properties = '\n    column: ' + columnMember + ', ' + properties;
@@ -1388,6 +1402,13 @@ export class ColumnCollection<rowType extends Entity<any>> {
       whatToAdd = columnMember;
     return whatToAdd;
   }
+  __changeWidth(col: ColumnSetting<any>, what: number) {
+    let width = col.width;
+    if (!width)
+      width = '50';
+    width = ((+width) + what).toString();
+    col.width = width;
+   }
   _colValueChanged(col: ColumnSetting<any>, r: any) {
 
     if (col.onUserChangedValue)

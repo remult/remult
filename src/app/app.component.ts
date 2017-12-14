@@ -67,7 +67,7 @@ export class AppComponent {
     columnSettings: orders => [
       {
         column: orders.id,
-        caption: 'order id'
+        caption: 'order id',
       },
       {
         column: orders.customerID,

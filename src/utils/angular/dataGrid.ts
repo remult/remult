@@ -23,7 +23,7 @@ import { isFunction } from '../common';
 
       <thead>
         <tr>
-          <th *ngFor="let map of settings.columns.getGridColumns()" class="headerWithFilter">
+          <th *ngFor="let map of settings.columns.getGridColumns()" class="headerWithFilter" [style.width]="settings.columns.__dataControlStyle(map)">
 
             <span (click)="settings.sort(map.column)">{{map.caption}}</span>
 

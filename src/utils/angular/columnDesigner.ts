@@ -9,6 +9,20 @@ import { Input, Component } from '@angular/core';
     <div class="form-group">
         <input type="text" class="form-control" [(ngModel)]="map.caption">
     </div>
+    <div class="form-group">
+      <label >Width</label>
+      <div class="input-group">
+      <input type="text" class="form-control" [(ngModel)]="map.width">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" (click)="settings.__changeWidth(map,-10)">-</button>
+      </span>
+      <span class="input-group-btn">
+      <button class="btn btn-default" type="button" (click)="settings.__changeWidth(map,10)">+</button>
+    </span>
+    </div><!-- /input-group -->
+      
+    </div>
+
     <label>Input Type</label>
     <div class="form-group">
         <select class="form-control" [(ngModel)]="map.inputType" placeholder="inputType">
