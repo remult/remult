@@ -5,6 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
+import { DataListComponent } from './data-list/data-list.component';
 
 
 
@@ -16,9 +17,9 @@ import { AppComponent } from './app.component';
     BrowserModule, FormsModule,RadWebModule
   ],
   declarations:
-    [AppComponent]
+    [AppComponent, DataListComponent]
   ,
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [DataListComponent]
 })
 export class AppModule { }
