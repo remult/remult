@@ -39,10 +39,10 @@ class ActualRestDataProvider implements DataProvider {
         url.add('_limit', options.limit);
       if (options.page)
         url.add('_page', options.page);
+        if (options.additionalUrlParameters)
+          url.addObject(options.additionalUrlParameters);
     }
     
-    if (options.additionalUrlParameters)
-      url.addObject(options.additionalUrlParameters);
     return myFetch(url.url).then(r => {
       return r;
     });

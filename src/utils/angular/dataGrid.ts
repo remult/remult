@@ -173,30 +173,11 @@ export class DataGridComponent implements OnChanges {
   }
 
   catchErrors(what: any, r: Entity<any>) {
-    what.catch((e: Promise<any>) => {
-      e.then(e => {
-        console.log(e);
-
-        if (e.message)
-          r.error = e.message;
-        else if (e.Message)
-          r.error = e.Message;
-        else r.error = e;
-        let s = e.modelState;
-        if (!s)
-          s = e.ModelState;
-        if (s) {
-          Object.keys(s).forEach(k => {
-            let c = r.__getColumnByJsonName(k);
-            if (c)
-              c.error = s[k];
-
-          });
-        }
+    what.catch((e: any) => {
         this.showError(r);
 
       });
-    });
+    
 
   }
   private showError(row: Entity<any>) {

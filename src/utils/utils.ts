@@ -743,7 +743,7 @@ export class lookupRowInfo<type> {
 
 export class Column<dataType>  {
 
-  __entityReset(): any {
+  __clearErrors(): any {
     this.error = undefined;
   }
   jsonName: string;
@@ -899,7 +899,28 @@ export class Entity<idType> {
     this.source = new EntitySource<this>(this.name, () => <this>this.factory(), dp);
   }
   save() {
-    return this.__entityData.save();
+    this.__clearErrors();
+    return this.__entityData.save().catch(
+      (e: Promise<any>) => {
+        return e.then(e => {
+          if (e.message)
+            this.error = e.message;
+          else if (e.Message)
+            this.error = e.Message;
+          else this.error = e;
+          let s = e.modelState;
+          if (!s)
+            s = e.ModelState;
+          if (s) {
+            Object.keys(s).forEach(k => {
+              let c = this.__getColumnByJsonName(k);
+              if (c)
+                c.error = s[k];
+            });
+          }
+          throw e;
+        });
+      });
   }
   delete() {
     return this.__entityData.delete();
@@ -907,8 +928,11 @@ export class Entity<idType> {
   }
   reset() {
     this.__entityData.reset();
-    this.__iterateColumns().forEach(c => c.__entityReset());
-    this.error = "";
+    this.__clearErrors();
+  }
+  private __clearErrors() {
+    this.__iterateColumns().forEach(c => c.__clearErrors());
+    this.error = undefined;
   }
   wasChanged() {
     return this.__entityData.wasChanged();
@@ -1408,7 +1432,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       width = '50';
     width = ((+width) + what).toString();
     col.width = width;
-   }
+  }
   _colValueChanged(col: ColumnSetting<any>, r: any) {
 
     if (col.onUserChangedValue)

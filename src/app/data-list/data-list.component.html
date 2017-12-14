@@ -1,3 +1,15 @@
 <p>
   data-list works!
 </p>
+
+<button (click)="addPage()">xx</button>
+  <ul>
+      <li *ngFor="let o of orders.items">
+          {{o.id.value}} <input [(ngModel)]="o.customerID.value">
+          error:{{o.customerID.error}}
+          <button (click)="save(o)">save</button>
+       </li>
+  </ul>
+
+  
+
