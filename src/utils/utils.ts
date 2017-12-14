@@ -594,12 +594,14 @@ export class RestList<T extends Entity<any>> implements Iterable<T>{
     this.items.push(x);
     return x;
   }
-  replaceRow(originalRow: any, newRow: any) {
+  private replaceRow(originalRow: any, newRow: any) {
     newRow = this.map(newRow);
     this.items[this.items.indexOf(originalRow)] = newRow;
     this._rowReplacedListeners.forEach(x => x(originalRow, newRow));
   }
 }
+
+
 export class Sort {
   constructor(...segments: SortSegment[]) {
 

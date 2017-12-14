@@ -69,22 +69,7 @@ import { isFunction } from '../common';
   </div>
   <data-area *ngIf="!settings.hideDataArea" [settings]="settings" [columns]="2"></data-area>
   `,
-  styles: [`.columnDesigner {
-    background-color: white;
-    position: absolute;
-    padding: 10px;
-    border-color: gray;
-    border-width: 2px;
-    border-style: solid;
-    z-index: 800;
-    border-radius: 5px;
-    width: 300px;
-}
-
-    .columnDesigner .form-group {
-        margin-right: 0;
-        margin-left: 0;
-    }
+  styles: [`
 
 .filterDialog {
     background-color: white;

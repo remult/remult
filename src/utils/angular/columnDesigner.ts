@@ -1,4 +1,4 @@
-import { ColumnSetting ,ColumnCollection} from '../utils';
+import { ColumnSetting, ColumnCollection } from '../utils';
 
 
 import { Input, Component } from '@angular/core';
@@ -21,9 +21,10 @@ import { Input, Component } from '@angular/core';
         </select>
     </div>
 
-    <div class="checkbox">
-
-        Readonly <input type="checkbox"  [(ngModel)]="map.readonly">
+    <div class="form-group">
+      <label>
+           <input type="checkbox"  [(ngModel)]="map.readonly"> Readonly
+      </label>
     </div>
 
 
@@ -41,7 +42,23 @@ import { Input, Component } from '@angular/core';
 <span class="designModeButton pull-right">
 <span class="glyphicon glyphicon-pencil " (click)="settings.designColumn(map)" *ngIf="settings.allowDesignMode"></span>
 </span>
-`
+`,
+  styles: [`.columnDesigner {
+  background-color: white;
+  position: absolute;
+  padding: 10px;
+  border-color: gray;
+  border-width: 2px;
+  border-style: solid;
+  z-index: 800;
+  border-radius: 5px;
+  width: 300px;
+}
+
+  .columnDesigner .form-group {
+      margin-right: 0;
+      margin-left: 0;
+  }`]
 })
 export class ColumnDesigner {
   @Input() map: ColumnSetting<any>;
