@@ -324,7 +324,7 @@ export class DataSettings<rowType extends Entity<any>>  {
   }
   get(options: FindOptionsPerEntity<rowType>) {
     this.getOptions = {};
-
+    this.getOptions = this.translateOptions(options);
     this.page = 1;
     return this.getRecords();
 
