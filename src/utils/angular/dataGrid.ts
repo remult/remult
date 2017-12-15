@@ -4,12 +4,7 @@ import { Component, OnChanges, Input } from '@angular/core';
 import { isFunction } from '../common';
 @Component({
   selector: 'data-grid',
-  template: `<div class="pull-right" *ngIf="settings && records">
-    <button class="btn glyphicon glyphicon-pencil btn-primary" *ngIf="settings.columns.allowDesignMode" (click)="settings.columns.designMode=!settings.columns.designMode"></button>
-    <button class="btn glyphicon glyphicon-chevron-left" *ngIf="settings.page>1" (click)="settings.previousPage()"></button>
-    <button class="btn glyphicon glyphicon-chevron-right" *ngIf="records.items&& records.items.length>0" (click)="settings.nextPage()"></button>
-    <button class="btn btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
-  </div>
+  template: `
 
   <div *ngIf="settings&&settings.columns&& settings.columns.designMode">
 <pre>
@@ -19,6 +14,12 @@ import { isFunction } from '../common';
 
   </div>
   <div class="table-responsive" >
+  <div class="pull-right" *ngIf="settings && records">
+    <button class="btn glyphicon glyphicon-pencil btn-primary" *ngIf="settings.columns.allowDesignMode" (click)="settings.columns.designMode=!settings.columns.designMode"></button>
+    <button class="btn glyphicon glyphicon-chevron-left" *ngIf="settings.page>1" (click)="settings.previousPage()"></button>
+    <button class="btn glyphicon glyphicon-chevron-right" *ngIf="records.items&& records.items.length>0" (click)="settings.nextPage()"></button>
+    <button class="btn btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
+  </div>
     <table class="table table-bordered table-condensed table-hover table-striped " *ngIf="settings&&settings.columns">
 
       <thead>
