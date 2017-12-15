@@ -38,8 +38,8 @@ import { isFunction } from '../common';
               <button class="btn glyphicon glyphicon-remove btn-primary" (click)="settings.columns.clearFilter(map)"></button>
 
             </div>
-            <span class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedAscending(map.column)"></span>
-            <span class="glyphicon glyphicon-chevron-up pull-right" *ngIf="settings.sortedDescending(map.column)"></span>
+            <span class="glyphicon glyphicon-chevron-up pull-right" *ngIf="settings.sortedAscending(map.column)"></span>
+            <span class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedDescending(map.column)"></span>
             <column-designer [settings]="settings.columns" [map]="map"></column-designer>
 
 
