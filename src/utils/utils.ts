@@ -868,6 +868,7 @@ export class Entity<idType> {
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
     this.setSource(source);
   }
+  /** @internal */
   __entityData: __EntityValueProvider;
 
   error: string;

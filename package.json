@@ -22,8 +22,11 @@
     "build": "ngc -p tsconfig.release.json",
     "addVersion": "npm version patch",
     "copyPackage": "copyfiles package.json dist",
+    "copyToEnvWeb": "copyfiles -u 1 ./dist/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../env.web/frontend/node_modules/radweb/copyfiles -u 1  ./dist/utils/angular/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../env.web/frontend/node_modules/radweb/",
+    
+    
     "publish-to-npm": "npm run build && npm run addVersion && npm run copyPackage && npm run package && cd dist && npm publish",
-    "publish": "npm run build && npm run copyPackage && npm run package && cd dist "
+    "testPub": "npm run build && npm run copyPackage && npm run package && npm run copyToEnvWeb"
   },
   "dependencies": {
     "@angular/animations": "^4.2.4",
