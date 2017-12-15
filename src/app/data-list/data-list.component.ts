@@ -10,8 +10,8 @@ import * as models from './../models';
 export class DataListComponent implements OnInit {
   page = 1;
   constructor() { }
-  settings = new utils.DataSettings(new models.Orders());
-  orders = new utils.RestList(new models.Orders().source);
+  settings = new utils.GridSettings(new models.Orders());
+  orders = new utils.DataList(new models.Orders().source);
   ngOnInit() {
     this.orders.get();
   }

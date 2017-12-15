@@ -24,7 +24,7 @@ export interface dataAreaSettings {
 declare var $: any;
 export class SelectPopup<rowType extends Entity<any>> {
   constructor(
-    private modalList: DataSettings<rowType>, settings?: SelectPopupSettings) {
+    private modalList: GridSettings<rowType>, settings?: SelectPopupSettings) {
     this.modalId = makeid();
     if (settings) {
       if (settings.title)
@@ -130,9 +130,9 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
 
 
-export class DataSettings<rowType extends Entity<any>>  {
+export class GridSettings<rowType extends Entity<any>>  {
   constructor(private entity?: rowType, settings?: IDataSettings<rowType>) {
-    this.restList = new RestList<rowType>(entity.source);
+    this.restList = new DataList<rowType>(entity.source);
     if (entity)
       this.filterHelper.filterRow = entity.source.createNewItem();
 
@@ -419,7 +419,7 @@ export class DataSettings<rowType extends Entity<any>>  {
 
 
 
-  private restList: RestList<rowType>;
+  private restList: DataList<rowType>;
   get items(): rowType[] {
     if (this.restList)
       return this.restList.items;
@@ -556,7 +556,7 @@ function applyWhereToGet(where: FilterBase[] | FilterBase, options: FindOptions)
 
 
 
-export class RestList<T extends Entity<any>> implements Iterable<T>{
+export class DataList<T extends Entity<any>> implements Iterable<T>{
   [Symbol.iterator](): Iterator<T> {
     return this.items[Symbol.iterator]();
   }
@@ -621,11 +621,11 @@ export interface SortSegment {
 export class Lookup<lookupType extends Entity<any>> {
 
   constructor(private source: EntitySource<lookupType>) {
-    this.restList = new RestList<lookupType>(source);
+    this.restList = new DataList<lookupType>(source);
 
   }
 
-  private restList: RestList<lookupType>;
+  private restList: DataList<lookupType>;
   private cache: any = {};
 
   get(filter: FilterBase): lookupType {
@@ -1252,7 +1252,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       }
       if (s.dropDown.source) {
         if (s.dropDown.source instanceof Entity) {
-          return new RestList(s.dropDown.source.source).get({ limit: 5000 }).then(arr =>
+          return new DataList(s.dropDown.source.source).get({ limit: 5000 }).then(arr =>
             populateBasedOnArray(arr));
         }
 

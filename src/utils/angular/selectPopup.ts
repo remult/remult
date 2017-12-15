@@ -1,5 +1,5 @@
 import { Input, Component } from '@angular/core';
-import { DataSettings } from '../utils';
+import { GridSettings } from '../utils';
 @Component({
   selector: 'select-popup',
   template: `
@@ -32,7 +32,7 @@ import { DataSettings } from '../utils';
 </div>`
 })
 export class SelectPopupComponent {
-  @Input() settings: DataSettings<any>;
+  @Input() settings: GridSettings<any>;
 
 
   ngOnChanges(): void {

@@ -18,7 +18,7 @@ export class AppComponent {
 
   pForLookup = new models.Products();
   pLookUp = new utils.Lookup(this.pForLookup.source);
-  orderDetailsSettings = new utils.DataSettings(new models.Order_details(), {
+  orderDetailsSettings = new utils.GridSettings(new models.Order_details(), {
     allowDelete: true,
     allowUpdate: true,
     allowInsert: true,
@@ -41,7 +41,7 @@ export class AppComponent {
   cs = new Lookup(this.customers.source);
 
 
-  customersSelect = new utils.DataSettings(new models.Customers(), {
+  customersSelect = new utils.GridSettings(new models.Customers(), {
     numOfColumnsInGrid: 4,
     columnSettings: customers => [
       customers.id,
@@ -54,7 +54,7 @@ export class AppComponent {
   });
 
 
-  settings = new utils.DataSettings(new models.Orders(), {
+  settings = new utils.GridSettings(new models.Orders(), {
     numOfColumnsInGrid: 4,
     allowUpdate: true,
     allowInsert: true,

@@ -1,5 +1,5 @@
 import { Entity } from './../utils';
-import { DataSettings, RowButton, isNewRow, Column } from '../utils';
+import { GridSettings, RowButton, isNewRow, Column } from '../utils';
 import { Component, OnChanges, Input } from '@angular/core';
 import { isFunction } from '../common';
 @Component({
@@ -127,7 +127,7 @@ export class DataGridComponent implements OnChanges {
 
 
   @Input() records: any;
-  @Input() settings: DataSettings<any>;
+  @Input() settings: GridSettings<any>;
   isFiltered(c: Column<any>) {
     this.settings.columns.filterHelper.isFiltered(c);
   }

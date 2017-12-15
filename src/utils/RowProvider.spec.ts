@@ -1,7 +1,7 @@
 import { NumberColumn } from '../';
 
 import { Entity, Column, Sort, ColumnCollection } from './utils';
-import { DataSettings, Lookup, ColumnSetting } from './utils';
+import { GridSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
 
@@ -154,7 +154,7 @@ describe("test row provider", () => {
   });
   itAsync("test grid update", async () => {
     let c = await insertFourRows();
-    let ds = new DataSettings(c, {
+    let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id })
       }
