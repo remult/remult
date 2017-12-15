@@ -873,8 +873,9 @@ export class Entity<idType> {
 
   error: string;
   __idColumn: Column<idType>;
-  protected initColumns(idColumn: Column<idType>) {
-    this.__idColumn = idColumn;
+  protected initColumns(idColumn?: Column<idType>) {
+    if (idColumn)
+      this.__idColumn = idColumn;
     let x = <any>this;
     for (let c in x) {
       let y = x[c];
@@ -882,6 +883,9 @@ export class Entity<idType> {
       if (y instanceof Column) {
         if (!y.jsonName)
           y.jsonName = c;
+        if (!this.__idColumn && y.jsonName == 'id')
+          this.__idColumn = y;  
+          
 
         this.applyColumn(y);
       }
@@ -1120,12 +1124,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings | string) {
     super(settingsOrCaption);
   }
 }
 export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1141,7 +1145,7 @@ export class NumberColumn extends Column<number>{
   }
 }
 export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';

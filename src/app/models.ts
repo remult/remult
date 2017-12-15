@@ -5,16 +5,15 @@ import { DataProvider, DataProviderFactory } from './../utils/DataInterfaces';
 import * as radweb from '../utils/utils';
 
 export class Categories extends radweb.Entity<number> {
-  id = new radweb.NumberColumn({ dbName: 'categoryID' });
-  categoryName = new radweb.StringColumn('CategoryName');
-  description = new radweb.StringColumn('Description');
+  id = new radweb.NumberColumn('CategoryID');
+  categoryName = new radweb.StringColumn();
+  description = new radweb.StringColumn();
 
   constructor() {
-    super(() => new Categories(), environment.dataSource, 'Categories');
-    this.initColumns(this.id);
+      super(() => new Categories(), environment.dataSource, 'Categories');
+      this.initColumns();
   }
 }
-
 export class Orders extends radweb.Entity<number> {
   id = new radweb.NumberColumn({dbName:"OrderId"});
   customerID = new radweb.StringColumn('CustomerID');

@@ -1,6 +1,6 @@
 import { NumberColumn } from '../';
 
-import { Entity, Column, Sort, ColumnCollection } from './utils';
+import { Entity, Column, Sort, ColumnCollection, FilterHelper } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
@@ -247,6 +247,14 @@ describe("column collection", () => {
     caption: 'name'
   }`);
   })
+  it("works ok with filter", () => { 
+    let c = new Categories();
+    var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }));
+    cc.add(c.id);
+    cc.filterHelper.filterColumn(cc.items[0].column, false);
+    expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
+    
+  });
 });
 
 

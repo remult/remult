@@ -20,6 +20,6 @@ import { DataListComponent } from './data-list/data-list.component';
     [AppComponent, DataListComponent]
   ,
   providers: [],
-  bootstrap: [DataListComponent]
+  bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -37,8 +37,6 @@ export class AppComponent {
       od.unitPrice.value = 1;
     }
   });
-  customers = new models.Customers();
-  cs = new Lookup(this.customers.source);
 
 
   customersSelect = new utils.GridSettings(new models.Customers(), {

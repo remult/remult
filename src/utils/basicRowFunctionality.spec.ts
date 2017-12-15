@@ -35,6 +35,11 @@ class Done {
 
 
 describe('Test basic row functionality', () => {
+  it("finds its id column", () => {
+    let c = new Categories();
+    expect(c.__idColumn.jsonName).toBe("id");
+
+   });
   it("object assign works", () => {
     let a: any = {};
     let b: any = {};

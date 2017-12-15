@@ -18,8 +18,8 @@ import { isFunction } from '../common';
 
 
   </div>
-  <div >
-    <table class="table table-bordered table-condensed table-hover table-striped" *ngIf="settings&&settings.columns">
+  <div class="table-responsive" >
+    <table class="table table-bordered table-condensed table-hover table-striped " *ngIf="settings&&settings.columns">
 
       <thead>
         <tr>
@@ -28,7 +28,7 @@ import { isFunction } from '../common';
             <span (click)="settings.sort(map.column)">{{map.caption}}</span>
 
 
-            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="isFiltered(map)"
+            <span class="glyphicon glyphicon-filter filterButton" [class.filteredFilterButton]="isFiltered(map.column)"
               (click)="settings.columns.showFilterDialog(map)"></span>
             <div class="filterDialog col-sm-4" *ngIf="settings.columns._shouldShowFilterDialog(map)">
               <div class="form-group">
@@ -129,7 +129,7 @@ export class DataGridComponent implements OnChanges {
   @Input() records: any;
   @Input() settings: GridSettings<any>;
   isFiltered(c: Column<any>) {
-    this.settings.columns.filterHelper.isFiltered(c);
+    return this.settings.columns.filterHelper.isFiltered(c);
   }
 
   getButtonCssClass(b: RowButton<any>, row: any) {
