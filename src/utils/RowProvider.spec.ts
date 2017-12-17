@@ -1,7 +1,7 @@
 import { FindOptionsPerEntity } from './DataInterfaces';
 import { NumberColumn, extractSortFromSettings } from '../';
 
-import { Entity, Column, Sort, ColumnCollection, FilterHelper } from './utils';
+import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync } from './testHelper.spec';
@@ -284,6 +284,58 @@ describe("grid settings ",
       expect(gs.sortedAscending(c.categoryName)).toBe(false);
       expect(gs.sortedDescending(c.categoryName)).toBe(false);
     });
+    it("paging works",async () => { 
+      let c =await  createData(async i => {
+        i(1, "a");
+        i(2, "b");
+        i(3, "a");
+        i(4, "b");
+        i(5, "a");
+        i(6, "b");
+        i(7, "a");
+        i(8, "b");
+      });
+      
+      let ds = new GridSettings(c, { get: { limit: 2 } });
+      await ds.getRecords();
+      expect(ds.items.length).toBe(2);
+      expect(ds.items[0].id.value).toBe(1);
+      await ds.nextPage();
+      expect(ds.items.length).toBe(2);
+      expect(ds.items[0].id.value).toBe(3);
+      await ds.nextPage();
+      expect(ds.items.length).toBe(2);
+      expect(ds.items[0].id.value).toBe(5);
+      await ds.previousPage();
+      expect(ds.items.length).toBe(2);
+      expect(ds.items[0].id.value).toBe(3);
+    });
+    it("paging works with filter",async () => { 
+      let c =await  createData(async i => {
+        i(1, "a");
+        i(2, "b");
+        i(3, "a");
+        i(4, "b");
+        i(5, "a");
+        i(6, "b");
+        i(7, "a");
+        i(8, "b");
+      });
+      
+      let ds = new GridSettings(c, { get: { limit: 2,where:c=>c.categoryName.isEqualTo('b') } });
+      await ds.getRecords();
+      expect(ds.items.length).toBe(2);
+      expect(ds.items[0].id.value).toBe(2);
+      await ds.nextPage();
+      expect(ds.items.length).toBe(2);
+      expect(ds.items[0].id.value).toBe(6);
+      await ds.nextPage();
+      expect(ds.items.length).toBe(0);
+      
+      await ds.previousPage();
+      expect(ds.items.length).toBe(2);
+      expect(ds.items[0].id.value).toBe(6);
+    });
   });
 describe("order by api", () => {
   it("works with sort", () => {
@@ -327,7 +379,6 @@ describe("order by api", () => {
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);
   });
-
 });
 
 

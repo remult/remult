@@ -60,6 +60,20 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
           return r;
         });
       }
+      if (options.limit) { 
+        let page = 1;
+        if (options.page)
+          page = options.page;
+        if (page < 1)
+          page = 1;  
+        let x = 0;
+        rows = rows.filter(i => { 
+          x++;
+          let max = page * options.limit;
+          let min = max - options.limit;
+          return x > min && x <= max;
+        });
+      }
     }
     if (rows)
       return rows.map(i => {
