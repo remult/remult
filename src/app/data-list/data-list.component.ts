@@ -1,7 +1,8 @@
-import { AppPage } from './../../../e2e/app.po';
+
 import { Component, OnInit } from '@angular/core';
 import * as utils from './../../utils/utils';
 import * as models from './../models';
+
 @Component({
   selector: 'app-root',
   templateUrl: './data-list.component.html',
@@ -11,13 +12,14 @@ export class DataListComponent implements OnInit {
   page = 1;
   constructor() { }
   settings = new utils.GridSettings(new models.Orders());
-  orders = new utils.DataList(new models.Orders().source);
+  orders = new utils.DataList(new models.Orders(), );
   ngOnInit() {
-    this.orders.get();
+    this.orders.get({ orderBy: o => new utils.Sort({ column: o.customerID }) });
   }
   addPage() {
     this.page++;
-    this.orders.get({ page: this.page });
+    this.orders.get({
+      page: this.page });
   }
   save(order: models.Orders) { 
     

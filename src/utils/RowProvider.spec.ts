@@ -1,4 +1,5 @@
-import { NumberColumn } from '../';
+import { FindOptionsPerEntity } from './DataInterfaces';
+import { NumberColumn, extractSortFromSettings } from '../';
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
@@ -197,7 +198,7 @@ describe("test row provider", () => {
 
     let c = await insertFourRows();
     let n = c.source.createNewItem();
-    let lookup = new Lookup(c.source);
+    let lookup = new Lookup(c);
     let r = await lookup.whenGet(c.categoryName.isEqualTo(undefined));
     expect(r.categoryName.value).toBe(undefined);
 
@@ -247,14 +248,86 @@ describe("column collection", () => {
     caption: 'name'
   }`);
   })
-  it("works ok with filter", () => { 
+  it("works ok with filter", () => {
     let c = new Categories();
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }));
     cc.add(c.id);
     cc.filterHelper.filterColumn(cc.items[0].column, false);
     expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
-    
+
   });
+});
+describe("grid settings ",
+  () => {
+    it("sort is displayed right", () => {
+      let c = new Categories();
+      let gs = new GridSettings(c);
+      expect(gs.sortedAscending(c.id)).toBe(false);
+      expect(gs.sortedDescending(c.id)).toBe(false);
+      gs.sort(c.id);
+      expect(gs.sortedAscending(c.id)).toBe(true);
+      expect(gs.sortedDescending(c.id)).toBe(false);
+      gs.sort(c.id);
+      expect(gs.sortedAscending(c.id)).toBe(false);
+      expect(gs.sortedDescending(c.id)).toBe(true);
+    });
+    it("sort is displayed right on start", () => {
+      let c = new Categories();
+      let gs = new GridSettings(c, { get: { orderBy: c => new Sort({ column: c.categoryName }) } });
+      expect(gs.sortedAscending(c.categoryName)).toBe(true);
+      expect(gs.sortedDescending(c.categoryName)).toBe(false);
+      expect(gs.sortedAscending(c.id)).toBe(false);
+      expect(gs.sortedDescending(c.id)).toBe(false);
+      gs.sort(c.id);
+      expect(gs.sortedAscending(c.id)).toBe(true);
+      expect(gs.sortedDescending(c.id)).toBe(false);
+      expect(gs.sortedAscending(c.categoryName)).toBe(false);
+      expect(gs.sortedDescending(c.categoryName)).toBe(false);
+    });
+  });
+describe("order by api", () => {
+  it("works with sort", () => {
+    let c = new Categories();
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => new Sort({ column: c.id }) };
+    let s = extractSortFromSettings(c, opt);
+    expect(s.Segments.length).toBe(1);
+    expect(s.Segments[0].column).toBe(c.id);
+
+
+  });
+  it("works with columns", () => {
+    let c = new Categories();
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c =>  c.id  };
+    let s = extractSortFromSettings(c, opt);
+    expect(s.Segments.length).toBe(1);
+    expect(s.Segments[0].column).toBe(c.id);
+  });
+  
+  it("works with columns array", () => {
+    let c = new Categories();
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [ c.id,c.categoryName]  };
+    let s = extractSortFromSettings(c, opt);
+    expect(s.Segments.length).toBe(2);
+    expect(s.Segments[0].column).toBe(c.id);
+    expect(s.Segments[1].column).toBe(c.categoryName);
+  });
+  it("works with segment array", () => {
+    let c = new Categories();
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }]  };
+    let s = extractSortFromSettings(c, opt);
+    expect(s.Segments.length).toBe(2);
+    expect(s.Segments[0].column).toBe(c.id);
+    expect(s.Segments[1].column).toBe(c.categoryName);
+  });
+  it("works with mixed column segment array", () => {
+    let c = new Categories();
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [  c.id , { column: c.categoryName }]  };
+    let s = extractSortFromSettings(c, opt);
+    expect(s.Segments.length).toBe(2);
+    expect(s.Segments[0].column).toBe(c.id);
+    expect(s.Segments[1].column).toBe(c.categoryName);
+  });
+
 });
 
 

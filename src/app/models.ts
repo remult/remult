@@ -16,8 +16,8 @@ export class Categories extends radweb.Entity<number> {
 }
 export class Orders extends radweb.Entity<number> {
   id = new radweb.NumberColumn({dbName:"OrderId"});
-  customerID = new radweb.StringColumn('CustomerID');
-  employeeID = new radweb.NumberColumn('EmployeeID');
+  customerID = new radweb.StringColumn();
+  employeeID = new radweb.NumberColumn();
   orderDate = new radweb.DateColumn('OrderDate');
   requiredDate = new radweb.DateColumn('RequiredDate');
   shippedDate = new radweb.DateColumn('ShippedDate');

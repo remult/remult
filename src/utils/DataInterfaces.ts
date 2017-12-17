@@ -1,5 +1,6 @@
-import { Column,Entity, Sort } from './utils';
+import { Column,Entity, Sort,SortSegment } from './utils';
 import { FindOptions } from './DataInterfaces';
+
 
 
 
@@ -18,7 +19,7 @@ export interface FindOptions {
 }
 export interface FindOptionsPerEntity<rowType extends Entity<any>> {
   where?: (rowType: rowType) => FilterBase;
-  orderBy?: (rowType: rowType) => Sort;
+  orderBy?: ((rowType: rowType) => Sort)|((rowType: rowType)=>(Column<any>))|((rowType: rowType)=>(Column<any>|SortSegment)[]);
   limit?: number;
   page?: number;
   additionalUrlParameters?: any;

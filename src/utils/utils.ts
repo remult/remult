@@ -1,3 +1,4 @@
+
 import { ColumnSetting } from './utils';
 
 import { makeTitle, isFunction } from './common';
@@ -132,7 +133,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
 export class GridSettings<rowType extends Entity<any>>  {
   constructor(private entity?: rowType, settings?: IDataSettings<rowType>) {
-    this.restList = new DataList<rowType>(entity.source);
+    this.restList = new DataList<rowType>(entity);
     if (entity)
       this.filterHelper.filterRow = entity.source.createNewItem();
 
@@ -176,13 +177,19 @@ export class GridSettings<rowType extends Entity<any>>  {
       if (!this.caption && entity) {
         this.caption = entity.source.createNewItem().name;
       }
-      this.getOptions = this.translateOptions(settings.get);
+      this.setGetOptions(settings.get);
 
     }
 
     this.popupSettings = new SelectPopup(this);
   }
+  private setGetOptions(get: FindOptionsPerEntity<rowType>) {
+    this.getOptions = get;
+    this._currentOrderBy = undefined;
+    if (this.getOptions && this.getOptions.orderBy)
+      this._currentOrderBy = extractSortFromSettings(this.entity, this.getOptions);
 
+  }
 
   popupSettings: SelectPopup<rowType>;
   showSelectPopup(onSelect: (selected: rowType) => void) {
@@ -326,76 +333,59 @@ export class GridSettings<rowType extends Entity<any>>  {
     return this.getRecords();
   }
   get(options: FindOptionsPerEntity<rowType>) {
-    this.getOptions = {};
-    this.getOptions = this.translateOptions(options);
+
+    this.setGetOptions(options);
     this.page = 1;
     return this.getRecords();
 
   }
-  translateOptions(options: FindOptionsPerEntity<rowType>) {
-    if (!options)
-      return undefined;
-    let getOptions: FindOptions = {};
-    if (options.where)
-      getOptions.where = options.where(this.entity);
-    if (options.orderBy)
-      getOptions.orderBy = options.orderBy(this.entity);
-    if (options.limit)
-      getOptions.limit = options.limit;
-    if (options.page)
-      getOptions.page = options.page;
-    if (options.additionalUrlParameters)
-      getOptions.additionalUrlParameters = options.additionalUrlParameters;
-    return getOptions;
-  }
+
+  _currentOrderBy: Sort;
   sort(column: Column<any>) {
-    if (!this.getOptions)
-      this.getOptions = {};
-    let done = false;;
-    if (this.getOptions.orderBy && this.getOptions.orderBy.Segments.length > 0) {
-      if (this.getOptions.orderBy.Segments[0].column == column) {
-        this.getOptions.orderBy.Segments[0].descending = !this.getOptions.orderBy.Segments[0].descending;
+
+    let done = false;
+    if (this._currentOrderBy && this._currentOrderBy.Segments.length > 0) {
+      if (this._currentOrderBy.Segments[0].column == column) {
+        this._currentOrderBy.Segments[0].descending = !this._currentOrderBy.Segments[0].descending;
         done = true;
       }
     } if (!done)
-      this.getOptions.orderBy = new Sort({ column: column });
+      this._currentOrderBy = new Sort({ column: column });
     this.getRecords();
   }
   sortedAscending(column: Column<any>) {
-    if (!this.getOptions)
-      return false;
-    if (!this.getOptions.orderBy)
+    if (!this._currentOrderBy)
       return false;
     if (!column)
       return false;
-    return this.getOptions.orderBy.Segments.length > 0 &&
-      this.getOptions.orderBy.Segments[0].column == column &&
-      !this.getOptions.orderBy.Segments[0].descending;
+    return this._currentOrderBy.Segments.length > 0 &&
+      this._currentOrderBy.Segments[0].column == column &&
+      !this._currentOrderBy.Segments[0].descending;
   }
   sortedDescending(column: Column<any>) {
-    if (!this.getOptions)
-      return false;
-    if (!this.getOptions.orderBy)
+    if (!this._currentOrderBy)
       return false;
     if (!column)
       return false;
-    return this.getOptions.orderBy.Segments.length > 0 &&
-      this.getOptions.orderBy.Segments[0].column == column &&
-      this.getOptions.orderBy.Segments[0].descending;
+    return this._currentOrderBy.Segments.length > 0 &&
+      this._currentOrderBy.Segments[0].column == column &&
+      !!this._currentOrderBy.Segments[0].descending;
   }
 
 
 
-  private getOptions: FindOptions;
+  private getOptions: FindOptionsPerEntity<rowType>;
 
 
 
   getRecords() {
 
-    let opt: FindOptions = {};
+    let opt: FindOptionsPerEntity<rowType> = {};
     if (this.getOptions) {
       opt = Object.assign(opt, this.getOptions);
     }
+    if (this._currentOrderBy)
+      opt.orderBy = r => this._currentOrderBy;
     if (!opt.limit)
       opt.limit = 7;
     if (this.page > 1)
@@ -450,13 +440,13 @@ export class FilterHelper<rowType extends Entity<any>> {
       this.filterColumns.push(column);
     this.reloadData();
   }
-  addToFindOptions(opt: FindOptions) {
+  addToFindOptions(opt: FindOptionsPerEntity<rowType>) {
     this.filterColumns.forEach(c => {
       if (opt.where) {
-        opt.where = new AndFilter(opt.where, c.isEqualTo(this.filterRow.__getColumn(c).value));
+        opt.where = r => new AndFilter(opt.where(r), c.isEqualTo(this.filterRow.__getColumn(c).value));
 
       }
-      else opt.where = c.isEqualTo(this.filterRow.__getColumn(c).value);
+      else opt.where = r => c.isEqualTo(this.filterRow.__getColumn(c).value);
     });
   }
 }
@@ -563,8 +553,24 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
 
 
   items: T[] = [];
-  constructor(private source: EntitySource<T>) {
+  constructor(private entity: T) {
 
+  }
+  translateOptions(options: FindOptionsPerEntity<T>) {
+    if (!options)
+      return undefined;
+    let getOptions: FindOptions = {};
+    if (options.where)
+      getOptions.where = options.where(this.entity);
+    if (options.orderBy)
+      getOptions.orderBy = extractSortFromSettings(this.entity, options);
+    if (options.limit)
+      getOptions.limit = options.limit;
+    if (options.page)
+      getOptions.page = options.page;
+    if (options.additionalUrlParameters)
+      getOptions.additionalUrlParameters = options.additionalUrlParameters;
+    return getOptions;
   }
   _rowReplacedListeners: ((oldRow: T, newRow: T) => void)[] = [];
 
@@ -581,11 +587,11 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
     return item;
   }
   lastGetId = 0;
-  get(options?: FindOptions) {
+  get(options?: FindOptionsPerEntity<T>) {
 
     let getId = ++this.lastGetId;
 
-    return this.source.find(options).then(r => {
+    return this.entity.source.find(this.translateOptions(options)).then(r => {
       let x: T[] = r;
       let result = r.map((x: any) => this.map(x));
       if (getId == this.lastGetId)
@@ -594,7 +600,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
     });
   }
   add(): T {
-    let x = this.map(this.source.createNewItem());
+    let x = this.map(this.entity.source.createNewItem());
     this.items.push(x);
     return x;
   }
@@ -620,8 +626,8 @@ export interface SortSegment {
 
 export class Lookup<lookupType extends Entity<any>> {
 
-  constructor(private source: EntitySource<lookupType>) {
-    this.restList = new DataList<lookupType>(source);
+  constructor(private entity: lookupType) {
+    this.restList = new DataList<lookupType>(entity);
 
   }
 
@@ -636,18 +642,18 @@ export class Lookup<lookupType extends Entity<any>> {
   }
 
   private getInternal(filter: FilterBase): lookupRowInfo<lookupType> {
-    let find: FindOptions = {};
-    find.where = filter;
+    let find: FindOptionsPerEntity<lookupType> = {};
+    find.where = r => filter;
 
     return this._internalGetByOptions(find);
   }
 
-  _internalGetByOptions(find: FindOptions): lookupRowInfo<lookupType> {
+  _internalGetByOptions(find: FindOptionsPerEntity<lookupType>): lookupRowInfo<lookupType> {
 
     let key = "";
     let url = new UrlBuilder("");
     if (find.where)
-      find.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+      find.where(this.entity).__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
     key = url.url;
 
     if (this.cache == undefined)
@@ -663,7 +669,7 @@ export class Lookup<lookupType extends Entity<any>> {
         res.found = false;
         return res;
       } else {
-        res.value = this.source.createNewItem();
+        res.value = this.entity.source.createNewItem();
         res.promise = this.restList.get(find).then(r => {
           res.loading = false;
           if (r.length > 0) {
@@ -809,6 +815,9 @@ export class Column<dataType>  {
   get value() {
     return this.__valueProvider.getValue(this.jsonName);
   }
+  get displayValue() {
+    return this.value;
+  }
   set value(value: dataType) {
     this.__valueProvider.setValue(this.jsonName, value);
     this.error = undefined;
@@ -884,8 +893,8 @@ export class Entity<idType> {
         if (!y.jsonName)
           y.jsonName = c;
         if (!this.__idColumn && y.jsonName == 'id')
-          this.__idColumn = y;  
-          
+          this.__idColumn = y;
+
 
         this.applyColumn(y);
       }
@@ -990,7 +999,7 @@ export class Entity<idType> {
         lookup = l.lookup;
     });
     if (!lookup) {
-      lookup = new Lookup(lookupEntity.source);
+      lookup = new Lookup(lookupEntity);
       this.source.__lookupCache.push({ key, lookup });
     }
     if (filter instanceof Column)
@@ -1134,7 +1143,12 @@ export class DateColumn extends Column<string>{
     if (!this.inputType)
       this.inputType = 'date';
   }
-
+  getDayOfWeek() {
+    return new Date(this.value).getDay();
+  }
+  get displayValue() {
+    return new Date(this.value).toLocaleDateString();
+  }
 
 }
 export class NumberColumn extends Column<number>{
@@ -1257,7 +1271,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       }
       if (s.dropDown.source) {
         if (s.dropDown.source instanceof Entity) {
-          return new DataList(s.dropDown.source.source).get({ limit: 5000 }).then(arr =>
+          return new DataList(s.dropDown.source).get({ limit: 5000 }).then(arr =>
             populateBasedOnArray(arr));
         }
 
@@ -1336,7 +1350,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
     }
     else if (col.column) {
-      r = row.__getColumn(col.column).value;
+      r = row.__getColumn(col.column).displayValue;
     }
 
 
@@ -1473,5 +1487,25 @@ export class ColumnCollection<rowType extends Entity<any>> {
   getNonGridColumns() {
     this._initColumnsArrays();
     return this.nonGridColumns;
+  }
+}
+export function extractSortFromSettings<T extends Entity<any>>(entity: T, opt: FindOptionsPerEntity<T>): Sort {
+  if (!opt)
+    return undefined;
+  if (!opt.orderBy)
+    return undefined;
+  let x = opt.orderBy(entity);
+  if (x instanceof Sort)
+    return x;
+  if (x instanceof Column)
+    return new Sort({ column: x });
+  if (x instanceof Array) {
+    let r = new Sort();
+    x.forEach(i => {
+      if (i instanceof Column)
+        r.Segments.push({ column: i });
+      else r.Segments.push(i);
+    });
+    return r; 
   }
 }

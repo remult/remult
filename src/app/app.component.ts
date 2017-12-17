@@ -17,17 +17,19 @@ export class AppComponent {
 
 
   pForLookup = new models.Products();
-  pLookUp = new utils.Lookup(this.pForLookup.source);
+  pLookUp = new utils.Lookup(this.pForLookup);
   orderDetailsSettings = new utils.GridSettings(new models.Order_details(), {
-    allowDelete: true,
-    allowUpdate: true,
-    allowInsert: true,
+   // allowDelete: true,
+   // allowUpdate: true,
+   // allowInsert: true,
+    
     columnSettings: orderDetails => [
       {
         column: orderDetails.productID,
         dropDown: { source: new models.Products() },
         onUserChangedValue: od => this.pLookUp.whenGet(this.pForLookup.id.isEqualTo(od.productID)).then(p => od.unitPrice.value = p.unitPrice.value)
       },
+      
       orderDetails.unitPrice,
       orderDetails.quantity,
       { caption: 'row total', getValue: od => od.unitPrice.value * od.quantity.value }
@@ -54,9 +56,10 @@ export class AppComponent {
 
   settings = new utils.GridSettings(new models.Orders(), {
     numOfColumnsInGrid: 4,
-    allowUpdate: true,
-    allowInsert: true,
-    get: { where: o => o.orderDate.IsGreaterOrEqualTo("1997") },
+    
+  //  allowUpdate: true,
+ //   allowInsert: true,
+    get: {limit:3, orderBy: o => new utils.Sort({column: o.id,descending:true }) },
 
     onEnterRow: o => {
 
