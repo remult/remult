@@ -264,6 +264,8 @@ __pycache__/
 **/src/**/*.js
 **/src/**/*.map
 **/src/**/*.d.ts
+**/src/**/*.ngsummary.json
+**/src/**/*.ngfactory.ts
 
 **/dist/**/*.js
 **/dist/**/*.map

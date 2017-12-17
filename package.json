@@ -12,12 +12,21 @@
     "start": "ng serve",
     "test": "ng test",
     "lint": "ng lint",
+    "server": " ts-node  -P tsconfig.server.json src/app/server/server.ts",
+    "server:watch": "concurrently \"tsc -P tsconfig.server.json -w\" \"nodemon dist/src/app/server/server.js --ignore /appData\"",
     "e2e": "ng e2e",
+    "myBuild": "tsc",
+    "myTest:build": "tsc -p src/tsconfig.mytest.json",
+    "myTest": "npm run myTest:build && jasmine dist/src/utils/newTests.spec.js",
+    "myTest:watch": "watch src/utils/newTests.spec.ts -c \"npm run myTest\"",
     "build": "ngc -p tsconfig.release.json",
     "addVersion": "npm version patch",
     "copyPackage": "copyfiles package.json dist",
+    "copyToEnvWeb": "copyfiles -u 1 ./dist/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../env.web/frontend/node_modules/radweb/copyfiles -u 1  ./dist/utils/angular/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../env.web/frontend/node_modules/radweb/",
+    
+    
     "publish-to-npm": "npm run build && npm run addVersion && npm run copyPackage && npm run package && cd dist && npm publish",
-    "publish": "npm run build && npm run copyPackage && npm run package && cd dist "
+    "testPub": "npm run build && npm run copyPackage && npm run package && npm run copyToEnvWeb"
   },
   "dependencies": {
     "@angular/animations": "^4.2.4",
@@ -35,14 +44,18 @@
   },
   "devDependencies": {
     "@angular/cli": "1.4.9",
-    "@angular/compiler": "^4.4.6",
-    "@angular/compiler-cli": "^4.4.6",
+    "@angular/compiler": "^4.2.4",
+    "@angular/compiler-cli": "^4.2.4",
     "@angular/language-service": "^4.2.4",
+    "@types/express": "^4.0.39",
     "@types/jasmine": "~2.5.53",
     "@types/jasminewd2": "~2.0.2",
+    "@types/mssql": "^4.0.6",
     "@types/node": "~6.0.60",
     "codelyzer": "~3.2.0",
+    "concurrently": "^3.5.1",
     "copyfiles": "^1.2.0",
+    "express": "^4.16.2",
     "jasmine-core": "~2.6.2",
     "jasmine-spec-reporter": "~4.1.0",
     "karma": "~1.7.0",
@@ -51,11 +64,14 @@
     "karma-coverage-istanbul-reporter": "^1.2.1",
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
+    "mssql": "^4.1.0",
+    "nodemon": "^1.12.1",
     "protractor": "~5.1.2",
+    "reflect-metadata": "^0.1.10",
     "rollup": "^0.50.0",
     "ts-node": "~3.2.0",
     "tslint": "~5.7.0",
-    "typescript": "^2.5.3",
+    "typescript": "^2.3.4",
     "uglify-js": "^3.1.6"
   }
 }

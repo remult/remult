@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "target":"es5",
-    "module": "es2015",
+    "module": "commonjs",
     "moduleResolution": "node",
     "rootDir": ".",
     "outDir": "dist",
@@ -22,6 +22,6 @@
 
 
   },
-  //"files":["./src/index.ts"],
+  //"files":["./src/index.ts","./src/app/server/server.ts"],
   "angularCompilerOptions": { "strictMetadataEmit": true }
 }

@@ -1,10 +1,11 @@
-import { radWebModule } from './../utils/utils';
+import { RadWebModule } from './../utils/angular/radWebModule';
+
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
-import { NoamCompComponent } from './noam-comp/noam-comp.component';
+import { DataListComponent } from './data-list/data-list.component';
 
 
 
@@ -13,10 +14,10 @@ import { NoamCompComponent } from './noam-comp/noam-comp.component';
 
 @NgModule({
   imports: [
-    BrowserModule, FormsModule,radWebModule
+    BrowserModule, FormsModule,RadWebModule
   ],
   declarations:
-    [AppComponent,NoamCompComponent]
+    [AppComponent, DataListComponent]
   ,
   providers: [],
   bootstrap: [AppComponent]
