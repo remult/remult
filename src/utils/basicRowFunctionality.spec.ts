@@ -1,4 +1,4 @@
-import { __EntityValueProvider } from './utils';
+import { __EntityValueProvider, NumberColumn,StringColumn,Entity } from './utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './DataApi';
 import { InMemoryDataProvider } from './inMemoryDatabase';
@@ -6,6 +6,9 @@ import { itAsync } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
+
+
+import { environment } from './../environments/environment';
 
 
 class TestDataApiResponse implements DataApiResponse {
@@ -72,9 +75,48 @@ describe('Test basic row functionality', () => {
     expect(y.id).toBe(1);
     expect(y.categoryName).toBe('noam');
   });
+  it("json name is important", () => {
+    let x = new Categories();
+    x.id.value = 1;
+    x.categoryName.jsonName = 'xx';
+    x.categoryName.value = 'noam';
+    let y = x.__toPojo();
+    expect(y.id).toBe(1);
+    expect(y.xx).toBe('noam');
+  });
+  it("json name is important 1", () => {
+    let x = new myTestEntity();
+    x.id.value = 1;
+    expect(x.name1.jsonName).toBe('name');
+    x.name1.value = 'noam';
+    let y = x.__toPojo();
+    expect(y.id).toBe(1);
+    expect(y.name).toBe('noam', JSON.stringify(y));
+    y.name = 'yael';
+    x.__fromPojo(y);
+    expect(x.name1.value).toBe('yael');
+    
+  });
+  it("json name is important", () => {
+    let x = new myTestEntity();
+    x.id.value = 1;
+    x.name1.value = 'a';
+    var y = new myTestEntity();
+    expect(x.__getColumn(y.name1).value).toBe('a');
+
+    
+  });
 
 });
+class myTestEntity extends Entity<number>{ 
+  id = new NumberColumn();
+  name1 = new StringColumn({ jsonName: 'name' });
+  constructor() { 
+    super(() => new myTestEntity(), environment.dataSource, 'myTestEntity');
+    this.initColumns();
+  }
 
+}
 
 describe("data api", () => {
   itAsync("get based on id", async () => {

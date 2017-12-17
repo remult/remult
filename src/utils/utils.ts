@@ -982,8 +982,12 @@ export class Entity<idType> {
     return this.__getColumnByJsonName(col.jsonName);
   }
   __getColumnByJsonName(key: string): Column<any> {
-    let any: any = this;
-    return any[key];
+    let result: Column<any>;
+    this.__iterateColumns().forEach(c => {
+      if (c.jsonName == key)
+        result = c;  
+    });
+    return result;
   }
   __iterateColumns() {
     return this.__columns;
