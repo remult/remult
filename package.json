@@ -1,6 +1,6 @@
 {
   "name": "radweb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "radweb",
   "license": "MIT",
   "main": "index.js",
@@ -23,8 +23,6 @@
     "addVersion": "npm version patch",
     "copyPackage": "copyfiles package.json dist",
     "copyToEnvWeb": "copyfiles -u 1 ./dist/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../env.web/frontend/node_modules/radweb/copyfiles -u 1  ./dist/utils/angular/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../env.web/frontend/node_modules/radweb/",
-    
-    
     "publish-to-npm": "npm run build && npm run addVersion && npm run copyPackage && npm run package && cd dist && npm publish",
     "testPub": "npm run build && npm run copyPackage && npm run package && npm run copyToEnvWeb"
   },
