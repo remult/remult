@@ -245,8 +245,9 @@ describe("test row provider", () => {
     expect(cs.dropDown.items[1].id).toBe(2);
     expect(cs.dropDown.items[0].caption).toBe('noam');
     expect(cs.dropDown.items[1].caption).toBe('yael');
-    c1.id.value = 1;
-    expect(cc._getColValue(cc.items[0], c1)).toBe('noam');
+    var c2 = new Categories();
+    c2.id.value = 1;
+    expect(cc._getColValue(cc.items[0], c2)).toBe('noam');
 
   });
 
