@@ -175,7 +175,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       if (settings.caption)
         this.caption = settings.caption;
       if (!this.caption && entity) {
-        this.caption = entity.source.createNewItem().name;
+        this.caption = entity.source.createNewItem().__name;
       }
       this.setGetOptions(settings.get);
 
@@ -873,7 +873,7 @@ export class AndFilter implements FilterBase {
 }
 
 export class Entity<idType> {
-  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, public name?: string) {
+  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, public __name?: string) {
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
     this.setSource(source);
   }
@@ -910,7 +910,7 @@ export class Entity<idType> {
   }
 
   setSource(dp: DataProviderFactory) {
-    this.source = new EntitySource<this>(this.name, () => <this>this.factory(), dp);
+    this.source = new EntitySource<this>(this.__name, () => <this>this.factory(), dp);
   }
   save() {
     this.__clearErrors();
@@ -1405,7 +1405,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   __columnSettingsTypeScript() {
     let memberName = 'x';
     if (this.currentRow())
-      memberName = this.currentRow().name;
+      memberName = this.currentRow().__name;
     memberName = memberName[0].toLocaleLowerCase() + memberName.substring(1);
     let result = ''
 
