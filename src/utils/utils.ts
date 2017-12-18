@@ -1224,7 +1224,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
 
     }
-    Promise.all(promises);
+    await Promise.all(promises);
     return Promise.resolve();
   }
   async buildDropDown(s: ColumnSetting<any>) {
