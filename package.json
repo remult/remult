@@ -1,6 +1,6 @@
 {
   "name": "radweb",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "radweb",
   "license": "MIT",
   "main": "index.js",
