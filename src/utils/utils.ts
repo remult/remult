@@ -885,7 +885,7 @@ export class Entity<idType> {
   protected initColumns(idColumn?: Column<idType>) {
     if (idColumn)
       this.__idColumn = idColumn;
-    let x = <any>this;
+    let x = <any>this; 
     for (let c in x) {
       let y = x[c];
 
