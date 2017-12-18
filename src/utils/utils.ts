@@ -1194,6 +1194,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   async add(...columns: ColumnSetting<rowType>[]):Promise<void>;
   async add(...columns: string[]):Promise<void>;
   async add(...columns: any[]) {
+    var promises: Promise<void>[] = [];
     for (let c of columns) {
       let s: ColumnSetting<rowType>;
       let x = c as ColumnSetting<rowType>;
@@ -1217,12 +1218,13 @@ export class ColumnCollection<rowType extends Entity<any>> {
       }
 
       else {
-        await this.buildDropDown(x);
+        promises.push(this.buildDropDown(x));
       }
       this.items.push(x);
 
 
     }
+    Promise.all(promises);
     return Promise.resolve();
   }
   async buildDropDown(s: ColumnSetting<any>) {
