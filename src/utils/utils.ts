@@ -1,5 +1,5 @@
 
-import { ColumnSetting } from './utils';
+import { ColumnSetting, DropDownItem } from './utils';
 
 import { makeTitle, isFunction } from './common';
 
@@ -1191,9 +1191,9 @@ export class ColumnCollection<rowType extends Entity<any>> {
   private settingsByKey: any = {};
 
   allowDesignMode: boolean;
-  add(...columns: ColumnSetting<rowType>[]): void;
-  add(...columns: string[]): void;
-  add(...columns: any[]) {
+  async add(...columns: ColumnSetting<rowType>[]):Promise<void>;
+  async add(...columns: string[]):Promise<void>;
+  async add(...columns: any[]) {
     for (let c of columns) {
       let s: ColumnSetting<rowType>;
       let x = c as ColumnSetting<rowType>;
@@ -1217,12 +1217,13 @@ export class ColumnCollection<rowType extends Entity<any>> {
       }
 
       else {
-        this.buildDropDown(x);
+        await this.buildDropDown(x);
       }
       this.items.push(x);
 
 
     }
+    return Promise.resolve();
   }
   async buildDropDown(s: ColumnSetting<any>) {
     if (s.dropDown) {
@@ -1352,8 +1353,16 @@ export class ColumnCollection<rowType extends Entity<any>> {
       if (r instanceof Column)
         r = r.value;
 
+    
+
     }
     else if (col.column) {
+      if (col.dropDown && col.dropDown.items) {
+        for (let x of col.dropDown.items) {
+          if (x.id == row.__getColumn(col.column).value)
+            return x.caption;  
+        }
+      }
       r = row.__getColumn(col.column).displayValue;
     }
 
