@@ -5,7 +5,7 @@ import { DataProvider, DataProviderFactory } from './../utils/DataInterfaces';
 import * as radweb from '../utils/utils';
 
 export class Categories extends radweb.Entity<number> {
-  id = new radweb.NumberColumn('CategoryID');
+  id = new radweb.NumberColumn({dbName: 'CategoryID'});
   categoryName = new radweb.StringColumn();
   description = new radweb.StringColumn();
 

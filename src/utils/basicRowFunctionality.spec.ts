@@ -1,6 +1,6 @@
 import { __EntityValueProvider, NumberColumn,StringColumn,Entity } from './utils';
 import { createData } from './RowProvider.spec';
-import { DataApi, DataApiError, DataApiResponse } from './DataApi';
+import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
 import { InMemoryDataProvider } from './inMemoryDatabase';
 import { itAsync } from './testHelper.spec';
 

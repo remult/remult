@@ -36,6 +36,7 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
       if (options.where) {
         rows = rows.filter(i => {
           let x = new FilterConsumerBridgeToObject(i);
+          
           options.where.__applyToConsumer(x);
           return x.ok;
         });
@@ -120,6 +121,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   ok = true;
   constructor(private row: any) { }
   public IsEqualTo(col: Column<any>, val: any): void {
+    
     if (this.row[col.jsonName] != val)
       this.ok = false;
   }
@@ -135,6 +137,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   }
 
   public IsGreaterThan(col: Column<any>, val: any): void {
+    
     if (this.row[col.jsonName] <= val)
       this.ok = false;
   }

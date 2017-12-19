@@ -1,4 +1,4 @@
-import { DataApi, DataApiResponse, DataApiError } from './../DataApi';
+import { DataApi, DataApiResponse, DataApiError } from './DataApi';
 import { Entity } from './../utils';
 import * as express from 'express';
 

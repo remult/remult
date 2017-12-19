@@ -45,7 +45,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
         select += where.where;
       }
     }
-
+    console.log(select);
     return r.query(select).then(r => {
 
       return r.recordset.map(y => {
@@ -70,7 +70,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
 
 }
 class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
-  where = " ";
+  where = "";
   constructor(private r: sql.Request) { }
   IsEqualTo(col: Column<any>, val: any): void {
     this.add(col, val, "=");

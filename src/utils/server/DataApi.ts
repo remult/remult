@@ -1,7 +1,7 @@
 import { DataApiError } from './DataApi';
 
-import { Entity, AndFilter, Sort } from './utils';
-import { FindOptions } from './DataInterfaces';
+import { Entity, AndFilter, Sort } from './../utils';
+import { FindOptions, FilterBase } from './../DataInterfaces';
 
 export class DataApi {
   constructor(private rowType: Entity<any>) {
@@ -17,14 +17,24 @@ export class DataApi {
 
 
         this.rowType.__iterateColumns().forEach(col => {
-          let val = request.get(col.jsonName);
-          if (val != undefined) {
-            let f = col.isEqualTo(val);
-            if (findOptions.where)
-              findOptions.where = new AndFilter(findOptions.where, f);
-            else
-              findOptions.where = f;
+
+          function addFilter(key: string, theFilter: (val: any) => FilterBase) { 
+            let val = request.get(col.jsonName+key);
+            if (val != undefined) {
+              let f = theFilter(val);
+              if (findOptions.where)
+                findOptions.where = new AndFilter(findOptions.where, f);
+              else
+                findOptions.where = f;
+            }
           }
+          addFilter('', val => col.isEqualTo(val));
+          addFilter('_gt', val => col.IsGreaterThan(val));
+          addFilter('_gte', val => col.IsGreaterOrEqualTo(val));
+          addFilter('_lt', val => col.IsLessThan(val));
+          addFilter('_lte', val => col.IsLessOrEqualTo(val));
+          addFilter('_ne', val => col.IsDifferentFrom(val));
+          
         });
       
         let sort = request.get("_sort");
@@ -43,7 +53,13 @@ export class DataApi {
               });
             }
           });
-        }  
+          
+        } 
+        let limit =+request.get("_limit");
+          if (!limit)
+            limit = 25;  
+          findOptions.limit = limit;
+          findOptions.page = +request.get("_page");
 
       }
       await this.rowType.source.find(findOptions)

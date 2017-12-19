@@ -275,3 +275,4 @@ __pycache__/
 **/e2e/**/*.map
 **/e2e/**/*.d.ts
 **/dist/**
+**/distServer/**

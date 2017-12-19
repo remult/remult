@@ -795,7 +795,7 @@ export class Column<dataType>  {
     return new Filter(add => add.IsGreaterOrEqualTo(this, this.getVal(value)));
   }
   IsGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsEqualTo(this, this.getVal(value)));
+    return new Filter(add => add.IsGreaterThan(this, this.getVal(value)));
   }
   IsLessOrEqualTo(value: Column<dataType> | dataType) {
     return new Filter(add => add.IsLessOrEqualTo(this, this.getVal(value)));
