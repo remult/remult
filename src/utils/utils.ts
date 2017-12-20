@@ -1,5 +1,4 @@
 
-import { ColumnSetting, DropDownItem } from './utils';
 
 import { makeTitle, isFunction } from './common';
 
@@ -786,24 +785,24 @@ export class Column<dataType>  {
   readonly: boolean;
   inputType: string;
   isEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsEqualTo(this, this.getVal(value)));
+    return new Filter(add => add.IsEqualTo(this, this.__getVal(value)));
   }
   IsDifferentFrom(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsDifferentFrom(this, this.getVal(value)));
+    return new Filter(add => add.IsDifferentFrom(this, this.__getVal(value)));
   }
   IsGreaterOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsGreaterOrEqualTo(this, this.getVal(value)));
+    return new Filter(add => add.IsGreaterOrEqualTo(this, this.__getVal(value)));
   }
   IsGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsGreaterThan(this, this.getVal(value)));
+    return new Filter(add => add.IsGreaterThan(this, this.__getVal(value)));
   }
   IsLessOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsLessOrEqualTo(this, this.getVal(value)));
+    return new Filter(add => add.IsLessOrEqualTo(this, this.__getVal(value)));
   }
   IsLessThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsLessThan(this, this.getVal(value)));
+    return new Filter(add => add.IsLessThan(this, this.__getVal(value)));
   }
-  private getVal(value: Column<dataType> | dataType): dataType {
+  __getVal(value: Column<dataType> | dataType): dataType {
 
 
     if (value instanceof Column)
@@ -885,7 +884,7 @@ export class Entity<idType> {
   protected initColumns(idColumn?: Column<idType>) {
     if (idColumn)
       this.__idColumn = idColumn;
-    let x = <any>this; 
+    let x = <any>this;
     for (let c in x) {
       let y = x[c];
 
@@ -914,7 +913,7 @@ export class Entity<idType> {
   }
   save() {
     this.__clearErrors();
-    return this.__entityData.save().catch(
+    return this.__entityData.save(this).catch(
       (e: Promise<any>) => {
         return e.then(e => {
           if (e.message)
@@ -985,7 +984,7 @@ export class Entity<idType> {
     let result: Column<any>;
     this.__iterateColumns().forEach(c => {
       if (c.jsonName == key)
-        result = c;  
+        result = c;
     });
     return result;
   }
@@ -1020,6 +1019,42 @@ export interface LookupCache<T extends Entity<any>> {
   lookup: Lookup<T>;
 }
 
+export class CompoundIdColumn extends Column<string>
+{
+  private columns: Column<any>[];
+  constructor(entity: Entity<string>, ...columns: Column<any>[]) {
+    super();
+    this.columns = columns;
+  }
+  isEqualTo(value: Column<string> | string): Filter {
+    return new Filter(add => {
+      let val = this.__getVal(value);
+      let id = val.split(',');
+      let result: FilterBase;
+      this.columns.forEach((c, i) => {
+        if (!result)
+          result = c.isEqualTo(id[i]);
+        else
+          result = new AndFilter(result, c.isEqualTo(id[i]));
+      });
+      return result.__applyToConsumer(add);
+    });
+  }
+  __addIdToPojo(p: any) {
+    if (p.id)
+      return;
+    let r = "";
+    this.columns.forEach(c => {
+      if (r.length > 0)
+        r += ',';
+      r += p[c.jsonName];
+    });
+    p.id = r;
+
+  }
+
+}
+
 
 
 
@@ -1034,7 +1069,8 @@ export class EntitySource<T extends Entity<any>>
       .then(arr => {
         return arr.map(i => {
           let r = this.factory();
-          r.__entityData.setData(i);
+
+          r.__entityData.setData(i,r);
           r.source = this;
           return r;
         })
@@ -1092,18 +1128,21 @@ export class __EntityValueProvider implements ColumnValueProvider {
         x.rowReset(this.newRow);
     });
   }
-  save(): Promise<void> {
+  save(e: Entity<any>): Promise<void> {
+    let d = JSON.parse(JSON.stringify(this.data));
+    if (e.__idColumn instanceof CompoundIdColumn)
+      d.id = undefined;  
     if (this.newRow) {
-      return this.getDataProvider().insert(this.data).then((newData: any) => {
-        this.setData(newData);
+      return this.getDataProvider().insert(d).then((newData: any) => {
+        this.setData(newData,e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(true);
         });
       });
     } else {
-      return this.getDataProvider().update(this.id, this.data).then((newData: any) => {
-        this.setData(newData);
+      return this.getDataProvider().update(this.id, d).then((newData: any) => {
+        this.setData(newData,e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(false);
@@ -1118,9 +1157,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
   private originalData: any = {};
 
 
-  setData(data: any) {
+  setData(data: any, r: Entity<any>) {
     if (!data)
       data = {};
+    if (r.__idColumn instanceof CompoundIdColumn) {
+      r.__idColumn.__addIdToPojo(data);
+    }
     if (data.id) {
       this.id = data.id;
       this.newRow = false;
@@ -1191,8 +1233,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
   private settingsByKey: any = {};
 
   allowDesignMode: boolean;
-  async add(...columns: ColumnSetting<rowType>[]):Promise<void>;
-  async add(...columns: string[]):Promise<void>;
+  async add(...columns: ColumnSetting<rowType>[]): Promise<void>;
+  async add(...columns: string[]): Promise<void>;
   async add(...columns: any[]) {
     var promises: Promise<void>[] = [];
     for (let c of columns) {
@@ -1355,14 +1397,14 @@ export class ColumnCollection<rowType extends Entity<any>> {
       if (r instanceof Column)
         r = r.value;
 
-    
+
 
     }
     else if (col.column) {
       if (col.dropDown && col.dropDown.items) {
         for (let x of col.dropDown.items) {
           if (x.id == row.__getColumn(col.column).value)
-            return x.caption;  
+            return x.caption;
         }
       }
       r = row.__getColumn(col.column).displayValue;
@@ -1521,6 +1563,6 @@ export function extractSortFromSettings<T extends Entity<any>>(entity: T, opt: F
         r.Segments.push({ column: i });
       else r.Segments.push(i);
     });
-    return r; 
+    return r;
   }
 }

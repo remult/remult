@@ -182,7 +182,7 @@ describe("test row provider", () => {
   });
   itAsync("update should fail nicely", async () => {
     let c = new Categories();
-    c.setSource({ provideFor: () => new myDp<Categories>() });
+    c.setSource({ provideFor: () => new myDp<Categories>(()=>new Categories()) }); 
     c.id.value = 1;
     c.categoryName.value = 'noam';
     await c.save();
@@ -409,8 +409,8 @@ describe("order by api", () => {
 
 
 class myDp<T extends Entity<any>> extends ActualInMemoryDataProvider<T> {
-  constructor() {
-    super([]);
+  constructor( factory: () => T) {
+    super( factory, []);
   }
   public update(id: any, data: any): Promise<any> {
     throw new Error("what");

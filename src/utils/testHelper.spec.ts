@@ -2,7 +2,7 @@ import { InMemoryDataProvider } from './inMemoryDatabase';
 import { Categories } from './../app/models';
 
 
-export function itAsync(name: string, runAsync: () => Promise<any>) {
+export function itAsync(name: string, runAsync: () => Promise<any>) { 
   it(name, (done: DoneFn) => {
     runAsync().catch(e => {
       fail(e);

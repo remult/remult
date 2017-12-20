@@ -1,4 +1,5 @@
-import { __EntityValueProvider, NumberColumn,StringColumn,Entity } from './utils';
+
+import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder ,  UrlBuilder} from './utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
 import { InMemoryDataProvider } from './inMemoryDatabase';
@@ -9,6 +10,7 @@ import { TestBed, async } from '@angular/core/testing';
 
 
 import { environment } from './../environments/environment';
+
 
 
 class TestDataApiResponse implements DataApiResponse {
@@ -42,7 +44,7 @@ describe('Test basic row functionality', () => {
     let c = new Categories();
     expect(c.__idColumn.jsonName).toBe("id");
 
-   });
+  });
   it("object assign works", () => {
     let a: any = {};
     let b: any = {};
@@ -95,7 +97,7 @@ describe('Test basic row functionality', () => {
     y.name = 'yael';
     x.__fromPojo(y);
     expect(x.name1.value).toBe('yael');
-    
+
   });
   it("json name is important", () => {
     let x = new myTestEntity();
@@ -104,14 +106,14 @@ describe('Test basic row functionality', () => {
     var y = new myTestEntity();
     expect(x.__getColumn(y.name1).value).toBe('a');
 
-    
+
   });
 
 });
-class myTestEntity extends Entity<number>{ 
+class myTestEntity extends Entity<number>{
   id = new NumberColumn();
   name1 = new StringColumn({ jsonName: 'name' });
-  constructor() { 
+  constructor() {
     super(() => new myTestEntity(), environment.dataSource, 'myTestEntity');
     this.initColumns();
   }
@@ -164,7 +166,7 @@ describe("data api", () => {
     t.success = async (data: any) => {
       expect(data.id).toBe(1);
       expect(data.categoryName).toBe('noam 1');
-      console.log(data);
+      
       d.ok();
     };
     await api.put(t, 1, {
@@ -297,7 +299,7 @@ describe("data api", () => {
     d.test();
   });
 
-  it("columnsAreOk", () => { 
+  it("columnsAreOk", () => {
     let c = new Categories();
     expect(c.__iterateColumns().length).toBe(3);
 
@@ -308,8 +310,8 @@ describe("data api", () => {
 
 });
 
-describe("column validation", () => { 
-  it("validation clears on reset", () => { 
+describe("column validation", () => {
+  it("validation clears on reset", () => {
     let c = new Categories();
     expect(c.isValid()).toBe(true);
     c.id.error = "x";
@@ -319,7 +321,7 @@ describe("column validation", () => {
     expect(c.id.error).toBe(undefined);
     expect(c.isValid()).toBe(true);
   });
-  it("validation clears on change", () => { 
+  it("validation clears on change", () => {
     let c = new Categories();
     expect(c.isValid()).toBe(true);
     c.id.error = "x";
@@ -331,3 +333,92 @@ describe("column validation", () => {
   });
 
 });
+describe("compund id", () => {
+  itAsync("start", async () => {
+    let c = new CompoundIdEntity();
+    let mem = new InMemoryDataProvider();
+    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    c.setSource(mem);
+    
+    var r = await c.source.find();
+    expect(r.length).toBe(2);
+    expect(r[0].a.value).toBe(1);
+    expect(r[0].id.value).toBe('1,11');
+    r = await c.source.find({ where: c.id.isEqualTo('1,11') });
+    
+    expect(r.length).toBe(1);
+    expect(r[0].a.value).toBe(1);
+  });
+  it("test id filter", () => {
+    let c = new CompoundIdEntity();
+    let u = new UrlBuilder("");
+    c.id.isEqualTo('1,11').__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(u));
+    expect(u.url).toBe('?a=1&b=11');
+   });
+  itAsync("update", async () => {
+    let c = new CompoundIdEntity();
+    let mem = new InMemoryDataProvider();
+    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    c.setSource(mem);
+    
+    var r = await c.source.find();
+    r[0].c.value = 55;
+    let saved = await  r[0].save();
+    
+    
+    expect(mem.rows[c.__name][0].c).toBe(55);
+    expect(mem.rows[c.__name][0].id).toBe(undefined);
+    expect(r[0].id.value).toBe('1,11');
+  });
+  itAsync("update2", async () => {
+    let c = new CompoundIdEntity();
+    let mem = new InMemoryDataProvider();
+    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    c.setSource(mem);
+    
+    var r = await c.source.find();
+    r[0].b.value = 55;
+    let saved = await  r[0].save();
+    
+    
+    expect(mem.rows[c.__name][0].b).toBe(55);
+    expect(mem.rows[c.__name][0].id).toBe(undefined);
+    expect(r[0].id.value).toBe('1,55');
+  });
+  itAsync("insert", async () => {
+    let c = new CompoundIdEntity();
+    let mem = new InMemoryDataProvider();
+    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    c.setSource(mem);
+    
+    c.a.value = 3;
+    c.b.value = 33;
+    c.c.value = 3333;
+    await c.save();
+    expect(mem.rows[c.__name][2].b).toBe(33);
+    expect(mem.rows[c.__name][2].id).toBe(undefined);
+    expect(c.id.value).toBe('3,33');
+  });
+  itAsync("delete", async () => { 
+    let c = new CompoundIdEntity();
+    let mem = new InMemoryDataProvider();
+    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    c.setSource(mem);
+    let r = await c.source.find();
+    await r[1].delete();
+    expect(mem.rows[c.__name].length).toBe(1);
+    expect(mem.rows[c.__name][0].a).toBe(1);
+  });
+
+});
+class CompoundIdEntity extends Entity<string>
+{
+  a = new NumberColumn();
+  b = new NumberColumn();
+  c = new NumberColumn();
+  id = new CompoundIdColumn(this, this.a, this.b);
+  constructor() {
+    super(() => new CompoundIdEntity(), environment.dataSource, "compountIdEntity");
+    this.initColumns();
+  }
+}

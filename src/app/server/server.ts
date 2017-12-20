@@ -1,4 +1,4 @@
-import { Orders, Customers, Shippers, Products } from './../models';
+import { Orders, Customers, Shippers, Products, Order_details } from './../models';
 import { DataApi, DataApiResponse, DataApiError } from './../../utils/server/DataApi';
 import { SQLServerDataProvider } from '../../utils/server/SQLServerDataProvider';
 import { environment } from './../../environments/environment';
@@ -29,6 +29,7 @@ app.use(function (req, res, next) {
 
 var eb = new ExpressBridge(app, '/dataApi');
 eb.add(new Categories());
+eb.add(new Order_details());
 eb.add(new Orders());
 eb.add(new Customers());
 eb.add(new Products());

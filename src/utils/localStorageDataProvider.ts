@@ -8,13 +8,13 @@ export class LocalStorageDataProvider implements DataProviderFactory {
   constructor() {
 
   }
-  public provideFor<T extends Entity<any>>(name: string): DataProvider {
-    return new JsonStorageDataProvider<T>(new LocalJsonStorage(name));
+  public provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
+    return new JsonStorageDataProvider<T>(new LocalJsonStorage(name, factory));
   }
 }
 
 class LocalJsonStorage implements JsonStorage {
-  constructor(private key: string) {
+  constructor(private key: string, private factory: () => Entity<any>) {
 
   }
   doWork<T>(what: (dp: DataProvider, save: () => void) => T): T {
@@ -27,7 +27,7 @@ class LocalJsonStorage implements JsonStorage {
     }
     if (!(data instanceof Array))
       data = [];
-    let dp = new ActualInMemoryDataProvider(data);
+    let dp = new ActualInMemoryDataProvider(this.factory, data);
     return what(dp, () => localStorage.setItem(this.key, JSON.stringify(data, undefined, 2)));
   }
 }

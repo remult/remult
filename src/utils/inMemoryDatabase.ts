@@ -1,19 +1,21 @@
+
 import { FilterConsumer } from './DataInterfaces';
 
 
-import { dataAreaSettings, Entity, Column } from './utils';
+import { dataAreaSettings, Entity, Column, CompoundIdColumn } from './utils';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';
 
 
+
 export class InMemoryDataProvider implements DataProviderFactory {
   rows: any = {};
-  public provideFor<T extends Entity<any>>(name: string): DataProvider {
+  public provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
     if (!this.rows[name])
       this.rows[name] = [];
-    return new ActualInMemoryDataProvider(this.rows[name]);
+    return new ActualInMemoryDataProvider(factory, this.rows[name]);
   }
 }
 
@@ -24,7 +26,7 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
 
 
 
-  constructor(private rows?: any[]) {
+  constructor(private factory: () => T, private rows?: any[]) {
     if (!rows)
       rows = [];
   }
@@ -36,7 +38,7 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
       if (options.where) {
         rows = rows.filter(i => {
           let x = new FilterConsumerBridgeToObject(i);
-          
+
           options.where.__applyToConsumer(x);
           return x.ok;
         });
@@ -61,14 +63,14 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
           return r;
         });
       }
-      if (options.limit) { 
+      if (options.limit) {
         let page = 1;
         if (options.page)
           page = options.page;
         if (page < 1)
-          page = 1;  
+          page = 1;
         let x = 0;
-        rows = rows.filter(i => { 
+        rows = rows.filter(i => {
           x++;
           let max = page * options.limit;
           let min = max - options.limit;
@@ -78,28 +80,46 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
     }
     if (rows)
       return rows.map(i => {
-
-        return JSON.parse(JSON.stringify(i));
-
+        return this.map(i);
       });
 
   }
-
+  map(i: any): any {
+    let r = JSON.parse(JSON.stringify(i));
+    return r;
+  }
+  private entity: Entity<any>;
+  private idMatches(id: any): (item: any) => boolean {
+    if (!this.entity)
+      this.entity = this.factory();
+    let idCol = this.entity.__idColumn;
+    let f = this.entity.__idColumn.isEqualTo(id);
+    return item => {
+      let x = new FilterConsumerBridgeToObject(item);
+      f.__applyToConsumer(x);
+      return x.ok;
+    };
+  }
 
 
   public update(id: any, data: any): Promise<any> {
+
+    let idMatches = this.idMatches(id);
+
     for (let i = 0; i < this.rows.length; i++) {
-      if (id == this.rows[i].id) {
+
+      if (idMatches(this.rows[i])) {
         this.rows[i] = Object.assign({}, this.rows[i], data);
-        return Promise.resolve(this.rows[i]);
+        return Promise.resolve(this.map(this.rows[i]));
       }
     }
     throw new Error("couldn't find id to update: " + id);
   }
 
   public delete(id: any): Promise<void> {
+    let idMatches = this.idMatches(id);
     for (let i = 0; i < this.rows.length; i++) {
-      if (id == this.rows[i].id) {
+      if (idMatches(this.rows[i])) {
         this.rows.splice(i, 1);
         return Promise.resolve();
       }
@@ -108,10 +128,11 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
   }
 
   public insert(data: any): Promise<any> {
-    this.rows.forEach(i => {
-      if (data.id == i.id)
-        throw Error("id already exists");
-    });
+    if (data.id)
+      this.rows.forEach(i => {
+        if (data.id == i.id)
+          throw Error("id already exists");
+      });
     this.rows.push(JSON.parse(JSON.stringify(data)));
     return Promise.resolve(JSON.parse(JSON.stringify(data)));
   }
@@ -121,7 +142,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   ok = true;
   constructor(private row: any) { }
   public IsEqualTo(col: Column<any>, val: any): void {
-    
+
     if (this.row[col.jsonName] != val)
       this.ok = false;
   }
@@ -137,7 +158,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   }
 
   public IsGreaterThan(col: Column<any>, val: any): void {
-    
+
     if (this.row[col.jsonName] <= val)
       this.ok = false;
   }

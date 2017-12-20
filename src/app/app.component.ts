@@ -20,7 +20,7 @@ export class AppComponent {
   pLookUp = new utils.Lookup(this.pForLookup);
   orderDetailsSettings = new utils.GridSettings(new models.Order_details(), {
    // allowDelete: true,
-   // allowUpdate: true,
+    allowUpdate: true,
    // allowInsert: true,
     
     columnSettings: orderDetails => [
@@ -57,7 +57,7 @@ export class AppComponent {
   settings = new utils.GridSettings(new models.Orders(), {
     numOfColumnsInGrid: 4,
     
-  //  allowUpdate: true,
+    allowUpdate: true,
  //   allowInsert: true,
     get: {limit:3, orderBy: o => new utils.Sort({column: o.id,descending:true }) },
 
@@ -84,7 +84,8 @@ export class AppComponent {
         }
       }
 
-    ]
+    ],
+    rowCssClass:o=>o.orderDate.getDayOfWeek()==2?'danger':''
   });
   shipInfoArea = this.settings.addArea({
     columnSettings: orders => [
