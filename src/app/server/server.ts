@@ -11,6 +11,7 @@ import * as bodyParser from 'body-parser';
 import * as fs from 'fs';
 import { ExpressBridge } from './../../utils/server/expressBridge';
 
+
 let app = express();
 let port = 3000;
 environment.dataSource = new JsonFileDataProvider('./appData');
@@ -23,6 +24,7 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Origin", req.header('origin'));
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
   
   next();
 });
