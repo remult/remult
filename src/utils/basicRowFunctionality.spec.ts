@@ -337,7 +337,7 @@ describe("compund id", () => {
   itAsync("start", async () => {
     let c = new CompoundIdEntity();
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
     
     var r = await c.source.find();
@@ -358,7 +358,7 @@ describe("compund id", () => {
   itAsync("update", async () => {
     let c = new CompoundIdEntity();
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
     
     var r = await c.source.find();
@@ -366,14 +366,14 @@ describe("compund id", () => {
     let saved = await  r[0].save();
     
     
-    expect(mem.rows[c.__name][0].c).toBe(55);
-    expect(mem.rows[c.__name][0].id).toBe(undefined);
+    expect(mem.rows[c.__getName()][0].c).toBe(55);
+    expect(mem.rows[c.__getName()][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,11');
   });
   itAsync("update2", async () => {
     let c = new CompoundIdEntity();
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
     
     var r = await c.source.find();
@@ -381,33 +381,33 @@ describe("compund id", () => {
     let saved = await  r[0].save();
     
     
-    expect(mem.rows[c.__name][0].b).toBe(55);
-    expect(mem.rows[c.__name][0].id).toBe(undefined);
+    expect(mem.rows[c.__getName()][0].b).toBe(55);
+    expect(mem.rows[c.__getName()][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,55');
   });
   itAsync("insert", async () => {
     let c = new CompoundIdEntity();
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
     
     c.a.value = 3;
     c.b.value = 33;
     c.c.value = 3333;
     await c.save();
-    expect(mem.rows[c.__name][2].b).toBe(33);
-    expect(mem.rows[c.__name][2].id).toBe(undefined);
+    expect(mem.rows[c.__getName()][2].b).toBe(33);
+    expect(mem.rows[c.__getName()][2].id).toBe(undefined);
     expect(c.id.value).toBe('3,33');
   });
   itAsync("delete", async () => { 
     let c = new CompoundIdEntity();
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__name] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
     let r = await c.source.find();
     await r[1].delete();
-    expect(mem.rows[c.__name].length).toBe(1);
-    expect(mem.rows[c.__name][0].a).toBe(1);
+    expect(mem.rows[c.__getName()].length).toBe(1);
+    expect(mem.rows[c.__getName()][0].a).toBe(1);
   });
 
 });

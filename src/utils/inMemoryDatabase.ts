@@ -1,9 +1,10 @@
 
-import { FilterConsumer } from './DataInterfaces';
+
+
 
 
 import { dataAreaSettings, Entity, Column, CompoundIdColumn } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from './dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from './dataInterfaces';
 
 
 import { isFunction, makeTitle } from './common';
@@ -63,20 +64,7 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
           return r;
         });
       }
-      if (options.limit) {
-        let page = 1;
-        if (options.page)
-          page = options.page;
-        if (page < 1)
-          page = 1;
-        let x = 0;
-        rows = rows.filter(i => {
-          x++;
-          let max = page * options.limit;
-          let min = max - options.limit;
-          return x > min && x <= max;
-        });
-      }
+      rows = pageArray(rows, options);
     }
     if (rows)
       return rows.map(i => {
@@ -136,6 +124,24 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
     this.rows.push(JSON.parse(JSON.stringify(data)));
     return Promise.resolve(JSON.parse(JSON.stringify(data)));
   }
+}
+export function pageArray(rows: any[], options?: FindOptions) {
+  if (!options)
+    return rows;
+  if (!options.limit)
+    return rows;
+  let page = 1;
+  if (options.page)
+    page = options.page;
+  if (page < 1)
+    page = 1;
+  let x = 0;
+  return rows.filter(i => {
+    x++;
+    let max = page * options.limit;
+    let min = max - options.limit;
+    return x > min && x <= max;
+  });
 }
 class FilterConsumerBridgeToObject implements FilterConsumer {
 

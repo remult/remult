@@ -174,7 +174,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       if (settings.caption)
         this.caption = settings.caption;
       if (!this.caption && entity) {
-        this.caption = entity.source.createNewItem().__name;
+        this.caption = entity.source.createNewItem().__getCaption();
       }
       this.setGetOptions(settings.get);
 
@@ -870,11 +870,42 @@ export class AndFilter implements FilterBase {
     this.b.__applyToConsumer(add);
   }
 }
-
+export interface EntityOptions {
+  name?: string;
+  dbName?: string;
+  caption?: string;
+ }
 export class Entity<idType> {
-  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, public __name?: string) {
+  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, options?: EntityOptions|string) {
+    if (options) { 
+      if (typeof (options) === "string") {
+        this.__options = { name: options };
+      } else this.__options = options;
+
+    }
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
     this.setSource(source);
+  }
+  __options: EntityOptions;
+
+
+  __getName() { 
+    if (!this.__options) { 
+      this.__options = {};
+    }
+    if (!this.__options.name) { 
+      this.__options.name = this.constructor.name;
+    }
+    return this.__options.name;
+  }
+  __getCaption() { 
+    if (!this.__options) { 
+      this.__options = {};
+    }
+    if (!this.__options.caption) { 
+      this.__options.caption =makeTitle(this.__getName());
+    }
+    return this.__options.caption;
   }
   /** @internal */
   __entityData: __EntityValueProvider;
@@ -909,7 +940,7 @@ export class Entity<idType> {
   }
 
   setSource(dp: DataProviderFactory) {
-    this.source = new EntitySource<this>(this.__name, () => <this>this.factory(), dp);
+    this.source = new EntitySource<this>(this.__getName(), () => <this>this.factory(), dp);
   }
   save() {
     this.__clearErrors();
@@ -1447,7 +1478,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   __columnSettingsTypeScript() {
     let memberName = 'x';
     if (this.currentRow())
-      memberName = this.currentRow().__name;
+      memberName = this.currentRow().__getName();
     memberName = memberName[0].toLocaleLowerCase() + memberName.substring(1);
     let result = ''
 

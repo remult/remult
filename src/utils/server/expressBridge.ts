@@ -9,7 +9,7 @@ export class ExpressBridge {
   }
   add(entity: Entity<any>) {
     let api = new DataApi(entity);
-    let myRoute = entity.__name;
+    let myRoute = entity.__getName();
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);
     this.app.route(myRoute).get((req, res) => {

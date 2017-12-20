@@ -1,3 +1,4 @@
+import { pageArray } from '../inMemoryDatabase';
 import { Entity, Column } from './../utils';
 import * as sql from 'mssql';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from '../dataInterfaces';
@@ -48,7 +49,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     console.log(select);
     return r.query(select).then(r => {
 
-      return r.recordset.map(y => {
+      return  pageArray(r.recordset,options).map(y => {
         let result: any = {};
         for (let x in r.recordset.columns) {
 

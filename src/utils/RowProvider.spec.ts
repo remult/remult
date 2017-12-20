@@ -38,6 +38,11 @@ async function insertFourRows() {
 };
 
 describe("test row provider", () => {
+  it("auto name", () => { 
+    var cat = new Categories();
+    expect(cat.constructor.name).toBe('Categories');
+    expect(cat.__getName()).toBe('Categories');
+  });
   itAsync("Insert", async () => {
 
 

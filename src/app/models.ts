@@ -10,7 +10,7 @@ export class Categories extends radweb.Entity<number> {
   description = new radweb.StringColumn();
 
   constructor() {
-      super(() => new Categories(), environment.dataSource, 'Categories');
+      super(() => new Categories(), environment.dataSource);
       this.initColumns();
   }
 }
@@ -92,7 +92,7 @@ export class Products extends radweb.Entity<number> {
 }
 
 export class Shippers extends radweb.Entity<number> {
-  id = new radweb.NumberColumn('ShipperID');
+  id = new radweb.NumberColumn({ dbName: 'ShipperID' });
   companyName = new radweb.StringColumn('CompanyName');
   phone = new radweb.StringColumn('Phone');
 
