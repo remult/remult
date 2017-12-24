@@ -39,8 +39,12 @@ export interface DataColumnSettings {
   readonly?: boolean;
   inputType?: string;
   dbName?: string;
+  storage?:ColumnStorage<any>
 }
-
+export interface ColumnStorage<dataType> {
+  toDb(val: dataType): any;
+  fromDb(val: any): dataType;
+}
 export interface RowEvents {
   rowDeleted?: () => void;
   rowSaved?: (newRow: boolean) => void;

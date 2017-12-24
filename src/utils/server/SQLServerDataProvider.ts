@@ -30,7 +30,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
   find(options?: FindOptions): Promise<any[]> {
     let e = this.factory();
     let select = 'select ';
-    let colKeys: string[] = [];
+    let colKeys: Column<any>[] = [];
     e.__iterateColumns().forEach(x => {
       if (x instanceof CompoundIdColumn) {
 
@@ -39,7 +39,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
         if (colKeys.length > 0)
           select += ', ';
         select += x.__getDbName();
-        colKeys.push(x.jsonName);
+        colKeys.push(x);
       }
     });
     select += ' from ' + e.__getDbName();
@@ -57,8 +57,8 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
       return pageArray(r.recordset, options).map(y => {
         let result: any = {};
         for (let x in r.recordset.columns) {
-
-          result[colKeys[r.recordset.columns[x].index]] = y[x];
+          let col = colKeys[r.recordset.columns[x].index];
+          result[col.jsonName] = col.__getStorage().fromDb(y[x]);
         }
         return result;
       });
@@ -102,7 +102,9 @@ class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       this.where += ' where ';
     } else this.where += ' and ';
     this.where += col.__getDbName() + ' ' + operator + ' @' + col.__getDbName();
-    this.r.input(col.__getDbName(), val);
+    let dbVal = col.__getStorage().toDb(val);
+    console.log(dbVal);
+    this.r.input(col.__getDbName(), dbVal);
   }
 
 }

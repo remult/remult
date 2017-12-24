@@ -1,8 +1,12 @@
 
 
+
 import { makeTitle, isFunction } from './common';
 
-import { DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer } from './DataInterfaces';
+import {
+  DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
+  , ColumnStorage
+} from './DataInterfaces';
 import { unescapeIdentifier } from '@angular/compiler';
 
 
@@ -746,6 +750,33 @@ export class lookupRowInfo<type> {
 
 }
 
+export class DefaultStorage<dataType> implements ColumnStorage<dataType>{
+  toDb(val: dataType) {
+    return val;
+  }
+  fromDb(val: any): dataType {
+    return val;
+  }
+
+}
+export class DateTimeDateStorage implements ColumnStorage<string>{
+  toDb(val: string) {
+    
+    return new Date(+val.substring(0,4),+val.substring(5,7),+val.substring(8,10));
+  }
+  fromDb(val: any): string {
+    var d = val as Date;
+    let month = '' + (d.getMonth() + 1),
+      day = '' + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
+  }
+
+}
 export class Column<dataType>  {
 
   __clearErrors(): any {
@@ -754,12 +785,15 @@ export class Column<dataType>  {
   jsonName: string;
   caption: string;
   dbName: string;
+  private __settings: DataColumnSettings;
   __getMemberName() { return this.jsonName; }
   constructor(settingsOrCaption?: DataColumnSettings | string) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
+        this.__settings = { caption: settingsOrCaption };
       } else {
+        this.__settings = settingsOrCaption;
         if (settingsOrCaption.jsonName)
           this.jsonName = settingsOrCaption.jsonName;
         if (settingsOrCaption.caption)
@@ -774,6 +808,15 @@ export class Column<dataType>  {
 
     }
 
+
+  }
+
+  __getStorage() {
+    if (!this.__settings)
+      this.__settings = {};
+    if (!this.__settings.storage)
+      this.__settings.storage = new DefaultStorage();
+    return this.__settings.storage;
 
   }
   error: string;
@@ -874,10 +917,10 @@ export interface EntityOptions {
   name?: string;
   dbName?: string;
   caption?: string;
- }
+}
 export class Entity<idType> {
-  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, options?: EntityOptions|string) {
-    if (options) { 
+  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, options?: EntityOptions | string) {
+    if (options) {
       if (typeof (options) === "string") {
         this.__options = { name: options };
       } else this.__options = options;
@@ -889,28 +932,28 @@ export class Entity<idType> {
   __options: EntityOptions;
 
 
-  __getName() { 
-    if (!this.__options) { 
+  __getName() {
+    if (!this.__options) {
       this.__options = {};
     }
-    if (!this.__options.name) { 
+    if (!this.__options.name) {
       this.__options.name = this.constructor.name;
     }
     return this.__options.name;
   }
-  __getDbName() { 
+  __getDbName() {
     if (!this.__options)
       this.__options = {};
     if (!this.__options.dbName)
       this.__options.dbName = this.__getName();
     return this.__options.dbName;
   }
-  __getCaption() { 
-    if (!this.__options) { 
+  __getCaption() {
+    if (!this.__options) {
       this.__options = {};
     }
-    if (!this.__options.caption) { 
-      this.__options.caption =makeTitle(this.__getName());
+    if (!this.__options.caption) {
+      this.__options.caption = makeTitle(this.__getName());
     }
     return this.__options.caption;
   }
@@ -1108,7 +1151,7 @@ export class EntitySource<T extends Entity<any>>
         return arr.map(i => {
           let r = this.factory();
 
-          r.__entityData.setData(i,r);
+          r.__entityData.setData(i, r);
           r.source = this;
           return r;
         })
@@ -1169,10 +1212,10 @@ export class __EntityValueProvider implements ColumnValueProvider {
   save(e: Entity<any>): Promise<void> {
     let d = JSON.parse(JSON.stringify(this.data));
     if (e.__idColumn instanceof CompoundIdColumn)
-      d.id = undefined;  
+      d.id = undefined;
     if (this.newRow) {
       return this.getDataProvider().insert(d).then((newData: any) => {
-        this.setData(newData,e);
+        this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(true);
@@ -1180,7 +1223,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     } else {
       return this.getDataProvider().update(this.id, d).then((newData: any) => {
-        this.setData(newData,e);
+        this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(false);

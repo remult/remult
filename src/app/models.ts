@@ -1,6 +1,6 @@
 import { environment } from './../environments/environment';
 
-import { Entity, EntitySource } from './../utils/utils';
+import { Entity, EntitySource, DateTimeDateStorage } from './../utils/utils';
 import { DataProvider, DataProviderFactory } from './../utils/DataInterfaces';
 import * as radweb from '../utils/utils';
 
@@ -18,9 +18,9 @@ export class Orders extends radweb.Entity<number> {
   id = new radweb.NumberColumn({dbName:"OrderId"});
   customerID = new radweb.StringColumn();
   employeeID = new radweb.NumberColumn();
-  orderDate = new radweb.DateColumn('OrderDate');
-  requiredDate = new radweb.DateColumn('RequiredDate');
-  shippedDate = new radweb.DateColumn('ShippedDate');
+  orderDate = new radweb.DateColumn({ storage : new DateTimeDateStorage()});
+  requiredDate = new radweb.DateColumn({ storage : new DateTimeDateStorage()});
+  shippedDate = new radweb.DateColumn({ storage : new DateTimeDateStorage()});
   shipVia = new radweb.NumberColumn('ShipVia');
   freight = new radweb.NumberColumn('Freight');
   shipName = new radweb.StringColumn('ShipName');

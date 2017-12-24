@@ -1,5 +1,5 @@
 
-import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder ,  UrlBuilder} from './utils';
+import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage } from './utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
 import { InMemoryDataProvider } from './inMemoryDatabase';
@@ -408,6 +408,18 @@ describe("compund id", () => {
     await r[1].delete();
     expect(mem.rows[c.__getName()].length).toBe(1);
     expect(mem.rows[c.__getName()][0].a).toBe(1);
+  });
+
+});
+describe("test date storage", () => { 
+  it("works", () => { 
+    var s = new DateTimeDateStorage();
+    let val = "1976-06-16";
+    var d: Date = s.toDb(val);
+    expect(d.getFullYear()).toBe(1976);
+    expect(d.getMonth()).toBe(6);
+    expect(d.getDate()).toBe(16);
+    
   });
 
 });
