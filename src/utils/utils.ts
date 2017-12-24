@@ -898,6 +898,13 @@ export class Entity<idType> {
     }
     return this.__options.name;
   }
+  __getDbName() { 
+    if (!this.__options)
+      this.__options = {};
+    if (!this.__options.dbName)
+      this.__options.dbName = this.__getName();
+    return this.__options.dbName;
+  }
   __getCaption() { 
     if (!this.__options) { 
       this.__options = {};

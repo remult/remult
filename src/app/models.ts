@@ -45,10 +45,10 @@ export class Order_details extends radweb.Entity<string> {
   unitPrice = new radweb.NumberColumn('UnitPrice');
   quantity = new radweb.NumberColumn('Quantity');
   discount = new radweb.NumberColumn('Discount');
-  id = new radweb.StringColumn('id');
+  id = new radweb.CompoundIdColumn(this,this.orderID,this.productID);
 
   constructor() {
-    super(() => new Order_details(), environment.dataSource, 'Order_details');
+    super(() => new Order_details(), environment.dataSource, {dbName:'[Order Details]'});
     this.initColumns(this.id);
   }
 }

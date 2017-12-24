@@ -1,5 +1,6 @@
+
 import { pageArray } from '../inMemoryDatabase';
-import { Entity, Column } from './../utils';
+import { Entity, Column, CompoundIdColumn } from './../utils';
 import * as sql from 'mssql';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from '../dataInterfaces';
 
@@ -31,13 +32,17 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let select = 'select ';
     let colKeys: string[] = [];
     e.__iterateColumns().forEach(x => {
+      if (x instanceof CompoundIdColumn) {
 
-      if (colKeys.length > 0)
-        select += ', ';
-      select += x.__getDbName();
-      colKeys.push(x.jsonName);
+      }
+      else {
+        if (colKeys.length > 0)
+          select += ', ';
+        select += x.__getDbName();
+        colKeys.push(x.jsonName);
+      }
     });
-    select += ' from ' + this.name;
+    select += ' from ' + e.__getDbName();
     let r = new sql.Request(this.sql);
     if (options) {
       if (options.where) {
@@ -49,7 +54,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     console.log(select);
     return r.query(select).then(r => {
 
-      return  pageArray(r.recordset,options).map(y => {
+      return pageArray(r.recordset, options).map(y => {
         let result: any = {};
         for (let x in r.recordset.columns) {
 
