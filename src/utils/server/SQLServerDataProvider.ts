@@ -76,9 +76,13 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
     let statement = 'update ' + this.entity.__getDbName() + ' set ';
     let added = false;
+    let resultFilter = this.entity.__idColumn.isEqualTo(id);
+    if (data.id != undefined)
+      resultFilter = this.entity.__idColumn.isEqualTo(data.id);
+
     this.entity.__iterateColumns().forEach(x => {
       if (x instanceof CompoundIdColumn) {
-
+        resultFilter = x.resultIdFilter(id, data);
       }
       else {
         let v = data[x.jsonName];
@@ -95,7 +99,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     statement += f.where;
     console.log(statement);
     return r.query(statement).then(() => {
-      return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
+      return this.find({ where: resultFilter }).then(y => y[0]);
     });
 
 
@@ -108,7 +112,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let r = new sql.Request(this.sql);
     let f = new FilterConsumerBridgeToSqlRequest(r);
     this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
-    let statement = 'delete ' + this.entity.__getDbName() ;
+    let statement = 'delete ' + this.entity.__getDbName();
     let added = false;
 
     statement += f.where;
@@ -130,10 +134,14 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let cols = '';
     let vals = '';
     let added = false;
+    let resultFilter = this.entity.__idColumn.isEqualTo(data.id);
+    
     this.entity.__iterateColumns().forEach(x => {
       if (x instanceof CompoundIdColumn) {
-
+        resultFilter = x.resultIdFilter(undefined, data);
       }
+
+
       else {
         let v = data[x.jsonName];
         if (v != undefined) {
@@ -152,7 +160,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
     console.log(statement);
     return r.query(statement).then(() => {
-      return this.find({ where: this.entity.__idColumn.isEqualTo(data.id) }).then(y => y[0]);
+      return this.find({ where: resultFilter }).then(y => y[0]);
     });
   }
 

@@ -996,12 +996,12 @@ export class Entity<idType> {
     this.__clearErrors();
     return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
   }
-  catchSaveErrors(e: any):any {
-    
+  catchSaveErrors(e: any): any {
+
     if (e instanceof Promise) {
       return e.then(x => this.catchSaveErrors(x));
     }
-    
+
 
     if (e.message)
       this.error = e.message;
@@ -1139,7 +1139,26 @@ export class CompoundIdColumn extends Column<string>
     p.id = r;
 
   }
-
+  resultIdFilter(id: string, data: any) {
+    return new Filter(add => {
+      let idParts:any[] = [];
+      if (id != undefined)
+        idParts = id.split(',');
+      let result: FilterBase;
+      this.columns.forEach((c, i) => {
+        let val = undefined;
+        if (i < idParts.length)
+          val = idParts[i];  
+        if (data[c.jsonName] != undefined)
+          val = data[c.jsonName];
+        if (!result)
+          result = c.isEqualTo(val);
+        else
+          result = new AndFilter(result, c.isEqualTo(val));
+      });
+      return result.__applyToConsumer(add);
+    });
+  }
 }
 
 

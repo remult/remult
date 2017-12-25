@@ -13,7 +13,7 @@ import { isFunction } from '../common';
 
 
   </div>
-  <div class="table-responsive" >
+  <div class="table-responsive col-sm-12" >
   <div class="pull-right" *ngIf="settings && records">
     <button class="btn glyphicon glyphicon-pencil btn-primary" *ngIf="settings.columns.allowDesignMode" (click)="settings.columns.designMode=!settings.columns.designMode"></button>
     <button class="btn glyphicon glyphicon-chevron-left" *ngIf="settings.page>1" (click)="settings.previousPage()"></button>

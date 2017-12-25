@@ -24,9 +24,9 @@ export class AppComponent {
   pForLookup = new models.Products();
   pLookUp = new utils.Lookup(this.pForLookup);
   orderDetailsSettings = new utils.GridSettings(new models.Order_details(), {
-    // allowDelete: true,
+     allowDelete: true,
     allowUpdate: true,
-    // allowInsert: true,
+     allowInsert: true,
 
     columnSettings: orderDetails => [
       {
