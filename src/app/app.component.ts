@@ -15,21 +15,25 @@ import * as db from '../utils/localStorageDataProvider';
 })
 export class AppComponent {
 
-
+  categories = new utils.GridSettings(new models.Categories(), {
+    allowUpdate: true,
+    allowDelete: true,
+    allowInsert: true
+  });
   pForLookup = new models.Products();
   pLookUp = new utils.Lookup(this.pForLookup);
   orderDetailsSettings = new utils.GridSettings(new models.Order_details(), {
-   // allowDelete: true,
+    // allowDelete: true,
     allowUpdate: true,
-   // allowInsert: true,
-    
+    // allowInsert: true,
+
     columnSettings: orderDetails => [
       {
         column: orderDetails.productID,
         dropDown: { source: new models.Products() },
         onUserChangedValue: od => this.pLookUp.whenGet(this.pForLookup.id.isEqualTo(od.productID)).then(p => od.unitPrice.value = p.unitPrice.value)
       },
-      
+
       orderDetails.unitPrice,
       orderDetails.quantity,
       { caption: 'row total', getValue: od => od.unitPrice.value * od.quantity.value }
@@ -56,10 +60,10 @@ export class AppComponent {
 
   settings = new utils.GridSettings(new models.Orders(), {
     numOfColumnsInGrid: 4,
-    
+
     allowUpdate: true,
- //   allowInsert: true,
-    get: {limit:3, orderBy: o => new utils.Sort({column: o.id,descending:true }) },
+    //   allowInsert: true,
+    get: { limit: 3, orderBy: o => new utils.Sort({ column: o.id, descending: true }) },
 
     onEnterRow: o => {
 
@@ -85,7 +89,7 @@ export class AppComponent {
       }
 
     ],
-    rowCssClass:o=>o.orderDate.getDayOfWeek()==2?'danger':''
+    rowCssClass: o => o.orderDate.getDayOfWeek() == 2 ? 'danger' : ''
   });
   shipInfoArea = this.settings.addArea({
     columnSettings: orders => [

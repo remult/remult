@@ -2,7 +2,7 @@
 import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage } from './utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
-import { InMemoryDataProvider } from './inMemoryDatabase';
+import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase';
 import { itAsync } from './testHelper.spec';
 
 import { Categories } from './../app/models';
@@ -197,6 +197,22 @@ describe("data api", () => {
 
     let r = await c.source.find();
     expect(r.length).toBe(0);
+  });
+  itAsync("delete falis nicely ", async () => {
+
+    let c = new Categories();
+    c.setSource({
+      provideFor: () => {
+        let r = new ActualInMemoryDataProvider(() => new Categories(), [{id:1}]);
+        r.delete = () => { throw  "ERROR";};
+      return r; }});
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = () => d.ok();
+    await api.delete(t, 1);
+
+    d.test();
   });
   itAsync("post works", async () => {
 

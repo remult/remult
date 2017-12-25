@@ -18,8 +18,8 @@ export class DataApi {
 
         this.rowType.__iterateColumns().forEach(col => {
 
-          function addFilter(key: string, theFilter: (val: any) => FilterBase) { 
-            let val = request.get(col.jsonName+key);
+          function addFilter(key: string, theFilter: (val: any) => FilterBase) {
+            let val = request.get(col.jsonName + key);
             if (val != undefined) {
               let f = theFilter(val);
               if (findOptions.where)
@@ -34,32 +34,32 @@ export class DataApi {
           addFilter('_lt', val => col.IsLessThan(val));
           addFilter('_lte', val => col.IsLessOrEqualTo(val));
           addFilter('_ne', val => col.IsDifferentFrom(val));
-          
+
         });
-      
+
         let sort = request.get("_sort");
-        if (sort != undefined) { 
+        if (sort != undefined) {
           let dir = request.get('_order');
-          let dirItems:string[] = [];
+          let dirItems: string[] = [];
           if (dir)
             dirItems = dir.split(',');
           findOptions.orderBy = new Sort();
-          sort.split(',').forEach((name,i) => { 
+          sort.split(',').forEach((name, i) => {
             let col = this.rowType.__getColumnByJsonName(name);
-            if (col) { 
+            if (col) {
               findOptions.orderBy.Segments.push({
                 column: col,
-                descending:i<dirItems.length&&dirItems[i].toLowerCase().startsWith("d")
+                descending: i < dirItems.length && dirItems[i].toLowerCase().startsWith("d")
               });
             }
           });
-          
-        } 
-        let limit =+request.get("_limit");
-          if (!limit)
-            limit = 25;  
-          findOptions.limit = limit;
-          findOptions.page = +request.get("_page");
+
+        }
+        let limit = +request.get("_limit");
+        if (!limit)
+          limit = 25;
+        findOptions.limit = limit;
+        findOptions.page = +request.get("_page");
 
       }
       await this.rowType.source.find(findOptions)
@@ -74,14 +74,15 @@ export class DataApi {
   private async doOnId(response: DataApiResponse, id: any, what: (row: Entity<any>) => Promise<void>) {
     try {
       await this.rowType.source.find({ where: this.rowType.__idColumn.isEqualTo(id) })
-        .then(r => {
+        .then(async r => {
           if (r.length == 0)
             response.notFound();
           else if (r.length > 1)
             response.error({ message: "id is not unique" });
-          else what(r[0]);
+          else
+            await what(r[0]);
         });
-    } catch (err) { 
+    } catch (err) {
       response.error({ message: err.message });
     }
   }
