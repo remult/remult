@@ -101,7 +101,22 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
 
   }
   delete(id: any): Promise<void> {
-    throw new Error("Method not implemented.");
+    if (!this.entity)
+      this.entity = this.entityFactory();
+
+
+    let r = new sql.Request(this.sql);
+    let f = new FilterConsumerBridgeToSqlRequest(r);
+    this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
+    let statement = 'delete ' + this.entity.__getDbName() ;
+    let added = false;
+
+    statement += f.where;
+    console.log(statement);
+    return r.query(statement).then(() => {
+      return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
+    });
+
   }
   insert(data: any): Promise<any> {
     if (!this.entity)
@@ -130,7 +145,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
           }
 
           cols += x.__getDbName();
-          vals +=  f.addParameterToCommandAndReturnParameterName(x, v);
+          vals += f.addParameterToCommandAndReturnParameterName(x, v);
         }
       }
     });
@@ -174,9 +189,9 @@ class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 
   usedNames: any = {};
   addParameterToCommandAndReturnParameterName(col: Column<any>, val: any) {
-    
+
     let dbVal = col.__getStorage().toDb(val);
-    
+
     let orig = col.__getDbName();
     let n = orig;
     let i = 0;
