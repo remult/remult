@@ -87,8 +87,12 @@ function onSuccess(response: Response) {
   
   if (response.status >= 200 && response.status < 300)
     return response.json();
-  else if (response.json)
-    throw response.json();
+  else 
+    throw response.json().then(x => {
+      if (!x.message)
+        x.message = response.statusText;
+      return x;
+    });
   
   
 

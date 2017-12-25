@@ -109,7 +109,7 @@ export class DataApi {
       if (p.then) {
         err = await p;
       }
-      response.error(err);
+      response.error({message:err.message});
     }
   }
 

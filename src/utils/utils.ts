@@ -997,6 +997,7 @@ export class Entity<idType> {
     return this.__entityData.save(this).catch(e=>this.catchSaveErrors(e));
   }
   catchSaveErrors(e: Promise<any>) {
+    
     return e.then(e => {
       if (e.message)
         this.error = e.message;
