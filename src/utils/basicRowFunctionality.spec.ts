@@ -1,5 +1,5 @@
 
-import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage } from './utils';
+import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage, DataList } from './utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase';
@@ -10,6 +10,7 @@ import { TestBed, async } from '@angular/core/testing';
 
 
 import { environment } from './../environments/environment';
+
 
 
 
@@ -166,7 +167,7 @@ describe("data api", () => {
     t.success = async (data: any) => {
       expect(data.id).toBe(1);
       expect(data.categoryName).toBe('noam 1');
-      
+
       d.ok();
     };
     await api.put(t, 1, {
@@ -203,9 +204,11 @@ describe("data api", () => {
     let c = new Categories();
     c.setSource({
       provideFor: () => {
-        let r = new ActualInMemoryDataProvider(() => new Categories(), [{id:1}]);
-        r.delete = () => { throw  "ERROR";};
-      return r; }});
+        let r = new ActualInMemoryDataProvider(() => new Categories(), [{ id: 1 }]);
+        r.delete = () => { throw "ERROR"; };
+        return r;
+      }
+    });
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -355,13 +358,13 @@ describe("compund id", () => {
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
-    
+
     var r = await c.source.find();
     expect(r.length).toBe(2);
     expect(r[0].a.value).toBe(1);
     expect(r[0].id.value).toBe('1,11');
     r = await c.source.find({ where: c.id.isEqualTo('1,11') });
-    
+
     expect(r.length).toBe(1);
     expect(r[0].a.value).toBe(1);
   });
@@ -370,18 +373,18 @@ describe("compund id", () => {
     let u = new UrlBuilder("");
     c.id.isEqualTo('1,11').__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(u));
     expect(u.url).toBe('?a=1&b=11');
-   });
+  });
   itAsync("update", async () => {
     let c = new CompoundIdEntity();
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
-    
+
     var r = await c.source.find();
     r[0].c.value = 55;
-    let saved = await  r[0].save();
-    
-    
+    let saved = await r[0].save();
+
+
     expect(mem.rows[c.__getName()][0].c).toBe(55);
     expect(mem.rows[c.__getName()][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,11');
@@ -391,12 +394,12 @@ describe("compund id", () => {
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
-    
+
     var r = await c.source.find();
     r[0].b.value = 55;
-    let saved = await  r[0].save();
-    
-    
+    let saved = await r[0].save();
+
+
     expect(mem.rows[c.__getName()][0].b).toBe(55);
     expect(mem.rows[c.__getName()][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,55');
@@ -406,7 +409,7 @@ describe("compund id", () => {
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
-    
+
     c.a.value = 3;
     c.b.value = 33;
     c.c.value = 3333;
@@ -415,7 +418,7 @@ describe("compund id", () => {
     expect(mem.rows[c.__getName()][2].id).toBe(undefined);
     expect(c.id.value).toBe('3,33');
   });
-  itAsync("delete", async () => { 
+  itAsync("delete", async () => {
     let c = new CompoundIdEntity();
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -427,15 +430,52 @@ describe("compund id", () => {
   });
 
 });
-describe("test date storage", () => { 
-  it("works", () => { 
+describe("test data list", () => {
+  itAsync("delete works", async () => {
+    let c = await createData(async i => {
+      await i(1, 'a');
+      await i(2, 'b');
+      await i(3, 'c');
+    });
+    let rl = new DataList(c);
+    await rl.get();
+    expect(rl.items.length).toBe(3);
+    await rl.items[1].delete();
+    expect(rl.items.length).toBe(2);
+  });
+  itAsync("delete fails nicely", async () => {
+    let c = new Categories();
+    c.setSource({
+      provideFor: () => {
+        let r = new ActualInMemoryDataProvider(() => c, [{ id: 1 }, { id: 2 }, {id:3}]);
+        r.delete = id => {return Promise.resolve().then(() => { throw Promise.resolve( "error");})};
+        return r;
+      }
+    });
+
+    let rl = new DataList(c);
+    await rl.get();
+    expect(rl.items.length).toBe(3);
+    try {
+      await rl.items[1].delete();
+      fail("was not supposed to get here");
+    }
+    catch (err) { 
+      expect(rl.items.length).toBe(3);
+      expect(rl.items[1].error).toBe("error");
+    }
+  });
+
+});
+describe("test date storage", () => {
+  it("works", () => {
     var s = new DateTimeDateStorage();
     let val = "1976-06-16";
     var d: Date = s.toDb(val);
     expect(d.getFullYear()).toBe(1976);
     expect(d.getMonth()).toBe(6);
     expect(d.getDate()).toBe(16);
-    
+
   });
 
 });

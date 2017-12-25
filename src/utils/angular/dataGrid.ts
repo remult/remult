@@ -240,7 +240,9 @@ export class DataGridComponent implements OnChanges {
       this.addButton({
         name: '',
         visible: (r) => !isNewRow(r),
-        click: r => this.catchErrors(r.delete(), r),
+        click: r => {
+          this.catchErrors(r.delete(), r);
+        },
         cssClass: "btn-danger glyphicon glyphicon-trash"
       });
     if (this.settings._buttons)

@@ -59,7 +59,8 @@ class ActualRestDataProvider implements DataProvider {
   }
 
   public delete(id: any): Promise<void> {
-    return fetch(this.url + '/' + id, { method: 'delete', credentials: 'include' }).then(() => { }, onError);
+    
+    return fetch(this.url + '/' + id, { method: 'delete', credentials: 'include' }).then(onSuccess, onError);
   }
 
   public insert(data: any): Promise<any> {
@@ -83,14 +84,17 @@ function myFetch(url: string, init?: RequestInit): Promise<any> {
 
 }
 function onSuccess(response: Response) {
-
+  
   if (response.status >= 200 && response.status < 300)
     return response.json();
-  else throw response.json();
+  else if (response.json)
+    throw response.json();
+  
+  
 
 }
 function onError(error: any) {
-  throw error;
+  throw Promise.resolve(error);
 }
 
 

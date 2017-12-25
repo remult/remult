@@ -108,6 +108,15 @@ export class AppComponent {
     window.open(environment.serverUrl + 'home/print/' + this.settings.currentRow.id.value, '_blank');
   }
   test() {
-    this.settings.currentRow.id.error = '4312';
+    fetch('http://localhost:3000/dataApi/Categories/0', { method: 'delete', credentials: 'include' }).then((response) => {
+      console.log(response);
+    },
+      error => {
+        console.log(error);
+
+      }).catch(error => {
+        console.log(error); //noam
+
+      });
   }
 }

@@ -585,7 +585,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
           this.items.splice(this.items.indexOf(item), 1);
 
       },
-      rowDeleted: () => { this.items.splice(this.items.indexOf(item)) }
+      rowDeleted: () => { this.items.splice(this.items.indexOf(item),1) }
     });
     return item;
   }
@@ -994,30 +994,30 @@ export class Entity<idType> {
   }
   save() {
     this.__clearErrors();
-    return this.__entityData.save(this).catch(
-      (e: Promise<any>) => {
-        return e.then(e => {
-          if (e.message)
-            this.error = e.message;
-          else if (e.Message)
-            this.error = e.Message;
-          else this.error = e;
-          let s = e.modelState;
-          if (!s)
-            s = e.ModelState;
-          if (s) {
-            Object.keys(s).forEach(k => {
-              let c = this.__getColumnByJsonName(k);
-              if (c)
-                c.error = s[k];
-            });
-          }
-          throw e;
-        });
-      });
+    return this.__entityData.save(this).catch(e=>this.catchSaveErrors(e));
   }
+  catchSaveErrors(e: Promise<any>) {
+    return e.then(e => {
+      if (e.message)
+        this.error = e.message;
+      else if (e.Message)
+        this.error = e.Message;
+      else this.error = e;
+      let s = e.modelState;
+      if (!s)
+        s = e.ModelState;
+      if (s) {
+        Object.keys(s).forEach(k => {
+          let c = this.__getColumnByJsonName(k);
+          if (c)
+            c.error = s[k];
+        });
+      }
+      throw e;
+    });
+   }
   delete() {
-    return this.__entityData.delete();
+    return this.__entityData.delete().catch(e=>this.catchSaveErrors(e));
 
   }
   reset() {
@@ -1244,7 +1244,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
     if (r.__idColumn instanceof CompoundIdColumn) {
       r.__idColumn.__addIdToPojo(data);
     }
-    if (data.id) {
+    if (data.id!=undefined) {
       this.id = data.id;
       this.newRow = false;
     }
