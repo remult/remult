@@ -141,6 +141,19 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
         select += where.where;
       }
     }
+    if (options.orderBy) { 
+      let first = true;
+      options.orderBy.Segments.forEach(c => { 
+        if (first)
+          select += ' Order By ';
+        else
+          select += ', ';
+        select += c.column.__getDbName();
+        if (c.descending)
+          select += ' desc';
+      });
+
+    }
     console.log(select);
     return r.query(select).then(r => {
 
