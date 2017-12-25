@@ -5,7 +5,7 @@
     "stripInternal": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,
-    "module": "es2015",
+    "module": "commonjs",
     "moduleResolution": "node",
     "outDir": "dist",
     "rootDir": "src",
@@ -19,6 +19,6 @@
       "rxjs/*": [ "node_modules/rxjs/*" ]
     }
   },
-  "files":["./src/index.ts"],
+  "files":["./src/index.ts","./src/server.ts"],
   "angularCompilerOptions": { "strictMetadataEmit": true }
 }

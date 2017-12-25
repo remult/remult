@@ -979,6 +979,8 @@ export class Entity<idType> {
         this.applyColumn(y);
       }
     }
+    if (!this.__idColumn)
+      this.__idColumn = this.__iterateColumns()[0];
   }
   isValid() {
     let ok = true;
