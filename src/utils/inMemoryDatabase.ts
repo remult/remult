@@ -80,7 +80,6 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
   private idMatches(id: any): (item: any) => boolean {
     if (!this.entity)
       this.entity = this.factory();
-    let idCol = this.entity.__idColumn;
     let f = this.entity.__idColumn.isEqualTo(id);
     return item => {
       let x = new FilterConsumerBridgeToObject(item);

@@ -89,13 +89,13 @@ export class DataApi {
   async put(response: DataApiResponse, id: any, body: any) {
     await this.doOnId(response, id, async row => {
       row.__fromPojo(body);
-      row.save();
+      await row.save();
       response.success(row.__toPojo());
     });
   }
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
-      row.delete();
+      await row.delete();
       response.success({});
     });
   }
@@ -105,10 +105,6 @@ export class DataApi {
       let r = await this.rowType.source.Insert(r => r.__fromPojo(body))
       response.success(r.__toPojo());
     } catch (err) {
-      let p = err as Promise<any>;
-      if (p.then) {
-        err = await p;
-      }
       response.error({message:err.message});
     }
   }

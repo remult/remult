@@ -24,14 +24,16 @@ export class SQLServerDataProvider implements DataProviderFactory {
 }
 
 class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
-  constructor(private entity: () => Entity<any>, private name: string, private sql: sql.ConnectionPool, private factory: () => T) {
+  constructor(private entityFactory: () => Entity<any>, private name: string, private sql: sql.ConnectionPool, private factory: () => T) {
 
   }
+  private entity: Entity<any>;
   find(options?: FindOptions): Promise<any[]> {
-    let e = this.factory();
+    if (!this.entity)
+      this.entity = this.entityFactory();
     let select = 'select ';
     let colKeys: Column<any>[] = [];
-    e.__iterateColumns().forEach(x => {
+    this.entity.__iterateColumns().forEach(x => {
       if (x instanceof CompoundIdColumn) {
 
       }
@@ -42,7 +44,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
         colKeys.push(x);
       }
     });
-    select += ' from ' + e.__getDbName();
+    select += ' from ' + this.entity.__getDbName();
     let r = new sql.Request(this.sql);
     if (options) {
       if (options.where) {
@@ -65,13 +67,78 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     });
   }
   update(id: any, data: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    if (!this.entity)
+      this.entity = this.entityFactory();
+
+
+    let r = new sql.Request(this.sql);
+    let f = new FilterConsumerBridgeToSqlRequest(r);
+    this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
+    let statement = 'update ' + this.entity.__getDbName() + ' set ';
+    let added = false;
+    this.entity.__iterateColumns().forEach(x => {
+      if (x instanceof CompoundIdColumn) {
+
+      }
+      else {
+        let v = data[x.jsonName];
+        if (v != undefined) {
+          if (!added)
+            added = true;
+          else
+            statement += ', ';
+
+          statement += x.__getDbName() + ' = ' + f.addParameterToCommandAndReturnParameterName(x, v);
+        }
+      }
+    });
+    statement += f.where;
+    console.log(statement);
+    return r.query(statement).then(() => {
+      return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
+    });
+
+
   }
   delete(id: any): Promise<void> {
     throw new Error("Method not implemented.");
   }
   insert(data: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    if (!this.entity)
+      this.entity = this.entityFactory();
+
+
+    let r = new sql.Request(this.sql);
+    let f = new FilterConsumerBridgeToSqlRequest(r);
+
+
+    let cols = '';
+    let vals = '';
+    let added = false;
+    this.entity.__iterateColumns().forEach(x => {
+      if (x instanceof CompoundIdColumn) {
+
+      }
+      else {
+        let v = data[x.jsonName];
+        if (v != undefined) {
+          if (!added)
+            added = true;
+          else {
+            cols += ', ';
+            vals += ', ';
+          }
+
+          cols += x.__getDbName();
+          vals +=  f.addParameterToCommandAndReturnParameterName(x, v);
+        }
+      }
+    });
+    let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
+    console.log(statement);
+    return r.query(statement).then(() => {
+      return this.find({ where: this.entity.__idColumn.isEqualTo(data.id) }).then(y => y[0]);
+    });
   }
 
 }
@@ -101,10 +168,25 @@ class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 
       this.where += ' where ';
     } else this.where += ' and ';
-    this.where += col.__getDbName() + ' ' + operator + ' @' + col.__getDbName();
+    this.where += col.__getDbName() + ' ' + operator + ' ' + this.addParameterToCommandAndReturnParameterName(col, val);
+
+  }
+
+  usedNames: any = {};
+  addParameterToCommandAndReturnParameterName(col: Column<any>, val: any) {
+    
     let dbVal = col.__getStorage().toDb(val);
-    console.log(dbVal);
-    this.r.input(col.__getDbName(), dbVal);
+    
+    let orig = col.__getDbName();
+    let n = orig;
+    let i = 0;
+
+    while (this.usedNames[n])
+      n = orig + i++;
+    this.usedNames[n] = true;
+    this.r.input(n, dbVal);
+    console.log(val + ' - ' + dbVal);
+    return '@' + n;
   }
 
 }

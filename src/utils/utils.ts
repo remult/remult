@@ -585,7 +585,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
           this.items.splice(this.items.indexOf(item), 1);
 
       },
-      rowDeleted: () => { this.items.splice(this.items.indexOf(item),1) }
+      rowDeleted: () => { this.items.splice(this.items.indexOf(item), 1) }
     });
     return item;
   }
@@ -761,8 +761,8 @@ export class DefaultStorage<dataType> implements ColumnStorage<dataType>{
 }
 export class DateTimeDateStorage implements ColumnStorage<string>{
   toDb(val: string) {
-    
-    return new Date(+val.substring(0,4),+val.substring(5,7),+val.substring(8,10));
+
+    return new Date(+val.substring(0, 4), +val.substring(5, 7), +val.substring(8, 10));
   }
   fromDb(val: any): string {
     var d = val as Date;
@@ -994,31 +994,36 @@ export class Entity<idType> {
   }
   save() {
     this.__clearErrors();
-    return this.__entityData.save(this).catch(e=>this.catchSaveErrors(e));
+    return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
   }
-  catchSaveErrors(e: Promise<any>) {
+  catchSaveErrors(e: any):any {
     
-    return e.then(e => {
-      if (e.message)
-        this.error = e.message;
-      else if (e.Message)
-        this.error = e.Message;
-      else this.error = e;
-      let s = e.modelState;
-      if (!s)
-        s = e.ModelState;
-      if (s) {
-        Object.keys(s).forEach(k => {
-          let c = this.__getColumnByJsonName(k);
-          if (c)
-            c.error = s[k];
-        });
-      }
-      throw e;
-    });
-   }
+    if (e instanceof Promise) {
+      return e.then(x => this.catchSaveErrors(x));
+    }
+    
+
+    if (e.message)
+      this.error = e.message;
+    else if (e.Message)
+      this.error = e.Message;
+    else this.error = e;
+    let s = e.modelState;
+    if (!s)
+      s = e.ModelState;
+    if (s) {
+      Object.keys(s).forEach(k => {
+        let c = this.__getColumnByJsonName(k);
+        if (c)
+          c.error = s[k];
+      });
+    }
+    throw e;
+
+  }
+
   delete() {
-    return this.__entityData.delete().catch(e=>this.catchSaveErrors(e));
+    return this.__entityData.delete().catch(e => this.catchSaveErrors(e));
 
   }
   reset() {
@@ -1245,7 +1250,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
     if (r.__idColumn instanceof CompoundIdColumn) {
       r.__idColumn.__addIdToPojo(data);
     }
-    if (data.id!=undefined) {
+    if (data.id != undefined) {
       this.id = data.id;
       this.newRow = false;
     }

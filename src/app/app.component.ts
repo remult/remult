@@ -16,6 +16,7 @@ import * as db from '../utils/localStorageDataProvider';
 export class AppComponent {
 
   categories = new utils.GridSettings(new models.Categories(), {
+    get: {limit:100},
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true
