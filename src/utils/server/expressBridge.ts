@@ -1,5 +1,5 @@
 import { SQLServerDataProvider } from './SQLServerDataProvider';
-import { DataApi, DataApiResponse, DataApiError } from './DataApi';
+import { DataApi, DataApiResponse, DataApiError, DataApiSettings } from './DataApi';
 import { Entity } from './../utils';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
@@ -40,8 +40,8 @@ export class ExpressBridge {
         });
       });
   }
-  add(entity: Entity<any>) {
-    let api = new DataApi(entity);
+  add<T extends Entity<any>>(entity:T,options?:DataApiSettings<T>) {
+    let api = new DataApi(entity,options);
     let myRoute = entity.__getName();
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);

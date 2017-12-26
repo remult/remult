@@ -819,7 +819,7 @@ export class Column<dataType>  {
     return this.__settings.storage;
 
   }
-  __defaultStorage(){
+  __defaultStorage() {
     return new DefaultStorage();
   }
   error: string;
@@ -993,12 +993,28 @@ export class Entity<idType> {
     });
     return ok;
   }
+  __getValidationError() {
+    let result: any = {};
+    result.modelState = {};
+    this.__iterateColumns().forEach(c => {
+      if (c.error)
+        result.modelState[c.jsonName] = c.error;
+    });
+    return result;
+  }
 
   setSource(dp: DataProviderFactory) {
     this.source = new EntitySource<this>(this.__getName(), () => <this>this.factory(), dp);
   }
+  __assertValidity() {
+    if (!this.isValid()){
+      
+      throw this.__getValidationError();
+    }
+  }
   save() {
     this.__clearErrors();
+
     return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
   }
   catchSaveErrors(e: any): any {
@@ -1146,14 +1162,14 @@ export class CompoundIdColumn extends Column<string>
   }
   resultIdFilter(id: string, data: any) {
     return new Filter(add => {
-      let idParts:any[] = [];
+      let idParts: any[] = [];
       if (id != undefined)
         idParts = id.split(',');
       let result: FilterBase;
       this.columns.forEach((c, i) => {
         let val = undefined;
         if (i < idParts.length)
-          val = idParts[i];  
+          val = idParts[i];
         if (data[c.jsonName] != undefined)
           val = data[c.jsonName];
         if (!result)
@@ -1306,7 +1322,7 @@ export class DateColumn extends Column<string>{
   get displayValue() {
     return new Date(this.value).toLocaleDateString();
   }
-  __defaultStorage(){
+  __defaultStorage() {
     return new DateTimeDateStorage();
   }
 

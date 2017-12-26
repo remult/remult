@@ -1,11 +1,12 @@
 import { DataApiError } from './DataApi';
 
 import { Entity, AndFilter, Sort } from './../utils';
-import { FindOptions, FilterBase } from './../DataInterfaces';
+import { FindOptions, FilterBase, FindOptionsPerEntity } from './../DataInterfaces';
 
-export class DataApi {
-  constructor(private rowType: Entity<any>) {
-
+export class DataApi<T extends Entity<any>> {
+  constructor(private rowType: T, private options?: DataApiSettings<T>) {
+    if (!options)
+      this.options = {};
   }
   async get(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => response.success(row.__toPojo()));
@@ -68,10 +69,10 @@ export class DataApi {
         });
     }
     catch (err) {
-      response.error({ message: err.message });
+      response.error(err);
     }
   }
-  private async doOnId(response: DataApiResponse, id: any, what: (row: Entity<any>) => Promise<void>) {
+  private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
       await this.rowType.source.find({ where: this.rowType.__idColumn.isEqualTo(id) })
         .then(async r => {
@@ -83,12 +84,16 @@ export class DataApi {
             await what(r[0]);
         });
     } catch (err) {
-      response.error({ message: err.message });
+      response.error(err);
     }
   }
   async put(response: DataApiResponse, id: any, body: any) {
     await this.doOnId(response, id, async row => {
       row.__fromPojo(body);
+      if (this.options.onSavingRow) {
+        this.options.onSavingRow(row);
+        row.__assertValidity();
+      }
       await row.save();
       response.success(row.__toPojo());
     });
@@ -102,14 +107,30 @@ export class DataApi {
   async post(response: DataApiResponse, body: any) {
     try {
 
-      let r = await this.rowType.source.Insert(r => r.__fromPojo(body))
+      let r = await this.rowType.source.Insert(r => {
+        r.__fromPojo(body);
+        if (this.options.onSavingRow) {
+          this.options.onSavingRow(r);
+          r.__assertValidity();
+        }
+      })
       response.success(r.__toPojo());
     } catch (err) {
-      response.error({message:err.message});
+      response.error(err);
     }
   }
 
 }
+export interface DataApiSettings<rowType extends Entity<any>> {
+  allowUpdate?: boolean,
+  allowInsert?: boolean,
+  allowDelete?: boolean,
+
+  get?: FindOptionsPerEntity<rowType>,
+  onSavingRow?: (r: rowType) => void;
+  onNewRow?: (r: rowType) => void;
+}
+
 export interface DataApiResponse {
   success(data: any): void;
   notFound(): void;
@@ -121,5 +142,4 @@ export interface DataApiRequest {
 
 export interface DataApiError {
   message: string;
-
 }

@@ -159,6 +159,26 @@ describe("data api", () => {
     await api.put(t, 2, {});
     d.test();
   });
+  itAsync("put with validations fails", async () => {
+
+    let c = await createData(async insert => insert(1, 'noam'));
+    var api = new DataApi(c, {
+      onSavingRow: c => c.categoryName.error = 'invalid'
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      
+      expect(data.modelState.categoryName).toBe('invalid');
+      d.ok();
+    };
+    await api.put(t, 1, {
+      categoryName: 'noam 1'
+    });
+    d.test();
+    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam');
+  });
   itAsync("put updates", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
     var api = new DataApi(c);
@@ -167,7 +187,6 @@ describe("data api", () => {
     t.success = async (data: any) => {
       expect(data.id).toBe(1);
       expect(data.categoryName).toBe('noam 1');
-
       d.ok();
     };
     await api.put(t, 1, {
@@ -232,6 +251,22 @@ describe("data api", () => {
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
+  });
+  itAsync("post with validation fails", async () => {
+
+
+    let c = await createData(async () => { });
+
+    var api = new DataApi(c,{onSavingRow:c=>c.categoryName.error = 'invalid'});
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      expect(data.modelState.categoryName).toBe('invalid');
+      d.ok();
+    };
+    await api.post(t, { id: 1, categoryName: 'noam' });
+    d.test();
+    expect((await c.source.find()).length).toBe(0);
   });
   itAsync("post fails on duplicate index", async () => {
 
@@ -447,8 +482,8 @@ describe("test data list", () => {
     let c = new Categories();
     c.setSource({
       provideFor: () => {
-        let r = new ActualInMemoryDataProvider(() => c, [{ id: 1 }, { id: 2 }, {id:3}]);
-        r.delete = id => {return Promise.resolve().then(() => { throw Promise.resolve( "error");})};
+        let r = new ActualInMemoryDataProvider(() => c, [{ id: 1 }, { id: 2 }, { id: 3 }]);
+        r.delete = id => { return Promise.resolve().then(() => { throw Promise.resolve("error"); }) };
         return r;
       }
     });
@@ -460,7 +495,7 @@ describe("test data list", () => {
       await rl.items[1].delete();
       fail("was not supposed to get here");
     }
-    catch (err) { 
+    catch (err) {
       expect(rl.items.length).toBe(3);
       expect(rl.items[1].error).toBe("error");
     }
