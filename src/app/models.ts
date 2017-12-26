@@ -18,9 +18,9 @@ export class Orders extends radweb.Entity<number> {
   id = new radweb.NumberColumn({dbName:"OrderId"});
   customerID = new radweb.StringColumn();
   employeeID = new radweb.NumberColumn();
-  orderDate = new radweb.DateColumn({ storage : new DateTimeDateStorage()});
-  requiredDate = new radweb.DateColumn({ storage : new DateTimeDateStorage()});
-  shippedDate = new radweb.DateColumn({ storage : new DateTimeDateStorage()});
+  orderDate = new radweb.DateColumn();
+  requiredDate = new radweb.DateColumn();
+  shippedDate = new radweb.DateColumn();
   shipVia = new radweb.NumberColumn('ShipVia');
   freight = new radweb.NumberColumn('Freight');
   shipName = new radweb.StringColumn('ShipName');

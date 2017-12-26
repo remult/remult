@@ -815,9 +815,12 @@ export class Column<dataType>  {
     if (!this.__settings)
       this.__settings = {};
     if (!this.__settings.storage)
-      this.__settings.storage = new DefaultStorage();
+      this.__settings.storage = this.__defaultStorage();;
     return this.__settings.storage;
 
+  }
+  __defaultStorage(){
+    return new DefaultStorage();
   }
   error: string;
   __getDbName() {
@@ -1302,6 +1305,9 @@ export class DateColumn extends Column<string>{
   }
   get displayValue() {
     return new Date(this.value).toLocaleDateString();
+  }
+  __defaultStorage(){
+    return new DateTimeDateStorage();
   }
 
 }
