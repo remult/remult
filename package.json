@@ -9,11 +9,11 @@
   },
   "scripts": {
     "package": "rollup -c",
-    "start": "ng serve",
+    "start": "concurrently \"ng serve\" \"npm run server:watch\" \"ng test\"",
     "test": "ng test",
     "lint": "ng lint",
     "server": " ts-node  -P tsconfig.server.json src/app/server/server.ts",
-    "server:watch": "concurrently \"tsc -P tsconfig.server.json -w\" \"nodemon dist/src/app/server/server.js --ignore /appData\"",
+    "server:watch": "concurrently \"tsc -P tsconfig.server.json -w\" \"nodemon distServer/src/app/server/server.js --ignore /appData --ignore /dist\"",
     "e2e": "ng e2e",
     "myBuild": "tsc",
     "myTest:build": "tsc -p src/tsconfig.mytest.json",

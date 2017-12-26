@@ -9,7 +9,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "rootDir": ".",
-    "outDir": "dist",
+    "outDir": "distServer",
     "sourceMap": true,
     "inlineSources": true,
 
