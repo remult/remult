@@ -10,9 +10,17 @@ export interface DataProvider {
   delete(id: any): Promise<void>;
   insert(data: any): Promise<any>;
 }
-export interface FindOptions {
-  where?: FilterBase;
+export interface FindOptions extends FindOptionsBase {
   orderBy?: Sort;
+}
+export interface EntitySourceFindOptions extends FindOptionsBase
+{
+  orderBy?: Sort|Column<any>|(Column<any>|SortSegment)[];
+}
+
+export interface FindOptionsBase{
+  where?: FilterBase;
+  
   limit?: number;
   page?: number;
   additionalUrlParameters?: any;

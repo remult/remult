@@ -410,6 +410,25 @@ describe("order by api", () => {
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);
   });
+  itAsync("test several sort options",async()=>{
+      let c =await  createData(async i=>{
+        i(1,'z');
+        i(2,'y');
+      });
+      
+      let r = await c.source.find({orderBy:c.categoryName});
+      expect(r.length).toBe(2);
+      expect(r[0].id.value).toBe(2);
+
+       r = await c.source.find({orderBy:[c.categoryName]});
+      expect(r.length).toBe(2);
+      expect(r[0].id.value).toBe(2);
+      
+      r = await c.source.find({orderBy:[{column:c.categoryName,descending:true}]});
+      expect(r.length).toBe(2);
+      expect(r[0].id.value).toBe(1);
+
+  });
 });
 
 

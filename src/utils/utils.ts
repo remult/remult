@@ -5,7 +5,8 @@ import { makeTitle, isFunction } from './common';
 
 import {
   DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
-  , ColumnStorage
+  , ColumnStorage,
+  EntitySourceFindOptions
 } from './DataInterfaces';
 import { unescapeIdentifier } from '@angular/compiler';
 
@@ -562,7 +563,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
   translateOptions(options: FindOptionsPerEntity<T>) {
     if (!options)
       return undefined;
-    let getOptions: FindOptions = {};
+    let getOptions: EntitySourceFindOptions = {};
     if (options.where)
       getOptions.where = options.where(this.entity);
     if (options.orderBy)
@@ -1191,8 +1192,10 @@ export class EntitySource<T extends Entity<any>>
   constructor(name: string, private factory: () => T, dataProvider: DataProviderFactory) {
     this._provider = dataProvider.provideFor(name, factory);
   }
-  find(options?: FindOptions): Promise<T[]> {
-    return this._provider.find(options)
+  find(options?: EntitySourceFindOptions): Promise<T[]> {
+    if (options)
+      options.orderBy = translateSort(options.orderBy);
+    return this._provider.find(<FindOptions>options)
       .then(arr => {
         return arr.map(i => {
           let r = this.factory();
@@ -1690,17 +1693,21 @@ export function extractSortFromSettings<T extends Entity<any>>(entity: T, opt: F
   if (!opt.orderBy)
     return undefined;
   let x = opt.orderBy(entity);
-  if (x instanceof Sort)
-    return x;
-  if (x instanceof Column)
-    return new Sort({ column: x });
-  if (x instanceof Array) {
-    let r = new Sort();
-    x.forEach(i => {
-      if (i instanceof Column)
-        r.Segments.push({ column: i });
-      else r.Segments.push(i);
-    });
-    return r;
-  }
+  return translateSort(x);
+  
+}
+export function translateSort(sort:any):Sort{
+  if (sort instanceof Sort)
+  return sort;
+if (sort instanceof Column)
+  return new Sort({ column: sort });
+if (sort instanceof Array) {
+  let r = new Sort();
+  sort.forEach(i => {
+    if (i instanceof Column)
+      r.Segments.push({ column: i });
+    else r.Segments.push(i);
+  });
+  return r;
+}
 }
