@@ -963,7 +963,7 @@ export class Entity<idType> {
   }
   /** @internal */
   __entityData: __EntityValueProvider;
-  __onSavingRow = ()=>{};
+  protected   onSavingRow = ()=>{};
   error: string;
   __idColumn: Column<idType>;
   protected initColumns(idColumn?: Column<idType>) {
@@ -1015,7 +1015,7 @@ export class Entity<idType> {
   }
   save() {
     this.__clearErrors();
-    this.__onSavingRow();
+    this.onSavingRow();
     this.__assertValidity();
     return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
   }

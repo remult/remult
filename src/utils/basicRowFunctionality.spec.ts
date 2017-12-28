@@ -637,7 +637,7 @@ export class entityWithValidations extends Entity<number>{
   constructor() {
     super(() => new entityWithValidations(), new InMemoryDataProvider());
     this.initColumns();
-    this.__onSavingRow = () => {
+    this.onSavingRow = () => {
       if (!this.name.value||this.name.value.length<3)
         this.name.error = 'invalid';
     };
