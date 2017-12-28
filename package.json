@@ -9,7 +9,7 @@
   },
   "scripts": {
     "package": "rollup -c",
-    "start": "concurrently \"ng serve\" \"npm run server:watch\" \"ng test\"",
+    "start": "concurrently \"ng serve --port 4201\" \"npm run server:watch\" \"ng test\"",
     "test": "ng test",
     "lint": "ng lint",
     "server": " ts-node  -P tsconfig.server.json src/app/server/server.ts",
