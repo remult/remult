@@ -66,9 +66,9 @@ export class AppComponent {
     //   allowInsert: true,
     get: { limit: 3, orderBy: o => new utils.Sort({ column: o.id, descending: true }) },
 
-    onEnterRow: o => {
+    onEnterRow: orders => {
 
-      this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(o.id), additionalUrlParameters: { cust: o.customerID } })
+      this.orderDetailsSettings.get({ where: orderDetails => orderDetails.orderID.isEqualTo(orders.id), additionalUrlParameters: { cust: orders.customerID } })
     },
     columnSettings: orders => [
       {
@@ -78,7 +78,7 @@ export class AppComponent {
       {
         column: orders.customerID,
 
-        getValue: o => o.lookup(new models.Customers(), c => c.id.isEqualTo(o.customerID)).companyName,
+        getValue: orders => orders.lookup(new models.Customers(), c => c.id.isEqualTo(orders.customerID)).companyName,
         //getValue: o => o.lookup(new models.Customers(), o.customerID).companyName,
         click: o => this.customersSelect.showSelectPopup(c => o.customerID.value = c.id.value)
       },
