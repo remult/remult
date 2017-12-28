@@ -79,6 +79,7 @@ function myFetch(url: string, init?: RequestInit): Promise<any> {
     init = {};
   init.credentials = 'include';
   return fetch(url, init).then(onSuccess, error => {
+    console.log(error);
     throw Promise.resolve(error);
   });
 
@@ -89,6 +90,7 @@ function onSuccess(response: Response) {
     return response.json();
   else 
     throw response.json().then(x => {
+      console.log(x);
       if (!x.message)
         x.message = response.statusText;
       return x;

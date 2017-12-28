@@ -168,7 +168,7 @@ describe("data api", () => {
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
-      
+
       expect(data.modelState.categoryName).toBe('invalid');
       d.ok();
     };
@@ -239,6 +239,7 @@ describe("data api", () => {
   itAsync("post works", async () => {
 
 
+
     let c = await createData(async () => { });
 
     var api = new DataApi(c);
@@ -252,16 +253,56 @@ describe("data api", () => {
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
   });
+  itAsync("post with logic works", async () => {
+
+
+    let c = await createData(async (i) => { i(1, 'a'); });
+
+    var api = new DataApi(c, {
+      onNewRow: async c => {
+        await new Promise((ok) => {
+          c.id.value = 2;
+          ok();
+        });
+
+      }
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      expect(data.id).toBe(2);
+      expect(data.categoryName).toBe('noam');
+      d.ok();
+    };
+    await api.post(t, { categoryName: 'noam' });
+    d.test();
+  });
   itAsync("post with validation fails", async () => {
 
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c,{onSavingRow:c=>c.categoryName.error = 'invalid'});
+    var api = new DataApi(c, { onSavingRow: c => c.categoryName.error = 'invalid' });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
       expect(data.modelState.categoryName).toBe('invalid');
+      d.ok();
+    };
+    await api.post(t, { id: 1, categoryName: 'noam' });
+    d.test();
+    expect((await c.source.find()).length).toBe(0);
+  });
+  itAsync("post with syntax error fails well", async () => {
+
+
+    let c = await createData(async () => { });
+
+    var api = new DataApi(c, { onSavingRow: c => c.description.value.length + 1 });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      expect(data.message).toBe("Cannot read property 'length' of undefined");
       d.ok();
     };
     await api.post(t, { id: 1, categoryName: 'noam' });

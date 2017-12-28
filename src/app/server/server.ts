@@ -4,11 +4,13 @@ import { SQLServerDataProvider } from '../../utils/server/SQLServerDataProvider'
 import { environment } from './../../environments/environment';
 import { JsonFileDataProvider } from './../../utils/server/JsonFileDataProvider';
 import { InMemoryDataProvider } from './../../utils/inMemoryDatabase';
+import { Sort } from './../../utils/utils';
 
 import { Categories } from '../models';
 import * as express from 'express';
 import * as fs from 'fs';
 import { ExpressBridge } from './../../utils/server/expressBridge';
+
 
 
 let app = express();
@@ -26,8 +28,16 @@ var eb = new ExpressBridge(app, '/dataApi');
 eb.addSqlDevHelpers(sqlServer);
 eb.add(new Categories(), {
     onSavingRow: c => {
-        if (c.description.value.length < 5){
+        if ( c.description.value.length < 5) {
             c.description.error = 'Description too short ';
+        }
+    },
+    onNewRow: async c => {
+        if (c.id.value <= 0) {
+            let x = await c.source.find({ orderBy: new Sort({ column: c.id, descending: true }), limit: 1 });
+            if (x.length > 0)
+                c.id.value = x[0].id.value;
+
         }
     }
 });

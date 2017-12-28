@@ -1217,9 +1217,11 @@ export class EntitySource<T extends Entity<any>>
     return r;
   }
 
-  async Insert(doOnRow: (item: T) => void): Promise<T> {
+  async Insert(doOnRow: (item: T) => Promise<void>|void): Promise<T> {
     var i = this.createNewItem();
-    doOnRow(i);
+    let x = doOnRow(i);
+    if (x instanceof Promise)
+      await x;
     await i.save();
     return i;
   }

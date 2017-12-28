@@ -10,12 +10,12 @@ export class ExpressBridge {
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     app.use(function (req, res, next) {
-      
+
       res.header("Access-Control-Allow-Credentials", "true");
       res.header("Access-Control-Allow-Origin", req.header('origin'));
       res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
       res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-      
+
       next();
     });
   }
@@ -35,13 +35,13 @@ export class ExpressBridge {
       async (req, res) => {
         server.listOfTables(new ExpressResponseBridgeToDataApiResponse(res), {
           get: key => {
-            return req.query[key] 
+            return req.query[key]
           }
         });
       });
   }
-  add<T extends Entity<any>>(entity:T,options?:DataApiSettings<T>) {
-    let api = new DataApi(entity,options);
+  add<T extends Entity<any>>(entity: T, options?: DataApiSettings<T>) {
+    let api = new DataApi(entity, options);
     let myRoute = entity.__getName();
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);
@@ -80,6 +80,9 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public error(data: DataApiError): void {
+    if (data instanceof TypeError) {
+      data = { message: data.message + '\n' + data.stack };
+    }
     this.r.status(500).json(data);
   }
 }
