@@ -179,6 +179,26 @@ describe("data api", () => {
     var x = await c.source.find({ where: c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
+  itAsync("put with validations on entity fails", async () => {
+
+    let c = new entityWithValidations();
+    c.setSource(new InMemoryDataProvider());
+    await c.source.Insert(c=>{c.id.value = 1;c.name.value = 'noam';});
+    let api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      expect(data.modelState.name).toBe('invalid');
+      d.ok();
+    };
+    await api.put(t, 1, {
+      name: '1'
+    });
+    d.test();
+    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    expect(x[0].name.value).toBe('noam');
+  });
+
   itAsync("put updates", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
     var api = new DataApi(c);
@@ -284,7 +304,7 @@ describe("data api", () => {
 
     var api = new DataApi(c, {
       onNewRow: async c => {
-          c.id.value =  (await c.source.max(c.id))+1;
+        c.id.value = (await c.source.max(c.id)) + 1;
       }
     });
     let t = new TestDataApiResponse();
@@ -419,18 +439,18 @@ describe("data api", () => {
     expect(c.__iterateColumns().length).toBe(3);
 
   });
- 
+
   itAsync("max works", async () => {
     let c = await createData(async i => {
-      i(1,'a');
-      i(2,'a');
-      i(3,'b');
+      i(1, 'a');
+      i(2, 'a');
+      i(3, 'b');
     });
-    expect (await c.source.max(c.id)).toBe(3);
-    expect (await c.source.max(c.id,c.categoryName.isEqualTo('a'))).toBe(2);
-    expect (await c.source.max(c.id,c.categoryName.isEqualTo('z'))).toBe(0);
+    expect(await c.source.max(c.id)).toBe(3);
+    expect(await c.source.max(c.id, c.categoryName.isEqualTo('a'))).toBe(2);
+    expect(await c.source.max(c.id, c.categoryName.isEqualTo('z'))).toBe(0);
   });
-   
+
 
 
 
@@ -596,5 +616,18 @@ class CompoundIdEntity extends Entity<string>
   constructor() {
     super(() => new CompoundIdEntity(), environment.dataSource, "compountIdEntity");
     this.initColumns();
+  }
+}
+export class entityWithValidations extends Entity<number>{
+  id = new NumberColumn();
+  name = new StringColumn();
+  constructor() {
+    super(() => new entityWithValidations(), new InMemoryDataProvider());
+    this.initColumns();
+    this.__onSavingRow = () => {
+      if (!this.name.value||this.name.value.length<3)
+        this.name.error = 'invalid';
+    };
+
   }
 }

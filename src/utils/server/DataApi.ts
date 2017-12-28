@@ -131,6 +131,7 @@ export interface DataApiSettings<rowType extends Entity<any>> {
 
   get?: FindOptionsPerEntity<rowType>,
   onSavingRow?: (r: rowType) => void;
+  
   onNewRow?: (r: rowType) => Promise<void>;
 }
 
