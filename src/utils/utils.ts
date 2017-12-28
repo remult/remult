@@ -994,6 +994,9 @@ export class Entity<idType> {
     });
     return ok;
   }
+  isNew(){
+    return this.__entityData.isNewRow();
+  }
   __getValidationError() {
     let result: any = {};
     result.modelState = {};

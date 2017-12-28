@@ -91,7 +91,9 @@ export class DataApi<T extends Entity<any>> {
     await this.doOnId(response, id, async row => {
       row.__fromPojo(body);
       if (this.options.onSavingRow) {
-        this.options.onSavingRow(row);
+        let x = this.options.onSavingRow(row);
+        if (x instanceof Promise)
+          await x;
         row.__assertValidity();
       }
       await row.save();
@@ -105,17 +107,17 @@ export class DataApi<T extends Entity<any>> {
     });
   }
   async post(response: DataApiResponse, body: any) {
-  
+
     try {
 
       let r = await this.rowType.source.Insert(async r => {
         r.__fromPojo(body);
         if (this.options.onSavingRow) {
-          this.options.onSavingRow(r);
+          var x =  this.options.onSavingRow(r);
+          if (x instanceof Promise)
+            await x;
           r.__assertValidity();
         }
-        if (this.options.onNewRow)
-            await this.options.onNewRow(r);
       })
       response.success(r.__toPojo());
     } catch (err) {
@@ -130,9 +132,7 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowDelete?: boolean,
 
   get?: FindOptionsPerEntity<rowType>,
-  onSavingRow?: (r: rowType) => void;
-  
-  onNewRow?: (r: rowType) => Promise<void>;
+  onSavingRow?: (r: rowType) => Promise<any>|any;
 }
 
 export interface DataApiResponse {

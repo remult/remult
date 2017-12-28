@@ -27,14 +27,15 @@ environment.dataSource = sqlServer;
 var eb = new ExpressBridge(app, '/dataApi');
 eb.addSqlDevHelpers(sqlServer);
 eb.add(new Categories(), {
-    onSavingRow: c => {
+    onSavingRow:async c => {
         if (c.description.value.length < 5) {
             c.description.error = 'Description too short ';
         }
+        if (c.isNew())
+            c.id.value = await c.source.max(c.id) + 1;
     },
-    onNewRow: async c => {
-        c.id.value = await c.source.max(c.id) + 1;
-    }
+        
+    
 });
 eb.add(new Order_details());
 eb.add(new Orders());

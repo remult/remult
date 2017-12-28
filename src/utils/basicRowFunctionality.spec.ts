@@ -183,7 +183,7 @@ describe("data api", () => {
 
     let c = new entityWithValidations();
     c.setSource(new InMemoryDataProvider());
-    await c.source.Insert(c=>{c.myId.value = 1;c.name.value = 'noam';});
+    await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -203,13 +203,13 @@ describe("data api", () => {
 
     let c = new entityWithValidations();
     c.setSource(new InMemoryDataProvider());
-    c = await c.source.Insert(c=>{c.myId.value = 1;c.name.value = 'noam';});
+    c = await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     c.name.value = 'yael';
     await c.save();
     expect(c.name.value).toBe('yael');
     expect((await c.source.find()).length).toBe(1);
-    
-    
+
+
   });
 
   itAsync("put updates", async () => {
@@ -292,11 +292,15 @@ describe("data api", () => {
     let c = await createData(async (i) => { i(1, 'a'); });
 
     var api = new DataApi(c, {
-      onNewRow: async c => {
-        await new Promise((ok) => {
-          c.id.value = 2;
-          ok();
-        });
+      onSavingRow: async c => {
+        if (c.isNew()) {
+          
+          await new Promise((ok) => {
+            
+            c.id.value = 2;
+            ok();
+          });
+        }
 
       }
     });
@@ -316,8 +320,9 @@ describe("data api", () => {
     let c = await createData(async (i) => { i(1, 'a'); });
 
     var api = new DataApi(c, {
-      onNewRow: async c => {
-        c.id.value = (await c.source.max(c.id)) + 1;
+      onSavingRow: async c => {
+        if (c.isNew)
+          c.id.value = (await c.source.max(c.id)) + 1;
       }
     });
     let t = new TestDataApiResponse();
@@ -351,7 +356,7 @@ describe("data api", () => {
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c, { onSavingRow: c => c.description.value.length + 1 });
+    var api = new DataApi(c, { onSavingRow: async c => { c.description.value.length + 1 } });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -638,7 +643,7 @@ export class entityWithValidations extends Entity<number>{
     super(() => new entityWithValidations(), new InMemoryDataProvider());
     this.initColumns();
     this.onSavingRow = () => {
-      if (!this.name.value||this.name.value.length<3)
+      if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid';
     };
 
