@@ -277,6 +277,26 @@ describe("data api", () => {
     await api.post(t, { categoryName: 'noam' });
     d.test();
   });
+  itAsync("post with logic works and max", async () => {
+
+
+    let c = await createData(async (i) => { i(1, 'a'); });
+
+    var api = new DataApi(c, {
+      onNewRow: async c => {
+          c.id.value =  (await c.source.max(c.id))+1;
+      }
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      expect(data.id).toBe(2);
+      expect(data.categoryName).toBe('noam');
+      d.ok();
+    };
+    await api.post(t, { categoryName: 'noam' });
+    d.test();
+  });
   itAsync("post with validation fails", async () => {
 
 
@@ -399,6 +419,18 @@ describe("data api", () => {
     expect(c.__iterateColumns().length).toBe(3);
 
   });
+ 
+  itAsync("max works", async () => {
+    let c = await createData(async i => {
+      i(1,'a');
+      i(2,'a');
+      i(3,'b');
+    });
+    expect (await c.source.max(c.id)).toBe(3);
+    expect (await c.source.max(c.id,c.categoryName.isEqualTo('a'))).toBe(2);
+    expect (await c.source.max(c.id,c.categoryName.isEqualTo('z'))).toBe(0);
+  });
+   
 
 
 

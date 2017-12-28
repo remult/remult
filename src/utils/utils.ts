@@ -1007,8 +1007,8 @@ export class Entity<idType> {
     this.source = new EntitySource<this>(this.__getName(), () => <this>this.factory(), dp);
   }
   __assertValidity() {
-    if (!this.isValid()){
-      
+    if (!this.isValid()) {
+
       throw this.__getValidationError();
     }
   }
@@ -1205,6 +1205,12 @@ export class EntitySource<T extends Entity<any>>
   }
   __lookupCache: LookupCache<any>[] = [];
 
+   async max(col: NumberColumn, filter?: FilterBase):Promise<number> {
+    let x = await this.find({ where: filter, limit: 1, orderBy: new Sort({ column: col, descending: true }) });
+    if (x.length == 0)
+      return 0;
+    return x[0].__getColumn(col).value;
+  }
 
 
   __getDataProvider() {
@@ -1217,7 +1223,7 @@ export class EntitySource<T extends Entity<any>>
     return r;
   }
 
-  async Insert(doOnRow: (item: T) => Promise<void>|void): Promise<T> {
+  async Insert(doOnRow: (item: T) => Promise<void> | void): Promise<T> {
     var i = this.createNewItem();
     let x = doOnRow(i);
     if (x instanceof Promise)
