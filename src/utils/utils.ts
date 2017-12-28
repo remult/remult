@@ -1302,8 +1302,9 @@ export class __EntityValueProvider implements ColumnValueProvider {
     if (r.__idColumn instanceof CompoundIdColumn) {
       r.__idColumn.__addIdToPojo(data);
     }
-    if (data.id != undefined) {
-      this.id = data.id;
+    let id = data[r.__idColumn.jsonName];
+    if (id != undefined) {
+      this.id = id;
       this.newRow = false;
     }
 

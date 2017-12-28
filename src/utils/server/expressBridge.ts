@@ -83,6 +83,9 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     if (data instanceof TypeError) {
       data = { message: data.message + '\n' + data.stack };
     }
+    let x = JSON.parse(JSON.stringify(data));
+    if (!x.message)
+      data = {message:data.message};
     this.r.status(500).json(data);
   }
 }

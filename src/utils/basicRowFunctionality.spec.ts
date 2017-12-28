@@ -183,7 +183,7 @@ describe("data api", () => {
 
     let c = new entityWithValidations();
     c.setSource(new InMemoryDataProvider());
-    await c.source.Insert(c=>{c.id.value = 1;c.name.value = 'noam';});
+    await c.source.Insert(c=>{c.myId.value = 1;c.name.value = 'noam';});
     let api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -195,8 +195,21 @@ describe("data api", () => {
       name: '1'
     });
     d.test();
-    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    var x = await c.source.find({ where: c.myId.isEqualTo(1) });
     expect(x[0].name.value).toBe('noam');
+
+  });
+  itAsync("entity with different id column still works well", async () => {
+
+    let c = new entityWithValidations();
+    c.setSource(new InMemoryDataProvider());
+    c = await c.source.Insert(c=>{c.myId.value = 1;c.name.value = 'noam';});
+    c.name.value = 'yael';
+    await c.save();
+    expect(c.name.value).toBe('yael');
+    expect((await c.source.find()).length).toBe(1);
+    
+    
   });
 
   itAsync("put updates", async () => {
@@ -619,7 +632,7 @@ class CompoundIdEntity extends Entity<string>
   }
 }
 export class entityWithValidations extends Entity<number>{
-  id = new NumberColumn();
+  myId = new NumberColumn();
   name = new StringColumn();
   constructor() {
     super(() => new entityWithValidations(), new InMemoryDataProvider());
