@@ -453,7 +453,8 @@ export class FilterHelper<rowType extends Entity<any>> {
   addToFindOptions(opt: FindOptionsPerEntity<rowType>) {
     this.filterColumns.forEach(c => {
       if (opt.where) {
-        opt.where = r => new AndFilter(opt.where(r), c.isEqualTo(this.filterRow.__getColumn(c).value));
+        let x = opt.where;
+        opt.where = r => new AndFilter(x(r), c.isEqualTo(this.filterRow.__getColumn(c).value));
 
       }
       else opt.where = r => c.isEqualTo(this.filterRow.__getColumn(c).value);
