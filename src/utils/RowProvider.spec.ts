@@ -1,5 +1,5 @@
 import { FindOptionsPerEntity } from './DataInterfaces';
-import { NumberColumn, extractSortFromSettings } from '../';
+import { NumberColumn, extractSortFromSettings, DataAreaSettings } from '../';
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
@@ -38,7 +38,7 @@ async function insertFourRows() {
 };
 
 describe("test row provider", () => {
-  it("auto name", () => { 
+  it("auto name", () => {
     var cat = new Categories();
     expect(cat.constructor.name).toBe('Categories');
     expect(cat.__getName()).toBe('Categories');
@@ -187,7 +187,7 @@ describe("test row provider", () => {
   });
   itAsync("update should fail nicely", async () => {
     let c = new Categories();
-    c.setSource({ provideFor: () => new myDp<Categories>(()=>new Categories()) }); 
+    c.setSource({ provideFor: () => new myDp<Categories>(() => new Categories()) });
     c.id.value = 1;
     c.categoryName.value = 'noam';
     await c.save();
@@ -244,7 +244,7 @@ describe("test row provider", () => {
     let cc = new ColumnCollection(() => c, () => true, undefined);
     let cs = { column: c1.id, dropDown: { source: c } } as ColumnSetting<Categories>
     await cc.add(cs);
-    
+
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
     expect(cs.dropDown.items[1].id).toBe(2);
@@ -258,7 +258,7 @@ describe("test row provider", () => {
 
 });
 describe("column collection", () => {
-  itAsync("uses a saparate column",async  () => {
+  itAsync("uses a saparate column", async () => {
     let c = new Categories();
     var cc = new ColumnCollection(() => c, () => false, undefined);
     await cc.add(c.categoryName);
@@ -279,7 +279,7 @@ describe("column collection", () => {
     caption: 'name'
   }`);
   })
-  itAsync("works ok with filter",async () => {
+  itAsync("works ok with filter", async () => {
     let c = new Categories();
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }));
     await cc.add(c.id);
@@ -315,8 +315,8 @@ describe("grid settings ",
       expect(gs.sortedAscending(c.categoryName)).toBe(false);
       expect(gs.sortedDescending(c.categoryName)).toBe(false);
     });
-    it("paging works",async () => { 
-      let c =await  createData(async i => {
+    it("paging works", async () => {
+      let c = await createData(async i => {
         i(1, "a");
         i(2, "b");
         i(3, "a");
@@ -326,7 +326,7 @@ describe("grid settings ",
         i(7, "a");
         i(8, "b");
       });
-      
+
       let ds = new GridSettings(c, { get: { limit: 2 } });
       await ds.getRecords();
       expect(ds.items.length).toBe(2);
@@ -341,8 +341,8 @@ describe("grid settings ",
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id.value).toBe(3);
     });
-    it("paging works with filter",async () => { 
-      let c =await  createData(async i => {
+    it("paging works with filter", async () => {
+      let c = await createData(async i => {
         i(1, "a");
         i(2, "b");
         i(3, "a");
@@ -352,8 +352,8 @@ describe("grid settings ",
         i(7, "a");
         i(8, "b");
       });
-      
-      let ds = new GridSettings(c, { get: { limit: 2,where:c=>c.categoryName.isEqualTo('b') } });
+
+      let ds = new GridSettings(c, { get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
       await ds.getRecords();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id.value).toBe(2);
@@ -362,7 +362,7 @@ describe("grid settings ",
       expect(ds.items[0].id.value).toBe(6);
       await ds.nextPage();
       expect(ds.items.length).toBe(0);
-      
+
       await ds.previousPage();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id.value).toBe(6);
@@ -380,15 +380,15 @@ describe("order by api", () => {
   });
   it("works with columns", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c =>  c.id  };
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => c.id };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column).toBe(c.id);
   });
-  
+
   it("works with columns array", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [ c.id,c.categoryName]  };
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [c.id, c.categoryName] };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
@@ -396,7 +396,7 @@ describe("order by api", () => {
   });
   it("works with segment array", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }]  };
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
@@ -404,37 +404,58 @@ describe("order by api", () => {
   });
   it("works with mixed column segment array", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [  c.id , { column: c.categoryName }]  };
+    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);
   });
-  itAsync("test several sort options",async()=>{
-      let c =await  createData(async i=>{
-        i(1,'z');
-        i(2,'y');
-      });
-      
-      let r = await c.source.find({orderBy:c.categoryName});
-      expect(r.length).toBe(2);
-      expect(r[0].id.value).toBe(2);
+  itAsync("test several sort options", async () => {
+    let c = await createData(async i => {
+      i(1, 'z');
+      i(2, 'y');
+    });
 
-       r = await c.source.find({orderBy:[c.categoryName]});
-      expect(r.length).toBe(2);
-      expect(r[0].id.value).toBe(2);
-      
-      r = await c.source.find({orderBy:[{column:c.categoryName,descending:true}]});
-      expect(r.length).toBe(2);
-      expect(r[0].id.value).toBe(1);
+    let r = await c.source.find({ orderBy: c.categoryName });
+    expect(r.length).toBe(2);
+    expect(r[0].id.value).toBe(2);
+
+    r = await c.source.find({ orderBy: [c.categoryName] });
+    expect(r.length).toBe(2);
+    expect(r[0].id.value).toBe(2);
+
+    r = await c.source.find({ orderBy: [{ column: c.categoryName, descending: true }] });
+    expect(r.length).toBe(2);
+    expect(r[0].id.value).toBe(1);
 
   });
 });
+describe("test area", () => {
+  it("works without entity", () => {
+      let n = new NumberColumn();
+      n.value = 5;
+      let area = new DataAreaSettings({columnSettings:()=>[n]});
+      expect(area.columns.items.length).toBe(1);
+      expect(area.columns.__showArea()).toBe(true);
+      expect(area.columns.getNonGridColumns().length).toBe(1);
+      
 
+  });
+
+});
+describe ("test number column",()=>{
+  it("Number is always a number",()=>{
+      let x = new NumberColumn();
+      var z:any = '123';
+      x.value = z;
+      x.value+=1;
+      expect(x.value).toBe(124);
+  });
+});
 
 class myDp<T extends Entity<any>> extends ActualInMemoryDataProvider<T> {
-  constructor( factory: () => T) {
-    super( factory, []);
+  constructor(factory: () => T) {
+    super(factory, []);
   }
   public update(id: any, data: any): Promise<any> {
     throw new Error("what");

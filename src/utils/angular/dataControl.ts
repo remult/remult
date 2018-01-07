@@ -7,7 +7,7 @@ import { Component, Input } from '@angular/core';
   selector: 'data-control',
   template: `
 <span *ngIf="!_getEditable()" >{{settings._getColValue(map,record)}}</span>
-<div *ngIf="_getEditable()" class="" [class.has-error]="settings._getError(map,record)" [style.width]="settings.__dataControlStyle(map)">
+<div *ngIf="_getEditable()" class="" [class.has-error]="settings._getError(map,record)" [style.width]="dataControlStyle()">
     <div >
         <div [class.input-group]="showDescription()||map.click" *ngIf="!isSelect()">
             <div class="input-group-btn" *ngIf="map.click">
@@ -32,13 +32,17 @@ export class DataControlComponent {
   @Input() map: ColumnSetting<any>;
   @Input() record: Entity<any>;
   @Input() notReadonly: false;
-
+  @Input() settings: ColumnCollection<any>;
   showDescription() {
 
     return (this.map.column) && this.map.getValue;
   }
+  dataControlStyle(){
+    return this.settings.__dataControlStyle(this.map);
+  }
   _getColumn() {
-    return this.record.__getColumn(this.map.column);
+    return this.settings.__getColumn(this.map,this.record);
+    
   }
   _getEditable() {
     if (this.notReadonly)
@@ -53,5 +57,5 @@ export class DataControlComponent {
       return true;
     return false;
   }
-  @Input() settings: ColumnCollection<any>;
+  
 }

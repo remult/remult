@@ -1,9 +1,10 @@
 import { environment } from '../environments/environment';
-import { ColumnSetting, Lookup } from './../utils/utils';
+import { ColumnSetting, Lookup,NumberColumn } from './../utils/utils';
 import { Component } from '@angular/core';
 import * as models from './models';
 import * as utils from '../utils/utils';
 import * as db from '../utils/localStorageDataProvider';
+
 
 
 
@@ -14,7 +15,12 @@ import * as db from '../utils/localStorageDataProvider';
 
 })
 export class AppComponent {
-
+  myNumber = new NumberColumn({caption:'my number',value:5});
+  myNumber1 = new NumberColumn({caption:'my number',value:2});
+  myNumber2 = new NumberColumn({caption:'my number',value:3});
+  myArea = new utils.DataAreaSettings({
+    columnSettings:()=>[this.myNumber,this.myNumber1,this.myNumber2,{caption:'1234',getValue:()=>this.myNumber.value+this.myNumber1.value}]
+  });
   categories = new utils.GridSettings(new models.Categories(), {
     get: {limit:100},
     allowUpdate: true,

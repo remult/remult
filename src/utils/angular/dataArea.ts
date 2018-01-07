@@ -1,12 +1,12 @@
 
-import {ColumnCollection, DataAreaSettings, dataAreaSettings,  ColumnSetting } from '../utils';
+import { ColumnCollection, DataAreaSettings, dataAreaSettings, ColumnSetting } from '../utils';
 
 import { Component, OnChanges, Input } from '@angular/core';
 @Component({
   selector: 'data-area',
   template: `
 
-<div class="form-horizontal" *ngIf="settings.columns&&settings.columns.currentRow()" >
+<div class="form-horizontal" *ngIf="settings.columns&&settings.columns.__showArea()" >
 
         <div class="{{getColumnsClass()}}" *ngFor="let col of theColumns()">
             <div class="form-group {{settings.columns._getColumnClass(map,settings.columns.currentRow())}}" *ngFor="let map of col" >

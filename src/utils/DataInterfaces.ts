@@ -41,12 +41,13 @@ export interface ColumnValueProvider {
   setValue(key: string, value: any): void;
 }
 
-export interface DataColumnSettings {
+export interface DataColumnSettings<type> {
   jsonName?: string;
   caption?: string;
   readonly?: boolean;
   inputType?: string;
   dbName?: string;
+  value?:type;
   storage?:ColumnStorage<any>
 }
 export interface ColumnStorage<dataType> {

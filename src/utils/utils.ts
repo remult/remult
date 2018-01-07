@@ -124,8 +124,14 @@ export interface IDataAreaSettings<rowType> {
 export class DataAreaSettings<rowType extends Entity<any>>
 {
 
-  constructor(public columns: ColumnCollection<rowType>, entity: rowType, public settings: IDataAreaSettings<rowType>) {
-    if (settings.columnSettings)
+  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
+    if (columns == undefined) {
+      columns = new ColumnCollection(() => undefined, () => true, undefined);
+      columns.numOfColumnsInGrid = 0;
+      this.columns = columns;
+
+    }
+    if (settings && settings.columnSettings)
       columns.add(...settings.columnSettings(entity));
 
   }
@@ -228,7 +234,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper);
     col.numOfColumnsInGrid = 0;
 
-    return new DataAreaSettings<rowType>(col, this.entity, settings);
+    return new DataAreaSettings<rowType>(settings, col, this.entity);
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {
@@ -786,9 +792,9 @@ export class Column<dataType>  {
   jsonName: string;
   caption: string;
   dbName: string;
-  private __settings: DataColumnSettings;
+  private __settings: DataColumnSettings<dataType>;
   __getMemberName() { return this.jsonName; }
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<dataType> | string) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
@@ -805,6 +811,8 @@ export class Column<dataType>  {
           this.inputType = settingsOrCaption.inputType;
         if (settingsOrCaption.dbName)
           this.dbName = settingsOrCaption.dbName;
+        if (settingsOrCaption.value != undefined)
+          this.value = settingsOrCaption.value;
       }
 
     }
@@ -864,8 +872,12 @@ export class Column<dataType>  {
   get displayValue() {
     return this.value;
   }
+  protected __processValue(value: dataType) {
+    return value;
+
+  }
   set value(value: dataType) {
-    this.__valueProvider.setValue(this.jsonName, value);
+    this.__valueProvider.setValue(this.jsonName, this.__processValue( value));
     this.error = undefined;
   }
   __addToPojo(pojo: any) {
@@ -963,7 +975,7 @@ export class Entity<idType> {
   }
   /** @internal */
   __entityData: __EntityValueProvider;
-  protected   onSavingRow = ()=>{};
+  protected onSavingRow = () => { };
   error: string;
   __idColumn: Column<idType>;
   protected initColumns(idColumn?: Column<idType>) {
@@ -994,7 +1006,7 @@ export class Entity<idType> {
     });
     return ok;
   }
-  isNew(){
+  isNew() {
     return this.__entityData.isNewRow();
   }
   __getValidationError() {
@@ -1212,7 +1224,7 @@ export class EntitySource<T extends Entity<any>>
   }
   __lookupCache: LookupCache<any>[] = [];
 
-   async max(col: NumberColumn, filter?: FilterBase):Promise<number> {
+  async max(col: NumberColumn, filter?: FilterBase): Promise<number> {
     let x = await this.find({ where: filter, limit: 1, orderBy: new Sort({ column: col, descending: true }) });
     if (x.length == 0)
       return 0;
@@ -1322,12 +1334,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string> | string) {
     super(settingsOrCaption);
   }
 }
 export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1344,14 +1356,21 @@ export class DateColumn extends Column<string>{
 
 }
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<number> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
   }
+  protected __processValue(value: number) {
+    console.log(typeof value);
+    if (value != undefined&& !(typeof value === "number"))
+      return +value;
+    return value;
+
+  }
 }
 export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<boolean> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';
@@ -1365,6 +1384,16 @@ export class ColumnCollection<rowType extends Entity<any>> {
         if (location.search.toLowerCase().indexOf('design=y') >= 0)
           this.allowDesignMode = true;
     }
+  }
+  __showArea() {
+    return true;
+    //return this.currentRow();
+
+  }
+  __getColumn(map: ColumnSetting<any>, record: Entity<any>) {
+    if (record)
+      return record.__getColumn(map.column);
+    return map.column;
   }
   __dataControlStyle(map: ColumnSetting<any>): string {
 
@@ -1549,11 +1578,11 @@ export class ColumnCollection<rowType extends Entity<any>> {
     else if (col.column) {
       if (col.dropDown && col.dropDown.items) {
         for (let x of col.dropDown.items) {
-          if (x.id == row.__getColumn(col.column).value)
+          if (x.id == this.__getColumn(col, row).value)
             return x.caption;
         }
       }
-      r = row.__getColumn(col.column).displayValue;
+      r = this.__getColumn(col, row).displayValue;
     }
 
 
@@ -1575,8 +1604,9 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return '';
 
   }
+
   _getError(col: ColumnSetting<any>, r: Entity<any>) {
-    return r.__getColumn(col.column).error;
+    return this.__getColumn(col, r).error;
   }
   autoGenerateColumnsBasedOnData() {
     if (this.items.length == 0) {
@@ -1699,20 +1729,20 @@ export function extractSortFromSettings<T extends Entity<any>>(entity: T, opt: F
     return undefined;
   let x = opt.orderBy(entity);
   return translateSort(x);
-  
+
 }
-export function translateSort(sort:any):Sort{
+export function translateSort(sort: any): Sort {
   if (sort instanceof Sort)
-  return sort;
-if (sort instanceof Column)
-  return new Sort({ column: sort });
-if (sort instanceof Array) {
-  let r = new Sort();
-  sort.forEach(i => {
-    if (i instanceof Column)
-      r.Segments.push({ column: i });
-    else r.Segments.push(i);
-  });
-  return r;
-}
+    return sort;
+  if (sort instanceof Column)
+    return new Sort({ column: sort });
+  if (sort instanceof Array) {
+    let r = new Sort();
+    sort.forEach(i => {
+      if (i instanceof Column)
+        r.Segments.push({ column: i });
+      else r.Segments.push(i);
+    });
+    return r;
+  }
 }

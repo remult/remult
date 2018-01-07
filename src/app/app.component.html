@@ -1,10 +1,15 @@
 <h1>rad web internal tests</h1>
-<data-grid [settings]="categories" ></data-grid>
 
+<data-area [settings]="myArea"></data-area>
+
+
+
+
+<data-grid [settings]="categories" ></data-grid>
+<br/>
 <data-grid [settings]="settings"></data-grid>
 <select-popup [settings]="customersSelect"></select-popup>
 <div>
-  <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
     <li class="active">
       <a href="#tab1" data-toggle="tab">Ship Info</a>
@@ -13,7 +18,6 @@
       <a href="#tab2" data-toggle="tab">Order Details {{getOrderTotal()}}</a>
     </li>
   </ul>
-  <!-- Tab panes -->
   <div class="tab-content">
     <div class="tab-pane active" id="tab1">
       <data-area [settings]="shipInfoArea"></data-area>
