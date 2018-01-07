@@ -634,31 +634,36 @@ export interface SortSegment {
   descending?: boolean
 }
 
-export class Lookup<lookupType extends Entity<any>> {
+export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
 
-  constructor(private entity: lookupType) {
-    this.restList = new DataList<lookupType>(entity);
+  constructor(private entity: entityType) {
+    this.restList = new DataList<entityType>(entity);
 
   }
 
-  private restList: DataList<lookupType>;
+  private restList: DataList<entityType>;
   private cache: any = {};
 
-  get(filter: FilterBase): lookupType {
+  get(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
     return this.getInternal(filter).value;
   }
-  found(filter: FilterBase): boolean {
+  found(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): boolean {
     return this.getInternal(filter).found;
   }
 
-  private getInternal(filter: FilterBase): lookupRowInfo<lookupType> {
-    let find: FindOptionsPerEntity<lookupType> = {};
-    find.where = r => filter;
+  private getInternal(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): lookupRowInfo<entityType> {
+    let find: FindOptionsPerEntity<entityType> = {};
+    if (filter instanceof Column)
+      find.where = (e) => e.__idColumn.isEqualTo(filter);
+    else if (isFunction(filter)) {
+      find.where = e => filter(e);
+    }
+
 
     return this._internalGetByOptions(find);
   }
 
-  _internalGetByOptions(find: FindOptionsPerEntity<lookupType>): lookupRowInfo<lookupType> {
+  _internalGetByOptions(find: FindOptionsPerEntity<entityType>): lookupRowInfo<entityType> {
 
     let key = "";
     let url = new UrlBuilder("");
@@ -671,7 +676,7 @@ export class Lookup<lookupType extends Entity<any>> {
     if (this.cache[key]) {
       return this.cache[key];
     } else {
-      let res = new lookupRowInfo<lookupType>();
+      let res = new lookupRowInfo<entityType>();
       this.cache[key] = res;
 
       if (find == undefined || key == undefined) {
@@ -693,8 +698,8 @@ export class Lookup<lookupType extends Entity<any>> {
     }
   }
 
-  whenGet(r: FilterBase) {
-    return this.getInternal(r).promise.then(r => r.value);
+  whenGet(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)) {
+    return this.getInternal(filter).promise.then(r => r.value);
   }
 }
 
@@ -877,7 +882,7 @@ export class Column<dataType>  {
 
   }
   set value(value: dataType) {
-    this.__valueProvider.setValue(this.jsonName, this.__processValue( value));
+    this.__valueProvider.setValue(this.jsonName, this.__processValue(value));
     this.error = undefined;
   }
   __addToPojo(pojo: any) {
@@ -1121,7 +1126,7 @@ export class Entity<idType> {
   lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
 
     let key = lookupEntity.constructor.name;
-    let lookup: Lookup<entityType>;
+    let lookup: Lookup<lookupIdType, entityType>;
     this.source.__lookupCache.forEach(l => {
       if (l.key == key)
         lookup = l.lookup;
@@ -1130,18 +1135,14 @@ export class Entity<idType> {
       lookup = new Lookup(lookupEntity);
       this.source.__lookupCache.push({ key, lookup });
     }
-    if (filter instanceof Column)
-      return lookup.get(lookupEntity.__idColumn.isEqualTo(filter));
-    else if (isFunction(filter)) {
+    return lookup.get(filter);
 
-      return lookup.get(filter(lookupEntity));
-    }
   }
 
 }
 export interface LookupCache<T extends Entity<any>> {
   key: string;
-  lookup: Lookup<T>;
+  lookup: Lookup<any, T>;
 }
 
 export class CompoundIdColumn extends Column<string>
@@ -1362,8 +1363,8 @@ export class NumberColumn extends Column<number>{
       this.inputType = 'number';
   }
   protected __processValue(value: number) {
-    console.log(typeof value);
-    if (value != undefined&& !(typeof value === "number"))
+    
+    if (value != undefined && !(typeof value === "number"))
       return +value;
     return value;
 

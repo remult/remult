@@ -38,7 +38,7 @@ export class AppComponent {
       {
         column: orderDetails.productID,
         dropDown: { source: new models.Products() },
-        onUserChangedValue: od => this.pLookUp.whenGet(this.pForLookup.id.isEqualTo(od.productID)).then(p => od.unitPrice.value = p.unitPrice.value)
+        onUserChangedValue: od => this.pLookUp.whenGet(e=>e.id.isEqualTo(od.productID)).then(p => od.unitPrice.value = p.unitPrice.value)   
       },
 
       orderDetails.unitPrice,

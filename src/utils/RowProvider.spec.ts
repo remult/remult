@@ -204,7 +204,7 @@ describe("test row provider", () => {
     let c = await insertFourRows();
     let n = c.source.createNewItem();
     let lookup = new Lookup(c);
-    let r = await lookup.whenGet(c.categoryName.isEqualTo(undefined));
+    let r = await lookup.whenGet(c=>c.categoryName.isEqualTo(undefined));
     expect(r.categoryName.value).toBe(undefined);
 
   });
