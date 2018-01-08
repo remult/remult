@@ -1,9 +1,10 @@
 import { environment } from '../environments/environment';
-import { ColumnSetting, Lookup,NumberColumn } from './../utils/utils';
+import { ColumnSetting, Lookup,NumberColumn,GridSettings } from './../utils/utils';
 import { Component } from '@angular/core';
 import * as models from './models';
 import * as utils from '../utils/utils';
 import * as db from '../utils/localStorageDataProvider';
+
 
 
 
@@ -15,6 +16,8 @@ import * as db from '../utils/localStorageDataProvider';
 
 })
 export class AppComponent {
+
+  x = new GridSettings(new models.Orders());
   myNumber = new NumberColumn({caption:'my number',value:5});
   myNumber1 = new NumberColumn({caption:'my number',value:2});
   myNumber2 = new NumberColumn({caption:'my number',value:3});

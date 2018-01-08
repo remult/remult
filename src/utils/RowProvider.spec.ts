@@ -9,6 +9,7 @@ import { itAsync } from './testHelper.spec';
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
+import { DataAreaCompnent } from '../utils/angular/dataArea';
 
 
 
@@ -438,10 +439,33 @@ describe("test area", () => {
       expect(area.columns.items.length).toBe(1);
       expect(area.columns.__showArea()).toBe(true);
       expect(area.columns.getNonGridColumns().length).toBe(1);
-      
+  });
+});
+describe("test Grid Settings",()=>{
+  it("works well with many columns",()=>{
+
+    let x = new GridSettings(new Categories(),{
+      columnSettings:x=>[
+        {caption:'a',getValue:r=>''},
+        {caption:'b',getValue:r=>''},
+        {caption:'c',getValue:r=>''},
+        {caption:'d',getValue:r=>''},
+        {caption:'e',getValue:r=>''},
+        {caption:'f',getValue:r=>''},
+        {caption:'g',getValue:r=>''},
+        {caption:'h',getValue:r=>''},
+      ]
+    });
+    expect(x.columns.getGridColumns().length).toBe(5);
+    expect(x.columns.getNonGridColumns().length).toBe(3);
+    let area = new DataAreaCompnent();
+    area.settings = x;
+    area.columns=2;
+    expect(area.theColumns().length).toBe(2);
+    expect(area.theColumns()[0].length).toBe(2);
+    expect(area.theColumns()[1].length).toBe(1);
 
   });
-
 });
 describe ("test number column",()=>{
   it("Number is always a number",()=>{
