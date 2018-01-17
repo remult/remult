@@ -1,12 +1,12 @@
 
-import {ColumnCollection, DataAreaSettings, dataAreaSettings,  ColumnSetting } from '../utils';
+import { ColumnCollection, DataAreaSettings, dataAreaSettings, ColumnSetting } from '../utils';
 
 import { Component, OnChanges, Input } from '@angular/core';
 @Component({
   selector: 'data-area',
   template: `
 
-<div class="form-horizontal" *ngIf="settings.columns&&settings.columns.currentRow()" >
+<div class="form-horizontal" *ngIf="settings.columns&&settings.columns.__showArea()" >
 
         <div class="{{getColumnsClass()}}" *ngFor="let col of theColumns()">
             <div class="form-group {{settings.columns._getColumnClass(map,settings.columns.currentRow())}}" *ngFor="let map of col" >
@@ -47,23 +47,27 @@ export class DataAreaCompnent implements OnChanges {
 
 
   lastCols: Array<ColumnSetting<any>[]>;
+  lastAllCols: ColumnSetting<any>[];
 
   theColumns(): Array<ColumnSetting<any>[]> {
 
-    if (!this.lastCols) {
 
-      let cols = this.settings.columns.getNonGridColumns();
 
-      let r: Array<ColumnSetting<any>[]> = [];
-      this.lastCols = r;
-      for (var i = 0; i < this.columns; i++) {
-        r.push([]);
-      }
-      let itemsPerCol = Math.round(cols.length / this.columns);
-      for (var i = 0; i < cols.length; i++) {
-        r[Math.floor(i / itemsPerCol)].push(cols[i]);
-      }
+    let cols = this.settings.columns.getNonGridColumns();
+    if (cols == this.lastAllCols)
+      return this.lastCols;
+      this.lastAllCols = cols;
+
+    let r: Array<ColumnSetting<any>[]> = [];
+    this.lastCols = r;
+    for (var i = 0; i < this.columns; i++) {
+      r.push([]);
     }
+    let itemsPerCol = Math.round(cols.length / this.columns);
+    for (var i = 0; i < cols.length; i++) {
+      r[Math.floor(i / itemsPerCol)].push(cols[i]);
+    }
+
     return this.lastCols;
   }
   @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined) };

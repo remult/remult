@@ -124,8 +124,14 @@ export interface IDataAreaSettings<rowType> {
 export class DataAreaSettings<rowType extends Entity<any>>
 {
 
-  constructor(public columns: ColumnCollection<rowType>, entity: rowType, public settings: IDataAreaSettings<rowType>) {
-    if (settings.columnSettings)
+  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
+    if (columns == undefined) {
+      columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined);
+      columns.numOfColumnsInGrid = 0;
+      this.columns = columns;
+
+    }
+    if (settings && settings.columnSettings)
       columns.add(...settings.columnSettings(entity));
 
   }
@@ -228,7 +234,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper);
     col.numOfColumnsInGrid = 0;
 
-    return new DataAreaSettings<rowType>(col, this.entity, settings);
+    return new DataAreaSettings<rowType>(settings, col, this.entity);
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {
@@ -447,7 +453,8 @@ export class FilterHelper<rowType extends Entity<any>> {
   addToFindOptions(opt: FindOptionsPerEntity<rowType>) {
     this.filterColumns.forEach(c => {
       if (opt.where) {
-        opt.where = r => new AndFilter(opt.where(r), c.isEqualTo(this.filterRow.__getColumn(c).value));
+        let x = opt.where;
+        opt.where = r => new AndFilter(x(r), c.isEqualTo(this.filterRow.__getColumn(c).value));
 
       }
       else opt.where = r => c.isEqualTo(this.filterRow.__getColumn(c).value);
@@ -628,31 +635,36 @@ export interface SortSegment {
   descending?: boolean
 }
 
-export class Lookup<lookupType extends Entity<any>> {
+export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
 
-  constructor(private entity: lookupType) {
-    this.restList = new DataList<lookupType>(entity);
+  constructor(private entity: entityType) {
+    this.restList = new DataList<entityType>(entity);
 
   }
 
-  private restList: DataList<lookupType>;
+  private restList: DataList<entityType>;
   private cache: any = {};
 
-  get(filter: FilterBase): lookupType {
+  get(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
     return this.getInternal(filter).value;
   }
-  found(filter: FilterBase): boolean {
+  found(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): boolean {
     return this.getInternal(filter).found;
   }
 
-  private getInternal(filter: FilterBase): lookupRowInfo<lookupType> {
-    let find: FindOptionsPerEntity<lookupType> = {};
-    find.where = r => filter;
+  private getInternal(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): lookupRowInfo<entityType> {
+    let find: FindOptionsPerEntity<entityType> = {};
+    if (filter instanceof Column)
+      find.where = (e) => e.__idColumn.isEqualTo(filter);
+    else if (isFunction(filter)) {
+      find.where = e => filter(e);
+    }
+
 
     return this._internalGetByOptions(find);
   }
 
-  _internalGetByOptions(find: FindOptionsPerEntity<lookupType>): lookupRowInfo<lookupType> {
+  _internalGetByOptions(find: FindOptionsPerEntity<entityType>): lookupRowInfo<entityType> {
 
     let key = "";
     let url = new UrlBuilder("");
@@ -665,7 +677,7 @@ export class Lookup<lookupType extends Entity<any>> {
     if (this.cache[key]) {
       return this.cache[key];
     } else {
-      let res = new lookupRowInfo<lookupType>();
+      let res = new lookupRowInfo<entityType>();
       this.cache[key] = res;
 
       if (find == undefined || key == undefined) {
@@ -687,8 +699,8 @@ export class Lookup<lookupType extends Entity<any>> {
     }
   }
 
-  whenGet(r: FilterBase) {
-    return this.getInternal(r).promise.then(r => r.value);
+  whenGet(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)) {
+    return this.getInternal(filter).promise.then(r => r.value);
   }
 }
 
@@ -786,9 +798,9 @@ export class Column<dataType>  {
   jsonName: string;
   caption: string;
   dbName: string;
-  private __settings: DataColumnSettings;
+  private __settings: DataColumnSettings<dataType>;
   __getMemberName() { return this.jsonName; }
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<dataType> | string) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
@@ -805,6 +817,8 @@ export class Column<dataType>  {
           this.inputType = settingsOrCaption.inputType;
         if (settingsOrCaption.dbName)
           this.dbName = settingsOrCaption.dbName;
+        if (settingsOrCaption.value != undefined)
+          this.value = settingsOrCaption.value;
       }
 
     }
@@ -864,8 +878,12 @@ export class Column<dataType>  {
   get displayValue() {
     return this.value;
   }
+  protected __processValue(value: dataType) {
+    return value;
+
+  }
   set value(value: dataType) {
-    this.__valueProvider.setValue(this.jsonName, value);
+    this.__valueProvider.setValue(this.jsonName, this.__processValue(value));
     this.error = undefined;
   }
   __addToPojo(pojo: any) {
@@ -963,7 +981,9 @@ export class Entity<idType> {
   }
   /** @internal */
   __entityData: __EntityValueProvider;
+
   protected onSavingRow: () => any = () => { };
+
   error: string;
   __idColumn: Column<idType>;
   protected initColumns(idColumn?: Column<idType>) {
@@ -1126,7 +1146,7 @@ export class Entity<idType> {
   lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
 
     let key = lookupEntity.constructor.name;
-    let lookup: Lookup<entityType>;
+    let lookup: Lookup<lookupIdType, entityType>;
     this.source.__lookupCache.forEach(l => {
       if (l.key == key)
         lookup = l.lookup;
@@ -1135,18 +1155,14 @@ export class Entity<idType> {
       lookup = new Lookup(lookupEntity);
       this.source.__lookupCache.push({ key, lookup });
     }
-    if (filter instanceof Column)
-      return lookup.get(lookupEntity.__idColumn.isEqualTo(filter));
-    else if (isFunction(filter)) {
+    return lookup.get(filter);
 
-      return lookup.get(filter(lookupEntity));
-    }
   }
 
 }
 export interface LookupCache<T extends Entity<any>> {
   key: string;
-  lookup: Lookup<T>;
+  lookup: Lookup<any, T>;
 }
 
 export class CompoundIdColumn extends Column<string>
@@ -1341,12 +1357,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string> | string) {
     super(settingsOrCaption);
   }
 }
 export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1363,14 +1379,21 @@ export class DateColumn extends Column<string>{
 
 }
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<number> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
   }
+  protected __processValue(value: number) {
+    
+    if (value != undefined && !(typeof value === "number"))
+      return +value;
+    return value;
+
+  }
 }
 export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption?: DataColumnSettings | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<boolean> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';
@@ -1384,6 +1407,16 @@ export class ColumnCollection<rowType extends Entity<any>> {
         if (location.search.toLowerCase().indexOf('design=y') >= 0)
           this.allowDesignMode = true;
     }
+  }
+  __showArea() {
+    return true;
+    //return this.currentRow();
+
+  }
+  __getColumn(map: ColumnSetting<any>, record: Entity<any>) {
+    if (record)
+      return record.__getColumn(map.column);
+    return map.column;
   }
   __dataControlStyle(map: ColumnSetting<any>): string {
 
@@ -1568,11 +1601,11 @@ export class ColumnCollection<rowType extends Entity<any>> {
     else if (col.column) {
       if (col.dropDown && col.dropDown.items) {
         for (let x of col.dropDown.items) {
-          if (x.id == row.__getColumn(col.column).value)
+          if (x.id == this.__getColumn(col, row).value)
             return x.caption;
         }
       }
-      r = row.__getColumn(col.column).displayValue;
+      r = this.__getColumn(col, row).displayValue;
     }
 
 
@@ -1594,8 +1627,9 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return '';
 
   }
+
   _getError(col: ColumnSetting<any>, r: Entity<any>) {
-    return r.__getColumn(col.column).error;
+    return this.__getColumn(col, r).error;
   }
   autoGenerateColumnsBasedOnData() {
     if (this.items.length == 0) {
