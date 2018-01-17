@@ -78,7 +78,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     this.r.statusCode = 201;
     this.r.json(data);
   }
-  public deleted(){
+  public deleted() {
     this.r.sendStatus(204);
   }
 
@@ -88,12 +88,13 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public error(data: DataApiError): void {
+    console.log(data);
     if (data instanceof TypeError) {
       data = { message: data.message + '\n' + data.stack };
     }
     let x = JSON.parse(JSON.stringify(data));
-    if (!x.message)
-      data = {message:data.message};
+    if (!x.message&&!x.modelState)
+      data = { message: data.message };
     this.r.status(400).json(data);
   }
 }

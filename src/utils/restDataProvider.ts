@@ -39,10 +39,10 @@ class ActualRestDataProvider implements DataProvider {
         url.add('_limit', options.limit);
       if (options.page)
         url.add('_page', options.page);
-        if (options.additionalUrlParameters)
-          url.addObject(options.additionalUrlParameters);
+      if (options.additionalUrlParameters)
+        url.addObject(options.additionalUrlParameters);
     }
-    
+
     return myFetch(url.url).then(r => {
       return r;
     });
@@ -59,7 +59,7 @@ class ActualRestDataProvider implements DataProvider {
   }
 
   public delete(id: any): Promise<void> {
-    
+
     return fetch(this.url + '/' + id, { method: 'delete', credentials: 'include' }).then(onSuccess, onError);
   }
 
@@ -85,18 +85,20 @@ function myFetch(url: string, init?: RequestInit): Promise<any> {
 
 }
 function onSuccess(response: Response) {
-  
+  if (response.status == 204)
+    return;
   if (response.status >= 200 && response.status < 300)
+
     return response.json();
-  else 
+  else
     throw response.json().then(x => {
       console.log(x);
       if (!x.message)
         x.message = response.statusText;
       return x;
     });
-  
-  
+
+
 
 }
 function onError(error: any) {
