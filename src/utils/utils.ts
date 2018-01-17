@@ -963,7 +963,7 @@ export class Entity<idType> {
   }
   /** @internal */
   __entityData: __EntityValueProvider;
-  protected   onSavingRow = ()=>{};
+  protected onSavingRow: () => any = () => { };
   error: string;
   __idColumn: Column<idType>;
   protected initColumns(idColumn?: Column<idType>) {
@@ -994,7 +994,7 @@ export class Entity<idType> {
     });
     return ok;
   }
-  isNew(){
+  isNew() {
     return this.__entityData.isNewRow();
   }
   __getValidationError() {
@@ -1018,9 +1018,26 @@ export class Entity<idType> {
   }
   save() {
     this.__clearErrors();
-    this.onSavingRow();
-    this.__assertValidity();
-    return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
+    
+    let x = this.onSavingRow();
+
+    let doSave = ()=>{
+      this.__assertValidity();
+      
+      
+      return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
+    };
+    if (x instanceof Promise)
+    {
+      
+      return x.then(() => {
+        return doSave();
+      });
+    }
+    else {
+      
+      return doSave();
+    }
   }
   catchSaveErrors(e: any): any {
 
@@ -1212,10 +1229,12 @@ export class EntitySource<T extends Entity<any>>
   }
   __lookupCache: LookupCache<any>[] = [];
 
-   async max(col: NumberColumn, filter?: FilterBase):Promise<number> {
+  async max(col: NumberColumn, filter?: FilterBase): Promise<number> {
     let x = await this.find({ where: filter, limit: 1, orderBy: new Sort({ column: col, descending: true }) });
-    if (x.length == 0)
+    
+    if (x.length == 0){
       return 0;
+    }
     return x[0].__getColumn(col).value;
   }
 
@@ -1699,20 +1718,20 @@ export function extractSortFromSettings<T extends Entity<any>>(entity: T, opt: F
     return undefined;
   let x = opt.orderBy(entity);
   return translateSort(x);
-  
+
 }
-export function translateSort(sort:any):Sort{
+export function translateSort(sort: any): Sort {
   if (sort instanceof Sort)
-  return sort;
-if (sort instanceof Column)
-  return new Sort({ column: sort });
-if (sort instanceof Array) {
-  let r = new Sort();
-  sort.forEach(i => {
-    if (i instanceof Column)
-      r.Segments.push({ column: i });
-    else r.Segments.push(i);
-  });
-  return r;
-}
+    return sort;
+  if (sort instanceof Column)
+    return new Sort({ column: sort });
+  if (sort instanceof Array) {
+    let r = new Sort();
+    sort.forEach(i => {
+      if (i instanceof Column)
+        r.Segments.push({ column: i });
+      else r.Segments.push(i);
+    });
+    return r;
+  }
 }

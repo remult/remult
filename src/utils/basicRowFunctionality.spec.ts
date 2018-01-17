@@ -294,9 +294,9 @@ describe("data api", () => {
     var api = new DataApi(c, {
       onSavingRow: async c => {
         if (c.isNew()) {
-          
+
           await new Promise((ok) => {
-            
+
             c.id.value = 2;
             ok();
           });
@@ -334,6 +334,22 @@ describe("data api", () => {
     };
     await api.post(t, { categoryName: 'noam' });
     d.test();
+  });
+  itAsync("post with logic works and max in entity", async () => {
+
+    let c = new entityWithValidations();
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      expect(data.name).toBe('noam honig');
+      expect(data.myId).toBe(1);
+      d.ok();
+    };
+    await api.post(t, { name: 'noam honig' });
+    d.test();
+    
   });
   itAsync("post with validation fails", async () => {
 
@@ -642,9 +658,15 @@ export class entityWithValidations extends Entity<number>{
   constructor() {
     super(() => new entityWithValidations(), new InMemoryDataProvider());
     this.initColumns();
-    this.onSavingRow = () => {
+    this.onSavingRow = async () => {
       if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid';
+        
+      if (this.isNew() && (!this.myId.value || this.myId.value == 0)){
+        
+        this.myId.value = await this.source.max(this.myId) + 1;
+        
+      }
     };
 
   }
