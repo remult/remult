@@ -18,6 +18,9 @@ class TestDataApiResponse implements DataApiResponse {
   success(data: any): void {
     fail('didnt expect success: ' + JSON.stringify(data));
   }
+  created(data: any): void {
+    fail('didnt expect created: ' + JSON.stringify(data));
+  }
   notFound(): void {
     fail('not found');
   }
@@ -278,7 +281,7 @@ describe("data api", () => {
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.success = async (data: any) => {
+    t.created = async (data: any) => {
       expect(data.id).toBe(1);
       expect(data.categoryName).toBe('noam');
       d.ok();
@@ -306,7 +309,7 @@ describe("data api", () => {
     });
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.success = async (data: any) => {
+    t.created = async (data: any) => {
       expect(data.id).toBe(2);
       expect(data.categoryName).toBe('noam');
       d.ok();
@@ -327,7 +330,7 @@ describe("data api", () => {
     });
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.success = async (data: any) => {
+    t.created = async (data: any) => {
       expect(data.id).toBe(2);
       expect(data.categoryName).toBe('noam');
       d.ok();
@@ -342,7 +345,7 @@ describe("data api", () => {
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.success = async (data: any) => {
+    t.created = async (data: any) => {
       expect(data.name).toBe('noam honig');
       expect(data.myId).toBe(1);
       d.ok();

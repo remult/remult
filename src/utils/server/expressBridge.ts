@@ -74,8 +74,13 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   public success(data: any): void {
     this.r.json(data);
   }
+  public created(data: any): void {
+    this.r.statusCode = 201;
+    this.r.json(data);
+  }
 
   public notFound(): void {
+
     this.r.sendStatus(404);
   }
 

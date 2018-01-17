@@ -119,7 +119,7 @@ export class DataApi<T extends Entity<any>> {
           r.__assertValidity();
         }
       })
-      response.success(r.__toPojo());
+      response.created(r.__toPojo());
     } catch (err) {
       response.error(err);
     }
@@ -137,6 +137,7 @@ export interface DataApiSettings<rowType extends Entity<any>> {
 
 export interface DataApiResponse {
   success(data: any): void;
+  created(data: any): void;
   notFound(): void;
   error(data: DataApiError): void;
 }
