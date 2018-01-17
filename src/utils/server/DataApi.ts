@@ -103,7 +103,7 @@ export class DataApi<T extends Entity<any>> {
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
       await row.delete();
-      response.success({});
+      response.deleted();
     });
   }
   async post(response: DataApiResponse, body: any) {
@@ -137,9 +137,11 @@ export interface DataApiSettings<rowType extends Entity<any>> {
 
 export interface DataApiResponse {
   success(data: any): void;
+  deleted(): void;
   created(data: any): void;
   notFound(): void;
   error(data: DataApiError): void;
+  
 }
 export interface DataApiRequest {
   get(key: string): string;

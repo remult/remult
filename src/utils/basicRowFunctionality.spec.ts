@@ -21,6 +21,9 @@ class TestDataApiResponse implements DataApiResponse {
   created(data: any): void {
     fail('didnt expect created: ' + JSON.stringify(data));
   }
+  deleted(): void {
+    fail('didnt expect deleted:' );
+  }
   notFound(): void {
     fail('not found');
   }
@@ -248,7 +251,7 @@ describe("data api", () => {
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.success = () => d.ok();
+    t.deleted = () => d.ok();
     await api.delete(t, 1);
 
     let r = await c.source.find();
