@@ -225,6 +225,26 @@ describe("data api", () => {
     expect(x[0].name.value).toBe('noam');
 
   });
+  itAsync("put with validations on entity fails", async () => {
+
+    let c = new entityWithValidationsOnEntityEvent();
+    c.setSource(new InMemoryDataProvider());
+    await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    let api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      expect(data.modelState.name).toBe('invalid');
+      d.ok();
+    };
+    await api.put(t, 1, {
+      name: '1'
+    });
+    d.test();
+    var x = await c.source.find({ where: c.myId.isEqualTo(1) });
+    expect(x[0].name.value).toBe('noam');
+
+  });
   itAsync("entity with different id column still works well", async () => {
 
     let c = new entityWithValidations();
@@ -708,5 +728,17 @@ export class entityWithValidationsOnColumn extends Entity<number>{
   constructor() {
     super(() => new entityWithValidationsOnColumn(), new InMemoryDataProvider());
     this.initColumns();
+  }
+}
+export class entityWithValidationsOnEntityEvent extends Entity<number>{
+  myId = new NumberColumn();
+  name = new StringColumn();
+  constructor() {
+    super(() => new entityWithValidationsOnEntityEvent(), new InMemoryDataProvider());
+    this.initColumns();
+    this.onValidate=()=>{
+      if (!this.name.value || this.name.value.length < 3)
+        this.name.error = 'invalid';
+    };
   }
 }

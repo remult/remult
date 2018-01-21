@@ -795,8 +795,8 @@ export class Column<dataType>  {
   __clearErrors(): any {
     this.error = undefined;
   }
-  __performValidation(){
-    if (this.__settings&&this.__settings.validate){
+  __performValidation() {
+    if (this.__settings && this.__settings.validate) {
       this.__settings.validate(this);
     }
 
@@ -804,9 +804,9 @@ export class Column<dataType>  {
   jsonName: string;
   caption: string;
   dbName: string;
-  private __settings: DataColumnSettings<dataType,Column<dataType>>;
+  private __settings: DataColumnSettings<dataType, Column<dataType>>;
   __getMemberName() { return this.jsonName; }
-  constructor(settingsOrCaption?: DataColumnSettings<dataType,Column<dataType>> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<dataType, Column<dataType>> | string) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
@@ -814,7 +814,7 @@ export class Column<dataType>  {
       } else {
         this.__settings = settingsOrCaption;
         if (settingsOrCaption.jsonName)
-          this.jsonName = settingsOrCaption.jsonName; 
+          this.jsonName = settingsOrCaption.jsonName;
         if (settingsOrCaption.caption)
           this.caption = settingsOrCaption.caption;
         if (settingsOrCaption.readonly)
@@ -988,7 +988,8 @@ export class Entity<idType> {
   /** @internal */
   __entityData: __EntityValueProvider;
 
-  protected onSavingRow: () => any = () => { };
+  protected onSavingRow: () => void | Promise<void> = () => { };
+  protected onValidate: () => void | Promise<void> = () => { };
 
   error: string;
   __idColumn: Column<idType>;
@@ -1045,29 +1046,32 @@ export class Entity<idType> {
   save() {
     this.__clearErrors();
 
-    this.__iterateColumns().forEach(c=>{
+    this.__iterateColumns().forEach(c => {
       c.__performValidation();
     });
 
+    if (this.onValidate)
+      this.onValidate();
+    this.__assertValidity();
 
-    
+
+
     let x = this.onSavingRow();
 
-    let doSave = ()=>{
+    let doSave = () => {
       this.__assertValidity();
-      
-      
+
+
       return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
     };
-    if (x instanceof Promise)
-    {
-      
+    if (x instanceof Promise) {
+
       return x.then(() => {
         return doSave();
       });
     }
     else {
-      
+
       return doSave();
     }
   }
@@ -1259,8 +1263,8 @@ export class EntitySource<T extends Entity<any>>
 
   async max(col: NumberColumn, filter?: FilterBase): Promise<number> {
     let x = await this.find({ where: filter, limit: 1, orderBy: new Sort({ column: col, descending: true }) });
-    
-    if (x.length == 0){
+
+    if (x.length == 0) {
       return 0;
     }
     return x[0].__getColumn(col).value;
@@ -1369,12 +1373,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings<string,StringColumn> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string, StringColumn> | string) {
     super(settingsOrCaption);
   }
 }
 export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings<string,DateColumn> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string, DateColumn> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1391,13 +1395,13 @@ export class DateColumn extends Column<string>{
 
 }
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: DataColumnSettings<number,NumberColumn> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<number, NumberColumn> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
   }
   protected __processValue(value: number) {
-    
+
     if (value != undefined && !(typeof value === "number"))
       return +value;
     return value;
@@ -1405,7 +1409,7 @@ export class NumberColumn extends Column<number>{
   }
 }
 export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption?: DataColumnSettings<boolean,BoolColumn> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<boolean, BoolColumn> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';
