@@ -205,7 +205,7 @@ describe("test row provider", () => {
     let c = await insertFourRows();
     let n = c.source.createNewItem();
     let lookup = new Lookup(c);
-    let r = await lookup.whenGet(c=>c.categoryName.isEqualTo(undefined));
+    let r = await lookup.whenGet(c => c.categoryName.isEqualTo(undefined));
     expect(r.categoryName.value).toBe(undefined);
 
   });
@@ -255,6 +255,37 @@ describe("test row provider", () => {
     c2.id.value = 1;
     expect(cc._getColValue(cc.items[0], c2)).toBe('noam');
 
+  });
+  it("get value function works", () => {
+    let a = new NumberColumn();
+    a.value = 5;
+    var cc = new DataAreaSettings({ columnSettings: () => [a] })
+
+
+    expect(cc.columns._getColValue(cc.columns.items[0], null)).toBe(5);
+
+  });
+  it("get value function works", () => {
+    let a = new NumberColumn();
+    a.value = 5;
+    var cc = new ColumnCollection(undefined, () => true, undefined);
+    cc.add(a);
+    expect(cc._getColValue(cc.items[0], null)).toBe(5);
+
+  });
+  it("get value function works", () => {
+    let a = new NumberColumn();
+    a.value = 5;
+    var cc = new ColumnCollection(undefined, () => true, undefined);
+    cc.add({column:a,getValue:()=>a.value*2});
+    expect(cc._getColValue(cc.items[0], null)).toBe(10);
+  });
+  it("get value function works", () => {
+    let a = new NumberColumn({getValue:v=>v*=3});
+    a.value = 5;
+    var cc = new ColumnCollection(undefined, () => true, undefined);
+    cc.add(a);
+    expect(cc._getColValue(cc.items[0], null)).toBe(15);
   });
 
 });
@@ -433,47 +464,47 @@ describe("order by api", () => {
 });
 describe("test area", () => {
   it("works without entity", () => {
-      let n = new NumberColumn();
-      n.value = 5;
-      let area = new DataAreaSettings({columnSettings:()=>[n]});
-      expect(area.columns.items.length).toBe(1);
-      expect(area.columns.__showArea()).toBe(true);
-      expect(area.columns.getNonGridColumns().length).toBe(1);
+    let n = new NumberColumn();
+    n.value = 5;
+    let area = new DataAreaSettings({ columnSettings: () => [n] });
+    expect(area.columns.items.length).toBe(1);
+    expect(area.columns.__showArea()).toBe(true);
+    expect(area.columns.getNonGridColumns().length).toBe(1);
   });
 });
-describe("test Grid Settings",()=>{
-  it("works well with many columns",()=>{
+describe("test Grid Settings", () => {
+  it("works well with many columns", () => {
 
-    let x = new GridSettings(new Categories(),{
-      columnSettings:x=>[
-        {caption:'a',getValue:r=>''},
-        {caption:'b',getValue:r=>''},
-        {caption:'c',getValue:r=>''},
-        {caption:'d',getValue:r=>''},
-        {caption:'e',getValue:r=>''},
-        {caption:'f',getValue:r=>''},
-        {caption:'g',getValue:r=>''},
-        {caption:'h',getValue:r=>''},
+    let x = new GridSettings(new Categories(), {
+      columnSettings: x => [
+        { caption: 'a', getValue: r => '' },
+        { caption: 'b', getValue: r => '' },
+        { caption: 'c', getValue: r => '' },
+        { caption: 'd', getValue: r => '' },
+        { caption: 'e', getValue: r => '' },
+        { caption: 'f', getValue: r => '' },
+        { caption: 'g', getValue: r => '' },
+        { caption: 'h', getValue: r => '' },
       ]
     });
     expect(x.columns.getGridColumns().length).toBe(5);
     expect(x.columns.getNonGridColumns().length).toBe(3);
     let area = new DataAreaCompnent();
     area.settings = x;
-    area.columns=2;
+    area.columns = 2;
     expect(area.theColumns().length).toBe(2);
     expect(area.theColumns()[0].length).toBe(2);
     expect(area.theColumns()[1].length).toBe(1);
 
   });
 });
-describe ("test number column",()=>{
-  it("Number is always a number",()=>{
-      let x = new NumberColumn();
-      var z:any = '123';
-      x.value = z;
-      x.value+=1;
-      expect(x.value).toBe(124);
+describe("test number column", () => {
+  it("Number is always a number", () => {
+    let x = new NumberColumn();
+    var z: any = '123';
+    x.value = z;
+    x.value += 1;
+    expect(x.value).toBe(124);
   });
 });
 

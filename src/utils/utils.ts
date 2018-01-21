@@ -830,6 +830,17 @@ export class Column<dataType>  {
     }
 
 
+
+  }
+  __getGetValueMethod(): ((row: Entity<any>) => any) {
+    if (this.__settings&& this.__settings.getValue)
+      return e => {
+        let c: Column<dataType> = this;
+        if (e)
+          c = e.__getColumn(c) as Column<dataType>;
+        return c.__settings.getValue(c.value);
+      };
+    return undefined;
   }
 
   __getStorage() {
@@ -1457,17 +1468,21 @@ export class ColumnCollection<rowType extends Entity<any>> {
       if (!x.column && c instanceof Column) {
         x = {
           column: c,
-          readonly: c.readonly,
-          caption: c.caption,
-          inputType: c.inputType
-
         }
 
-      } else
-        if (x.column) {
-          if (!x.caption && x.column.caption)
-            x.caption = x.column.caption;
+      }
+      if (x.column) {
+        if (!x.caption && x.column.caption)
+          x.caption = x.column.caption;
+        if (x.readonly == undefined)
+          x.readonly = x.column.readonly;
+        if (x.inputType == undefined)
+          x.inputType = x.column.inputType;
+        if (x.getValue == undefined) {
+          x.getValue = x.column.__getGetValueMethod();
         }
+
+      }
 
       if (x.getValue) {
         s = x;

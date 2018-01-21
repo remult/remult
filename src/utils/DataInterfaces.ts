@@ -48,7 +48,8 @@ export interface DataColumnSettings<type,colType> {
   dbName?: string;
   value?: type;
   storage?: ColumnStorage<type>;
-  validate?: (col: colType) => any;
+  validate?: (col: colType) => void|Promise<void>;
+  getValue?: (val:type)=>any;
 }
 export interface ColumnStorage<dataType> {
   toDb(val: dataType): any;
