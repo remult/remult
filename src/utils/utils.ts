@@ -836,16 +836,24 @@ export class Column<dataType>  {
 
 
   }
-  __getGetValueMethod(): ((row: Entity<any>) => any) {
-    if (this.__settings && this.__settings.getValue)
-      return e => {
+  __decorateDataSettings(x: ColumnSetting<any>) {
+    if (!x.caption && this.caption)
+      x.caption = this.caption;
+    if (x.readonly == undefined)
+      x.readonly = this.readonly;
+    if (x.inputType == undefined)
+      x.inputType = this.inputType;
+    if (x.getValue == undefined) {
+      if (this.__settings && this.__settings.getValue)
+      x.getValue= e => {
         let c: Column<dataType> = this;
         if (e)
           c = e.__getColumn(c) as Column<dataType>;
         return c.__settings.getValue(c.value);
       };
-    return undefined;
+    }
   }
+
 
   __getStorage() {
     if (!this.__settings)
@@ -1478,16 +1486,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
       }
       if (x.column) {
-        if (!x.caption && x.column.caption)
-          x.caption = x.column.caption;
-        if (x.readonly == undefined)
-          x.readonly = x.column.readonly;
-        if (x.inputType == undefined)
-          x.inputType = x.column.inputType;
-        if (x.getValue == undefined) {
-          x.getValue = x.column.__getGetValueMethod();
-        }
-
+        x.column.__decorateDataSettings(x);
       }
 
       if (x.getValue) {
