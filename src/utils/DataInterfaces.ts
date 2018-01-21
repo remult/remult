@@ -40,7 +40,7 @@ export interface ColumnValueProvider {
   setValue(key: string, value: any): void;
 }
 
-export interface DataColumnSettings<type,colType> {
+export interface DataColumnSettings<type, colType> {
   jsonName?: string;
   caption?: string;
   readonly?: boolean;
@@ -48,8 +48,9 @@ export interface DataColumnSettings<type,colType> {
   dbName?: string;
   value?: type;
   storage?: ColumnStorage<type>;
-  validate?: (col: colType) => void|Promise<void>;
-  getValue?: (val:type)=>any;
+  validate?: (col: colType) => void | Promise<void>;
+  getValue?: (val: type) => any;
+  valueChange?: (val: type) => void;
 }
 export interface ColumnStorage<dataType> {
   toDb(val: dataType): any;

@@ -801,6 +801,7 @@ export class Column<dataType>  {
     }
 
   }
+  onValueChange: () => void;
   jsonName: string;
   caption: string;
   dbName: string;
@@ -825,7 +826,10 @@ export class Column<dataType>  {
           this.dbName = settingsOrCaption.dbName;
         if (settingsOrCaption.value != undefined)
           this.value = settingsOrCaption.value;
+        if (settingsOrCaption.valueChange)
+          this.onValueChange = () => this.__settings.valueChange(this.value);
       }
+
 
     }
 
@@ -833,7 +837,7 @@ export class Column<dataType>  {
 
   }
   __getGetValueMethod(): ((row: Entity<any>) => any) {
-    if (this.__settings&& this.__settings.getValue)
+    if (this.__settings && this.__settings.getValue)
       return e => {
         let c: Column<dataType> = this;
         if (e)
@@ -902,6 +906,8 @@ export class Column<dataType>  {
   set value(value: dataType) {
     this.__valueProvider.setValue(this.jsonName, this.__processValue(value));
     this.error = undefined;
+    if (this.onValueChange)
+      this.onValueChange();
   }
   __addToPojo(pojo: any) {
     pojo[this.jsonName] = this.value;

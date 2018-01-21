@@ -19,5 +19,15 @@ export interface MDHInterface {
   delete?(id: any): Promise<void>;
   insert?(data: any): Promise<any>;
 }
+export class Done {
+  happened = false;
+  ok() {
+    this.happened = true;
+  }
+  test() {
+    if (!this.happened)
+      fail('expected to be done');
+  }
 
+}
 

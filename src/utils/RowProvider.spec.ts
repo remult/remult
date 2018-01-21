@@ -4,7 +4,7 @@ import { NumberColumn, extractSortFromSettings, DataAreaSettings } from '../';
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
-import { itAsync } from './testHelper.spec';
+import { itAsync, Done } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
@@ -277,11 +277,11 @@ describe("test row provider", () => {
     let a = new NumberColumn();
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined);
-    cc.add({column:a,getValue:()=>a.value*2});
+    cc.add({ column: a, getValue: () => a.value * 2 });
     expect(cc._getColValue(cc.items[0], null)).toBe(10);
   });
   it("get value function works", () => {
-    let a = new NumberColumn({getValue:v=>v*=3});
+    let a = new NumberColumn({ getValue: v => v *= 3 });
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined);
     cc.add(a);
@@ -496,6 +496,23 @@ describe("test Grid Settings", () => {
     expect(area.theColumns()[0].length).toBe(2);
     expect(area.theColumns()[1].length).toBe(1);
 
+  });
+});
+describe("test column value change", () => {
+  it("should fire", () => {
+    let d = new Done();
+    let x = new NumberColumn({
+      valueChange: () => d.ok()
+    });
+    x.value++;
+    d.test();
+  });
+  it("should fire 2", () => {
+    let d = new Done();
+    let x = new NumberColumn();
+    x.onValueChange = ()=>d.ok();
+    x.value++;
+    d.test();
   });
 });
 describe("test number column", () => {

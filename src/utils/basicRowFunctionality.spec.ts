@@ -3,7 +3,7 @@ import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdCo
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase';
-import { itAsync } from './testHelper.spec';
+import { itAsync,Done } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
@@ -32,17 +32,7 @@ class TestDataApiResponse implements DataApiResponse {
   }
 }
 
-class Done {
-  happened = false;
-  ok() {
-    this.happened = true;
-  }
-  test() {
-    if (!this.happened)
-      fail('expected to be done');
-  }
 
-}
 
 
 
