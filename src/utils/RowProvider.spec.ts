@@ -1,5 +1,5 @@
 import { FindOptionsPerEntity } from './DataInterfaces';
-import { NumberColumn, extractSortFromSettings, DataAreaSettings } from '../';
+import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions } from '../';
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
@@ -14,9 +14,9 @@ import { DataAreaCompnent } from '../utils/angular/dataArea';
 
 
 
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string) => Promise<void>) => Promise<void>) {
+export async function createData(doInsert: (insert: (id: number, name: string, description?: string) => Promise<void>) => Promise<void>,settings?:EntityOptions) {
 
-  let c = new Categories();
+  let c = new Categories(settings);
   c.setSource(new InMemoryDataProvider());
   await doInsert(async (id, name, description) => {
     await c.source.Insert(c => {
@@ -28,14 +28,14 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
   return c;
 }
 
-async function insertFourRows() {
+async function insertFourRows(settings?:EntityOptions) {
 
   return createData(async i => {
     await i(1, 'noam', 'x');
     await i(4, 'yael', 'x');
     await i(2, 'yoni', 'y');
     await i(3, 'maayan', 'y');
-  });
+  },settings);
 };
 
 describe("test row provider", () => {
@@ -172,6 +172,31 @@ describe("test row provider", () => {
     ds.items[0].categoryName.value = 'noam honig';
     await ds.items[0].save();
     expect(ds.items[0].categoryName.value).toBe('noam honig');
+  });
+  itAsync("test grid update and validation cycle", async () => {
+    let orderOfOperation = '';
+    let c = await insertFourRows({
+      onSavingRow:r=>orderOfOperation+="EntityOnSavingRow,",
+      onValidate:r=>orderOfOperation+="EntityValidate,",
+    });
+    let ds = new GridSettings(c, {
+      onSavingRow:r=>orderOfOperation+="GridOnSavingRow,",
+      onValidate:r=>orderOfOperation+="GridValidate,",
+      get: {
+        orderBy: c => new Sort({ column: c.id })
+      }
+    });
+    orderOfOperation = "";
+    await ds.getRecords();
+
+    let r =ds.items[0];
+    r.categoryName.onValidate = ()=>orderOfOperation+="ColumnValidate,";
+    
+    expect(r.categoryName.value).toBe('noam');
+    r.categoryName.value = 'noam honig';
+    await ds._doSavingRow(r);
+    expect(ds.items[0].categoryName.value).toBe('noam honig');
+    expect(orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
   });
   itAsync("test that it fails nicely", async () => {
     let c = await insertFourRows();

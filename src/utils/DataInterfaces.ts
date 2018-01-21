@@ -48,7 +48,7 @@ export interface DataColumnSettings<type, colType> {
   dbName?: string;
   value?: type;
   storage?: ColumnStorage<type>;
-  validate?: (col: colType) => void | Promise<void>;
+  onValidate?: (col: colType) => void | Promise<void>;
   getValue?: (val: type) => any;
   valueChange?: (val: type) => void;
 }

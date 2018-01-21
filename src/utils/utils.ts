@@ -182,6 +182,8 @@ export class GridSettings<rowType extends Entity<any>>  {
         this.onEnterRow = settings.onEnterRow;
       if (settings.onNewRow)
         this.onNewRow = settings.onNewRow;
+      if (settings.onValidate)
+        this.onValidate = settings.onValidate;
       if (settings.caption)
         this.caption = settings.caption;
       if (!this.caption && entity) {
@@ -312,12 +314,13 @@ export class GridSettings<rowType extends Entity<any>>  {
   _buttons: RowButton<Entity<any>>[] = [];
 
   rowClass?: (row: any) => string;
-  onSavingRow?: (row: any) => void;
+  onSavingRow?: (row: any) => Promise<any> | any;
+  onValidate?: (row: rowType) => Promise<any> | any;
   onEnterRow: (row: rowType) => void;
   onNewRow: (row: rowType) => void;
   _doSavingRow(s: rowType) {
-    if (this.onSavingRow)
-      this.onSavingRow(s);
+    return s.save(this.onValidate, this.onSavingRow);
+
   }
   caption: string;
 
@@ -474,6 +477,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
   rowButtons?: RowButton<rowType>[],
   get?: FindOptionsPerEntity<rowType>,
   onSavingRow?: (r: rowType) => void;
+  onValidate?: (r: rowType) => void;
   onEnterRow?: (r: rowType) => void;
   onNewRow?: (r: rowType) => void;
   numOfColumnsInGrid?: number;
@@ -796,11 +800,12 @@ export class Column<dataType>  {
     this.error = undefined;
   }
   __performValidation() {
-    if (this.__settings && this.__settings.validate) {
-      this.__settings.validate(this);
+    if (this.onValidate) {
+      this.onValidate();
     }
 
   }
+  onValidate: () => void;
   onValueChange: () => void;
   jsonName: string;
   caption: string;
@@ -828,6 +833,8 @@ export class Column<dataType>  {
           this.value = settingsOrCaption.value;
         if (settingsOrCaption.valueChange)
           this.onValueChange = () => this.__settings.valueChange(this.value);
+        if (settingsOrCaption.onValidate)
+          this.onValidate = () => settingsOrCaption.onValidate(this);
       }
 
 
@@ -845,12 +852,12 @@ export class Column<dataType>  {
       x.inputType = this.inputType;
     if (x.getValue == undefined) {
       if (this.__settings && this.__settings.getValue)
-      x.getValue= e => {
-        let c: Column<dataType> = this;
-        if (e)
-          c = e.__getColumn(c) as Column<dataType>;
-        return c.__settings.getValue(c.value);
-      };
+        x.getValue = e => {
+          let c: Column<dataType> = this;
+          if (e)
+            c = e.__getColumn(c) as Column<dataType>;
+          return c.__settings.getValue(c.value);
+        };
     }
   }
 
@@ -970,13 +977,21 @@ export interface EntityOptions {
   name?: string;
   dbName?: string;
   caption?: string;
+  onSavingRow?: (e: Entity<any>) => Promise<any> | any;
+  onValidate?: (e: Entity<any>) => Promise<any> | any;
 }
 export class Entity<idType> {
   constructor(private factory: () => Entity<idType>, source: DataProviderFactory, options?: EntityOptions | string) {
     if (options) {
       if (typeof (options) === "string") {
         this.__options = { name: options };
-      } else this.__options = options;
+      } else {
+        this.__options = options;
+        if (options.onSavingRow)
+          this.onSavingRow = () => options.onSavingRow(this);
+        if (options.onValidate)
+          this.onValidate = () => options.onValidate(this);
+      }
 
     }
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
@@ -1068,7 +1083,7 @@ export class Entity<idType> {
       throw this.__getValidationError();
     }
   }
-  save() {
+  save(validate?: (row: this) => Promise<any> | any, onSavingRow?: (row: this) => Promise<any> | any) {
     this.__clearErrors();
 
     this.__iterateColumns().forEach(c => {
@@ -1077,28 +1092,39 @@ export class Entity<idType> {
 
     if (this.onValidate)
       this.onValidate();
+    if (validate)
+      validate(this);
     this.__assertValidity();
 
 
+    let performEntitySave = () => {
+      let x = this.onSavingRow();
 
-    let x = this.onSavingRow();
-
-    let doSave = () => {
-      this.__assertValidity();
+      let doSave = () => {
+        this.__assertValidity();
 
 
-      return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
-    };
-    if (x instanceof Promise) {
+        return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
+      };
+      if (x instanceof Promise) {
 
-      return x.then(() => {
+        return x.then(() => {
+          return doSave();
+        });
+      }
+      else {
+
         return doSave();
-      });
+      }
     }
-    else {
 
-      return doSave();
+    if (!onSavingRow)
+      return performEntitySave();
+    let y = onSavingRow(this);
+    if (y instanceof Promise) {
+      return y.then(() => { return performEntitySave(); });
     }
+    return performEntitySave();
   }
   catchSaveErrors(e: any): any {
 

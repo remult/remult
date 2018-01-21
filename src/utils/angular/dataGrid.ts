@@ -215,13 +215,7 @@ export class DataGridComponent implements OnChanges {
         cssClass: "glyphicon glyphicon-ok btn-success",
         visible: r => r.wasChanged(),
         click: r => {
-          r.error = undefined;
-          this.settings._doSavingRow(r);
-
-          if (r.isValid())
-            this.catchErrors(r.save(), r);
-          else
-            this.showError(r);
+          this.catchErrors(this.settings._doSavingRow(r),r);
         },
 
       });

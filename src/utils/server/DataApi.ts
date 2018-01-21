@@ -14,6 +14,12 @@ export class DataApi<T extends Entity<any>> {
   async getArray(response: DataApiResponse, request: DataApiRequest) {
     try {
       let findOptions: FindOptions = {};
+      if (this.options && this.options.get) {
+        Object.assign(findOptions, this.options.get);
+        if (this.options.get.where)
+          findOptions.where = this.options.get.where(this.rowType);
+      }
+
       if (request) {
 
 
@@ -74,7 +80,12 @@ export class DataApi<T extends Entity<any>> {
   }
   private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
-      await this.rowType.source.find({ where: this.rowType.__idColumn.isEqualTo(id) })
+
+      let where: FilterBase = this.rowType.__idColumn.isEqualTo(id);
+      if (this.options && this.options.get && this.options.get.where)
+        where = new AndFilter(where, this.options.get.where(this.rowType));
+
+      await this.rowType.source.find({ where })
         .then(async r => {
           if (r.length == 0)
             response.notFound();
@@ -88,6 +99,10 @@ export class DataApi<T extends Entity<any>> {
     }
   }
   async put(response: DataApiResponse, id: any, body: any) {
+    if (!this.options.allowUpdate) {
+      response.methodNotAllowed();
+      return;
+    }
     await this.doOnId(response, id, async row => {
       row.__fromPojo(body);
       if (this.options.onSavingRow) {
@@ -96,29 +111,30 @@ export class DataApi<T extends Entity<any>> {
           await x;
         row.__assertValidity();
       }
-      await row.save();
+      await row.save(this.options.validate, this.options.onSavingRow);
       response.success(row.__toPojo());
     });
   }
   async delete(response: DataApiResponse, id: any) {
+    if (!this.options.allowDelete) {
+      response.methodNotAllowed();
+      return;
+    }
     await this.doOnId(response, id, async row => {
       await row.delete();
       response.deleted();
     });
   }
   async post(response: DataApiResponse, body: any) {
-
+    if (!this.options.allowInsert) {
+      response.methodNotAllowed();
+      return;
+    }
     try {
 
-      let r = await this.rowType.source.Insert(async r => {
-        r.__fromPojo(body);
-        if (this.options.onSavingRow) {
-          var x =  this.options.onSavingRow(r);
-          if (x instanceof Promise)
-            await x;
-          r.__assertValidity();
-        }
-      })
+      let r = this.rowType.source.createNewItem();
+      r.__fromPojo(body);
+      await r.save(this.options.validate,this.options.onSavingRow);
       response.created(r.__toPojo());
     } catch (err) {
       response.error(err);
@@ -132,7 +148,8 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowDelete?: boolean,
 
   get?: FindOptionsPerEntity<rowType>,
-  onSavingRow?: (r: rowType) => Promise<any>|any;
+  validate?: (r: rowType) => void;
+  onSavingRow?: (r: rowType) => Promise<any> | any;
 }
 
 export interface DataApiResponse {
@@ -141,7 +158,8 @@ export interface DataApiResponse {
   created(data: any): void;
   notFound(): void;
   error(data: DataApiError): void;
-  
+  methodNotAllowed(): void;
+
 }
 export interface DataApiRequest {
   get(key: string): string;

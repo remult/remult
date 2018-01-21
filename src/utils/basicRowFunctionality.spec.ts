@@ -3,7 +3,7 @@ import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdCo
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase';
-import { itAsync,Done } from './testHelper.spec';
+import { itAsync, Done } from './testHelper.spec';
 
 import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
@@ -29,6 +29,9 @@ class TestDataApiResponse implements DataApiResponse {
   }
   error(data: DataApiError) {
     fail('error: ' + data + " " + JSON.stringify(data));
+  }
+  methodNotAllowed(){
+    fail('methodNotAllowed api result');
   }
 }
 
@@ -148,7 +151,7 @@ describe("data api", () => {
   itAsync("put fails when not found", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowUpdate:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
@@ -159,7 +162,8 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
     var api = new DataApi(c, {
-      onSavingRow: c => c.categoryName.error = 'invalid'
+      onSavingRow: c => c.categoryName.error = 'invalid',
+      allowUpdate:true
     });
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -180,7 +184,7 @@ describe("data api", () => {
     let c = new entityWithValidations();
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
-    let api = new DataApi(c);
+    let api = new DataApi(c,{allowUpdate:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -200,7 +204,7 @@ describe("data api", () => {
     let c = new entityWithValidationsOnColumn();
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
-    let api = new DataApi(c);
+    let api = new DataApi(c,{allowUpdate:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -220,7 +224,7 @@ describe("data api", () => {
     let c = new entityWithValidationsOnEntityEvent();
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
-    let api = new DataApi(c);
+    let api = new DataApi(c,{allowUpdate:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -250,7 +254,7 @@ describe("data api", () => {
 
   itAsync("put updates", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowUpdate:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -268,7 +272,7 @@ describe("data api", () => {
   itAsync("delete fails when not found", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowDelete:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
@@ -278,7 +282,7 @@ describe("data api", () => {
   itAsync("delete works ", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowDelete:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.deleted = () => d.ok();
@@ -297,7 +301,7 @@ describe("data api", () => {
         return r;
       }
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowDelete:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = () => d.ok();
@@ -311,7 +315,7 @@ describe("data api", () => {
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowInsert:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.created = async (data: any) => {
@@ -328,6 +332,7 @@ describe("data api", () => {
     let c = await createData(async (i) => { i(1, 'a'); });
 
     var api = new DataApi(c, {
+      allowInsert:true,
       onSavingRow: async c => {
         if (c.isNew()) {
 
@@ -356,6 +361,7 @@ describe("data api", () => {
     let c = await createData(async (i) => { i(1, 'a'); });
 
     var api = new DataApi(c, {
+      allowInsert:true,
       onSavingRow: async c => {
         if (c.isNew)
           c.id.value = (await c.source.max(c.id)) + 1;
@@ -375,7 +381,7 @@ describe("data api", () => {
 
     let c = new entityWithValidations();
 
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowInsert:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.created = async (data: any) => {
@@ -392,7 +398,7 @@ describe("data api", () => {
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c, { onSavingRow: c => c.categoryName.error = 'invalid' });
+    var api = new DataApi(c, { onSavingRow: c => c.categoryName.error = 'invalid',allowInsert:true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -408,7 +414,7 @@ describe("data api", () => {
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c, { onSavingRow: async c => { c.description.value.length + 1 } });
+    var api = new DataApi(c, { onSavingRow: async c => { c.description.value.length + 1 },allowInsert:true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -424,7 +430,7 @@ describe("data api", () => {
 
     let c = await createData(async (i) => { i(1, 'noam'); });
 
-    var api = new DataApi(c);
+    var api = new DataApi(c,{allowInsert:true});
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = err => {
@@ -472,6 +478,208 @@ describe("data api", () => {
         return undefined;
       }
     });
+    d.test();
+  });
+  itAsync("getArray works with predefined filter", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(1);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == c.description.jsonName)
+          return "a";
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  itAsync("getArray works with predefined filter", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(0);
+
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == c.description.jsonName)
+          return "a";
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  itAsync("getArray works with predefined filter", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+      expect(data[0].id).toBe(2);
+
+      d.ok();
+    };
+    await api.getArray(t, undefined);
+    d.test();
+  });
+  itAsync("get works with predefined filter", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      
+      expect(data.id).toBe(2);
+
+      d.ok();
+    };
+    await api.get(t, 2);
+    d.test();
+  });
+  itAsync("get id  works with predefined filterand shouldnt return anything", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.notFound = () => {
+      d.ok();
+    };
+    await api.get(t, 1);
+    d.test();
+  });
+  itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      allowDelete:true,
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.notFound = () => {
+      d.ok();
+    };
+    await api.delete(t, 1);
+    d.test();
+  });
+  itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      allowDelete:true,
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.deleted = () => {
+      d.ok();
+    };
+    await api.delete(t, 2);
+    d.test();
+  });
+  itAsync("delete id  not Allowed", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      allowDelete:false
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.methodNotAllowed = () => {
+      d.ok();
+    };
+    await api.delete(t, 2);
+    d.test();
+  });
+  itAsync("put id  works with predefined filterand shouldnt return anything", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      allowUpdate:true,
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = () => {
+      d.ok();
+    };
+    await api.put(t, 2,{name:'YAEL'});
+    d.test();
+  });
+  itAsync("put id 1 works with predefined filterand shouldnt return anything", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', 'a');
+      i(2, 'yael', 'b');
+      i(3, 'yoni', 'a');
+    });
+    var api = new DataApi(c, {
+      allowUpdate:true,
+      get: { where: c => c.description.isEqualTo('b') }
+
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.notFound = () => {
+      d.ok();
+    };
+    await api.put(t, 1,{name:'YAEL'});
     d.test();
   });
   itAsync("getArray works with sort", async () => {
@@ -710,7 +918,7 @@ export class entityWithValidations extends Entity<number>{
 export class entityWithValidationsOnColumn extends Entity<number>{
   myId = new NumberColumn();
   name = new StringColumn({
-    validate: col => {
+    onValidate: col => {
       if (!col.value || col.value.length < 3)
         col.error = 'invalid on column';
     }
@@ -726,7 +934,7 @@ export class entityWithValidationsOnEntityEvent extends Entity<number>{
   constructor() {
     super(() => new entityWithValidationsOnEntityEvent(), new InMemoryDataProvider());
     this.initColumns();
-    this.onValidate=()=>{
+    this.onValidate = () => {
       if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid';
     };

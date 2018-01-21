@@ -74,6 +74,9 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   public success(data: any): void {
     this.r.json(data);
   }
+  public methodNotAllowed(): void {
+    this.r.sendStatus(405);
+  }
   public created(data: any): void {
     this.r.statusCode = 201;
     this.r.json(data);
@@ -93,7 +96,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
       data = { message: data.message + '\n' + data.stack };
     }
     let x = JSON.parse(JSON.stringify(data));
-    if (!x.message&&!x.modelState)
+    if (!x.message && !x.modelState)
       data = { message: data.message };
     this.r.status(400).json(data);
   }

@@ -27,6 +27,7 @@ environment.dataSource = sqlServer;
 var eb = new ExpressBridge(app, '/dataApi');
 eb.addSqlDevHelpers(sqlServer);
 eb.add(new Categories(), {
+    allowUpdate:true,
     onSavingRow:async c => {
         if (c.description.value.length < 5) {
             c.description.error = 'Description too short ';

@@ -9,8 +9,8 @@ export class Categories extends radweb.Entity<number> {
   categoryName = new radweb.StringColumn();
   description = new radweb.StringColumn();
 
-  constructor() {
-      super(() => new Categories(), environment.dataSource);
+  constructor(settings?:radweb.EntityOptions) {
+      super(() => new Categories(settings), environment.dataSource,settings);
       this.initColumns();
   }
 }
