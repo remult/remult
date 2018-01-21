@@ -795,12 +795,18 @@ export class Column<dataType>  {
   __clearErrors(): any {
     this.error = undefined;
   }
+  __performValidation(){
+    if (this.__settings&&this.__settings.validate){
+      this.__settings.validate(this);
+    }
+
+  }
   jsonName: string;
   caption: string;
   dbName: string;
-  private __settings: DataColumnSettings<dataType>;
+  private __settings: DataColumnSettings<dataType,Column<dataType>>;
   __getMemberName() { return this.jsonName; }
-  constructor(settingsOrCaption?: DataColumnSettings<dataType> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<dataType,Column<dataType>> | string) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
@@ -808,7 +814,7 @@ export class Column<dataType>  {
       } else {
         this.__settings = settingsOrCaption;
         if (settingsOrCaption.jsonName)
-          this.jsonName = settingsOrCaption.jsonName;
+          this.jsonName = settingsOrCaption.jsonName; 
         if (settingsOrCaption.caption)
           this.caption = settingsOrCaption.caption;
         if (settingsOrCaption.readonly)
@@ -830,12 +836,12 @@ export class Column<dataType>  {
     if (!this.__settings)
       this.__settings = {};
     if (!this.__settings.storage)
-      this.__settings.storage = this.__defaultStorage();;
+      this.__settings.storage = this.__defaultStorage();
     return this.__settings.storage;
 
   }
   __defaultStorage() {
-    return new DefaultStorage();
+    return new DefaultStorage<any>();
   }
   error: string;
   __getDbName() {
@@ -1038,6 +1044,12 @@ export class Entity<idType> {
   }
   save() {
     this.__clearErrors();
+
+    this.__iterateColumns().forEach(c=>{
+      c.__performValidation();
+    });
+
+
     
     let x = this.onSavingRow();
 
@@ -1357,12 +1369,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings<string> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string,StringColumn> | string) {
     super(settingsOrCaption);
   }
 }
 export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings<string> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<string,DateColumn> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1379,7 +1391,7 @@ export class DateColumn extends Column<string>{
 
 }
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: DataColumnSettings<number> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<number,NumberColumn> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
@@ -1393,7 +1405,7 @@ export class NumberColumn extends Column<number>{
   }
 }
 export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption?: DataColumnSettings<boolean> | string) {
+  constructor(settingsOrCaption?: DataColumnSettings<boolean,BoolColumn> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';

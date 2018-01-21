@@ -22,7 +22,7 @@ class TestDataApiResponse implements DataApiResponse {
     fail('didnt expect created: ' + JSON.stringify(data));
   }
   deleted(): void {
-    fail('didnt expect deleted:' );
+    fail('didnt expect deleted:');
   }
   notFound(): void {
     fail('not found');
@@ -205,6 +205,26 @@ describe("data api", () => {
     expect(x[0].name.value).toBe('noam');
 
   });
+  itAsync("put with validations on column fails", async () => {
+
+    let c = new entityWithValidationsOnColumn();
+    c.setSource(new InMemoryDataProvider());
+    await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    let api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      expect(data.modelState.name).toBe('invalid on column');
+      d.ok();
+    };
+    await api.put(t, 1, {
+      name: '1'
+    });
+    d.test();
+    var x = await c.source.find({ where: c.myId.isEqualTo(1) });
+    expect(x[0].name.value).toBe('noam');
+
+  });
   itAsync("entity with different id column still works well", async () => {
 
     let c = new entityWithValidations();
@@ -355,7 +375,7 @@ describe("data api", () => {
     };
     await api.post(t, { name: 'noam honig' });
     d.test();
-    
+
   });
   itAsync("post with validation fails", async () => {
 
@@ -667,13 +687,26 @@ export class entityWithValidations extends Entity<number>{
     this.onSavingRow = async () => {
       if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid';
-        
-      if (this.isNew() && (!this.myId.value || this.myId.value == 0)){
-        
+
+      if (this.isNew() && (!this.myId.value || this.myId.value == 0)) {
+
         this.myId.value = await this.source.max(this.myId) + 1;
-        
+
       }
     };
 
+  }
+}
+export class entityWithValidationsOnColumn extends Entity<number>{
+  myId = new NumberColumn();
+  name = new StringColumn({
+    validate: col => {
+      if (!col.value || col.value.length < 3)
+        col.error = 'invalid on column';
+    }
+  });
+  constructor() {
+    super(() => new entityWithValidationsOnColumn(), new InMemoryDataProvider());
+    this.initColumns();
   }
 }

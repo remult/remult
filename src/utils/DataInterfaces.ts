@@ -1,4 +1,4 @@
-import { Column,Entity, Sort,SortSegment } from './utils';
+import { Column, Entity, Sort, SortSegment } from './utils';
 import { FindOptions } from './DataInterfaces';
 
 
@@ -13,21 +13,20 @@ export interface DataProvider {
 export interface FindOptions extends FindOptionsBase {
   orderBy?: Sort;
 }
-export interface EntitySourceFindOptions extends FindOptionsBase
-{
-  orderBy?: Sort|Column<any>|(Column<any>|SortSegment)[];
+export interface EntitySourceFindOptions extends FindOptionsBase {
+  orderBy?: Sort | Column<any> | (Column<any> | SortSegment)[];
 }
 
-export interface FindOptionsBase{
+export interface FindOptionsBase {
   where?: FilterBase;
-  
+
   limit?: number;
   page?: number;
   additionalUrlParameters?: any;
 }
 export interface FindOptionsPerEntity<rowType extends Entity<any>> {
   where?: (rowType: rowType) => FilterBase;
-  orderBy?: ((rowType: rowType) => Sort)|((rowType: rowType)=>(Column<any>))|((rowType: rowType)=>(Column<any>|SortSegment)[]);
+  orderBy?: ((rowType: rowType) => Sort) | ((rowType: rowType) => (Column<any>)) | ((rowType: rowType) => (Column<any> | SortSegment)[]);
   limit?: number;
   page?: number;
   additionalUrlParameters?: any;
@@ -41,14 +40,15 @@ export interface ColumnValueProvider {
   setValue(key: string, value: any): void;
 }
 
-export interface DataColumnSettings<type> {
+export interface DataColumnSettings<type,colType> {
   jsonName?: string;
   caption?: string;
   readonly?: boolean;
   inputType?: string;
   dbName?: string;
-  value?:type;
-  storage?:ColumnStorage<any>
+  value?: type;
+  storage?: ColumnStorage<type>;
+  validate?: (col: colType) => any;
 }
 export interface ColumnStorage<dataType> {
   toDb(val: dataType): any;
@@ -64,7 +64,7 @@ export interface RowEvents {
 export interface FilterBase {
   __applyToConsumer(add: FilterConsumer): void;
 }
-export interface FilterConsumer { 
+export interface FilterConsumer {
   IsEqualTo(col: Column<any>, val: any): void;
   IsDifferentFrom(col: Column<any>, val: any): void;
   IsGreaterOrEqualTo(col: Column<any>, val: any): void;
