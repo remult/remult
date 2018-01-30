@@ -82,7 +82,7 @@ export class SQLServerDataProvider implements DataProviderFactory {
                 break;
             case "DATE":
             case "datetime":
-            t = 'StringColumn';
+            t = 'DateTimeColumn';
                 break;
             case "bit":
             t = 'BoolColumn';

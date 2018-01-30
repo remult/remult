@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import * as models from './models';
 import * as utils from '../utils/utils';
 import * as db from '../utils/localStorageDataProvider';
+import { Action } from '../utils/restDataProvider';
 
 
 
@@ -16,8 +17,14 @@ import * as db from '../utils/localStorageDataProvider';
 
 })
 export class AppComponent {
+  login() {
+    new LoginAction().run({ user: 'noam', password: '12345' }).then(
+      s => {
+        console.log(s);
+      });
 
-  x = new GridSettings(new models.Categories(),{
+  }
+  x = new GridSettings(new models.Categories(), {
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true
@@ -133,4 +140,32 @@ export class AppComponent {
 
       });
   }
+}
+
+export abstract class ServerAction<inParam, outParam> extends Action<inParam, outParam>{
+  constructor(url?: string) {
+    super('http://localhost:3000/', url);
+  }
+}
+export class LoginAction extends ServerAction<LoginInfo, SessionInfo>{
+  protected async execute(info: LoginInfo): Promise<SessionInfo> {
+    return { sessionId: "12345" };
+  }
+}
+export class CheckLoginAction extends ServerAction<SessionInfo, SessionStatus>{
+
+  protected async execute(info: SessionInfo): Promise<SessionStatus> {
+    return { ok: info.sessionId == "12345" };
+  }
+
+}
+export interface LoginInfo {
+  user: string;
+  password: string;
+}
+export interface SessionInfo {
+  sessionId: string;
+}
+export interface SessionStatus {
+  ok: boolean;
 }

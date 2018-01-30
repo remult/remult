@@ -3,6 +3,7 @@ import { DataApi, DataApiResponse, DataApiError, DataApiSettings } from './DataA
 import { Entity } from './../utils';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import { Action } from './../restDataProvider';
 
 export class ExpressBridge {
 
@@ -64,6 +65,13 @@ export class ExpressBridge {
     });
 
 
+  }
+  addAction<T extends Action<any, any>>(action: T) {
+    action.__register((url, what: (data: any) => Promise<any>) => {
+      this.app.route('/' + url).post((req, res) => {
+        what(req.body).then(y => res.send(y));
+      });
+    });
   }
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {

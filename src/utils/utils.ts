@@ -794,6 +794,22 @@ export class DateTimeDateStorage implements ColumnStorage<string>{
   }
 
 }
+export class DateTimeStorage implements ColumnStorage<string>{
+  toDb(val: string) {
+    return DateTimeColumn.stringToDate(val);
+  }
+  fromDb(val: any): string {
+    var d = val as Date;
+    return DateTimeColumn.dateToString(d);
+  }
+
+}
+function addZeros(number: number, stringLength: number = 2) {
+  let to = number.toString();
+  while (to.length < stringLength)
+    to = '0' + to;
+  return to;
+}
 export class Column<dataType>  {
 
   __clearErrors(): any {
@@ -1443,6 +1459,57 @@ export class DateColumn extends Column<string>{
   __defaultStorage() {
     return new DateTimeDateStorage();
   }
+
+}
+export class DateTimeColumn extends Column<string>{
+  constructor(settingsOrCaption?: DataColumnSettings<string, DateTimeColumn> | string) {
+    super(settingsOrCaption);
+    if (!this.inputType)
+      this.inputType = 'date';
+  }
+  getDayOfWeek() {
+    return new Date(this.value).getDay();
+  }
+  get displayValue() {
+    return new Date(this.value).toLocaleString();
+  }
+  __defaultStorage() {
+    return new DateTimeStorage();
+  }
+  get dateValue(){
+    return DateTimeColumn.stringToDate(this.value);
+  }
+  set dateValue(val:Date){
+    this.value = DateTimeColumn.dateToString(val);
+  }
+  static stringToDate(val: string) {
+
+    return new Date(
+      +val.substring(0, 4),
+      +val.substring(5, 7)-1,
+      +val.substring(8, 10),
+      +val.substring(11, 13),
+      +val.substring(14, 16),
+      +val.substring(17, 19),
+      +val.substring(20, 3));
+  }
+  static dateToString(val: Date): string {
+    var d = val as Date;
+    let month = addZeros(d.getMonth() + 1),
+      day = addZeros(d.getDate()),
+      year = d.getFullYear(),
+      hours = addZeros(d.getHours()),
+      minutes = addZeros(d.getMinutes()),
+      seconds = addZeros(d.getSeconds()),
+      ms = addZeros(d.getMilliseconds(), 3)
+      ;
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-') + ' ' + [hours, minutes, seconds].join(':') + '.' + ms;
+  }
+
 
 }
 export class NumberColumn extends Column<number>{

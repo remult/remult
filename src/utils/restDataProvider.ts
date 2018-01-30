@@ -74,7 +74,7 @@ class ActualRestDataProvider implements DataProvider {
   }
 }
 
-function myFetch(url: string, init?: RequestInit): Promise<any> {
+export function myFetch(url: string, init?: RequestInit): Promise<any> {
   if (!init)
     init = {};
   init.credentials = 'include';
@@ -105,3 +105,26 @@ function onError(error: any) {
 }
 
 
+export abstract class Action<inParam, outParam>{
+  constructor(private serverUrl:string,private actionUrl?: string) {
+    if (!actionUrl) {
+      this.actionUrl = this.constructor.name;
+      if (this.actionUrl.endsWith('Action'))
+        this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
+    }
+  }
+  run(pIn: inParam): Promise<outParam> {
+    let h = new Headers();
+    h.append('Content-type', "application/json");
+    return myFetch(this.serverUrl+ this.actionUrl, {
+      method: 'post',
+      headers: h,
+      body: JSON.stringify(pIn)
+    });
+
+  }
+  protected abstract execute(info: inParam): Promise<outParam>;
+  __register(reg: (url: string, what: ((data: any) => Promise<any>)) => void) {
+    reg(this.actionUrl, d => { return this.execute(d); });
+  }
+}
