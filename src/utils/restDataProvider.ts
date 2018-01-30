@@ -82,7 +82,6 @@ function myFetch(url: string, init?: RequestInit): Promise<any> {
     console.log(error);
     throw Promise.resolve(error);
   });
-
 }
 function onSuccess(response: Response) {
   if (response.status == 204)
