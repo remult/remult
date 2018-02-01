@@ -1,6 +1,6 @@
 
 import { Sort, Column, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
-import { DataProvider, DataProviderFactory, FindOptions } from './DataInterfaces';
+import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest } from './DataInterfaces';
 export class RestDataProvider implements DataProviderFactory {
   constructor(private url: string) {
 
@@ -106,7 +106,7 @@ function onError(error: any) {
 
 
 export abstract class Action<inParam, outParam>{
-  constructor(private serverUrl:string,private actionUrl?: string) {
+  constructor(private serverUrl: string, private actionUrl?: string) {
     if (!actionUrl) {
       this.actionUrl = this.constructor.name;
       if (this.actionUrl.endsWith('Action'))
@@ -116,15 +116,15 @@ export abstract class Action<inParam, outParam>{
   run(pIn: inParam): Promise<outParam> {
     let h = new Headers();
     h.append('Content-type', "application/json");
-    return myFetch(this.serverUrl+ this.actionUrl, {
+    return myFetch(this.serverUrl + this.actionUrl, {
       method: 'post',
       headers: h,
       body: JSON.stringify(pIn)
     });
 
   }
-  protected abstract execute(info: inParam): Promise<outParam>;
-  __register(reg: (url: string, what: ((data: any) => Promise<any>)) => void) {
-    reg(this.actionUrl, d => { return this.execute(d); });
+  protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;
+  __register(reg: (url: string, what: ((data: any, req: DataApiRequest) => Promise<any>)) => void) {
+    reg(this.actionUrl, (d, req) => { return this.execute(d, req); });
   }
 }

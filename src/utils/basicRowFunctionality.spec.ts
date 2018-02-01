@@ -18,6 +18,9 @@ class TestDataApiResponse implements DataApiResponse {
   success(data: any): void {
     fail('didnt expect success: ' + JSON.stringify(data));
   }
+  forbidden(){
+    fail('didnt expect forbidden:');
+  }
   created(data: any): void {
     fail('didnt expect created: ' + JSON.stringify(data));
   }
@@ -476,7 +479,7 @@ describe("data api", () => {
         if (x == "id")
           return "2";
         return undefined;
-      }
+      },clientIp:'',context:{}
     });
     d.test();
   });
@@ -499,7 +502,7 @@ describe("data api", () => {
         if (x == c.description.jsonName)
           return "a";
         return undefined;
-      }
+      },clientIp:'',context:{}
     });
     d.test();
   });
@@ -525,7 +528,7 @@ describe("data api", () => {
         if (x == c.description.jsonName)
           return "a";
         return undefined;
-      }
+      },clientIp:'',context:{}
     });
     d.test();
   });
@@ -707,7 +710,7 @@ describe("data api", () => {
         if (x == "_order")
           return "asc,desc";
         return undefined;
-      }
+      },clientIp:'',context:{}
     });
     d.test();
   });

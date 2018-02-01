@@ -75,3 +75,8 @@ export interface FilterConsumer {
   IsLessThan(col: Column<any>, val: any): void;
 }
 
+export interface DataApiRequest {
+  get(key: string): string;
+  context:any;
+  clientIp:string;
+}

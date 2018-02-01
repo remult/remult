@@ -1,13 +1,19 @@
 import { DataApiError } from './DataApi';
 
 import { Entity, AndFilter, Sort } from './../utils';
-import { FindOptions, FilterBase, FindOptionsPerEntity } from './../DataInterfaces';
+import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest } from './../DataInterfaces';
 
 export class DataApi<T extends Entity<any>> {
+  getRoute() {
+    if (!this.options.name)
+      return this.rowType.__getName();
+    return this.options.name;
+  }
   constructor(private rowType: T, private options?: DataApiSettings<T>) {
     if (!options)
       this.options = {};
   }
+
   async get(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => response.success(row.__toPojo()));
   }
@@ -134,7 +140,7 @@ export class DataApi<T extends Entity<any>> {
 
       let r = this.rowType.source.createNewItem();
       r.__fromPojo(body);
-      await r.save(this.options.validate,this.options.onSavingRow);
+      await r.save(this.options.validate, this.options.onSavingRow);
       response.created(r.__toPojo());
     } catch (err) {
       response.error(err);
@@ -146,7 +152,7 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
-
+  name?: string,
   get?: FindOptionsPerEntity<rowType>,
   validate?: (r: rowType) => void;
   onSavingRow?: (r: rowType) => Promise<any> | any;
@@ -159,11 +165,11 @@ export interface DataApiResponse {
   notFound(): void;
   error(data: DataApiError): void;
   methodNotAllowed(): void;
+  forbidden():void;
 
 }
-export interface DataApiRequest {
-  get(key: string): string;
-}
+
+
 
 export interface DataApiError {
   message: string;

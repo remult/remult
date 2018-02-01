@@ -4,10 +4,11 @@ import { Entity } from './../utils';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { Action } from './../restDataProvider';
+import { DataApiRequest } from 'src/utils/DataInterfaces';
 
 export class ExpressBridge {
 
-  constructor(private app: express.Express, private rootUrl: string = '') {
+  constructor(private app: express.Express, private rootUrl: string = '', private preProcessRequestAndReturnTrueToAuthorize?: (req: DataApiRequest) => boolean) {
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     app.use(function (req, res, next) {
@@ -37,44 +38,69 @@ export class ExpressBridge {
         server.listOfTables(new ExpressResponseBridgeToDataApiResponse(res), {
           get: key => {
             return req.query[key]
-          }
+          }, clientIp: '', context: {}
         });
       });
   }
-  add<T extends Entity<any>>(entity: T, options?: DataApiSettings<T>) {
-    let api = new DataApi(entity, options);
-    let myRoute = entity.__getName();
+
+  add(entityOrDataApiFactory: Entity<any> | ((req: DataApiRequest) => DataApi<any>)) {
+
+
+    let api: ((req: DataApiRequest) => DataApi<any>);
+    if (entityOrDataApiFactory instanceof Entity)
+      api = () => new DataApi(entityOrDataApiFactory);
+    else api = entityOrDataApiFactory;
+
+    let myRoute = api({ clientIp: 'onServer', context: {}, get: r => '' }).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);
-    this.app.route(myRoute).get((req, res) => {
+   
 
-      api.getArray(new ExpressResponseBridgeToDataApiResponse(res), {
-        get: key => {
-          return req.query[key]
-        }
-      });
-    }).post(async (req, res) => {
-      api.post(new ExpressResponseBridgeToDataApiResponse(res), req.body);
-    });
-    this.app.route(myRoute + '/:id').get((req, res) => {
-      api.get(new ExpressResponseBridgeToDataApiResponse(res), req.params.id);
-    }).put(async (req, res) => {
-      api.put(new ExpressResponseBridgeToDataApiResponse(res), req.params.id, req.body);
-    }).delete(async (req, res) => {
-      api.delete(new ExpressResponseBridgeToDataApiResponse(res), req.params.id);
-    });
+    this.app.route(myRoute)
+      .get(this.process((req, res) => api(req).getArray(res, req)))
+      .post(this.process(async (req, res, orig) => api(req).post(res, orig.body)));
+    this.app.route(myRoute + '/:id')
+      .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))
+      .put(this.process(async (req, res, orig) => api(req).put(res, orig.params.id, orig.body)))
+      .delete(this.process(async (req, res, orig) => api(req).delete(res, orig.params.id)));
 
 
   }
+   process(what: (myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
+    return async (req: express.Request, res: express.Response) => {
+      let myReq = new ExpressRequestBridgeToDataApiReqiest(req);
+      let myRes = new ExpressResponseBridgeToDataApiResponse(res);
+      let ok = true;
+      if (this.preProcessRequestAndReturnTrueToAuthorize)
+        ok = this.preProcessRequestAndReturnTrueToAuthorize(myReq);
+      if (!ok)
+        myRes.forbidden();
+      else
+        what(myReq, myRes,req);
+    }
+  };
   addAction<T extends Action<any, any>>(action: T) {
-    action.__register((url, what: (data: any) => Promise<any>) => {
-      this.app.route('/' + url).post((req, res) => {
-        what(req.body).then(y => res.send(y));
-      });
+    action.__register((url, what: (data: any, r: DataApiRequest) => Promise<any>) => {
+      this.app.route('/' + url).post(this.process (async(req, res,orig) => {
+        what(orig.body, req).then(y => res.success(y));
+      }));
     });
   }
 }
+class ExpressRequestBridgeToDataApiReqiest implements DataApiRequest {
+  get(key: string): string {
+    return this.r.query[key];
+  }
+  context: any = {};
+  clientIp: string;
+  constructor(private r: express.Request) {
+    this.clientIp = r.ip;
+  }
+}
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
+  forbidden(): void {
+    this.r.sendStatus(403);
+  }
   constructor(private r: express.Response) {
 
   }

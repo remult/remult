@@ -19,25 +19,23 @@ let port = 3001;
 
 
 environment.dataSource = new JsonFileDataProvider('./appData');
-let sqlServer = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind','sqlexpress');
+let sqlServer = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', '');
 environment.dataSource = sqlServer;
 
 
 
 var eb = new ExpressBridge(app, '/dataApi');
 eb.addSqlDevHelpers(sqlServer);
-eb.add(new Categories(), {
-    allowUpdate:true,
-    onSavingRow:async c => {
+eb.add(r => new DataApi(new Categories(), {
+    allowUpdate: true,
+    onSavingRow: async c => {
         if (c.description.value.length < 5) {
             c.description.error = 'Description too short ';
         }
         if (c.isNew())
             c.id.value = await c.source.max(c.id) + 1;
     },
-        
-    
-});
+}));
 eb.add(new Order_details());
 eb.add(new Orders());
 eb.add(new Customers());
