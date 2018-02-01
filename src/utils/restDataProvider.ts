@@ -1,18 +1,20 @@
 
 import { Sort, Column, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest } from './DataInterfaces';
+
 export class RestDataProvider implements DataProviderFactory {
-  constructor(private url: string) {
+  constructor(private url: string, private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
 
   }
   public provideFor(name: string): DataProvider {
-    return new ActualRestDataProvider(this.url + '/' + name);
+    return new ActualRestDataProvider(this.url + '/' + name, this.addRequestHeader);
   }
 }
 class ActualRestDataProvider implements DataProvider {
 
-  constructor(private url: string) {
-
+  constructor(private url: string, private addRequestHeader: (add: ((name: string, value: string) => void)) => void) {
+    if (!addRequestHeader)
+      this.addRequestHeader = () => { };
   }
   public find(options: FindOptions): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);
@@ -43,40 +45,42 @@ class ActualRestDataProvider implements DataProvider {
         url.addObject(options.additionalUrlParameters);
     }
 
-    return myFetch(url.url).then(r => {
+    return myFetch(url.url, undefined, this.addRequestHeader).then(r => {
       return r;
     });
   }
 
   public update(id: any, data: any): Promise<any> {
-    let h = new Headers();
-    h.append('Content-type', "application/json");
     return myFetch(this.url + '/' + id, {
       method: 'put',
-      headers: h,
       body: JSON.stringify(data)
-    })
+    }, this.addRequestHeader, JsonContent)
   }
 
   public delete(id: any): Promise<void> {
-
-    return fetch(this.url + '/' + id, { method: 'delete', credentials: 'include' }).then(onSuccess, onError);
+    let h = new Headers();
+    this.addRequestHeader((name, value) => h.append(name, value));
+    return fetch(this.url + '/' + id, { method: 'delete', credentials: 'include', headers: h }).then(onSuccess, onError);
   }
 
   public insert(data: any): Promise<any> {
-    let h = new Headers();
-    h.append('Content-type', "application/json");
     return myFetch(this.url, {
       method: 'post',
-      headers: h,
       body: JSON.stringify(data)
-    })
+    }, this.addRequestHeader, JsonContent)
   }
 }
+function JsonContent(add: (name: string, value: string) => void) {
+  add('Content-type', "application/json");
+}
 
-export function myFetch(url: string, init?: RequestInit): Promise<any> {
+export function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
   if (!init)
     init = {};
+  if (!init.headers)
+    init.headers = new Headers();
+  var h = init.headers as Headers;
+  addRequestHeader.forEach(x => x((n, v) => h.append(n, v)));
   init.credentials = 'include';
   return fetch(url, init).then(onSuccess, error => {
     console.log(error);
@@ -106,7 +110,9 @@ function onError(error: any) {
 
 
 export abstract class Action<inParam, outParam>{
-  constructor(private serverUrl: string, private actionUrl?: string) {
+  constructor(private serverUrl: string, private actionUrl?: string, private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
+    if (!addRequestHeader)
+      this.addRequestHeader = () => { };
     if (!actionUrl) {
       this.actionUrl = this.constructor.name;
       if (this.actionUrl.endsWith('Action'))
@@ -114,13 +120,12 @@ export abstract class Action<inParam, outParam>{
     }
   }
   run(pIn: inParam): Promise<outParam> {
-    let h = new Headers();
-    h.append('Content-type', "application/json");
+
+
     return myFetch(this.serverUrl + this.actionUrl, {
       method: 'post',
-      headers: h,
       body: JSON.stringify(pIn)
-    });
+    }, this.addRequestHeader, JsonContent);
 
   }
   protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;

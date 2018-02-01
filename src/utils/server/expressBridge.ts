@@ -4,7 +4,7 @@ import { Entity } from './../utils';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { Action } from './../restDataProvider';
-import { DataApiRequest } from 'src/utils/DataInterfaces';
+import { DataApiRequest } from '../DataInterfaces';
 
 export class ExpressBridge {
 
