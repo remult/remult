@@ -77,6 +77,12 @@ export interface FilterConsumer {
 
 export interface DataApiRequest {
   get(key: string): string;
-  context:any;
-  clientIp:string;
+  getHeader(key: string): string;
+  context: any;
+  clientIp: string;
+}
+export interface DataApiServer{
+  addAllowedHeader(name:string):void;
+  addRequestProcessor(processAndReturnTrueToAouthorise:(req:DataApiRequest)=>boolean):void;
+
 }

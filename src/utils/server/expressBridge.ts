@@ -4,23 +4,32 @@ import { Entity } from './../utils';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { Action } from './../restDataProvider';
-import { DataApiRequest } from '../DataInterfaces';
+import { DataApiRequest, DataApiServer } from '../DataInterfaces';
 
-export class ExpressBridge {
+export class ExpressBridge implements DataApiServer {
+  addAllowedHeader(name: string): void {
+    this.allowedHeaders.push(name);
+  }
+  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => boolean): void {
+    this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAouthorise);
+  }
 
-  constructor(private app: express.Express, private rootUrl: string = '', private preProcessRequestAndReturnTrueToAuthorize?: (req: DataApiRequest) => boolean) {
+  constructor(private app: express.Express, private rootUrl: string = '') {
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
-    app.use(function (req, res, next) {
+    app.use((req, res, next) => {
 
       res.header("Access-Control-Allow-Credentials", "true");
       res.header("Access-Control-Allow-Origin", req.header('origin'));
-      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+      res.header("Access-Control-Allow-Headers", this.allowedHeaders.join(','));
       res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
 
       next();
     });
   }
+  private preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => boolean)[] = [];
+
+  private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
   addSqlDevHelpers(server: SQLServerDataProvider) {
 
     let r = this.rootUrl + '/sqlHelper/typescript/:tableName';
@@ -38,7 +47,7 @@ export class ExpressBridge {
         server.listOfTables(new ExpressResponseBridgeToDataApiResponse(res), {
           get: key => {
             return req.query[key]
-          }, clientIp: '', context: {}
+          }, clientIp: '', context: {}, getHeader: x => "",
         });
       });
   }
@@ -51,10 +60,10 @@ export class ExpressBridge {
       api = () => new DataApi(entityOrDataApiFactory);
     else api = entityOrDataApiFactory;
 
-    let myRoute = api({ clientIp: 'onServer', context: {}, get: r => '' }).getRoute();
+    let myRoute = api({ clientIp: 'onServer', context: {}, get: r => '', getHeader: x => "" }).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);
-   
+
 
     this.app.route(myRoute)
       .get(this.process((req, res) => api(req).getArray(res, req)))
@@ -66,31 +75,34 @@ export class ExpressBridge {
 
 
   }
-   process(what: (myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
+  process(what: (myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
     return async (req: express.Request, res: express.Response) => {
-      let myReq = new ExpressRequestBridgeToDataApiReqiest(req);
+      let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
       let ok = true;
-      if (this.preProcessRequestAndReturnTrueToAuthorize)
-        ok = this.preProcessRequestAndReturnTrueToAuthorize(myReq);
+      this.preProcessRequestAndReturnTrueToAuthorize.forEach(p => {
+        if (!p(myReq))
+          ok = false;
+      })
       if (!ok)
         myRes.forbidden();
       else
-        what(myReq, myRes,req);
+        what(myReq, myRes, req);
     }
   };
   addAction<T extends Action<any, any>>(action: T) {
     action.__register((url, what: (data: any, r: DataApiRequest) => Promise<any>) => {
-      this.app.route('/' + url).post(this.process (async(req, res,orig) => {
+      this.app.route('/' + url).post(this.process(async (req, res, orig) => {
         what(orig.body, req).then(y => res.success(y));
       }));
     });
   }
 }
-class ExpressRequestBridgeToDataApiReqiest implements DataApiRequest {
+class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): string {
     return this.r.query[key];
   }
+  getHeader(key: string) { return this.r.headers[key] as string };
   context: any = {};
   clientIp: string;
   constructor(private r: express.Request) {
