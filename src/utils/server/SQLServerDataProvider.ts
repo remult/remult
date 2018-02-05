@@ -1,8 +1,8 @@
 
 import { pageArray, InMemoryDataProvider } from '../inMemoryDatabase';
-import { Entity, Column, CompoundIdColumn, StringColumn,NumberColumn, Sort } from './../utils';
+import { Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort } from './../utils';
 import * as sql from 'mssql';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer ,DataApiRequest} from '../dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer, DataApiRequest } from '../dataInterfaces';
 
 import { DataApi, DataApiResponse } from './DataApi';
 
@@ -46,48 +46,47 @@ export class SQLServerDataProvider implements DataProviderFactory {
       orderBy: new Sort({ column: columns.Ordinal_Position })
 
     }).then(r => {
-      r.forEach(c => { 
+      r.forEach(c => {
 
         let t = '';
-        
-        switch (c.Data_Type.value)
-        {
-            case "decimal":
-            case "real":
-            case "int":
-            case "smallint":
-            case "tinyint":
-            case "bigint":
-            case "float":
-            case "numeric":
-            case "NUMBER":
-            case "money":
+
+        switch (c.Data_Type.value) {
+          case "decimal":
+          case "real":
+          case "int":
+          case "smallint":
+          case "tinyint":
+          case "bigint":
+          case "float":
+          case "numeric":
+          case "NUMBER":
+          case "money":
             t = 'NumberColumn';
-                break;
-            case "nchar":
-            case "nvarchar":
-            case "ntext":
-            case "NVARCHAR2":
-            case "text":
-            case "varchar":
-            case "VARCHAR2":
+            break;
+          case "nchar":
+          case "nvarchar":
+          case "ntext":
+          case "NVARCHAR2":
+          case "text":
+          case "varchar":
+          case "VARCHAR2":
             t = 'StringColumn';
-                break;
-            case "char":
-            case "CHAR":
+            break;
+          case "char":
+          case "CHAR":
             if (c.Character_maximum_length.value == 8 && c.Column_Default.value == "('00000000')")
               t = 'DateColumn';
             else
               t = 'StringColumn';
-                break;
-            case "DATE":
-            case "datetime":
+            break;
+          case "DATE":
+          case "datetime":
             t = 'DateTimeColumn';
-                break;
-            case "bit":
+            break;
+          case "bit":
             t = 'BoolColumn';
-                break;
-            
+            break;
+
           default:
             t = 'StringColumn';
 
@@ -141,9 +140,9 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
         select += where.where;
       }
     }
-    if (options.orderBy) { 
+    if (options.orderBy) {
       let first = true;
-      options.orderBy.Segments.forEach(c => { 
+      options.orderBy.Segments.forEach(c => {
         if (first)
           select += ' Order By ';
         else
@@ -235,7 +234,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let cols = '';
     let vals = '';
     let added = false;
-    let resultFilter = this.entity.__idColumn.isEqualTo(data.id);
+    let resultFilter = this.entity.__idColumn.isEqualTo(data[this.entity.__idColumn.jsonName]);
 
     this.entity.__iterateColumns().forEach(x => {
       if (x instanceof CompoundIdColumn) {
@@ -258,10 +257,14 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
         }
       }
     });
+   
     let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
     console.log(statement);
     return r.query(statement).then(() => {
-      return this.find({ where: resultFilter }).then(y => y[0]);
+      return this.find({ where: resultFilter }).then(y => {
+        
+        return y[0];
+      });
     });
   }
 
@@ -338,9 +341,9 @@ class Columns extends Entity<string> {
   Character_maximum_length = new NumberColumn();
   Column_Default = new StringColumn();
 
-  
+
   constructor() {
     super(() => new Columns(), new InMemoryDataProvider(), { dbName: 'INFORMATION_SCHEMA.Columns' });
-    this.initColumns(new CompoundIdColumn(this, this.Table_Name, this.Table_Schema, this.Table_Catalog,this.Ordinal_Position));
+    this.initColumns(new CompoundIdColumn(this, this.Table_Name, this.Table_Schema, this.Table_Catalog, this.Ordinal_Position));
   }
 }

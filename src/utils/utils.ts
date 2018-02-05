@@ -1484,14 +1484,7 @@ export class DateTimeColumn extends Column<string>{
   }
   static stringToDate(val: string) {
 
-    return new Date(
-      +val.substring(0, 4),
-      +val.substring(5, 7)-1,
-      +val.substring(8, 10),
-      +val.substring(11, 13),
-      +val.substring(14, 16),
-      +val.substring(17, 19),
-      +val.substring(20, 3));
+    return new Date(val);
   }
   static dateToString(val: Date): string {
     var d = val as Date;

@@ -555,6 +555,7 @@ describe("test datetime column", () => {
     var x = new DateTimeColumn();
     x.dateValue = new Date(1976, 11, 16, 8, 55, 31, 65)
     expect (x.value).toBe('1976-12-16 08:55:31.065');
+    expect(x.dateValue.toISOString()).toBe(new Date(1976,11,16,8,55,31,65).toISOString());
   });
 });
 

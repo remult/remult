@@ -10,7 +10,7 @@ export class ExpressBridge implements DataApiServer {
   addAllowedHeader(name: string): void {
     this.allowedHeaders.push(name);
   }
-  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => boolean): void {
+  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void {
     this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAouthorise);
   }
 
@@ -27,7 +27,7 @@ export class ExpressBridge implements DataApiServer {
       next();
     });
   }
-  private preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => boolean)[] = [];
+  private preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => Promise<boolean>)[] = [];
 
   private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
   addSqlDevHelpers(server: SQLServerDataProvider) {
@@ -80,10 +80,11 @@ export class ExpressBridge implements DataApiServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
       let ok = true;
-      this.preProcessRequestAndReturnTrueToAuthorize.forEach(p => {
-        if (!p(myReq))
+      for (let i = 0; i < this.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
+        if (!(await this.preProcessRequestAndReturnTrueToAuthorize[i](myReq)))
           ok = false;
-      })
+      }
+      
       if (!ok)
         myRes.forbidden();
       else
@@ -91,10 +92,11 @@ export class ExpressBridge implements DataApiServer {
     }
   };
   addAction<T extends Action<any, any>>(action: T) {
-    action.__register((url, what: (data: any, r: DataApiRequest) => Promise<any>) => {
-      this.app.route('/' + url).post(this.process(async (req, res, orig) => {
-        what(orig.body, req).then(y => res.success(y));
-      }));
+    action.__register((url, what: (data: any, r: DataApiRequest, res: DataApiResponse) => void) => {
+      this.app.route('/' + url).post(this.process(
+        async (req, res, orig) =>
+          what(orig.body, req, res)
+      ));
     });
   }
 }

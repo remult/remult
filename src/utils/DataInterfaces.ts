@@ -83,6 +83,6 @@ export interface DataApiRequest {
 }
 export interface DataApiServer{
   addAllowedHeader(name:string):void;
-  addRequestProcessor(processAndReturnTrueToAouthorise:(req:DataApiRequest)=>boolean):void;
+  addRequestProcessor(processAndReturnTrueToAouthorise:(req:DataApiRequest)=>Promise<boolean>):void;
 
 }

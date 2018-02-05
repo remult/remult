@@ -1,6 +1,7 @@
 
 import { Sort, Column, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest } from './DataInterfaces';
+import { DataApiResponse } from '../utils/server/DataApi';
 
 export class RestDataProvider implements DataProviderFactory {
   constructor(private url: string, private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
@@ -129,7 +130,18 @@ export abstract class Action<inParam, outParam>{
 
   }
   protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;
-  __register(reg: (url: string, what: ((data: any, req: DataApiRequest) => Promise<any>)) => void) {
-    reg(this.actionUrl, (d, req) => { return this.execute(d, req); });
+  
+  __register(reg: (url: string, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
+    reg(this.actionUrl, async (d, req, res) => {
+     
+        try {
+          var r = await this.execute(d, req);
+          res.success(r);
+        }
+        catch (err) {
+          res.error(err);
+        }
+     
+    });
   }
 }
