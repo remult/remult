@@ -110,10 +110,11 @@ export class SiteArea<AuthInfoType> {
         what(myReq, myRes, req);
     }
   };
-  addAction<T extends Action<any, any,AuthInfoType>>(action: T) {
+  addAction<T extends Action<any, any, AuthInfoType>>(action: T) {
     action.__register((url, what: (data: any, r: DataApiRequest<AuthInfoType>, res: DataApiResponse) => void) => {
-      console.log('/' + url);
-      this.app.route('/' + url).post(this.process(
+      let myUrl = this.rootUrl + '/' + url;
+      console.log(myUrl);
+      this.app.route(myUrl).post(this.process(
         async (req, res, orig) =>
           what(orig.body, req, res)
       ));
