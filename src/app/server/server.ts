@@ -24,9 +24,10 @@ environment.dataSource = sqlServer;
 
 
 
-var eb = new ExpressBridge(app, '/dataApi');
-eb.addSqlDevHelpers(sqlServer);
-eb.add(r => new DataApi(new Categories(), {
+var eb = new ExpressBridge(app);
+let dataApi = eb.addArea('/dataApi');
+dataApi.addSqlDevHelpers(sqlServer);
+dataApi.add(r => new DataApi(new Categories(), {
     allowUpdate: true,
     onSavingRow: async c => {
         if (c.description.value.length < 5) {
@@ -36,13 +37,11 @@ eb.add(r => new DataApi(new Categories(), {
             c.id.value = await c.source.max(c.id) + 1;
     },
 }));
-eb.add(new Order_details());
-eb.add(new Orders());
-eb.add(new Customers());
-eb.add(new Products());
-eb.add(new Shippers());
+dataApi.add(new Order_details());
+dataApi.add(new Orders());
+dataApi.add(new Customers());
+dataApi.add(new Products());
+dataApi.add(new Shippers());
 
-
-console.log('working 13');
 
 app.listen(port);

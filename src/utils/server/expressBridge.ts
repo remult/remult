@@ -10,11 +10,14 @@ export class ExpressBridge implements DataApiServer {
   addAllowedHeader(name: string): void {
     this.allowedHeaders.push(name);
   }
-  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void {
+  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => void): void {
     this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAouthorise);
   }
+  preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => void)[] = [];
 
-  constructor(private app: express.Express, private rootUrl: string = '') {
+  private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
+
+  constructor(private app: express.Express) {
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     app.use((req, res, next) => {
@@ -27,9 +30,22 @@ export class ExpressBridge implements DataApiServer {
       next();
     });
   }
-  private preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => Promise<boolean>)[] = [];
+  addArea(
+    rootUrl: string,
+    processAndReturnTrueToAouthorise?: (req: DataApiRequest) => Promise<boolean>
+  ) {
+    return new SiteArea(this, this.app, rootUrl, processAndReturnTrueToAouthorise);
+  }
 
-  private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
+}
+export class SiteArea {
+  constructor(
+    private bridge: ExpressBridge,
+    private app: express.Express,
+    private rootUrl: string,
+    private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>) {
+
+  }
   addSqlDevHelpers(server: SQLServerDataProvider) {
 
     let r = this.rootUrl + '/sqlHelper/typescript/:tableName';
@@ -80,11 +96,14 @@ export class ExpressBridge implements DataApiServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
       let ok = true;
-      for (let i = 0; i < this.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
-        if (!(await this.preProcessRequestAndReturnTrueToAuthorize[i](myReq)))
-          ok = false;
+      for (let i = 0; i < this.bridge.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
+        await this.bridge.preProcessRequestAndReturnTrueToAuthorize[i](myReq);
+
       }
-      
+      if (this.processAndReturnTrueToAouthorise)
+        if (!await this.processAndReturnTrueToAouthorise(myReq))
+          ok = false;
+
       if (!ok)
         myRes.forbidden();
       else
@@ -93,6 +112,7 @@ export class ExpressBridge implements DataApiServer {
   };
   addAction<T extends Action<any, any>>(action: T) {
     action.__register((url, what: (data: any, r: DataApiRequest, res: DataApiResponse) => void) => {
+      console.log('/' + url);
       this.app.route('/' + url).post(this.process(
         async (req, res, orig) =>
           what(orig.body, req, res)
