@@ -6,14 +6,14 @@ import * as bodyParser from 'body-parser';
 import { Action } from './../restDataProvider';
 import { DataApiRequest, DataApiServer } from '../DataInterfaces';
 
-export class ExpressBridge implements DataApiServer {
+export class ExpressBridge<AuthInfoType> implements DataApiServer<AuthInfoType> {
   addAllowedHeader(name: string): void {
     this.allowedHeaders.push(name);
   }
-  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => void): void {
+  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest<AuthInfoType>) => void): void {
     this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAouthorise);
   }
-  preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => void)[] = [];
+  preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest<AuthInfoType>) => void)[] = [];
 
   private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
 
@@ -32,18 +32,18 @@ export class ExpressBridge implements DataApiServer {
   }
   addArea(
     rootUrl: string,
-    processAndReturnTrueToAouthorise?: (req: DataApiRequest) => Promise<boolean>
+    processAndReturnTrueToAouthorise?: (req: DataApiRequest<AuthInfoType>) => Promise<boolean>
   ) {
-    return new SiteArea(this, this.app, rootUrl, processAndReturnTrueToAouthorise);
+    return new SiteArea<AuthInfoType>(this, this.app, rootUrl, processAndReturnTrueToAouthorise);
   }
 
 }
-export class SiteArea {
+export class SiteArea<AuthInfoType> {
   constructor(
-    private bridge: ExpressBridge,
+    private bridge: ExpressBridge<AuthInfoType>,
     private app: express.Express,
     private rootUrl: string,
-    private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>) {
+    private processAndReturnTrueToAouthorise: (req: DataApiRequest<AuthInfoType>) => Promise<boolean>) {
 
   }
   addSqlDevHelpers(server: SQLServerDataProvider) {
@@ -63,20 +63,20 @@ export class SiteArea {
         server.listOfTables(new ExpressResponseBridgeToDataApiResponse(res), {
           get: key => {
             return req.query[key]
-          }, clientIp: '', context: {}, getHeader: x => "",
+          }, clientIp: '', authInfo: undefined, getHeader: x => "",
         });
       });
   }
 
-  add(entityOrDataApiFactory: Entity<any> | ((req: DataApiRequest) => DataApi<any>)) {
+  add(entityOrDataApiFactory: Entity<any> | ((req: DataApiRequest<AuthInfoType>) => DataApi<any>)) {
 
 
-    let api: ((req: DataApiRequest) => DataApi<any>);
+    let api: ((req: DataApiRequest<AuthInfoType>) => DataApi<any>);
     if (entityOrDataApiFactory instanceof Entity)
       api = () => new DataApi(entityOrDataApiFactory);
     else api = entityOrDataApiFactory;
 
-    let myRoute = api({ clientIp: 'onServer', context: {}, get: r => '', getHeader: x => "" }).getRoute();
+    let myRoute = api({ clientIp: 'onServer', authInfo: undefined, get: r => '', getHeader: x => "" }).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);
 
@@ -91,9 +91,9 @@ export class SiteArea {
 
 
   }
-  process(what: (myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
+  process(what: (myReq: DataApiRequest<AuthInfoType>, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
     return async (req: express.Request, res: express.Response) => {
-      let myReq = new ExpressRequestBridgeToDataApiRequest(req);
+      let myReq = new ExpressRequestBridgeToDataApiRequest<AuthInfoType>(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
       let ok = true;
       for (let i = 0; i < this.bridge.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
@@ -110,8 +110,8 @@ export class SiteArea {
         what(myReq, myRes, req);
     }
   };
-  addAction<T extends Action<any, any>>(action: T) {
-    action.__register((url, what: (data: any, r: DataApiRequest, res: DataApiResponse) => void) => {
+  addAction<T extends Action<any, any,AuthInfoType>>(action: T) {
+    action.__register((url, what: (data: any, r: DataApiRequest<AuthInfoType>, res: DataApiResponse) => void) => {
       console.log('/' + url);
       this.app.route('/' + url).post(this.process(
         async (req, res, orig) =>
@@ -120,12 +120,12 @@ export class SiteArea {
     });
   }
 }
-class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
+class ExpressRequestBridgeToDataApiRequest<AuthInfoType> implements DataApiRequest<AuthInfoType> {
   get(key: string): string {
     return this.r.query[key];
   }
   getHeader(key: string) { return this.r.headers[key] as string };
-  context: any = {};
+  authInfo: AuthInfoType = undefined;
   clientIp: string;
   constructor(private r: express.Request) {
     this.clientIp = r.ip;

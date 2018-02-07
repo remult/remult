@@ -17,7 +17,7 @@ export class DataApi<T extends Entity<any>> {
   async get(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => response.success(row.__toPojo()));
   }
-  async getArray(response: DataApiResponse, request: DataApiRequest) {
+  async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
     try {
       let findOptions: FindOptions = {};
       if (this.options && this.options.get) {

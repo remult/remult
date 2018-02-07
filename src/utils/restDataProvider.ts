@@ -110,7 +110,7 @@ function onError(error: any) {
 }
 
 
-export abstract class Action<inParam, outParam>{
+export abstract class Action<inParam, outParam,AuthInfoType>{
   constructor(private serverUrl: string, private actionUrl?: string, private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)
       this.addRequestHeader = () => { };
@@ -129,9 +129,9 @@ export abstract class Action<inParam, outParam>{
     }, this.addRequestHeader, JsonContent);
 
   }
-  protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;
+  protected abstract execute(info: inParam, req: DataApiRequest<AuthInfoType>): Promise<outParam>;
   
-  __register(reg: (url: string, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
+  __register(reg: (url: string, what: ((data: any, req: DataApiRequest<AuthInfoType>, res: DataApiResponse) => void)) => void) {
     reg(this.actionUrl, async (d, req, res) => {
      
         try {

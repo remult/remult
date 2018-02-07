@@ -24,7 +24,7 @@ export class SQLServerDataProvider implements DataProviderFactory {
   provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
     return new ActualSQLServerDataProvider(factory, name, this.pool, factory);
   }
-  async listOfTables(response: DataApiResponse, request: DataApiRequest) {
+  async listOfTables(response: DataApiResponse, request: DataApiRequest<any>) {
     let t = new Tables();
     t.setSource(this);
     let api = new DataApi(t);

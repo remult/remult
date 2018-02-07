@@ -142,7 +142,7 @@ export class AppComponent {
   }
 }
 
-export abstract class ServerAction<inParam, outParam> extends Action<inParam, outParam>{
+export abstract class ServerAction<inParam, outParam> extends Action<inParam, outParam,any>{
   constructor(url?: string) {
     super('http://localhost:3000/', url);
   }

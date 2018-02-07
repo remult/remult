@@ -75,14 +75,14 @@ export interface FilterConsumer {
   IsLessThan(col: Column<any>, val: any): void;
 }
 
-export interface DataApiRequest {
+export interface DataApiRequest<AuthInfoType> {
   get(key: string): string;
   getHeader(key: string): string;
-  context: any;
+  authInfo: AuthInfoType;
   clientIp: string;
 }
-export interface DataApiServer{
+export interface DataApiServer<AuthInfoType>{
   addAllowedHeader(name:string):void;
-  addRequestProcessor(processAndReturnTrueToAouthorise:(req:DataApiRequest)=>Promise<boolean>):void;
+  addRequestProcessor(processAndReturnTrueToAouthorise:(req:DataApiRequest<AuthInfoType>)=>Promise<boolean>):void;
 
 }
