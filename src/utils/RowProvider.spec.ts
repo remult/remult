@@ -1,5 +1,5 @@
 import { FindOptionsPerEntity } from './DataInterfaces';
-import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn } from '../';
+import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn } from '../';
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
@@ -556,6 +556,11 @@ describe("test datetime column", () => {
     x.dateValue = new Date(1976, 11, 16, 8, 55, 31, 65)
     expect (x.value).toBe('1976-12-16 08:55:31.065');
     expect(x.dateValue.toISOString()).toBe(new Date(1976,11,16,8,55,31,65).toISOString());
+  });
+  it("displays empty date well",()=>{
+    var x = new DateColumn();
+    x.value = '';
+    expect(x.displayValue).toBe('');
   });
 });
 

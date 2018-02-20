@@ -1454,6 +1454,8 @@ export class DateColumn extends Column<string>{
     return new Date(this.value).getDay();
   }
   get displayValue() {
+    if (!this.value|| this.value=='')
+    return '';
     return new Date(this.value).toLocaleDateString();
   }
   __defaultStorage() {
