@@ -214,7 +214,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   static getRecords(): any {
     throw new Error("Method not implemented.");
   }
-  private addNewRow() {
+  addNewRow() {
     let r: any = this.restList.add();
     this.columns.items.forEach(item => {
       if (item.defaultValue) {
@@ -1454,8 +1454,8 @@ export class DateColumn extends Column<string>{
     return new Date(this.value).getDay();
   }
   get displayValue() {
-    if (!this.value|| this.value=='')
-    return '';
+    if (!this.value || this.value == '')
+      return '';
     return new Date(this.value).toLocaleDateString();
   }
   __defaultStorage() {
@@ -1478,10 +1478,10 @@ export class DateTimeColumn extends Column<string>{
   __defaultStorage() {
     return new DateTimeStorage();
   }
-  get dateValue(){
+  get dateValue() {
     return DateTimeColumn.stringToDate(this.value);
   }
-  set dateValue(val:Date){
+  set dateValue(val: Date) {
     this.value = DateTimeColumn.dateToString(val);
   }
   static stringToDate(val: string) {
