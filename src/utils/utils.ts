@@ -1461,6 +1461,23 @@ export class DateColumn extends Column<string>{
   __defaultStorage() {
     return new DateTimeDateStorage();
   }
+  get dateValue() {
+    return DateColumn.stringToDate(this.value);
+  }
+  set dateValue(val: Date) {
+    this.value = DateColumn.dateToString(val);
+  }
+  static stringToDate(val: string) {
+
+    return new Date(val);
+  }
+  static dateToString(val: Date): string {
+    var d = val as Date;
+    let month = addZeros(d.getMonth() + 1),
+      day = addZeros(d.getDate()),
+      year = d.getFullYear();
+    return [year, month, day].join('-');
+  }
 
 }
 export class DateTimeColumn extends Column<string>{
@@ -1490,19 +1507,16 @@ export class DateTimeColumn extends Column<string>{
   }
   static dateToString(val: Date): string {
     var d = val as Date;
-    let month = addZeros(d.getMonth() + 1),
-      day = addZeros(d.getDate()),
-      year = d.getFullYear(),
+    let
       hours = addZeros(d.getHours()),
       minutes = addZeros(d.getMinutes()),
       seconds = addZeros(d.getSeconds()),
       ms = addZeros(d.getMilliseconds(), 3)
       ;
 
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
+   
 
-    return [year, month, day].join('-') + ' ' + [hours, minutes, seconds].join(':') + '.' + ms;
+    return DateColumn.dateToString(d) + ' ' + [hours, minutes, seconds].join(':') + '.' + ms;
   }
 
 
