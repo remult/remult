@@ -21,6 +21,13 @@
             "type": "npm",
             "script": "publish-to-npm",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "testPub",
+            "problemMatcher": [
+                "$tsc"
+            ]
         }
     ]
 }
