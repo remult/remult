@@ -1,7 +1,7 @@
 import { FindOptionsPerEntity } from './DataInterfaces';
 import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn } from '../';
 
-import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder } from './utils';
+import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync, Done } from './testHelper.spec';
@@ -554,13 +554,22 @@ describe("test datetime column", () => {
   it("stores well", () => {
     var x = new DateTimeColumn();
     x.dateValue = new Date(1976, 11, 16, 8, 55, 31, 65)
-    expect (x.value).toBe('1976-12-16 08:55:31.065');
-    expect(x.dateValue.toISOString()).toBe(new Date(1976,11,16,8,55,31,65).toISOString());
+    expect(x.value).toBe('1976-12-16 08:55:31.065');
+    expect(x.dateValue.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
-  it("displays empty date well",()=>{
+  it("displays empty date well", () => {
     var x = new DateColumn();
     x.value = '';
     expect(x.displayValue).toBe('');
+  });
+});
+describe("Test char date storage", () => {
+  let x = new CharDateStorage();
+  it("from db", () => {
+    expect(x.fromDb('19760616')).toBe('1976-06-16');
+  });
+  it("to db", () => {
+    expect(x.toDb('1976-06-16')).toBe('19760616');
   });
 });
 

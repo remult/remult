@@ -783,21 +783,22 @@ export class DateTimeDateStorage implements ColumnStorage<string>{
   }
   fromDb(val: any): string {
     var d = val as Date;
-    let month = '' + (d.getMonth() + 1),
-      day = '' + d.getDate(),
-      year = d.getFullYear();
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    return [year, month, day].join('-');
+    return DateColumn.dateToString(d);
   }
 
+}
+export class CharDateStorage implements ColumnStorage<string> {
+  toDb(val: string) {
+    return val.replace(/-/g,'');
+  }
+  fromDb(val: any): string {
+    return val.substring(0, 4)+'-'+val.substring(4, 6)+'-' +val.substring(6, 8);
+  }
 }
 export class DateTimeStorage implements ColumnStorage<string>{
   toDb(val: string) {
     return DateTimeColumn.stringToDate(val);
-  }
+  } 
   fromDb(val: any): string {
     var d = val as Date;
     return DateTimeColumn.dateToString(d);
@@ -1514,7 +1515,7 @@ export class DateTimeColumn extends Column<string>{
       ms = addZeros(d.getMilliseconds(), 3)
       ;
 
-   
+
 
     return DateColumn.dateToString(d) + ' ' + [hours, minutes, seconds].join(':') + '.' + ms;
   }
