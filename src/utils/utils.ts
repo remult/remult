@@ -789,16 +789,16 @@ export class DateTimeDateStorage implements ColumnStorage<string>{
 }
 export class CharDateStorage implements ColumnStorage<string> {
   toDb(val: string) {
-    return val.replace(/-/g,'');
+    return val.replace(/-/g, '');
   }
   fromDb(val: any): string {
-    return val.substring(0, 4)+'-'+val.substring(4, 6)+'-' +val.substring(6, 8);
+    return val.substring(0, 4) + '-' + val.substring(4, 6) + '-' + val.substring(6, 8);
   }
 }
 export class DateTimeStorage implements ColumnStorage<string>{
   toDb(val: string) {
     return DateTimeColumn.stringToDate(val);
-  } 
+  }
   fromDb(val: any): string {
     var d = val as Date;
     return DateTimeColumn.dateToString(d);
@@ -1455,7 +1455,7 @@ export class DateColumn extends Column<string>{
     return new Date(this.value).getDay();
   }
   get displayValue() {
-    if (!this.value || this.value == '')
+    if (!this.value || this.value == '' || this.value == '0000-00-00')
       return '';
     return new Date(this.value).toLocaleDateString();
   }
@@ -1491,6 +1491,8 @@ export class DateTimeColumn extends Column<string>{
     return new Date(this.value).getDay();
   }
   get displayValue() {
+    if (!this.value || this.value.trim() == '' || this.value.startsWith('0000-00-00'))
+      return '';
     return new Date(this.value).toLocaleString();
   }
   __defaultStorage() {

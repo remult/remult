@@ -562,6 +562,11 @@ describe("test datetime column", () => {
     x.value = '';
     expect(x.displayValue).toBe('');
   });
+  it("displays empty date well empty", () => {
+    var x = new DateColumn();
+    x.value = '0000-00-00';
+    expect(x.displayValue).toBe('');
+  });
 });
 describe("Test char date storage", () => {
   let x = new CharDateStorage();
