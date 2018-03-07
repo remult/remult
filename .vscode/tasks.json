@@ -16,6 +16,11 @@
             "problemMatcher": [
                 "$tsc"
             ]
+        },
+        {
+            "type": "npm",
+            "script": "publish-to-npm",
+            "problemMatcher": []
         }
     ]
 }
