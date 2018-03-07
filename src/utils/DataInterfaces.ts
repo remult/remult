@@ -51,6 +51,7 @@ export interface DataColumnSettings<type, colType> {
   onValidate?: (col: colType) => void | Promise<void>;
   getValue?: (val: type) => any;
   valueChange?: (val: type) => void;
+  virtualData?: () => type|Promise<type>;
 }
 export interface ColumnStorage<dataType> {
   toDb(val: dataType): any;
@@ -81,8 +82,8 @@ export interface DataApiRequest<AuthInfoType> {
   authInfo: AuthInfoType;
   clientIp: string;
 }
-export interface DataApiServer<AuthInfoType>{
-  addAllowedHeader(name:string):void;
-  addRequestProcessor(processAndReturnTrueToAouthorise:(req:DataApiRequest<AuthInfoType>)=>Promise<boolean>):void;
+export interface DataApiServer<AuthInfoType> {
+  addAllowedHeader(name: string): void;
+  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest<AuthInfoType>) => Promise<boolean>): void;
 
 }

@@ -72,29 +72,29 @@ describe('Test basic row functionality', () => {
     y.categoryName.value = 'yael';
     expect(y.__getColumn(x.categoryName).value).toBe('yael');
   });
-  it("can be saved to a pojo", () => {
+  itAsync("can be saved to a pojo",async () => {
     let x = new Categories();
     x.id.value = 1;
     x.categoryName.value = 'noam';
-    let y = x.__toPojo();
+    let y =await  x.__toPojo();
     expect(y.id).toBe(1);
     expect(y.categoryName).toBe('noam');
   });
-  it("json name is important", () => {
+  itAsync("json name is important",async () => {
     let x = new Categories();
     x.id.value = 1;
     x.categoryName.jsonName = 'xx';
     x.categoryName.value = 'noam';
-    let y = x.__toPojo();
+    let y =await x.__toPojo();
     expect(y.id).toBe(1);
     expect(y.xx).toBe('noam');
   });
-  it("json name is important 1", () => {
+  itAsync("json name is important 1",async () => {
     let x = new myTestEntity();
     x.id.value = 1;
     expect(x.name1.jsonName).toBe('name');
     x.name1.value = 'noam';
-    let y = x.__toPojo();
+    let y =await  x.__toPojo();
     expect(y.id).toBe(1);
     expect(y.name).toBe('noam', JSON.stringify(y));
     y.name = 'yael';
@@ -135,6 +135,41 @@ describe("data api", () => {
     t.success = async (data: any) => {
       expect(data.id).toBe(1);
       expect(data.categoryName).toBe('noam');
+      
+      d.ok();
+    };
+    await api.get(t, 1)
+    d.test();
+  });
+  itAsync("get based on id virtual column", async () => {
+
+
+    let c = await createData(async insert => insert(1, 'noam'));
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      expect(data.id).toBe(1);
+      expect(data.categoryName).toBe('noam');
+      expect(data.categoryNameLength).toBe(4);
+      d.ok();
+    };
+    await api.get(t, 1)
+    d.test();
+  });
+  itAsync("get based on id virtual column async", async () => {
+
+
+    let c = await createData(async insert => insert(1, 'noam'));
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      expect(data.id).toBe(1);
+      expect(data.categoryName).toBe('noam');
+      expect(data.categoryNameLengthAsync).toBe(4);
       d.ok();
     };
     await api.get(t, 1)
@@ -717,7 +752,7 @@ describe("data api", () => {
 
   it("columnsAreOk", () => {
     let c = new Categories();
-    expect(c.__iterateColumns().length).toBe(3);
+    expect(c.__iterateColumns().length).toBe(5);
 
   });
 

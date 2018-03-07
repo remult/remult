@@ -121,7 +121,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     let select = 'select ';
     let colKeys: Column<any>[] = [];
     this.entity.__iterateColumns().forEach(x => {
-      if (x instanceof CompoundIdColumn) {
+      if (x.__isVirtual()) {
 
       }
       else {
@@ -183,7 +183,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     this.entity.__iterateColumns().forEach(x => {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
-      }
+      } if (x.__isVirtual()) { }
       else {
         let v = data[x.jsonName];
         if (v != undefined) {
@@ -240,7 +240,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }
-
+      if (x.__isVirtual()) { }
 
       else {
         let v = data[x.jsonName];
@@ -257,12 +257,12 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
         }
       }
     });
-   
+
     let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
     console.log(statement);
     return r.query(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => {
-        
+
         return y[0];
       });
     });
@@ -312,7 +312,7 @@ class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       n = orig + i++;
     this.usedNames[n] = true;
     this.r.input(n, dbVal);
-    
+
     return '@' + n;
   }
 

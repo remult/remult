@@ -15,7 +15,7 @@ export class DataApi<T extends Entity<any>> {
   }
 
   async get(response: DataApiResponse, id: any) {
-    await this.doOnId(response, id, async row => response.success(row.__toPojo()));
+    await this.doOnId(response, id, async row => response.success(await row.__toPojo()));
   }
   async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
     try {
@@ -76,8 +76,8 @@ export class DataApi<T extends Entity<any>> {
 
       }
       await this.rowType.source.find(findOptions)
-        .then(r => {
-          response.success(r.map(y => y.__toPojo()));
+        .then(async r => {
+          response.success(await Promise.all(r.map(async y =>await  y.__toPojo())));
         });
     }
     catch (err) {
@@ -118,7 +118,7 @@ export class DataApi<T extends Entity<any>> {
         row.__assertValidity();
       }
       await row.save(this.options.validate, this.options.onSavingRow);
-      response.success(row.__toPojo());
+      response.success(await row.__toPojo());
     });
   }
   async delete(response: DataApiResponse, id: any) {
@@ -141,7 +141,7 @@ export class DataApi<T extends Entity<any>> {
       let r = this.rowType.source.createNewItem();
       r.__fromPojo(body);
       await r.save(this.options.validate, this.options.onSavingRow);
-      response.created(r.__toPojo());
+      response.created(await r.__toPojo());
     } catch (err) {
       response.error(err);
     }

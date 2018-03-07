@@ -812,7 +812,21 @@ function addZeros(number: number, stringLength: number = 2) {
   return to;
 }
 export class Column<dataType>  {
+  async __calcVirtuals() {
+    if (this.__settings && this.__settings.virtualData) {
+      let x = this.__settings.virtualData();
+      if (x instanceof Promise)
+        x = await x;
+      this.value = x;
 
+    }
+  }
+  __isVirtual() {
+    if (this.__settings && this.__settings.virtualData)
+      return true;
+    return false;
+
+  }
   __clearErrors(): any {
     this.error = undefined;
   }
@@ -929,7 +943,9 @@ export class Column<dataType>  {
     return this.__valueProvider.getValue(this.jsonName);
   }
   get displayValue() {
-    return this.value.toString();
+    if (this.value)
+      return this.value.toString();
+      return '';
   }
   protected __processValue(value: dataType) {
     return value;
@@ -1081,6 +1097,7 @@ export class Entity<idType> {
   isNew() {
     return this.__entityData.isNewRow();
   }
+
   __getValidationError() {
     let result: any = {};
     result.modelState = {};
@@ -1184,8 +1201,11 @@ export class Entity<idType> {
   wasChanged() {
     return this.__entityData.wasChanged();
   }
-  __toPojo(): any {
+  async __toPojo(): Promise<any> {
     let r = {};
+    await Promise.all(this.__iterateColumns().map(async c => {
+      await c.__calcVirtuals();
+    }));
     this.__iterateColumns().forEach(c => {
       c.__addToPojo(r);
     });
@@ -1242,6 +1262,21 @@ export class Entity<idType> {
     return lookup.get(filter);
 
   }
+  lookupAsync<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): Promise<entityType> {
+
+    let key = lookupEntity.constructor.name;
+    let lookup: Lookup<lookupIdType, entityType>;
+    this.source.__lookupCache.forEach(l => {
+      if (l.key == key)
+        lookup = l.lookup;
+    });
+    if (!lookup) {
+      lookup = new Lookup(lookupEntity);
+      this.source.__lookupCache.push({ key, lookup });
+    }
+    return lookup.whenGet(filter);
+
+  }
 
 }
 export interface LookupCache<T extends Entity<any>> {
@@ -1256,6 +1291,7 @@ export class CompoundIdColumn extends Column<string>
     super();
     this.columns = columns;
   }
+  __isVirtual() { return true; }
   isEqualTo(value: Column<string> | string): Filter {
     return new Filter(add => {
       let val = this.__getVal(value);

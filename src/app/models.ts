@@ -8,7 +8,12 @@ export class Categories extends radweb.Entity<number> {
   id = new radweb.NumberColumn({dbName: 'CategoryID'});
   categoryName = new radweb.StringColumn();
   description = new radweb.StringColumn();
-
+  categoryNameLength = new radweb.NumberColumn({
+    virtualData:()=>this.categoryName.value.length
+  });
+  categoryNameLengthAsync = new radweb.NumberColumn({
+    virtualData:()=> Promise.resolve(this.categoryName.value.length)
+  });
   constructor(settings?:radweb.EntityOptions) {
       super(() => new Categories(settings), environment.dataSource,settings);
       this.initColumns();
@@ -41,7 +46,7 @@ export class Orders extends radweb.Entity<number> {
 
 export class Order_details extends radweb.Entity<string> {
   orderID = new radweb.NumberColumn('OrderID');
-  productID = new radweb.NumberColumn('ProductID');
+  productID = new radweb.NumberColumn('ProductID'); 
   unitPrice = new radweb.NumberColumn('UnitPrice');
   quantity = new radweb.NumberColumn('Quantity');
   discount = new radweb.NumberColumn('Discount');
