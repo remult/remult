@@ -6,7 +6,7 @@ import { Component, Input } from '@angular/core';
 @Component({
   selector: 'data-control',
   template: `
-<span *ngIf="!_getEditable()" >{{settings._getColValue(map,record)}}</span>
+<span *ngIf="!_getEditable()" >{{settings._getColDisplayValue(map,record)}}</span>
 <div *ngIf="_getEditable()" class="" [class.has-error]="settings._getError(map,record)" [style.width]="dataControlStyle()">
     <div >
         <div [class.input-group]="showDescription()||map.click" *ngIf="!isSelect()">
@@ -14,7 +14,7 @@ import { Component, Input } from '@angular/core';
                 <button type="button" class="btn btn-default" (click)="settings._click(map,record)" > <span class="glyphicon glyphicon-chevron-down"></span></button>
             </div>
             <input class="form-control"  [(ngModel)]="_getColumn().value" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" />
-            <div class="input-group-addon" style="width:60%;text-align:left" *ngIf="showDescription()">{{settings._getColValue(map,record)}}</div>
+            <div class="input-group-addon" style="width:60%;text-align:left" *ngIf="showDescription()">{{settings._getColDisplayValue(map,record)}}</div>
 
         </div>
         <div *ngIf="isSelect()">

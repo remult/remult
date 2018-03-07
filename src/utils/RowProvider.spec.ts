@@ -278,7 +278,7 @@ describe("test row provider", () => {
     expect(cs.dropDown.items[1].caption).toBe('yael');
     var c2 = new Categories();
     c2.id.value = 1;
-    expect(cc._getColValue(cc.items[0], c2)).toBe('noam');
+    expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
 
   });
   it("get value function works", () => {
@@ -287,7 +287,7 @@ describe("test row provider", () => {
     var cc = new DataAreaSettings({ columnSettings: () => [a] })
 
 
-    expect(cc.columns._getColValue(cc.columns.items[0], null)).toBe(5);
+    expect(cc.columns._getColDisplayValue(cc.columns.items[0], null)).toBe('5');
 
   });
   it("get value function works", () => {
@@ -295,7 +295,7 @@ describe("test row provider", () => {
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined);
     cc.add(a);
-    expect(cc._getColValue(cc.items[0], null)).toBe(5);
+    expect(cc._getColDisplayValue(cc.items[0], null)).toBe('5');
 
   });
   it("get value function works", () => {
@@ -303,14 +303,14 @@ describe("test row provider", () => {
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined);
     cc.add({ column: a, getValue: () => a.value * 2 });
-    expect(cc._getColValue(cc.items[0], null)).toBe(10);
+    expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
   });
   it("get value function works", () => {
     let a = new NumberColumn({ getValue: v => v *= 3 });
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined);
     cc.add(a);
-    expect(cc._getColValue(cc.items[0], null)).toBe(15);
+    expect(cc._getColDisplayValue(cc.items[0], null)).toBe(15);
   });
 
 });

@@ -929,7 +929,7 @@ export class Column<dataType>  {
     return this.__valueProvider.getValue(this.jsonName);
   }
   get displayValue() {
-    return this.value;
+    return this.value.toString();
   }
   protected __processValue(value: dataType) {
     return value;
@@ -1728,7 +1728,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     });
   }
 
-  _getColValue(col: ColumnSetting<any>, row: rowType) {
+  _getColDisplayValue(col: ColumnSetting<any>, row: rowType) {
     let r;
     if (col.getValue) {
 
