@@ -13,7 +13,7 @@ import { isFunction } from '../common';
 
 
   </div>
-  <div class="table-responsive" >
+  <div  >
   <div class="pull-right" *ngIf="settings && records">
     <button class="btn glyphicon glyphicon-pencil btn-primary" *ngIf="settings.columns.allowDesignMode" (click)="settings.columns.designMode=!settings.columns.designMode"></button>
     <button class="btn glyphicon glyphicon-chevron-left" *ngIf="settings.page>1" (click)="settings.previousPage()"></button>
@@ -175,10 +175,10 @@ export class DataGridComponent implements OnChanges {
 
   catchErrors(what: any, r: Entity<any>) {
     what.catch((e: any) => {
-        this.showError(r);
+      this.showError(r);
 
-      });
-    
+    });
+
 
   }
   private showError(row: Entity<any>) {
@@ -215,7 +215,7 @@ export class DataGridComponent implements OnChanges {
         cssClass: "glyphicon glyphicon-ok btn-success",
         visible: r => r.wasChanged(),
         click: r => {
-          this.catchErrors(this.settings._doSavingRow(r),r);
+          this.catchErrors(this.settings._doSavingRow(r), r);
         },
 
       });
