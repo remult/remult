@@ -111,12 +111,6 @@ export class DataApi<T extends Entity<any>> {
     }
     await this.doOnId(response, id, async row => {
       row.__fromPojo(body);
-      if (this.options.onSavingRow) {
-        let x = this.options.onSavingRow(row);
-        if (x instanceof Promise)
-          await x;
-        row.__assertValidity();
-      }
       await row.save(this.options.validate, this.options.onSavingRow);
       response.success(await row.__toPojo());
     });

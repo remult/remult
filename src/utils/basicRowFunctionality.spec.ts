@@ -217,6 +217,28 @@ describe("data api", () => {
     var x = await c.source.find({ where: c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
+  itAsync("put with validations works", async () => {
+    let count=0;
+    let c = await createData(async insert => insert(1, 'noam'));
+    var api = new DataApi(c, {
+      onSavingRow: c => {count++;},
+      allowUpdate:true
+    });
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+
+      
+      d.ok();
+    };
+    await api.put(t, 1, {
+      categoryName: 'noam 1'
+    });
+    d.test();
+    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam 1');
+    expect(count).toBe(1);
+  });
   itAsync("put with validations on entity fails", async () => {
 
     let c = new entityWithValidations();
@@ -397,10 +419,11 @@ describe("data api", () => {
 
 
     let c = await createData(async (i) => { i(1, 'a'); });
-
+    let count = 0;
     var api = new DataApi(c, {
       allowInsert:true,
       onSavingRow: async c => {
+        count++;
         if (c.isNew)
           c.id.value = (await c.source.max(c.id)) + 1;
       }
@@ -411,8 +434,11 @@ describe("data api", () => {
       expect(data.id).toBe(2);
       expect(data.categoryName).toBe('noam');
       d.ok();
+      expect(count).toBe(1); 
     };
+
     await api.post(t, { categoryName: 'noam' });
+    expect(count).toBe(1);
     d.test();
   });
   itAsync("post with logic works and max in entity", async () => {
@@ -427,7 +453,9 @@ describe("data api", () => {
       expect(data.myId).toBe(1);
       d.ok();
     };
+    entityWithValidations.savingRowCount= 0;
     await api.post(t, { name: 'noam honig' });
+    expect(entityWithValidations.savingRowCount).toBe(1);
     d.test();
 
   });
@@ -937,6 +965,7 @@ class CompoundIdEntity extends Entity<string>
 export class entityWithValidations extends Entity<number>{
   myId = new NumberColumn();
   name = new StringColumn();
+  static savingRowCount = 0;
   constructor() {
     super(() => new entityWithValidations(), new InMemoryDataProvider());
     this.initColumns();
@@ -949,6 +978,7 @@ export class entityWithValidations extends Entity<number>{
         this.myId.value = await this.source.max(this.myId) + 1;
 
       }
+      entityWithValidations.savingRowCount++;
     };
 
   }

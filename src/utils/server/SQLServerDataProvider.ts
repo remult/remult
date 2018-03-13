@@ -312,7 +312,6 @@ class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       n = orig + i++;
     this.usedNames[n] = true;
     this.r.input(n, dbVal);
-
     return '@' + n;
   }
 
