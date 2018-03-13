@@ -58,11 +58,11 @@ export class DataApi<T extends Entity<any>> {
             dirItems = dir.split(',');
           findOptions.orderBy = new Sort();
           sort.split(',').forEach((name, i) => {
-            let col = this.rowType.__getColumnByJsonName(name);
+            let col = this.rowType.__getColumnByJsonName(name.trim());
             if (col) {
               findOptions.orderBy.Segments.push({
                 column: col,
-                descending: i < dirItems.length && dirItems[i].toLowerCase().startsWith("d")
+                descending: i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d")
               });
             }
           });

@@ -143,8 +143,10 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     if (options.orderBy) {
       let first = true;
       options.orderBy.Segments.forEach(c => {
-        if (first)
+        if (first){
           select += ' Order By ';
+          first = false;
+        }
         else
           select += ', ';
         select += c.column.__getDbName();
