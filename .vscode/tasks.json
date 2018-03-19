@@ -28,6 +28,14 @@
             "problemMatcher": [
                 "$tsc"
             ]
+        },
+        {
+            "type": "npm",
+            "script": "copyToStarterKit",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true
         }
     ]
 }

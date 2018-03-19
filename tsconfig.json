@@ -14,11 +14,8 @@
     "inlineSources": true,
 
     "skipLibCheck": true,
-    "lib": [ "es2015", "dom" ],
-    "paths": {
-      "@angular/core": [ "node_modules/@angular/core" ],
-      "rxjs/*": [ "node_modules/rxjs/*" ]
-    }
+    "lib": [ "es2015", "dom" ]
+   
 
 
   },
