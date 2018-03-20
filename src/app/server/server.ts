@@ -19,7 +19,7 @@ let port = 3001;
 
 
 environment.dataSource = new JsonFileDataProvider('./appData');
-let sqlServer = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', '');
+let sqlServer = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
 environment.dataSource = sqlServer;
 
 

@@ -12,6 +12,7 @@
     "start": "concurrently \"ng serve --port 4201\" \"npm run server:watch\" \"ng test\"",
     "test": "ng test",
     "lint": "ng lint",
+    "ng-serve": "ng serve",
     "server": " ts-node  -P tsconfig.server.json src/app/server/server.ts",
     "server:watch": "concurrently \"tsc -P tsconfig.server.json -w\" \"nodemon distServer/src/app/server/server.js --ignore /appData",
     "e2e": "ng e2e",
@@ -26,7 +27,7 @@
     "copyToStarterKit": "copyfiles -u 1 ./dist/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/angular/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/server/* ../radweb-starterkit/node_modules/radweb/",
     "copyToIssueTracker": "copyfiles -u 1 ./dist/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/angular/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/server/* ../issue-tracker/node_modules/radweb/",
     "publish-to-npm": "npm run build && npm run addVersion && npm run copyPackage && npm run package && cd dist && npm publish",
-    "testPub": "npm run build && npm run copyPackage && npm run package && npm run copyToStarterKit"
+    "testPub": "npm run build && npm run copyPackage && npm run package && npm run copyToEnvWeb"
   },
   "dependencies": {
     "@angular/animations": "^5.2.0",
@@ -38,7 +39,9 @@
     "@angular/platform-browser": "^5.2.0",
     "@angular/platform-browser-dynamic": "^5.2.0",
     "@angular/router": "^5.2.0",
+    "bootstrap3": "^3.3.5",
     "core-js": "^2.4.1",
+    "ngx-bootstrap": "^2.0.3",
     "rxjs": "^5.5.6",
     "zone.js": "^0.8.19"
   },

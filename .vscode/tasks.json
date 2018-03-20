@@ -36,6 +36,22 @@
                 "$tsc-watch"
             ],
             "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "ng-serve",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "server:watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true
         }
     ]
 }
