@@ -5,6 +5,7 @@ import * as sql from 'mssql';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer, DataApiRequest } from '../dataInterfaces';
 
 import { DataApi, DataApiResponse } from './DataApi';
+import { SQLConnectionProvider, SQLCommand, FilterConsumerBridgeToSqlRequest, SQLQueryResult } from './SQLDatabaseShared';
 
 
 export class SQLServerDataProvider implements DataProviderFactory {
@@ -22,7 +23,7 @@ export class SQLServerDataProvider implements DataProviderFactory {
 
 
   provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
-    return new ActualSQLServerDataProvider(factory, name, this.pool, factory);
+    return new ActualSQLServerDataProvider(factory, name, new SQLServerBridgeToSQLConnectionProvider(this.pool), factory);
   }
   async listOfTables(response: DataApiResponse, request: DataApiRequest<any>) {
     let t = new Tables();
@@ -110,8 +111,38 @@ ${cols}
 
 }
 
-class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
-  constructor(private entityFactory: () => Entity<any>, private name: string, private sql: sql.ConnectionPool, private factory: () => T) {
+class SQLServerBridgeToSQLConnectionProvider implements SQLConnectionProvider {
+  constructor(private sql: sql.ConnectionPool) { }
+  createCommand(): SQLCommand {
+    return new SQLServerBridgeToSQLCommand(new sql.Request(this.sql));
+  }
+}
+class SQLServerBridgeToSQLCommand implements SQLCommand {
+  query(sql: string): Promise<SQLQueryResult> {
+    return this.r.query(sql).then(x => x.recordset);
+  }
+  constructor(private r: sql.Request) {
+
+  }
+  usedNames: any = {};
+  addParameterToCommandAndReturnParameterName(col: Column<any>, val: any) {
+
+    let dbVal = col.__getStorage().toDb(val);
+
+    let orig = col.__getDbName();
+    let n = orig;
+    let i = 0;
+
+    while (this.usedNames[n])
+      n = orig + i++;
+    this.usedNames[n] = true;
+    this.r.input(n, dbVal);
+    return '@' + n;
+  }
+}
+
+export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
+  constructor(private entityFactory: () => Entity<any>, private name: string, private sql: SQLConnectionProvider, private factory: () => T) {
 
   }
   private entity: Entity<any>;
@@ -132,7 +163,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
       }
     });
     select += ' from ' + this.entity.__getDbName();
-    let r = new sql.Request(this.sql);
+    let r = this.sql.createCommand();
     if (options) {
       if (options.where) {
         let where = new FilterConsumerBridgeToSqlRequest(r);
@@ -143,7 +174,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     if (options.orderBy) {
       let first = true;
       options.orderBy.Segments.forEach(c => {
-        if (first){
+        if (first) {
           select += ' Order By ';
           first = false;
         }
@@ -158,10 +189,10 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
     console.log(select);
     return r.query(select).then(r => {
 
-      return pageArray(r.recordset, options).map(y => {
+      return pageArray(r, options).map(y => {
         let result: any = {};
-        for (let x in r.recordset.columns) {
-          let col = colKeys[r.recordset.columns[x].index];
+        for (let x in r.columns) {
+          let col = colKeys[r.columns[x].index];
           result[col.jsonName] = col.__getStorage().fromDb(y[x]);
         }
         return result;
@@ -173,7 +204,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
       this.entity = this.entityFactory();
 
 
-    let r = new sql.Request(this.sql);
+    let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
     this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
     let statement = 'update ' + this.entity.__getDbName() + ' set ';
@@ -194,7 +225,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
           else
             statement += ', ';
 
-          statement += x.__getDbName() + ' = ' + f.addParameterToCommandAndReturnParameterName(x, v);
+          statement += x.__getDbName() + ' = ' + r.addParameterToCommandAndReturnParameterName(x, v);
         }
       }
     });
@@ -211,7 +242,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
       this.entity = this.entityFactory();
 
 
-    let r = new sql.Request(this.sql);
+    let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
     this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
     let statement = 'delete ' + this.entity.__getDbName();
@@ -229,7 +260,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
       this.entity = this.entityFactory();
 
 
-    let r = new sql.Request(this.sql);
+    let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
 
 
@@ -255,7 +286,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
           }
 
           cols += x.__getDbName();
-          vals += f.addParameterToCommandAndReturnParameterName(x, v);
+          vals += r.addParameterToCommandAndReturnParameterName(x, v);
         }
       }
     });
@@ -271,54 +302,7 @@ class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider
   }
 
 }
-class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
-  where = "";
-  constructor(private r: sql.Request) { }
-  IsEqualTo(col: Column<any>, val: any): void {
-    this.add(col, val, "=");
-  }
-  IsDifferentFrom(col: Column<any>, val: any): void {
-    this.add(col, val, "<>");
-  }
-  IsGreaterOrEqualTo(col: Column<any>, val: any): void {
-    this.add(col, val, ">=");
-  }
-  IsGreaterThan(col: Column<any>, val: any): void {
-    this.add(col, val, ">");
-  }
-  IsLessOrEqualTo(col: Column<any>, val: any): void {
-    this.add(col, val, "<=");
-  }
-  IsLessThan(col: Column<any>, val: any): void {
-    this.add(col, val, "<");
-  }
-  private add(col: Column<any>, val: any, operator: string) {
-    if (this.where.length == 0) {
 
-      this.where += ' where ';
-    } else this.where += ' and ';
-    this.where += col.__getDbName() + ' ' + operator + ' ' + this.addParameterToCommandAndReturnParameterName(col, val);
-
-  }
-
-  usedNames: any = {};
-  addParameterToCommandAndReturnParameterName(col: Column<any>, val: any) {
-
-    let dbVal = col.__getStorage().toDb(val);
-
-    let orig = col.__getDbName();
-    let n = orig;
-    let i = 0;
-
-    while (this.usedNames[n])
-      n = orig + i++;
-    this.usedNames[n] = true;
-    this.r.input(n, dbVal);
-    return '@' + n;
-  }
-
-
-}
 
 class Tables extends Entity<string> {
   Table_Name = new StringColumn();

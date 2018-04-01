@@ -27,7 +27,8 @@ export class AppComponent {
   x = new GridSettings(new models.Categories(), {
     allowUpdate: true,
     allowDelete: true,
-    allowInsert: true
+    allowInsert: true,
+    get:{limit:100}
   });
   myNumber = new NumberColumn({ caption: 'my number', value: 5 });
   myNumber1 = new NumberColumn({ caption: 'my number', value: 2 });

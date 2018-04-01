@@ -42,6 +42,7 @@
     "bootstrap3": "^3.3.5",
     "core-js": "^2.4.1",
     "ngx-bootstrap": "^2.0.3",
+    "pg": "^7.4.1",
     "rxjs": "^5.5.6",
     "zone.js": "^0.8.19"
   },
@@ -56,6 +57,7 @@
     "@types/jasminewd2": "~2.0.2",
     "@types/mssql": "^4.0.6",
     "@types/node": "~6.0.60",
+    "@types/pg": "^7.4.5",
     "body-parser": "^1.18.2",
     "codelyzer": "^4.0.1",
     "concurrently": "^3.5.1",

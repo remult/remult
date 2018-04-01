@@ -10,7 +10,13 @@ import { Categories } from '../models';
 import * as express from 'express';
 import * as fs from 'fs';
 import { ExpressBridge } from './../../utils/server/expressBridge';
+import {Pool} from 'pg';
 
+var p = new Pool({
+ database:'postgres',user:'postgres',password:'MASTERKEY',host:'localhost'
+
+});
+p.query("select now()").then(r=>{console.log('ok',r)}).catch(err=>console.log('err',err));
 
 
 let app = express();
@@ -29,6 +35,8 @@ let dataApi = eb.addArea('/dataApi');
 dataApi.addSqlDevHelpers(sqlServer);
 dataApi.add(r => new DataApi(new Categories(), {
     allowUpdate: true,
+    allowInsert:true,
+    allowDelete:true,
     onSavingRow: async c => {
         if (c.description.value.length < 5) {
             c.description.error = 'Description too short ';
