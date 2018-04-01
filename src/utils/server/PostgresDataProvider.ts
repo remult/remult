@@ -4,27 +4,57 @@ import * as sql from 'mssql';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer, DataApiRequest } from '../dataInterfaces';
 
 import { DataApi, DataApiResponse } from './DataApi';
-import { ActualSQLServerDataProvider } from './SQLServerDataProvider';
+
+import { Pool, QueryResult } from 'pg';
+import { ActualSQLServerDataProvider, SQLConnectionProvider, SQLCommand, SQLQueryResult } from './SQLDatabaseShared';
 
 
 export class PostgresDataProvider implements DataProviderFactory {
 
-    pool: sql.ConnectionPool;
-    constructor(user: string, password: string, server: string, database: string, instanceName: string) {
-      var config: sql.config = {
-        user, password, server, database
-      };
-      if (instanceName)
-        config.options = { instanceName };
-      this.pool = new sql.ConnectionPool(config);
-      this.pool.connect();
-    }
-  
-  
-    provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
-      return undefined;
-      //return new ActualSQLServerDataProvider(factory, name, this.pool, factory);
-    }
-  
-  
+
+  constructor(private pool: Pool) {
+
   }
+
+
+  provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
+    return new ActualSQLServerDataProvider(factory, name, new PostgresBridgeToSQLConnection(this.pool), factory);
+  }
+
+
+}
+class PostgresBridgeToSQLConnection implements SQLConnectionProvider {
+  constructor(private pool: Pool) {
+
+  }
+  createCommand(): SQLCommand {
+    return new PostgrestBridgeToSQLCommand(this.pool);
+  }
+}
+class PostgrestBridgeToSQLCommand implements SQLCommand {
+  constructor(private pool: Pool) {
+
+  }
+  values: any[]=[];
+  addParameterToCommandAndReturnParameterName(col: Column<any>, val: any): string {
+    this.values.push(val);
+    return '$' + this.values.length;
+  }
+  query(sql: string): Promise<SQLQueryResult> {
+    return this.pool.query(sql, this.values).then(r => new PostgressBridgeToSQLQueryResult(r));
+  }
+}
+class PostgressBridgeToSQLQueryResult implements SQLQueryResult {
+  getColumnIndex(name: string): number {
+    for (let i = 0; i < this.r.fields.length; i++) {
+      if (this.r.fields[i].name.toLowerCase() == name.toLowerCase())
+        return i;
+    }
+    return -1;
+  }
+  constructor(private r: QueryResult) {
+    this.rows = r.rows;
+  }
+  rows: any[];
+
+}
