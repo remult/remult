@@ -4,7 +4,7 @@
 
 
 import { dataAreaSettings, Entity, Column, CompoundIdColumn } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from './dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from './dataInterfaces1';
 
 
 import { isFunction, makeTitle } from './common';

@@ -1,7 +1,7 @@
 import { environment } from './../environments/environment';
 
 import { Entity, EntitySource, DateTimeDateStorage } from './../utils/utils';
-import { DataProvider, DataProviderFactory } from './../utils/dataInterfaces';
+import { DataProvider, DataProviderFactory } from './../utils/dataInterfaces1';
 import * as radweb from '../utils/utils';
 
 export class Categories extends radweb.Entity<number> {

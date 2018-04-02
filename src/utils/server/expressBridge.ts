@@ -4,7 +4,7 @@ import { Entity } from './../utils';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { Action } from './../restDataProvider';
-import { DataApiRequest, DataApiServer } from '../dataInterfaces';
+import { DataApiRequest, DataApiServer } from '../dataInterfaces1';
 
 export class ExpressBridge<AuthInfoType> implements DataApiServer<AuthInfoType> {
   addAllowedHeader(name: string): void {

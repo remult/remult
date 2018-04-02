@@ -1,5 +1,5 @@
 import { Entity } from './utils';
-import { DataProvider, FindOptions } from './dataInterfaces';
+import { DataProvider, FindOptions } from './dataInterfaces1';
 export interface JsonStorage {
   doWork<T>(what: (dp: DataProvider, save: () => void) => T): T;
 }

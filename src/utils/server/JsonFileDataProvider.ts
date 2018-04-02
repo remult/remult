@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { dataAreaSettings } from '../utils';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from '../dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions } from '../dataInterfaces1';
 
 
 import { isFunction, makeTitle } from '../common';

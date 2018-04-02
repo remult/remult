@@ -1,5 +1,5 @@
 import { Column, Entity, Sort, SortSegment } from './utils';
-import { FindOptions } from './dataInterfaces';
+import { FindOptions } from './dataInterfaces1';
 
 
 

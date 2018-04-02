@@ -1,7 +1,7 @@
 import { pageArray, InMemoryDataProvider } from '../inMemoryDatabase';
 import { Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort } from './../utils';
 import * as sql from 'mssql';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer, DataApiRequest } from '../dataInterfaces';
+import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer, DataApiRequest } from '../dataInterfaces1';
 
 import { DataApi, DataApiResponse } from './DataApi';
 

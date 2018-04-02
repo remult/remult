@@ -1,4 +1,4 @@
-import { FindOptionsPerEntity } from './dataInterfaces';
+import { FindOptionsPerEntity } from './dataInterfaces1';
 import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn } from '../';
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage } from './utils';
