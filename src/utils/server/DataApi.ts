@@ -1,7 +1,7 @@
 import { DataApiError } from './DataApi';
 
 import { Entity, AndFilter, Sort } from './../utils';
-import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest } from './../DataInterfaces';
+import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest } from './../dataInterfaces';
 
 export class DataApi<T extends Entity<any>> {
   getRoute() {

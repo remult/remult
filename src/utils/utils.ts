@@ -7,7 +7,7 @@ import {
   DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
   , ColumnStorage,
   EntitySourceFindOptions
-} from './DataInterfaces';
+} from './dataInterfaces';
 import { unescapeIdentifier } from '@angular/compiler';
 
 

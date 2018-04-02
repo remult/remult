@@ -1,6 +1,6 @@
 
 import { Sort, Column, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
-import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest } from './DataInterfaces';
+import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest } from './dataInterfaces';
 import { DataApiResponse } from '../utils/server/DataApi';
 
 export class RestDataProvider implements DataProviderFactory {

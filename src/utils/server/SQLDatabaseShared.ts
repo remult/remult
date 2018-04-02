@@ -1,5 +1,5 @@
 import { Column, CompoundIdColumn, Entity } from "../..";
-import { FilterConsumer, DataProvider, FindOptions } from "../DataInterfaces";
+import { FilterConsumer, DataProvider, FindOptions } from "../dataInterfaces";
 import { pageArray } from "../inMemoryDatabase";
 
 

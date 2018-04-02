@@ -1,4 +1,4 @@
-import { DataProviderFactory } from './../utils/DataInterfaces';
+import { DataProviderFactory } from './../utils/dataInterfaces';
 import { RestDataProvider } from './../utils/restDataProvider';
 import { InMemoryDataProvider } from './../utils/inMemoryDatabase';
 import { LocalStorageDataProvider } from './../utils/localStorageDataProvider';
