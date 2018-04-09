@@ -14,7 +14,7 @@ import { isFunction } from '../common';
 
   </div>
   <div  >
-  <div class="pull-right" *ngIf="settings && records">
+  <div class="pull-right" *ngIf="settings && records && displayVCR">
     <button class="btn glyphicon glyphicon-pencil btn-primary" *ngIf="settings.columns.allowDesignMode" (click)="settings.columns.designMode=!settings.columns.designMode"></button>
     <button class="btn glyphicon glyphicon-chevron-left" *ngIf="settings.page>1" (click)="settings.previousPage()"></button>
     <button class="btn glyphicon glyphicon-chevron-right" *ngIf="records.items&& records.items.length>0" (click)="settings.nextPage()"></button>
@@ -127,6 +127,8 @@ export class DataGridComponent implements OnChanges {
 
 
   @Input() displayButtons = true;
+  @Input() displayVCR = true;
+  
   @Input() records: any;
   @Input() settings: GridSettings<any>;
   isFiltered(c: Column<any>) {
