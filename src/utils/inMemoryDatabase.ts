@@ -30,7 +30,7 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
   constructor(private factory: () => T, private rows?: any[]) {
     if (!rows)
       rows = [];
-    console.log('1234', rows);
+    
   }
 
   async find(options?: FindOptions): Promise<any[]> {
