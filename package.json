@@ -25,9 +25,10 @@
     "copyPackage": "copyfiles package.json dist",
     "copyToEnvWeb": "copyfiles -u 1 ./dist/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/angular/* ../env.web/frontend/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../env.web/frontend/node_modules/radweb/",
     "copyToStarterKit": "copyfiles -u 1 ./dist/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/angular/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../radweb-starterkit/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/server/* ../radweb-starterkit/node_modules/radweb/",
+    "copyToHugMoms": "copyfiles -u 1 ./dist/* ../hug-moms/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../hug-moms/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/angular/* ../hug-moms/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../hug-moms/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/server/* ../hug-moms/node_modules/radweb/",
     "copyToIssueTracker": "copyfiles -u 1 ./dist/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/angular/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/bundles/* ../issue-tracker/node_modules/radweb/ && copyfiles -u 1  ./dist/utils/server/* ../issue-tracker/node_modules/radweb/",
     "publish-to-npm": "npm run build && npm run addVersion && npm run copyPackage && npm run package && cd dist && npm publish",
-    "testPub": "npm run build && npm run copyPackage && npm run package && npm run copyToEnvWeb"
+    "testPub": "npm run build && npm run copyPackage && npm run package && npm run copyToHugMoms"
   },
   "dependencies": {
     "@angular/animations": "^5.2.0",

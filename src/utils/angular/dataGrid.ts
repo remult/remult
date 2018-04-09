@@ -48,7 +48,7 @@ import { isFunction } from '../common';
 
 
           </th>
-          <th *ngIf="rowButtons&& rowButtons.length>0" [class.col-xs-1]="rowButtons&&rowButtons.length<3" [class.col-xs-2]="rowButtons.length>=3"></th>
+          <th *ngIf="rowButtons&& rowButtons.length>0&&displayButtons" [class.col-xs-1]="rowButtons&&rowButtons.length<3" [class.col-xs-2]="rowButtons.length>=3"></th>
         </tr>
       </thead>
       <tbody>
@@ -57,7 +57,7 @@ import { isFunction } from '../common';
           <td *ngFor="let map of settings.columns.getGridColumns()" [className]="settings.columns._getColumnClass(map,record)">
             <data-control [settings]="settings.columns" [map]="map" [record]="record"></data-control>
           </td>
-          <td *ngIf="rowButtons.length>0" style="white-space:nowrap">
+          <td *ngIf="rowButtons.length>0&&displayButtons" style="white-space:nowrap">
             <span *ngFor="let b of rowButtons">
               <button class="btn {{getButtonCssClass(b,record) }}" *ngIf="b.visible(record)" (click)="b.click(record)">{{b.name}}</button>
             </span>
@@ -126,7 +126,7 @@ table select {
 export class DataGridComponent implements OnChanges {
 
 
-
+  @Input() displayButtons = true;
   @Input() records: any;
   @Input() settings: GridSettings<any>;
   isFiltered(c: Column<any>) {
