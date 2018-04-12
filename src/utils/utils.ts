@@ -945,7 +945,7 @@ export class Column<dataType>  {
   get displayValue() {
     if (this.value)
       return this.value.toString();
-      return '';
+    return '';
   }
   protected __processValue(value: dataType) {
     return value;
@@ -1596,9 +1596,12 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
   }
   __getColumn(map: ColumnSetting<any>, record: Entity<any>) {
+    let result: Column<any>;
     if (record)
-      return record.__getColumn(map.column);
-    return map.column;
+      result = record.__getColumn(map.column);
+    if (!result)
+      result=  map.column;
+      return result;
   }
   __dataControlStyle(map: ColumnSetting<any>): string {
 
