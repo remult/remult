@@ -469,7 +469,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
   allowInsert?: boolean,
   allowDelete?: boolean,
   hideDataArea?: boolean,
-  confirmDelete?: (yes: () => void) => void;
+  confirmDelete?: (r:rowType, yes: () => void) => void;
 
   columnSettings?: (row: rowType) => ColumnSetting<rowType>[],
   areas?: { [areaKey: string]: ColumnSetting<any>[] },

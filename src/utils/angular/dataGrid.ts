@@ -238,7 +238,7 @@ export class DataGridComponent implements OnChanges {
         visible: (r) => !isNewRow(r),
         click: r => {
           if (this.settings.setCurrentRow && this.settings.settings.confirmDelete) {
-            this.settings.settings.confirmDelete(() => this.catchErrors(r.delete(), r));
+            this.settings.settings.confirmDelete(r, () => this.catchErrors(r.delete(), r));
           }
           else
             this.catchErrors(r.delete(), r);
