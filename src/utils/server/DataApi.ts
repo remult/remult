@@ -12,9 +12,12 @@ export class DataApi<T extends Entity<any>> {
   constructor(private rowType: T, private options?: DataApiSettings<T>) {
     if (!options)
       this.options = {};
-    this.excludedColumns.add(...this.options.excludeColumns);
-    this.readonlyColumns.add(...this.options.readonlyColumns);
-    this.readonlyColumns.add(...this.options.excludeColumns);
+    if (this.options.readonlyColumns)
+      this.readonlyColumns.add(...this.options.readonlyColumns(rowType));
+    if (this.options.excludeColumns) {
+      this.excludedColumns.add(...this.options.excludeColumns(rowType));
+      this.readonlyColumns.add(...this.options.excludeColumns(rowType));
+    }
 
   }
   private excludedColumns = new ColumnHashSet();
@@ -152,8 +155,8 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
-  excludeColumns?: Column<any>[],
-  readonlyColumns?: Column<any>[],
+  excludeColumns?: (r: rowType) => Column<any>[],
+  readonlyColumns?: (r: rowType) => Column<any>[],
   name?: string,
   get?: FindOptionsPerEntity<rowType>,
   validate?: (r: rowType) => void;

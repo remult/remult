@@ -146,7 +146,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
 
-    var api = new DataApi(c, { excludeColumns: [c.categoryName] });
+    var api = new DataApi(c, { excludeColumns:c=> [c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -348,7 +348,7 @@ describe("data api", () => {
   });
   itAsync("put updates and excluded columns", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true,excludeColumns:[c.categoryName] });
+    var api = new DataApi(c, { allowUpdate: true,excludeColumns:c=>[c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -365,7 +365,7 @@ describe("data api", () => {
   });
   itAsync("put updates and readonly columns", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true,readonlyColumns:[c.categoryName] });
+    var api = new DataApi(c, { allowUpdate: true,readonlyColumns:c=>[c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
