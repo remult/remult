@@ -904,8 +904,12 @@ describe("compund id", () => {
     c.setSource(mem);
 
     var r = await c.source.find();
+    expect (r[0].c.value).toBe(111);
     r[0].c.value = 55;
+    expect (r[0].c.originalValue).toBe(111);
     let saved = await r[0].save();
+    
+    expect (r[0].c.value).toBe(55);
 
 
     expect(mem.rows[c.__getName()][0].c).toBe(55);

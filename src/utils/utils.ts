@@ -942,6 +942,9 @@ export class Column<dataType>  {
   get value() {
     return this.__valueProvider.getValue(this.jsonName);
   }
+  get originalValue() {
+    return this.__valueProvider.getOriginalValue(this.jsonName);
+  }
   get displayValue() {
     if (this.value)
       return this.value.toString();
@@ -973,6 +976,11 @@ class dummyColumnStorage implements ColumnValueProvider {
   public getValue(key: string): any {
     return this._val;
   }
+  public getOriginalValue(key: string): any {
+    return this._val;
+  }
+
+
 
   public setValue(key: string, value: string): void {
     this._val = value;
@@ -1484,6 +1492,9 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
   getValue(key: string) {
     return this.data[key];
+  }
+  getOriginalValue(key: string) {
+    return this.originalData[key];
   }
   setValue(key: string, value: any): void {
     this.data[key] = value;

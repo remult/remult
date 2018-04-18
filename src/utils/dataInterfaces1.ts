@@ -37,6 +37,7 @@ export interface DataProviderFactory {
 }
 export interface ColumnValueProvider {
   getValue(key: string): any;
+  getOriginalValue(key: string): any;
   setValue(key: string, value: any): void;
 }
 
