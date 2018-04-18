@@ -1,6 +1,6 @@
 import { DataApiError } from './DataApi';
 
-import { Entity, AndFilter, Sort } from './../utils';
+import { Entity, AndFilter, Sort, Column, ColumnHashSet } from './../utils';
 import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest } from './../dataInterfaces1';
 
 export class DataApi<T extends Entity<any>> {
@@ -12,10 +12,16 @@ export class DataApi<T extends Entity<any>> {
   constructor(private rowType: T, private options?: DataApiSettings<T>) {
     if (!options)
       this.options = {};
+    this.excludedColumns.add(...this.options.excludeColumns);
+    this.readonlyColumns.add(...this.options.readonlyColumns);
+    this.readonlyColumns.add(...this.options.excludeColumns);
+
   }
+  private excludedColumns = new ColumnHashSet();
+  private readonlyColumns = new ColumnHashSet();
 
   async get(response: DataApiResponse, id: any) {
-    await this.doOnId(response, id, async row => response.success(await row.__toPojo()));
+    await this.doOnId(response, id, async row => response.success(await row.__toPojo(this.excludedColumns)));
   }
   async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
     try {
@@ -77,7 +83,7 @@ export class DataApi<T extends Entity<any>> {
       }
       await this.rowType.source.find(findOptions)
         .then(async r => {
-          response.success(await Promise.all(r.map(async y =>await  y.__toPojo())));
+          response.success(await Promise.all(r.map(async y => await y.__toPojo(this.excludedColumns))));
         });
     }
     catch (err) {
@@ -110,9 +116,9 @@ export class DataApi<T extends Entity<any>> {
       return;
     }
     await this.doOnId(response, id, async row => {
-      row.__fromPojo(body);
+      row.__fromPojo(body, this.readonlyColumns);
       await row.save(this.options.validate, this.options.onSavingRow);
-      response.success(await row.__toPojo());
+      response.success(await row.__toPojo(this.excludedColumns));
     });
   }
   async delete(response: DataApiResponse, id: any) {
@@ -133,9 +139,9 @@ export class DataApi<T extends Entity<any>> {
     try {
 
       let r = this.rowType.source.createNewItem();
-      r.__fromPojo(body);
+      r.__fromPojo(body, this.readonlyColumns);
       await r.save(this.options.validate, this.options.onSavingRow);
-      response.created(await r.__toPojo());
+      response.created(await r.__toPojo(this.excludedColumns));
     } catch (err) {
       response.error(err);
     }
@@ -146,6 +152,8 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
+  excludeColumns?: Column<any>[],
+  readonlyColumns?: Column<any>[],
   name?: string,
   get?: FindOptionsPerEntity<rowType>,
   validate?: (r: rowType) => void;
@@ -159,7 +167,7 @@ export interface DataApiResponse {
   notFound(): void;
   error(data: DataApiError): void;
   methodNotAllowed(): void;
-  forbidden():void;
+  forbidden(): void;
 
 }
 

@@ -1201,21 +1201,23 @@ export class Entity<idType> {
   wasChanged() {
     return this.__entityData.wasChanged();
   }
-  async __toPojo(): Promise<any> {
+  async __toPojo(excludeColumns: ColumnHashSet): Promise<any> {
     let r = {};
     await Promise.all(this.__iterateColumns().map(async c => {
       await c.__calcVirtuals();
     }));
     this.__iterateColumns().forEach(c => {
-      c.__addToPojo(r);
+      if (!excludeColumns.contains(c))
+        c.__addToPojo(r);
     });
     return r;
 
   }
-  __fromPojo(r: any): any {
+  __fromPojo(r: any, excludeColumns: ColumnHashSet): any {
 
     this.__iterateColumns().forEach(c => {
-      c.__loadFromToPojo(r);
+      if (!excludeColumns.contains(c))
+        c.__loadFromToPojo(r);
     });
 
 
@@ -1278,6 +1280,17 @@ export class Entity<idType> {
 
   }
 
+}
+export class ColumnHashSet {
+  private _names: string[] = [];
+  add(...columns: Column<any>[]) {
+    if (columns)
+      for (let c of columns)
+        this._names.push(c.__getMemberName());
+  }
+  contains(column: Column<any>) {
+    return this._names.indexOf(column.__getMemberName()) >= 0;
+  }
 }
 export interface LookupCache<T extends Entity<any>> {
   key: string;
@@ -1600,8 +1613,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
     if (record)
       result = record.__getColumn(map.column);
     if (!result)
-      result=  map.column;
-      return result;
+      result = map.column;
+    return result;
   }
   __dataControlStyle(map: ColumnSetting<any>): string {
 
