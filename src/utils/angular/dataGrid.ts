@@ -128,7 +128,7 @@ export class DataGridComponent implements OnChanges {
 
   @Input() displayButtons = true;
   @Input() displayVCR = true;
-  
+
   @Input() records: any;
   @Input() settings: GridSettings<any>;
   isFiltered(c: Column<any>) {
@@ -237,7 +237,12 @@ export class DataGridComponent implements OnChanges {
         name: '',
         visible: (r) => !isNewRow(r),
         click: r => {
-          this.catchErrors(r.delete(), r);
+          if (this.settings.setCurrentRow && this.settings.settings.confirmDelete) {
+            this.settings.settings.confirmDelete(() => this.catchErrors(r.delete(), r));
+          }
+          else
+            this.catchErrors(r.delete(), r);
+
         },
         cssClass: "btn-danger glyphicon glyphicon-trash"
       });

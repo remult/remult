@@ -142,7 +142,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
 
 export class GridSettings<rowType extends Entity<any>>  {
-  constructor(private entity?: rowType, settings?: IDataSettings<rowType>) {
+  constructor(private entity?: rowType,public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entity);
     if (entity)
       this.filterHelper.filterRow = entity.source.createNewItem();
@@ -469,6 +469,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
   allowInsert?: boolean,
   allowDelete?: boolean,
   hideDataArea?: boolean,
+  confirmDelete?: (yes: () => void) => void;
 
   columnSettings?: (row: rowType) => ColumnSetting<rowType>[],
   areas?: { [areaKey: string]: ColumnSetting<any>[] },
