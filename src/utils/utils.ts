@@ -966,7 +966,7 @@ export class Column<dataType>  {
   }
   __loadFromToPojo(pojo: any) {
     let x = pojo[this.jsonName];
-    if (x)
+    if (x!=undefined)
       this.value = x;
   }
 }

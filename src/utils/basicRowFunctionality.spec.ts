@@ -1,5 +1,5 @@
 
-import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage, DataList, ColumnHashSet } from './utils';
+import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage, DataList, ColumnHashSet, BoolColumn } from './utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from './server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase';
@@ -98,7 +98,7 @@ describe('Test basic row functionality', () => {
     expect(y.id).toBe(1);
     expect(y.name).toBe('noam', JSON.stringify(y));
     y.name = 'yael';
-    x.__fromPojo(y,new ColumnHashSet());
+    x.__fromPojo(y, new ColumnHashSet());
     expect(x.name1.value).toBe('yael');
 
   });
@@ -146,7 +146,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
 
-    var api = new DataApi(c, { excludeColumns:c=> [c.categoryName] });
+    var api = new DataApi(c, { excludeColumns: c => [c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -348,7 +348,7 @@ describe("data api", () => {
   });
   itAsync("put updates and excluded columns", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true,excludeColumns:c=>[c.categoryName] });
+    var api = new DataApi(c, { allowUpdate: true, excludeColumns: c => [c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -365,7 +365,7 @@ describe("data api", () => {
   });
   itAsync("put updates and readonly columns", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true,readonlyColumns:c=>[c.categoryName] });
+    var api = new DataApi(c, { allowUpdate: true, readonlyColumns: c => [c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -904,12 +904,12 @@ describe("compund id", () => {
     c.setSource(mem);
 
     var r = await c.source.find();
-    expect (r[0].c.value).toBe(111);
+    expect(r[0].c.value).toBe(111);
     r[0].c.value = 55;
-    expect (r[0].c.originalValue).toBe(111);
+    expect(r[0].c.originalValue).toBe(111);
     let saved = await r[0].save();
-    
-    expect (r[0].c.value).toBe(55);
+
+    expect(r[0].c.value).toBe(55);
 
 
     expect(mem.rows[c.__getName()][0].c).toBe(55);
@@ -1004,7 +1004,16 @@ describe("test date storage", () => {
     expect(d.getDate()).toBe(16);
 
   });
-
+});
+describe("test bool value", () => {
+  it("should work", () => {
+    let bc = new BoolColumn();
+    bc.jsonName = 'x';
+    bc.__loadFromToPojo({ 'x': true });
+    expect(bc.value).toBe(true);
+    bc.__loadFromToPojo({ 'x': false });
+    expect(bc.value).toBe(false);
+  });
 });
 class CompoundIdEntity extends Entity<string>
 {
