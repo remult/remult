@@ -1535,6 +1535,8 @@ export class DateColumn extends Column<string>{
   }
   static dateToString(val: Date): string {
     var d = val as Date;
+    if (!d)
+    return '';
     let month = addZeros(d.getMonth() + 1),
       day = addZeros(d.getDate()),
       year = d.getFullYear();
