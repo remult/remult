@@ -566,6 +566,7 @@ describe("test datetime column", () => {
     var x = new DateColumn();
     x.value = null;
     expect(DateColumn.dateToString(null)).toBe('');
+    expect(DateTimeColumn.dateToString(null)).toBe('');
     expect(x.displayValue).toBe('');
   });
   it("displays empty date well empty", () => {

@@ -1573,6 +1573,8 @@ export class DateTimeColumn extends Column<string>{
   }
   static dateToString(val: Date): string {
     var d = val as Date;
+    if (!d)
+    return '';
     let
       hours = addZeros(d.getHours()),
       minutes = addZeros(d.getMinutes()),
