@@ -72,7 +72,7 @@ export class PostgrestSchemaBuilder {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
-                        result = this.addColumnSqlSyntax(x);
+                        result += this.addColumnSqlSyntax(x);
                         if (x == e.__idColumn)
                             result += ' primary key';
                     }
