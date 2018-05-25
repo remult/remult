@@ -142,7 +142,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
 
 export class GridSettings<rowType extends Entity<any>>  {
-  constructor(private entity?: rowType,public settings?: IDataSettings<rowType>) {
+  constructor(private entity?: rowType, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entity);
     if (entity)
       this.filterHelper.filterRow = entity.source.createNewItem();
@@ -469,7 +469,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
   allowInsert?: boolean,
   allowDelete?: boolean,
   hideDataArea?: boolean,
-  confirmDelete?: (r:rowType, yes: () => void) => void;
+  confirmDelete?: (r: rowType, yes: () => void) => void;
 
   columnSettings?: (row: rowType) => ColumnSetting<rowType>[],
   areas?: { [areaKey: string]: ColumnSetting<any>[] },
@@ -966,7 +966,7 @@ export class Column<dataType>  {
   }
   __loadFromToPojo(pojo: any) {
     let x = pojo[this.jsonName];
-    if (x!=undefined)
+    if (x != undefined)
       this.value = x;
   }
 }
@@ -1536,7 +1536,7 @@ export class DateColumn extends Column<string>{
   static dateToString(val: Date): string {
     var d = val as Date;
     if (!d)
-    return '';
+      return '';
     let month = addZeros(d.getMonth() + 1),
       day = addZeros(d.getDate()),
       year = d.getFullYear();
@@ -1568,13 +1568,14 @@ export class DateTimeColumn extends Column<string>{
     this.value = DateTimeColumn.dateToString(val);
   }
   static stringToDate(val: string) {
-
+    if (val == '')
+      return null;
     return new Date(val);
   }
   static dateToString(val: Date): string {
     var d = val as Date;
     if (!d)
-    return '';
+      return '';
     let
       hours = addZeros(d.getHours()),
       minutes = addZeros(d.getMinutes()),
