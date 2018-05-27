@@ -825,6 +825,16 @@ export class Column<dataType>  {
 
     }
   }
+  private _entity: Entity<any>;
+  __setEntity(e: Entity<any>) {
+    this._entity = e;
+  }
+  get entity() { return this._entity.lookup; }
+  lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter?: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
+    if (!filter)
+      filter = <any> this ;
+    return this._entity.lookup(lookupEntity, filter);
+  }
   __isVirtual() {
     if (this.__settings && this.__settings.virtualData)
       return true;
@@ -1242,6 +1252,7 @@ export class Entity<idType> {
     y.__valueProvider = this.__entityData;
     if (this.__columns.indexOf(y) < 0)
       this.__columns.push(y);
+    y.__setEntity(this);
   }
   private __columns: Column<any>[] = [];
   __getColumn<T>(col: Column<T>) {
