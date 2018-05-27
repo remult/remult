@@ -832,7 +832,7 @@ export class Column<dataType>  {
   get entity() { return this._entity.lookup; }
   lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter?: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
     if (!filter)
-      filter = <any> this ;
+      filter = <any>this;
     return this._entity.lookup(lookupEntity, filter);
   }
   __isVirtual() {
@@ -1733,13 +1733,18 @@ export class ColumnCollection<rowType extends Entity<any>> {
             if (!p.caption)
               p.caption = p.id;
             result.push(p);
+          } else {
+            let x = item as DropDownItem;
+            if (x && x.id) {
+              result.push(x);
+            }
           }
         }
       };
       if (orig instanceof Array) {
         populateBasedOnArray(orig);
       }
-      if (s.dropDown.source) {
+      else if (s.dropDown.source) {
         if (s.dropDown.source instanceof Entity) {
           return new DataList(s.dropDown.source).get({ limit: 5000 }).then(arr =>
             populateBasedOnArray(arr));

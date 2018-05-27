@@ -245,7 +245,7 @@ describe("test row provider", () => {
       c.id.value = 2;
       c.categoryName.value = 'yael';
     });
-    let cc = new ColumnCollection(() => c, () => true, undefined);
+    let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
     let cs = { dropDown: { source: c } } as ColumnSetting<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
@@ -253,6 +253,19 @@ describe("test row provider", () => {
     expect(cs.dropDown.items[1].id).toBe(2);
     expect(cs.dropDown.items[0].caption).toBe('noam');
     expect(cs.dropDown.items[1].caption).toBe('yael');
+
+  });
+  itAsync("column drop down with items", async () => {
+    let c = new Categories();
+
+    let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
+    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 2, caption: 'b' }] } } as ColumnSetting<Categories>
+    await cc.buildDropDown(cs);
+    expect(cs.dropDown.items.length).toBe(2);
+    expect(cs.dropDown.items[0].id).toBe(1);
+    expect(cs.dropDown.items[1].id).toBe(2);
+    expect(cs.dropDown.items[0].caption).toBe('a');
+    expect(cs.dropDown.items[1].caption).toBe('b');
 
   });
   itAsync("column drop down 1", async () => {
@@ -267,7 +280,7 @@ describe("test row provider", () => {
       c.categoryName.value = 'yael';
     });
     let c1 = new Categories();
-    let cc = new ColumnCollection(() => c, () => true, undefined);
+    let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
     let cs = { column: c1.id, dropDown: { source: c } } as ColumnSetting<Categories>
     await cc.add(cs);
 
@@ -293,7 +306,7 @@ describe("test row provider", () => {
   it("get value function works", () => {
     let a = new NumberColumn();
     a.value = 5;
-    var cc = new ColumnCollection(undefined, () => true, undefined);
+    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe('5');
 
@@ -301,14 +314,14 @@ describe("test row provider", () => {
   it("get value function works", () => {
     let a = new NumberColumn();
     a.value = 5;
-    var cc = new ColumnCollection(undefined, () => true, undefined);
+    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add({ column: a, getValue: () => a.value * 2 });
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
   });
   it("get value function works", () => {
     let a = new NumberColumn({ getValue: v => v *= 3 });
     a.value = 5;
-    var cc = new ColumnCollection(undefined, () => true, undefined);
+    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(15);
   });
@@ -317,7 +330,7 @@ describe("test row provider", () => {
 describe("column collection", () => {
   itAsync("uses a saparate column", async () => {
     let c = new Categories();
-    var cc = new ColumnCollection(() => c, () => false, undefined);
+    var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.items[0] === c.categoryName).toBe(false);
     expect(cc.items[0] === cc.items[0].column).toBe(false);
@@ -327,7 +340,7 @@ describe("column collection", () => {
   })
   itAsync("jsonSaverIsNice", async () => {
     let c = new Categories();
-    var cc = new ColumnCollection(() => c, () => false, undefined);
+    var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe("x.categoryName");
     cc.items[0].caption = 'name';
@@ -338,7 +351,7 @@ describe("column collection", () => {
   })
   itAsync("works ok with filter", async () => {
     let c = new Categories();
-    var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }));
+    var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }), () => true);
     await cc.add(c.id);
     cc.filterHelper.filterColumn(cc.items[0].column, false);
     expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
