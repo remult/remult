@@ -84,7 +84,7 @@ export class PostgrestSchemaBuilder {
     private addColumnSqlSyntax(x: Column<any>) {
         let result = x.__getDbName();
         if (x instanceof DateTimeColumn)
-            result += " date";
+            result += " timestamp";
         else if (x instanceof BoolColumn)
             result += " boolean default false not null";
         else if (x instanceof NumberColumn)

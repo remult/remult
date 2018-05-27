@@ -70,8 +70,11 @@ async function test() {
     await sb.CreateIfNotExist(new testEntity());
 
     let x = new testEntity();
+    x.datet.dateValue = new Date();
+    await x.save();
     var r = await x.source.find({});
-    r[0].save();
+    r[0].datet.dateValue = new Date();
+    await r[0].save();
     
 
 }
