@@ -1735,7 +1735,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
             result.push(p);
           } else {
             let x = item as DropDownItem;
-            if (x && x.id) {
+            if (x && x.id!=undefined) {
               result.push(x);
             }
           }

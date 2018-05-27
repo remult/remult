@@ -259,11 +259,11 @@ describe("test row provider", () => {
     let c = new Categories();
 
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 2, caption: 'b' }] } } as ColumnSetting<Categories>
+    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } } as ColumnSetting<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
-    expect(cs.dropDown.items[1].id).toBe(2);
+    expect(cs.dropDown.items[1].id).toBe(0);
     expect(cs.dropDown.items[0].caption).toBe('a');
     expect(cs.dropDown.items[1].caption).toBe('b');
 
