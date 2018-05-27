@@ -9,7 +9,7 @@ import { Component, Input } from '@angular/core';
 <span *ngIf="!_getEditable()" >{{settings._getColDisplayValue(map,record)}}</span>
 <div *ngIf="_getEditable()" class="" [class.has-error]="settings._getError(map,record)" [style.width]="dataControlStyle()">
     <div >
-        <div [class.input-group]="showDescription()||map.click" *ngIf="!isSelect()">
+        <div [class.input-group]="showDescription()||map.click" *ngIf="!isSelect()" style="width:100%">
             <div class="input-group-btn" *ngIf="map.click">
                 <button type="button" class="btn btn-default" (click)="settings._click(map,record)" > <span class="glyphicon glyphicon-chevron-down"></span></button>
             </div>

@@ -28,7 +28,43 @@ export class AppComponent {
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true,
-    get:{limit:100}
+    numOfColumnsInGrid: 2,
+    get: { limit: 100 },
+    hideDataArea: true,
+    columnSettings: c => [
+
+      c.id,
+      c.categoryName,
+      c.categoryName,
+      {
+        column: c.id,
+        getValue: c => c.id.value + ' blabla',
+        click: c => { }
+
+      },
+      {
+        column: c.id,
+        getValue: c => c.id.value + ' blabla',
+        click: c => { }
+
+      },
+      {
+        column: c.id,
+        getValue: c => c.id.value + ' blabla',
+
+
+      },
+      {
+        column: c.id,
+        getValue: c => c.id.value + ' blabla',
+      },
+      {
+        column: c.id,
+
+        click: c => { }
+
+      }
+    ]
   });
   myNumber = new NumberColumn({ caption: 'my number', value: 5 });
   myNumber1 = new NumberColumn({ caption: 'my number', value: 2 });
@@ -143,7 +179,7 @@ export class AppComponent {
   }
 }
 
-export abstract class ServerAction<inParam, outParam> extends Action<inParam, outParam,any>{
+export abstract class ServerAction<inParam, outParam> extends Action<inParam, outParam, any>{
   constructor(url?: string) {
     super('http://localhost:3000/', url);
   }

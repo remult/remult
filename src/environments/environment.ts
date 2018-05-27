@@ -11,6 +11,6 @@ const serverUrl= 'http://localhost:3001/';
 export const environment = {
   production: false,
   serverUrl,
-  //dataSource: new LocalStorageDataProvider() as DataProviderFactory
-  dataSource : new RestDataProvider(serverUrl+ 'dataapi') as DataProviderFactory
+  dataSource: new LocalStorageDataProvider() as DataProviderFactory
+  //dataSource : new RestDataProvider(serverUrl+ 'dataapi') as DataProviderFactory
 };
