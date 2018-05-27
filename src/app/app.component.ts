@@ -45,13 +45,14 @@ export class AppComponent {
       {
         column: c.id,
         getValue: c => c.id.value + ' blabla',
-        click: c => { }
+        click: c => { },
+        hideDataOnInput:true
 
       },
       {
         column: c.id,
         getValue: c => c.id.value + ' blabla',
-
+        hideDataOnInput:true
 
       },
       {

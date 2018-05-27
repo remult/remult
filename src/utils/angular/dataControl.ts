@@ -13,7 +13,8 @@ import { Component, Input } from '@angular/core';
             <div class="input-group-btn" *ngIf="map.click">
                 <button type="button" class="btn btn-default" (click)="settings._click(map,record)" > <span class="glyphicon glyphicon-chevron-down"></span></button>
             </div>
-            <input class="form-control"  [(ngModel)]="_getColumn().value" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" />
+
+            <input class="form-control"  [(ngModel)]="_getColumn().value" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" *ngIf="!map.hideDataOnInput" />
             <div class="input-group-addon" style="width:60%;text-align:start" *ngIf="showDescription()">{{settings._getColDisplayValue(map,record)}}</div>
 
         </div>

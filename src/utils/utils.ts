@@ -408,7 +408,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     return this.restList.get(opt).then(() => {
 
 
-      if (this.restList.items.length == 0){
+      if (this.restList.items.length == 0) {
         this.setCurrentRow(undefined);
         this.columns.autoGenerateColumnsBasedOnData(this.entity);
       }
@@ -498,6 +498,7 @@ export interface ColumnSetting<rowType> {
   inputType?: string;
   designMode?: boolean;
   getValue?: (row: rowType) => any;
+  hideDataOnInput?: boolean;
   cssClass?: (string | ((row: rowType) => string));
   defaultValue?: (row: rowType) => any;
   onUserChangedValue?: (row: rowType) => void;
