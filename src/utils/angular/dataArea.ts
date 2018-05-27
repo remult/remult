@@ -56,7 +56,7 @@ export class DataAreaCompnent implements OnChanges {
     let cols = this.settings.columns.getNonGridColumns();
     if (cols == this.lastAllCols)
       return this.lastCols;
-      this.lastAllCols = cols;
+    this.lastAllCols = cols;
 
     let r: Array<ColumnSetting<any>[]> = [];
     this.lastCols = r;
@@ -70,7 +70,7 @@ export class DataAreaCompnent implements OnChanges {
 
     return this.lastCols;
   }
-  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined) };
+  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true) };
   @Input() labelWidth = 4;
   @Input() columns = 1;
 }
