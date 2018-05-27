@@ -1,7 +1,7 @@
-import { FindOptionsPerEntity } from './dataInterfaces1';
+import { FindOptionsPerEntity, DataColumnSettings } from './dataInterfaces1';
 import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn } from '../';
 
-import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage } from './utils';
+import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage, DropDownItem, ClosedListColumn } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync, Done } from './testHelper.spec';
@@ -11,6 +11,28 @@ import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
 import { DataAreaCompnent } from '../utils/angular/dataArea';
 
+export class LanguageColumn extends ClosedListColumn<Language> {
+  constructor() {
+    super(Language, 'שפה');
+  }
+ 
+ 
+
+}
+
+export class Language {
+  static Hebrew = new Language(0, 'עברית');
+  static Russian = new Language(10, 'רוסית');
+  static Amharit = new Language(20, 'אמהרית');
+  constructor(public id: number,
+    private caption: string) {
+
+  }
+  toString() {
+    return this.caption;
+  }
+
+}
 
 
 
@@ -37,6 +59,19 @@ async function insertFourRows(settings?: EntityOptions) {
     await i(3, 'maayan', 'y');
   }, settings);
 };
+
+describe("Closed List  column", () => {
+
+  it("Basic Operations", () => {
+    let x = new LanguageColumn();
+    x.value = 0;
+    expect(x.listValue).toBe(Language.Hebrew);
+    x.listValue = Language.Russian;
+    expect(x.value).toBe(10);
+
+    expect(x.getOptions().length).toBe(3);
+  });
+});
 
 describe("test row provider", () => {
   it("auto name", () => {

@@ -1604,6 +1604,9 @@ export class DateTimeColumn extends Column<string>{
 
 
 }
+
+
+
 export class NumberColumn extends Column<number>{
   constructor(settingsOrCaption?: DataColumnSettings<number, NumberColumn> | string) {
     super(settingsOrCaption);
@@ -1623,6 +1626,48 @@ export class BoolColumn extends Column<boolean>{
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';
+  }
+}
+export interface ClosedListItem {
+  id: number;
+  toString(): string;
+}
+export class ClosedListColumn<closedListType extends ClosedListItem> extends NumberColumn {
+  constructor(private closedListType: any, settingsOrCaption?: DataColumnSettings<number, NumberColumn> | string) {
+    super(settingsOrCaption);
+  }
+  getOptions(): DropDownItem[] {
+    let result = [];
+    for (let member in this.closedListType) {
+      let s = this.closedListType[member] as closedListType;
+      if (s && s.id != undefined) {
+        result.push({
+          id: s.id,
+          caption: s.toString()
+        })
+      }
+    }
+    console.log(result);
+    return result;
+  }
+  get listValue() {
+    return this.byId(this.value);
+  }
+  set listValue(val: closedListType) {
+    this.value = val.id;
+  }
+  get displayValue() {
+    if (this.listValue)
+      return this.listValue.toString();
+    return '';
+  }
+   byId(id: number): closedListType {
+    for (let member in this.closedListType) {
+      let s = this.closedListType[member] as closedListType;
+      if (s && s.id == id)
+        return  s;
+    }
+    return undefined;
   }
 }
 export class ColumnCollection<rowType extends Entity<any>> {
