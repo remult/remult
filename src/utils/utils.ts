@@ -126,7 +126,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
   constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
     if (columns == undefined) {
-      columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined);
+      columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined,()=>true);
       columns.numOfColumnsInGrid = 0;
       this.columns = columns;
 
@@ -147,7 +147,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     if (entity)
       this.filterHelper.filterRow = entity.source.createNewItem();
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper)
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper,()=>this.currentRow?true:false)
 
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
@@ -233,7 +233,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   noam: string;
 
   addArea(settings: IDataAreaSettings<rowType>) {
-    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper);
+    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper,()=>this.currentRow?true:false);
     col.numOfColumnsInGrid = 0;
 
     return new DataAreaSettings<rowType>(settings, col, this.entity);
@@ -1612,7 +1612,7 @@ export class BoolColumn extends Column<boolean>{
   }
 }
 export class ColumnCollection<rowType extends Entity<any>> {
-  constructor(public currentRow: () => Entity<any>, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>) {
+  constructor(public currentRow: () => Entity<any>, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>,private showArea:()=>boolean) {
 
     if (this.allowDesignMode == undefined) {
       if (location.search)
@@ -1621,8 +1621,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     }
   }
   __showArea() {
-    return true;
-    //return this.currentRow();
+    return this.showArea();
 
   }
   __getColumn(map: ColumnSetting<any>, record: Entity<any>) {
