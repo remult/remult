@@ -1584,6 +1584,8 @@ export class DateTimeColumn extends Column<string>{
   static stringToDate(val: string) {
     if (val == '')
       return null;
+    if (val == undefined)
+      return undefined;
     return new Date(val);
   }
   static dateToString(val: Date): string {
@@ -1661,11 +1663,11 @@ export class ClosedListColumn<closedListType extends ClosedListItem> extends Num
       return this.listValue.toString();
     return '';
   }
-   byId(id: number): closedListType {
+  byId(id: number): closedListType {
     for (let member in this.closedListType) {
       let s = this.closedListType[member] as closedListType;
       if (s && s.id == id)
-        return  s;
+        return s;
     }
     return undefined;
   }
@@ -1780,7 +1782,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
             result.push(p);
           } else {
             let x = item as DropDownItem;
-            if (x && x.id!=undefined) {
+            if (x && x.id != undefined) {
               result.push(x);
             }
           }

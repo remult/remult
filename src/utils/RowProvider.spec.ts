@@ -15,8 +15,8 @@ export class LanguageColumn extends ClosedListColumn<Language> {
   constructor() {
     super(Language, 'שפה');
   }
- 
- 
+
+
 
 }
 
@@ -604,6 +604,12 @@ describe("test datetime column", () => {
     x.dateValue = new Date(1976, 11, 16, 8, 55, 31, 65)
     expect(x.value).toBe('1976-12-16 08:55:31.065');
     expect(x.dateValue.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
+  });
+  it("stores well undefined", () => {
+    var x = new DateTimeColumn();
+    x.value = undefined;
+
+    expect(x.dateValue).toBe(undefined);
   });
   it("displays empty date well", () => {
     var x = new DateColumn();
