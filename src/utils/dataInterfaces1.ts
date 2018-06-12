@@ -5,6 +5,7 @@ import { FindOptions } from './dataInterfaces1';
 
 
 export interface DataProvider {
+  count(where: FilterBase): Promise<number>;
   find(options?: FindOptions): Promise<Array<any>>;
   update(id: any, data: any): Promise<any>;
   delete(id: any): Promise<void>;

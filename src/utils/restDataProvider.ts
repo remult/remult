@@ -1,6 +1,6 @@
 
 import { Sort, Column, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
-import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest } from './dataInterfaces1';
+import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest, FilterBase } from './dataInterfaces1';
 import { DataApiResponse } from '../utils/server/DataApi';
 
 export class RestDataProvider implements DataProviderFactory {
@@ -16,6 +16,14 @@ class ActualRestDataProvider implements DataProvider {
   constructor(private url: string, private addRequestHeader: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)
       this.addRequestHeader = () => { };
+  }
+  public count(where: FilterBase): Promise<number> {
+    let url = new UrlBuilder(this.url);
+    url.add("__action", "count");
+    if (where) {
+      where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+    }
+    return myFetch(url.url, undefined, this.addRequestHeader).then(r => r);
   }
   public find(options: FindOptions): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);
@@ -110,7 +118,7 @@ function onError(error: any) {
 }
 
 
-export abstract class Action<inParam, outParam,AuthInfoType>{
+export abstract class Action<inParam, outParam, AuthInfoType>{
   constructor(private serverUrl: string, private actionUrl?: string, private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)
       this.addRequestHeader = () => { };
@@ -130,18 +138,18 @@ export abstract class Action<inParam, outParam,AuthInfoType>{
 
   }
   protected abstract execute(info: inParam, req: DataApiRequest<AuthInfoType>): Promise<outParam>;
-  
+
   __register(reg: (url: string, what: ((data: any, req: DataApiRequest<AuthInfoType>, res: DataApiResponse) => void)) => void) {
     reg(this.actionUrl, async (d, req, res) => {
-     
-        try {
-          var r = await this.execute(d, req);
-          res.success(r);
-        }
-        catch (err) {
-          res.error(err);
-        }
-     
+
+      try {
+        var r = await this.execute(d, req);
+        res.success(r);
+      }
+      catch (err) {
+        res.error(err);
+      }
+
     });
   }
 }

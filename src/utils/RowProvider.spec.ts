@@ -194,6 +194,16 @@ describe("test row provider", () => {
     expect(rows[2].id.value).toBe(1);
     expect(rows[3].id.value).toBe(3);
   });
+  itAsync("counts", async () => {
+    let c = await insertFourRows();
+    let count = await c.source.count();
+    expect(count).toBe(4);
+  });
+  itAsync("counts with filter", async () => {
+    let c = await insertFourRows();
+    let count = await c.source.count(c.id.IsLessOrEqualTo(2));
+    expect(count).toBe(2);
+  });
   itAsync("test grid update", async () => {
     let c = await insertFourRows();
     let ds = new GridSettings(c, {

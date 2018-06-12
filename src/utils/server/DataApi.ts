@@ -26,52 +26,19 @@ export class DataApi<T extends Entity<any>> {
   async get(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => response.success(await row.__toPojo(this.excludedColumns)));
   }
+  async count(response: DataApiResponse, request: DataApiRequest<any>) {
+    let where = this.buildWhere(request);
+    response.success(await this.rowType.source.count(where));
+  }
+
   async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
     try {
       let findOptions: FindOptions = {};
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
-        if (this.options.get.where)
-          findOptions.where = this.options.get.where(this.rowType);
       }
-
+      findOptions.where = this.buildWhere(request);
       if (request) {
-
-
-        this.rowType.__iterateColumns().forEach(col => {
-
-          function addFilter(key: string, theFilter: (val: any) => FilterBase) {
-            let val = request.get(col.jsonName + key);
-            if (val != undefined) {
-              let f = theFilter(val);
-              if (f) {
-                if (findOptions.where)
-                  findOptions.where = new AndFilter(findOptions.where, f);
-                else
-                  findOptions.where = f;
-              }
-            }
-          }
-          addFilter('', val => col.isEqualTo(val));
-          addFilter('_gt', val => col.IsGreaterThan(val));
-          addFilter('_gte', val => col.IsGreaterOrEqualTo(val));
-          addFilter('_lt', val => col.IsLessThan(val));
-          addFilter('_lte', val => col.IsLessOrEqualTo(val));
-          addFilter('_ne', val => col.IsDifferentFrom(val));
-          addFilter('_contains', val => {
-            let c = col as StringColumn;
-            if (c != null && c.isContains) {
-              return c.isContains(val);
-            }
-          });
-          addFilter('_st', val => {
-            let c = col as StringColumn;
-            if (c != null && c.isContains) {
-              return c.isStartsWith(val);
-            }
-          });
-
-        });
 
         let sort = request.get("_sort");
         if (sort != undefined) {
@@ -107,6 +74,47 @@ export class DataApi<T extends Entity<any>> {
       response.error(err);
     }
   }
+  private buildWhere(request: DataApiRequest<any>) {
+    var where: FilterBase;
+    if (this.options && this.options.get && this.options.get.where)
+      where = this.options.get.where(this.rowType);
+    if (request) {
+      this.rowType.__iterateColumns().forEach(col => {
+        function addFilter(key: string, theFilter: (val: any) => FilterBase) {
+          let val = request.get(col.jsonName + key);
+          if (val != undefined) {
+            let f = theFilter(val);
+            if (f) {
+              if (where)
+                where = new AndFilter(where, f);
+              else
+                where = f;
+            }
+          }
+        }
+        addFilter('', val => col.isEqualTo(val));
+        addFilter('_gt', val => col.IsGreaterThan(val));
+        addFilter('_gte', val => col.IsGreaterOrEqualTo(val));
+        addFilter('_lt', val => col.IsLessThan(val));
+        addFilter('_lte', val => col.IsLessOrEqualTo(val));
+        addFilter('_ne', val => col.IsDifferentFrom(val));
+        addFilter('_contains', val => {
+          let c = col as StringColumn;
+          if (c != null && c.isContains) {
+            return c.isContains(val);
+          }
+        });
+        addFilter('_st', val => {
+          let c = col as StringColumn;
+          if (c != null && c.isContains) {
+            return c.isStartsWith(val);
+          }
+        });
+      });
+    }
+    return where;
+  }
+
   private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
 

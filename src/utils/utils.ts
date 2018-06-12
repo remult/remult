@@ -1407,6 +1407,9 @@ export class EntitySource<T extends Entity<any>>
         })
       });
   }
+  async count(where?:FilterBase){
+    return this._provider.count(where);
+  }
   __lookupCache: LookupCache<any>[] = [];
 
   async max(col: NumberColumn, filter?: FilterBase): Promise<number> {

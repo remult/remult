@@ -1,6 +1,7 @@
 import { Column, CompoundIdColumn, Entity, StringColumn } from "../..";
-import { FilterConsumer, DataProvider, FindOptions } from "../dataInterfaces1";
+import { FilterConsumer, DataProvider, FindOptions, FilterBase } from "../dataInterfaces1";
 import { pageArray } from "../inMemoryDatabase";
+import { rows } from "mssql";
 
 
 
@@ -44,7 +45,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.add(col, '%' + val + '%', 'like');
   }
   public isStartsWith(col: StringColumn, val: any): void {
-    this.add(col,  val + '%', 'like');
+    this.add(col, val + '%', 'like');
   }
   private add(col: Column<any>, val: any, operator: string) {
     if (this.where.length == 0) {
@@ -65,6 +66,22 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
 
   }
   private entity: Entity<any>;
+  public count(where: FilterBase): Promise<number> {
+    if (!this.entity)
+      this.entity = this.entityFactory();
+    let select = 'select count(*) from ' + this.entity.__getDbName();
+    let r = this.sql.createCommand();
+    if (where) {
+      let wc = new FilterConsumerBridgeToSqlRequest(r);
+      where.__applyToConsumer(wc);
+      select += wc.where;
+    }
+    console.log(select);
+    return r.query(select).then(r => {
+      return r.rows[0].count;
+    });
+
+  }
   find(options?: FindOptions): Promise<any[]> {
     if (!this.entity)
       this.entity = this.entityFactory();

@@ -32,7 +32,23 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
       rows = [];
 
   }
+  async count(where?: FilterBase): Promise<number> {
+    let rows = this.rows;
+    let j = 0;
+    for (let i = 0;  i < rows.length;i++) {
+      if (!where) {
+        j++;
+      }
+      else {
+        let x = new FilterConsumerBridgeToObject(rows[i]);
+        where.__applyToConsumer(x);
+        if (x.ok)
+          j++;
+      }
 
+    }
+    return j;
+  }
   async find(options?: FindOptions): Promise<any[]> {
 
     let rows = this.rows;

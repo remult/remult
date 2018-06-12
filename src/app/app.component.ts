@@ -24,6 +24,10 @@ export class AppComponent {
       });
 
   }
+   constructor(){
+    let c = new models.Categories();
+     c.source.count(c.id.IsGreaterOrEqualTo(2)).then(x=>this.count = x);
+  }
   x = new GridSettings(new models.Categories(), {
     allowUpdate: true,
     allowDelete: true,
@@ -67,6 +71,7 @@ export class AppComponent {
       }
     ]
   });
+  count=-1;
   myNumber = new NumberColumn({ caption: 'my number', value: 5 });
   myNumber1 = new NumberColumn({ caption: 'my number', value: 2 });
   myNumber2 = new NumberColumn({ caption: 'my number', value: 7 });
