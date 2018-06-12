@@ -1021,7 +1021,9 @@ export class AndFilter implements FilterBase {
   constructor(private a: FilterBase, private b: FilterBase) {
 
   }
-
+  and(filter: FilterBase): FilterBase {
+    return new AndFilter(this, filter);
+  }
 
   public __applyToConsumer(add: FilterConsumer): void {
     this.a.__applyToConsumer(add);
