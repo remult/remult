@@ -457,12 +457,18 @@ export class FilterHelper<rowType extends Entity<any>> {
   }
   addToFindOptions(opt: FindOptionsPerEntity<rowType>) {
     this.filterColumns.forEach(c => {
+
+      let val = this.filterRow.__getColumn(c).value;
+      let f = c.isEqualTo(val);
+      if (c instanceof StringColumn) {
+        f = c.isContains(val);
+      }
+
       if (opt.where) {
         let x = opt.where;
-        opt.where = r => new AndFilter(x(r), c.isEqualTo(this.filterRow.__getColumn(c).value));
-
+        opt.where = r => new AndFilter(x(r), f);
       }
-      else opt.where = r => c.isEqualTo(this.filterRow.__getColumn(c).value);
+      else opt.where = r => f;
     });
   }
 }
@@ -1407,7 +1413,7 @@ export class EntitySource<T extends Entity<any>>
         })
       });
   }
-  async count(where?:FilterBase){
+  async count(where?: FilterBase) {
     return this._provider.count(where);
   }
   __lookupCache: LookupCache<any>[] = [];
