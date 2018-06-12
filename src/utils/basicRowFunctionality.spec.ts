@@ -597,6 +597,54 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("getArray works with filter contains", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam');
+      i(2, 'yael');
+      i(3, 'yoni');
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(1);
+      expect(data[1].id).toBe(2);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == c.categoryName.jsonName+'_contains')
+          return "a";
+        return undefined;
+      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+    });
+    d.test();
+  });
+  itAsync("getArray works with filter startsWith", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam');
+      i(2, 'yael');
+      i(3, 'yoni');
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == c.categoryName.jsonName+'_st')
+          return "y";
+        return undefined;
+      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+    });
+    d.test();
+  });
   itAsync("getArray works with predefined filter", async () => {
     let c = await createData(async (i) => {
       i(1, 'noam', 'a');

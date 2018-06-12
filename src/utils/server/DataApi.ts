@@ -1,6 +1,6 @@
 import { DataApiError } from './DataApi';
 
-import { Entity, AndFilter, Sort, Column, ColumnHashSet } from './../utils';
+import { Entity, AndFilter, Sort, Column, ColumnHashSet, StringColumn } from './../utils';
 import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest } from './../dataInterfaces1';
 
 export class DataApi<T extends Entity<any>> {
@@ -44,10 +44,12 @@ export class DataApi<T extends Entity<any>> {
             let val = request.get(col.jsonName + key);
             if (val != undefined) {
               let f = theFilter(val);
-              if (findOptions.where)
-                findOptions.where = new AndFilter(findOptions.where, f);
-              else
-                findOptions.where = f;
+              if (f) {
+                if (findOptions.where)
+                  findOptions.where = new AndFilter(findOptions.where, f);
+                else
+                  findOptions.where = f;
+              }
             }
           }
           addFilter('', val => col.isEqualTo(val));
@@ -56,6 +58,18 @@ export class DataApi<T extends Entity<any>> {
           addFilter('_lt', val => col.IsLessThan(val));
           addFilter('_lte', val => col.IsLessOrEqualTo(val));
           addFilter('_ne', val => col.IsDifferentFrom(val));
+          addFilter('_contains', val => {
+            let c = col as StringColumn;
+            if (c != null && c.isContains) {
+              return c.isContains(val);
+            }
+          });
+          addFilter('_st', val => {
+            let c = col as StringColumn;
+            if (c != null && c.isContains) {
+              return c.isStartsWith(val);
+            }
+          });
 
         });
 

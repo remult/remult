@@ -3,7 +3,7 @@
 
 
 
-import { dataAreaSettings, Entity, Column, CompoundIdColumn } from './utils';
+import { dataAreaSettings, Entity, Column, CompoundIdColumn, StringColumn } from './utils';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from './dataInterfaces1';
 
 
@@ -30,7 +30,7 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
   constructor(private factory: () => T, private rows?: any[]) {
     if (!rows)
       rows = [];
-    
+
   }
 
   async find(options?: FindOptions): Promise<any[]> {
@@ -176,6 +176,28 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
   public IsLessThan(col: Column<any>, val: any): void {
     if (this.row[col.jsonName] >= val)
+      this.ok = false;
+  }
+  public isContains(col: StringColumn, val: any): void {
+    let v = this.row[col.jsonName];
+    if (!v) {
+      this.ok = false;
+      return;
+    }
+
+    let s = '' + v;
+    if (s.indexOf(val) < 0)
+      this.ok = false;
+  }
+  public isStartsWith(col: StringColumn, val: any): void {
+    let v = this.row[col.jsonName];
+    if (!v) {
+      this.ok = false;
+      return;
+    }
+
+    let s = '' + v;
+    if (s.indexOf(val) != 0)
       this.ok = false;
   }
 }

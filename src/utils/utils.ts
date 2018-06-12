@@ -761,6 +761,12 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
   public IsLessThan(col: Column<any>, val: any): void {
     this.url.add(col.jsonName + '_lt', val);
   }
+  public isContains(col: StringColumn, val: any): void {
+    this.url.add(col.jsonName + "_contains", val);
+  }
+  public isStartsWith(col: StringColumn, val: any): void {
+    this.url.add(col.jsonName + "_st", val);
+  }
 }
 
 export class lookupRowInfo<type> {
@@ -1520,6 +1526,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
 export class StringColumn extends Column<string>{
   constructor(settingsOrCaption?: DataColumnSettings<string, StringColumn> | string) {
     super(settingsOrCaption);
+  }
+  isContains(value: StringColumn | string) {
+    return new Filter(add => add.isContains(this, this.__getVal(value)));
+  }
+  isStartsWith(value: StringColumn | string) {
+    return new Filter(add => add.isStartsWith(this, this.__getVal(value)));
   }
 }
 export class DateColumn extends Column<string>{

@@ -39,9 +39,7 @@ dataApi.add(r => new DataApi(new Categories(), {
     allowInsert: true,
     allowDelete: true,
     onSavingRow: async c => {
-        if (c.description.value.length < 5) {
-            c.description.error = 'Description too short ';
-        }
+       
         if (c.isNew())
             c.id.value = await c.source.max(c.id) + 1;
     },
@@ -78,4 +76,3 @@ async function test() {
     
 
 }
-test();

@@ -1,4 +1,4 @@
-import { Column, CompoundIdColumn, Entity } from "../..";
+import { Column, CompoundIdColumn, Entity, StringColumn } from "../..";
 import { FilterConsumer, DataProvider, FindOptions } from "../dataInterfaces1";
 import { pageArray } from "../inMemoryDatabase";
 
@@ -39,6 +39,12 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
   IsLessThan(col: Column<any>, val: any): void {
     this.add(col, val, "<");
+  }
+  public isContains(col: StringColumn, val: any): void {
+    this.add(col, '%' + val + '%', 'like');
+  }
+  public isStartsWith(col: StringColumn, val: any): void {
+    this.add(col,  val + '%', 'like');
   }
   private add(col: Column<any>, val: any, operator: string) {
     if (this.where.length == 0) {
@@ -189,7 +195,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       if (x.__isVirtual()) { }
 
       else {
-        let v = x.__getStorage().toDb( data[x.jsonName]);
+        let v = x.__getStorage().toDb(data[x.jsonName]);
         if (v != undefined) {
           if (!added)
             added = true;

@@ -1,4 +1,4 @@
-import { Column, Entity, Sort, SortSegment } from './utils';
+import { Column, Entity, Sort, SortSegment, StringColumn } from './utils';
 import { FindOptions } from './dataInterfaces1';
 
 
@@ -52,7 +52,7 @@ export interface DataColumnSettings<type, colType> {
   onValidate?: (col: colType) => void | Promise<void>;
   getValue?: (val: type) => any;
   valueChange?: (val: type) => void;
-  virtualData?: () => type|Promise<type>;
+  virtualData?: () => type | Promise<type>;
 }
 export interface ColumnStorage<dataType> {
   toDb(val: dataType): any;
@@ -75,6 +75,8 @@ export interface FilterConsumer {
   IsGreaterThan(col: Column<any>, val: any): void;
   IsLessOrEqualTo(col: Column<any>, val: any): void;
   IsLessThan(col: Column<any>, val: any): void;
+  isContains(col: StringColumn, val: any): void;
+  isStartsWith(col: StringColumn, val: any): void;
 }
 
 export interface DataApiRequest<AuthInfoType> {
