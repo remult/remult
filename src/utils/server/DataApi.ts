@@ -28,7 +28,7 @@ export class DataApi<T extends Entity<any>> {
   }
   async count(response: DataApiResponse, request: DataApiRequest<any>) {
     let where = this.buildWhere(request);
-    response.success(await this.rowType.source.count(where));
+    response.success({count:+await this.rowType.source.count(where)});
   }
 
   async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
