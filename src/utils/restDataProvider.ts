@@ -23,7 +23,7 @@ class ActualRestDataProvider implements DataProvider {
     if (where) {
       where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
     }
-    return myFetch(url.url, undefined, this.addRequestHeader).then(r => r);
+    return myFetch(url.url, undefined, this.addRequestHeader).then(r =>+r);
   }
   public find(options: FindOptions): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);

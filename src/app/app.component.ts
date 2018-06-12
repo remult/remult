@@ -26,7 +26,7 @@ export class AppComponent {
   }
    constructor(){
     let c = new models.Categories();
-     c.source.count(c.id.IsGreaterOrEqualTo(2)).then(x=>this.count = x);
+     c.source.count(c.id.IsGreaterOrEqualTo(2)).then(x=>this.count = x+1);
   }
   x = new GridSettings(new models.Categories(), {
     allowUpdate: true,
