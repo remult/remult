@@ -211,9 +211,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   }
 
 
-  static getRecords(): any {
-    throw new Error("Method not implemented.");
-  }
+
   addNewRow() {
     let r: any = this.restList.add();
     this.columns.items.forEach(item => {
@@ -389,7 +387,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   private getOptions: FindOptionsPerEntity<rowType>;
 
-
+  totalRows: number;
 
   getRecords() {
 
@@ -405,7 +403,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       opt.page = this.page;
     this.filterHelper.addToFindOptions(opt);
 
-    return this.restList.get(opt).then(() => {
+    let result = this.restList.get(opt).then(() => {
 
 
       if (this.restList.items.length == 0) {
@@ -420,6 +418,12 @@ export class GridSettings<rowType extends Entity<any>>  {
       }
       return this.restList;
     });
+    if (this.settings && this.settings.knowTotalRows) {
+      this.restList.count(opt.where).then(x => {
+        this.totalRows = x;
+      });
+    }
+    return result;
   };
 
 
@@ -485,6 +489,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[],
   get?: FindOptionsPerEntity<rowType>,
+  knowTotalRows?: boolean,
   onSavingRow?: (r: rowType) => void;
   onValidate?: (r: rowType) => void;
   onEnterRow?: (r: rowType) => void;
@@ -612,6 +617,12 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
     return item;
   }
   lastGetId = 0;
+  count(where?: (rowType: T) => FilterBase) {
+    let w: FilterBase = undefined;
+    if (where)
+      w = where(this.entity);
+    return this.entity.source.count(w);
+  }
   get(options?: FindOptionsPerEntity<T>) {
 
     let getId = ++this.lastGetId;

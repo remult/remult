@@ -18,6 +18,7 @@ import { Action } from '../utils/restDataProvider';
 })
 export class AppComponent {
   login() {
+    console.log(this.settings.totalRows);
     new LoginAction().run({ user: 'noam', password: '12345' }).then(
       s => {
         console.log(s);
@@ -32,6 +33,7 @@ export class AppComponent {
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true,
+    knowTotalRows:true,
     numOfColumnsInGrid: 2,
     get: { limit: 100 },
     hideDataArea: true,
