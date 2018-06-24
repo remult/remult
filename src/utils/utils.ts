@@ -861,7 +861,7 @@ export class Column<dataType>  {
   async  lookupAsync<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter?: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
     if (!filter)
       filter = <any>this;
-    return await  this._entity.lookupAsync(lookupEntity, filter);
+    return  this._entity.lookupAsync(lookupEntity, filter);
   }
   __isVirtual() {
     if (this.__settings && this.__settings.virtualData)
