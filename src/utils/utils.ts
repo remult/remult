@@ -858,10 +858,10 @@ export class Column<dataType>  {
       filter = <any>this;
     return this._entity.lookup(lookupEntity, filter);
   }
-  async  lookupAsync<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter?: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
+  async  lookupAsync<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter?: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): Promise<entityType> {
     if (!filter)
       filter = <any>this;
-    return  this._entity.lookupAsync(lookupEntity, filter);
+    return this._entity.lookupAsync(lookupEntity, filter);
   }
   __isVirtual() {
     if (this.__settings && this.__settings.virtualData)
