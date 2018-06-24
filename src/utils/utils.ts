@@ -1049,8 +1049,10 @@ export class AndFilter implements FilterBase {
   }
 
   public __applyToConsumer(add: FilterConsumer): void {
-    this.a.__applyToConsumer(add);
-    this.b.__applyToConsumer(add);
+    if (this.a)
+      this.a.__applyToConsumer(add);
+    if (this.b)
+      this.b.__applyToConsumer(add);
   }
 }
 export interface EntityOptions {
