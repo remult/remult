@@ -5,24 +5,5 @@
 
 <br/>
 
-<select-popup [settings]="customersSelect"></select-popup>
-<div>
-  <ul class="nav nav-tabs" role="tablist">
-    <li class="active">
-      <a href="#tab1" data-toggle="tab">Ship Info</a>
-    </li>
-    <li>
-      <a href="#tab2" data-toggle="tab">Order Details {{getOrderTotal()}}</a>
-    </li>
-  </ul>
-  <div class="tab-content">
-    <div class="tab-pane active" id="tab1">
-      <data-area [settings]="shipInfoArea"></data-area>
-    </div>
-    <div class="tab-pane" id="tab2">
-      <data-grid [settings]="orderDetailsSettings"></data-grid>
-    </div>
-  </div>
-</div>
 <button class="btn btn-success" (click)="printOrder()">Print</button>
 <button class="btn btn-success" (click)="test()">Test</button>

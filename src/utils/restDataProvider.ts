@@ -23,7 +23,7 @@ class ActualRestDataProvider implements DataProvider {
     if (where) {
       where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
     }
-    return myFetch(url.url, undefined, this.addRequestHeader).then(r =>+(r.count));
+    return myFetch(url.url, undefined, this.addRequestHeader).then(r => +(r.count));
   }
   public find(options: FindOptions): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);
@@ -82,7 +82,12 @@ class ActualRestDataProvider implements DataProvider {
 function JsonContent(add: (name: string, value: string) => void) {
   add('Content-type', "application/json");
 }
-
+export interface WrapFetchInterface {
+  wrap: () => (() => void);
+}
+export const wrapFetch: WrapFetchInterface = {
+  wrap: () => () => { }
+};
 export function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
   if (!init)
     init = {};
@@ -91,8 +96,14 @@ export function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((a
   var h = init.headers as Headers;
   addRequestHeader.forEach(x => x((n, v) => h.append(n, v)));
   init.credentials = 'include';
-  return fetch(url, init).then(onSuccess, error => {
+  let x = wrapFetch.wrap();
+  return fetch(url, init).then(response => {
+    x();
+    return onSuccess(response);
+
+  }, error => {
     console.log(error);
+    x();
     throw Promise.resolve(error);
   });
 }
