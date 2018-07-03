@@ -1627,22 +1627,13 @@ export class DateTimeColumn extends Column<string>{
       return null;
     if (val == undefined)
       return undefined;
-    return new Date(val);
+    return  new Date( Date.parse(val));
   }
   static dateToString(val: Date): string {
     var d = val as Date;
     if (!d)
       return '';
-    let
-      hours = addZeros(d.getHours()),
-      minutes = addZeros(d.getMinutes()),
-      seconds = addZeros(d.getSeconds()),
-      ms = addZeros(d.getMilliseconds(), 3)
-      ;
-
-
-
-    return DateColumn.dateToString(d) + ' ' + [hours, minutes, seconds].join(':') + '.' + ms;
+      return d.toISOString();
   }
 
 
