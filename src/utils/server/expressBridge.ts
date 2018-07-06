@@ -87,7 +87,8 @@ export class SiteArea<AuthInfoType> {
           return api(req).count(res, req);
         } else
           return api(req).getArray(res, req);
-      }))
+      })).put(this.process(async (req, res, orig) => api(req).put(res, '', orig.body)))
+      .delete(this.process(async (req, res, orig) => api(req).delete(res, '')))
       .post(this.process(async (req, res, orig) => api(req).post(res, orig.body)));
     this.app.route(myRoute + '/:id')
       .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))
