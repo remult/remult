@@ -54,6 +54,7 @@ export interface DataColumnSettings<type, colType> {
   getValue?: (val: type) => any;
   valueChange?: (val: type) => void;
   virtualData?: () => type | Promise<type>;
+  dbReadOnly?: boolean;
 }
 export interface ColumnStorage<dataType> {
   toDb(val: dataType): any;

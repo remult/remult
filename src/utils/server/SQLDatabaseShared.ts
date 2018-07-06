@@ -152,7 +152,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     this.entity.__iterateColumns().forEach(x => {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
-      } if (x.__isVirtual()) { }
+      } if (x.__dbReadOnly()) { }
       else {
         let v = x.__getStorage().toDb(data[x.jsonName]);
         if (v != undefined) {
@@ -209,7 +209,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }
-      if (x.__isVirtual()) { }
+      if (x.__dbReadOnly()) { }
 
       else {
         let v = x.__getStorage().toDb(data[x.jsonName]);

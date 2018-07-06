@@ -869,6 +869,11 @@ export class Column<dataType>  {
     return false;
 
   }
+  __dbReadOnly(){
+    if (this.__settings && this.__settings.dbReadOnly)
+      return true;
+    return this.__isVirtual();
+  }
   __clearErrors(): any {
     this.error = undefined;
   }
