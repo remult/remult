@@ -1686,7 +1686,6 @@ export class ClosedListColumn<closedListType extends ClosedListItem> extends Num
         })
       }
     }
-    console.log(result);
     return result;
   }
   get listValue() {
