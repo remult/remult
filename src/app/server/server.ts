@@ -27,7 +27,7 @@ let port = 3001;
 environment.dataSource = new JsonFileDataProvider('./appData');
 //let sqlServer = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
 //environment.dataSource = sqlServer;
-environment.dataSource = new PostgresDataProvider(p);
+//environment.dataSource = new PostgresDataProvider(p);
 
 
 
