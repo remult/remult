@@ -20,7 +20,7 @@ import { NgModule } from "@angular/core";
   ,
   providers: [],
   bootstrap: [],
-  exports: [DataGridComponent, DataAreaCompnent, SelectPopupComponent]
+  exports: [DataGridComponent, DataAreaCompnent, SelectPopupComponent,DataControlComponent]
 
 })
 export class RadWebModule { }

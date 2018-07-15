@@ -322,7 +322,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   }
   caption: string;
 
-  private filterHelper = new FilterHelper<rowType>(() => {
+   filterHelper = new FilterHelper<rowType>(() => {
     this.page = 1;
     this.getRecords();
   });

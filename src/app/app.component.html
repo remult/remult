@@ -1,4 +1,10 @@
+<button (click)="test()">
 
+    test</button>
+<select [(ngModel)]="filterColumn">
+    <option *ngFor="let m of x.columns.items" [ngValue]="m">{{m.caption}}</option>
+</select>
 
+<data-control *ngIf="filterColumn" [settings]="x.columns" [map]="filterColumn" [record]="x.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
 <data-grid [settings]="x"></data-grid>
 <data-area [settings]="x"></data-area>

@@ -1,4 +1,4 @@
-import { GridSettings } from './../utils/utils';
+import { GridSettings, Column } from './../utils/utils';
 import { Component } from '@angular/core';
 import * as models from './models';
 
@@ -13,7 +13,7 @@ import * as models from './models';
 
 })
 export class AppComponent {
-  
+
   x = new GridSettings(new models.Orders(), {
     allowUpdate: true,
     allowDelete: true,
@@ -22,8 +22,15 @@ export class AppComponent {
     numOfColumnsInGrid: 4,
     get: { limit: 100 },
     hideDataArea: true
-   
-    
   });
+  test() {
+    let y = this.x.columns.items[2];
+    this.x.columns.items.splice(2, 1);
+    this.x.columns.items.splice(this.x.columns.items.length,0,y);
+    this.x.columns.colListChanged();
+    
+
+  }
+  filterColumn: Column<any>;
 
 }
