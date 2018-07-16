@@ -14,12 +14,31 @@ import { isFunction } from '../common';
 
   </div>
   <div  >
-  <div class="pull-right" *ngIf="settings && records && displayVCR">
+  <div  *ngIf="settings && records && displayVCR">
     <button class="btn glyphicon glyphicon-pencil btn-primary" *ngIf="settings.columns.allowDesignMode" (click)="settings.columns.designMode=!settings.columns.designMode"></button>
     <button class="btn glyphicon glyphicon-chevron-left" *ngIf="settings.page>1" (click)="settings.previousPage()"></button>
     <button class="btn glyphicon glyphicon-chevron-right" *ngIf="records.items&& records.items.length>0" (click)="settings.nextPage()"></button>
     <button class="btn btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
+    <button class="btn glyphicon glyphicon glyphicon-cog" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.userChooseColumns()"></button>
+ 
   </div>
+  <div *ngIf="settings.showSelectColumn" class="selectColumnsArea">
+  
+  Select Columns
+  <ol>
+  <li *ngFor="let c of settings.currList; let i=index">
+      <select [(ngModel)]="settings.currList[i]" class="form-control selectColumnCombo" (change)="settings.columns.colListChanged()">
+          <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}}</option>
+      </select>
+      <button class="btn btn-sm glyphicon glyphicon-trash" *ngIf="settings.currList.length>1" (click)="settings.deleteCol(c)"></button>
+      <button class="btn btn-sm  glyphicon glyphicon-plus" (click)="settings.addCol(c)"></button>
+      <button class="btn btn-sm  glyphicon glyphicon-chevron-down" *ngIf="i<settings.currList.length-1"(click)="settings.columns.moveCol(c,1)"></button>
+      <button class="btn btn-sm  glyphicon glyphicon-chevron-up" *ngIf="i>0" (click)="settings.columns.moveCol(c,-1)"></button>
+  </li>
+</ol>
+<button (click)="settings.resetColumns()" class="btn glyphicon glyphicon-repeat"></button>
+</div>
+<div>
     <table class="table table-bordered table-condensed table-hover table-striped " *ngIf="settings&&settings.columns">
 
       <thead>
@@ -94,6 +113,13 @@ import { isFunction } from '../common';
 
 .designModeButton:hover span {
     visibility: visible
+}
+.selectColumnCombo{
+  display:inline-block;
+  width:auto;
+}
+.selectColumnsArea{
+  display:block;
 }
 
 .headerWithFilter {

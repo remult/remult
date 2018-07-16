@@ -195,6 +195,43 @@ export class GridSettings<rowType extends Entity<any>>  {
 
     this.popupSettings = new SelectPopup(this);
   }
+  currList: ColumnSetting<any>[] = [];
+  origList: ColumnSetting<any>[];
+  origNumOfColumns: number;
+  showSelectColumn = false;
+  userChooseColumns() {
+    if (!this.origList) {
+      this.origList = [];
+      this.origNumOfColumns = this.settings.numOfColumnsInGrid;
+      this.origList.push(...this.columns.items);
+      this.resetColumns();
+
+    }
+    this.showSelectColumn = !this.showSelectColumn;
+  }
+  resetColumns() {
+    this.currList = [];
+    this.columns.items = this.currList;
+    this.columns.numOfColumnsInGrid = this.origNumOfColumns;
+    for (let i = 0; i < this.origList.length; i++) {
+      if (i < this.columns.numOfColumnsInGrid)
+        this.currList.push(this.origList[i]);
+    }
+
+  }
+  addCol(c: ColumnSetting<any>) {
+    this.columns.addCol(c);
+    this.adjustColumns();
+  }
+  deleteCol(c: ColumnSetting<any>) {
+    this.columns.deleteCol(c)
+    this.adjustColumns();
+  }
+  adjustColumns() {
+    this.columns.items.forEach(c => c.designMode = false);
+    this.columns.numOfColumnsInGrid = this.columns.items.length;
+  }
+
   private setGetOptions(get: FindOptionsPerEntity<rowType>) {
     this.getOptions = get;
     this._currentOrderBy = undefined;
@@ -322,7 +359,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   }
   caption: string;
 
-   filterHelper = new FilterHelper<rowType>(() => {
+  filterHelper = new FilterHelper<rowType>(() => {
     this.page = 1;
     this.getRecords();
   });
@@ -869,7 +906,7 @@ export class Column<dataType>  {
     return false;
 
   }
-  __dbReadOnly(){
+  __dbReadOnly() {
     if (this.__settings && this.__settings.dbReadOnly)
       return true;
     return this.__isVirtual();
@@ -1632,13 +1669,13 @@ export class DateTimeColumn extends Column<string>{
       return null;
     if (val == undefined)
       return undefined;
-    return  new Date( Date.parse(val));
+    return new Date(Date.parse(val));
   }
   static dateToString(val: Date): string {
     var d = val as Date;
     if (!d)
       return '';
-      return d.toISOString();
+    return d.toISOString();
   }
 
 
