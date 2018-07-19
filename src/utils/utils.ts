@@ -195,15 +195,23 @@ export class GridSettings<rowType extends Entity<any>>  {
 
     this.popupSettings = new SelectPopup(this);
   }
-  currList: ColumnSetting<any>[] = [];
+
+  currList: ColumnSetting<any>[];
   origList: ColumnSetting<any>[];
   origNumOfColumns: number;
   showSelectColumn = false;
-  userChooseColumns() {
+
+  initOrigList() {
     if (!this.origList) {
       this.origList = [];
       this.origNumOfColumns = this.settings.numOfColumnsInGrid;
       this.origList.push(...this.columns.items);
+    }
+  }
+  userChooseColumns() {
+    this.initOrigList();
+    if (!this.currList) {
+
       this.resetColumns();
 
     }
@@ -491,7 +499,7 @@ export class FilterHelper<rowType extends Entity<any>> {
     if (!column)
       return;
     if (clearFilter)
-      this.filterColumns.splice(this.filterColumns.indexOf(column, 1));
+      this.filterColumns.splice(this.filterColumns.indexOf(column, 1), 1);
     else if (this.filterColumns.indexOf(column) < 0)
       this.filterColumns.push(column);
     this.reloadData();
@@ -500,9 +508,18 @@ export class FilterHelper<rowType extends Entity<any>> {
     this.filterColumns.forEach(c => {
 
       let val = this.filterRow.__getColumn(c).value;
-      let f = c.isEqualTo(val);
+      let f: FilterBase = c.isEqualTo(val);
       if (c instanceof StringColumn) {
         f = c.isContains(val);
+      }
+      if (c instanceof DateTimeColumn) {
+        if (val) {
+          let v = DateTimeColumn.stringToDate(val);
+          v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
+
+          f = c.IsGreaterOrEqualTo(DateTimeColumn.dateToString(v)).and(c.IsLessThan(DateTimeColumn.dateToString(new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
+
+        }
       }
 
       if (opt.where) {

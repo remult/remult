@@ -19,9 +19,12 @@ import { isFunction } from '../common';
     <button class="btn glyphicon glyphicon-chevron-left" *ngIf="settings.page>1" (click)="settings.previousPage()"></button>
     <button class="btn glyphicon glyphicon-chevron-right" *ngIf="records.items&& records.items.length>0" (click)="settings.nextPage()"></button>
     <button class="btn btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
-    <button class="btn glyphicon glyphicon glyphicon-cog" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.userChooseColumns()"></button>
+    <button class="btn glyphicon glyphicon glyphicon-cog" (click)="settings.userChooseColumns()"></button>
+    <button class="btn glyphicon glyphicon glyphicon-filter" (click)="dataFilter.userFilterButton()"></button>
+    
  
   </div>
+  <Data-Filter [settings]="settings" #dataFilter></Data-Filter>
   <div *ngIf="settings.showSelectColumn" class="selectColumnsArea">
   
   Select Columns

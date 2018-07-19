@@ -20,7 +20,7 @@ export class AppComponent {
     allowInsert: true,
     knowTotalRows: true,
     numOfColumnsInGrid: 4,
-    get: { limit: 100 },
+    get: { limit: 5 },
     hideDataArea: true
   });
   test() {
