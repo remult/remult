@@ -93,8 +93,8 @@ class PostgressBridgeToSQLQueryResult implements SQLQueryResult {
 
 export class PostgrestSchemaBuilder {
 
-    CreateIfNotExist(e: Entity<any>): any {
-        this.pool.query("select 1 from information_Schema.tables where table_name=$1", [e.__getDbName().toLowerCase()]).then(r => {
+    async CreateIfNotExist(e: Entity<any>): Promise<void> {
+        await this.pool.query("select 1 from information_Schema.tables where table_name=$1", [e.__getDbName().toLowerCase()]).then(async r => {
             if (r.rowCount == 0) {
                 let result = '';
                 e.__iterateColumns().forEach(x => {
@@ -107,7 +107,7 @@ export class PostgrestSchemaBuilder {
                             result += ' primary key';
                     }
                 });
-                this.pool.query('create table ' + e.__getDbName() + ' (' + result + '\r\n)');
+                await this.pool.query('create table ' + e.__getDbName() + ' (' + result + '\r\n)');
             }
         });
     }
@@ -142,9 +142,9 @@ export class PostgrestSchemaBuilder {
         }
     }
     async verifyAllColumns<T extends Entity<any>>(e: T) {
-        e.__iterateColumns().forEach(column => {
-            this.addColumnIfNotExist(e, () => column);
-        });
+        await Promise.all(e.__iterateColumns().map(async column => {
+            await this.addColumnIfNotExist(e, () => column);
+        }));
     }
 
     constructor(private pool: Pool) {
