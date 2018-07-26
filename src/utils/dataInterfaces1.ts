@@ -82,7 +82,7 @@ export interface FilterConsumer {
 }
 
 export interface DataApiRequest<AuthInfoType> {
-  get(key: string): string;
+  get(key: string): any;
   getHeader(key: string): string;
   authInfo: AuthInfoType;
   clientIp: string;

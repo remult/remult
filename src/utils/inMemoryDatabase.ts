@@ -35,7 +35,7 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
   async count(where?: FilterBase): Promise<number> {
     let rows = this.rows;
     let j = 0;
-    for (let i = 0;  i < rows.length;i++) {
+    for (let i = 0; i < rows.length; i++) {
       if (!where) {
         j++;
       }

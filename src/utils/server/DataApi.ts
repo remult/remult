@@ -1,6 +1,6 @@
 import { DataApiError } from './DataApi';
 
-import { Entity, AndFilter, Sort, Column, ColumnHashSet, StringColumn } from './../utils';
+import { Entity, AndFilter, Sort, Column, ColumnHashSet, StringColumn, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './../utils';
 import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest } from './../dataInterfaces1';
 
 export class DataApi<T extends Entity<any>> {
@@ -44,7 +44,7 @@ export class DataApi<T extends Entity<any>> {
       findOptions.where = this.buildWhere(request);
       if (request) {
 
-        let sort = request.get("_sort");
+        let sort = <string>request.get("_sort");
         if (sort != undefined) {
           let dir = request.get('_order');
           let dirItems: string[] = [];
@@ -87,13 +87,26 @@ export class DataApi<T extends Entity<any>> {
         function addFilter(key: string, theFilter: (val: any) => FilterBase) {
           let val = request.get(col.jsonName + key);
           if (val != undefined) {
-            let f = theFilter(val);
-            if (f) {
-              if (where)
-                where = new AndFilter(where, f);
-              else
-                where = f;
+            let addFilter = (val: any) => {
+              let f = theFilter(val);
+              if (f) {
+                if (where)
+                  where = new AndFilter(where, f);
+                else
+                  where = f;
+              }
             }
+
+            if (val instanceof Array) {
+
+              val.forEach(v => {
+                addFilter(v);
+              });
+            }
+            else
+              addFilter(val);
+
+
           }
         }
         addFilter('', val => col.isEqualTo(val));

@@ -597,6 +597,29 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("getArray works with filter and multiple values", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam');
+      i(2, 'yael');
+      i(3, 'yoni');
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+      expect(data[0].id).toBe(2);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "id_ne")
+          return [ "1", "3"];
+        return undefined;
+      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+    });
+    d.test();
+  });
   itAsync("getArray works with filter contains", async () => {
     let c = await createData(async (i) => {
       i(1, 'noam');
@@ -614,7 +637,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.categoryName.jsonName+'_contains')
+        if (x == c.categoryName.jsonName + '_contains')
           return "a";
         return undefined;
       }, clientIp: '', authInfo: undefined, getHeader: x => ""
@@ -638,7 +661,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.categoryName.jsonName+'_st')
+        if (x == c.categoryName.jsonName + '_st')
           return "y";
         return undefined;
       }, clientIp: '', authInfo: undefined, getHeader: x => ""
