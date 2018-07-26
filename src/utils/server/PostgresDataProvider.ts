@@ -1,5 +1,5 @@
 import { pageArray, InMemoryDataProvider } from '../inMemoryDatabase';
-import { Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort, DateTimeColumn, BoolColumn } from './../utils';
+import { Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort, DateTimeColumn, BoolColumn, DateColumn } from './../utils';
 import * as sql from 'mssql';
 import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer, DataApiRequest } from '../dataInterfaces1';
 
@@ -115,6 +115,8 @@ export class PostgrestSchemaBuilder {
         let result = x.__getDbName();
         if (x instanceof DateTimeColumn)
             result += " timestamp";
+        else if (x instanceof DateColumn)
+            result += " date";
         else if (x instanceof BoolColumn)
             result += " boolean default false not null";
         else if (x instanceof NumberColumn)
