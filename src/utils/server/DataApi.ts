@@ -27,8 +27,12 @@ export class DataApi<T extends Entity<any>> {
     await this.doOnId(response, id, async row => response.success(await row.__toPojo(this.excludedColumns)));
   }
   async count(response: DataApiResponse, request: DataApiRequest<any>) {
-    let where = this.buildWhere(request);
-    response.success({count:+await this.rowType.source.count(where)});
+    try {
+      let where = this.buildWhere(request);
+      response.success({ count: +await this.rowType.source.count(where) });
+    } catch (err) {
+      response.error(err);
+    }
   }
 
   async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
