@@ -1071,7 +1071,7 @@ describe("test date storage", () => {
     let val = "1976-06-16";
     var d: Date = s.toDb(val);
     expect(d.getFullYear()).toBe(1976);
-    expect(d.getMonth()).toBe(6);
+    expect(d.getMonth()).toBe(5);
     expect(d.getDate()).toBe(16);
 
   });

@@ -860,7 +860,7 @@ export class DefaultStorage<dataType> implements ColumnStorage<dataType>{
 export class DateTimeDateStorage implements ColumnStorage<string>{
   toDb(val: string) {
 
-    return new Date(+val.substring(0, 4), +val.substring(5, 7), +val.substring(8, 10));
+    return DateColumn.stringToDate(val);
   }
   fromDb(val: any): string {
     var d = val as Date;
@@ -1645,7 +1645,7 @@ export class DateColumn extends Column<string>{
   }
   static stringToDate(val: string) {
 
-    return new Date(val);
+    return new Date(Date.parse(val));
   }
   static dateToString(val: Date): string {
     var d = val as Date;

@@ -1,7 +1,7 @@
 import { FindOptionsPerEntity, DataColumnSettings } from './dataInterfaces1';
 import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn } from '../';
 
-import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage, DropDownItem, ClosedListColumn } from './utils';
+import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage, DropDownItem, ClosedListColumn, DateTimeDateStorage } from './utils';
 import { GridSettings, Lookup, ColumnSetting } from './utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from './inMemoryDatabase'
 import { itAsync, Done } from './testHelper.spec';
@@ -647,6 +647,13 @@ describe("test datetime column", () => {
     x.dateValue = new Date('1976-06-16');
     expect(x.value).toBe('1976-06-16');
     expect(x.dateValue.toISOString()).toBe(new Date('1976-06-16').toISOString());
+  //  expect(x.dateValue.getHours()).toBe(0);
+  });
+  it("date Storage works", () => {
+    var x = new DateTimeDateStorage();
+
+    expect(x.toDb('1976-06-16').toLocaleDateString()).toBe(new Date(1976, 5, 16,0,0,0).toLocaleDateString());
+    
   });
 });
 describe("Test char date storage", () => {
