@@ -98,7 +98,7 @@ export class PostgrestSchemaBuilder {
             if (r.rowCount == 0) {
                 let result = '';
                 e.__iterateColumns().forEach(x => {
-                    if (!x.__isVirtual()) {
+                    if (!x.__dbReadOnly()) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
@@ -127,6 +127,8 @@ export class PostgrestSchemaBuilder {
     }
 
     async addColumnIfNotExist<T extends Entity<any>>(e: T, c: ((e: T) => Column<any>)) {
+        if (c(e).__dbReadOnly())
+            return;
         try {
             if (
                 (await this.pool.query(`select 1   

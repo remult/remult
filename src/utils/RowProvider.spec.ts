@@ -10,6 +10,7 @@ import { Categories } from './../app/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
 import { DataAreaCompnent } from '../utils/angular/dataArea';
+import { toBase64String } from '../../node_modules/@angular/compiler/src/output/source_map';
 
 export class LanguageColumn extends ClosedListColumn<Language> {
   constructor() {
@@ -613,8 +614,8 @@ describe("test datetime column", () => {
     var x = new DateTimeColumn();
     x.dateValue = new Date(1976, 11, 16, 8, 55, 31, 65)
     expect(x.value).toBe('1976-12-16T06:55:31.065Z');
-    
-    
+
+
     expect(x.dateValue.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
@@ -639,6 +640,13 @@ describe("test datetime column", () => {
     var x = new DateColumn();
     x.value = '0000-00-00';
     expect(x.displayValue).toBe('');
+  });
+  it("date works", () => {
+    var x = new DateColumn();
+
+    x.dateValue = new Date('1976-06-16');
+    expect(x.value).toBe('1976-06-16');
+    expect(x.dateValue.toISOString()).toBe(new Date('1976-06-16').toISOString());
   });
 });
 describe("Test char date storage", () => {
