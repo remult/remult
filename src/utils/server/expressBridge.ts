@@ -166,7 +166,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public error(data: DataApiError): void {
-    console.log(data);
+    
     if (data instanceof TypeError) {
       data = { message: data.message + '\n' + data.stack };
     }

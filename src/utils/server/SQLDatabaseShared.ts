@@ -76,7 +76,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       where.__applyToConsumer(wc);
       select += wc.where;
     }
-    console.log(select);
+    
     return r.query(select).then(r => {
       return r.rows[0].count;
     });
@@ -122,7 +122,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       });
 
     }
-    console.log(select);
+    
     return r.query(select).then(r => {
 
       return pageArray(r.rows, options).map(y => {
@@ -166,7 +166,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       }
     });
     statement += f.where;
-    console.log(statement);
+    
     return r.query(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => y[0]);
     });
@@ -185,7 +185,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     let added = false;
 
     statement += f.where;
-    console.log(statement);
+    
     return r.query(statement).then(() => {
       return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
     });
@@ -228,7 +228,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     });
 
     let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
-    console.log(statement);
+    
     return r.query(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => {
 

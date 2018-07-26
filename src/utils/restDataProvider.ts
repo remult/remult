@@ -115,7 +115,7 @@ function onSuccess(response: Response) {
     return response.json();
   else
     throw response.json().then(x => {
-      console.log(x);
+      
       if (!x.message)
         x.message = response.statusText;
       return x;

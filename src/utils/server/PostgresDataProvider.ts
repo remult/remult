@@ -71,7 +71,6 @@ class PostgrestBridgeToSQLCommand implements SQLCommand {
         return '$' + this.values.length;
     }
     query(sql: string): Promise<SQLQueryResult> {
-        console.log(this.values);
         return this.source.query(sql, this.values).then(r => new PostgressBridgeToSQLQueryResult(r));
     }
 }
@@ -138,7 +137,7 @@ export class PostgrestSchemaBuilder {
                     [e.__getDbName().toLocaleLowerCase(),
                     c(e).__getDbName().toLocaleLowerCase()])).rowCount == 0) {
                 let sql = `alter table ${e.__getDbName()} add column ${this.addColumnSqlSyntax(c(e))}`;
-                console.log(sql);
+                
                 await this.pool.query(sql);
             }
         }
