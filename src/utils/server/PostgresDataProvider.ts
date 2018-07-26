@@ -71,6 +71,7 @@ class PostgrestBridgeToSQLCommand implements SQLCommand {
         return '$' + this.values.length;
     }
     query(sql: string): Promise<SQLQueryResult> {
+        console.log(this.values);
         return this.source.query(sql, this.values).then(r => new PostgressBridgeToSQLQueryResult(r));
     }
 }
