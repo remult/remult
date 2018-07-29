@@ -1326,6 +1326,10 @@ export class Entity<idType> {
     return r;
 
   }
+  fromPojo(r:any){
+    this.__entityData.setData(r,this);
+    return this;
+  }
   __fromPojo(r: any, excludeColumns: ColumnHashSet): any {
 
     this.__iterateColumns().forEach(c => {
