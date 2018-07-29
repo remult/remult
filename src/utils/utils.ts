@@ -1326,10 +1326,7 @@ export class Entity<idType> {
     return r;
 
   }
-  fromPojo(r:any){
-    this.__entityData.setData(r,this);
-    return this;
-  }
+
   __fromPojo(r: any, excludeColumns: ColumnHashSet): any {
 
     this.__iterateColumns().forEach(c => {
@@ -1493,6 +1490,11 @@ export class EntitySource<T extends Entity<any>>
           return r;
         })
       });
+  }
+  fromPojo(r: any): T {
+    let f = this.factory();
+    f.__entityData.setData(r, f);
+    return f;
   }
   async count(where?: FilterBase) {
     return this._provider.count(where);
