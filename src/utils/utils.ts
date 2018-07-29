@@ -1494,6 +1494,7 @@ export class EntitySource<T extends Entity<any>>
   fromPojo(r: any): T {
     let f = this.factory();
     f.__entityData.setData(r, f);
+    f.source = this;
     return f;
   }
   async count(where?: FilterBase) {
