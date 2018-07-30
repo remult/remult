@@ -242,7 +242,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   private setGetOptions(get: FindOptionsPerEntity<rowType>) {
     this.getOptions = get;
-    if (get.limit)
+    if (get&&get.limit)
       this.rowsPerPage = get.limit;
     else
       this.rowsPerPage = 7;
