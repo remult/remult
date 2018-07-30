@@ -21,6 +21,7 @@ import { isFunction } from '../common';
     <button class="btn btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
     <button class="btn glyphicon glyphicon glyphicon-cog" (click)="settings.userChooseColumns()"></button>
     <button class="btn glyphicon glyphicon glyphicon-filter" (click)="dataFilter.userFilterButton()"></button>
+    <button class="btn glyphicon glyphicon glyphicon-repeat" (click)="settings.getRecords()"></button>
 
         
  
