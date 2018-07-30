@@ -21,12 +21,16 @@ import { isFunction } from '../common';
     <button class="btn btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
     <button class="btn glyphicon glyphicon glyphicon-cog" (click)="settings.userChooseColumns()"></button>
     <button class="btn glyphicon glyphicon glyphicon-filter" (click)="dataFilter.userFilterButton()"></button>
-    
+
+        
  
   </div>
   <Data-Filter [settings]="settings" #dataFilter></Data-Filter>
   <div *ngIf="settings.showSelectColumn" class="selectColumnsArea">
-  
+  lines per page
+  <select class="form-control" style="width:100px;display:inline-block" [(ngModel)]="settings.rowsPerPage" (change)="settings.getRecords()">
+          <option *ngFor="let r of settings.rowsPerPageOptions" value="{{r}}">{{r}}</option>
+      </select><br/>
   Select Columns
   <ol>
   <li *ngFor="let c of settings.currList; let i=index">

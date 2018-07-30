@@ -242,6 +242,14 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   private setGetOptions(get: FindOptionsPerEntity<rowType>) {
     this.getOptions = get;
+    if (get.limit)
+      this.rowsPerPage = get.limit;
+    else
+      this.rowsPerPage = 7;
+    if (this.rowsPerPageOptions.indexOf(this.rowsPerPage) < 0) {
+      this.rowsPerPageOptions.push(this.rowsPerPage);
+      this.rowsPerPageOptions.sort((a,b)=>+a-+b);
+    }
     this._currentOrderBy = undefined;
     if (this.getOptions && this.getOptions.orderBy)
       this._currentOrderBy = extractSortFromSettings(this.entity, this.getOptions);
@@ -388,6 +396,8 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.page--;
     return this.getRecords();
   }
+  rowsPerPage: number;
+  rowsPerPageOptions = [10, 25, 50, 100, 500, 1000];
   get(options: FindOptionsPerEntity<rowType>) {
 
     this.setGetOptions(options);
@@ -442,8 +452,8 @@ export class GridSettings<rowType extends Entity<any>>  {
     }
     if (this._currentOrderBy)
       opt.orderBy = r => this._currentOrderBy;
-    if (!opt.limit)
-      opt.limit = 7;
+
+    opt.limit = this.rowsPerPage;
     if (this.page > 1)
       opt.page = this.page;
     this.filterHelper.addToFindOptions(opt);
