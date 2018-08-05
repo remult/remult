@@ -242,13 +242,13 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   private setGetOptions(get: FindOptionsPerEntity<rowType>) {
     this.getOptions = get;
-    if (get&&get.limit)
+    if (get && get.limit)
       this.rowsPerPage = get.limit;
     else
       this.rowsPerPage = 7;
     if (this.rowsPerPageOptions.indexOf(this.rowsPerPage) < 0) {
       this.rowsPerPageOptions.push(this.rowsPerPage);
-      this.rowsPerPageOptions.sort((a,b)=>+a-+b);
+      this.rowsPerPageOptions.sort((a, b) => +a - +b);
     }
     this._currentOrderBy = undefined;
     if (this.getOptions && this.getOptions.orderBy)
@@ -499,19 +499,24 @@ export class GridSettings<rowType extends Entity<any>>  {
 export class FilterHelper<rowType extends Entity<any>> {
   filterRow: rowType;
   filterColumns: Column<any>[] = [];
+  forceEqual: Column<any>[] = [];
   constructor(private reloadData: () => void) {
 
   }
   isFiltered(column: Column<any>) {
     return this.filterColumns.indexOf(column) >= 0;
   }
-  filterColumn(column: Column<any>, clearFilter: boolean) {
+  filterColumn(column: Column<any>, clearFilter: boolean, forceEqual: boolean) {
     if (!column)
       return;
-    if (clearFilter)
+    if (clearFilter) {
       this.filterColumns.splice(this.filterColumns.indexOf(column, 1), 1);
-    else if (this.filterColumns.indexOf(column) < 0)
+      this.forceEqual.splice(this.forceEqual.indexOf(column, 1), 1);
+    }
+    else if (this.filterColumns.indexOf(column) < 0) {
       this.filterColumns.push(column);
+      this.forceEqual.push(column);
+    }
     this.reloadData();
   }
   addToFindOptions(opt: FindOptionsPerEntity<rowType>) {
@@ -520,7 +525,8 @@ export class FilterHelper<rowType extends Entity<any>> {
       let val = this.filterRow.__getColumn(c).value;
       let f: FilterBase = c.isEqualTo(val);
       if (c instanceof StringColumn) {
-        f = c.isContains(val);
+        if (this.forceEqual.indexOf(c) < 0)
+          f = c.isContains(val);
       }
       if (c instanceof DateTimeColumn) {
         if (val) {
@@ -1932,11 +1938,11 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
   filterRows(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column, false);
+    this.filterHelper.filterColumn(col.column, false, false);
   }
   clearFilter(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column, true);
+    this.filterHelper.filterColumn(col.column, true, (!!col.dropDown || !!col.click));
   }
   _shouldShowFilterDialog(col: FilteredColumnSetting<any>) {
     return col && col._showFilter;
