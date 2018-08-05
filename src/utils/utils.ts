@@ -515,7 +515,8 @@ export class FilterHelper<rowType extends Entity<any>> {
     }
     else if (this.filterColumns.indexOf(column) < 0) {
       this.filterColumns.push(column);
-      this.forceEqual.push(column);
+      if (forceEqual)
+        this.forceEqual.push(column);
     }
     this.reloadData();
   }
@@ -525,7 +526,8 @@ export class FilterHelper<rowType extends Entity<any>> {
       let val = this.filterRow.__getColumn(c).value;
       let f: FilterBase = c.isEqualTo(val);
       if (c instanceof StringColumn) {
-        if (this.forceEqual.indexOf(c) < 0)
+        let fe = this.forceEqual;
+        if (fe.indexOf(c) < 0)
           f = c.isContains(val);
       }
       if (c instanceof DateTimeColumn) {
@@ -1938,11 +1940,11 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
   filterRows(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column, false, false);
+    this.filterHelper.filterColumn(col.column, false, (col.dropDown != undefined || col.click != undefined));
   }
   clearFilter(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column, true, (!!col.dropDown || !!col.click));
+    this.filterHelper.filterColumn(col.column, true, false);
   }
   _shouldShowFilterDialog(col: FilteredColumnSetting<any>) {
     return col && col._showFilter;

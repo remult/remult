@@ -21,14 +21,22 @@ export class AppComponent {
     knowTotalRows: true,
     numOfColumnsInGrid: 4,
     get: { limit: 5 },
-    hideDataArea: true
+    hideDataArea: true,
+    columnSettings: o => [
+      {
+        column: o.customerID, click: o => {
+          console.log('123');
+        }
+      },
+      o.shipAddress
+    ]
   });
   test() {
     let y = this.x.columns.items[2];
     this.x.columns.items.splice(2, 1);
-    this.x.columns.items.splice(this.x.columns.items.length,0,y);
+    this.x.columns.items.splice(this.x.columns.items.length, 0, y);
     this.x.columns.colListChanged();
-    
+
 
   }
   filterColumn: Column<any>;

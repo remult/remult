@@ -399,7 +399,7 @@ describe("column collection", () => {
     let c = new Categories();
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }), () => true);
     await cc.add(c.id);
-    cc.filterHelper.filterColumn(cc.items[0].column, false);
+    cc.filterHelper.filterColumn(cc.items[0].column, false,false);
     expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
 
   });
