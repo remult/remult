@@ -291,10 +291,12 @@ export class GridSettings<rowType extends Entity<any>>  {
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {
-    this.currentRow = row;
-    if (this.onEnterRow && row) {
+    if (this.currentRow != row) {
+      this.currentRow = row;
+      if (this.onEnterRow && row) {
 
-      this.onEnterRow(row);
+        this.onEnterRow(row);
+      }
     }
 
   }
