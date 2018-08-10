@@ -296,11 +296,13 @@ export class DataGridComponent implements OnChanges {
   }
 
   _getRowClass(row: any) {
-    if (row == this.settings.currentRow)
-      return "active";
+    let r = '';
     if (this.settings.rowClass)
-      return this.settings.rowClass(row);
-    return "";
+      r+= this.settings.rowClass(row);
+    if (row == this.settings.currentRow)
+      r+= "active";
+    
+    return r;
   }
 
 
