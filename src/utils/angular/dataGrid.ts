@@ -300,7 +300,7 @@ export class DataGridComponent implements OnChanges {
     if (this.settings.rowClass)
       r+= this.settings.rowClass(row);
     if (row == this.settings.currentRow)
-      r+= "active";
+      r+= " active";
     
     return r;
   }
