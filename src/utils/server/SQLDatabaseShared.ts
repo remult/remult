@@ -77,9 +77,14 @@ class LogSQLCommand implements SQLCommand {
     this.args[r] = val;
     return r;
   }
-  query(sql: string): Promise<SQLQueryResult> {
+  async query(sql: string): Promise<SQLQueryResult> {
     console.log(sql, this.args);
-    return this.origin.query(sql);
+    try {
+      return await this.origin.query(sql);
+    }
+    catch (err) {
+      console.log('error:',err);
+    }
   }
 }
 export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
