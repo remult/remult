@@ -86,7 +86,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
   public static LogToConsole = false;
   constructor(private entityFactory: () => Entity<any>, private name: string, private sql: SQLConnectionProvider, private factory: () => T) {
     if (ActualSQLServerDataProvider.LogToConsole)
-      sql = new LogSQLConnectionProvider(sql);
+      this.sql = new LogSQLConnectionProvider(sql);
   }
   private entity: Entity<any>;
   public count(where: FilterBase): Promise<number> {
