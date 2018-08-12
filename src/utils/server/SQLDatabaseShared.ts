@@ -61,9 +61,32 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 
 
 }
-export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
-  constructor(private entityFactory: () => Entity<any>, private name: string, private sql: SQLConnectionProvider, private factory: () => T) {
+class LogSQLConnectionProvider implements SQLConnectionProvider {
+  constructor(private origin: SQLConnectionProvider) { }
+  createCommand(): SQLCommand {
+    return new LogSQLCommand(this.origin.createCommand());
+  }
+}
+class LogSQLCommand implements SQLCommand {
+  constructor(private origin: SQLCommand) {
 
+  }
+  args: any = {};
+  addParameterToCommandAndReturnParameterName(col: Column<any>, val: any): string {
+    let r = this.origin.addParameterToCommandAndReturnParameterName(col, val);
+    this.args[r] = val;
+    return r;
+  }
+  query(sql: string): Promise<SQLQueryResult> {
+    console.log(sql, this.args);
+    return this.origin.query(sql);
+  }
+}
+export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
+  public static LogToConsole = false;
+  constructor(private entityFactory: () => Entity<any>, private name: string, private sql: SQLConnectionProvider, private factory: () => T) {
+    if (ActualSQLServerDataProvider.LogToConsole)
+      sql = new LogSQLConnectionProvider(sql);
   }
   private entity: Entity<any>;
   public count(where: FilterBase): Promise<number> {
@@ -76,7 +99,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       where.__applyToConsumer(wc);
       select += wc.where;
     }
-    
+
     return r.query(select).then(r => {
       return r.rows[0].count;
     });
@@ -122,7 +145,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       });
 
     }
-    
+
     return r.query(select).then(r => {
 
       return pageArray(r.rows, options).map(y => {
@@ -166,7 +189,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       }
     });
     statement += f.where;
-    
+
     return r.query(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => y[0]);
     });
@@ -185,7 +208,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     let added = false;
 
     statement += f.where;
-    
+
     return r.query(statement).then(() => {
       return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
     });
@@ -228,7 +251,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     });
 
     let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
-    
+
     return r.query(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => {
 
