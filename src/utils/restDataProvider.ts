@@ -60,7 +60,7 @@ class ActualRestDataProvider implements DataProvider {
   }
 
   public update(id: any, data: any): Promise<any> {
-    return myFetch(this.url + '/' + encodeURI(id), {
+    return myFetch(this.url + '/' + encodeURIComponent(id), {
       method: 'put',
       body: JSON.stringify(data)
     }, this.addRequestHeader, JsonContent)
@@ -69,7 +69,7 @@ class ActualRestDataProvider implements DataProvider {
   public delete(id: any): Promise<void> {
     let h = new Headers();
     this.addRequestHeader((name, value) => h.append(name, value));
-    return fetch(this.url + '/' +encodeURI(id), { method: 'delete', credentials: 'include', headers: h }).then(onSuccess, onError);
+    return fetch(this.url + '/' +encodeURIComponent(id), { method: 'delete', credentials: 'include', headers: h }).then(onSuccess, onError);
   }
 
   public insert(data: any): Promise<any> {
