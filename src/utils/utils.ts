@@ -1386,7 +1386,7 @@ export class Entity<idType> {
 
   lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
 
-    let key = lookupEntity.constructor.name;
+    let key = lookupEntity.__getName();
     let lookup: Lookup<lookupIdType, entityType>;
     this.source.__lookupCache.forEach(l => {
       if (l.key == key)
@@ -1401,7 +1401,7 @@ export class Entity<idType> {
   }
   lookupAsync<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): Promise<entityType> {
 
-    let key = lookupEntity.constructor.name;
+    let key = lookupEntity.__getName();
     let lookup: Lookup<lookupIdType, entityType>;
     this.source.__lookupCache.forEach(l => {
       if (l.key == key)
