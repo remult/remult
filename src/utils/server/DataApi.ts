@@ -24,6 +24,10 @@ export class DataApi<T extends Entity<any>> {
   private readonlyColumns = new ColumnHashSet();
 
   async get(response: DataApiResponse, id: any) {
+    if (this.options.allowRead == false) {
+      response.methodNotAllowed();
+      return;
+    }
     await this.doOnId(response, id, async row => response.success(await row.__toPojo(this.excludedColumns)));
   }
   async count(response: DataApiResponse, request: DataApiRequest<any>) {
@@ -36,6 +40,10 @@ export class DataApi<T extends Entity<any>> {
   }
 
   async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
+    if (this.options.allowRead == false) {
+      response.methodNotAllowed();
+      return;
+    }
     try {
       let findOptions: FindOptions = {};
       if (this.options && this.options.get) {
@@ -194,6 +202,7 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
+  allowRead?: boolean,
   excludeColumns?: (r: rowType) => Column<any>[],
   readonlyColumns?: (r: rowType) => Column<any>[],
   name?: string,
