@@ -22,7 +22,7 @@ export interface dataAreaSettings {
 
 
 
-
+export const testing = 'testing 123';
 
 
 
