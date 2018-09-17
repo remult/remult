@@ -7,7 +7,7 @@ import { Component, Input } from '@angular/core';
   selector: 'data-control',
   template: `
 <span *ngIf="!_getEditable()" >{{settings._getColDisplayValue(map,record)}}</span>
-<div *ngIf="_getEditable()" class="" [class.has-error]="settings._getError(map,record)" [style.width]="dataControlStyle()">
+<div *ngIf="_getEditable()" class="" [class.has-error]="settings._getError(map,record)">
     <div >
         <div [class.input-group]="showDescription()||map.click" *ngIf="!isSelect()" style="width:100%">
             <div class="input-group-btn" *ngIf="map.click">

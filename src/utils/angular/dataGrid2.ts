@@ -1,6 +1,6 @@
-import { Entity } from '../utils';
+import { Entity, ColumnSetting } from '../utils';
 import { GridSettings, RowButton, isNewRow, Column } from '../utils';
-import { Component, OnChanges, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnChanges, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { isFunction } from '../common';
 @Component({
   selector: 'data-grid2',
@@ -25,11 +25,11 @@ import { isFunction } from '../common';
   </div>
 
 <div>
-    <div class="dataGrid"  *ngIf="settings&&settings.columns"[style.height]="_getHeight()" >
+    <div class="dataGrid" #dataGridDiv *ngIf="settings&&settings.columns"[style.height]="_getHeight()" >
 
       <div class="dataGridHeaderArea">
         <div class="dataGridRow">
-          <div class="dataGridHeaderCell headerWithFilter" *ngFor="let map of settings.columns.getGridColumns()"  [style.width]="settings.columns.__dataControlStyle(map)" draggable="true" (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)" >
+          <div class="dataGridHeaderCell headerWithFilter" *ngFor="let map of settings.columns.getGridColumns()"  [style.flex]="getColFlex(map)" draggable="true" (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)" >
 
             <span (click)="settings.sort(map.column)">{{map.caption}}</span>
 
@@ -59,7 +59,7 @@ import { isFunction } from '../common';
       <div class="dataGridBodyArea">
         <div class="dataGridRow" *ngFor="let record of records"  [className]="_getRowClass(record)" (click)="rowClicked(record)">
 
-          <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns()" [className]="_getRowColumnClass(map,record)">
+          <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns()" [className]="_getRowColumnClass(map,record)" [style.flex]="getColFlex(map)">
             <data-control [settings]="settings.columns" [map]="map" [record]="record"></data-control>
           </div>
           <div class="dataGridButtonCell" *ngIf="rowButtons.length>0&&displayButtons" style="white-space:nowrap">
@@ -75,25 +75,29 @@ import { isFunction } from '../common';
         <div class="dataGridFooterButtonGroup">
         <button class="btn glyphicon glyphicon glyphicon-cog" (click)="settings.userChooseColumns()"></button>
     <button class="btn glyphicon glyphicon glyphicon-filter" (click)="dataFilter.userFilterButton()"></button>
-        lines per page
+    {{rightToLeft?'שורות בדף': 'lines per page'}}
   <select class="form-control" style="width:80px;display:inline-block" [(ngModel)]="settings.rowsPerPage" (change)="settings.getRecords()">
           <option *ngFor="let r of settings.rowsPerPageOptions" value="{{r}}">{{r}}</option>
       </select></div>
-      <div class="dataGridFooterButtonGroup">
+      <div class="dataGridFooterButtonGroup" *ngIf="!rightToLeft">
       <button class="btn glyphicon glyphicon-step-backward" (click)="settings.firstPage()"></button>
       <button class="btn glyphicon glyphicon-chevron-left" [disabled]="settings.page==1" (click)="settings.previousPage()"></button>
       Page {{settings.page}} of {{getTotalRows()}} 
     <button class="btn btn-sm glyphicon glyphicon-chevron-right"[disabled]="!(records.items&& records.items.length>0)" (click)="settings.nextPage()"></button>
     <button class="btn  btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
-        </div>
+    </div>
+    <div class="dataGridFooterButtonGroup" *ngIf="rightToLeft">
+      <button class="btn glyphicon glyphicon-step-forward" (click)="settings.firstPage()"></button>
+      <button class="btn glyphicon glyphicon-chevron-right" [disabled]="settings.page==1" (click)="settings.previousPage()"></button>
+      עמוד {{settings.page}} מתוך {{getTotalRows()}} 
+    <button class="btn btn-sm glyphicon glyphicon-chevron-left"[disabled]="!(records.items&& records.items.length>0)" (click)="settings.nextPage()"></button>
+    <button class="btn  btn-primary glyphicon glyphicon-plus" *ngIf="settings.allowUpdate &&settings.allowInsert" (click)="settings.addNewRow()"></button>
+    </div>
+    
         
 
         <Data-Filter [settings]="settings" #dataFilter></Data-Filter>
         <div *ngIf="settings.showSelectColumn" class="selectColumnsArea">
-        lines per page
-        <select class="form-control" style="width:100px;display:inline-block" [(ngModel)]="settings.rowsPerPage" (change)="settings.getRecords()">
-                <option *ngFor="let r of settings.rowsPerPageOptions" value="{{r}}">{{r}}</option>
-            </select><br/>
         Select Columns
         <ol>
         <li *ngFor="let c of settings.currList; let i=index">
@@ -130,7 +134,7 @@ import { isFunction } from '../common';
 
   }
   .dataGridDataCell ,.dataGridHeaderCell{
-    flex:0 0 200px;
+    
     
   }
   .dataGridRow{
@@ -241,7 +245,26 @@ table select {
 
 
 
-export class DataGrid2Component implements OnChanges {
+export class DataGrid2Component implements OnChanges, AfterViewInit {
+  ngAfterViewInit(): void {
+    if (window && window.getComputedStyle && this.dataGridDiv) {
+      this.rightToLeft = window.getComputedStyle(this.dataGridDiv.nativeElement, null).getPropertyValue('direction') == 'rtl';
+      console.log(this.rightToLeft);
+    }
+  }
+  getColFlex(map: ColumnSetting<any>) {
+    let x = this.settings.columns.__dataControlStyle(map);
+    if (!x)
+      x = '200px';
+    return '0 0 ' + x;
+  }
+
+  test() {
+    //this.dataGridDiv.nativeElement.scrollTop = 0;
+  }
+  rightToLeft = false;
+  @ViewChild('dataGridDiv')
+  dataGridDiv: ElementRef;
   getTotalRows() {
     if (this.settings.totalRows)
       return Math.ceil(this.settings.totalRows / this.settings.rowsPerPage);
@@ -259,7 +282,7 @@ export class DataGrid2Component implements OnChanges {
     let oldPosition = this.settings.columns.items.indexOf(this.tempDragColumn);
     this.settings.columns.items.splice(oldPosition, 1);
     let newPosition = this.settings.columns.items.indexOf(x);
-    if (newPosition==oldPosition)
+    if (newPosition == oldPosition)
       newPosition++;
     this.settings.columns.items.splice(newPosition, 0, this.tempDragColumn);
     this.settings.columns.colListChanged();
@@ -405,7 +428,6 @@ export class DataGrid2Component implements OnChanges {
       });
 
     }
-
 
   }
 

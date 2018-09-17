@@ -27,7 +27,9 @@ export class AppComponent {
     },
     columnSettings: o => [
       {
-        column: o.customerID, click: x => { }
+        column: o.customerID, click: x => { },
+        width:'150px'
+
       },
       o.shipAddress,
       {
