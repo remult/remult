@@ -14,6 +14,7 @@
     "lint": "ng lint",
     "ng-serve": "ng serve",
     "server": " ts-node   -P tsconfig.server.json src/app/server/server.ts",
+    "ng-serve-noam-ip-10.0.0.6": "ng serve --host 10.0.0.6",
     "server:debug": " ts-node  --inspect  --debug-brk -P tsconfig.server.json src/app/server/server.ts",
     "server:watch": "concurrently \"tsc -P tsconfig.server.json -w\" \"nodemon distServer/src/app/server/server.js --ignore /appData",
     "e2e": "ng e2e",

@@ -398,6 +398,10 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.page--;
     return this.getRecords();
   }
+  firstPage(){
+    this.page=1;
+    return this.getRecords();
+  }
   rowsPerPage: number;
   rowsPerPageOptions = [10, 25, 50, 100, 500, 1000];
   get(options: FindOptionsPerEntity<rowType>) {

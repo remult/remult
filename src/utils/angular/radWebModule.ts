@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgModule } from "@angular/core";
 import { DataFilterInfoComponent } from './data-filter-info';
+import { DataGrid2Component } from './dataGrid2';
 
 
 @NgModule({
@@ -17,12 +18,12 @@ import { DataFilterInfoComponent } from './data-filter-info';
     FormsModule, CommonModule
   ],
   declarations:
-    [DataGridComponent, DataAreaCompnent, DataControlComponent, ColumnDesigner, SelectPopupComponent,
+    [DataGridComponent, DataAreaCompnent, DataControlComponent, ColumnDesigner, SelectPopupComponent,DataGrid2Component,
       DataFilterInfoComponent]
   ,
   providers: [],
   bootstrap: [],
-  exports: [DataGridComponent, DataAreaCompnent, SelectPopupComponent,DataControlComponent,DataFilterInfoComponent]
+  exports: [DataGridComponent,DataGrid2Component, DataAreaCompnent, SelectPopupComponent,DataControlComponent,DataFilterInfoComponent]
 
 })
 export class RadWebModule { }

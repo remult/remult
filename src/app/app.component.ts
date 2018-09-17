@@ -19,16 +19,22 @@ export class AppComponent {
     allowDelete: true,
     allowInsert: true,
     knowTotalRows: true,
-    numOfColumnsInGrid: 4,
-    get: { limit: 5 },
+    numOfColumnsInGrid: 100,
+    get: { limit: 100 },
     hideDataArea: true,
+    onValidate:o=>{
+      o.shipCountry.error='Has Errors';
+    },
     columnSettings: o => [
       {
-        column: o.customerID, click: o => {
-          console.log('123');
-        }
+        column: o.customerID, click: x => { }
       },
-      o.shipAddress
+      o.shipAddress,
+      {
+        column: o.shipCity,
+        getValue:x=>'asdf'
+      },
+      o.shipCountry
     ]
   });
   test() {

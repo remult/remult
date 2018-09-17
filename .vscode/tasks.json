@@ -60,6 +60,11 @@
                 "$tsc-watch"
             ],
             "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "ng-serve-noam-ip-10.0.0.6",
+            "problemMatcher": []
         }
     ]
 }
