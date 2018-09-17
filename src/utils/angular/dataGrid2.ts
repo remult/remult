@@ -432,7 +432,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   }
 
   _getRowClass(row: any) {
-    let r = 'dataGridRow';
+    let r = 'dataGridRow ';
     if (this.settings.rowClass)
       r += this.settings.rowClass(row);
     if (row == this.settings.currentRow)
