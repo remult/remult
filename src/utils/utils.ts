@@ -204,7 +204,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   initOrigList() {
     if (!this.origList) {
       this.origList = [];
-      this.origNumOfColumns = this.settings.numOfColumnsInGrid;
+      this.origNumOfColumns = this.columns.numOfColumnsInGrid;
       this.origList.push(...this.columns.items);
     }
   }

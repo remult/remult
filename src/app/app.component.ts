@@ -19,7 +19,7 @@ export class AppComponent {
     allowDelete: true,
     allowInsert: true,
     knowTotalRows: true,
-    numOfColumnsInGrid: 100,
+    //numOfColumnsInGrid: 100,
     get: { limit: 100 },
     hideDataArea: true,
     onValidate:o=>{
