@@ -14,7 +14,7 @@ import * as models from './models';
 })
 export class AppComponent {
 
-  x = new GridSettings(new models.Orders(), {
+  x = new GridSettings<models.Orders>(new models.Orders(), {
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true,
@@ -34,7 +34,7 @@ export class AppComponent {
       o.shipAddress,
       {
         column: o.shipCity,
-        getValue:x=>'asdf'
+        getValue:x=>'asdfkjhgfdfghjkjhgfdfghjklkjhgfdfghjklkjhgfghj'
       },
       o.shipCountry
     ]

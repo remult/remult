@@ -26,10 +26,10 @@ import { isFunction } from '../common';
 
 <div>
     <div class="dataGrid" #dataGridDiv *ngIf="settings&&settings.columns"[style.height]="_getHeight()" >
-
+    <div class="inner-wrapper">
       <div class="dataGridHeaderArea">
         <div class="dataGridRow">
-          <div class="dataGridHeaderCell headerWithFilter" *ngFor="let map of settings.columns.getGridColumns()"  [style.flex]="getColFlex(map)" draggable="true" (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)" >
+          <div class="dataGridHeaderCell headerWithFilter" *ngFor="let map of settings.columns.getGridColumns()"  [style.flex]="getColFlex(map)" [style.width]="getColWidth(map)" draggable="true" (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)" >
 
             <span (click)="settings.sort(map.column)">{{map.caption}}</span>
 
@@ -53,13 +53,13 @@ import { isFunction } from '../common';
 
 
           </div>
-          <div class="dataGridButtonHeaderCell" *ngIf="rowButtons&& rowButtons.length>0&&displayButtons" [class.col-xs-1]="rowButtons&&rowButtons.length<3" [class.col-xs-2]="rowButtons.length>=3"></div>
+          <div class="dataGridButtonHeaderCell" *ngIf="rowButtons&& rowButtons.length>0&&displayButtons" [class.col-xs-1]="rowButtons&&rowButtons.length<3" ></div>
         </div>
       </div>
       <div class="dataGridBodyArea">
         <div class="dataGridRow" *ngFor="let record of records"  [className]="_getRowClass(record)" (click)="rowClicked(record)">
 
-          <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns()" [className]="_getRowColumnClass(map,record)" [style.flex]="getColFlex(map)">
+          <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns()" [className]="_getRowColumnClass(map,record)" [style.flex]="getColFlex(map)" [style.width]="getColWidth(map)">
             <data-control [settings]="settings.columns" [map]="map" [record]="record"></data-control>
           </div>
           <div class="dataGridButtonCell" *ngIf="rowButtons.length>0&&displayButtons" style="white-space:nowrap">
@@ -69,6 +69,7 @@ import { isFunction } from '../common';
           </div>
         </div>
 
+        </div>
         </div>
         </div>
         <div class="dataGridFooterArea" *ngIf="records">
@@ -117,7 +118,10 @@ import { isFunction } from '../common';
   <data-area *ngIf="!settings.hideDataArea" [settings]="settings" [columns]="2"></data-area>
   `,
   styles: [`
-  .dataGrid{
+  .inner-wrapper {
+    display: inline-block;
+  }
+    .dataGrid{
     overflow:auto;
     border:1px solid #e0e0e0;
   }
@@ -148,7 +152,7 @@ import { isFunction } from '../common';
     position:sticky;
     top:0;
     clear:both;
-    
+    background-color:rgb(245, 245, 245);
     z-index:3;
     
   }
@@ -172,7 +176,7 @@ import { isFunction } from '../common';
     padding:4px;
   }
   .dataGridHeaderCell{
-    background-color:rgb(245, 245, 245);
+ 
     height:36px;
     font-weight:bold;
   }
@@ -253,10 +257,14 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     }
   }
   getColFlex(map: ColumnSetting<any>) {
+    return '0 0 ' + this.getColWidth(map);
+  }
+  getColWidth(map:ColumnSetting<any>)
+  {
     let x = this.settings.columns.__dataControlStyle(map);
     if (!x)
       x = '200px';
-    return '0 0 ' + x;
+    return  x;
   }
 
   test() {
