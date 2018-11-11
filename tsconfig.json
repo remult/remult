@@ -1,24 +1,32 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": ".",
-    "declaration": true,
-    "stripInternal": true,
-    "experimentalDecorators": true,
-    "noImplicitAny": true,
-    "target":"es5",
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
     "module": "es2015",
     "moduleResolution": "node",
-    "rootDir": ".",
-    "outDir": "dist",
-    "sourceMap": true,
-    "inlineSources": true,
-
-    "skipLibCheck": true,
-    "lib": [ "es2015", "dom" ]
-   
-
-
-  },
-  //"files":["./src/index.ts"],
-  "angularCompilerOptions": { "strictMetadataEmit": true }
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es5",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "paths": {
+      "radweb": [
+        "dist/radweb"
+      ],
+      "radweb-server":[
+        "dist/radweb-server"
+      ],
+      "radweb/*": [
+        "dist/radweb/*"
+      ]
+    }
+  }
 }

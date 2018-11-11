@@ -1,0 +1,6 @@
+{
+    "extends": "../radweb-server/tsconfig.json",
+    "compilerOptions": {
+        "outDir":"../../dist/radweb-server-mssql"
+    }
+}

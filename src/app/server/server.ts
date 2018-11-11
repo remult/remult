@@ -1,17 +1,12 @@
+import { DataApi,Entity, NumberColumn, DateTimeColumn } from 'radweb';
+import { Pool } from 'pg';
 import { Orders, Customers, Shippers, Products, Order_details } from './../models';
-import { DataApi, DataApiResponse, DataApiError } from './../../utils/server/DataApi';
-import { SQLServerDataProvider } from '../../utils/server/SQLServerDataProvider';
 import { environment } from './../../environments/environment';
-import { JsonFileDataProvider } from './../../utils/server/JsonFileDataProvider';
-import { InMemoryDataProvider } from './../../utils/inMemoryDatabase';
-import { Sort, Entity, NumberColumn, DateTimeColumn } from './../../utils/utils';
-
 import { Categories } from '../models';
 import * as express from 'express';
-import * as fs from 'fs';
-import { ExpressBridge } from './../../utils/server/expressBridge';
-import { Pool } from 'pg';
-import { PostgresDataProvider, PostgrestSchemaBuilder } from '../../utils/server/PostgresDataProvider';
+import { JsonFileDataProvider,ExpressBridge } from 'radweb-server';
+
+import { PostgrestSchemaBuilder } from 'radweb-server-postgres';
 
 var p = new Pool({
     database: 'postgres', user: 'postgres', password: 'MASTERKEY', host: 'localhost'

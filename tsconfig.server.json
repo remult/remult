@@ -5,23 +5,28 @@
     "stripInternal": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,
-    "target":"es5",
+    "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
     "rootDir": ".",
     "outDir": "distServer",
     "sourceMap": true,
     "inlineSources": true,
-
     "skipLibCheck": true,
-    "lib": [ "es2015", "dom" ],
+    "lib": [
+      "es2015",
+      "dom"
+    ],
     "paths": {
-      "@angular/core": [ "node_modules/@angular/core" ],
-      "rxjs/*": [ "node_modules/rxjs/*" ]
+      "radweb": [
+        "dist/radweb"
+      ],
+      "radweb/*": [
+        "dist/radweb/*"
+      ]
     }
-
-
   },
-  
-  "angularCompilerOptions": { "strictMetadataEmit": true }
+  "angularCompilerOptions": {
+    "strictMetadataEmit": true
+  }
 }

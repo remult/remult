@@ -1,8 +1,8 @@
 import { environment } from './../environments/environment';
 
-import { Entity, EntitySource, DateTimeDateStorage } from './../utils/utils';
-import { DataProvider, DataProviderFactory } from './../utils/dataInterfaces1';
-import * as radweb from '../utils/utils';
+import { Entity, EntitySource, DateTimeDateStorage } from 'radweb';
+import { DataProvider, DataProviderFactory } from 'radweb';
+import * as radweb from 'radweb';
 
 export class Categories extends radweb.Entity<number> {
   id = new radweb.NumberColumn({dbName: 'CategoryID'});
@@ -18,7 +18,7 @@ export class Categories extends radweb.Entity<number> {
       super(() => new Categories(settings), environment.dataSource,settings);
       this.initColumns();
   }
-}
+} 
 export class Orders extends radweb.Entity<number> {
   id = new radweb.NumberColumn({dbName:"OrderId"});
   customerID = new radweb.StringColumn();
