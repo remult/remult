@@ -15,9 +15,9 @@
     "cc": "copyfiles -u 2 projects/radweb-server/package.json dist/radweb-server",
     "server-run": "node distServer/src/app/server/server.js",
     "server-watch": "ts-node-dev --respawn --project tsconfig.server.json  src/app/server/server.ts",
-    "publish-radweb":"cd dist/radweb && npm publish --tag pre-alpha",
-    "publish-radweb-server":"cd dist/radweb-server && npm publish --tag pre-alpha",
-    "publish-radweb-server-postgres":"cd dist/radweb-server-postgres && npm publish --tag pre-alpha"
+    "publish-radweb": "cd dist/radweb && npm publish --tag pre-alpha",
+    "publish-radweb-server": "cd dist/radweb-server && npm publish --tag pre-alpha",
+    "publish-radweb-server-postgres": "cd dist/radweb-server-postgres && npm publish --tag pre-alpha"
   },
   "private": true,
   "dependencies": {
