@@ -16,4 +16,4 @@ import { SelectPopupComponent } from './angular-components/select-popup.ts/selec
   ,
   exports: [DataControlComponent,DataGridComponent,ColumnDesigner,DataFilterInfoComponent,DataAreaCompnent,DataGrid2Component,SelectPopupComponent]
 })
-export class RadwebModule { }
+export class RadWebModule { }

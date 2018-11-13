@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { RadwebModule } from 'radweb';
+import { RadWebModule } from 'radweb';
 
 @NgModule({
   declarations: [
@@ -12,7 +12,7 @@ import { RadwebModule } from 'radweb';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    RadwebModule
+    RadWebModule
   ],
   providers: [],
   bootstrap: [AppComponent]
