@@ -4,7 +4,6 @@ import { isFunction } from '../../core/common';
 @Component({
   selector: 'data-grid2',
   template: `
-123
   <div *ngIf="settings&&settings.columns&& settings.columns.designMode">
 <pre>
 {{settings.columns.__columnSettingsTypeScript()}}
