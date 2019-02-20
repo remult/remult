@@ -47,7 +47,7 @@ export interface DataColumnSettings<type, colType> {
   caption?: string;
   readonly?: boolean;
   inputType?: string;
-  dbName?: string;
+  dbName?: string | (() => string);
   value?: type;
   storage?: ColumnStorage<type>;
   onValidate?: (col: colType) => void | Promise<void>;

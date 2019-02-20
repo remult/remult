@@ -398,8 +398,8 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.page--;
     return this.getRecords();
   }
-  firstPage(){
-    this.page=1;
+  firstPage() {
+    this.page = 1;
     return this.getRecords();
   }
   rowsPerPage: number;
@@ -965,7 +965,7 @@ export class Column<dataType>  {
   onValueChange: () => void;
   jsonName: string;
   caption: string;
-  dbName: string;
+  dbName: string | (() => string);
   private __settings: DataColumnSettings<dataType, Column<dataType>>;
   __getMemberName() { return this.jsonName; }
   constructor(settingsOrCaption?: DataColumnSettings<dataType, Column<dataType>> | string) {
@@ -1030,9 +1030,14 @@ export class Column<dataType>  {
     return new DefaultStorage<any>();
   }
   error: string;
-  __getDbName() {
+  __getDbName(): string {
     if (this.dbName)
-      return this.dbName;
+      if (isFunction(this.dbName)) {
+        let x = this.dbName as any;
+        return x();
+      }
+      else
+        return this.dbName.toString();
     return this.jsonName;
   }
   readonly: boolean;

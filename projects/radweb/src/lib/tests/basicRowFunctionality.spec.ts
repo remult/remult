@@ -5,7 +5,7 @@ import { DataApi, DataApiError, DataApiResponse } from '../server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase';
 import { itAsync, Done } from './testHelper.spec';
 
-import { Categories,environment } from './testModel/models';
+import { Categories, environment } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 
 
@@ -612,7 +612,7 @@ describe("data api", () => {
     await api.getArray(t, {
       get: x => {
         if (x == "id_ne")
-          return [ "1", "3"];
+          return ["1", "3"];
         return undefined;
       }, clientIp: '', authInfo: undefined, getHeader: x => ""
     });
@@ -1038,6 +1038,18 @@ describe("test data list", () => {
     expect(rl.items.length).toBe(3);
     await rl.items[1].delete();
     expect(rl.items.length).toBe(2);
+  });
+  it("dbname string works", () => {
+    let i = 0;
+    var co = new StringColumn({ dbName: 'test' });
+    expect(co.__getDbName()).toBe('test');
+  });
+  it("dbname calcs Late", () => {
+    let i = 0;
+    var co = new StringColumn({ dbName: () => 'test' + (i++) }) ;
+    expect(i).toBe(0);
+    expect(co.__getDbName()).toBe('test0');
+    expect(i).toBe(1);
   });
   itAsync("delete fails nicely", async () => {
     let c = new Categories();
