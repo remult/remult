@@ -1046,11 +1046,22 @@ describe("test data list", () => {
   });
   it("dbname calcs Late", () => {
     let i = 0;
-    var co = new StringColumn({ dbName: () => 'test' + (i++) }) ;
+    var co = new StringColumn({ dbName: () => 'test' + (i++) });
     expect(i).toBe(0);
     expect(co.__getDbName()).toBe('test0');
     expect(i).toBe(1);
   });
+  it("dbname of entity string works", () => {
+    var e = new Categories({
+      dbName: 'test'
+    });
+    expect(e.__getDbName()).toBe('test');
+  });
+  it("dbname of entity can use column names", () => {
+    var e = new EntityWithLateBoundDbName();
+    expect(e.__getDbName()).toBe('(select CategoryID)');
+  });
+
   itAsync("delete fails nicely", async () => {
     let c = new Categories();
     c.setSource({
@@ -1151,5 +1162,16 @@ export class entityWithValidationsOnEntityEvent extends Entity<number>{
       if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid';
     };
+  }
+}
+export class EntityWithLateBoundDbName extends Entity<number> {
+  id = new NumberColumn({ dbName: 'CategoryID' });
+  constructor() {
+    super(() => new EntityWithLateBoundDbName(), new InMemoryDataProvider(),
+      {
+        dbName:()=> '(select ' + this.id.__getDbName() + ')'
+
+      });
+    this.initColumns();
   }
 }

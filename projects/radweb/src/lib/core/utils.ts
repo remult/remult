@@ -1,7 +1,7 @@
 
 
 
-import { makeTitle, isFunction } from './common';
+import { makeTitle, isFunction, functionOrString } from './common';
 
 import {
   DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
@@ -1032,12 +1032,8 @@ export class Column<dataType>  {
   error: string;
   __getDbName(): string {
     if (this.dbName)
-      if (isFunction(this.dbName)) {
-        let x = this.dbName as any;
-        return x();
-      }
-      else
-        return this.dbName.toString();
+      return functionOrString(this.dbName);
+
     return this.jsonName;
   }
   readonly: boolean;
@@ -1150,7 +1146,7 @@ export class AndFilter implements FilterBase {
 }
 export interface EntityOptions {
   name?: string;
-  dbName?: string;
+  dbName?: string | (() => string);
   caption?: string;
   onSavingRow?: (e: Entity<any>) => Promise<any> | any;
   onValidate?: (e: Entity<any>) => Promise<any> | any;
@@ -1189,7 +1185,7 @@ export class Entity<idType> {
       this.__options = {};
     if (!this.__options.dbName)
       this.__options.dbName = this.__getName();
-    return this.__options.dbName;
+    return functionOrString(this.__options.dbName);
   }
   __getCaption() {
     if (!this.__options) {
