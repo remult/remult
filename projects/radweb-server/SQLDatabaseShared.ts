@@ -81,7 +81,8 @@ class LogSQLCommand implements SQLCommand {
       return await this.origin.query(sql);
     }
     catch (err) {
-      console.log('error:', err);
+      console.log('error:', err,sql);
+      throw err;
     }
   }
 }
