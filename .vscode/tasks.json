@@ -60,6 +60,24 @@
             "problemMatcher": [
                 "$tsc"
             ]
+        },
+        {
+            "type": "npm",
+            "script": "radweb-server-build",
+            "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "server-run",
+            "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "app-server-watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true
         }
     ]
 }

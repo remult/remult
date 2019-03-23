@@ -1,4 +1,4 @@
-import {DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn } from 'radweb';
+import { DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn } from 'radweb';
 
 import { Pool, QueryResult } from 'pg';
 import { ActualSQLServerDataProvider, SQLConnectionProvider, SQLCommand, SQLQueryResult } from 'radweb-server';
@@ -114,8 +114,12 @@ export class PostgrestSchemaBuilder {
             result += " date";
         else if (x instanceof BoolColumn)
             result += " boolean default false not null";
-        else if (x instanceof NumberColumn)
-            result += " int default 0 not null";
+        else if (x instanceof NumberColumn) {
+            if (x.__numOfDecimalDigits == 0)
+                result += " int default 0 not null";
+            else
+                result += ' numeric default 0 not null';
+        }
         else
             result += " varchar default '' not null ";
         return result;
@@ -132,7 +136,7 @@ export class PostgrestSchemaBuilder {
                     [e.__getDbName().toLocaleLowerCase(),
                     c(e).__getDbName().toLocaleLowerCase()])).rowCount == 0) {
                 let sql = `alter table ${e.__getDbName()} add column ${this.addColumnSqlSyntax(c(e))}`;
-                
+
                 await this.pool.query(sql);
             }
         }

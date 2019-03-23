@@ -1733,11 +1733,16 @@ export class DateTimeColumn extends Column<string>{
 
 
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: DataColumnSettings<number, NumberColumn> | string) {
+  constructor(settingsOrCaption?: NumberColumnSettings | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
+      let s = settingsOrCaption as NumberColumnSettings;
+      if (s&&s.decimalDigits){
+        this.__numOfDecimalDigits= s.decimalDigits;
+      }
   }
+  __numOfDecimalDigits:number=0;
   protected __processValue(value: number) {
 
     if (value != undefined && !(typeof value === "number"))
@@ -1745,6 +1750,9 @@ export class NumberColumn extends Column<number>{
     return value;
 
   }
+}
+export interface NumberColumnSettings extends DataColumnSettings<number,NumberColumn>{
+  decimalDigits?:number;
 }
 export class BoolColumn extends Column<boolean>{
   constructor(settingsOrCaption?: DataColumnSettings<boolean, BoolColumn> | string) {

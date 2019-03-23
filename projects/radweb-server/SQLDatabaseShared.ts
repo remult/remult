@@ -81,7 +81,7 @@ class LogSQLCommand implements SQLCommand {
       return await this.origin.query(sql);
     }
     catch (err) {
-      console.log('error:', err,sql);
+      console.log('error:', err, sql);
       throw err;
     }
   }
@@ -91,6 +91,9 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
   constructor(private entityFactory: () => Entity<any>, private name: string, private sql: SQLConnectionProvider, private factory: () => T) {
     if (ActualSQLServerDataProvider.LogToConsole)
       this.sql = new LogSQLConnectionProvider(sql);
+  }
+  createDirectSQLCommand() {
+    return this.sql.createCommand();
   }
   private entity: Entity<any>;
   public count(where: FilterBase): Promise<number> {
@@ -149,10 +152,21 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
       });
 
     }
+    if (options) {
+
+      if (options.limit) {
+
+        let page = 1;
+        if (options.page)
+          page = options.page;
+        if (page < 1)
+          page = 1;
+        select += ' limit ' + options.limit + ' offset ' + (page - 1) * options.limit;
+      }
+    }
 
     return r.query(select).then(r => {
-
-      return pageArray(r.rows, options).map(y => {
+      return r.rows.map(y => {
         let result: any = {};
         for (let x in y) {
           let col = colKeys[r.getColumnIndex(x)];
