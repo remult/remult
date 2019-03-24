@@ -1,64 +1,10 @@
-import { FilterConsumer, DataProvider, FindOptions, FilterBase, Column, CompoundIdColumn, Entity, StringColumn, pageArray } from "radweb";
-
-
-
-
-export interface SQLCommand {
-  addParameterToCommandAndReturnParameterName(col: Column<any>, val: any): string;
-  query(sql: string): Promise<SQLQueryResult>;
-}
-export interface SQLQueryResult {
-  rows: any[];
-  getColumnIndex(name: string): number;
-}
-
-
-
-export interface SQLConnectionProvider {
-  createCommand(): SQLCommand;
-}
-
-export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
-  where = "";
-  constructor(private r: SQLCommand) { }
-  IsEqualTo(col: Column<any>, val: any): void {
-    this.add(col, val, "=");
-  }
-  IsDifferentFrom(col: Column<any>, val: any): void {
-    this.add(col, val, "<>");
-  }
-  IsGreaterOrEqualTo(col: Column<any>, val: any): void {
-    this.add(col, val, ">=");
-  }
-  IsGreaterThan(col: Column<any>, val: any): void {
-    this.add(col, val, ">");
-  }
-  IsLessOrEqualTo(col: Column<any>, val: any): void {
-    this.add(col, val, "<=");
-  }
-  IsLessThan(col: Column<any>, val: any): void {
-    this.add(col, val, "<");
-  }
-  public isContains(col: StringColumn, val: any): void {
-    this.add(col, '%' + val + '%', 'like');
-  }
-  public isStartsWith(col: StringColumn, val: any): void {
-    this.add(col, val + '%', 'like');
-  }
-  private add(col: Column<any>, val: any, operator: string) {
-    if (this.where.length == 0) {
-
-      this.where += ' where ';
-    } else this.where += ' and ';
-    this.where += col.__getDbName() + ' ' + operator + ' ' + this.r.addParameterToCommandAndReturnParameterName(col, val);
-
-  }
+import {  DataProvider, FindOptions, FilterBase, Column, CompoundIdColumn, Entity, 
+  FilterConsumerBridgeToSqlRequest ,SQLConnectionProvider,SQLCommand,SQLQueryResult} from "radweb";
 
 
 
 
 
-}
 class LogSQLConnectionProvider implements SQLConnectionProvider {
   constructor(private origin: SQLConnectionProvider) { }
   createCommand(): SQLCommand {

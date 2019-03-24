@@ -1,7 +1,7 @@
-import { DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn } from 'radweb';
+import { DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn,SQLConnectionProvider, SQLCommand, SQLQueryResult  } from 'radweb';
 
 import { Pool, QueryResult } from 'pg';
-import { ActualSQLServerDataProvider, SQLConnectionProvider, SQLCommand, SQLQueryResult } from 'radweb-server';
+import { ActualSQLServerDataProvider} from 'radweb-server';
 
 
 export class PostgresDataProvider implements DataProviderFactory {
