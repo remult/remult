@@ -1737,12 +1737,12 @@ export class NumberColumn extends Column<number>{
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
-      let s = settingsOrCaption as NumberColumnSettings;
-      if (s&&s.decimalDigits){
-        this.__numOfDecimalDigits= s.decimalDigits;
-      }
+    let s = settingsOrCaption as NumberColumnSettings;
+    if (s && s.decimalDigits) {
+      this.__numOfDecimalDigits = s.decimalDigits;
+    }
   }
-  __numOfDecimalDigits:number=0;
+  __numOfDecimalDigits: number = 0;
   protected __processValue(value: number) {
 
     if (value != undefined && !(typeof value === "number"))
@@ -1751,8 +1751,8 @@ export class NumberColumn extends Column<number>{
 
   }
 }
-export interface NumberColumnSettings extends DataColumnSettings<number,NumberColumn>{
-  decimalDigits?:number;
+export interface NumberColumnSettings extends DataColumnSettings<number, NumberColumn> {
+  decimalDigits?: number;
 }
 export class BoolColumn extends Column<boolean>{
   constructor(settingsOrCaption?: DataColumnSettings<boolean, BoolColumn> | string) {
@@ -1923,7 +1923,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       }
       else if (s.dropDown.source) {
         if (s.dropDown.source instanceof Entity) {
-          return new DataList(s.dropDown.source).get({ limit: 5000 }).then(arr =>
+          return new DataList(s.dropDown.source).get({ limit: 5000, orderBy: e => [{ column: e.__getColumn(s.dropDown.captionColumn) }] }).then(arr =>
             populateBasedOnArray(arr));
         }
 
