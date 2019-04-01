@@ -3,28 +3,8 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
-        {
-            "type": "npm",
-            "script": "build",
-            "problemMatcher": [
-                "$tsc"
-            ]
-        },
-        {
-            "type": "npm",
-            "script": "server-build",
-            "problemMatcher": [
-                "$tsc"
-            ]
-        },
-        {
-            "type": "npm",
-            "script": "server-watch",
-            "problemMatcher": [
-                "$tsc-watch"
-            ],
-            "isBackground": true
-        },
+        
+        
         {
             "type": "npm",
             "script": "radweb-server-mssql-build",
@@ -78,6 +58,13 @@
                 "$tsc-watch"
             ],
             "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "radweb-build",
+            "problemMatcher": [
+                "$tsc"
+            ]
         }
     ]
 }

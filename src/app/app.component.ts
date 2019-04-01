@@ -14,7 +14,7 @@ import * as models from './models';
 })
 export class AppComponent {
 
-  x = new GridSettings<models.Orders>(new models.Orders(), {
+  x = new GridSettings<models.Products>(new models.Products(), {
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true,
@@ -23,30 +23,19 @@ export class AppComponent {
     get: { limit: 100 },
     hideDataArea: true,
     onValidate:o=>{
-      o.shipCountry.error='Has Errors';
+      
     },
-    columnSettings: o => [
+    columnSettings:p=>[
+      p.id,p.productName,p.discontinued,
       {
-        column: o.customerID, click: x => { },
-        width:'150px'
-
-      },
-      o.shipAddress,
-      {
-        column: o.shipCity,
-        getValue:x=>'asdfkjhgfdfghjkjhgfdfghjklkjhgfdfghjklkjhgfghj'
-      },
-      o.shipCountry
+        getValue:p=>p.discontinued.value +'noam'
+      }
     ]
+   
+   
   });
-  test() {
-    let y = this.x.columns.items[2];
-    this.x.columns.items.splice(2, 1);
-    this.x.columns.items.splice(this.x.columns.items.length, 0, y);
-    this.x.columns.colListChanged();
-
-
-  }
+  inputType='checkbox';
+  test;
   filterColumn: Column<any>;
 
 }

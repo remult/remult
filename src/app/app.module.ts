@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { RadWebModule } from 'radweb';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import { RadWebModule } from 'radweb';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    RadWebModule
+    RadWebModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

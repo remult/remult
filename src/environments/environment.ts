@@ -1,4 +1,5 @@
-import { RestDataProvider, DataProviderFactory } from "radweb";
+import { RestDataProvider, DataProviderFactory,LocalStorageDataProvider } from "radweb";
+
 
 var serverUrl = 'http://localhost:3001/';
 if (typeof (window) === 'undefined') {
@@ -11,6 +12,6 @@ else {
 export const environment = {
   production: false,
   serverUrl,
-  //dataSource: new LocalStorageDataProvider() as DataProviderFactory
-  dataSource: new RestDataProvider(serverUrl + 'dataapi') as DataProviderFactory
+  dataSource: new LocalStorageDataProvider() as DataProviderFactory
+  //dataSource: new RestDataProvider(serverUrl + 'dataapi') as DataProviderFactory
 };

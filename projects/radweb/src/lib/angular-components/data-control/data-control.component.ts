@@ -1,5 +1,5 @@
 
-import {ColumnCollection, ColumnSetting,Entity } from '../../core/utils';
+import { ColumnCollection, ColumnSetting, Entity } from '../../core/utils';
 import { Component, Input } from '@angular/core';
 @Component({
   selector: 'data-control',
@@ -7,7 +7,7 @@ import { Component, Input } from '@angular/core';
 <span *ngIf="!_getEditable()" >{{settings._getColDisplayValue(map,record)}}</span>
 <div *ngIf="_getEditable()" class="" [class.has-error]="settings._getError(map,record)">
     <div >
-        <div [class.input-group]="showDescription()||map.click" *ngIf="!isSelect()" style="width:100%">
+        <div [class.input-group]="showDescription()||map.click" *ngIf="showTextBox()" style="width:100%">
             <div class="input-group-btn" *ngIf="map.click">
                 <button type="button" class="btn btn-default" (click)="settings._click(map,record)" > <span class="glyphicon glyphicon-chevron-down"></span></button>
             </div>
@@ -22,6 +22,11 @@ import { Component, Input } from '@angular/core';
 
             </select>
         </div>
+        <div *ngIf="showCheckbox()" style="width:100%">
+        <input class="form-control"  [(ngModel)]="_getColumn().value" type="checkbox" (ngModelChange)="settings._colValueChanged(map,record)" *ngIf="!map.hideDataOnInput" />
+        
+
+    </div>
     <span class="help-block" *ngIf="settings._getError(map,record)">{{settings._getError(map,record)}}</span>
 
     </div>
@@ -36,12 +41,12 @@ export class DataControlComponent {
 
     return (this.map.column) && this.map.getValue;
   }
-  dataControlStyle(){
+  dataControlStyle() {
     return this.settings.__dataControlStyle(this.map);
   }
   _getColumn() {
-    return this.settings.__getColumn(this.map,this.record);
-    
+    return this.settings.__getColumn(this.map, this.record);
+
   }
   _getEditable() {
     if (this.notReadonly)
@@ -51,10 +56,16 @@ export class DataControlComponent {
   ngOnChanges(): void {
 
   }
-  isSelect() :boolean{
-    if ( this.map.dropDown)
+  isSelect(): boolean {
+    if (this.map.dropDown)
       return true;
     return false;
   }
-  
+  showTextBox() {
+    return !this.isSelect() && !this.showCheckbox();
+  }
+  showCheckbox(){
+    return this.settings._getColDataType(this.map) == 'checkbox'
+  }
+
 }
