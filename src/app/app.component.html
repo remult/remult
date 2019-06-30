@@ -1,3 +1,7 @@
-<data-area [settings]="area"></data-area>
-DisplayValue: {{myDate.displayValue}}<br>
-value: {{myDate.value}}
+<div>
+    <data-grid2 [settings]="x" [height]="'400'"></data-grid2>
+  </div>
+  <data-area [settings]="x"></data-area>
+  
+   <input type="{{inputType}}" [(ngModel)]="test" >
+   {{test}}

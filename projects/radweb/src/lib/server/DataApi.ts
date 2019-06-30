@@ -93,7 +93,7 @@ export class DataApi<T extends Entity<any>> {
     if (request) {
       this.rowType.__iterateColumns().forEach(col => {
         function addFilter(key: string, theFilter: (val: any) => FilterBase) {
-          let val = request.get(col.jsonName + key);
+          let val = col.fromRawValue(request.get(col.jsonName + key));
           if (val != undefined) {
             let addFilter = (val: any) => {
               let f = theFilter(val);

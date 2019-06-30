@@ -1,10 +1,10 @@
-import { GridSettings, Column, DateColumn, DataAreaSettings, NumberColumn } from 'radweb';
+import { GridSettings, Column } from 'radweb';
 import { Component } from '@angular/core';
 import * as models from './models';
 
 
 
-
+ 
 
 @Component({
   selector: 'app-root',
@@ -14,10 +14,28 @@ import * as models from './models';
 })
 export class AppComponent {
 
- myDate = new DateColumn('התאריך שלי');
- nc = new NumberColumn('המספר של');
-  area = new DataAreaSettings({ columnSettings: () => [this.nc,this.myDate] });
-  init(){
-    
-  }
+  x = new GridSettings<models.Products>(new models.Products(), {
+    allowUpdate: true,
+    allowDelete: true,
+    allowInsert: true,
+    knowTotalRows: true,
+    //numOfColumnsInGrid: 100,
+    get: { limit: 100 },
+    hideDataArea: true,
+    onValidate:o=>{
+      
+    },
+    columnSettings:p=>[
+      p.id,p.productName,p.discontinued,
+      {
+        getValue:p=>p.discontinued.value +'noam'
+      }
+    ]
+   
+   
+  });
+  inputType='checkbox';
+  test;
+  filterColumn: Column<any>;
+
 }

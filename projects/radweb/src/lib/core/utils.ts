@@ -1081,10 +1081,10 @@ export class Column<dataType>  {
     return value;
 
   }
-  protected fromRawValue(value: any): dataType {
+  fromRawValue(value: any): dataType {
     return value;
   }
-  protected toRawValue(value: dataType): any {
+  toRawValue(value: dataType): any {
     return value;
   }
   set rawValue(value: any) {
@@ -1103,16 +1103,16 @@ export class Column<dataType>  {
     this.rawValue = value;
   }
   set value(value: dataType) {
-    
+
     this.rawValue = this.toRawValue(value);
   }
   __addToPojo(pojo: any) {
-    pojo[this.jsonName] = this.value;
+    pojo[this.jsonName] = this.rawValue;
   }
   __loadFromToPojo(pojo: any) {
     let x = pojo[this.jsonName];
     if (x != undefined)
-      this.value = x;
+      this.rawValue = x;
   }
 }
 
@@ -1689,10 +1689,10 @@ export class DateColumn extends Column<Date>{
   __defaultStorage() {
     return new DateTimeDateStorage();
   }
-  protected toRawValue(value: Date) {
+  toRawValue(value: Date) {
     return DateColumn.dateToString(value);
   }
-  protected fromRawValue(value: any) {
+  fromRawValue(value: any) {
 
     return DateColumn.stringToDate(value);
   }
@@ -1730,19 +1730,19 @@ export class DateTimeColumn extends Column<Date>{
   __defaultStorage() {
     return new DateTimeStorage();
   }
-  protected fromRawValue(value: any) {
+  fromRawValue(value: any) {
     return DateTimeColumn.stringToDate(value);
   }
-  protected toRawValue(value:Date){
+  toRawValue(value: Date) {
     return DateTimeColumn.dateToString(value);
   }
 
-  static stringToDate(val: string) { 
+  static stringToDate(val: string) {
+    if (val == undefined)
+      return undefined;
     if (val == '')
       return undefined;
     if (val.startsWith('0000-00-00'))
-      return undefined;
-    if (val == undefined)
       return undefined;
     return new Date(Date.parse(val));
   }
@@ -1808,10 +1808,10 @@ export class ClosedListColumn<closedListType extends ClosedListItem> extends Col
     }
     return result;
   }
-  protected toRawValue(value: closedListType) {
+  toRawValue(value: closedListType) {
     return value.id;
   }
-  protected fromRawValue(value: any) {
+  fromRawValue(value: any) {
     return this.byId(+value);
   }
 

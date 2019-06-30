@@ -67,10 +67,23 @@ describe("Closed List  column", () => {
     let x = new LanguageColumn();
     x.rawValue = 0;
     expect(x.value).toBe(Language.Hebrew);
-    x.value  = Language.Russian;
-    expect(x.rawValue).toBe(10); 
+    x.value = Language.Russian;
+    expect(x.rawValue).toBe(10);
 
     expect(x.getOptions().length).toBe(3);
+  });
+  it("loads and saved from Pojo correctly", () => {
+    let x = new LanguageColumn();
+    x.jsonName='abc';
+    x.value = Language.Russian;
+    let y={};
+    x.__addToPojo(y);
+    expect(y[x.jsonName]).toBe(10);
+    x.value = Language.Hebrew;
+    expect(x.value).toBe(Language.Hebrew);
+    x.__loadFromToPojo({'abc':10});
+    expect(x.value).toBe(Language.Russian);
+
   });
 });
 
@@ -399,7 +412,7 @@ describe("column collection", () => {
     let c = new Categories();
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }), () => true);
     await cc.add(c.id);
-    cc.filterHelper.filterColumn(cc.items[0].column, false,false);
+    cc.filterHelper.filterColumn(cc.items[0].column, false, false);
     expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
 
   });
@@ -649,13 +662,13 @@ describe("test datetime column", () => {
     x.value = new Date('1976-06-16');
     expect(x.rawValue).toBe('1976-06-16');
     expect(x.value.toISOString()).toBe(new Date('1976-06-16').toISOString());
-  //  expect(x.dateValue.getHours()).toBe(0);
+    //  expect(x.dateValue.getHours()).toBe(0);
   });
   it("date Storage works", () => {
     var x = new DateTimeDateStorage();
 
-    expect(x.toDb('1976-06-16').toLocaleDateString()).toBe(new Date(1976, 5, 16,0,0,0).toLocaleDateString());
-    
+    expect(x.toDb('1976-06-16').toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
+
   });
 });
 describe("Test char date storage", () => {
