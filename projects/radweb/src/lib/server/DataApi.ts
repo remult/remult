@@ -118,11 +118,11 @@ export class DataApi<T extends Entity<any>> {
           }
         }
         addFilter('', val => col.isEqualTo(val));
-        addFilter('_gt', val => col.IsGreaterThan(val));
-        addFilter('_gte', val => col.IsGreaterOrEqualTo(val));
-        addFilter('_lt', val => col.IsLessThan(val));
-        addFilter('_lte', val => col.IsLessOrEqualTo(val));
-        addFilter('_ne', val => col.IsDifferentFrom(val));
+        addFilter('_gt', val => col.isGreaterThan(val));
+        addFilter('_gte', val => col.isGreaterOrEqualTo(val));
+        addFilter('_lt', val => col.isLessThan(val));
+        addFilter('_lte', val => col.isLessOrEqualTo(val));
+        addFilter('_ne', val => col.isDifferentFrom(val));
         addFilter('_contains', val => {
           let c = col as StringColumn;
           if (c != null && c.isContains) {

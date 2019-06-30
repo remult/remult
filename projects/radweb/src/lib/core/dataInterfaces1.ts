@@ -71,12 +71,12 @@ export interface FilterBase {
   __applyToConsumer(add: FilterConsumer): void;
 }
 export interface FilterConsumer {
-  IsEqualTo(col: Column<any>, val: any): void;
-  IsDifferentFrom(col: Column<any>, val: any): void;
-  IsGreaterOrEqualTo(col: Column<any>, val: any): void;
-  IsGreaterThan(col: Column<any>, val: any): void;
-  IsLessOrEqualTo(col: Column<any>, val: any): void;
-  IsLessThan(col: Column<any>, val: any): void;
+  isEqualTo(col: Column<any>, val: any): void;
+  isDifferentFrom(col: Column<any>, val: any): void;
+  isGreaterOrEqualTo(col: Column<any>, val: any): void;
+  isGreaterThan(col: Column<any>, val: any): void;
+  isLessOrEqualTo(col: Column<any>, val: any): void;
+  isLessThan(col: Column<any>, val: any): void;
   isContains(col: StringColumn, val: any): void;
   isStartsWith(col: StringColumn, val: any): void;
 }

@@ -163,34 +163,34 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
   ok = true;
   constructor(private row: any) { }
-  public IsEqualTo(col: Column<any>, val: any): void {
+  public isEqualTo(col: Column<any>, val: any): void {
 
     if (this.row[col.jsonName] != val)
       this.ok = false;
   }
 
-  public IsDifferentFrom(col: Column<any>, val: any): void {
+  public isDifferentFrom(col: Column<any>, val: any): void {
     if (this.row[col.jsonName] == val)
       this.ok = false;
   }
 
-  public IsGreaterOrEqualTo(col: Column<any>, val: any): void {
+  public isGreaterOrEqualTo(col: Column<any>, val: any): void {
     if (this.row[col.jsonName] < val)
       this.ok = false;
   }
 
-  public IsGreaterThan(col: Column<any>, val: any): void {
+  public isGreaterThan(col: Column<any>, val: any): void {
 
     if (this.row[col.jsonName] <= val)
       this.ok = false;
   }
 
-  public IsLessOrEqualTo(col: Column<any>, val: any): void {
+  public isLessOrEqualTo(col: Column<any>, val: any): void {
     if (this.row[col.jsonName] > val)
       this.ok = false;
   }
 
-  public IsLessThan(col: Column<any>, val: any): void {
+  public isLessThan(col: Column<any>, val: any): void {
     if (this.row[col.jsonName] >= val)
       this.ok = false;
   }

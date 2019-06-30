@@ -12,18 +12,18 @@ import { Component, Input } from '@angular/core';
                 <button type="button" class="btn btn-default" (click)="settings._click(map,record)" > <span class="glyphicon glyphicon-chevron-down"></span></button>
             </div>
 
-            <input class="form-control"  [(ngModel)]="_getColumn().value" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" *ngIf="!map.hideDataOnInput" />
+            <input class="form-control"  [(ngModel)]="_getColumn().inputValue" type="{{settings._getColDataType(map)}}" (ngModelChange)="settings._colValueChanged(map,record)" *ngIf="!map.hideDataOnInput" />
             <div class="input-group-addon" style="width:60%;text-align:start" *ngIf="showDescription()">{{settings._getColDisplayValue(map,record)}}</div>
 
         </div>
         <div *ngIf="isSelect()">
-            <select  class="form-control" [(ngModel)]="_getColumn().value" (ngModelChange)="settings._colValueChanged(map,record)" >
+            <select  class="form-control" [(ngModel)]="_getColumn().inputValue" (ngModelChange)="settings._colValueChanged(map,record)" >
                 <option *ngFor="let v of map.dropDown.items" value="{{v.id}}">{{v.caption}}</option>
 
             </select>
         </div>
         <div *ngIf="showCheckbox()" style="width:100%">
-        <input class="form-control"  [(ngModel)]="_getColumn().value" type="checkbox" (ngModelChange)="settings._colValueChanged(map,record)" *ngIf="!map.hideDataOnInput" />
+        <input class="form-control"  [(ngModel)]="_getColumn().inputValue" type="checkbox" (ngModelChange)="settings._colValueChanged(map,record)" *ngIf="!map.hideDataOnInput" />
         
 
     </div>

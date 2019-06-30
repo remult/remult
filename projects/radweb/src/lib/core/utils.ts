@@ -542,7 +542,7 @@ export class FilterHelper<rowType extends Entity<any>> {
           let v = DateTimeColumn.stringToDate(val);
           v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
 
-          f = c.IsGreaterOrEqualTo(DateTimeColumn.dateToString(v)).and(c.IsLessThan(DateTimeColumn.dateToString(new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
+          f = c.isGreaterOrEqualTo(DateTimeColumn.dateToString(v)).and(c.isLessThan(DateTimeColumn.dateToString(new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
 
         }
       }
@@ -834,27 +834,27 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
 
   }
 
-  public IsEqualTo(col: Column<any>, val: any): void {
+  public isEqualTo(col: Column<any>, val: any): void {
     this.url.add(col.jsonName, val);
   }
 
-  public IsDifferentFrom(col: Column<any>, val: any): void {
+  public isDifferentFrom(col: Column<any>, val: any): void {
     this.url.add(col.jsonName + '_ne', val);
   }
 
-  public IsGreaterOrEqualTo(col: Column<any>, val: any): void {
+  public isGreaterOrEqualTo(col: Column<any>, val: any): void {
     this.url.add(col.jsonName + '_gte', val);
   }
 
-  public IsGreaterThan(col: Column<any>, val: any): void {
+  public isGreaterThan(col: Column<any>, val: any): void {
     this.url.add(col.jsonName + '_gt', val);
   }
 
-  public IsLessOrEqualTo(col: Column<any>, val: any): void {
+  public isLessOrEqualTo(col: Column<any>, val: any): void {
     this.url.add(col.jsonName + '_lte', val);
   }
 
-  public IsLessThan(col: Column<any>, val: any): void {
+  public isLessThan(col: Column<any>, val: any): void {
     this.url.add(col.jsonName + '_lt', val);
   }
   public isContains(col: StringColumn, val: any): void {
@@ -1040,37 +1040,37 @@ export class Column<dataType>  {
   readonly: boolean;
   inputType: string;
   isEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsEqualTo(this, this.__getVal(value)));
+    return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
   }
-  IsDifferentFrom(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsDifferentFrom(this, this.__getVal(value)));
+  isDifferentFrom(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isDifferentFrom(this, this.__getVal(value)));
   }
-  IsGreaterOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsGreaterOrEqualTo(this, this.__getVal(value)));
+  isGreaterOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
   }
-  IsGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsGreaterThan(this, this.__getVal(value)));
+  isGreaterThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
   }
-  IsLessOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsLessOrEqualTo(this, this.__getVal(value)));
+  isLessOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
   }
-  IsLessThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.IsLessThan(this, this.__getVal(value)));
+  isLessThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
   }
   __getVal(value: Column<dataType> | dataType): dataType {
 
 
     if (value instanceof Column)
-      return value.value;
+      return this.toRawValue(value.value);
     else
-      return value;
+      return this.toRawValue(value);
   }
   __valueProvider: ColumnValueProvider = new dummyColumnStorage();
   get value() {
-    return this.__valueProvider.getValue(this.jsonName);
+    return this.fromRawValue(this.rawValue);
   }
   get originalValue() {
-    return this.__valueProvider.getOriginalValue(this.jsonName);
+    return this.fromRawValue(this.__valueProvider.getOriginalValue(this.jsonName));
   }
   get displayValue() {
     if (this.value)
@@ -1081,11 +1081,30 @@ export class Column<dataType>  {
     return value;
 
   }
-  set value(value: dataType) {
+  protected fromRawValue(value: any): dataType {
+    return value;
+  }
+  protected toRawValue(value: dataType): any {
+    return value;
+  }
+  set rawValue(value: any) {
     this.__valueProvider.setValue(this.jsonName, this.__processValue(value));
     this.error = undefined;
     if (this.onValueChange)
       this.onValueChange();
+  }
+  get rawValue() {
+    return this.__valueProvider.getValue(this.jsonName);
+  }
+  get inputValue() {
+    return this.rawValue;
+  }
+  set inputValue(value: string) {
+    this.rawValue = value;
+  }
+  set value(value: dataType) {
+    console.log(value);
+    this.rawValue = this.toRawValue(value);
   }
   __addToPojo(pojo: any) {
     pojo[this.jsonName] = this.value;
@@ -1653,8 +1672,8 @@ export class StringColumn extends Column<string>{
     return new Filter(add => add.isStartsWith(this, this.__getVal(value)));
   }
 }
-export class DateColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings<string, DateColumn> | string) {
+export class DateColumn extends Column<Date>{
+  constructor(settingsOrCaption?: DataColumnSettings<Date, Column<Date>> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1663,22 +1682,25 @@ export class DateColumn extends Column<string>{
     return new Date(this.value).getDay();
   }
   get displayValue() {
-    if (!this.value || this.value == '' || this.value == '0000-00-00')
+    if (!this.value)
       return '';
-    return new Date(this.value).toLocaleDateString();
+    return this.value.toLocaleDateString();
   }
   __defaultStorage() {
     return new DateTimeDateStorage();
   }
-  get dateValue() {
-    return DateColumn.stringToDate(this.value);
+  protected toRawValue(value: Date) {
+    return DateColumn.dateToString(value);
   }
-  set dateValue(val: Date) {
-    this.value = DateColumn.dateToString(val);
-  }
-  static stringToDate(val: string) {
+  protected fromRawValue(value: any) {
 
-    return new Date(Date.parse(val));
+    return DateColumn.stringToDate(value);
+  }
+
+  static stringToDate(value: string) {
+    if (!value || value == '' || value == '0000-00-00')
+      return undefined;
+    return new Date(Date.parse(value));
   }
   static dateToString(val: Date): string {
     var d = val as Date;
@@ -1738,12 +1760,12 @@ export class NumberColumn extends Column<number>{
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
-      let s = settingsOrCaption as NumberColumnSettings;
-      if (s&&s.decimalDigits){
-        this.__numOfDecimalDigits= s.decimalDigits;
-      }
+    let s = settingsOrCaption as NumberColumnSettings;
+    if (s && s.decimalDigits) {
+      this.__numOfDecimalDigits = s.decimalDigits;
+    }
   }
-  __numOfDecimalDigits:number=0;
+  __numOfDecimalDigits: number = 0;
   protected __processValue(value: number) {
 
     if (value != undefined && !(typeof value === "number"))
@@ -1752,8 +1774,8 @@ export class NumberColumn extends Column<number>{
 
   }
 }
-export interface NumberColumnSettings extends DataColumnSettings<number,NumberColumn>{
-  decimalDigits?:number;
+export interface NumberColumnSettings extends DataColumnSettings<number, NumberColumn> {
+  decimalDigits?: number;
 }
 export class BoolColumn extends Column<boolean>{
   constructor(settingsOrCaption?: DataColumnSettings<boolean, BoolColumn> | string) {
@@ -1766,8 +1788,8 @@ export interface ClosedListItem {
   id: number;
   toString(): string;
 }
-export class ClosedListColumn<closedListType extends ClosedListItem> extends NumberColumn {
-  constructor(private closedListType: any, settingsOrCaption?: DataColumnSettings<number, NumberColumn> | string) {
+export class ClosedListColumn<closedListType extends ClosedListItem> extends Column<closedListType> {
+  constructor(private closedListType: any, settingsOrCaption?: DataColumnSettings<closedListType, Column<closedListType>> | string) {
     super(settingsOrCaption);
   }
   getOptions(): DropDownItem[] {
@@ -1783,15 +1805,16 @@ export class ClosedListColumn<closedListType extends ClosedListItem> extends Num
     }
     return result;
   }
-  get listValue() {
-    return this.byId(this.value);
+  protected toRawValue(value: closedListType) {
+    return value.id;
   }
-  set listValue(val: closedListType) {
-    this.value = val.id;
+  protected fromRawValue(value: any) {
+    return this.byId(+value);
   }
+
   get displayValue() {
-    if (this.listValue)
-      return this.listValue.toString();
+    if (this.value)
+      return this.value.toString();
     return '';
   }
   byId(id: number): closedListType {
@@ -1924,7 +1947,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       }
       else if (s.dropDown.source) {
         if (s.dropDown.source instanceof Entity) {
-          return new DataList(s.dropDown.source).get({ limit: 5000,orderBy:s.dropDown.orderBy }).then(arr =>
+          return new DataList(s.dropDown.source).get({ limit: 5000, orderBy: s.dropDown.orderBy }).then(arr =>
             populateBasedOnArray(arr));
         }
 
@@ -2193,22 +2216,22 @@ export interface SQLConnectionProvider {
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
   constructor(private r: SQLCommand) { }
-  IsEqualTo(col: Column<any>, val: any): void {
+  isEqualTo(col: Column<any>, val: any): void {
     this.add(col, val, "=");
   }
-  IsDifferentFrom(col: Column<any>, val: any): void {
+  isDifferentFrom(col: Column<any>, val: any): void {
     this.add(col, val, "<>");
   }
-  IsGreaterOrEqualTo(col: Column<any>, val: any): void {
+  isGreaterOrEqualTo(col: Column<any>, val: any): void {
     this.add(col, val, ">=");
   }
-  IsGreaterThan(col: Column<any>, val: any): void {
+  isGreaterThan(col: Column<any>, val: any): void {
     this.add(col, val, ">");
   }
-  IsLessOrEqualTo(col: Column<any>, val: any): void {
+  isLessOrEqualTo(col: Column<any>, val: any): void {
     this.add(col, val, "<=");
   }
-  IsLessThan(col: Column<any>, val: any): void {
+  isLessThan(col: Column<any>, val: any): void {
     this.add(col, val, "<");
   }
   public isContains(col: StringColumn, val: any): void {

@@ -65,10 +65,10 @@ describe("Closed List  column", () => {
 
   it("Basic Operations", () => {
     let x = new LanguageColumn();
-    x.value = 0;
-    expect(x.listValue).toBe(Language.Hebrew);
-    x.listValue = Language.Russian;
-    expect(x.value).toBe(10);
+    x.rawValue = 0;
+    expect(x.value).toBe(Language.Hebrew);
+    x.value  = Language.Russian;
+    expect(x.rawValue).toBe(10); 
 
     expect(x.getOptions().length).toBe(3);
   });
@@ -202,7 +202,7 @@ describe("test row provider", () => {
   });
   itAsync("counts with filter", async () => {
     let c = await insertFourRows();
-    let count = await c.source.count(c.id.IsLessOrEqualTo(2));
+    let count = await c.source.count(c.id.isLessOrEqualTo(2));
     expect(count).toBe(2);
   });
   itAsync("test grid update", async () => {
@@ -628,7 +628,7 @@ describe("test datetime column", () => {
   });
   it("displays empty date well", () => {
     var x = new DateColumn();
-    x.value = '';
+    x.rawValue = '';
     expect(x.displayValue).toBe('');
   });
   it("displays null date well", () => {
@@ -640,15 +640,15 @@ describe("test datetime column", () => {
   });
   it("displays empty date well empty", () => {
     var x = new DateColumn();
-    x.value = '0000-00-00';
+    x.rawValue = '0000-00-00';
     expect(x.displayValue).toBe('');
   });
   it("date works", () => {
     var x = new DateColumn();
 
-    x.dateValue = new Date('1976-06-16');
-    expect(x.value).toBe('1976-06-16');
-    expect(x.dateValue.toISOString()).toBe(new Date('1976-06-16').toISOString());
+    x.value = new Date('1976-06-16');
+    expect(x.rawValue).toBe('1976-06-16');
+    expect(x.value.toISOString()).toBe(new Date('1976-06-16').toISOString());
   //  expect(x.dateValue.getHours()).toBe(0);
   });
   it("date Storage works", () => {
