@@ -542,7 +542,7 @@ export class FilterHelper<rowType extends Entity<any>> {
           let v = DateTimeColumn.stringToDate(val);
           v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
 
-          f = c.isGreaterOrEqualTo(DateTimeColumn.dateToString(v)).and(c.isLessThan(DateTimeColumn.dateToString(new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
+          f = c.isGreaterOrEqualTo(v).and(c.isLessThan((new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
 
         }
       }
@@ -1103,7 +1103,7 @@ export class Column<dataType>  {
     this.rawValue = value;
   }
   set value(value: dataType) {
-    console.log(value);
+    
     this.rawValue = this.toRawValue(value);
   }
   __addToPojo(pojo: any) {
@@ -1713,32 +1713,35 @@ export class DateColumn extends Column<Date>{
   }
 
 }
-export class DateTimeColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings<string, DateTimeColumn> | string) {
+export class DateTimeColumn extends Column<Date>{
+  constructor(settingsOrCaption?: DataColumnSettings<Date, DateTimeColumn> | string) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
   }
   getDayOfWeek() {
-    return new Date(this.value).getDay();
+    return this.value.getDay();
   }
   get displayValue() {
-    if (!this.value || this.value.trim() == '' || this.value.startsWith('0000-00-00'))
+    if (!this.value)
       return '';
-    return new Date(this.value).toLocaleString();
+    return this.value.toLocaleString();
   }
   __defaultStorage() {
     return new DateTimeStorage();
   }
-  get dateValue() {
-    return DateTimeColumn.stringToDate(this.value);
+  protected fromRawValue(value: any) {
+    return DateTimeColumn.stringToDate(value);
   }
-  set dateValue(val: Date) {
-    this.value = DateTimeColumn.dateToString(val);
+  protected toRawValue(value:Date){
+    return DateTimeColumn.dateToString(value);
   }
-  static stringToDate(val: string) {
+
+  static stringToDate(val: string) { 
     if (val == '')
-      return null;
+      return undefined;
+    if (val.startsWith('0000-00-00'))
+      return undefined;
     if (val == undefined)
       return undefined;
     return new Date(Date.parse(val));

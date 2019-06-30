@@ -614,17 +614,17 @@ describe("test number column", () => {
 describe("test datetime column", () => {
   it("stores well", () => {
     var x = new DateTimeColumn();
-    x.dateValue = new Date(1976, 11, 16, 8, 55, 31, 65)
-    expect(x.value).toBe('1976-12-16T06:55:31.065Z');
+    x.value = new Date(1976, 11, 16, 8, 55, 31, 65)
+    expect(x.rawValue).toBe('1976-12-16T06:55:31.065Z');
 
 
-    expect(x.dateValue.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
+    expect(x.value.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
     var x = new DateTimeColumn();
     x.value = undefined;
-
-    expect(x.dateValue).toBe(undefined);
+    expect(x.value).toBe(undefined);
+    expect(x.rawValue).toBe('');
   });
   it("displays empty date well", () => {
     var x = new DateColumn();
