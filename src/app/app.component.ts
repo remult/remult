@@ -35,7 +35,7 @@ export class AppComponent {
    
   });
   inputType='checkbox';
-  test;
+  test:any;
   filterColumn: Column<any>;
 
 }

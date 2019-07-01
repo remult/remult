@@ -38,4 +38,8 @@ testem.log
 .DS_Store
 Thumbs.db
 
-**/distServer/**
+distServer/*
+!/distServer/package.json
+!/distServer/projects/radweb/src/package.json
+!distServer/projects/radweb-server/package.json
+!distServer/projects/radweb-server-postgres/package.json

@@ -39,9 +39,6 @@
     "express": "^4.16.4",
     "mssql": "^4.2.3",
     "pg": "^7.6.1",
-    "radweb": "file:dist/radweb",
-    "radweb-server": "file:dist/radweb-server",
-    "radweb-server-mssql": "file:dist/radweb-server-mssql",
     "radweb-server-postgres": "file:dist/radweb-server-postgres",
     "rxjs": "~6.3.3",
     "zone.js": "~0.8.26"

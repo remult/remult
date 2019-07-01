@@ -76,7 +76,7 @@ describe("Closed List  column", () => {
     let x = new LanguageColumn();
     x.jsonName='abc';
     x.value = Language.Russian;
-    let y={};
+    let y:any={};
     x.__addToPojo(y);
     expect(y[x.jsonName]).toBe(10);
     x.value = Language.Hebrew;

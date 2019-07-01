@@ -19,10 +19,14 @@
     ],
     "paths": {
       "radweb": [
-        "dist/radweb"
+        "projects/radweb/src/public_api"
       ],
+      "radweb-server":[
+        "projects/radweb-server"
+      ],
+    
       "radweb/*": [
-        "dist/radweb/*"
+        "projects/radweb/src/*"
       ]
     }
   },

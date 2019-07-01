@@ -21,6 +21,9 @@
       "radweb": [
         "projects/radweb/src/public_api"
       ],
+      "radweb-server":[
+        "projects/radweb-server"
+      ],
     
       "radweb/*": [
         "projects/radweb/src/*"
