@@ -1,3 +1,6 @@
+import {CustomModuleLoader} from './CustomModuleLoader';
+let moduleLoader = new CustomModuleLoader();
+
 import { DataApi,Entity, NumberColumn, DateTimeColumn } from 'radweb';
 import { Pool } from 'pg';
 import { Orders, Customers, Shippers, Products, Order_details } from './../models';
