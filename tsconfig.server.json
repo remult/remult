@@ -4,7 +4,7 @@
     "declaration": false,"baseUrl": ".",
     "stripInternal": true,
     "experimentalDecorators": true,
-    "noImplicitAny": true,
+
     "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",

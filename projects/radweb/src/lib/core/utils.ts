@@ -8,7 +8,7 @@ import {
   , ColumnStorage,
   EntitySourceFindOptions
 } from './dataInterfaces1';
-import { unescapeIdentifier } from '@angular/compiler';
+
 
 
 
@@ -966,6 +966,7 @@ export class Column<dataType>  {
   onValueChange: () => void;
   jsonName: string;
   caption: string;
+  excludeFromApi=false;
   dbName: string | (() => string);
   private __settings: DataColumnSettings<dataType, Column<dataType>>;
   __getMemberName() { return this.jsonName; }
@@ -980,6 +981,8 @@ export class Column<dataType>  {
           this.jsonName = settingsOrCaption.jsonName;
         if (settingsOrCaption.caption)
           this.caption = settingsOrCaption.caption;
+        if (settingsOrCaption.excludeFromApi)
+          this.excludeFromApi = settingsOrCaption.excludeFromApi;
         if (settingsOrCaption.readonly)
           this.readonly = settingsOrCaption.readonly;
         if (settingsOrCaption.inputType)

@@ -131,13 +131,7 @@ export class ContextEntity<idType> extends Entity<idType>{
     }
     _getExcludedColumns(x: Entity<any>) {
         let r = x.__iterateColumns().filter(c => {
-            let y = <hasMoreDataColumnSettings><any>c;
-            if (y && y.__getMoreDataColumnSettings) {
-
-                if (y.__getMoreDataColumnSettings() && y.__getMoreDataColumnSettings().excludeFromApi)
-                    return true;
-            }
-            return false;
+            return !c.excludeFromApi;
         });
         return r;
     }
@@ -175,12 +169,7 @@ export class ContextEntity<idType> extends Entity<idType>{
         }
     }
 }
-export interface hasMoreDataColumnSettings {
-    __getMoreDataColumnSettings(): MoreDataColumnSettings<any, any>;
-}
-export interface MoreDataColumnSettings<type, colType> extends DataColumnSettings<type, colType> {
-    excludeFromApi?: boolean;
-}
+
 export interface ContextEntityOptions {
     name: string;//required
     dbName?: string | (() => string);
