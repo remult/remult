@@ -13,5 +13,6 @@ export * from './lib/server/DataApi';
 export * from './lib/core/localStorageDataProvider';
 export * from './lib/context/Context';
 export * from './lib/jwt-session-manager';
+export * from './lib/navigate-to-component-route-service';
 //server
  
