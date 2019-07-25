@@ -1,4 +1,4 @@
-import { DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn } from 'radweb';
+import { ServerContext, DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn, allEntities } from 'radweb';
 
 import { Pool, QueryResult } from 'pg';
 import { ActualSQLServerDataProvider } from 'radweb-server';
@@ -87,7 +87,16 @@ class PostgressBridgeToSQLQueryResult implements SQLQueryResult {
 
 
 export class PostgrestSchemaBuilder {
-
+    async verifyStructureOfAllEntities() {
+        let context = new ServerContext();
+        for (const entity of allEntities) {
+            let x = context.for(entity).create();
+            if (x.__getDbName().toLowerCase().indexOf('from ') < 0) {
+                await this.CreateIfNotExist(x);
+                await this.verifyAllColumns(x);
+            }
+        }
+    }
     async CreateIfNotExist(e: Entity<any>): Promise<void> {
         await this.pool.query("select 1 from information_Schema.tables where table_name=$1", [e.__getDbName().toLowerCase()]).then(async r => {
             if (r.rowCount == 0) {
@@ -120,7 +129,7 @@ export class PostgrestSchemaBuilder {
             else
                 result += ' numeric default 0 not null';
         } else if (x instanceof ClosedListColumn) {
-                result +=' int default 0 not null';
+            result += ' int default 0 not null';
         }
         else
             result += " varchar default '' not null ";
