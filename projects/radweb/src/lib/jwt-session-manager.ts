@@ -107,16 +107,31 @@ export interface AuthorizedGuardRouteData {
     name?: string;
 
 }
-export class dummyRoute extends ActivatedRouteSnapshot {
+class dummyRoute extends ActivatedRouteSnapshot {
     constructor() {
         super();
 
     }
-    routeConfig:any;
+    routeConfig: any;
 }
 export interface AuthorizedGuardRoute extends Route {
     data?: {
         allowedRoles?: string[];
         name?: string;
     };
+}
+export function canNavigateToRoute(route: Route) {
+    if (!route.canActivate)
+        return true;
+    for (let guard of route.canActivate) {
+        let g = this.injector.get(guard) as CanActivate;
+        if (g && g.canActivate) {
+            var r = new dummyRoute();
+            r.routeConfig = route;
+            let canActivate = g.canActivate(r, undefined);
+            if (!canActivate)
+                return false;
+        }
+    }
+    return true;
 }
