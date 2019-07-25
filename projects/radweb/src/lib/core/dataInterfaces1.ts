@@ -35,6 +35,11 @@ export interface FindOptionsPerEntity<rowType extends Entity<any>> {
 
 export interface DataProviderFactory {
   provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider;
+
+}
+export interface SupportsTransaction extends DataProviderFactory {
+  doInTransaction(what: (dp: DataProviderFactory) => Promise<void>): Promise<void>;
+
 }
 export interface ColumnValueProvider {
   getValue(key: string): any;
