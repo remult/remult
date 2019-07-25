@@ -24,6 +24,9 @@
       "radweb-server":[
         "projects/radweb-server"
       ],
+      "radweb-server-postgres":[
+        "projects/radweb-server-postgres/PostgresDataProvider"
+      ],
     
       "radweb/*": [
         "projects/radweb/src/*"
