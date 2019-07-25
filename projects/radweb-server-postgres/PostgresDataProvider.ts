@@ -1,7 +1,7 @@
-import { DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn,SQLConnectionProvider, SQLCommand, SQLQueryResult  } from 'radweb';
+import { DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn } from 'radweb';
 
 import { Pool, QueryResult } from 'pg';
-import { ActualSQLServerDataProvider} from 'radweb-server';
+import { ActualSQLServerDataProvider } from 'radweb-server';
 
 
 export class PostgresDataProvider implements DataProviderFactory {
@@ -119,6 +119,8 @@ export class PostgrestSchemaBuilder {
                 result += " int default 0 not null";
             else
                 result += ' numeric default 0 not null';
+        } else if (x instanceof ClosedListColumn) {
+                result +=' int default 0 not null';
         }
         else
             result += " varchar default '' not null ";

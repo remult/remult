@@ -1,6 +1,6 @@
 {
   "name": "radweb-server-postgres",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main":"PostgresDataProvider.js",
   "Dependencies": {
    
