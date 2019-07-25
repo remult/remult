@@ -11,5 +11,6 @@ export * from './lib/core/inMemoryDatabase';
 export * from './lib/core/JsonStorageDataProvider';
 export * from './lib/server/DataApi';
 export * from './lib/core/localStorageDataProvider';
+export * from './lib/context/Context';
 //server
  
