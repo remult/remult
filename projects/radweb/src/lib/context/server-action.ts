@@ -20,13 +20,13 @@ interface result {
 }
 
 
-export class myServerAction extends Action<inArgs, result, UserInfo>
+export class myServerAction extends Action<inArgs, result>
 {
     constructor(name: string, private types: any[], private options: RunOnServerOptions, private originalMethod: (args: any[]) => any) {
         super(Context.apiBaseUrl + '/', name)
     }
     dataSource: DataProviderFactory;
-    protected async execute(info: inArgs, req: DataApiRequest<UserInfo>): Promise<result> {
+    protected async execute(info: inArgs, req: DataApiRequest): Promise<result> {
         let result = { data: {} };
         await (<SupportsTransaction>this.dataSource).doInTransaction(async ds => {
             let context = new ServerContext();

@@ -591,7 +591,7 @@ describe("data api", () => {
         if (x == "id")
           return "2";
         return undefined;
-      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+      }, clientIp: '', user: undefined, getHeader: x => ""
     });
     d.test();
   });
@@ -614,7 +614,7 @@ describe("data api", () => {
         if (x == "id_ne")
           return ["1", "3"];
         return undefined;
-      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+      }, clientIp: '', user: undefined, getHeader: x => ""
     });
     d.test();
   });
@@ -638,7 +638,7 @@ describe("data api", () => {
         if (x == c.categoryName.jsonName + '_contains')
           return "a";
         return undefined;
-      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+      }, clientIp: '', user: undefined, getHeader: x => ""
     });
     d.test();
   });
@@ -662,7 +662,7 @@ describe("data api", () => {
         if (x == c.categoryName.jsonName + '_st')
           return "y";
         return undefined;
-      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+      }, clientIp: '', user: undefined, getHeader: x => ""
     });
     d.test();
   });
@@ -685,7 +685,7 @@ describe("data api", () => {
         if (x == c.description.jsonName)
           return "a";
         return undefined;
-      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+      }, clientIp: '', user: undefined, getHeader: x => ""
     });
     d.test();
   });
@@ -711,7 +711,7 @@ describe("data api", () => {
         if (x == c.description.jsonName)
           return "a";
         return undefined;
-      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+      }, clientIp: '', user: undefined, getHeader: x => ""
     });
     d.test();
   });
@@ -893,7 +893,7 @@ describe("data api", () => {
         if (x == "_order")
           return "asc,desc";
         return undefined;
-      }, clientIp: '', authInfo: undefined, getHeader: x => ""
+      }, clientIp: '', user: undefined, getHeader: x => ""
     });
     d.test();
   });

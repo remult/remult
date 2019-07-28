@@ -1,13 +1,13 @@
-import {CustomModuleLoader} from './CustomModuleLoader';
+import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader();
 
-import { DataApi,Entity, NumberColumn, DateTimeColumn } from 'radweb';
+import { DataApi, Entity, NumberColumn, DateTimeColumn } from 'radweb';
 import { Pool } from 'pg';
 import { Orders, Customers, Shippers, Products, Order_details } from './../models';
 import { environment } from './../../environments/environment';
 import { Categories } from '../models';
 import * as express from 'express';
-import { JsonFileDataProvider,ExpressBridge } from 'radweb-server';
+import { JsonFileDataProvider, ExpressBridge } from 'radweb-server';
 
 import { PostgrestSchemaBuilder, PostgresDataProvider } from 'radweb-server-postgres';
 
@@ -29,7 +29,7 @@ environment.dataSource = new PostgresDataProvider(p);
 
 
 
-var eb = new ExpressBridge(app);
+var eb = new ExpressBridge(app, environment.dataSource, true);
 let dataApi = eb.addArea('/dataApi');
 //dataApi.addSqlDevHelpers(sqlServer);
 dataApi.add(r => new DataApi(new Categories(), {
@@ -37,7 +37,7 @@ dataApi.add(r => new DataApi(new Categories(), {
     allowInsert: true,
     allowDelete: true,
     onSavingRow: async c => {
-       
+
         if (c.isNew())
             c.id.value = await c.source.max(c.id) + 1;
     },
@@ -71,6 +71,6 @@ async function test() {
     var r = await x.source.find({});
     r[0].datet.value = new Date();
     await r[0].save();
-    
+
 
 }

@@ -1,7 +1,7 @@
 import { SiteArea } from "./expressBridge";
 import { UserInfo,allEntities, DataProviderFactory,ServerContext,ContextEntity,DataApi} from "radweb";
 
-export function registerEntitiesOnServer(area: SiteArea<UserInfo>, dataProvider: DataProviderFactory) {
+export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProviderFactory) {
     let errors = '';
     //add Api Entries
     allEntities.forEach(e => {

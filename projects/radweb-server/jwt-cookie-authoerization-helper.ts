@@ -1,19 +1,18 @@
-import { DataApiServer} from 'radweb';
+import { DataApiServer, UserInfo } from 'radweb';
 
 import * as jwt from 'jsonwebtoken';
 import { Request } from 'express';
-export class JWTCookieAuthorizationHelper<T>
-{
+export class JWTCookieAuthorizationHelper {
 
-    constructor(server: DataApiServer<T>, private tokenSignKey: string, private authCookieName?: string) {
+    constructor(server: DataApiServer, private tokenSignKey: string, private authCookieName?: string) {
         if (!authCookieName) {
             this.authCookieName = 'authorization';
         }
 
         server.addRequestProcessor(async req => {
             var h = req.getHeader('cookie');
-            req.authInfo = await this.authenticateCookie(h);
-            return !!req.authInfo;
+            req.user = await this.authenticateCookie(h);
+            return !!req.user;
         })
     }
     async authenticateRequest(req: Request) {
@@ -25,7 +24,7 @@ export class JWTCookieAuthorizationHelper<T>
                 let itemInfo = iterator.split('=');
                 if (itemInfo && itemInfo[0].trim() == this.authCookieName) {
                     if (this.validateToken)
-                        return await <T><any>this.validateToken(itemInfo[1]);
+                        return await <UserInfo><any>this.validateToken(itemInfo[1]);
                 }
             }
             return undefined;
@@ -38,10 +37,10 @@ export class JWTCookieAuthorizationHelper<T>
 
 
 
-    validateToken: (token: string) => Promise<T> = async (x) => {
-        let result: T;
+    validateToken: (token: string) => Promise<UserInfo> = async (x) => {
+        let result: UserInfo;
         try {
-            result = <T><any>jwt.verify(x, this.tokenSignKey);
+            result = <UserInfo><any>jwt.verify(x, this.tokenSignKey);
         } catch (err) { }
 
         return result;

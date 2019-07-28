@@ -1,5 +1,6 @@
 import { Column, Entity, Sort, SortSegment, StringColumn } from './utils';
 import { FindOptions } from './dataInterfaces1';
+import { UserInfo } from 'radweb';
 
 
 
@@ -87,14 +88,14 @@ export interface FilterConsumer {
   isStartsWith(col: StringColumn, val: any): void;
 }
 
-export interface DataApiRequest<AuthInfoType> {
+export interface DataApiRequest {
   get(key: string): any;
   getHeader(key: string): string;
-  authInfo: AuthInfoType;
+  user: UserInfo;
   clientIp: string;
 }
-export interface DataApiServer<AuthInfoType> {
+export interface DataApiServer {
   addAllowedHeader(name: string): void;
-  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest<AuthInfoType>) => Promise<boolean>): void;
+  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void;
 
 }

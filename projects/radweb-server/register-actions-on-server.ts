@@ -1,7 +1,7 @@
 import { SiteArea } from "./expressBridge";
 import { UserInfo, DataProviderFactory, myServerAction, serverActionField,actionInfo } from 'radweb';
 
-export function registerActionsOnServer(area: SiteArea<UserInfo>, dataSource: DataProviderFactory) {
+export function registerActionsOnServer(area: SiteArea, dataSource: DataProviderFactory) {
     var addAction = (a: any) => {
         let x = <myServerAction>a[serverActionField];
         if (!x) {

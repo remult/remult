@@ -78,11 +78,11 @@ export class ServerContext extends Context {
 
     }
 
-    private req: DataApiRequest<UserInfo>;
+    private req: DataApiRequest;
 
-    setReq(req: DataApiRequest<UserInfo>) {
+    setReq(req: DataApiRequest) {
         this.req = req;
-        this._user = req.authInfo ? req.authInfo : undefined;
+        this._user = req.user ? req.user : undefined;
     }
     setDataProvider(dataProvider: DataProviderFactory) {
         this._dataSource = dataProvider;

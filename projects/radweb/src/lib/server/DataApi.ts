@@ -30,7 +30,7 @@ export class DataApi<T extends Entity<any>> {
     }
     await this.doOnId(response, id, async row => response.success(await row.__toPojo(this.excludedColumns)));
   }
-  async count(response: DataApiResponse, request: DataApiRequest<any>) {
+  async count(response: DataApiResponse, request: DataApiRequest) {
     try {
       let where = this.buildWhere(request);
       response.success({ count: +await this.rowType.source.count(where) });
@@ -39,7 +39,7 @@ export class DataApi<T extends Entity<any>> {
     }
   }
 
-  async getArray(response: DataApiResponse, request: DataApiRequest<any>) {
+  async getArray(response: DataApiResponse, request: DataApiRequest) {
     if (this.options.allowRead == false) {
       response.methodNotAllowed();
       return;
@@ -86,7 +86,7 @@ export class DataApi<T extends Entity<any>> {
       response.error(err);
     }
   }
-  private buildWhere(request: DataApiRequest<any>) {
+  private buildWhere(request: DataApiRequest) {
     var where: FilterBase;
     if (this.options && this.options.get && this.options.get.where)
       where = this.options.get.where(this.rowType);
