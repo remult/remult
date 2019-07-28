@@ -179,17 +179,17 @@ function onError(error: any) {
 }
 
 
-export abstract class Action<inParam, outParam>{
-  constructor(private serverUrl: string, private actionUrl?: string, private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
+ export abstract class Action<inParam, outParam>{
+  constructor(private serverUrl: string, private actionUrl?: string, addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)
-      this.addRequestHeader = () => { };
+      addRequestHeader = () => { };
     if (!actionUrl) {
       this.actionUrl = this.constructor.name;
       if (this.actionUrl.endsWith('Action'))
         this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
     }
   }
-  static provider: restDataProviderHttpProvider;
+  static provider: restDataProviderHttpProvider = new restDataProviderHttpProviderUsingFetch();
   run(pIn: inParam): Promise<outParam> {
 
     return Action.provider.post(this.serverUrl + this.actionUrl, pIn);

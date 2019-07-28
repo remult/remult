@@ -1,6 +1,6 @@
 import { Column, Entity, Sort, SortSegment, StringColumn } from './utils';
 import { FindOptions } from './dataInterfaces1';
-import { UserInfo } from 'radweb';
+import { UserInfo } from '../context/Context';
 
 
 

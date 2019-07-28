@@ -31,17 +31,21 @@
     "@angular/platform-browser": "^7.2.9",
     "@angular/platform-browser-dynamic": "^7.2.9",
     "@angular/router": "^7.2.9",
+    "@auth0/angular-jwt": "^3.0.0",
     "@types/express": "^4.16.0",
     "@types/mssql": "^4.0.10",
     "@types/pg": "^7.4.11",
     "bootstrap3": "^3.3.5",
     "core-js": "^2.5.4",
     "express": "^4.16.4",
+    "express-force-https": "^1.0.0",
+    "jsonwebtoken": "^8.5.1",
     "mssql": "^4.2.3",
     "pg": "^7.6.1",
     "radweb-server-postgres": "file:dist/radweb-server-postgres",
     "rxjs": "~6.3.3",
-    "zone.js": "~0.8.26"
+    "zone.js": "~0.8.26",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.10.0",

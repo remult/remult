@@ -192,7 +192,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     let added = false;
     let resultFilter = this.entity.__idColumn.isEqualTo(data[this.entity.__idColumn.jsonName]);
 
-    this.entity.__iterateColumns().forEach(x => {
+    this.entity.__iterateColumns().forEach((x:any) => {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }

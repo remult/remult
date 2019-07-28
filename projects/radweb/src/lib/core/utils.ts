@@ -1525,7 +1525,8 @@ export class EntitySource<T extends Entity<any>>
 {
   private _provider: DataProvider;
   constructor(name: string, private factory: () => T, dataProvider: DataProviderFactory) {
-    this._provider = dataProvider.provideFor(name, factory);
+    if (dataProvider)
+      this._provider = dataProvider.provideFor(name, factory);
   }
   find(options?: EntitySourceFindOptions): Promise<T[]> {
     if (options)

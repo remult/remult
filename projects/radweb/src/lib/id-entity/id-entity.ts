@@ -1,6 +1,8 @@
-import * as uuid from 'uuid';
+import uuid from 'uuid';
 import { StringColumn, Entity, Column } from "../core/utils";
-import { ContextEntity, ContextEntityOptions, DataColumnSettings } from 'radweb';
+import { ContextEntity, ContextEntityOptions } from '../context/Context';
+import { DataColumnSettings } from '../core/dataInterfaces1';
+
 
 export class IdEntity<idType extends IdColumn> extends ContextEntity<string>
 {
