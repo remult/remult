@@ -1,8 +1,9 @@
-import { Entity, IDataSettings, GridSettings, Column, NumberColumn, DataList, EntityOptions, ColumnHashSet, DataApi, RestDataProvider, InMemoryDataProvider } from "radweb";
-import { EntitySourceFindOptions, FilterBase, FindOptionsPerEntity, DataProviderFactory, DataColumnSettings, DataApiRequest } from "radweb";
-
 import { Injectable } from "@angular/core";
-import { DataApiSettings } from "radweb";
+import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
+import { RestDataProvider } from "../core/restDataProvider";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings } from "../core/utils";
+import { InMemoryDataProvider } from "../core/inMemoryDatabase";
+import { DataApiSettings } from "../server/DataApi";
 
 
 

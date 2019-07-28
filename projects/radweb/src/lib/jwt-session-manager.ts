@@ -3,7 +3,7 @@ import { Router, CanActivate, ActivatedRouteSnapshot, Route } from "@angular/rou
 import { JwtHelperService } from '@auth0/angular-jwt';
 
 
-import { Context, UserInfo } from 'radweb';
+import { Context, UserInfo } from './context/Context';
 
 
 

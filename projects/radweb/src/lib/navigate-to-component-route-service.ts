@@ -1,6 +1,6 @@
 import { Router, Route, CanActivate, ActivatedRouteSnapshot } from '@angular/router';
 import { Injectable, Injector } from '@angular/core';
-import { Context } from 'radweb';
+import { Context } from './context/Context';
 @Injectable()
 export class RouteHelperService {
     constructor(private router: Router,private injector:Injector) {
