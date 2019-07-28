@@ -11,11 +11,12 @@ import { SelectPopupComponent } from './angular-components/select-popup.ts/selec
 import { Context } from './context/Context';
 import { JwtSessionManager } from './jwt-session-manager';
 import { NotLoggedInGuard, AuthorizedGuard, RouteHelperService } from './navigate-to-component-route-service';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
   declarations: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent],
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule,HttpClientModule],
   providers: [Context,JwtSessionManager,NotLoggedInGuard,AuthorizedGuard,RouteHelperService]
   ,
   exports: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent]

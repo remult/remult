@@ -966,7 +966,7 @@ export class Column<dataType>  {
   onValueChange: () => void;
   jsonName: string;
   caption: string;
-  excludeFromApi=false;
+  excludeFromApi = false;
   dbName: string | (() => string);
   private __settings: DataColumnSettings<dataType, Column<dataType>>;
   __getMemberName() { return this.jsonName; }
@@ -1321,12 +1321,14 @@ export class Entity<idType> {
     }
     return performEntitySave();
   }
-  catchSaveErrors(e: any): any {
-
+  catchSaveErrors(err: any): any {
+    let e = err;
     if (e instanceof Promise) {
       return e.then(x => this.catchSaveErrors(x));
     }
-
+    if (e.error) {
+      e = e.error;
+    }
 
     if (e.message)
       this.error = e.message;
@@ -1343,7 +1345,7 @@ export class Entity<idType> {
           c.error = s[k];
       });
     }
-    throw e;
+    throw err;
 
   }
 

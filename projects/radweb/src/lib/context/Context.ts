@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
-import { RestDataProvider } from "../core/restDataProvider";
+import { RestDataProvider, restDataProviderHttpProviderUsingFetch, angularHttpProvider } from "../core/restDataProvider";
 import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
+import { HttpClient } from "@angular/common/http";
 
 
 
@@ -18,13 +19,18 @@ export class Context {
     isLoggedIn() {
         return !!this.user;
     }
-    constructor() {
+    constructor(http: HttpClient) {
+        this._dataSource = new RestDataProvider(Context.apiBaseUrl
+            , new angularHttpProvider(http)
+            //,new restDataProviderHttpProviderUsingFetch()
+        );
+
 
     }
 
 
 
-    protected _dataSource: DataProviderFactory = new RestDataProvider(Context.apiBaseUrl);
+    protected _dataSource: DataProviderFactory;
     protected _onServer = false;
     get onServer(): boolean {
         return this._onServer;
@@ -73,7 +79,7 @@ export class Context {
 }
 export class ServerContext extends Context {
     constructor() {
-        super();
+        super(undefined);
         this._onServer = true;
 
 
@@ -216,7 +222,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         for (const item of items) {
             await what(item);
         }
-        
+
     }
     async find(options?: FindOptionsPerEntity<T>) {
         let dl = new DataList(this.entity);
@@ -245,7 +251,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 export interface EntityType {
     new(...args: any[]): Entity<any>;
 }
-export const allEntities :EntityType[] = [];
+export const allEntities: EntityType[] = [];
 
 
 export function EntityClass(theEntityClass: EntityType) {
@@ -253,7 +259,7 @@ export function EntityClass(theEntityClass: EntityType) {
     var original = theEntityClass;
 
     // a utility function to generate instances of a class
-    function construct(constructor:any, args:any[]) {
+    function construct(constructor: any, args: any[]) {
         var c: any = function () {
             return constructor.apply(this, args);
         }
@@ -262,7 +268,7 @@ export function EntityClass(theEntityClass: EntityType) {
     }
     let newEntityType: any;
     // the new constructor behaviour
-    var f: any = function (...args:any[]) {
+    var f: any = function (...args: any[]) {
 
         let r = construct(original, args);
         if (r instanceof ContextEntity) {
