@@ -88,12 +88,12 @@ export class angularHttpProvider implements restDataProviderHttpProvider {
   }
   post(url: string, data: any): Promise<any> {
     return this.http.post(url, data).toPromise();
-  } 
+  }
   delete(url: string): Promise<void> {
-    return this.http.delete(url).toPromise().then(x=>{});
+    return this.http.delete(url).toPromise().then(x => { });
   }
   put(url: string, data: any): Promise<any> {
-    return this.http.put(url,data).toPromise();
+    return this.http.put(url, data).toPromise();
   }
   get(url: string): Promise<any> {
     return this.http.get(url).toPromise();
@@ -189,13 +189,11 @@ export abstract class Action<inParam, outParam>{
         this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
     }
   }
+  static provider: restDataProviderHttpProvider;
   run(pIn: inParam): Promise<outParam> {
 
+    return Action.provider.post(this.serverUrl + this.actionUrl, pIn);
 
-    return myFetch(this.serverUrl + this.actionUrl, {
-      method: 'post',
-      body: JSON.stringify(pIn)
-    }, this.addRequestHeader, JsonContent);
 
   }
   protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;

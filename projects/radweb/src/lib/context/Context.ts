@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
-import { RestDataProvider, restDataProviderHttpProviderUsingFetch, angularHttpProvider } from "../core/restDataProvider";
+import { RestDataProvider, Action, angularHttpProvider } from "../core/restDataProvider";
 import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
@@ -20,10 +20,14 @@ export class Context {
         return !!this.user;
     }
     constructor(http: HttpClient) {
-        this._dataSource = new RestDataProvider(Context.apiBaseUrl
-            , new angularHttpProvider(http)
-            //,new restDataProviderHttpProviderUsingFetch()
-        );
+        if (http) {
+            var prov = new angularHttpProvider(http);
+            this._dataSource = new RestDataProvider(Context.apiBaseUrl
+                , prov
+                //,new restDataProviderHttpProviderUsingFetch()
+            );
+            Action.provider = prov;
+        }
 
 
     }
