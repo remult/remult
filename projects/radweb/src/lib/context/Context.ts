@@ -131,7 +131,7 @@ export class ContextEntity<idType> extends Entity<idType>{
     }
     _getExcludedColumns(x: Entity<any>) {
         let r = x.__iterateColumns().filter(c => {
-            return !c.excludeFromApi;
+            return c.excludeFromApi;
         });
         return r;
     }
