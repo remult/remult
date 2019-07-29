@@ -26,7 +26,6 @@
               "src/favicon.ico",
               "src/assets"
             ],
-            "preserveSymlinks": true, //https://stackoverflow.com/questions/51614615/angular-6-the-result-of-a-dependency-is-an-expression
             "styles": [
               "src/styles.scss",
               "node_modules/bootstrap3/dist/css/bootstrap.min.css"

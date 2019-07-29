@@ -6,6 +6,10 @@
   "author": {
     "name": "Noam Honig"
   },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "uuid": "^3.3.2"
+  },
   "peerDependencies": {
     "@angular/common": "^7.0.0",
     "@angular/core": "^7.0.0",

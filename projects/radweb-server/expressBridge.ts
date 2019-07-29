@@ -4,8 +4,11 @@ import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApi
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
+// @ts-ignore: 
 import * as secure from 'express-force-https';
-import { registerActionsOnServer, registerEntitiesOnServer } from 'radweb-server';
+import { registerActionsOnServer } from './register-actions-on-server';
+import { registerEntitiesOnServer } from './register-entities-on-server';
+
 
 
 

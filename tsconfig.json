@@ -17,21 +17,6 @@
     "lib": [
       "es2018",
       "dom"
-    ],
-    "paths": {
-      "radweb": [
-        "projects/radweb/src/public_api"
-      ],
-      "radweb-server":[
-        "projects/radweb-server"
-      ],
-      "radweb-server-postgres":[
-        "projects/radweb-server-postgres/PostgresDataProvider"
-      ],
-    
-      "radweb/*": [
-        "projects/radweb/src/*"
-      ]
-    }
+    ]
   }
 }
