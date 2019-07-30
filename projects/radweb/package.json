@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "@auth0/angular-jwt": "^3.0.0"
   },
   "peerDependencies": {
     "@angular/common": "^7.0.0",

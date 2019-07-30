@@ -60,7 +60,10 @@ export class JwtSessionManager {
             }
         }
         this.context._setUser(user);
+        if (this.tokenInfoChanged)
+            this.tokenInfoChanged();
     }
+    tokenInfoChanged: () => void;
 
     signout(): any {
         this._setToken('');

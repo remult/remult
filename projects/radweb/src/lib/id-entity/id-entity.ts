@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { StringColumn, Entity, Column } from "../core/utils";
 import { ContextEntity, ContextEntityOptions } from '../context/Context';
 import { DataColumnSettings } from '../core/dataInterfaces1';

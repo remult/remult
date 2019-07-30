@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
-import { RestDataProvider, Action, angularHttpProvider } from "../core/restDataProvider";
+import { RestDataProvider, Action, angularHttpProvider, wrapFetch } from "../core/restDataProvider";
 import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
@@ -142,7 +142,7 @@ export class ContextEntity<idType> extends Entity<idType>{
     }
     _getExcludedColumns(x: Entity<any>) {
         let r = x.__iterateColumns().filter(c => {
-            return c.excludeFromApi;
+            return !c.includeInApi;
         });
         return r;
     }
@@ -210,7 +210,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return this._lookupCache.lookupAsync(this.entity, filter);
     }
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
-        return this._lookupCache.lookup(this.entity, filter);
+        let x = wrapFetch.wrap;
+        wrapFetch.wrap = () => () => { };
+        try {
+            return this._lookupCache.lookup(this.entity, filter);
+        } finally {
+            wrapFetch.wrap = x;
+        }
     }
     async count(where?: (entity: T) => FilterBase) {
         let dl = new DataList(this.entity);
@@ -296,7 +302,10 @@ export function EntityClass(theEntityClass: EntityType) {
 }
 export interface UserInfo {
     id: string;
-    name: String;
+    name: string;
     roles: string[];
 }
 
+export abstract class DirectSQL {
+    abstract execute(sql:string);
+}

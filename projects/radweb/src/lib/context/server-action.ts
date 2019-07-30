@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 import { SupportsTransaction, DataProviderFactory, DataApiRequest } from "../core/dataInterfaces1";
 import { Action } from '../core/restDataProvider';
-import { Context, ServerContext } from './Context';
+import { Context, ServerContext, DirectSQL } from './Context';
 
 
 interface inArgs {
@@ -11,7 +11,17 @@ interface inArgs {
 interface result {
     data: any;
 }
-
+export class ActualDirectSQL extends DirectSQL {
+    static log = false;
+    execute(sql: string) {
+        if (ActualDirectSQL.log)
+            console.log(sql);
+        return this.dp.source.query(sql);
+    }
+    constructor(private dp: any) {
+        super();
+    }
+}
 
 export class myServerAction extends Action<inArgs, result>
 {
@@ -34,16 +44,17 @@ export class myServerAction extends Action<inArgs, result>
                 if (this.types[i] == Context || this.types[i] == ServerContext) {
 
                     info.args[i] = context;
+                } else if (this.types[i] == DirectSQL && ds) {
+                    info.args[i] = new ActualDirectSQL(ds);
                 }
             }
-
             try {
                 result.data = await this.originalMethod(info.args);
 
             }
 
             catch (err) {
-                console.log(err);
+                console.error(err);
                 throw err
             }
         });

@@ -50,7 +50,7 @@ export interface ColumnValueProvider {
 
 export interface DataColumnSettings<type, colType> {
   jsonName?: string;
-  excludeFromApi?: boolean;
+  includeInApi?: boolean;
   caption?: string;
   readonly?: boolean;
   inputType?: string;

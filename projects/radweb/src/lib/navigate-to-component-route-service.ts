@@ -44,15 +44,16 @@ export class AuthorizedGuard implements CanActivate {
     canActivate(route: ActivatedRouteSnapshot) {
         let allowedRoles: string[];
 
-        let data = route.routeConfig.data as AuthorizedGuardRouteData;
+        let r = route.routeConfig as AuthorizedGuardRoute
+        let data = r.data ;
         if (data && data.allowedRoles)
             allowedRoles = data.allowedRoles;
-
+        
         if (this.context.hasRole(...allowedRoles)) {
             return true;
         }
         if (!(route instanceof dummyRoute))
-            this.router.navigate(['/']);
+            this.router.navigate([data.alternativeRoute?data.alternativeRoute: '/']);
         return false;
     }
 }
@@ -68,11 +69,7 @@ export class NotLoggedInGuard implements CanActivate {
 
     }
 }
-export interface AuthorizedGuardRouteData {
-    allowedRoles?: string[];
-    name?: string;
 
-}
 class dummyRoute extends ActivatedRouteSnapshot {
     constructor() {
         super();
@@ -84,5 +81,6 @@ export interface AuthorizedGuardRoute extends Route {
     data?: {
         allowedRoles?: string[];
         name?: string;
+        alternativeRoute?:string;
     };
 }
