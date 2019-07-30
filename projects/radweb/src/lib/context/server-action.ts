@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 import { SupportsTransaction, DataProviderFactory, DataApiRequest } from "../core/dataInterfaces1";
 import { Action } from '../core/restDataProvider';
-import { Context, ServerContext, DirectSQL } from './Context';
+import { Context, ServerContext, DirectSQL, Allowed } from './Context';
 
 
 interface inArgs {
@@ -35,7 +35,7 @@ export class myServerAction extends Action<inArgs, result>
             let context = new ServerContext();
             context.setReq(req);
             context.setDataProvider(ds);
-            if (!this.options.allowed(context))
+            if (!context.isAllowed(this.options.allowed))
                 throw 'not allowed';
             for (let i = 0; i < this.types.length; i++) {
                 if (info.args.length < i) {
@@ -63,7 +63,7 @@ export class myServerAction extends Action<inArgs, result>
 
 }
 export interface RunOnServerOptions {
-    allowed: (context: Context) => boolean;
+    allowed: Allowed;
 }
 export const actionInfo = {
     allActions: [] as any[],

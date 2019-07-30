@@ -8,6 +8,7 @@ import {
   , ColumnStorage,
   EntitySourceFindOptions
 } from './dataInterfaces1';
+import { Allowed } from '../context/Context';
 
 
 
@@ -966,7 +967,7 @@ export class Column<dataType>  {
   onValueChange: () => void;
   jsonName: string;
   caption: string;
-  includeInApi = true;
+  includeInApi:Allowed = true;
   dbName: string | (() => string);
   private __settings: DataColumnSettings<dataType, Column<dataType>>;
   __getMemberName() { return this.jsonName; }

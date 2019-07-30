@@ -1,6 +1,6 @@
 import { Column, Entity, Sort, SortSegment, StringColumn } from './utils';
 import { FindOptions } from './dataInterfaces1';
-import { UserInfo } from '../context/Context';
+import { UserInfo, Allowed } from '../context/Context';
 
 
 
@@ -50,7 +50,7 @@ export interface ColumnValueProvider {
 
 export interface DataColumnSettings<type, colType> {
   jsonName?: string;
-  includeInApi?: boolean;
+  includeInApi?: Allowed;
   caption?: string;
   readonly?: boolean;
   inputType?: string;

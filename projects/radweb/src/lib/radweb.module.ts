@@ -10,14 +10,14 @@ import { DataGrid2Component } from './angular-components/date-grid-2/data-grid2.
 import { SelectPopupComponent } from './angular-components/select-popup.ts/select-popup.component';
 import { Context } from './context/Context';
 import { JwtSessionManager } from './jwt-session-manager';
-import { NotLoggedInGuard, AuthorizedGuard, RouteHelperService } from './navigate-to-component-route-service';
+import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
   declarations: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent],
   imports: [FormsModule, CommonModule,HttpClientModule],
-  providers: [Context,JwtSessionManager,NotLoggedInGuard,AuthorizedGuard,RouteHelperService]
+  providers: [Context,JwtSessionManager,NotSignedInGuard,SignedInGuard,RouteHelperService]
   ,
   exports: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent]
 })

@@ -7,6 +7,7 @@ import { itAsync, Done } from './testHelper.spec';
 
 import { Categories, environment } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
+import { Context, Role, Allowed } from '../context/Context';
 
 
 
@@ -1107,6 +1108,58 @@ describe("test bool value", () => {
     expect(bc.value).toBe(false);
   });
 });
+describe("check allowedDataType", () => {
+  let c = new Context(undefined);
+  let strA = 'roleA',
+    strB = 'roleB',
+    strC = 'roleC';
+  let roleA = new Role(strA);
+  let roleB = new Role(strB);
+  let roleC = new Role(strC);
+  c._setUser({ id: 'x', name: 'y', roles: [strA, strB] }
+  );
+  it("1", () => {
+    expect(c.isAllowed(strA)).toBe(true);
+  });
+  function myIt(allowed: Allowed, expected: boolean, description?: string) {
+    if (!description && allowed != undefined)
+      description = allowed.toString();
+    it(description, () => {
+      expect(c.isAllowed(allowed)).toBe(expected);
+    });
+  }
+  myIt(strA, true, "a");
+  myIt(strC, false, "a");
+  myIt([strA], true, "a");
+  myIt([strC], false, "a");
+  myIt([strA], true, "a");
+  myIt([strC, strA], true, "a");
+  myIt([strC, "strD"], false, "a");
+  myIt(roleA, true);
+  myIt(roleC, false);
+  myIt([roleA], true);
+  myIt([roleC], false);
+  myIt([roleC, roleA], true);
+  myIt([roleC, "strD"], false);
+  myIt(c => c.isAllowed(roleA), true);
+  myIt(true, true);
+  myIt(false, false);
+  myIt(undefined, undefined);
+  it("no context", () => {
+    let c = new Context(undefined);
+    c._setUser(undefined);
+    expect(c.isAllowed(true)).toBe(true);
+    expect(c.isAllowed(c => true)).toBe(true);
+    expect(c.isAllowed(false)).toBe(false);
+    expect(c.isAllowed(c => false)).toBe(false);
+    expect(c.isAllowed([false, true])).toBe(true);
+    expect(c.isAllowed([false, c => true])).toBe(true);
+    expect(c.isAllowed([false, false])).toBe(false);
+    expect(c.isAllowed([false, c => false])).toBe(false);
+    expect(c.isAllowed("abc")).toBe(false);
+  });
+
+});
 class CompoundIdEntity extends Entity<string>
 {
   a = new NumberColumn();
@@ -1169,7 +1222,7 @@ export class EntityWithLateBoundDbName extends Entity<number> {
   constructor() {
     super(() => new EntityWithLateBoundDbName(), new InMemoryDataProvider(),
       {
-        dbName:()=> '(select ' + this.id.__getDbName() + ')'
+        dbName: () => '(select ' + this.id.__getDbName() + ')'
 
       });
     this.initColumns();

@@ -1,12 +1,12 @@
 import { Router, Route, CanActivate, ActivatedRouteSnapshot } from '@angular/router';
 import { Injectable, Injector } from '@angular/core';
-import { Context } from './context/Context';
+import { Context, Allowed, AngularComponent } from './context/Context';
 @Injectable()
 export class RouteHelperService {
-    constructor(private router: Router,private injector:Injector) {
+    constructor(private router: Router, private injector: Injector) {
 
     }
-  
+
     navigateToComponent(toComponent: { new(...args: any[]): any }) {
         let done = false;
         this.router.config.forEach(path => {
@@ -38,32 +38,39 @@ export class RouteHelperService {
 }
 
 @Injectable()
-export class AuthorizedGuard implements CanActivate {
-    constructor(private context: Context, private router: Router) {
-    }
-    canActivate(route: ActivatedRouteSnapshot) {
-        let allowedRoles: string[];
+export class SignedInGuard implements CanActivate {
+    constructor(protected context: Context, private router: Router, private helper: RouteHelperService) {
 
-        let r = route.routeConfig as AuthorizedGuardRoute
-        let data = r.data ;
-        if (data && data.allowedRoles)
-            allowedRoles = data.allowedRoles;
-        
-        if (this.context.hasRole(...allowedRoles)) {
+    }
+    isAllowed(): Allowed {
+        return true;
+    }
+    static componentToNavigateIfNotAllowed:AngularComponent;
+    
+    canActivate(route: ActivatedRouteSnapshot) {
+        if (this.context.isSignedIn()&&this.context.isAllowed(this.isAllowed())) {
             return true;
         }
-        if (!(route instanceof dummyRoute))
-            this.router.navigate([data.alternativeRoute?data.alternativeRoute: '/']);
+        
+        if (!(route instanceof dummyRoute)) {
+            let x = SignedInGuard.componentToNavigateIfNotAllowed;
+            if (x != undefined) {
+                this.helper.navigateToComponent(x);
+            } else
+                this.router.navigate(['/']);
+        }
         return false;
     }
 }
+
+
 @Injectable()
-export class NotLoggedInGuard implements CanActivate {
+export class NotSignedInGuard implements CanActivate {
     constructor(private context: Context, private router: Router) {
     }
     canActivate(route: ActivatedRouteSnapshot) {
-        let allowedRoles: string[];
-        if (this.context.user)
+
+        if (this.context.isSignedIn())
             return false;
         return true;
 
@@ -76,11 +83,4 @@ class dummyRoute extends ActivatedRouteSnapshot {
 
     }
     routeConfig: any;
-}
-export interface AuthorizedGuardRoute extends Route {
-    data?: {
-        allowedRoles?: string[];
-        name?: string;
-        alternativeRoute?:string;
-    };
 }

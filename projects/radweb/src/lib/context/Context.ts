@@ -5,6 +5,7 @@ import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, I
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
+import { isFunction, isString, isBoolean } from "util";
 
 
 
@@ -16,7 +17,7 @@ export class Context {
         this._lookupCache = new stamEntity();
     }
 
-    isLoggedIn() {
+    isSignedIn() {
         return !!this.user;
     }
     constructor(http: HttpClient) {
@@ -47,17 +48,34 @@ export class Context {
     }
     static apiBaseUrl = 'api';
 
-    hasRole(...allowedRoles: string[]) {
+    isAllowed(roles: Allowed) {
+        if (roles == undefined)
+            return undefined;
+        if (roles instanceof Array) {
+            for (const role of roles) {
+                if (this.isAllowed(role) === true) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (isFunction(roles)) {
+            return (<any>roles)(this);
+        }
+        if (isBoolean(roles))
+            return roles;
+
+        if (roles instanceof Role) {
+            roles = roles.key;
+        } 
         if (!this.user)
             return false;
-        if (!allowedRoles)
-            return true;
-        if (!this.user.roles)
-            return false;
-        for (const role of allowedRoles) {
-            if (this.user.roles.indexOf(role) >= 0)
+        if (isString(roles))
+            if (this.user.roles.indexOf(roles.toString()) >= 0)
                 return true;
-        }
+
+
         return false;
     }
 
@@ -76,7 +94,7 @@ export class Context {
 
         if (this.cache[classType.__key])
             return this.cache[classType.__key] as SpecificEntityHelper<lookupIdType, T>;
-        return this.cache[classType.__key] = new SpecificEntityHelper<lookupIdType, T>(this.create(c), this._lookupCache);
+        return this.cache[classType.__key] = new SpecificEntityHelper<lookupIdType, T>(this.create(c), this._lookupCache, this);
     }
 
     private _lookupCache = new stamEntity();
@@ -140,9 +158,9 @@ export class ContextEntity<idType> extends Entity<idType>{
         this.initColumns((<any>this).id);
 
     }
-    _getExcludedColumns(x: Entity<any>) {
+    _getExcludedColumns(x: Entity<any>, context: Context) {
         let r = x.__iterateColumns().filter(c => {
-            return !c.includeInApi;
+            return !context.isAllowed(c.includeInApi);
         });
         return r;
     }
@@ -161,12 +179,12 @@ export class ContextEntity<idType> extends Entity<idType>{
                 options.allowApiUpdate = true;
             }
             return {
-                allowRead: options.allowApiRead,
-                allowUpdate: options.allowApiUpdate,
-                allowDelete: options.allowApiDelete,
-                allowInsert: options.allowApiInsert,
+                allowRead: r.isAllowed(options.allowApiRead),
+                allowUpdate: r.isAllowed(options.allowApiUpdate),
+                allowDelete: r.isAllowed(options.allowApiDelete),
+                allowInsert: r.isAllowed(options.allowApiInsert),
                 excludeColumns: x =>
-                    this._getExcludedColumns(x)
+                    this._getExcludedColumns(x, r)
                 ,
                 readonlyColumns: x => {
                     let r = x.__iterateColumns().filter(c => c.readonly);
@@ -185,11 +203,11 @@ export interface ContextEntityOptions {
     name: string;//required
     dbName?: string | (() => string);
     caption?: string;
-    allowApiRead?: boolean;
-    allowApiUpdate?: boolean;
-    allowApiDelete?: boolean;
-    allowApiInsert?: boolean;
-    allowApiCRUD?: boolean;
+    allowApiRead?: Allowed;
+    allowApiUpdate?: Allowed;
+    allowApiDelete?: Allowed;
+    allowApiInsert?: Allowed;
+    allowApiCRUD?: Allowed;
     apiDataFilter?: () => FilterBase;
 
     onSavingRow?: () => Promise<any>;
@@ -203,7 +221,7 @@ class stamEntity extends Entity<number> {
     }
 }
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> {
-    constructor(private entity: T, private _lookupCache: Entity<any>) {
+    constructor(private entity: T, private _lookupCache: Entity<any>, private context: Context) {
 
     }
     lookupAsync(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): Promise<T> {
@@ -247,7 +265,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     toPojoArray(items: T[]) {
         let exc = new ColumnHashSet();
         if (this.entity instanceof ContextEntity)
-            exc.add(...this.entity._getExcludedColumns(this.entity));
+            exc.add(...this.entity._getExcludedColumns(this.entity, this.context));
 
         return Promise.all(items.map(f => f.__toPojo(exc)));
     }
@@ -307,5 +325,16 @@ export interface UserInfo {
 }
 
 export abstract class DirectSQL {
-    abstract execute(sql:string);
+    abstract execute(sql: string);
 }
+export class Role {
+    constructor(public key: string) {
+
+    }
+    static not(allowed: Allowed): Allowed {
+        return c => !c.isAllowed(allowed);
+    }
+}
+declare type AllowedRule = string | Role | ((c: Context) => boolean) | boolean;;
+export declare type Allowed = AllowedRule | AllowedRule[];
+export declare type AngularComponent = { new(...args: any[]): any };
