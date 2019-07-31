@@ -47,18 +47,17 @@ export interface ColumnValueProvider {
   getOriginalValue(key: string): any;
   setValue(key: string, value: any): void;
 }
-
-export interface DataColumnSettings<type, colType> {
+export declare type ColumnOptions<type> = DataColumnSettings<type> | string;
+export interface DataColumnSettings<type> {
   jsonName?: string;
   includeInApi?: Allowed;
   caption?: string;
-  
-  allowApiUpdate?:Allowed;
+  allowApiUpdate?: Allowed;
   inputType?: string;
   dbName?: string | (() => string);
   value?: type;
   storage?: ColumnStorage<type>;
-  onValidate?: (col: colType) => void | Promise<void>;
+  onValidate?: () => void | Promise<void>;
   getValue?: (val: type) => any;
   valueChange?: (val: type) => void;
   virtualData?: () => type | Promise<type>;

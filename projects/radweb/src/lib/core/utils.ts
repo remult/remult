@@ -4,7 +4,7 @@
 import { makeTitle, isFunction, functionOrString } from './common';
 
 import {
-  DataColumnSettings, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
+  DataColumnSettings,ColumnOptions, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
   , ColumnStorage,
   EntitySourceFindOptions
 } from './dataInterfaces1';
@@ -971,9 +971,9 @@ export class Column<dataType>  {
   caption: string;
   includeInApi: Allowed = true;
   dbName: string | (() => string);
-  private __settings: DataColumnSettings<dataType, Column<dataType>>;
+  private __settings: DataColumnSettings<dataType>;
   __getMemberName() { return this.jsonName; }
-  constructor(settingsOrCaption?: DataColumnSettings<dataType, Column<dataType>> | string) {
+  constructor(settingsOrCaption?: ColumnOptions<dataType>) {
     if (settingsOrCaption) {
       if (typeof (settingsOrCaption) === "string") {
         this.caption = settingsOrCaption;
@@ -997,7 +997,7 @@ export class Column<dataType>  {
         if (settingsOrCaption.valueChange)
           this.onValueChange = () => this.__settings.valueChange(this.value);
         if (settingsOrCaption.onValidate)
-          this.onValidate = () => settingsOrCaption.onValidate(this);
+          this.onValidate = () => settingsOrCaption.onValidate();
       }
 
 
@@ -1741,7 +1741,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption?: DataColumnSettings<string, StringColumn> | string) {
+  constructor(settingsOrCaption?: ColumnOptions<string> ) {
     super(settingsOrCaption);
   }
   isContains(value: StringColumn | string) {
@@ -1752,7 +1752,7 @@ export class StringColumn extends Column<string>{
   }
 }
 export class DateColumn extends Column<Date>{
-  constructor(settingsOrCaption?: DataColumnSettings<Date, Column<Date>> | string) {
+  constructor(settingsOrCaption?: ColumnOptions<Date>) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1793,7 +1793,7 @@ export class DateColumn extends Column<Date>{
 
 }
 export class DateTimeColumn extends Column<Date>{
-  constructor(settingsOrCaption?: DataColumnSettings<Date, DateTimeColumn> | string) {
+  constructor(settingsOrCaption?: ColumnOptions<Date>) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'date';
@@ -1838,7 +1838,7 @@ export class DateTimeColumn extends Column<Date>{
 
 
 export class NumberColumn extends Column<number>{
-  constructor(settingsOrCaption?: NumberColumnSettings | string) {
+  constructor(settingsOrCaption?: NumberColumnOptions) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'number';
@@ -1856,11 +1856,12 @@ export class NumberColumn extends Column<number>{
 
   }
 }
-export interface NumberColumnSettings extends DataColumnSettings<number, NumberColumn> {
+export interface NumberColumnSettings extends DataColumnSettings<number> {
   decimalDigits?: number;
 }
+export declare type NumberColumnOptions = NumberColumnSettings|string;
 export class BoolColumn extends Column<boolean>{
-  constructor(settingsOrCaption?: DataColumnSettings<boolean, BoolColumn> | string) {
+  constructor(settingsOrCaption?: ColumnOptions<boolean>) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';
@@ -1871,7 +1872,7 @@ export interface ClosedListItem {
   toString(): string;
 }
 export class ClosedListColumn<closedListType extends ClosedListItem> extends Column<closedListType> {
-  constructor(private closedListType: any, settingsOrCaption?: DataColumnSettings<closedListType, Column<closedListType>> | string) {
+  constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<closedListType> ) {
     super(settingsOrCaption);
   }
   getOptions(): DropDownItem[] {

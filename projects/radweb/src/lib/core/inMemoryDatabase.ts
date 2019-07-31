@@ -3,8 +3,8 @@
 
 
 
-import { dataAreaSettings, Entity, Column, CompoundIdColumn, StringColumn } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, ColumnValueProvider, DataColumnSettings, FindOptions, FilterConsumer } from './dataInterfaces1';
+import { Entity, Column, StringColumn } from './utils';
+import { FilterBase, DataProviderFactory, DataProvider, FindOptions, FilterConsumer } from './dataInterfaces1';
 
 
 import { isFunction, makeTitle } from './common';

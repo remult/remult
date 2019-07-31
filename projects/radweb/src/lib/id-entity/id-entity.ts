@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { StringColumn, Entity, Column, EntityOptions } from "../core/utils";
 
-import { DataColumnSettings } from '../core/dataInterfaces1';
+import { ColumnOptions, DataColumnSettings } from '../core/dataInterfaces1';
 
 
 
@@ -40,8 +40,8 @@ export async function checkForDuplicateValue(row: Entity<any>, column: Column<an
   }
 
 }
-export function DecorateDataColumnSettings<type, colType>(original: DataColumnSettings<type, colType> | string, addValues: (x: DataColumnSettings<type, colType>) => void) {
-  let result: DataColumnSettings<type, colType> = {};
+export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, addValues: (x: DataColumnSettings<type>) => void) {
+  let result: DataColumnSettings<type> = {};
   if (typeof (original) == "string")
     result.caption = original;
   else
