@@ -1,16 +1,17 @@
 import { v4 as uuid } from 'uuid';
-import { StringColumn, Entity, Column } from "../core/utils";
-import { ContextEntity, ContextEntityOptions } from '../context/Context';
+import { StringColumn, Entity, Column, EntityOptions } from "../core/utils";
+
 import { DataColumnSettings } from '../core/dataInterfaces1';
 
 
-export class IdEntity<idType extends IdColumn> extends ContextEntity<string>
+
+export class IdEntity<idType extends IdColumn> extends Entity<string>
 {
   id: idType;
-  constructor(id: idType, options?: ContextEntityOptions | string) {
+  constructor(id: idType, options?: EntityOptions | string) {
     super(options);
     this.id = id;
-    id.readonly = true;
+    id.allowApiUpdate = false;
     let x = this.onSavingRow;
     this.onSavingRow = () => {
       if (this.isNew() && !this.id.value && !this.disableNewId)

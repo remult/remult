@@ -19,8 +19,14 @@
     ],
     
     "paths": {
-      "radweb*": [
-        "projects/radweb*"
+      "radweb": [
+        "projects/radweb"
+      ],
+      "radweb-server": [
+        "projects/radweb-server"
+      ],
+      "radweb-server-postgres": [
+        "projects/radweb-server-postgres"
       ]
     }
   },

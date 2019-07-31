@@ -4,23 +4,25 @@ import { Entity, EntitySource, DateTimeDateStorage } from 'radweb';
 import { DataProvider, DataProviderFactory } from 'radweb';
 import * as radweb from 'radweb';
 
+@EntityClass
 export class Categories extends radweb.Entity<number> {
-  id = new radweb.NumberColumn({dbName: 'CategoryID'});
+  id = new radweb.NumberColumn({ dbName: 'CategoryID' });
   categoryName = new radweb.StringColumn();
   description = new radweb.StringColumn();
   categoryNameLength = new radweb.NumberColumn({
-    virtualData:()=>this.categoryName.value.length
+    virtualData: () => this.categoryName.value.length
   });
   categoryNameLengthAsync = new radweb.NumberColumn({
-    virtualData:()=> Promise.resolve(this.categoryName.value.length)
+    virtualData: () => Promise.resolve(this.categoryName.value.length)
   });
-  constructor(settings?:radweb.EntityOptions) {
-      super(() => new Categories(settings), environment.dataSource,settings);
-      this.initColumns();
+  constructor(settings?: radweb.EntityOptions) {
+    super( settings,() => new Categories(settings));
+    this.initColumns();
   }
-} 
+}
+@EntityClass
 export class Orders extends radweb.Entity<number> {
-  id = new radweb.NumberColumn({dbName:"OrderId"});
+  id = new radweb.NumberColumn({ dbName: "OrderId" });
   customerID = new radweb.StringColumn();
   employeeID = new radweb.NumberColumn();
   orderDate = new radweb.DateColumn();
@@ -36,31 +38,31 @@ export class Orders extends radweb.Entity<number> {
   shipCountry = new radweb.StringColumn('ShipCountry');
 
   constructor() {
-    super(() => new Orders(), environment.dataSource, 'Orders');
+    super( 'Orders');
 
     this.initColumns(this.id);
   }
 
 
 }
-
+@EntityClass
 export class Order_details extends radweb.Entity<string> {
   orderID = new radweb.NumberColumn('OrderID');
-  productID = new radweb.NumberColumn('ProductID'); 
+  productID = new radweb.NumberColumn('ProductID');
   unitPrice = new radweb.NumberColumn('UnitPrice');
   quantity = new radweb.NumberColumn('Quantity');
   discount = new radweb.NumberColumn('Discount');
-  id = new radweb.CompoundIdColumn(this,this.orderID,this.productID);
+  id = new radweb.CompoundIdColumn(this, this.orderID, this.productID);
 
   constructor() {
-    super(() => new Order_details(), environment.dataSource, {dbName:'[Order Details]'});
+    super({ name: "OrderDetails", dbName: '[Order Details]' });
     this.initColumns(this.id);
   }
 }
 
-
+@EntityClass
 export class Customers extends radweb.Entity<string> {
-  id = new radweb.StringColumn({caption: 'CustomerID',dbName:'CustomerID'});
+  id = new radweb.StringColumn({ caption: 'CustomerID', dbName: 'CustomerID' });
   companyName = new radweb.StringColumn('CompanyName');
   contactName = new radweb.StringColumn('ContactName');
   contactTitle = new radweb.StringColumn('ContactTitle');
@@ -73,11 +75,11 @@ export class Customers extends radweb.Entity<string> {
   fax = new radweb.StringColumn('Fax');
 
   constructor() {
-    super(() => new Customers(), environment.dataSource, 'Customers');
+    super('Customers');
     this.initColumns(this.id);
   }
 }
-
+@EntityClass
 export class Products extends radweb.Entity<number> {
   id = new radweb.NumberColumn({ dbName: 'ProductID' });
   productName = new radweb.StringColumn('ProductName');
@@ -91,18 +93,18 @@ export class Products extends radweb.Entity<number> {
   discontinued = new radweb.BoolColumn('Discontinued');
 
   constructor() {
-    super(() => new Products(), environment.dataSource, 'Products');
+    super('Products');
     this.initColumns(this.id);
   }
 }
-
+@EntityClass
 export class Shippers extends radweb.Entity<number> {
   id = new radweb.NumberColumn({ dbName: 'ShipperID' });
   companyName = new radweb.StringColumn('CompanyName');
   phone = new radweb.StringColumn('Phone');
 
   constructor() {
-    super(() => new Shippers(), environment.dataSource, 'Shippers');
+    super('Shippers');
     this.initColumns(this.id);
   }
 }

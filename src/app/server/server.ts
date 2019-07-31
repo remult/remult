@@ -1,7 +1,7 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader();
 
-import { DataApi, Entity, NumberColumn, DateTimeColumn } from 'radweb';
+import { DataApi, Entity, NumberColumn, DateTimeColumn, EntityClass } from 'radweb';
 import { Pool } from 'pg';
 import { Orders, Customers, Shippers, Products, Order_details } from './../models';
 import { environment } from './../../environments/environment';
@@ -51,12 +51,12 @@ dataApi.add(new Shippers());
 
 app.listen(port);
 
-
+@EntityClass
 class testEntity extends Entity<number>{
     id = new NumberColumn();
     datet = new DateTimeColumn();
     constructor() {
-        super(() => new testEntity(), environment.dataSource, 'testdt');
+        super( 'testdt');
         this.initColumns(this.id);
     }
 }

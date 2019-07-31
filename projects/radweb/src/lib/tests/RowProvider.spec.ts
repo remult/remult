@@ -9,6 +9,7 @@ import { itAsync, Done } from './testHelper.spec';
 import { Categories } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
+import { Context } from '../context/Context';
 //import { DataAreaCompnent } from '../utils/angular/dataArea';
 
 
@@ -74,14 +75,14 @@ describe("Closed List  column", () => {
   });
   it("loads and saved from Pojo correctly", () => {
     let x = new LanguageColumn();
-    x.jsonName='abc';
+    x.jsonName = 'abc';
     x.value = Language.Russian;
-    let y:any={};
+    let y: any = {};
     x.__addToPojo(y);
     expect(y[x.jsonName]).toBe(10);
     x.value = Language.Hebrew;
     expect(x.value).toBe(Language.Hebrew);
-    x.__loadFromToPojo({'abc':10});
+    x.__loadFromToPojo({ 'abc': 10 });
     expect(x.value).toBe(Language.Russian);
 
   });
@@ -235,7 +236,8 @@ describe("test row provider", () => {
   itAsync("test grid update and validation cycle", async () => {
     let orderOfOperation = '';
     let c = await insertFourRows({
-      onSavingRow: r => orderOfOperation += "EntityOnSavingRow,",
+      name: undefined,
+      onSavingRow: () => orderOfOperation += "EntityOnSavingRow,",
       onValidate: r => orderOfOperation += "EntityValidate,",
     });
     let ds = new GridSettings(c, {
@@ -328,8 +330,10 @@ describe("test row provider", () => {
 
   });
   itAsync("column drop down 1", async () => {
-    let c = new Categories();
+    let ctx = new Context(undefined);
+    let c = ctx.create(Categories);
     c.setSource(new InMemoryDataProvider());
+    
     await c.source.Insert(c => {
       c.id.value = 1;
       c.categoryName.value = 'noam'
@@ -338,7 +342,7 @@ describe("test row provider", () => {
       c.id.value = 2;
       c.categoryName.value = 'yael';
     });
-    let c1 = new Categories();
+    let c1 = ctx.create(Categories);
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
     let cs = { column: c1.id, dropDown: { source: c } } as ColumnSetting<Categories>
     await cc.add(cs);
@@ -348,7 +352,7 @@ describe("test row provider", () => {
     expect(cs.dropDown.items[1].id).toBe(2);
     expect(cs.dropDown.items[0].caption).toBe('noam');
     expect(cs.dropDown.items[1].caption).toBe('yael');
-    var c2 = new Categories();
+    var c2 = ctx.create(Categories);
     c2.id.value = 1;
     expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
 
@@ -387,18 +391,20 @@ describe("test row provider", () => {
 
 });
 describe("column collection", () => {
+  let ctx = new Context(undefined);
   itAsync("uses a saparate column", async () => {
-    let c = new Categories();
+    let c = ctx.create(Categories);
+    c.categoryName.allowApiUpdate = false;
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.items[0] === c.categoryName).toBe(false);
     expect(cc.items[0] === cc.items[0].column).toBe(false);
-    expect(cc.items[0].caption == c.categoryName.caption);
-    expect(cc.items[0].readonly == c.categoryName.readonly);
-    expect(cc.items[0].inputType == c.categoryName.inputType);
+    expect(cc.items[0].caption == c.categoryName.caption).toBe(true);
+    expect(cc.items[0].readonly).toBe(true);
+    expect(cc.items[0].inputType == c.categoryName.inputType).toBe(true);
   })
   itAsync("jsonSaverIsNice", async () => {
-    let c = new Categories();
+    let c = ctx.create(Categories);
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe("x.categoryName");
@@ -409,7 +415,7 @@ describe("column collection", () => {
   }`);
   })
   itAsync("works ok with filter", async () => {
-    let c = new Categories();
+    let c = ctx.create(Categories);
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }), () => true);
     await cc.add(c.id);
     cc.filterHelper.filterColumn(cc.items[0].column, false, false);
@@ -419,8 +425,10 @@ describe("column collection", () => {
 });
 describe("grid settings ",
   () => {
+    let ctx = new Context(undefined);
     it("sort is displayed right", () => {
-      let c = new Categories();
+      let c = ctx.create( Categories);
+      c.setSource(new InMemoryDataProvider());
       let gs = new GridSettings(c);
       expect(gs.sortedAscending(c.id)).toBe(false);
       expect(gs.sortedDescending(c.id)).toBe(false);
@@ -432,7 +440,8 @@ describe("grid settings ",
       expect(gs.sortedDescending(c.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let c = new Categories();
+      let c = ctx.create( Categories);
+      c.setSource(new InMemoryDataProvider());
       let gs = new GridSettings(c, { get: { orderBy: c => new Sort({ column: c.categoryName }) } });
       expect(gs.sortedAscending(c.categoryName)).toBe(true);
       expect(gs.sortedDescending(c.categoryName)).toBe(false);

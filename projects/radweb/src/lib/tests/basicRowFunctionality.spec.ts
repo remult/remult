@@ -7,7 +7,7 @@ import { itAsync, Done } from './testHelper.spec';
 
 import { Categories, environment } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
-import { Context, Role, Allowed } from '../context/Context';
+import { Context, Role, Allowed, EntityClass } from '../context/Context';
 
 
 
@@ -112,11 +112,12 @@ describe('Test basic row functionality', () => {
   });
 
 });
+@EntityClass
 class myTestEntity extends Entity<number>{
   id = new NumberColumn();
   name1 = new StringColumn({ jsonName: 'name' });
   constructor() {
-    super(() => new myTestEntity(), environment.dataSource, 'myTestEntity');
+    super('myTestEntity');
     this.initColumns();
   }
 
@@ -255,9 +256,10 @@ describe("data api", () => {
     expect(x[0].categoryName.value).toBe('noam 1');
     expect(count).toBe(1);
   });
+  let ctx = new Context();
   itAsync("put with validations on entity fails", async () => {
 
-    let c = new entityWithValidations();
+    let c = ctx.create(entityWithValidations);
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
@@ -277,7 +279,7 @@ describe("data api", () => {
   });
   itAsync("put with validations on column fails", async () => {
 
-    let c = new entityWithValidationsOnColumn();
+    let c = ctx.create(entityWithValidationsOnColumn);
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
@@ -297,7 +299,7 @@ describe("data api", () => {
   });
   itAsync("put with validations on entity fails", async () => {
 
-    let c = new entityWithValidationsOnEntityEvent();
+    let c = ctx.create(entityWithValidations);
     c.setSource(new InMemoryDataProvider());
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
@@ -317,7 +319,7 @@ describe("data api", () => {
   });
   itAsync("entity with different id column still works well", async () => {
 
-    let c = new entityWithValidations();
+    let c = ctx.create(entityWithValidations);
     c.setSource(new InMemoryDataProvider());
     c = await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     c.name.value = 'yael';
@@ -493,7 +495,7 @@ describe("data api", () => {
   });
   itAsync("post with logic works and max in entity", async () => {
 
-    let c = new entityWithValidations();
+    let c = ctx.create( entityWithValidations);
 
     var api = new DataApi(c, { allowInsert: true });
     let t = new TestDataApiResponse();
@@ -946,8 +948,9 @@ describe("column validation", () => {
 
 });
 describe("compund id", () => {
+  const ctx = new Context();
   itAsync("start", async () => {
-    let c = new CompoundIdEntity();
+    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
@@ -962,13 +965,13 @@ describe("compund id", () => {
     expect(r[0].a.value).toBe(1);
   });
   it("test id filter", () => {
-    let c = new CompoundIdEntity();
+    let c = ctx.create(CompoundIdEntity);
     let u = new UrlBuilder("");
     c.id.isEqualTo('1,11').__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(u));
     expect(u.url).toBe('?a=1&b=11');
   });
   itAsync("update", async () => {
-    let c = new CompoundIdEntity();
+    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
@@ -987,7 +990,7 @@ describe("compund id", () => {
     expect(r[0].id.value).toBe('1,11');
   });
   itAsync("update2", async () => {
-    let c = new CompoundIdEntity();
+    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
@@ -1002,7 +1005,7 @@ describe("compund id", () => {
     expect(r[0].id.value).toBe('1,55');
   });
   itAsync("insert", async () => {
-    let c = new CompoundIdEntity();
+    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
@@ -1016,7 +1019,7 @@ describe("compund id", () => {
     expect(c.id.value).toBe('3,33');
   });
   itAsync("delete", async () => {
-    let c = new CompoundIdEntity();
+    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
     mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
     c.setSource(mem);
@@ -1054,6 +1057,7 @@ describe("test data list", () => {
   });
   it("dbname of entity string works", () => {
     var e = new Categories({
+      name: 'testName',
       dbName: 'test'
     });
     expect(e.__getDbName()).toBe('test');
@@ -1160,6 +1164,7 @@ describe("check allowedDataType", () => {
   });
 
 });
+@EntityClass
 class CompoundIdEntity extends Entity<string>
 {
   a = new NumberColumn();
@@ -1167,16 +1172,17 @@ class CompoundIdEntity extends Entity<string>
   c = new NumberColumn();
   id = new CompoundIdColumn(this, this.a, this.b);
   constructor() {
-    super(() => new CompoundIdEntity(), environment.dataSource, "compountIdEntity");
+    super("compountIdEntity");
     this.initColumns();
   }
 }
+@EntityClass
 export class entityWithValidations extends Entity<number>{
   myId = new NumberColumn();
   name = new StringColumn();
   static savingRowCount = 0;
   constructor() {
-    super(() => new entityWithValidations(), new InMemoryDataProvider());
+    super();
     this.initColumns();
     this.onSavingRow = async () => {
       if (!this.name.value || this.name.value.length < 3)
@@ -1192,6 +1198,7 @@ export class entityWithValidations extends Entity<number>{
 
   }
 }
+@EntityClass
 export class entityWithValidationsOnColumn extends Entity<number>{
   myId = new NumberColumn();
   name = new StringColumn({
@@ -1201,15 +1208,16 @@ export class entityWithValidationsOnColumn extends Entity<number>{
     }
   });
   constructor() {
-    super(() => new entityWithValidationsOnColumn(), new InMemoryDataProvider());
+    super();
     this.initColumns();
   }
 }
+@EntityClass
 export class entityWithValidationsOnEntityEvent extends Entity<number>{
   myId = new NumberColumn();
   name = new StringColumn();
   constructor() {
-    super(() => new entityWithValidationsOnEntityEvent(), new InMemoryDataProvider());
+    super();
     this.initColumns();
     this.onValidate = () => {
       if (!this.name.value || this.name.value.length < 3)
@@ -1217,11 +1225,13 @@ export class entityWithValidationsOnEntityEvent extends Entity<number>{
     };
   }
 }
+@EntityClass
 export class EntityWithLateBoundDbName extends Entity<number> {
   id = new NumberColumn({ dbName: 'CategoryID' });
   constructor() {
-    super(() => new EntityWithLateBoundDbName(), new InMemoryDataProvider(),
+    super(
       {
+        name: 'stam',
         dbName: () => '(select ' + this.id.__getDbName() + ')'
 
       });

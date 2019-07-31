@@ -8,7 +8,9 @@ import {
   , ColumnStorage,
   EntitySourceFindOptions
 } from './dataInterfaces1';
-import { Allowed } from '../context/Context';
+import { Allowed, Context, EntityType } from '../context/Context';
+import { DataApiSettings } from '../server/DataApi';
+import { isBoolean } from 'util';
 
 
 
@@ -967,7 +969,7 @@ export class Column<dataType>  {
   onValueChange: () => void;
   jsonName: string;
   caption: string;
-  includeInApi:Allowed = true;
+  includeInApi: Allowed = true;
   dbName: string | (() => string);
   private __settings: DataColumnSettings<dataType, Column<dataType>>;
   __getMemberName() { return this.jsonName; }
@@ -984,8 +986,8 @@ export class Column<dataType>  {
           this.caption = settingsOrCaption.caption;
         if (settingsOrCaption.includeInApi != undefined)
           this.includeInApi = settingsOrCaption.includeInApi;
-        if (settingsOrCaption.readonly)
-          this.readonly = settingsOrCaption.readonly;
+        if (settingsOrCaption.allowApiUpdate != undefined)
+          this.allowApiUpdate = settingsOrCaption.allowApiUpdate;
         if (settingsOrCaption.inputType)
           this.inputType = settingsOrCaption.inputType;
         if (settingsOrCaption.dbName)
@@ -1008,7 +1010,8 @@ export class Column<dataType>  {
     if (!x.caption && this.caption)
       x.caption = this.caption;
     if (x.readonly == undefined)
-      x.readonly = this.readonly;
+      if (this._entity)
+        x.readonly = !this._entity.__getApiAllowUpdate(this.allowApiUpdate);
     if (x.inputType == undefined)
       x.inputType = this.inputType;
     if (x.getValue == undefined) {
@@ -1041,7 +1044,8 @@ export class Column<dataType>  {
 
     return this.jsonName;
   }
-  readonly: boolean;
+
+  allowApiUpdate: Allowed = true;
   inputType: string;
   isEqualTo(value: Column<dataType> | dataType) {
     return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
@@ -1169,52 +1173,120 @@ export class AndFilter implements FilterBase {
   }
 }
 export interface EntityOptions {
-  name?: string;
+  name: string;
   dbName?: string | (() => string);
   caption?: string;
-  onSavingRow?: (e: Entity<any>) => Promise<any> | any;
+  allowApiRead?: Allowed;
+  allowApiUpdate?: Allowed;
+  allowApiDelete?: Allowed;
+  allowApiInsert?: Allowed;
+  allowApiCRUD?: Allowed;
+  apiDataFilter?: () => FilterBase;
+  onSavingRow?: () => Promise<any> | any;
+
   onValidate?: (e: Entity<any>) => Promise<any> | any;
 }
 export class Entity<idType> {
-  constructor(private factory: () => Entity<idType>, source: DataProviderFactory, options?: EntityOptions | string) {
+  constructor(options?: EntityOptions | string, private factory?: () => Entity<idType>) {
+    if (!factory) {
+      this.factory = () => this.__createInstance();
+    }
     if (options) {
       if (typeof (options) === "string") {
         this.__options = { name: options };
       } else {
         this.__options = options;
         if (options.onSavingRow)
-          this.onSavingRow = () => options.onSavingRow(this);
+          this.onSavingRow = () => options.onSavingRow();
         if (options.onValidate)
           this.onValidate = () => options.onValidate(this);
       }
 
     }
+    else {
+      this.__options = {
+        name: this.constructor.name
+      };
+    }
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
-    this.setSource(source);
+    this._noContextErrorWithStack = new Error('@EntityClass not used or context was not set for ' + this.constructor.name);
+
+  }
+  private entityType: EntityType;
+  _noContextErrorWithStack: Error;
+  private __context: Context;
+  _setContext(context: Context) {
+    this.__context = context;
+  }
+  __getApiAllowUpdate(allowed: Allowed) {
+    if (!this.__context && isBoolean(allowed))
+      return allowed;
+    return this.__context.isAllowed(allowed);
+  }
+  _setFactoryClassAndDoInitColumns(entityType: EntityType) {
+    this.entityType = entityType;
+    this.initColumns((<any>this).id);
+
+  }
+  _getExcludedColumns(x: Entity<any>, context: Context) {
+    let r = x.__iterateColumns().filter(c => {
+      return !context.isAllowed(c.includeInApi);
+    });
+    return r;
+  }
+  _getEntityApiSettings(r: Context): DataApiSettings<Entity<any>> {
+
+
+    let x = r.for(this.entityType).create() as Entity<any>;
+
+    let options = x.__options;
+    if (options.allowApiCRUD) {
+      options.allowApiDelete = true;
+      options.allowApiInsert = true;
+      options.allowApiUpdate = true;
+    }
+    return {
+      allowRead: r.isAllowed(options.allowApiRead),
+      allowUpdate: r.isAllowed(options.allowApiUpdate),
+      allowDelete: r.isAllowed(options.allowApiDelete),
+      allowInsert: r.isAllowed(options.allowApiInsert),
+      excludeColumns: x =>
+        this._getExcludedColumns(x, r)
+      ,
+      readonlyColumns: x => {
+        return  x.__iterateColumns().filter(c => !r.isAllowed(c.allowApiUpdate));
+      },
+      get: {
+        where: x => options.apiDataFilter ? options.apiDataFilter() : undefined
+      }
+    }
+
+  }
+  private __createInstance() {
+    if (!this.__context) {
+
+      throw this._noContextErrorWithStack;
+    }
+    if (!this.entityType) {
+      throw this._noContextErrorWithStack;
+    }
+    return this.__context.create(this.entityType);
   }
   __options: EntityOptions;
 
 
   __getName() {
-    if (!this.__options) {
-      this.__options = {};
-    }
     if (!this.__options.name) {
       this.__options.name = this.constructor.name;
     }
     return this.__options.name;
   }
   __getDbName() {
-    if (!this.__options)
-      this.__options = {};
     if (!this.__options.dbName)
       this.__options.dbName = this.__getName();
     return functionOrString(this.__options.dbName);
   }
   __getCaption() {
-    if (!this.__options) {
-      this.__options = {};
-    }
     if (!this.__options.caption) {
       this.__options.caption = makeTitle(this.__getName());
     }
@@ -2118,10 +2190,6 @@ export class ColumnCollection<rowType extends Entity<any>> {
       if (c.caption != c.column.caption) {
         addString('caption', c.caption)
       }
-      if (c.readonly != undefined && c.readonly != c.column.readonly && (c.readonly || c.column.readonly)) {
-        addToProperties('readonly', c.readonly);
-      }
-
 
     } else {
       addString('caption', c.caption);

@@ -52,7 +52,8 @@ export interface DataColumnSettings<type, colType> {
   jsonName?: string;
   includeInApi?: Allowed;
   caption?: string;
-  readonly?: boolean;
+  
+  allowApiUpdate?:Allowed;
   inputType?: string;
   dbName?: string | (() => string);
   value?: type;

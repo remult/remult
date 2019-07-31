@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
 import { RestDataProvider, Action, angularHttpProvider, wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings } from "../core/utils";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
@@ -15,13 +15,15 @@ export class Context {
     clearAllCache(): any {
         this.cache = {};
         this._lookupCache = new stamEntity();
+        this._lookupCache._setContext(this);
+        this._lookupCache.setSource(this._dataSource);
     }
 
     isSignedIn() {
         return !!this.user;
     }
-    constructor(http: HttpClient) {
-        if (http) {
+    constructor(http?: HttpClient) {
+        if (http instanceof HttpClient) {
             var prov = new angularHttpProvider(http);
             this._dataSource = new RestDataProvider(Context.apiBaseUrl
                 , prov
@@ -29,6 +31,10 @@ export class Context {
             );
             Action.provider = prov;
         }
+        else {
+            this._dataSource = new InMemoryDataProvider();
+        }
+        this._lookupCache.setSource(this._dataSource);
 
 
     }
@@ -68,7 +74,7 @@ export class Context {
 
         if (roles instanceof Role) {
             roles = roles.key;
-        } 
+        }
         if (!this.user)
             return false;
         if (isString(roles))
@@ -82,9 +88,7 @@ export class Context {
     public create<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }) {
         let e = new c(this);
         e.setSource(this._dataSource);
-        if (e instanceof ContextEntity) {
-            e._setContext(this);
-        }
+        e._setContext(this);
         return e;
     }
     cache: any = {};
@@ -121,104 +125,18 @@ export class ServerContext extends Context {
     }
 }
 
-function buildEntityOptions(o: ContextEntityOptions | string): EntityOptions | string {
-    if (typeof (o) == 'string')
-        return o;
-    return {
-        name: o.name,
-        caption: o.caption,
-        dbName: o.dbName,
-        onSavingRow: o.onSavingRow,
-    }
-}
-
-export class ContextEntity<idType> extends Entity<idType>{
-    _noContextErrorWithStack: Error;
-    constructor(private contextEntityOptions?: ContextEntityOptions | string) {
-        super(() => {
-            if (!this.__context) {
-
-                throw this._noContextErrorWithStack;
-            }
-            if (!this.entityType) {
-                throw this._noContextErrorWithStack;
-            }
-            return this.__context.create(this.entityType);
-
-        }, new InMemoryDataProvider(), buildEntityOptions(contextEntityOptions));
-        this._noContextErrorWithStack = new Error('@EntityClass not used or context was not set for' + this.constructor.name);
-    }
-    private __context: Context;
-    _setContext(context: Context) {
-        this.__context = context;
-    }
-    private entityType: EntityType;
-    _setFactoryClassAndDoInitColumns(entityType: EntityType) {
-        this.entityType = entityType;
-        this.initColumns((<any>this).id);
-
-    }
-    _getExcludedColumns(x: Entity<any>, context: Context) {
-        let r = x.__iterateColumns().filter(c => {
-            return !context.isAllowed(c.includeInApi);
-        });
-        return r;
-    }
-    _getEntityApiSettings(r: Context): DataApiSettings<Entity<any>> {
 
 
-        let x = r.for(this.entityType).create() as ContextEntity<any>;
-        if (typeof (x.contextEntityOptions) == "string") {
-            return {}
-        }
-        else {
-            let options = x.contextEntityOptions;
-            if (options.allowApiCRUD) {
-                options.allowApiDelete = true;
-                options.allowApiInsert = true;
-                options.allowApiUpdate = true;
-            }
-            return {
-                allowRead: r.isAllowed(options.allowApiRead),
-                allowUpdate: r.isAllowed(options.allowApiUpdate),
-                allowDelete: r.isAllowed(options.allowApiDelete),
-                allowInsert: r.isAllowed(options.allowApiInsert),
-                excludeColumns: x =>
-                    this._getExcludedColumns(x, r)
-                ,
-                readonlyColumns: x => {
-                    let r = x.__iterateColumns().filter(c => c.readonly);
 
-                    return r;
-                },
-                get: {
-                    where: x => options.apiDataFilter ? options.apiDataFilter() : undefined
-                }
-            }
-        }
-    }
-}
 
-export interface ContextEntityOptions {
-    name: string;//required
-    dbName?: string | (() => string);
-    caption?: string;
-    allowApiRead?: Allowed;
-    allowApiUpdate?: Allowed;
-    allowApiDelete?: Allowed;
-    allowApiInsert?: Allowed;
-    allowApiCRUD?: Allowed;
-    apiDataFilter?: () => FilterBase;
-
-    onSavingRow?: () => Promise<any>;
-}
 class stamEntity extends Entity<number> {
-
+    
     id = new NumberColumn();
     constructor() {
-        super(() => new stamEntity(), new InMemoryDataProvider(), "stamEntity");
+        super("stamEntity");
         this.initColumns();
     }
+  
 }
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> {
     constructor(private entity: T, private _lookupCache: Entity<any>, private context: Context) {
@@ -264,8 +182,8 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
     toPojoArray(items: T[]) {
         let exc = new ColumnHashSet();
-        if (this.entity instanceof ContextEntity)
-            exc.add(...this.entity._getExcludedColumns(this.entity, this.context));
+
+        exc.add(...this.entity._getExcludedColumns(this.entity, this.context));
 
         return Promise.all(items.map(f => f.__toPojo(exc)));
     }
@@ -299,10 +217,7 @@ export function EntityClass(theEntityClass: EntityType) {
     var f: any = function (...args: any[]) {
 
         let r = construct(original, args);
-        if (r instanceof ContextEntity) {
-            r._setFactoryClassAndDoInitColumns(newEntityType);
-
-        }
+        r._setFactoryClassAndDoInitColumns(newEntityType);
         return r;
     }
     newEntityType = f;

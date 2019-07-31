@@ -1,5 +1,5 @@
 
-import {  DataProviderFactory, DataProvider,  DataApiRequest,DataApi, DataApiResponse, InMemoryDataProvider ,Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort, SQLConnectionProvider, SQLCommand, SQLQueryResult} from 'radweb';
+import {  DataProviderFactory, DataProvider,  DataApiRequest,DataApi, DataApiResponse, InMemoryDataProvider ,Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort, SQLConnectionProvider, SQLCommand, SQLQueryResult, EntityClass} from 'radweb';
 import * as sql from 'mssql';
 import { ActualSQLServerDataProvider } from 'radweb-server';
 
@@ -20,7 +20,7 @@ export class SQLServerDataProvider implements DataProviderFactory {
   provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
     return new ActualSQLServerDataProvider(factory, name, new SQLServerBridgeToSQLConnectionProvider(this.pool), factory);
   }
-  async listOfTables(response: DataApiResponse, request: DataApiRequest<any>) {
+  async listOfTables(response: DataApiResponse, request: DataApiRequest) {
     let t = new Tables();
     t.setSource(this);
     let api = new DataApi(t);
@@ -150,7 +150,7 @@ class SQLRecordSetBridgeToSQlQueryResult implements SQLQueryResult {
 }
 
 
-
+@EntityClass
 class Tables extends Entity<string> {
   Table_Name = new StringColumn();
   Table_Catalog = new StringColumn();
@@ -159,10 +159,11 @@ class Tables extends Entity<string> {
 
   id = new CompoundIdColumn(this, this.Table_Name, this.Table_Schema, this.Table_Catalog);
   constructor() {
-    super(() => new Tables(), new InMemoryDataProvider(), { dbName: 'INFORMATION_SCHEMA.TABLES' });
+    super({ name: 'INFORMATION_SCHEMA.TABLES' });
     this.initColumns();
   }
 }
+@EntityClass
 class Columns extends Entity<string> {
   Table_Name = new StringColumn();
   Table_Catalog = new StringColumn();
@@ -175,7 +176,7 @@ class Columns extends Entity<string> {
 
 
   constructor() {
-    super(() => new Columns(), new InMemoryDataProvider(), { dbName: 'INFORMATION_SCHEMA.Columns' });
+    super( { name: 'INFORMATION_SCHEMA.Columns' });
     this.initColumns(new CompoundIdColumn(this, this.Table_Name, this.Table_Schema, this.Table_Catalog, this.Ordinal_Position));
   }
 }
