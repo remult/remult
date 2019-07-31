@@ -1,5 +1,5 @@
 import { FindOptionsPerEntity } from '../core/dataInterfaces1';
-import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn } from '../core/utils';
+import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn, StringColumn } from '../core/utils';
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage, DropDownItem, ClosedListColumn, DateTimeDateStorage } from '../core/utils';
 import { GridSettings, Lookup, ColumnSetting } from '../core/utils';
@@ -10,6 +10,7 @@ import { Categories } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
 import { Context } from '../context/Context';
+
 //import { DataAreaCompnent } from '../utils/angular/dataArea';
 
 
@@ -333,7 +334,7 @@ describe("test row provider", () => {
     let ctx = new Context(undefined);
     let c = ctx.create(Categories);
     c.setSource(new InMemoryDataProvider());
-    
+
     await c.source.Insert(c => {
       c.id.value = 1;
       c.categoryName.value = 'noam'
@@ -427,7 +428,7 @@ describe("grid settings ",
   () => {
     let ctx = new Context(undefined);
     it("sort is displayed right", () => {
-      let c = ctx.create( Categories);
+      let c = ctx.create(Categories);
       c.setSource(new InMemoryDataProvider());
       let gs = new GridSettings(c);
       expect(gs.sortedAscending(c.id)).toBe(false);
@@ -440,7 +441,7 @@ describe("grid settings ",
       expect(gs.sortedDescending(c.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let c = ctx.create( Categories);
+      let c = ctx.create(Categories);
       c.setSource(new InMemoryDataProvider());
       let gs = new GridSettings(c, { get: { orderBy: c => new Sort({ column: c.categoryName }) } });
       expect(gs.sortedAscending(c.categoryName)).toBe(true);
@@ -689,6 +690,16 @@ describe("Test char date storage", () => {
     expect(x.toDb('1976-06-16')).toBe('19760616');
   });
 });
+describe("test parameter priority", () => {
+  it("a", () => {
+    let t = new testMyColumn();
+    expect(t.allowApiUpdate).toBe(false);
+    t = new testMyColumn({ allowApiUpdate: true });
+    expect(t.allowApiUpdate).toBe(false);
+    let s = new StringColumn();
+    expect(s.allowApiUpdate).toBe(true);
+  });
+});
 
 class myDp<T extends Entity<any>> extends ActualInMemoryDataProvider<T> {
   constructor(factory: () => T) {
@@ -700,3 +711,6 @@ class myDp<T extends Entity<any>> extends ActualInMemoryDataProvider<T> {
 }
 
 
+class testMyColumn extends StringColumn {
+  allowApiUpdate = false;
+}
