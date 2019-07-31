@@ -2283,6 +2283,7 @@ export interface SQLCommand {
 export interface SQLQueryResult {
   rows: any[];
   getColumnIndex(name: string): number;
+  getcolumnNameAtIndex(index:number):string;
 }
 
 

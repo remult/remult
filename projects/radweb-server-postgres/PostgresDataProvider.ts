@@ -42,6 +42,9 @@ class PostgresDataTransaction implements DataProviderFactory {
     provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
         return new ActualSQLServerDataProvider(factory, name, new PostgresBridgeToSQLConnection(this.source), factory);
     }
+    createDirectSQLCommand(): SQLCommand{
+         return new PostgrestBridgeToSQLCommand(this.source);
+    }
 
 
 }
@@ -70,6 +73,9 @@ class PostgrestBridgeToSQLCommand implements SQLCommand {
     }
 }
 class PostgressBridgeToSQLQueryResult implements SQLQueryResult {
+    getcolumnNameAtIndex(index: number): string {
+        return this.r.fields[index].name;
+    }
     getColumnIndex(name: string): number {
         for (let i = 0; i < this.r.fields.length; i++) {
             if (this.r.fields[i].name.toLowerCase() == name.toLowerCase())

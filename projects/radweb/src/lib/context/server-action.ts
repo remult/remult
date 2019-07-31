@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { SupportsTransaction, DataProviderFactory, DataApiRequest } from "../core/dataInterfaces1";
 import { Action } from '../core/restDataProvider';
 import { Context, ServerContext, DirectSQL, Allowed } from './Context';
+import { SQLConnectionProvider, SQLCommand } from '../core/utils';
 
 
 interface inArgs {
@@ -12,11 +13,10 @@ interface result {
     data: any;
 }
 export class ActualDirectSQL extends DirectSQL {
-    static log = false;
+
     execute(sql: string) {
-        if (ActualDirectSQL.log)
-            console.log(sql);
-        return this.dp.source.query(sql);
+        let c = this.dp.createDirectSQLCommand() as SQLCommand;
+        return c.query(sql);
     }
     constructor(private dp: any) {
         super();

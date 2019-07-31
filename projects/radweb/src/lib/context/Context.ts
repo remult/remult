@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
 import { RestDataProvider, Action, angularHttpProvider, wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource } from "../core/utils";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
@@ -240,7 +240,7 @@ export interface UserInfo {
 }
 
 export abstract class DirectSQL {
-    abstract execute(sql: string);
+    abstract execute(sql: string):Promise<SQLQueryResult>;
 }
 export class Role {
     constructor(public key: string) {
