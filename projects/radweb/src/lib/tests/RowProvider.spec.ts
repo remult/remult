@@ -1,4 +1,4 @@
-import { FindOptionsPerEntity } from '../core/dataInterfaces1';
+import { FindOptionsPerEntity, ColumnOptions } from '../core/dataInterfaces1';
 import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn, StringColumn } from '../core/utils';
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage, DropDownItem, ClosedListColumn, DateTimeDateStorage } from '../core/utils';
@@ -699,6 +699,18 @@ describe("test parameter priority", () => {
     let s = new StringColumn();
     expect(s.allowApiUpdate).toBe(true);
   });
+  it("b", () => {
+    let s = new AnotherTest();
+    expect(s.caption).toBe('default');
+  });
+  it("c", () => {
+    let s = new AnotherTest('test');
+    expect(s.caption).toBe('test');
+  });
+  it("d", () => {
+    let s = new AnotherTest({caption:'test'});
+    expect(s.caption).toBe('test');
+  });
 });
 
 class myDp<T extends Entity<any>> extends ActualInMemoryDataProvider<T> {
@@ -713,4 +725,11 @@ class myDp<T extends Entity<any>> extends ActualInMemoryDataProvider<T> {
 
 class testMyColumn extends StringColumn {
   allowApiUpdate = false;
+}
+class AnotherTest extends StringColumn {
+  constructor(x?: ColumnOptions<string>) {
+    super(x);
+    if (!this.caption)
+      this.caption = 'default';
+  }
 }
