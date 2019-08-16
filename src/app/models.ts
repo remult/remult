@@ -55,7 +55,7 @@ export class Order_details extends radweb.Entity<string> {
   id = new radweb.CompoundIdColumn(this, this.orderID, this.productID);
 
   constructor() {
-    super({ name: "OrderDetails", dbName: '[Order Details]' });
+    super({ name: "OrderDetails", dbName: 'Order_Details' });
     this.initColumns(this.id);
   }
 }
