@@ -1,10 +1,10 @@
-import { GridSettings, Column } from 'radweb';
+import { GridSettings, Column, Context } from 'radweb';
 import { Component } from '@angular/core';
 import * as models from './models';
 
 
 
- 
+
 
 @Component({
   selector: 'app-root',
@@ -13,8 +13,10 @@ import * as models from './models';
 
 })
 export class AppComponent {
+  constructor(private context:Context) {
 
-  x = new GridSettings<models.Products>(new models.Products(), {
+  }
+  x =  this.context.for(models.Products).gridSettings( {
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true,
@@ -22,20 +24,20 @@ export class AppComponent {
     //numOfColumnsInGrid: 100,
     get: { limit: 100 },
     hideDataArea: true,
-    onValidate:o=>{
-      
+    onValidate: o => {
+
     },
-    columnSettings:p=>[
-      p.id,p.productName,p.discontinued,
+    columnSettings: p => [
+      p.id, p.productName, p.discontinued,
       {
-        getValue:p=>p.discontinued.value +'noam'
+        getValue: p => p.discontinued.value + 'noam'
       }
     ]
-   
-   
+
+
   });
-  inputType='checkbox';
-  test:any;
+  inputType = 'checkbox';
+  test: any;
   filterColumn: Column<any>;
 
 }

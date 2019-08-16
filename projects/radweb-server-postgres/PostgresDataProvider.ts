@@ -29,6 +29,10 @@ export class PostgresDataProvider implements DataProviderFactory {
         finally {
             await client.release();
         }
+        
+    }
+    createDirectSQLCommand(): SQLCommand {
+        return new PostgrestBridgeToSQLCommand(this.pool);
     }
 
 }
@@ -42,8 +46,8 @@ class PostgresDataTransaction implements DataProviderFactory {
     provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
         return new ActualSQLServerDataProvider(factory, name, new PostgresBridgeToSQLConnection(this.source), factory);
     }
-    createDirectSQLCommand(): SQLCommand{
-         return new PostgrestBridgeToSQLCommand(this.source);
+    createDirectSQLCommand(): SQLCommand {
+        return new PostgrestBridgeToSQLCommand(this.source);
     }
 
 
@@ -94,12 +98,19 @@ class PostgressBridgeToSQLQueryResult implements SQLQueryResult {
 
 export class PostgrestSchemaBuilder {
     async verifyStructureOfAllEntities() {
+        console.log("start verify structure");
         let context = new ServerContext();
         for (const entity of allEntities) {
             let x = context.for(entity).create();
-            if (x.__getDbName().toLowerCase().indexOf('from ') < 0) {
-                await this.CreateIfNotExist(x);
-                await this.verifyAllColumns(x);
+            try {
+
+                if (x.__getDbName().toLowerCase().indexOf('from ') < 0) {
+                    await this.CreateIfNotExist(x);
+                    await this.verifyAllColumns(x);
+                }
+            }
+            catch (err) {
+                console.log("failed verify structore of " + x.__getDbName()+" ",err);
             }
         }
     }
@@ -117,7 +128,9 @@ export class PostgrestSchemaBuilder {
                             result += ' primary key';
                     }
                 });
-                await this.pool.query('create table ' + e.__getDbName() + ' (' + result + '\r\n)');
+                let sql = 'create table ' + e.__getDbName() + ' (' + result + '\r\n)';
+                console.log(sql);
+                await this.pool.query(sql);
             }
         });
     }
@@ -153,7 +166,7 @@ export class PostgrestSchemaBuilder {
                     [e.__getDbName().toLocaleLowerCase(),
                     c(e).__getDbName().toLocaleLowerCase()])).rowCount == 0) {
                 let sql = `alter table ${e.__getDbName()} add column ${this.addColumnSqlSyntax(c(e))}`;
-
+                console.log(sql);
                 await this.pool.query(sql);
             }
         }

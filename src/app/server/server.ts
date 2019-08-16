@@ -7,10 +7,10 @@ import { Orders, Customers, Shippers, Products, Order_details } from './../model
 import { environment } from './../../environments/environment';
 import { Categories } from '../models';
 import * as express from 'express';
-import { JsonFileDataProvider, ExpressBridge } from 'radweb-server';
+import { JsonFileDataProvider, ExpressBridge, ActualSQLServerDataProvider } from 'radweb-server';
 
 import { PostgrestSchemaBuilder, PostgresDataProvider } from 'radweb-server-postgres';
-
+import '../app.module';
 var p = new Pool({
     database: 'postgres', user: 'postgres', password: 'MASTERKEY', host: 'localhost'
 });
@@ -19,34 +19,18 @@ var p = new Pool({
 
 let app = express();
 let port = 3001;
-;
+
 
 
 //environment.dataSource = new JsonFileDataProvider('./appData');
 //let sqlServer = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
 //environment.dataSource = sqlServer;
 environment.dataSource = new PostgresDataProvider(p);
+ActualSQLServerDataProvider.LogToConsole = true;
+new PostgrestSchemaBuilder(p).verifyStructureOfAllEntities();
+let eb = new ExpressBridge(app, environment.dataSource, true);
 
 
-
-var eb = new ExpressBridge(app, environment.dataSource, true);
-let dataApi = eb.addArea('/dataApi');
-//dataApi.addSqlDevHelpers(sqlServer);
-dataApi.add(r => new DataApi(new Categories(), {
-    allowUpdate: true,
-    allowInsert: true,
-    allowDelete: true,
-    onSavingRow: async c => {
-
-        if (c.isNew())
-            c.id.value = await c.source.max(c.id) + 1;
-    },
-}));
-dataApi.add(new Order_details());
-dataApi.add(new Orders());
-dataApi.add(new Customers());
-dataApi.add(new Products());
-dataApi.add(new Shippers());
 
 
 app.listen(port);

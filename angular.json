@@ -62,7 +62,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "radweb-app:build"
+            "browserTarget": "radweb-app:build",
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {

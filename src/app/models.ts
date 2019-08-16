@@ -1,6 +1,6 @@
 import { environment } from './../environments/environment';
 
-import { Entity, EntitySource, DateTimeDateStorage } from 'radweb';
+import { Entity, EntitySource, DateTimeDateStorage, EntityClass } from 'radweb';
 import { DataProvider, DataProviderFactory } from 'radweb';
 import * as radweb from 'radweb';
 
@@ -16,7 +16,7 @@ export class Categories extends radweb.Entity<number> {
     virtualData: () => Promise.resolve(this.categoryName.value.length)
   });
   constructor(settings?: radweb.EntityOptions) {
-    super( settings,() => new Categories(settings));
+    super(settings, () => new Categories(settings));
     this.initColumns();
   }
 }
@@ -38,7 +38,7 @@ export class Orders extends radweb.Entity<number> {
   shipCountry = new radweb.StringColumn('ShipCountry');
 
   constructor() {
-    super( 'Orders');
+    super('Orders');
 
     this.initColumns(this.id);
   }
@@ -93,7 +93,11 @@ export class Products extends radweb.Entity<number> {
   discontinued = new radweb.BoolColumn('Discontinued');
 
   constructor() {
-    super('Products');
+    super({
+      name: 'Products',
+      allowApiCRUD: true,
+
+    });
     this.initColumns(this.id);
   }
 }
