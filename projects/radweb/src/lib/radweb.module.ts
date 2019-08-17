@@ -11,14 +11,24 @@ import { SelectPopupComponent } from './angular-components/select-popup.ts/selec
 import { Context } from './context/Context';
 import { JwtSessionManager } from './jwt-session-manager';
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { BusyService, LoaderInterceptor } from './angular-components/wait/busy-service';
+import { MatDialogModule } from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { WaitComponent } from './angular-components/wait/wait.component';
+
 
 
 @NgModule({
-  declarations: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent],
-  imports: [FormsModule, CommonModule,HttpClientModule],
-  providers: [Context,JwtSessionManager,NotSignedInGuard,SignedInGuard,RouteHelperService]
+  declarations: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent,WaitComponent],
+  imports: [FormsModule, CommonModule, HttpClientModule, MatProgressSpinnerModule,MatDialogModule,BrowserAnimationsModule],
+  providers: [Context, JwtSessionManager, NotSignedInGuard, SignedInGuard, RouteHelperService,
+    BusyService,
+    
+    { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
   ,
-  exports: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent]
+  exports: [DataControlComponent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, SelectPopupComponent],
+  entryComponents:[WaitComponent]
 })
 export class RadWebModule { }

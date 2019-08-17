@@ -6,6 +6,7 @@ import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
+import { BusyService } from "../angular-components/wait/busy-service";
 
 
 
@@ -130,13 +131,13 @@ export class ServerContext extends Context {
 
 
 class stamEntity extends Entity<number> {
-    
+
     id = new NumberColumn();
     constructor() {
         super("stamEntity");
         this.initColumns();
     }
-  
+
 }
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> {
     constructor(private entity: T, private _lookupCache: Entity<any>, private context: Context) {
@@ -146,13 +147,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return this._lookupCache.lookupAsync(this.entity, filter);
     }
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
-        let x = wrapFetch.wrap;
-        wrapFetch.wrap = () => () => { };
-        try {
-            return this._lookupCache.lookup(this.entity, filter);
-        } finally {
-            wrapFetch.wrap = x;
-        }
+        return BusyService.singleInstance.donotWaitNonAsync(() => this._lookupCache.lookup(this.entity, filter));
     }
     async count(where?: (entity: T) => FilterBase) {
         let dl = new DataList(this.entity);
@@ -240,7 +235,7 @@ export interface UserInfo {
 }
 
 export abstract class DirectSQL {
-    abstract execute(sql: string):Promise<SQLQueryResult>;
+    abstract execute(sql: string): Promise<SQLQueryResult>;
 }
 export class Role {
     constructor(public key: string) {

@@ -4,6 +4,7 @@ import { SupportsTransaction, DataProviderFactory, DataApiRequest } from "../cor
 import { Action } from '../core/restDataProvider';
 import { Context, ServerContext, DirectSQL, Allowed } from './Context';
 import { SQLConnectionProvider, SQLCommand } from '../core/utils';
+import { BusyService } from '../angular-components/wait/busy-service';
 
 
 interface inArgs {
@@ -37,17 +38,18 @@ export class myServerAction extends Action<inArgs, result>
             context.setDataProvider(ds);
             if (!context.isAllowed(this.options.allowed))
                 throw 'not allowed';
-            for (let i = 0; i < this.types.length; i++) {
-                if (info.args.length < i) {
-                    info.args.push(undefined);
-                }
-                if (this.types[i] == Context || this.types[i] == ServerContext) {
+            if (this.types)
+                for (let i = 0; i < this.types.length; i++) {
+                    if (info.args.length < i) {
+                        info.args.push(undefined);
+                    }
+                    if (this.types[i] == Context || this.types[i] == ServerContext) {
 
-                    info.args[i] = context;
-                } else if (this.types[i] == DirectSQL && ds) {
-                    info.args[i] = new ActualDirectSQL(ds);
+                        info.args[i] = context;
+                    } else if (this.types[i] == DirectSQL && ds) {
+                        info.args[i] = new ActualDirectSQL(ds);
+                    }
                 }
-            }
             try {
                 result.data = await this.originalMethod(info.args);
 
@@ -64,6 +66,7 @@ export class myServerAction extends Action<inArgs, result>
 }
 export interface RunOnServerOptions {
     allowed: Allowed;
+    blockUser?: boolean;
 }
 export const actionInfo = {
     allActions: [] as any[],
@@ -82,8 +85,13 @@ export function RunOnServer(options: RunOnServerOptions) {
 
 
         descriptor.value = async function (...args: any[]) {
-            if (!actionInfo.runningOnServer)
-                return (await serverAction.run({ args })).data;
+            if (!actionInfo.runningOnServer) {
+                if (options.blockUser===false){
+                    return await BusyService.singleInstance.donotWait(async ()=> (await serverAction.run({ args })).data);
+                }
+                else
+                    return (await serverAction.run({ args })).data;
+            }
             else
                 return (await originalMethod.apply(undefined, args));
         }

@@ -1,6 +1,8 @@
-import { GridSettings, Column, Context } from 'radweb';
+import { GridSettings, Column, Context, RunOnServer } from 'radweb';
 import { Component } from '@angular/core';
 import * as models from './models';
+import { MatDialog } from '@angular/material';
+import { WaitComponent } from 'projects/radweb/src/lib/angular-components/wait/wait.component';
 
 
 
@@ -13,10 +15,10 @@ import * as models from './models';
 
 })
 export class AppComponent {
-  constructor(private context:Context) {
+  constructor(private context: Context, private dialog: MatDialog) {
 
   }
-  x =  this.context.for(models.Products).gridSettings( {
+  x = this.context.for(models.Products).gridSettings({
     allowUpdate: true,
     allowDelete: true,
     allowInsert: true,
@@ -30,7 +32,7 @@ export class AppComponent {
     columnSettings: p => [
       p.id, p.productName, p.discontinued,
       {
-        getValue: p => p.discontinued.value + 'noam'
+        getValue: p => this.context.for(models.Products).lookup(x => x.id.isEqualTo(p.id)).productName.value
       }
     ]
 
@@ -39,5 +41,12 @@ export class AppComponent {
   inputType = 'checkbox';
   test: any;
   filterColumn: Column<any>;
-
+  async testIt() {
+    await AppComponent.testServer();
+  }
+  @RunOnServer({ allowed: true })
+  static async testServer() {
+    console.log("I'm here");
+    return "";
+  }
 }
