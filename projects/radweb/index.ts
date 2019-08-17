@@ -15,6 +15,6 @@ export * from './src/lib/context/Context';
 export * from './src/lib/jwt-session-manager';
 export * from './src/lib/navigate-to-component-route-service';
 export * from './src/lib/context/server-action';
-export * from './src/lib/id-entity/id-entity';  
+export * from './src/lib/id-entity/id-entity';
+export { BusyService } from './src/lib/angular-components/wait/busy-service';
 //server
- 
