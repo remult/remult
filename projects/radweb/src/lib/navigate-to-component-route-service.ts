@@ -36,7 +36,7 @@ export class RouteHelperService {
         return true;
     }
 }
-
+// @dynamic
 @Injectable()
 export class SignedInGuard implements CanActivate {
     constructor(protected context: Context, private router: Router, private helper: RouteHelperService) {

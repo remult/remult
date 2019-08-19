@@ -237,6 +237,7 @@ export interface UserInfo {
 export abstract class DirectSQL {
     abstract execute(sql: string): Promise<SQLQueryResult>;
 }
+// @dynamic
 export class Role {
     constructor(public key: string) {
 

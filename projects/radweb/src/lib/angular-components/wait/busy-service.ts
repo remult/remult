@@ -1,11 +1,11 @@
 import { Injectable } from "@angular/core";
 import { MatDialog, MatDialogRef } from "@angular/material";
-import { wrapFetch } from "radweb";
+
 import { WaitComponent } from "./wait.component";
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { finalize } from "rxjs/operators";
-
+// @dynamic
 @Injectable()
 export class BusyService {
     private waitRef: MatDialogRef<any>;
@@ -39,9 +39,7 @@ export class BusyService {
     constructor(private dialog: MatDialog) {
         BusyService.singleInstance = this;
 
-        wrapFetch.wrap = () => {
-            return this.showBusy();
-        };
+        
     }
     async doWhileShowingBusy<t>(what: () => Promise<t>): Promise<t> {
         let x = this.showBusy();

@@ -17,7 +17,11 @@
     "lib": [
       "es2018",
       "dom"
-    ],
+    ]
+    ,
+    
+    
+    
     "paths": {
       "radweb": [
         "projects/radweb"

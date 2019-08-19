@@ -1,7 +1,9 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/radweb",
+  
   "lib": {
-    "entryFile": "/index.ts"
-  }
+    "entryFile": "index.ts"
+  },
+  "whitelistedNonPeerDependencies": ["jsonwebtoken","uuid","@auth0/angular-jwt"] 
 }

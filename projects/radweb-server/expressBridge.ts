@@ -97,9 +97,9 @@ export class SiteArea {
       .delete(this.process(async (req, res, orig) => api(req).delete(res, '')))
       .post(this.process(async (req, res, orig) => api(req).post(res, orig.body)));
     this.app.route(myRoute + '/:id')
-      .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))
-      .put(this.process(async (req, res, orig) => api(req).put(res, orig.params.id, orig.body)))
-      .delete(this.process(async (req, res, orig) => api(req).delete(res, orig.params.id)));
+      .get(this.process(async (req, res, orig) => api(req).get(res, orig.query.id)))
+      .put(this.process(async (req, res, orig) => api(req).put(res, orig.query.id, orig.body)))
+      .delete(this.process(async (req, res, orig) => api(req).delete(res, orig.query.id)));
 
 
   }
