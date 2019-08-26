@@ -40,6 +40,7 @@ export class JwtSessionManager {
         if (jwtToken) {
             this._setToken(jwtToken);
             let c = authToken + "=" + jwtToken;
+            c+=';path=/'
             if (rememberOnDevice)
                 c += '; expires = Thu, 01 Jan 2076 00:00:00 GMT';
             document.cookie = c;
