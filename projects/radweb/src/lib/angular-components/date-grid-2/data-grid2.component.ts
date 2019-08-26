@@ -413,7 +413,9 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     if (this.settings.allowDelete)
       this.addButton({
         name: '',
-        visible: (r) => !isNewRow(r),
+        visible: (r) => {
+          return r&&!r.isNew();
+        },
         click: r => {
           if (this.settings.setCurrentRow && this.settings.settings.confirmDelete) {
             this.settings.settings.confirmDelete(r, () => this.catchErrors(r.delete(), r));
