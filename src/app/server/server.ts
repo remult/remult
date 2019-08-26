@@ -28,7 +28,7 @@ let port = 3001;
 environment.dataSource = new PostgresDataProvider(p);
 ActualSQLServerDataProvider.LogToConsole = true;
 new PostgrestSchemaBuilder(p).verifyStructureOfAllEntities();
-let eb = new ExpressBridge(app, environment.dataSource, true);
+let eb = new ExpressBridge(app, environment.dataSource,true);
 
 
 

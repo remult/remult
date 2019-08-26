@@ -103,6 +103,7 @@ import { isFunction } from '../../core/common';
             <select [(ngModel)]="settings.currList[i]" class="form-control selectColumnCombo" (change)="settings.columns.colListChanged()">
                 <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}}</option>
             </select>
+            <input [(ngModel)]="c.width" style="width:50px;display:inline;" class="form-control">
             <button class="btn btn-sm glyphicon glyphicon-trash" *ngIf="settings.currList.length>1" (click)="settings.deleteCol(c)"></button>
             <button class="btn btn-sm  glyphicon glyphicon-plus" (click)="settings.addCol(c)"></button>
             <button class="btn btn-sm  glyphicon glyphicon-chevron-down" *ngIf="i<settings.currList.length-1"(click)="settings.columns.moveCol(c,1)"></button>

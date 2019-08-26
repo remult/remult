@@ -1,6 +1,6 @@
 {
     "extends": "../../tsconfig.json",
-    "compilerOptions":{
+    "compilerOptions": {
         "outDir": "../../dist/radweb-server",
         "baseUrl": ".",
         "declaration": true,
@@ -14,6 +14,17 @@
         "lib": [
             "es2018",
             "dom"
-        ]
+        ],
+        "paths": {
+            "radweb": [
+                "projects/radweb"
+            ],
+            "radweb-server": [
+                "projects/radweb-server"
+            ],
+            "radweb-server-postgres": [
+                "projects/radweb-server-postgres"
+            ]
+        }
     }
 }
