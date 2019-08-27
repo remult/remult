@@ -29,8 +29,8 @@ export class ExpressBridge implements DataApiServer {
     if (!disableHttpForDevOnly) {
       app.use(secure);
     }
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(bodyParser.json());
+    app.use(bodyParser.json({ limit: '10mb' }));
+    app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
     let apiArea = this.addArea('/' + Context.apiBaseUrl);
 
     registerActionsOnServer(apiArea, dataSource);
@@ -97,7 +97,7 @@ export class SiteArea {
       .delete(this.process(async (req, res, orig) => api(req).delete(res, '')))
       .post(this.process(async (req, res, orig) => api(req).post(res, orig.body)));
     this.app.route(myRoute + '/:id')
-    //@ts-ignore
+      //@ts-ignore
       .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))
       //@ts-ignore
       .put(this.process(async (req, res, orig) => api(req).put(res, orig.params.id, orig.body)))
@@ -111,7 +111,7 @@ export class SiteArea {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
       let ok = true;
-    for (let i = 0; i < this.bridge.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
+      for (let i = 0; i < this.bridge.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
         await this.bridge.preProcessRequestAndReturnTrueToAuthorize[i](myReq);
 
       }
