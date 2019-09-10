@@ -147,7 +147,10 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return this._lookupCache.lookupAsync(this.entity, filter);
     }
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
-        return BusyService.singleInstance.donotWaitNonAsync(() => this._lookupCache.lookup(this.entity, filter));
+        if (BusyService.singleInstance)
+            return BusyService.singleInstance.donotWaitNonAsync(() => this._lookupCache.lookup(this.entity, filter));
+        else
+            return this._lookupCache.lookup(this.entity, filter);
     }
     async count(where?: (entity: T) => FilterBase) {
         let dl = new DataList(this.entity);

@@ -26,11 +26,11 @@ export class ExpressBridge implements DataApiServer {
 
   constructor(private app: express.Express, dataSource: DataProviderFactory, disableHttpForDevOnly?: boolean) {
     app.use(compression());
-    if (disableHttpForDevOnly) {
+    if (!disableHttpForDevOnly) {
       app.use(secure);
     }
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(bodyParser.json());
+    app.use(bodyParser.json({ limit: '10mb' }));
+    app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
     let apiArea = this.addArea('/' + Context.apiBaseUrl);
 
     registerActionsOnServer(apiArea, dataSource);
@@ -97,9 +97,12 @@ export class SiteArea {
       .delete(this.process(async (req, res, orig) => api(req).delete(res, '')))
       .post(this.process(async (req, res, orig) => api(req).post(res, orig.body)));
     this.app.route(myRoute + '/:id')
-      .get(this.process(async (req, res, orig) => api(req).get(res, orig.query.id)))
-      .put(this.process(async (req, res, orig) => api(req).put(res, orig.query.id, orig.body)))
-      .delete(this.process(async (req, res, orig) => api(req).delete(res, orig.query.id)));
+      //@ts-ignore
+      .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))
+      //@ts-ignore
+      .put(this.process(async (req, res, orig) => api(req).put(res, orig.params.id, orig.body)))
+      //@ts-ignore
+      .delete(this.process(async (req, res, orig) => api(req).delete(res, orig.params.id)));
 
 
   }
