@@ -1,8 +1,5 @@
-import {  DataProvider, FindOptions, FilterBase, Column, CompoundIdColumn, Entity, 
-  FilterConsumerBridgeToSqlRequest ,SQLConnectionProvider,SQLCommand,SQLQueryResult} from "radweb";
-
-
-
+import { SQLConnectionProvider, SQLCommand, Column, SQLQueryResult, Entity, FilterConsumerBridgeToSqlRequest, CompoundIdColumn } from "./utils";
+import { DataProvider, FilterBase, FindOptions } from "./dataInterfaces1";
 
 
 class LogSQLConnectionProvider implements SQLConnectionProvider {
@@ -82,23 +79,21 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
         options.where.__applyToConsumer(where);
         select += where.where;
       }
-    }
-    if (options.orderBy) {
-      let first = true;
-      options.orderBy.Segments.forEach(c => {
-        if (first) {
-          select += ' Order By ';
-          first = false;
-        }
-        else
-          select += ', ';
-        select += c.column.__getDbName();
-        if (c.descending)
-          select += ' desc';
-      });
+      if (options.orderBy) {
+        let first = true;
+        options.orderBy.Segments.forEach(c => {
+          if (first) {
+            select += ' Order By ';
+            first = false;
+          }
+          else
+            select += ', ';
+          select += c.column.__getDbName();
+          if (c.descending)
+            select += ' desc';
+        });
 
-    }
-    if (options) {
+      }
 
       if (options.limit) {
 
@@ -192,7 +187,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     let added = false;
     let resultFilter = this.entity.__idColumn.isEqualTo(data[this.entity.__idColumn.jsonName]);
 
-    this.entity.__iterateColumns().forEach((x:any) => {
+    this.entity.__iterateColumns().forEach((x: any) => {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }

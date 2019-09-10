@@ -8,6 +8,8 @@ export * from './src/lib/core/dataInterfaces1';
 export * from './src/lib/core/utils';
 export * from './src/lib/core/common';
 export * from './src/lib/core/inMemoryDatabase';
+export * from './src/lib/core/WebSqlDataProvider';
+export * from './src/lib/core/SQLDatabaseShared';
 export * from './src/lib/core/JsonStorageDataProvider';
 export * from './src/lib/server/DataApi';
 export * from './src/lib/core/localStorageDataProvider';

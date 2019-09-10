@@ -1,13 +1,13 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader();
 
-import { DataApi, Entity, NumberColumn, DateTimeColumn, EntityClass } from 'radweb';
+import { DataApi, Entity, NumberColumn, DateTimeColumn, EntityClass, ActualSQLServerDataProvider } from 'radweb';
 import { Pool } from 'pg';
 import { Orders, Customers, Shippers, Products, Order_details } from './../models';
 import { environment } from './../../environments/environment';
 import { Categories } from '../models';
 import * as express from 'express';
-import { JsonFileDataProvider, ExpressBridge, ActualSQLServerDataProvider } from 'radweb-server';
+import { JsonFileDataProvider, ExpressBridge } from 'radweb-server';
 
 import { PostgrestSchemaBuilder, PostgresDataProvider } from 'radweb-server-postgres';
 import '../app.module';

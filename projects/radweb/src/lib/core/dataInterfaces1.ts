@@ -38,6 +38,10 @@ export interface DataProviderFactory {
   provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider;
 
 }
+
+export interface RowsOfDataForTesting {
+  rows: any;
+}
 export interface SupportsTransaction extends DataProviderFactory {
   doInTransaction(what: (dp: DataProviderFactory) => Promise<void>): Promise<void>;
 

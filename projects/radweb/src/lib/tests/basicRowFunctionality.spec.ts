@@ -3,15 +3,32 @@ import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdCo
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase';
-import { itAsync, Done } from './testHelper.spec';
+import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
 import { Categories, environment } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { Context, Role, Allowed, EntityClass } from '../context/Context';
+import { WebSqlDataProvider } from '../core/WebSqlDataProvider';
+import { DataProviderFactory, RowsOfDataForTesting } from '../core/dataInterfaces1';
 
-
-
-
+function itWithDataProvider(name: string, runAsync: (dpf: DataProviderFactory, rows?: RowsOfDataForTesting) => Promise<any>) {
+  let webSql = new WebSqlDataProvider('test');
+  itAsyncForEach<any>(name, [new InMemoryDataProvider(), webSql],
+    (dp) => new Promise((res, rej) =>{
+      webSql.db.transaction(t => {
+        t.executeSql("select name from sqlite_master where type='table'", null,
+          (t1, r) => {
+            for (let i = 0; i < r.rows.length; i++) {
+              webSql.db.transaction(t => t.executeSql("delete from " + r.rows[i].name));
+            }
+            runAsync(dp, dp).then(res).catch(rej);
+          }, (t, e) => {
+            rej(e);
+            return undefined;
+          });
+      }, (e) => rej(e));
+    }));
+}
 
 class TestDataApiResponse implements DataApiResponse {
   success(data: any): void {
@@ -257,30 +274,30 @@ describe("data api", () => {
     expect(count).toBe(1);
   });
   let ctx = new Context();
-  itAsync("put with validations on entity fails", async () => {
+  itWithDataProvider("put with validations on entity fails",
+    async (dataProvider) => {
+      let c = ctx.create(entityWithValidations);
+      c.setSource(dataProvider);
+      await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+      let api = new DataApi(c, { allowUpdate: true });
+      let t = new TestDataApiResponse();
+      let d = new Done();
+      t.error = async (data: any) => {
+        expect(data.modelState.name).toBe('invalid');
+        d.ok();
+      };
+      await api.put(t, 1, {
+        name: '1'
+      });
+      d.test();
+      var x = await c.source.find({ where: c.myId.isEqualTo(1) });
+      expect(x[0].name.value).toBe('noam');
 
-    let c = ctx.create(entityWithValidations);
-    c.setSource(new InMemoryDataProvider());
-    await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
-    let api = new DataApi(c, { allowUpdate: true });
-    let t = new TestDataApiResponse();
-    let d = new Done();
-    t.error = async (data: any) => {
-      expect(data.modelState.name).toBe('invalid');
-      d.ok();
-    };
-    await api.put(t, 1, {
-      name: '1'
     });
-    d.test();
-    var x = await c.source.find({ where: c.myId.isEqualTo(1) });
-    expect(x[0].name.value).toBe('noam');
-
-  });
-  itAsync("put with validations on column fails", async () => {
+  itWithDataProvider("put with validations on column fails", async (dp) => {
 
     let c = ctx.create(entityWithValidationsOnColumn);
-    c.setSource(new InMemoryDataProvider());
+    c.setSource(dp);
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
@@ -297,10 +314,9 @@ describe("data api", () => {
     expect(x[0].name.value).toBe('noam');
 
   });
-  itAsync("put with validations on entity fails", async () => {
-
+  itWithDataProvider("put with validations on entity fails", async (dp) => {
     let c = ctx.create(entityWithValidations);
-    c.setSource(new InMemoryDataProvider());
+    c.setSource(dp);
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
@@ -317,10 +333,10 @@ describe("data api", () => {
     expect(x[0].name.value).toBe('noam');
 
   });
-  itAsync("entity with different id column still works well", async () => {
+  itWithDataProvider("entity with different id column still works well", async (dp) => {
 
     let c = ctx.create(entityWithValidations);
-    c.setSource(new InMemoryDataProvider());
+    c.setSource(dp);
     c = await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     c.name.value = 'yael';
     await c.save();
@@ -495,7 +511,7 @@ describe("data api", () => {
   });
   itAsync("post with logic works and max in entity", async () => {
 
-    let c = ctx.create( entityWithValidations);
+    let c = ctx.create(entityWithValidations);
 
     var api = new DataApi(c, { allowInsert: true });
     let t = new TestDataApiResponse();

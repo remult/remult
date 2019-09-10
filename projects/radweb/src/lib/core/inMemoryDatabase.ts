@@ -4,20 +4,21 @@
 
 
 import { Entity, Column, StringColumn } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, FindOptions, FilterConsumer } from './dataInterfaces1';
+import { FilterBase, DataProviderFactory, DataProvider, FindOptions, FilterConsumer, RowsOfDataForTesting } from './dataInterfaces1';
 
 
 import { isFunction, makeTitle } from './common';
 
 
 
-export class InMemoryDataProvider implements DataProviderFactory {
+export class InMemoryDataProvider implements DataProviderFactory, RowsOfDataForTesting {
   rows: any = {};
   public provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
     if (!this.rows[name])
       this.rows[name] = [];
     return new ActualInMemoryDataProvider(factory, this.rows[name]);
   }
+  toString() { return "InMemoryDataProvider" }
 }
 
 

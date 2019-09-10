@@ -4,13 +4,13 @@
 import { makeTitle, isFunction, functionOrString } from './common';
 
 import {
-  DataColumnSettings,ColumnOptions, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
+  DataColumnSettings, ColumnOptions, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
   , ColumnStorage,
   EntitySourceFindOptions
 } from './dataInterfaces1';
 import { Allowed, Context, EntityType } from '../context/Context';
 import { DataApiSettings } from '../server/DataApi';
-import { isBoolean } from 'util';
+import { isBoolean, isString } from 'util';
 
 
 
@@ -1254,7 +1254,7 @@ export class Entity<idType> {
         this._getExcludedColumns(x, r)
       ,
       readonlyColumns: x => {
-        return  x.__iterateColumns().filter(c => !r.isAllowed(c.allowApiUpdate));
+        return x.__iterateColumns().filter(c => !r.isAllowed(c.allowApiUpdate));
       },
       get: {
         where: x => options.apiDataFilter ? options.apiDataFilter() : undefined
@@ -1741,7 +1741,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption?: ColumnOptions<string> ) {
+  constructor(settingsOrCaption?: ColumnOptions<string>) {
     super(settingsOrCaption);
   }
   isContains(value: StringColumn | string) {
@@ -1859,20 +1859,36 @@ export class NumberColumn extends Column<number>{
 export interface NumberColumnSettings extends DataColumnSettings<number> {
   decimalDigits?: number;
 }
-export declare type NumberColumnOptions = NumberColumnSettings|string;
+export declare type NumberColumnOptions = NumberColumnSettings | string;
 export class BoolColumn extends Column<boolean>{
   constructor(settingsOrCaption?: ColumnOptions<boolean>) {
     super(settingsOrCaption);
     if (!this.inputType)
       this.inputType = 'checkbox';
   }
+  __defaultStorage() {
+    return new BoolStorage();
+  }
 }
+
+export class BoolStorage implements ColumnStorage<any>{
+  toDb(val: any) {
+    return val;
+  }
+  fromDb(val: any): any {
+    if (isString(val))
+      return val==="true";
+    return val;
+  }
+
+}
+
 export interface ClosedListItem {
   id: number;
   toString(): string;
 }
 export class ClosedListColumn<closedListType extends ClosedListItem> extends Column<closedListType> {
-  constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<closedListType> ) {
+  constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<closedListType>) {
     super(settingsOrCaption);
   }
   getOptions(): DropDownItem[] {
@@ -2284,7 +2300,7 @@ export interface SQLCommand {
 export interface SQLQueryResult {
   rows: any[];
   getColumnIndex(name: string): number;
-  getcolumnNameAtIndex(index:number):string;
+  getcolumnNameAtIndex(index: number): string;
 }
 
 
