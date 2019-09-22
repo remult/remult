@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>pre requisites</title>
+    <title>Creating a new Project</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,49 +29,38 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="pre-requisites">pre requisites</h1>
-<p>These are the softwares we'll use for the local development environment</p>
-<h2 id="node-js">Node js</h2>
-<p>Node.js is an open-source, cross-platform JavaScript runtime environment for executing JavaScript code server-side.</p>
-<p>Install it from: <a href="https://nodejs.org/en/">https://nodejs.org/en/</a></p>
-<p>(For this demo we've used 10.16.3 LTS)</p>
-<h2 id="postgres-database">Postgres database</h2>
-<p>We'll use the great and free database called Postgres</p>
-<p>Download and install it from:
-<a href="https://www.enterprisedb.com/downloads/postgres-postgresql-downloads">https://www.enterprisedb.com/downloads/postgres-postgresql-downloads</a></p>
-<p>In this demo we've used Windows x86-64 version, 11.5</p>
+                <div class="content"><h1 id="creating-a-new-project">Creating a new Project</h1>
+<p>The first thing we'll do is let angular create the project using it's CLI.</p>
+<h2 id="create-the-angular-project">Create the Angular Project</h2>
+<p>Open a command prompt in a folder that'll be the parent of your new project (in my case I use <code>c:\repos\</code>) and run the following command, replacing <code>my-project</code> with the name of the project you want to use:</p>
+<pre><code>ng new my-project
+</code></pre>
+<p>You'll be prompted with the following questions:</p>
 <ol>
-<li>Download and run it.</li>
-<li>Click Next</li>
-<li>Next</li>
-<li>In the <code>Select Components</code> screen, uncheck the <code>Stack Builder</code> we don't need it.</li>
+<li>Would you like to add angular routing? - <strong>Say Yes</strong></li>
+<li>Which stylesheet format would you like to use? - <strong>choose &quot;Sass (.scss) [http://sass-lang.com]&quot; (it's the second option)</strong></li>
 </ol>
-<p><img src="2019-09-22_18h11_31.png" alt="" /></p>
-<ol start="5">
-<li>Next</li>
-<li>Next</li>
-<li>You are prompted for a password, give it a password, and remember it (we'll need it later)</li>
-</ol>
-<p><img src="2019-09-22_18h06_08.png" alt="enter password" /></p>
-<p>From here on, just click next next next, till the setup is complete.</p>
-<h2 id="visual-studio-code">Visual Studio Code</h2>
-<p>A source code editor which we use to develop application.</p>
-<p>Install it from: <a href="https://code.visualstudio.com/">https://code.visualstudio.com/</a></p>
-<h4 id="visual-studio-extentions">Visual Studio Extentions</h4>
-<p>To install the following recommended extentions, open a command prompt and run the following commands:</p>
-<pre><code>code --install-extension Angular.ng-template
-code --install-extension infinity1207.angular2-switcher
-code --install-extension CoenraadS.bracket-pair-colorizer
-code --install-extension eamodio.gitlens
-code --install-extension sibiraj-s.vscode-scss-formatter
+<h2 id="install-radweb">Install radweb</h2>
+<p>Next go into the folder of your new project</p>
+<pre><code>cd my-project
 </code></pre>
-<h2 id="angular-cli">Angular Cli</h2>
-<p>From the command prompt, run the following command to install angular cli with the specific version we used for this demo</p>
-<pre><code>npm install -g @angular/cli@7.3.5
+<p>And run the following command to install the <code>radweb</code> framework starter kit.</p>
+<pre><code>ng add radweb@pre-alpha
 </code></pre>
-<ul>
-<li><a href="some-topic.html">some topic</a></li>
-</ul>
+<p>You'll be prompted to chose a prebuilt theme for the material design, choose one and continue</p>
+<h2 id="commit-to-git">Commit to Git</h2>
+<p>In the command prompt run:</p>
+<pre><code>git add .
+git commit -m &quot;install radweb&quot;
+</code></pre>
+<h2 id="change-the-password-for-the-postgres-connection">Change the password for the postgres connection.</h2>
+<p>If you did not use the default password we've used (MASTERKEY), then you can change the postgres password, in the .env file,
+just replace the work (MASTERKEY) with the password you've chosen for the postgres database.</p>
+<p>Don't worry, your password is safe, the .env file exists only locally on your dev machine and is never sent anywhere.</p>
+<h2 id="open-vs-code-in-the-my-project-directory">open vs code in the <code>my-project</code> directory</h2>
+<p>In the command prompt type:</p>
+<pre><code>code .
+</code></pre>
 
 
                 <br />
@@ -127,7 +116,7 @@ code --install-extension sibiraj-s.vscode-scss-formatter
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'pre-requisites.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'creating-a-new-project.html', 'previousButton', 'nextButton');
         </script>
 </body>
 

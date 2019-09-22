@@ -26,7 +26,10 @@ In this demo we've used Windows x86-64 version, 11.5
 6. Next
 7. You are prompted for a password, give it a password, and remember it (we'll need it later)
 
+
 ![enter password](2019-09-22_18h06_08.png)
+
+> (when creating this demo we used MASTERKEY)
 
 From here on, just click next next next, till the setup is complete.
 
@@ -35,7 +38,7 @@ A source code editor which we use to develop application.
 
 Install it from: https://code.visualstudio.com/
 
-### Visual Studio Extentions
+#### Visual Studio Extentions
 To install the following recommended extentions, open a command prompt and run the following commands:
 ```
 code --install-extension Angular.ng-template
@@ -43,9 +46,10 @@ code --install-extension infinity1207.angular2-switcher
 code --install-extension CoenraadS.bracket-pair-colorizer
 code --install-extension eamodio.gitlens
 code --install-extension sibiraj-s.vscode-scss-formatter
-|
 ```
 
-
-
-
+## Angular Cli
+From the command prompt, run the following command to install angular cli with the specific version we used for this demo
+```
+npm install -g @angular/cli@7.3.5
+```
