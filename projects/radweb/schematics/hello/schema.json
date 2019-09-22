@@ -1,0 +1,12 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "id": "HelloSchematics",
+    "title": "Hello Options Schema",
+    "type": "object",
+    "description": "Says hello to someone",
+    "properties": {
+    },
+    "required": [
+        
+    ]
+}

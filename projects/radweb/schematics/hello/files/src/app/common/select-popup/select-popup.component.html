@@ -1,0 +1,18 @@
+<div dir="rtl">
+
+  <h3 matDialogHeader>בחרי מתנדבת</h3>
+  <mat-dialog-content>
+    <data-grid [settings]="helpers" [displayVCR]="false"></data-grid>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+
+    <button mat-raised-button color="warning" (click)="close()">
+      בטלי
+    </button>
+    <button mat-raised-button color="primary" [disabled]="!helpers.currentRow" (click)="select()">
+      בחרי
+    </button>
+  </mat-dialog-actions>
+
+
+</div>

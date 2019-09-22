@@ -1,11 +1,13 @@
 {
   "name": "radweb",
-  "version": "3.0.11",
+  "schematics": "./schematics/collection.json",
+  "version": "3.1.11",
   "description": "radweb",
   "license": "MIT",
   "author": {
     "name": "Noam Honig"
   },
+  
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
     "uuid": "^3.3.2",

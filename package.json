@@ -9,6 +9,11 @@
     "e2e": "ng e2e",
     "app-server-watch": "tsc -p tsconfig.server.json --watch",
     "radweb-build": "ng build radweb",
+    "schemas:build": "tsc -p projects/radweb/tsconfig.schematics.json",
+    "schemas:copy:schemas": "copyfiles -V -u 2  projects/radweb/schematics/*/schema.json dist/radweb/",
+    "schemas:copy:files": "copyfiles -a -p -V -u 2 projects/radweb/schematics/*/files/** dist/radweb/",
+    "schemas:copy:collection": "copyfiles -V -u 3 projects/radweb/schematics/collection.json dist/radweb/schematics/",
+    "postschemas:build": "npm run schemas:copy:schemas && npm run schemas:copy:files && npm run schemas:copy:collection",
     "radweb-server-build": "tsc -p projects/radweb-server/tsconfig.json && copyfiles -u 2 projects/radweb-server/package.json dist/radweb-server",
     "radweb-server-mssql-build": "tsc -p projects/radweb-server-mssql/tsconfig.json && copyfiles -u 2 projects/radweb-server-mssql/package.json dist/radweb-server-mssql",
     "radweb-server-postgres-build": "tsc -p projects/radweb-server-postgres/tsconfig.json && copyfiles -u 2 projects/radweb-server-postgres/package.json dist/radweb-server-postgres",
@@ -18,6 +23,7 @@
     "publish-radweb": "cd projects/radweb && npm version patch && cd.. && cd.. && npm run radweb-build && cd dist/radweb && npm publish --tag pre-alpha",
     "publish-radweb-server": "cd dist/radweb-server && npm publish --tag pre-alpha",
     "publish-radweb-server-postgres": "cd dist/radweb-server-postgres && npm publish --tag pre-alpha"
+    
   },
   "private": true,
   "dependencies": {
@@ -61,6 +67,7 @@
     "@types/websql": "0.0.27",
     "codelyzer": "~4.5.0",
     "copyfiles": "^2.1.0",
+    "cp": "^0.2.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~3.0.0",

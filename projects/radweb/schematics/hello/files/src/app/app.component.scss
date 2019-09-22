@@ -1,0 +1,56 @@
+.active-route{
+    background-color: #f2f2f2;
+    
+}
+
+.app-sidenav-container{
+    flex:1;
+    width:100%;
+    position:fixed;
+    height:100%;
+    min-width:100%;
+    min-height:100%;
+    border:1px solid rgba(0,0,0,0.5);
+}
+.mat-toolbar{
+    display:flex;
+}
+.toolbar-title{
+    flex-grow: 1;
+}
+.user-info-button{
+    border: solid;
+}
+.app-sidenav-content{
+    display:flex;
+    height:100%;
+    flex-direction: column;
+}
+.app-sidenav{
+    width:240px;
+}
+.wrapper{
+    margin:5px 5px;
+    margin-bottom: 60px;
+}
+
+$iconWidth:56px;
+
+.sidenav-toggle{
+    
+    padding:0;
+    margin:8px;
+    min-width:$iconWidth;
+    @media(max-width: 720px){
+        display:flex;
+        align-item:center;
+        justify-content: center;
+    }
+    mat-icon{
+        font-size:30px;
+        height:$iconWidth;
+        width:$iconWidth;
+        line-height :$iconWidth;
+        color: white;
+    }
+}
