@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta charset="utf-8" />
+    <meta name="keywords" content="">
+
+    <title>Welcome to Visual Studio and the Migrated Application</title>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="assets/css/toc.css" />
+    <link rel="stylesheet" href="assets/css/highlight.css" />
+    <link rel="stylesheet" href="assets/css/prism.css" />
+    <link rel="stylesheet" href="assets/css/prism-csdiff.css" />
+
+
+    <link rel="stylesheet" href="assets/css/theme_firefly.css" />
+    <link rel="stylesheet" href="assets/css/mermaid.css" />
+</head>
+
+<body class="markdown-body" role="document">
+    <div class="wrapper">
+
+        <div class="middle">
+
+            <div class="container">
+
+                <div class="content" role="navigation" aria-label="footer navigation">
+                    <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+                    <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
+                </div>
+                <div class="content"><h1 id="welcome-to-visual-studio-and-the-migrated-application">Welcome to Visual Studio and the Migrated Application</h1>
+<p>In this article we'll review the migrated solution and it's different parts</p>
+<p><strong>Solution Structure</strong></p>
+<ol>
+<li><p>Before opening the solution in the solution explorer, make sure to run <code>BuildDebug.bat</code> to build the project and make sure that everything is ready.</p>
+</li>
+<li><p>Visual Studio is compound from three basic parts :</p>
+<ul>
+<li><strong>Solution Explorer</strong> - provides an organized view of the solution which includes your projects and their files</li>
+<li><strong>Working area</strong> - where you can edit your code</li>
+<li><strong>Tool box</strong> - displays icons for controls and other items that you can add to Visual Studio projects</li>
+</ul>
+</li>
+<li><p>In the solution explorer,</p>
+<ul>
+<li><em>ENV</em> project - is the generic source code common to all migrated application.<br />
+ENV has a reference to the <strong>Firefly.box.dll</strong> which is also common code supplied by firefly</li>
+<li><em>[Solution name]</em> - solution</li>
+<li><em>[Solution name].[moduleName]</em> - The solution is split to several projects.
+Every module has its controllers, views (screens),</li>
+<li><em>[Solution name]Base</em> - contains the migrated tables under the Models folder, migrated Models under the Types folder and other objects which are shared by the whole solution.</li>
+</ul>
+</li>
+<li><p>The startup project is the one in Bold and is the first to run when we run the application.<br />
+The startup project includes several parts:</p>
+<ul>
+<li>.ini file - the configuration file use to run the application</li>
+<li>The Views folder which contains all the menus</li>
+<li>ApplicationCore class - is migrated version of the main program</li>
+<li>ApplicationPrograms class - is the list of the migrated programs with their numbers, names, public names, and their location inside the solution</li>
+<li>ApplicationEntities class - is the list of the migrated tables with their numbers, names, public names, and their location inside the solution</li>
+<li>Program.cs - is the first program that runs when you launch the application.<br />
+Main is the program</li>
+</ul>
+</li>
+</ol>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ztHuX9ncvTY?list=PL1DEQjXG2xnKI3TL-gsy91eXbh3ytOt6h" frameborder="0" allowfullscreen></iframe>
+<ul>
+<li><a href="exercise-application-structure.html">Exercise Application Structure</a></li>
+</ul>
+
+
+                <br />
+                        <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+
+                        <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
+                    
+                </div>
+
+                <!-- .content -->
+
+
+
+
+            </div>
+            <!-- .container-->
+
+            <aside class="left-sidebar">
+                <div class="wy-side-nav-search-ff">
+                    <a href="" class="test">
+                        <h3>remult ts</h3>
+                    </a>
+                </div>
+                <div id="menuTree" </div>
+            </aside>
+            <!-- .left-sidebar -->
+
+            <aside class="right-sidebar"></aside>
+            <!-- .right-sidebar -->
+
+            </div>
+            <!-- .middle-->
+
+
+
+        </div>
+
+
+        <script src="assets/js/mermaid.js"></script>
+        <script src="assets/js/prism-start.js"></script>
+        <script src="assets/js/prism-clike.js"></script>
+        <script src="assets/js/prism-markup.js"></script>
+        <script src="assets/js/prism-css.js"></script>
+        <script src="assets/js/prism-javascript.js"></script>
+
+        <script src="assets/js/prism-diff.js"></script>
+        <script src="assets/js/prism-csdiff.js"></script>
+        <script src="assets/js/prism-function.js"></script>
+
+        <script src="assets/js/jquery-3.1.1.js"></script>
+
+
+      
+        <script src="assets/js/tree.js"></script>
+        <script language="javascript">
+            buildTree('menuTree', 'welcome-to-visual-studio-and-the-migrated-application.html', 'previousButton', 'nextButton');
+        </script>
+</body>
+
+</html>
