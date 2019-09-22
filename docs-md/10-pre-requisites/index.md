@@ -35,12 +35,16 @@ A source code editor which we use to develop application.
 
 Install it from: https://code.visualstudio.com/
 
-After you install it, install the following extentions:
-1. https://marketplace.visualstudio.com/items?itemName=Angular.ng-template
-2. https://marketplace.visualstudio.com/items?itemName=infinity1207.angular2-switcher
-3. https://marketplace.visualstudio.com/items?itemName=CoenraadS.bracket-pair-colorizer
-4. https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens
-5. https://marketplace.visualstudio.com/items?itemName=sibiraj-s.vscode-scss-formatter
+### Visual Studio Extentions
+To install the following recommended extentions, open a command prompt and run the following commands:
+```
+code --install-extension Angular.ng-template
+code --install-extension infinity1207.angular2-switcher
+code --install-extension CoenraadS.bracket-pair-colorizer
+code --install-extension eamodio.gitlens
+code --install-extension sibiraj-s.vscode-scss-formatter
+|
+```
 
 
 
