@@ -8,7 +8,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "app-server-watch": "tsc -p tsconfig.server.json --watch",
-    "radweb-build": "ng build radweb",
+    "radweb-build": "ng build radweb && npm run schemas:build",
     "schemas:build": "tsc -p projects/radweb/tsconfig.schematics.json",
     "schemas:copy:schemas": "copyfiles -V -u 2  projects/radweb/schematics/*/schema.json dist/radweb/",
     "schemas:copy:files": "copyfiles -a -p -V -u 2 projects/radweb/schematics/*/files/** dist/radweb/",
