@@ -238,7 +238,7 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
         return found;
     };
     $.ajax({
-        url: "../menu.json",
+        url: "./menu.json",
         dataType: "json",
         success: function (data) {
             var searchDiv = document.createElement('div');
