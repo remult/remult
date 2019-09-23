@@ -238,7 +238,7 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
         return found;
     };
     $.ajax({
-        url: "../../menu.json",
+        url: "../menu.json",
         dataType: "json",
         success: function (data) {
             var searchDiv = document.createElement('div');
@@ -273,7 +273,7 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
                     searchButtonDiv.innerHTML = '';
                     if (searchInput.value != '') {
                         var searchBtn = document.createElement("a");
-                        var searchReference = document.createElement("a");
+                        
 
 
                         searchButtonDiv.className = 'searchButtonsDiv';
@@ -283,19 +283,15 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
                         searchBtn.className = "btn btn-neutral";
                         searchBtn.href = "asdfsadfas";
                         searchButtonDiv.appendChild(searchBtn);
-                        searchBtn.title = 'Search doc.fireflymigration.com using Google Search';
+                        searchBtn.title = 'Search using Google Search';
 
-                        searchReference.innerText = "Search in API";
-                        searchReference.href = '123';
-                        searchReference.className = "btn btn-neutral";
-                        searchReference.style.cssFloat = 'right';
-                        searchButtonDiv.appendChild(searchReference);
-                        searchBtn.href = 'http://www.google.com/search?q=site:doc.fireflymigration.com ' + encodeURI(searchInput.value);
+                      
+                        
+                        searchBtn.href = 'http://www.google.com/search?q=site:'+document.location.origin+' ' + encodeURI(searchInput.value);
                         searchBtn.title = "Search the API Documentation using Google Search";
                         
                         searchBtn.target='_blank';
-                        searchReference.href = 'http://www.google.com/search?q=site:www.fireflymigration.com/reference ' + encodeURI(searchInput.value);
-                        searchReference.target = '_blank';
+                        
                     }
                 }
 
