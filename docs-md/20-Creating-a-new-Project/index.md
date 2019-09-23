@@ -39,5 +39,4 @@ Don't worry, your password is safe, the .env file exists only locally on your de
 In the command prompt type:
 ```
 code .
-```
-
+``

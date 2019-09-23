@@ -22,7 +22,8 @@
     "server:debug": "node --inspect --debug-brk distServer/src/app/server/server.js",
     "publish-radweb": "cd projects/radweb && npm version patch && cd.. && cd.. && npm run radweb-build && cd dist/radweb && npm publish --tag pre-alpha",
     "publish-radweb-server": "cd dist/radweb-server && npm publish --tag pre-alpha",
-    "publish-radweb-server-postgres": "cd dist/radweb-server-postgres && npm publish --tag pre-alpha"
+    "publish-radweb-server-postgres": "cd dist/radweb-server-postgres && npm publish --tag pre-alpha",
+    "docs":"c:/repos/radweb/docs-builder/buildsite.exe ./docs-md ./docs"
     
   },
   "private": true,
