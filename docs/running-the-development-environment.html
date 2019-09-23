@@ -32,10 +32,57 @@
                 <div class="content"><h1 id="running-the-development-environment">Running the Development Environment</h1>
 <p>Now that we have our new project configured, we want to run it.</p>
 <p>Open Visual Studio code in the folder of your prject (<code>my-project</code> in our case).</p>
-<p>#The different servers
-When developing an angular application in a dev environment we'll need to servers, one used by Angular for the front end development (the ui that'll run in the browser), and one that will represent the actual server, where all the data access will be and all the heavy lifting will be done.</p>
-<p>To do all that we'll run the following:
-1.</p>
+<h1 id="the-different-servers">The different servers</h1>
+<p>When developing an angular application in a dev environment we'll need two servers,</p>
+<ol>
+<li>Angular dev server - used by Angular for the front end development (the ui that'll run in the browser),</li>
+<li>Node JS web server - is the Actual server, where all the data access will be and all the heavy lifting will be done.</li>
+</ol>
+<h2 id="the-tasks-well-use">The tasks we'll use</h2>
+<h3 id="run-the-automatic-typescript-build">1. Run the automatic typescript build</h3>
+<ol>
+<li><p>press <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open visual studio's code <code>command pallet</code></p>
+</li>
+<li><p>Select <code>Tasks:Run Task</code></p>
+<p><img src="2019-09-23_14h40_29.png" alt="" /></p>
+</li>
+<li><p>Select <code>npm:server:build-watch</code></p>
+<p><img src="2019-09-23_14h42_25.png" alt="" /></p>
+</li>
+<li><p>You might see the following question:
+<img src="select-task-output-options.png" alt="" /></p>
+<p>If so - please choose <code>Never scan the task output</code></p>
+</li>
+<li><p>You'll now see at the bottom part of your screen a new terminal window running the typescript compiler in watch mode - meaning that whenever you change a file, it'll automatically rebuild your code.</p>
+<p><img src="running-server-build-watch.png" alt="" /></p>
+</li>
+</ol>
+<h3 id="run-the-node-js-server">2. Run the Node JS Server</h3>
+<p>Simply press <kbd>F5</kbd> and it'll run.</p>
+<p>If you'll click on the <code>DEBUG CONSOLE</code> at the bottom of the editor, you'll see that it's running:</p>
+<p><img src="debug-console.png" alt="" /></p>
+<p>This server is your api server, it shows which api's are now available and it will serve as the server of our application</p>
+<h3 id="run-the-angular-dev-server">3. Run the Angular Dev Server</h3>
+<ol>
+<li><p>press <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open visual studio's code <code>command pallet</code></p>
+</li>
+<li><p>select <code>Tasks:Run Task</code></p>
+<p><img src="2019-09-23_14h40_29.png" alt="" /></p>
+</li>
+<li><p>select <code>npm:ng:dev</code></p>
+</li>
+<li><p>You might see the following question:
+<img src="select-task-output-options.png" alt="" /></p>
+<p>If so - please choose <code>Never scan the task output</code></p>
+</li>
+<li><p>You'll now see at the bototm part of your screen a terminal window running the Angular web server:</p>
+</li>
+<li><p><img src="angular-dev-server.png" alt="" /></p>
+</li>
+</ol>
+<h2 id="great-now-we-can-start">Great, now we can start</h2>
+<p>Simply open a browser with the url <code>http://localhost:4200</code> and you'll see your application running</p>
+<p><img src="the-first-application-stage.png" alt="" /></p>
 
 
                 <br />
