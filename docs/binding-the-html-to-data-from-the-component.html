@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>index</title>
+    <title>Binding the html to data from the component</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,16 +29,29 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="index">index</h1>
-<ul>
-<li><a href="installing-a-dev-machine.html">Installing a Dev Machine</a></li>
-<li><a href="creating-a-new-project.html">Creating a new Project</a></li>
-<li><a href="running-the-development-environment.html">Running the Development Environment</a></li>
-<li><a href="hello-angular.html">Hello Angular</a></li>
-<li><a href="adding-the-products-component.html">Adding the Products Component</a></li>
-<li><a href="additional-info.html">Additional info</a></li>
-<li><a href="exercise-remove-me.html">exercise remove me</a></li>
-</ul>
+                <div class="content"><h1 id="binding-the-html-to-data-from-the-component">Binding the html to data from the component</h1>
+<p>Let's add a field in our component and use it from the html.</p>
+<p>In the <code>home.component.ts</code> add the <code>name</code> field:</p>
+<pre data-line="11" class="language-csdiff line-numbers"><code> import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+export class HomeComponent implements OnInit {
+
+  constructor() { }
+  name = 'Steve';
+  ngOnInit() {
+  }
+} </code></pre>
+<p>Now we can use the <code>name</code> field in the <code>home.component.html</code> file</p>
+<pre data-line="3" class="language-csdiff line-numbers"><code>    &lt;p&gt;
+-   Hello world!
+    Hello {{name}}!
+    &lt;/p&gt; </code></pre>
+<p>Within the curly brackets, we can write any typescript code and it'll work, for example if we'll write <code>{{ 1 + 1}}</code> it'll write 2 in the html.</p>
 
 
                 <br />
@@ -94,7 +107,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'index.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'binding-the-html-to-data-from-the-component.html', 'previousButton', 'nextButton');
         </script>
 </body>
 

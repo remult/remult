@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>index</title>
+    <title>Adding a button with a Click event</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,16 +29,32 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="index">index</h1>
-<ul>
-<li><a href="installing-a-dev-machine.html">Installing a Dev Machine</a></li>
-<li><a href="creating-a-new-project.html">Creating a new Project</a></li>
-<li><a href="running-the-development-environment.html">Running the Development Environment</a></li>
-<li><a href="hello-angular.html">Hello Angular</a></li>
-<li><a href="adding-the-products-component.html">Adding the Products Component</a></li>
-<li><a href="additional-info.html">Additional info</a></li>
-<li><a href="exercise-remove-me.html">exercise remove me</a></li>
-</ul>
+                <div class="content"><h1 id="adding-a-button-with-a-click-event">Adding a button with a Click event</h1>
+<p>Now, I want the user to be able to add a friend to the list.</p>
+<p>First, in the <code>home.component.ts</code> let's add the <code>addFriend</code> method</p>
+<pre data-line="7,8,9,10" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
+  constructor() { }
+  person: Person = { name: 'Steve', age: 25 };
+  friends: Person[] = [{ name: 'Rachel', age: 45 }, { name: 'Ross', age: 47 }];
+  ngOnInit() {
+  }
+  addFriend() {
+    this.friends.push(this.person); // add the person to the friends array
+    this.person = { name: 'new friend', age: 25 }; //init the person field
+  }
+} </code></pre>
+<p>And now let's call it from the <code>home.component.html</code> template</p>
+<pre data-line="6" class="language-csdiff line-numbers"><code>    What is your name?
+    &lt;input [(ngModel)]="person.name"&gt;
+    &lt;p *ngIf="person.name.length&gt;0"&gt;
+    Hello {{person.name}}! you are {{person.age}} years old
+    &lt;/p&gt;
+    &lt;button (click)="addFriend()" &gt;Add {{person.name}} as a friend&lt;/button&gt;
+    &lt;h4&gt;These are our friends ({{friends.length}})&lt;/h4&gt;
+    &lt;ul&gt;
+    &lt;li *ngFor="let f of friends"&gt;{{f.name}}, age: {{f.age}}&lt;/li&gt;
+    &lt;/ul&gt; </code></pre>
+<p>We've added a button, and in it's <code>(click)</code> event we call the <code>addFriend</code> method we've defined in the <code>home.component.ts</code></p>
 
 
                 <br />
@@ -94,7 +110,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'index.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'adding-a-button-with-a-click-event.html', 'previousButton', 'nextButton');
         </script>
 </body>
 

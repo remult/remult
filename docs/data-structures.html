@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>index</title>
+    <title>Data Structures</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,16 +29,73 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="index">index</h1>
-<ul>
-<li><a href="installing-a-dev-machine.html">Installing a Dev Machine</a></li>
-<li><a href="creating-a-new-project.html">Creating a new Project</a></li>
-<li><a href="running-the-development-environment.html">Running the Development Environment</a></li>
-<li><a href="hello-angular.html">Hello Angular</a></li>
-<li><a href="adding-the-products-component.html">Adding the Products Component</a></li>
-<li><a href="additional-info.html">Additional info</a></li>
-<li><a href="exercise-remove-me.html">exercise remove me</a></li>
-</ul>
+                <div class="content"><h1 id="data-structures">Data Structures</h1>
+<p>instead of just using fields, we can use a data structure that we define. In typescript, it's called an <code>interface</code></p>
+<p>In the <code>home.component.html</code> file, add the following code:</p>
+<pre data-line="16,17,18,19" class="language-csdiff line-numbers"><code>import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+export class HomeComponent implements OnInit {
+
+  constructor() { }
+  name='Steve';
+  ngOnInit() {
+  }
+}
+
+export interface Person{
+   name:string;
+   age?:number;
+} </code></pre>
+<ol>
+<li>We've created an <code>inteface</code> with the name of <code>Person</code></li>
+<li>this interface will have two members:
+<ol>
+<li>name of type string - the structure in typescript is member name, colon (:) and the member type.</li>
+<li>age of type string, which is optional (the question mark indicates that this is an optional field)</li>
+</ol>
+</li>
+<li>By adding the <code>export</code> keyword before the <code>interface</code> we've indicated that we might use this interface elsewhere in the application.</li>
+</ol>
+<p>Now let's use our new interface with it's two members.</p>
+<p>In the <code>home.component.ts</code> file</p>
+<pre data-line="12" class="language-csdiff line-numbers"><code>import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+export class HomeComponent implements OnInit {
+
+  constructor() { }
+- name='Steve';
+  person: Person = { name: 'Steve', age: 25 };
+  ngOnInit() {
+  }
+}
+export interface Person {
+  name: string;
+  age?: number;
+} </code></pre>
+<p>In the <code>home.component.html</code> file:</p>
+<pre data-line="3,6,9" class="language-csdiff line-numbers"><code>What is your name?
+- &lt;input [(ngModel)]="name"&gt;
+  &lt;input [(ngModel)]="person.name"&gt;
+
+- &lt;p *ngIf="name.length&gt;0"&gt;
+  &lt;p *ngIf="person.name.length&gt;0"&gt;
+
+- Hello {{name}}!
+  Hello {{person.name}}! you are {{person.age}} years old
+ &lt;/p&gt; </code></pre>
+<blockquote>
+<p>Yes I know I don't input the age, for now let's assume everyone is 25 - or you can do that as an exercise</p>
+</blockquote>
 
 
                 <br />
@@ -94,7 +151,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'index.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'data-structures.html', 'previousButton', 'nextButton');
         </script>
 </body>
 

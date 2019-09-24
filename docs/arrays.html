@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>index</title>
+    <title>Arrays</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,16 +29,59 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="index">index</h1>
-<ul>
-<li><a href="installing-a-dev-machine.html">Installing a Dev Machine</a></li>
-<li><a href="creating-a-new-project.html">Creating a new Project</a></li>
-<li><a href="running-the-development-environment.html">Running the Development Environment</a></li>
-<li><a href="hello-angular.html">Hello Angular</a></li>
-<li><a href="adding-the-products-component.html">Adding the Products Component</a></li>
-<li><a href="additional-info.html">Additional info</a></li>
-<li><a href="exercise-remove-me.html">exercise remove me</a></li>
-</ul>
+                <div class="content"><h1 id="arrays">Arrays</h1>
+<p>Arrays are easy to define in typescript and are very powerful. For those of you coming from C# it's a full blown powerful list.</p>
+<p>Let's add a Friends array, to the 'home.component.ts' file</p>
+<pre data-line="6" class="language-csdiff line-numbers"><code>...
+export class HomeComponent implements OnInit {
+
+  constructor() { }
+  person: Person = { name: 'Steve', age: 25 };
+  friends:Person[] = [];
+  ngOnInit() {
+  }
+}
+... </code></pre>
+<p>In this line we've defined a new <code>member</code> called <code>friends</code> - it's of Type <code>Person[]</code> (Person Array) = and we have initialized it with an empty Array (<code>[]</code>);</p>
+<p>We can add Items to the Array</p>
+<pre data-line="8,9" class="language-csdiff line-numbers"><code>...
+export class HomeComponent implements OnInit {
+
+  constructor() { }
+  person: Person = { name: 'Steve', age: 25 };
+  friends:Person[] = [];
+  ngOnInit() {
+    this.friends.push({name:'Rachel',age:45});
+    this.friends.push({name:'Ross',age:47});
+  }
+}
+... </code></pre>
+<p>We can also initialize the Array with these items in one line:</p>
+<pre data-line="6" class="language-csdiff line-numbers"><code>...
+export class HomeComponent implements OnInit {
+  constructor() { }
+  person: Person = { name: 'Steve', age: 25 };
+- friends:Person[] = [];
+  friends:Person[] = [{name:'Rachel',age:45}, {name:'Ross',age:47}];
+  ngOnInit() {
+-   this.friends.push({name:'Rachel',age:45});
+-   this.friends.push({name:'Ross',age:47});
+  }
+}
+... </code></pre>
+<h2 id="using-arrays-in-the-html-template-using-ngfor">Using Arrays in the Html Template using *ngFor</h2>
+<p>Let's display a list of Friends in our <code>home.component.html</code></p>
+<pre data-line="6,7,8,9" class="language-csdiff line-numbers"><code>What is your name?
+    &lt;input [(ngModel)]="person.name"&gt;
+    &lt;p *ngIf="person.name.length&gt;0"&gt;
+    Hello {{person.name}}! you are {{person.age}} years old
+    &lt;/p&gt;
+    &lt;h4&gt;These are our friends ({{friends.length}})&lt;/h4&gt;
+    &lt;ul&gt;
+    &lt;li *ngFor="let f of friends"&gt;{{f.name}}, age: {{f.age}}&lt;/li&gt;
+    &lt;/ul&gt; </code></pre>
+<p>In line 6 we've added an <code>h4</code> html title tag, to display a title that will also include how many friends we have. In this case it'll show <code>These are our friends (2)</code>
+By placing the <code>*ngFor</code> tag in the <code>li</code> html tag, we ask Angular to repeat the <code>li</code> tag for every item in the array (person in the friends array)</p>
 
 
                 <br />
@@ -94,7 +137,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'index.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'arrays.html', 'previousButton', 'nextButton');
         </script>
 </body>
 

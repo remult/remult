@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>index</title>
+    <title>The Home Component</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,16 +29,25 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="index">index</h1>
-<ul>
-<li><a href="installing-a-dev-machine.html">Installing a Dev Machine</a></li>
-<li><a href="creating-a-new-project.html">Creating a new Project</a></li>
-<li><a href="running-the-development-environment.html">Running the Development Environment</a></li>
-<li><a href="hello-angular.html">Hello Angular</a></li>
-<li><a href="adding-the-products-component.html">Adding the Products Component</a></li>
-<li><a href="additional-info.html">Additional info</a></li>
-<li><a href="exercise-remove-me.html">exercise remove me</a></li>
-</ul>
+                <div class="content"><h1 id="the-home-component">The Home Component</h1>
+<p>The first thing we see in the application, is the <code>HomeComponent</code></p>
+<p><img src="home-component.png" alt="" /></p>
+<p>let's review it's code.</p>
+<p>In the file explorer (in the left of your editor), under the <code>src\app</code> directory you will find the <code>home</code> directory that has all the files that are related to the <code>HomeComponent</code></p>
+<p><img src="home-component-file-structure.png" alt="" /></p>
+<p>The files are:</p>
+<ol>
+<li>home.component.html - holds the html template for the component</li>
+<li>home.component.scss - holds the css rules for the component</li>
+<li>home.component.ts - holds the TypeScript business logic for the component.</li>
+</ol>
+<h2 id="changing-the-html">Changing the html</h2>
+<p>Let's open the <code>homd.component.html</code> file and make the following change:</p>
+<pre data-line="3" class="language-csdiff line-numbers"><code>    &lt;p&gt;
+-   home works!
+    Hello world!
+    &lt;/p&gt; </code></pre>
+<p>while you do that, please look at your browser and see that it automatically refreshes whenever we change a file in the code. We have the Angular dev server to thank for that.</p>
 
 
                 <br />
@@ -94,7 +103,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'index.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'the-home-component.html', 'previousButton', 'nextButton');
         </script>
 </body>
 
