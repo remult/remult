@@ -30,6 +30,60 @@
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
                 <div class="content"><h1 id="adding-the-products-component">Adding the Products Component</h1>
+<p>In this step we want to create a new Angular <code>Component</code> for the <code>Products</code> table we want to add and update.</p>
+<p>In visual studio code you can open a terminal window to activate commands from the command line.
+To open the terminal window click on the <code>Terminal\new Terminal</code> menu.</p>
+<p>In the terminal window run the following command to create the <code>Products</code> component.</p>
+<pre data-line="" class="language-csdiff line-numbers"><code>ng generate component --skipTests=true products </code></pre>
+<p>After running this command we'll see that a folder called <code>products</code> was created under the <code>src/app</code> folder and in it there are three files:</p>
+<ol>
+<li>products.component.html - the html template of the component</li>
+<li>products.component.sass - the style sheet file for the component</li>
+<li>products.component.ts - the typescript code file</li>
+</ol>
+<p>Next we would like to be able to navigate to the component, to do that we'll add a route for it in the <code>app-routing.module.ts</code></p>
+<blockquote>
+<p>pro tip: you can quickly open a file by clicking <kbd>Control</kbd> + <kbd>P</kbd> and typing the name of the file you want to open.</p>
+</blockquote>
+<pre data-line="11,16" class="language-csdiff line-numbers"><code>import { RadWebModule, NotSignedInGuard, SignedInGuard } from 'radweb';
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule, Route, ActivatedRouteSnapshot } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+
+import { RegisterComponent } from './users/register/register.component';
+import { UpdateInfoComponent } from './users/update-info/update-info.component';
+
+import { UsersComponent } from './users/users.component';
+import { Roles, AdminGuard } from './users/roles';
+import { ProductsComponent } from './products/products.component';
+
+
+const routes: Routes = [
+  { path: 'Home', component: HomeComponent },
+  { path: 'Products', component: ProductsComponent },
+  { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard] },
+
+  { path: 'Register', component: RegisterComponent, canActivate: [NotSignedInGuard] },
+  { path: 'Account Info', component: UpdateInfoComponent, canActivate: [SignedInGuard] },
+  { path: '', redirectTo: '/Home', pathMatch: 'full' },
+  { path: '**', redirectTo: '/Home', pathMatch: 'full' }
+
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes), RadWebModule],
+  providers: [AdminGuard],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { } </code></pre>
+<ol>
+<li>In the routes array we've added a route with the path <code>Products</code> which will call the <code>ProductsComponent</code></li>
+<li>By default, it'll also be added to the sidebar automatically, so now the users can select it from the menu.</li>
+<li>When we'll click on the <code>Products</code> menu entry, it'll navigate to our component and we should see the message &quot;products works!&quot;</li>
+</ol>
+<blockquote>
+<p>Pro Tip: You don't have to start by adding the <code>import</code> statement on line 11, instead when you'll start typing the <code>ProductsComponent</code>in line 16, vs code will automatically suggest to add the import (most times :)</p>
+</blockquote>
 
 
                 <br />
