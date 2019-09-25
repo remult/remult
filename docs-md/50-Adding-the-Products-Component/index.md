@@ -13,7 +13,10 @@ After running this command we'll see that a folder called `products` was created
 2. products.component.sass - the style sheet file for the component
 3. products.component.ts - the typescript code file
 
-Next we would like to be able to navigate to the component, to do that we'll add a route for it in the `app-routing.module.ts`
+## Adding a Route for the component
+Next we would like to be able to navigate to the component, so that the user will be able to type the url `https://www.oursite.com/products` they'll reach the products component.
+
+to do that we'll add a route for it in the `app-routing.module.ts`.
 > pro tip: you can quickly open a file by clicking <kbd>Control</kbd> + <kbd>P</kbd> and typing the name of the file you want to open.
 
 ```csdiff
