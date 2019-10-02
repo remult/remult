@@ -40,7 +40,7 @@ This server is your api server, it shows which api's are now available and it wi
 2. select `Tasks:Run Task`
 
      ![](2019-09-23_14h40_29.png)
-3. select `npm:ng:dev`
+3. select `npm:ng-serve`
 4. You might see the following question:
     ![](select-task-output-options.png)
     

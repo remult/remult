@@ -5,13 +5,13 @@ import { ColumnOptions, DataColumnSettings } from '../core/dataInterfaces1';
 
 
 
-export class IdEntity<idType extends IdColumn> extends Entity<string>
+export class IdEntity extends Entity<string>
 {
-  id: idType;
-  constructor(id: idType, options?: EntityOptions | string) {
+  id= new IdColumn();
+  constructor(options?: EntityOptions | string) {
     super(options);
-    this.id = id;
-    id.allowApiUpdate = false;
+    
+    this.id.allowApiUpdate = false;
     let x = this.onSavingRow;
     this.onSavingRow = () => {
       if (this.isNew() && !this.id.value && !this.disableNewId)
