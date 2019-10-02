@@ -21,8 +21,8 @@ export function hello(_options: Schema): Rule {
     editPackageJson(tree);
     const installTaskId = _context.addTask(new NodePackageInstallTask());
     _context.addTask(new RunSchematicTask('@angular/material/schematics/collection.json', 'ng-add', { gestures: true, animations: true }), [installTaskId]);
-    editJson(tree, "./tsconfig.json", j => {
-      j.include = ["./src/main.ts", "./src/polyfills.ts"];
+    editJson(tree, "./src/tsconfig.app.json", j => {
+      j.exclude.push("./app/server**");
     });
 
     editGitIgnore(tree);

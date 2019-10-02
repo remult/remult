@@ -32,6 +32,100 @@
                 <div class="content"><h1 id="adding-the-products-entity">Adding the Products Entity</h1>
 <p>At this stage we would like to define the product Entity, where we will store our product information.
 Let's add a new file under the <code>Products</code> folder, called <code>products.ts</code></p>
+<pre data-line="" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass } from 'radweb';
+
+@EntityClass
+export class Products extends IdEntity {
+    name = new StringColumn();
+    constructor() {
+        super({
+            name: "Products",
+            allowApiCRUD:true
+        });
+    }
+} </code></pre>
+<p>Let's review:</p>
+<ol>
+<li>We've added a <code>Products</code> class that extends the <code>IdEntity</code> class from <code>radweb</code>. This will create an <code>Entity</code> that will have an <code>id</code> column that is unique, and anything else we would like to add to it.</li>
+<li>On line 5 we've defined a <code>name</code> column (the product name)</li>
+<li>On line 7 we've called the <code>super</code> class's constructor and defined a <code>name</code> for our <code>API</code> and determined that CRUD operations are allowed in the <code>API</code> (Create Update Delete)</li>
+</ol>
+<p>Now let's add a grid on the <code>ProductsComponent</code> that displays the <code>Products</code> Entity</p>
+<p>in <code>products.component.ts</code></p>
+<pre data-line="2,3,12,14,15,16,17,18" class="language-csdiff line-numbers"><code>import { Component, OnInit } from '@angular/core';
+import { Context } from 'radweb';
+import { Products } from './products';
+
+@Component({
+  selector: 'app-products',
+  templateUrl: './products.component.html',
+  styleUrls: ['./products.component.sass']
+})
+export class ProductsComponent implements OnInit {
+- constructor() { }
+  constructor(private context: Context) { }
+
+  products = this.context.for(Products).gridSettings({
+    allowInsert:true,
+    allowUpdate:true,
+    allowDelete:true
+});
+
+  ngOnInit() {
+  }
+
+} </code></pre>
+<p>let's review:</p>
+<ol>
+<li>In line 2 and 3 we've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them)</li>
+<li>In line 12, we've added a parameter to the constructor called <code>context</code> of type <code>Context</code> from <code>radweb</code>. This object will help us get data from the server and more. by tagging it as <code>private</code> we make it available throughout the class, by using <code>this.context</code></li>
+<li>On line 14 we've added the definition of <code>products</code> in this component. We've asked the context to provide us with <code>gridSettings</code> for the <code>Entity</code> Products - and we've configured it to allow update insert and delete.</li>
+</ol>
+<p>and in the <code>products.component.html</code></p>
+<pre data-line="4" class="language-csdiff line-numbers"><code>-   &lt;p&gt;
+-       products works!
+-   &lt;/p&gt;
+  &lt;data-grid2 [settings]="products" [height]="300"&gt;&lt;/data-grid2&gt; </code></pre>
+<p>let's review:</p>
+<ol>
+<li>We've replaced the <code>html</code> with a <code>data-grid2</code> tag that will display the grid settings provided in the <code>products</code> member of the <code>products.component.ts</code> file.</li>
+<li>We've determined a fixed height of 300 pixels.</li>
+</ol>
+<p>Next we'll need to restart the server to expose the new API, we'll do that by pressing <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>F5</kbd></p>
+<p>Now if we'll look at the <code>DEBUG CONSOLE</code> tab in the bottom of the screen we'll see that the server restarted and a new api is now available:</p>
+<pre data-line="6,7,8,9,13,14,15" class="language-csdiff line-numbers"><code>C:\Program Files\nodejs\npm.cmd run-script server:debug 
+Debugger listening on ws://127.0.0.1:9229/448cce0c-4c5f-48e9-89a5-a9415e8d00e9
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+start verify structure
+create table Products (
+   id varchar default '' not null  primary key,
+   name varchar default '' not null 
+)
+/api/signIn
+/api/resetPassword
+/api/Users
+/api/Products
+Security not set for:
+Products </code></pre>
+<p>Let's review:</p>
+<ol>
+<li>When the server started, it checked if a <code>Products</code> table exists in the database, and since it didn't exist it created it in lines 6-9.</li>
+<li>On line 13 it added an api endpoint for our <code>Products</code> <code>Entity</code></li>
+<li>Ignore line 14 for now.</li>
+</ol>
+<p>Ignore the Security not set message for now.</p>
+<p>When we'll review the products page, we'll be able to see an empty grid with a column called <code>id</code> and a column called <code>name</code>, we can add new rows by clicking on the <code>+</code> sign at the bottom, and saving them when we edit them.</p>
+<p>Let's add a few products:</p>
+<ol>
+<li>Beer</li>
+<li>Wine</li>
+<li>Bread</li>
+</ol>
+<p>We can also navigate through the browser directly to the api address <code>http://localhost:4200/api/products</code> and see the Json result we'll get when calling the api.</p>
+<blockquote>
+<p>Note that we'll only see the api when we restart the web server and only if we used the <code>Entity</code> somewhere in our application. An api by default is not generated if the <code>Entity</code> is not used anywhere.</p>
+</blockquote>
 
 
                 <br />

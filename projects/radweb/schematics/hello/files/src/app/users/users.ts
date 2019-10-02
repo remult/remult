@@ -10,11 +10,11 @@ import { Roles } from './roles';
 
 
 @EntityClass
-export class Users extends IdEntity<UserId>  {
+export class Users extends IdEntity  {
 
     constructor(private context: Context) {
 
-        super(new UserId(context), {
+        super({
             name: "Users",
             allowApiRead: true,
             allowApiDelete: context.isSignedIn(),

@@ -5,7 +5,7 @@
     "tasks": [
         {
             "type": "npm",
-            "script": "start",
+            "script": "ng-serve",
             "problemMatcher": [],
             "isBackground": true,
             "presentation": {
@@ -19,7 +19,6 @@
                 "$tsc"
             ]
         },
-       
         {
             "type": "npm",
             "script": "server:build",
@@ -27,15 +26,7 @@
                 "$tsc"
             ]
         },
-      
-        {
-            "type": "npm",
-            "script": "server:execute",
-            "problemMatcher": [],
-            "presentation": {
-                "group": "groupA"
-            }
-        },
+     
         {
             "type": "npm",
             "script": "server:build-watch",
