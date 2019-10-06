@@ -6,7 +6,7 @@ import { Component, OnChanges, Input } from '@angular/core';
   selector: 'data-area',
   template: `
 
-<div class="form-horizontal" *ngIf="settings.columns&&settings.columns.__showArea()" >
+<div class="form-horizontal row" *ngIf="settings.columns&&settings.columns.__showArea()" >
 
         <div class="{{getColumnsClass()}}" *ngFor="let col of theColumns()">
             <div class="form-group {{settings.columns._getColumnClass(map,settings.columns.currentRow())}}" *ngFor="let map of col" >

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>index</title>
+    <title>Adding Columns to the Products Entity</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,20 +29,47 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="index">index</h1>
-<ul>
-<li><a href="installing-a-dev-machine.html">Installing a Dev Machine</a></li>
-<li><a href="creating-a-new-project.html">Creating a new Project</a></li>
-<li><a href="running-the-development-environment.html">Running the Development Environment</a></li>
-<li><a href="hello-angular.html">Hello Angular</a></li>
-<li><a href="adding-the-products-component.html">Adding the Products Component</a></li>
-<li><a href="adding-the-products-entity.html">Adding the Products Entity</a></li>
-<li><a href="adding-columns-to-the-products-entity.html">Adding Columns to the Products Entity</a></li>
-<li><a href="adding-validations.html">Adding Validations</a></li>
-<li><a href="configuring-the-datagrid.html">Configuring the DataGrid</a></li>
-<li><a href="additional-info.html">Additional info</a></li>
-<li><a href="exercise-remove-me.html">exercise remove me</a></li>
-</ul>
+                <div class="content"><h1 id="adding-columns-to-the-products-entity">Adding Columns to the Products Entity</h1>
+<p>let's add a price, and availability dates to the <code>Products</code> entity</p>
+<p>In the <code>products.ts</code> file</p>
+<pre data-line="2,7,8,9" class="language-csdiff line-numbers"><code>-import { IdEntity, StringColumn, EntityClass } from 'radweb';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'radweb';
+
+@EntityClass
+export class Products extends IdEntity {
+    name = new StringColumn();
+    price = new NumberColumn();
+    availableFrom = new DateColumn();
+    availableTo = new DateColumn();
+    constructor() {
+        super({
+            name: "Products",
+            allowApiCRUD:true,
+            allowApiRead:true
+        });
+    }
+} </code></pre>
+<p>Once we've added these columns we'll be able to see in the <code>node-serve</code> terminal window that these columns were added to our database:</p>
+<pre><code>12:21:03 PM - File change detected. Starting incremental compilation...
+
+
+12:21:03 PM - Found 0 errors. Watching for file changes.
+
+&gt; my-project@0.0.0 server:dev-run c:\try\test1\my-project
+&gt; node --inspect dist-server/server/server.js
+
+Debugger listening on ws://127.0.0.1:9229/67e4d3a7-c829-4769-8ff0-f576726719a7
+For help, see: https://nodejs.org/en/docs/inspector
+start verify structure
++alter table Products add column price int default 0 not null
++alter table Products add column availableFrom date
++alter table Products add column availableTo date
+/api/signIn
+/api/resetPassword
+/api/Users
+/api/Products
+</code></pre>
+<p>And when we'll loot at the browser, we'll see that there are 3 more columns to the grid</p>
 
 
                 <br />
@@ -98,7 +125,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'index.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'adding-columns-to-the-products-entity.html', 'previousButton', 'nextButton');
         </script>
 </body>
 
