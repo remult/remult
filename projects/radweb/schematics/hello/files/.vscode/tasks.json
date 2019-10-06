@@ -29,7 +29,7 @@
      
         {
             "type": "npm",
-            "script": "server:build-watch",
+            "script": "node-serve",
             "problemMatcher": [
                 "$tsc-watch"
             ],

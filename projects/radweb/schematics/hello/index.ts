@@ -112,11 +112,12 @@ export function hello(_options: Schema): Rule {
   function editPackageJson(tree: Tree) {
     editJson(tree, './package.json', json => {
       json.scripts["ng-serve"] = json.scripts.start;
+      json.scripts["node-serve"] = "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run";
+      json.scripts["server:dev-run"] = "node --inspect dist-server/server/server.js";
       json.scripts["ng:build"] = "ng build --prod";
       json.scripts["build"] = "npm run server:build && npm run ng:build";
       json.scripts.start = "node dist-server/server/server.js";
       json.scripts["server:build-watch"] = "tsc -p tsconfig.server.json --watch";
-      json.scripts["server:build"] = "tsc -p tsconfig.server.json";
       json.scripts["server:build"] = "tsc -p tsconfig.server.json";
       json.scripts["server:debug"] = "node --inspect --debug-brk dist-server/server/server.js";
       json.dependencies["bootstrap3"] = "^3.3.5";
@@ -130,6 +131,7 @@ export function hello(_options: Schema): Rule {
       json.dependencies["express-force-https"] = "^1.0.0";
       json.dependencies["jsonwebtoken"] = "^8.5.1";
       json.dependencies["@auth0/angular-jwt"]="3.0.0";
+      json.devDependencies["tsc-watch"] = "^4.0.0";
     });
 
   }
