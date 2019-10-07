@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta charset="utf-8" />
+    <meta name="keywords" content="">
+
+    <title>Creating a CategoryId column אטפק</title>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="assets/css/toc.css" />
+    <link rel="stylesheet" href="assets/css/highlight.css" />
+    <link rel="stylesheet" href="assets/css/prism.css" />
+    <link rel="stylesheet" href="assets/css/prism-csdiff.css" />
+
+
+    <link rel="stylesheet" href="assets/css/theme_firefly.css" />
+    <link rel="stylesheet" href="assets/css/mermaid.css" />
+</head>
+
+<body class="markdown-body" role="document">
+    <div class="wrapper">
+
+        <div class="middle">
+
+            <div class="container">
+
+                <div class="content" role="navigation" aria-label="footer navigation">
+                    <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+                    <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
+                </div>
+                <div class="content"><h1 id="creating-a-categoryid-column">Creating a CategoryId column אטפק</h1>
+<p>Currently the code that relates to the category is spread across many files - let's create a <code>CategoryId</code> type and consolidate everything to it.</p>
+<p>Under the <code>categories</code> folder, let's add a <code>categoryId.ts</code> file</p>
+<pre data-line="" class="language-csdiff line-numbers"><code>import { IdColumn } from 'radweb';
+
+export class CategoryId extends IdColumn{
+} </code></pre>
+<p>Now let's use it in the <code>Products</code> Entity</p>
+<pre data-line="2,29" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from 'radweb';
+import { CategoryId } from '../categories/categoryId';
+
+@EntityClass
+export class Products extends IdEntity {
+    name = new StringColumn();
+    price = new NumberColumn({
+        onValidate: () =&gt; {
+            if (!this.price.value) {
+                this.price.error = 'Price is required';
+            }
+        }
+    });
+    availableFrom = new DateColumn({
+        onValidate: () =&gt; {
+            if (!this.availableFrom.value || this.availableFrom.value.getFullYear() &lt; 1990)
+                this.availableFrom.error = 'Invalid Date';
+        }
+    }
+    );
+    availableTo = new DateColumn({
+        onValidate:() =&gt;{
+            if (!this.availableTo.value||this.availableTo.value&lt;=this.availableFrom.value){
+                this.availableTo.error='Should be greater than '+this.availableFrom.caption;
+            }
+        }
+    });
+-   category = new IdColumn();
+    category = new CategoryId();
+    constructor() {
+        super({
+            name: "Products",
+            allowApiCRUD: true,
+            allowApiRead: true
+        });
+    }
+} </code></pre>
+<p>Now let's start moving logic into the <code>CategoryId</code> class.</p>
+<p>My first priority is to configure the <code>displayValue</code> property of the <code>CategoryId</code> to display the category name, then we can remove the <code>getProductCategory</code> from the <code>home.component.ts</code></p>
+<p>In the <code>CategoryId.ts</code> file:</p>
+<pre data-line="2,3,4,5,6,7" class="language-csdiff line-numbers"><code>export class CategoryId extends IdColumn {
+    constructor(private context: Context) {
+        super();
+     }
+    get displayValue() {
+        return this.context.for(Categories).lookup(this).name.value;
+    }
+} </code></pre>
+<p>Let's review:</p>
+<ol>
+<li>In line 2, we've added a constructor that receives the <code>context</code> object that we'll use to get data from the server.</li>
+<li>In line 3 we've called the base class's constructor - since CategoryId extends IdColumn we are required to call it's constructor in ours, this is done by calling the <code>super()</code> method.</li>
+<li>On lines 5-7 we've overwritten the <code>displayValue</code> property, to return the Category name instead if it's id.</li>
+</ol>
+<p>Since we've added a parameter to the constructor of <code>CategoryId</code> well need to provide it.
+In <code>products.ts</code></p>
+<pre data-line="26,28" class="language-csdiff line-numbers"><code>@EntityClass
+export class Products extends IdEntity {
+    name = new StringColumn();
+    price = new NumberColumn({
+        onValidate: () =&gt; {
+            if (!this.price.value) {
+                this.price.error = 'Price is required';
+            }
+        }
+    });
+    availableFrom = new DateColumn({
+        onValidate: () =&gt; {
+            if (!this.availableFrom.value || this.availableFrom.value.getFullYear() &lt; 1990)
+                this.availableFrom.error = 'Invalid Date';
+        }
+    }
+    );
+    availableTo = new DateColumn({
+        onValidate:() =&gt;{
+            if (!this.availableTo.value||this.availableTo.value&lt;=this.availableFrom.value){
+                this.availableTo.error='Should be greater than '+this.availableFrom.caption;
+            }
+        }
+    });
+-   category = new CategoryId();
+    category = new CategoryId(this.context);
+-   constructor() {}
+    constructor(private context:Context) {
+        super({
+            name: "Products",
+            allowApiCRUD: true,
+            allowApiRead: true
+        });
+    }
+} </code></pre>
+<p>Now let's simply the code of our <code>home.component</code> to use the <code>displayValue</code> property instead of the <code>getProductCategory</code> method.</p>
+<p>in <code>home.component.ts</code></p>
+<pre data-line="" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
+
+  constructor(private context: Context) { }
+  products: Products[] = [];
+  async ngOnInit() {
+    this.products = await this.context.for(Products).find({
+      orderBy: p =&gt; p.name,
+      where: p =&gt; p.availableFrom.isLessOrEqualTo(new Date()).and(
+        p.availableTo.isGreaterOrEqualTo(new Date()))
+    });
+  }
+- getProductCategory(p: Products) {
+-   return this.context.for(Categories).lookup(p.category).name.value;
+- }
+} </code></pre>
+<p>In <code>home.component.html</code></p>
+<pre data-line="8" class="language-csdiff line-numbers"><code>    &lt;mat-card *ngFor="let p of products" class="product-card"&gt;
+        &lt;mat-card-title&gt;
+        {{p.name.value}}
+        &lt;/mat-card-title&gt;
+        &lt;mat-card-subtitle&gt;
+        {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}&lt;br/&gt;
+-       Category: {{getProductCategory(p)}}
+        Category: {{p.category.displayValue}}
+        &lt;/mat-card-subtitle&gt;
+    &lt;/mat-card&gt; </code></pre>
+
+
+                <br />
+                        <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+
+                        <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
+                        <hr />Help us improve,
+                        <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//65-Creating a CategoryId column אטפק.md" target="_blank" id="link">Edit this page on GitHub</a>        
+                </div>
+                
+                <!-- .content -->
+
+                
+
+
+            </div>
+            
+            <!-- .container-->
+            
+            <aside class="left-sidebar">
+                <div class="wy-side-nav-search-ff">
+                    <a href="" class="test">
+                        <h3>remult ts</h3>
+                    </a>
+                </div>
+                <div id="menuTree" </div>
+            </aside>
+            <!-- .left-sidebar -->
+
+            <aside class="right-sidebar"></aside>
+            <!-- .right-sidebar -->
+
+            </div>
+            <!-- .middle-->
+
+            
+
+        </div>
+
+
+        <script src="assets/js/mermaid.js"></script>
+        <script src="assets/js/prism-start.js"></script>
+        <script src="assets/js/prism-clike.js"></script>
+        <script src="assets/js/prism-markup.js"></script>
+        <script src="assets/js/prism-css.js"></script>
+        <script src="assets/js/prism-javascript.js"></script>
+
+        <script src="assets/js/prism-diff.js"></script>
+        <script src="assets/js/prism-csdiff.js"></script>
+        <script src="assets/js/prism-function.js"></script>
+
+        <script src="assets/js/jquery-3.1.1.js"></script>
+
+
+      
+        <script src="assets/js/tree.js"></script>
+        <script language="javascript">
+            buildTree('menuTree', 'creating-a-categoryid-column-אטפק.html', 'previousButton', 'nextButton');
+        </script>
+</body>
+
+</html>
