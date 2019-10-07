@@ -50,7 +50,7 @@ export class Products extends IdEntity {
     }
 } </code></pre>
 <p>Once we've added these columns we'll be able to see in the <code>node-serve</code> terminal window that these columns were added to our database:</p>
-<pre><code>12:21:03 PM - File change detected. Starting incremental compilation...
+<pre data-line="12,13,14" class="language-csdiff line-numbers"><code>12:21:03 PM - File change detected. Starting incremental compilation...
 
 
 12:21:03 PM - Found 0 errors. Watching for file changes.
@@ -61,14 +61,13 @@ export class Products extends IdEntity {
 Debugger listening on ws://127.0.0.1:9229/67e4d3a7-c829-4769-8ff0-f576726719a7
 For help, see: https://nodejs.org/en/docs/inspector
 start verify structure
-+alter table Products add column price int default 0 not null
-+alter table Products add column availableFrom date
-+alter table Products add column availableTo date
+alter table Products add column price int default 0 not null
+alter table Products add column availableFrom date
+alter table Products add column availableTo date
 /api/signIn
 /api/resetPassword
 /api/Users
-/api/Products
-</code></pre>
+/api/Products </code></pre>
 <p>And when we'll loot at the browser, we'll see that there are 3 more columns to the grid</p>
 
 

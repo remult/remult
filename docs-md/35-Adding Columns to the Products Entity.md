@@ -22,7 +22,7 @@ export class Products extends IdEntity {
 ```
 
 Once we've added these columns we'll be able to see in the `node-serve` terminal window that these columns were added to our database:
-```
+```csdiff
 12:21:03 PM - File change detected. Starting incremental compilation...
 
 
