@@ -125,7 +125,7 @@ and in the `home.component.scss` file we'll define that class:
 }
 ```
 
-#Sorting
+# Sorting
 Now let's sort the cards by name. In the `home.component.ts` file, let's start by sending an object to the `find` method:
 ```csdiff
   async ngOnInit() {
@@ -167,3 +167,6 @@ We've used the `where` property which receives a function that gets the `Product
 
 we've then used the column's filter method, these start with the `is` word and allow filtering (`isEqualTo`, `isGreaterOrEqualTo` etc...)
 
+The result should look like this:
+
+![](2019-10-07_09h32_19.png)

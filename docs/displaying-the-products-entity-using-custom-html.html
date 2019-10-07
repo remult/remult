@@ -124,8 +124,8 @@ In the <code>home.component.ts</code> file, the first step would be to get the <
     display:inline-block;
     margin:10px;
 } </code></pre>
-<p>#Sorting
-Now let's sort the cards by name. In the <code>home.component.ts</code> file, let's start by sending an object to the <code>find</code> method:</p>
+<h1 id="sorting">Sorting</h1>
+<p>Now let's sort the cards by name. In the <code>home.component.ts</code> file, let's start by sending an object to the <code>find</code> method:</p>
 <pre data-line="3,4" class="language-csdiff line-numbers"><code>  async ngOnInit() {
 -   this.products = await this.context.for(Products).find();
     this.products = await this.context.for(Products).find({
@@ -155,6 +155,8 @@ Now let's sort the cards by name. In the <code>home.component.ts</code> file, le
   } </code></pre>
 <p>We've used the <code>where</code> property which receives a function that gets the <code>Products</code> entity as a parameter and returns a filter.</p>
 <p>we've then used the column's filter method, these start with the <code>is</code> word and allow filtering (<code>isEqualTo</code>, <code>isGreaterOrEqualTo</code> etc...)</p>
+<p>The result should look like this:</p>
+<p><img src="2019-10-07_09h32_19.png" alt="" /></p>
 
 
                 <br />
