@@ -5,6 +5,13 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
     var root = document.getElementById(id);
     var backBtn = document.querySelectorAll("#" + backButtonId);
     var nextBtn = document.querySelectorAll("#" + nextButtonId);
+    var link = document.querySelectorAll("#link");
+    if (link && link.length > 0) {
+        let href = link[0].href.substring('https://github.com/FireflyMigration/firefly-doc/blob/master//'.length);
+        href = 'https://github.com/noam-honig/radweb/blob/master/docs-md/'+href;
+        link[0].href = href;
+        
+    }
 
     function foreach(array, action) {
         if (array != undefined)
@@ -159,7 +166,7 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
                         if (before.length > 20)
                             before = before.substring(before.length - 20);
                         if (after.length > 20)
-                            after = after.substring(0,20);
+                            after = after.substring(0, 20);
                         keywords.innerHTML = 'keywords: ' + before + '<strong>' + middle + '</strong>' + after;
                         nodeShow(keywords);
                         found = true;
@@ -266,14 +273,14 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
             }
             var searchButtonDiv = document.createElement("div");
 
-            
+
 
             searchInput.oninput = function () {
                 {
                     searchButtonDiv.innerHTML = '';
                     if (searchInput.value != '') {
                         var searchBtn = document.createElement("a");
-                        
+
 
 
                         searchButtonDiv.className = 'searchButtonsDiv';
@@ -285,13 +292,13 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
                         searchButtonDiv.appendChild(searchBtn);
                         searchBtn.title = 'Search using Google Search';
 
-                      
-                        
-                        searchBtn.href = 'http://www.google.com/search?q=site:'+document.location.origin+' ' + encodeURI(searchInput.value);
+
+
+                        searchBtn.href = 'http://www.google.com/search?q=site:' + document.location.origin + ' ' + encodeURI(searchInput.value);
                         searchBtn.title = "Search the API Documentation using Google Search";
-                        
-                        searchBtn.target='_blank';
-                        
+
+                        searchBtn.target = '_blank';
+
                     }
                 }
 
