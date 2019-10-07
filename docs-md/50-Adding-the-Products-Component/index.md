@@ -10,7 +10,7 @@ ng generate component --skipTests=true products
 
 After running this command we'll see that a folder called `products` was created under the `src/app` folder and in it there are three files:
 1. products.component.html - the html template of the component
-2. products.component.sass - the style sheet file for the component
+2. products.component.scss - the style sheet file for the component
 3. products.component.ts - the typescript code file
 
 ## Adding a Route for the component
