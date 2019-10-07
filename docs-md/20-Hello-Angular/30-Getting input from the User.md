@@ -7,7 +7,7 @@ Let's add the following line to the `home.component.html` file:
  </p>
 ```
 We've added the html `input` tag - and in it we've added the following code `[(ngModel)]="name"` which tells Angular to bind the data from the input, to the `name` field.
-Whenever the use will type a value in the `input` html element - the page will recompute to reflect that change.
+Whenever the user will type a value in the `input` html element - the page will recompute to reflect that change.
 
 For example, type in your name in the `input` and you'll be gritted with hello.
 

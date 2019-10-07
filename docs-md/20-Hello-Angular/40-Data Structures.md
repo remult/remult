@@ -1,7 +1,7 @@
 
 instead of just using fields, we can use a data structure that we define. In typescript, it's called an `interface`
 
-In the `home.component.html` file, add the following code:
+In the `home.component.ts` file, add the following code:
 ```csdiff
 import { Component, OnInit } from '@angular/core';
 
@@ -27,7 +27,7 @@ export class HomeComponent implements OnInit {
 1. We've created an `inteface` with the name of `Person`
 2. this interface will have two members:
     1. name of type string - the structure in typescript is member name, colon (:) and the member type.
-    2. age of type string, which is optional (the question mark indicates that this is an optional field)
+    2. age of type number, which is optional (the question mark indicates that this is an optional field)
 3. By adding the `export` keyword before the `interface` we've indicated that we might use this interface elsewhere in the application.
 
 Now let's use our new interface with it's two members.
