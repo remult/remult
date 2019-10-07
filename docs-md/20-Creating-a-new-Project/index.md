@@ -3,12 +3,8 @@ The first thing we'll do is let angular create the project using it's CLI.
 ## Create the Angular Project
 Open a command prompt in a folder that'll be the parent of your new project (in my case I use `c:\repos\`) and run the following command, replacing `my-project` with the name of the project you want to use:
 ```
-ng new my-project
+ng new --style=scss --routing=true  my-project
 ```
-You'll be prompted with the following questions:
-1. Would you like to add angular routing? - **Say Yes**
-2. Which stylesheet format would you like to use? - **choose "Sass (.scss) [http://sass-lang.com]" (it's the second option)**
-
 
 ## Install radweb
 Next go into the folder of your new project
