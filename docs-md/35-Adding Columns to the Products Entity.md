@@ -43,4 +43,4 @@ start verify structure
 /api/Products
 ```
 
-And when we'll loot at the browser, we'll see that there are 3 more columns to the grid
+And when we'll look at the browser, we'll see that there are 3 more columns to the grid
