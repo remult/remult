@@ -19,3 +19,4 @@
     b.	Signed in user can update products.
     c.	Admin can update categories and suppliers.
 5. Read products from csv file
+6. install git

@@ -7,6 +7,11 @@ Install it from: https://nodejs.org/en/
 
 (For this demo we've used version 10.16.3 LTS)
 
+## Git Source Control
+Git is the most widely used source control and versioning tool. 
+Download and install it from:
+https://git-scm.com/download/win
+
 ## Postgres database   
 We'll use the great and free database called Postgres
 

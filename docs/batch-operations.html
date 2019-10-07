@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>todo</title>
+    <title>Batch Operations</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,60 +29,11 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="todo">todo</h1>
-<ol>
-<li>Default values.</li>
-<li>More tables:
-<ol type="a">
-<li>Categories:
-<ol type="i">
-<li>Name</li>
-<li>
-<pre><code>Category to Products
+                <div class="content"><h1 id="batch-operations">Batch Operations</h1>
+<p>The next requirement from our users is to be able to update the price of all products by a fixed amount in a simple operation.</p>
+<p>For that we'll start by adding a new component called <code>updatePrice</code></p>
+<pre><code>ng generate component --skipTests=true update-price
 </code></pre>
-</li>
-<li>Add a view in the categories that’ll show the categories products.</li>
-</ol>
-</li>
-<li>Suppliers:
-<ol type="i">
-<li>Name</li>
-<li>
-<pre><code>ction List
-</code></pre>
-<ol>
-<li>Build using Normal Angular.</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>Run On Server:
-<ol type="a">
-<li>Button add 10$ to each product.
-<ol type="i">
-<li>Get rows from server</li>
-<li>
-<pre><code>te each row
-</code></pre>
-</li>
-<li>Save.</li>
-</ol>
-</li>
-<li>Move to run on Server</li>
-</ol>
-</li>
-<li>Security:
-<ol type="a">
-<li>Products page that shows for readonly all the products.</li>
-<li>Signed in user can update products.</li>
-<li>Admin can update categories and suppliers.</li>
-</ol>
-</li>
-<li>Read products from csv file</li>
-<li>install git</li>
-</ol>
 
 
                 <br />
@@ -90,7 +41,7 @@
 
                         <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
                         <hr />Help us improve,
-                        <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//todo.md" target="_blank" id="link">Edit this page on GitHub</a>        
+                        <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//70-Batch Operations.md" target="_blank" id="link">Edit this page on GitHub</a>        
                 </div>
                 
                 <!-- .content -->
@@ -140,7 +91,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'todo.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'batch-operations.html', 'previousButton', 'nextButton');
         </script>
 </body>
 
