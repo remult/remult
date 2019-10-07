@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta charset="utf-8" />
+    <meta name="keywords" content="">
+
+    <title>Displaying the Products Entity using Custom Html</title>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="assets/css/toc.css" />
+    <link rel="stylesheet" href="assets/css/highlight.css" />
+    <link rel="stylesheet" href="assets/css/prism.css" />
+    <link rel="stylesheet" href="assets/css/prism-csdiff.css" />
+
+
+    <link rel="stylesheet" href="assets/css/theme_firefly.css" />
+    <link rel="stylesheet" href="assets/css/mermaid.css" />
+</head>
+
+<body class="markdown-body" role="document">
+    <div class="wrapper">
+
+        <div class="middle">
+
+            <div class="container">
+
+                <div class="content" role="navigation" aria-label="footer navigation">
+                    <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+                    <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
+                </div>
+                <div class="content"><h1 id="displaying-the-products-entity-using-custom-html">Displaying the Products Entity using Custom Html</h1>
+<p>Next we would like to create a list of products that our site visitors can see on our home page.</p>
+<p>First, let's clear everything we've played with in our <code>home.component.html</code> and our <code>home.component.ts</code>
+Replace the <code>home.component.html</code> content with the default:</p>
+<pre data-line="" class="language-csdiff line-numbers"><code> &lt;p&gt;
+  home works!
+ &lt;/p&gt; </code></pre>
+<p>Replace the <code>hompe.component.ts</code> content with the default:</p>
+<pre data-line="" class="language-csdiff line-numbers"><code>import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+export class HomeComponent implements OnInit {
+
+  constructor() { }
+
+  ngOnInit() {
+  }
+} </code></pre>
+<p>Let's start with designing our <code>home.component.html</code> - we'll use Angular Material components for this design - specifically the  <a href="https://material.angular.io/components/card/overview">Mat-Card</a></p>
+<p>Let's start with the basic card:</p>
+<pre data-line="" class="language-csdiff line-numbers"><code>    &lt;mat-card&gt;
+        &lt;mat-card-title&gt;
+        My Product
+        &lt;/mat-card-title&gt;
+        &lt;mat-card-subtitle&gt;
+        this is my subtitle
+        &lt;/mat-card-subtitle&gt;
+    &lt;/mat-card&gt; </code></pre>
+<p>Next we would like to use the actual data from the <code>products</code> entity.
+In the <code>home.component.ts</code> file, the first step would be to get the <code>context</code> object in. As used before, the <code>context</code> object helps us with comunicating with the server and figuring out our context</p>
+<pre data-line="4" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
+
+- constructor() { }
+  constructor(private context:Context) { }
+
+  ngOnInit() {
+  }
+} </code></pre>
+<p>Next let's define a list of products:</p>
+<pre data-line="4" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
+
+  constructor(private context:Context) { }
+  products :Products[] = [];
+  ngOnInit() {
+  }
+} </code></pre>
+<p>We've defined a member called <code>products</code> of type <code>Products[]</code> (an Array of products) and have set it's initial value to an empty array (<code>= []</code>)</p>
+<p>Now let's populate the array with products from our db:</p>
+<pre data-line="5,6,7" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
+
+  constructor(private context: Context) { }
+  products: Products[] = [];
+  async ngOnInit() {
+    this.products = await this.context.for(Products).find();
+  }
+} </code></pre>
+<p>Just three lines, but a lot to explain.</p>
+<p>When developing web applications, all the calls to the server (and many many other things) are performed asynchronously. That means that while we wait for the call to the server to complete, the code can do other things (specifically not leave the user interface hung).</p>
+<p>The fact that the call to the <code>find</code> method is asynchronous can be  inferred from it's return type - in this case <code>Promise&lt;Products[]&gt;</code>. Any method that returns a <code>Promise</code> will run asynchronously. In this case it return a <code>Promise</code> of type <code>Products[]</code>.</p>
+<p>We want to wait for the result of this <code>Promise</code>. To do that we'll have to decorate the method we are running with the <code>async</code> keyword (as we've done on line 5) and use the <code>await</code> keyword when we call the method.</p>
+<p>Now let's adjust the <code>home.component.html</code> to use these products, using the <code>*ngFor</code> directive</p>
+<pre data-line="2,5,9" class="language-csdiff line-numbers"><code>-   &lt;mat-card&gt;
+    &lt;mat-card *ngFor="let p of products"&gt;
+        &lt;mat-card-title&gt;
+-       My Product
+        {{p.name.value}}
+        &lt;/mat-card-title&gt;
+        &lt;mat-card-subtitle&gt;
+-       this is my subtitle
+        {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}
+        &lt;/mat-card-subtitle&gt;
+    &lt;/mat-card&gt; </code></pre>
+<ul>
+<li>We're using the <code>displayValue</code> property of the <code>DateColumn</code> to show the date in a friendly way.</li>
+</ul>
+<p>Now let's format the cards to display multiple cards in a row. We'll add a <code>css</code> class to the <code>mat-card</code> tag</p>
+<pre data-line="2" class="language-csdiff line-numbers"><code>-   &lt;mat-card *ngFor="let p of products"&gt;
+    &lt;mat-card *ngFor="let p of products" class="product-card"&gt;
+        &lt;mat-card-title&gt;
+        {{p.name.value}}
+        &lt;/mat-card-title&gt;
+        &lt;mat-card-subtitle&gt;
+        {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}
+        &lt;/mat-card-subtitle&gt;
+    &lt;/mat-card&gt; </code></pre>
+<p>and in the <code>home.component.scss</code> file we'll define that class:</p>
+<pre data-line="" class="language-csdiff line-numbers"><code>.product-card{
+    width:260px;
+    display:inline-block;
+    margin:10px;
+} </code></pre>
+<p>#Sorting
+Now let's sort the cards by name. In the <code>home.component.ts</code> file, let's start by sending an object to the <code>find</code> method:</p>
+<pre data-line="3,4" class="language-csdiff line-numbers"><code>  async ngOnInit() {
+-   this.products = await this.context.for(Products).find();
+    this.products = await this.context.for(Products).find({
+    });
+  } </code></pre>
+<p>Next let's add the <code>orderBy</code> property:</p>
+<pre data-line="3" class="language-csdiff line-numbers"><code>  async ngOnInit() {
+    this.products = await this.context.for(Products).find({
+      orderBy: p =&gt; p.name
+    });
+  } </code></pre>
+<p>The <code>orderBy</code> property is set to a method that receives the <code>Products</code> entity and returns one of several variations:</p>
+<ol>
+<li>The column we wanted to sort on (as we've done in this case)</li>
+<li>An array of columns we want to sort on - for example: <code>orderBy: p =&gt; [p.name,p.availableFrom]</code></li>
+<li>An Array of <code>SortSegments</code> that can be used to sort descending - for example: <code>orderBy: p =&gt; [{ column: p.name, descending: true }, p.availableFrom]</code></li>
+</ol>
+<p>In our case we'll stick to simply sorting by the Product Name.</p>
+<h1 id="filtering-the-data">Filtering the Data</h1>
+<p>Since we only want to show products that are available, let's filter the products to indicate that:</p>
+<pre data-line="4,5" class="language-csdiff line-numbers"><code>  async ngOnInit() {
+    this.products = await this.context.for(Products).find({
+      orderBy: p =&gt; p.name
+      , where: p =&gt; p.availableFrom.isLessOrEqualTo(new Date()).and(
+          p.availableTo.isGreaterOrEqualTo(new Date()))
+    });
+  } </code></pre>
+<p>We've used the <code>where</code> property which receives a function that gets the <code>Products</code> entity as a parameter and returns a filter.</p>
+<p>we've then used the column's filter method, these start with the <code>is</code> word and allow filtering (<code>isEqualTo</code>, <code>isGreaterOrEqualTo</code> etc...)</p>
+
+
+                <br />
+                        <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+
+                        <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
+                    
+                </div>
+
+                <!-- .content -->
+
+
+
+
+            </div>
+            <!-- .container-->
+
+            <aside class="left-sidebar">
+                <div class="wy-side-nav-search-ff">
+                    <a href="" class="test">
+                        <h3>remult ts</h3>
+                    </a>
+                </div>
+                <div id="menuTree" </div>
+            </aside>
+            <!-- .left-sidebar -->
+
+            <aside class="right-sidebar"></aside>
+            <!-- .right-sidebar -->
+
+            </div>
+            <!-- .middle-->
+
+
+
+        </div>
+
+
+        <script src="assets/js/mermaid.js"></script>
+        <script src="assets/js/prism-start.js"></script>
+        <script src="assets/js/prism-clike.js"></script>
+        <script src="assets/js/prism-markup.js"></script>
+        <script src="assets/js/prism-css.js"></script>
+        <script src="assets/js/prism-javascript.js"></script>
+
+        <script src="assets/js/prism-diff.js"></script>
+        <script src="assets/js/prism-csdiff.js"></script>
+        <script src="assets/js/prism-function.js"></script>
+
+        <script src="assets/js/jquery-3.1.1.js"></script>
+
+
+      
+        <script src="assets/js/tree.js"></script>
+        <script language="javascript">
+            buildTree('menuTree', 'displaying-the-products-entity-using-custom-html.html', 'previousButton', 'nextButton');
+        </script>
+</body>
+
+</html>
