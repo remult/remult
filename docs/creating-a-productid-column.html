@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
-    <title>index</title>
+    <title>Creating a ProductId column</title>
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/toc.css" />
     <link rel="stylesheet" href="assets/css/highlight.css" />
@@ -29,25 +29,51 @@
                     <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
                     <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
                 </div>
-                <div class="content"><h1 id="index">index</h1>
-<ul>
-<li><a href="installing-a-dev-machine.html">Installing a Dev Machine</a></li>
-<li><a href="creating-a-new-project.html">Creating a new Project</a></li>
-<li><a href="running-the-development-environment.html">Running the Development Environment</a></li>
-<li><a href="hello-angular.html">Hello Angular</a></li>
-<li><a href="adding-the-products-component.html">Adding the Products Component</a></li>
-<li><a href="adding-the-products-entity.html">Adding the Products Entity</a></li>
-<li><a href="adding-columns-to-the-products-entity.html">Adding Columns to the Products Entity</a></li>
-<li><a href="adding-validations.html">Adding Validations</a></li>
-<li><a href="configuring-the-datagrid-and-dataarea.html">Configuring the DataGrid and DataArea</a></li>
-<li><a href="settings-default-values-for-new-rows.html">Settings Default Values for New Rows</a></li>
-<li><a href="displaying-the-products-entity-using-custom-html.html">Displaying the Products Entity using Custom Html</a></li>
-<li><a href="adding-product-categories.html">Adding Product Categories</a></li>
-<li><a href="creating-a-categoryid-column.html">Creating a CategoryId column</a></li>
-<li><a href="additional-info.html">Additional info</a></li>
-<li><a href="exercise-remove-me.html">exercise remove me</a></li>
-<li><a href="todo.html">todo</a></li>
-</ul>
+                <div class="content"><h1 id="creating-a-productid-column">Creating a ProductId column</h1>
+<p>Currently the code that relates to the category is spread across many files - let's create a <code>CategoryId</code> type and consolidate everything to it.</p>
+<p>Under the <code>categories</code> folder, let's add a <code>categoryId.ts</code> file</p>
+<pre data-line="" class="language-csdiff line-numbers"><code>import { IdColumn } from 'radweb';
+
+export class CategoryId extends IdColumn{
+} </code></pre>
+<p>Now let's use it in the <code>Products</code> Entity</p>
+<pre data-line="2,29" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from 'radweb';
+import { CategoryId } from '../categories/categoryId';
+
+@EntityClass
+export class Products extends IdEntity {
+    name = new StringColumn();
+    price = new NumberColumn({
+        onValidate: () =&gt; {
+            if (!this.price.value) {
+                this.price.error = 'Price is required';
+            }
+        }
+    });
+    availableFrom = new DateColumn({
+        onValidate: () =&gt; {
+            if (!this.availableFrom.value || this.availableFrom.value.getFullYear() &lt; 1990)
+                this.availableFrom.error = 'Invalid Date';
+        }
+    }
+    );
+    availableTo = new DateColumn({
+        onValidate:() =&gt;{
+            if (!this.availableTo.value||this.availableTo.value&lt;=this.availableFrom.value){
+                this.availableTo.error='Should be greater than '+this.availableFrom.caption;
+            }
+        }
+    });
+-   category = new IdColumn();
+    category = new CategoryId();
+    constructor() {
+        super({
+            name: "Products",
+            allowApiCRUD: true,
+            allowApiRead: true
+        });
+    }
+} </code></pre>
 
 
                 <br />
@@ -103,7 +129,7 @@
       
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
-            buildTree('menuTree', 'index.html', 'previousButton', 'nextButton');
+            buildTree('menuTree', 'creating-a-productid-column.html', 'previousButton', 'nextButton');
         </script>
 </body>
 
