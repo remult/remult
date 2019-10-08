@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Users } from './users';
-import { Context } from 'radweb';
-import { ServerFunction } from 'radweb';
+import { Context, ServerFunction } from 'radweb';
   
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';

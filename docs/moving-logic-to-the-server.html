@@ -39,7 +39,7 @@ Although this is valid when you have 10-20 products, if you have a 1000 products
 <ol>
 <li>Separate the update logic from the UI (the alert messages)</li>
 <li>Make our method static</li>
-<li>Decorate the method with the <code>@RunOnServer</code> decorator</li>
+<li>Decorate the method with the <code>@ServerFunction</code> decorator</li>
 </ol>
 <p>Here's the result:</p>
 <p>Let's start with separating the update logic from the UI</p>
@@ -68,9 +68,9 @@ Although this is valid when you have 10-20 products, if you have a 1000 products
     let count = await this.actualUpdatePrices();
     alert("updated "+count+" products");
   } </code></pre>
-<p>Next we'll make the <code>actualUpdatePrices</code> method static and decorate it with the <code>RunOnServer</code> decorator</p>
+<p>Next we'll make the <code>actualUpdatePrices</code> method static and decorate it with the <code>ServerFunction</code> decorator</p>
 <pre data-line="2,3,5,9,21" class="language-csdiff line-numbers"><code>- async actualUpdatePrices() {
-  @RunOnServer({ allowed: true })
+  @ServerFunction({ allowed: true })
   static async actualUpdatePrices(amountToAdd:number,context?:Context) {
 -   let products = await this.context.for(Products).find();
     let products = await context.for(Products).find({});
