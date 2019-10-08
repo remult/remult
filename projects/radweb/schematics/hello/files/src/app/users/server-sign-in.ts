@@ -1,11 +1,11 @@
 import { Roles } from './roles';
 import { JWTCookieAuthorizationHelper } from 'radweb-server';
-import { RunOnServer } from 'radweb';
+import { ServerFunction } from 'radweb';
 import { UserInfo, Context } from 'radweb';
 import { Users } from './users';
 export class ServerSignIn {
     static helper: JWTCookieAuthorizationHelper;
-    @RunOnServer({ allowed: () => true })
+    @ServerFunction({ allowed: () => true })
     static async signIn(user: string, password: string, context?: Context) {
         let result: UserInfo;
         await context.for(Users).foreach(h => h.name.isEqualTo(user), async (h) => {

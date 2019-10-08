@@ -9,7 +9,7 @@ Let's refactor the code in `update-price.component.ts` to do that:
 We'll perform several steps:
 1. Separate the update logic from the UI (the alert messages)
 2. Make our method static
-3. Decorate the method with the `@RunOnServer` decorator
+3. Decorate the method with the `@ServerFunction` decorator
 
 Here's the result:
 
@@ -42,10 +42,10 @@ Let's start with separating the update logic from the UI
   }
 ```
 
-Next we'll make the `actualUpdatePrices` method static and decorate it with the `RunOnServer` decorator
+Next we'll make the `actualUpdatePrices` method static and decorate it with the `ServerFunction` decorator
 ```csdiff
 - async actualUpdatePrices() {
-+ @RunOnServer({ allowed: true })
++ @ServerFunction({ allowed: true })
 + static async actualUpdatePrices(amountToAdd:number,context?:Context) {
 -   let products = await this.context.for(Products).find();
 +   let products = await context.for(Products).find({});

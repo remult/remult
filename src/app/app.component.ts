@@ -1,4 +1,4 @@
-import { GridSettings, Column, Context, RunOnServer } from 'radweb';
+import { GridSettings, Column, Context, ServerFunction } from 'radweb';
 import { Component } from '@angular/core';
 import * as models from './models';
 import { MatDialog } from '@angular/material';
@@ -44,7 +44,7 @@ export class AppComponent {
   async testIt() {
     await AppComponent.testServer();
   }
-  @RunOnServer({ allowed: true })
+  @ServerFunction({ allowed: true })
   static async testServer() {
     console.log("I'm here");
     return "";

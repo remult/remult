@@ -26,7 +26,7 @@ export class ActualDirectSQL extends DirectSQL {
 
 export class myServerAction extends Action<inArgs, result>
 {
-    constructor(name: string, private types: any[], private options: RunOnServerOptions, private originalMethod: (args: any[]) => any) {
+    constructor(name: string, private types: any[], private options: ServerFunctionOptions, private originalMethod: (args: any[]) => any) {
         super(Context.apiBaseUrl + '/', name)
     }
     dataSource: DataProviderFactory;
@@ -64,7 +64,7 @@ export class myServerAction extends Action<inArgs, result>
     }
 
 }
-export interface RunOnServerOptions {
+export interface ServerFunctionOptions {
     allowed: Allowed;
     blockUser?: boolean;
 }
@@ -73,7 +73,7 @@ export const actionInfo = {
     runningOnServer: false
 }
 
-export function RunOnServer(options: RunOnServerOptions) {
+export function ServerFunction(options: ServerFunctionOptions) {
     return (target: any, key: string, descriptor: any) => {
 
         var originalMethod = descriptor.value;

@@ -5,7 +5,7 @@ export function registerActionsOnServer(area: SiteArea, dataSource: DataProvider
     var addAction = (a: any) => {
         let x = <myServerAction>a[serverActionField];
         if (!x) {
-            throw 'failed to set server action, did you forget the RunOnServerDecorator?';
+            throw 'failed to set server action, did you forget the ServerFunctionDecorator?';
         }
         x.dataSource = dataSource;
         area.addAction(x);
