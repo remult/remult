@@ -181,7 +181,7 @@ export class UsersComponent implements OnInit {
 ### Step 3, Set Role on User Sign In
 
 The `server-sign-in.ts` file contains the `signIn` function that signs the user in. In that function we would like to add the `productManager` role if the user has it.
-```csdiff
+```ts
 import { Roles } from './roles';
 import { JWTCookieAuthorizationHelper } from 'radweb-server';
 import { ServerFunction } from 'radweb';

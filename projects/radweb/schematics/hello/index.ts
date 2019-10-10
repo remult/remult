@@ -130,8 +130,12 @@ export function hello(_options: Schema): Rule {
       json.dependencies["pg"] = "^7.6.1";
       json.dependencies["express-force-https"] = "^1.0.0";
       json.dependencies["jsonwebtoken"] = "^8.5.1";
-      json.dependencies["@auth0/angular-jwt"]="3.0.0";
+      json.dependencies["@auth0/angular-jwt"] = "3.0.0";
+      json.dependencies["express"] = "^4.16.4";
+      json.dependencies["reflect-metadata"] = "^0.1.12";
+      json.dependencies["compression"] = "^1.7.3";
       json.devDependencies["tsc-watch"] = "^4.0.0";
+
     });
 
   }
