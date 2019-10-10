@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta charset="utf-8" />
+    <meta name="keywords" content="">
+
+    <title>Users and Security</title>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="assets/css/toc.css" />
+    <link rel="stylesheet" href="assets/css/highlight.css" />
+    <link rel="stylesheet" href="assets/css/prism.css" />
+    <link rel="stylesheet" href="assets/css/prism-csdiff.css" />
+
+
+    <link rel="stylesheet" href="assets/css/theme_firefly.css" />
+    <link rel="stylesheet" href="assets/css/mermaid.css" />
+</head>
+
+<body class="markdown-body" role="document">
+    <div class="wrapper">
+
+        <div class="middle">
+
+            <div class="container">
+
+                <div class="content" role="navigation" aria-label="footer navigation">
+                    <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+                    <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
+                </div>
+                <div class="content"><h1 id="users-and-security">Users and Security</h1>
+<p>The next thing on our feature list is managing users and security for the application.</p>
+<p>We want users to be able to register and sign in to the application, and we want to have a role based system where:</p>
+<ol>
+<li>Only admin users can update categories</li>
+<li>Only users that are Product Managers can update products.</li>
+<li>Non signed in users can only view the products and register if they want.</li>
+</ol>
+<p>We already have a built in security implementation that can do this, let's review how we use it and how it works.</p>
+<h2 id="creating-the-first-user">Creating the first user</h2>
+<p>We need to create our first user, to do that simply click on the <code>Register</code> menu entry, enter your info and click <code>Register</code></p>
+<p><img src="2019-10-08_11h09_40.png" alt="" /></p>
+<p>Now that you are signed in you can see your name at the top right toolbar, and you can click it to signout.</p>
+<p><img src="2019-10-08_11h16_54.png" alt="" /></p>
+<p>After you sign out, you can click the <code>sign in</code> button at the top right and enter your name and password to sign in again.</p>
+<h2 id="user-management">User Management</h2>
+<p>The first user that signs in is by default the application's <code>Admin</code> and has access to the <code>User Accounts</code> menu entry where users can be managed.</p>
+<p><img src="2019-10-08_11h20_28.png" alt="" /></p>
+<p>Here you can manage the users and even reset their password.</p>
+<h2 id="securing-the-categories">Securing the Categories</h2>
+<p>Now that we understand how users can be managed, let's start securing the application by restricting access to the <code>Categories</code>.</p>
+<p>In the <code>categories.ts</code></p>
+<pre data-line="2,11" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass } from 'radweb';
+import { Roles } from '../users/roles';
+
+@EntityClass
+export class Categories extends IdEntity {
+    name = new StringColumn();
+    constructor() {
+        super({
+            name: "Categories",
+-           allowApiCRUD:true,
+            allowApiCRUD:Roles.admin,
+            allowApiRead:true
+        });
+    }
+} </code></pre>
+<p>We've changed the <code>allowApiCRUD</code> property to only allow it for users that has the role <code>Roles.admin</code> (later we'll define new roles)
+We've kept the <code>allowApiRead</code> to true, since even non signed in users can view products and their categories in the <code>home.component.ts</code></p>
+<p>This step has secured the <code>API</code> which means that even someone who is accessing our server directly, without the application can't update the categories if they are not authorized to do so.</p>
+<p>Next let's restrict access to the <code>categories.component.ts</code></p>
+<p>In the <code>app-routing.module.ts</code></p>
+<pre data-line="7" class="language-csdiff line-numbers"><code>const routes: Routes = [
+  { path: 'Home', component: HomeComponent },
+  { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard] },
+  { path: 'Products', component: ProductsComponent },
+  { path: 'Update-Price', component: UpdatePriceComponent },
+- { path: 'Categories', component: CategoriesComponent },
+  { path: 'Categories', component: CategoriesComponent, canActivate: [AdminGuard] },
+  { path: 'Register', component: RegisterComponent, canActivate: [NotSignedInGuard] },
+  { path: 'Account Info', component: UpdateInfoComponent, canActivate: [SignedInGuard] },
+  { path: '', redirectTo: '/Home', pathMatch: 'full' },
+  { path: '**', redirectTo: '/Home', pathMatch: 'full' }
+]; </code></pre>
+<p>We've added the <code>, canActivate: [AdminGuard]</code> definition to the <code>Categories</code> path. This means that a user that does not have the <code>admin</code> role, will not be able to access the categories entry in the menu.</p>
+<blockquote>
+<p>Create another user, without admin privliges and see  how that works.</p>
+</blockquote>
+<p>Now that you know about the <code>canActivate</code> you can see that several of the prepared routes are using similar guards:</p>
+<ol>
+<li>AdminGuard - only users that have the <code>Admin</code> role.</li>
+<li>NotSignedInGuard - only users that are not Signed in.</li>
+<li>SignedInGuard - only users that are signed in.</li>
+</ol>
+<ul>
+<li><a href="adding-a-new-role.html">Adding a new Role</a></li>
+</ul>
+
+
+                <br />
+                        <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+
+                        <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
+                        <hr />Help us improve,
+                        <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//80-Users and Security/index.md" target="_blank" id="link">Edit this page on GitHub</a>        
+                </div>
+                
+                <!-- .content -->
+
+                
+
+
+            </div>
+            
+            <!-- .container-->
+            
+            <aside class="left-sidebar">
+                <div class="wy-side-nav-search-ff">
+                    <a href="" class="test">
+                        <h3>remult ts</h3>
+                    </a>
+                </div>
+                <div id="menuTree" </div>
+            </aside>
+            <!-- .left-sidebar -->
+
+            <aside class="right-sidebar"></aside>
+            <!-- .right-sidebar -->
+
+            </div>
+            <!-- .middle-->
+
+            
+
+        </div>
+
+
+        <script src="assets/js/mermaid.js"></script>
+        <script src="assets/js/prism-start.js"></script>
+        <script src="assets/js/prism-clike.js"></script>
+        <script src="assets/js/prism-markup.js"></script>
+        <script src="assets/js/prism-css.js"></script>
+        <script src="assets/js/prism-javascript.js"></script>
+
+        <script src="assets/js/prism-diff.js"></script>
+        <script src="assets/js/prism-csdiff.js"></script>
+        <script src="assets/js/prism-function.js"></script>
+
+        <script src="assets/js/jquery-3.1.1.js"></script>
+
+
+      
+        <script src="assets/js/tree.js"></script>
+        <script language="javascript">
+            buildTree('menuTree', 'users-and-security.html', 'previousButton', 'nextButton');
+        </script>
+</body>
+
+</html>

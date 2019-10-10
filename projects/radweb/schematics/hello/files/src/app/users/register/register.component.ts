@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 
-import {  StringColumn } from 'radweb';
+import {  StringColumn, RouteHelperService } from 'radweb';
 import { Route } from '@angular/router';
 import { Context } from 'radweb';
 import { Users } from '../users';
 
 import { ServerSignIn } from "../server-sign-in";
 import { JwtSessionManager } from 'radweb';
+import { HomeComponent } from '../../home/home.component';
 
 
 @Component({
@@ -15,7 +16,7 @@ import { JwtSessionManager } from 'radweb';
   styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
-  constructor(private auth: JwtSessionManager,private context:Context) {
+  constructor(private auth: JwtSessionManager,private context:Context,private route:RouteHelperService) {
 
 
   }
@@ -50,6 +51,7 @@ export class RegisterComponent implements OnInit {
       let userInfo = this.helpers.currentRow;
       await this.helpers._doSavingRow(userInfo);
       this.auth.setToken(await ServerSignIn.signIn(userInfo.name.value, this.confirmPassword.value));
+      this.route.navigateToComponent(HomeComponent);
     }
     catch (err) {
       console.log(err);
