@@ -69,7 +69,11 @@ git push heroku master -f
 
 
 ## And We're done
-Just run `heroku apps:open` to open the browser with your application. You'll see the url provided to you in step 2 of this page  (`https://desolate-fjord-53965.herokuapp.com/` in our case).
+Just run:
+```
+heroku apps:open
+```
+ It'll open browser with your application. You'll see the url provided to you in step 2 of this page  (`https://desolate-fjord-53965.herokuapp.com/` in our case).
 
 Don't forget to sign in and declare yourself the admin :)
 

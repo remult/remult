@@ -184,7 +184,7 @@ export class UsersComponent implements OnInit {
  ... </code></pre>
 <h3 id="step-3-set-role-on-user-sign-in">Step 3, Set Role on User Sign In</h3>
 <p>The <code>server-sign-in.ts</code> file contains the <code>signIn</code> function that signs the user in. In that function we would like to add the <code>productManager</code> role if the user has it.</p>
-<pre data-line="21,22,23" class="language-csdiff line-numbers"><code>import { Roles } from './roles';
+<pre><code class="language-ts">import { Roles } from './roles';
 import { JWTCookieAuthorizationHelper } from 'radweb-server';
 import { ServerFunction } from 'radweb';
 import { UserInfo, Context } from 'radweb';
@@ -204,9 +204,9 @@ export class ServerSignIn {
                 if (h.admin.value) {
                     result.roles.push(Roles.admin);
                 }
-                if (h.productManager.value||h.admin.value){
-                    result.roles.push(Roles.productManager);
-                }
++               if (h.productManager.value||h.admin.value){
++                   result.roles.push(Roles.productManager);
++               }
             }
         });
         if (result) {
@@ -214,7 +214,8 @@ export class ServerSignIn {
         }
         return undefined;
     }
-} </code></pre>
+}
+</code></pre>
 <p>Note that you'll have to sign out and sign back in to have this role.</p>
 
 

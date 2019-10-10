@@ -58,3 +58,5 @@ export class AppRoutingModule { }
 
 >Pro Tip: You don't have to start by adding the `import` statement on line 11, instead when you'll start typing the `ProductsComponent`in line 16, vs code will automatically suggest to add the import (most times :)
 
+>Pro Tip 2: If you don't have the `import` statement you need, just hover over the class you need (`Products` in this case), and visual studio will tell you that it `cannot find name 'products'` and will suggest a quick fix that will be to add the import statement.
+You can also use <kbd>control</kbd> + <kbd>.</kbd> (dot) and it'll suggest to add the import

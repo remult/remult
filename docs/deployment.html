@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta charset="utf-8" />
+    <meta name="keywords" content="">
+
+    <title>Deployment</title>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="assets/css/toc.css" />
+    <link rel="stylesheet" href="assets/css/highlight.css" />
+    <link rel="stylesheet" href="assets/css/prism.css" />
+    <link rel="stylesheet" href="assets/css/prism-csdiff.css" />
+
+
+    <link rel="stylesheet" href="assets/css/theme_firefly.css" />
+    <link rel="stylesheet" href="assets/css/mermaid.css" />
+</head>
+
+<body class="markdown-body" role="document">
+    <div class="wrapper">
+
+        <div class="middle">
+
+            <div class="container">
+
+                <div class="content" role="navigation" aria-label="footer navigation">
+                    <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+                    <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
+                </div>
+                <div class="content"><h1 id="deployment">Deployment</h1>
+<p>This application is a standard node js application, that uses postgres as a database and can be deployed to any web server or cloud service that has node js and postgres.</p>
+<p>In this tutorial we'll use heroku as they provide a great free plan that and very easy deployment.</p>
+<h2 id="step-1-create-an-heroku-user-and-install-their-tools">Step 1 Create an Heroku User and install their tools</h2>
+<p>Goto, <a href="https://signup.heroku.com/">heroku's signup page</a> signup and create a user.</p>
+<p>The heroku free plan provides for 550 free web server hours (they call it dyno) per month. You can increase that to 1000 hours by just adding your credit card info (no cost)</p>
+<p>Next, download and install the <a href="https://devcenter.heroku.com/articles/heroku-cli#download-and-install">heroku command line tool</a></p>
+<p>After that, goto the command line and run</p>
+<pre><code>heroku login
+</code></pre>
+<p>And enter your credentials.</p>
+<h2 id="step-2-create-the-heroku-application">Step 2 Create the Heroku Application</h2>
+<p>In the Command line, in the project folder, we can use the <code>apps:create</code> command to create our project.</p>
+<ol>
+<li>We can send it the region we want to use (by default it's us, for europe and middleeast we recommend europe: <code>--region eu</code>)</li>
+<li>Specify the name of the project, (<code>my-project</code> in our case) - that name will be used as the prefix for your application's url (<code>https://my-project.herokuapp.com</code> on our case).
+The name you want may be taken - so keep trying names until you reach a name that is free, or run the command without a name, and <code>heroku</code> will generate a name for you.</li>
+</ol>
+<p>Here's the command with the specific name <code>my-project</code> in the <code>eu</code> region</p>
+<pre><code>heroku apps:create --region eu  my-project
+</code></pre>
+<p>And here's the command that tells heroku to choose the name themselves:</p>
+<pre><code>heroku apps:create --region eu
+</code></pre>
+<p>Here's the result we got :)</p>
+<pre><code>Creating app... done, ⬢ desolate-fjord-53965, region is eu
+https://desolate-fjord-53965.herokuapp.com/ | https://git.heroku.com/desolate-fjord-53965.git
+</code></pre>
+<ol>
+<li>The first part of the result is our website url - once we'll install the app, we can navigate there.</li>
+<li>The second part of the result is the url for the git repository.</li>
+</ol>
+<h2 id="step-3-provision-the-database-on-heroku">Step 3 Provision the database on Heroku</h2>
+<p>run:</p>
+<pre><code>heroku addons:create heroku-postgresql:hobby-dev
+</code></pre>
+<h2 id="step-4-set-the-authentication-token-sign-key">Step 4 Set the Authentication token sign key</h2>
+<p>The <strong>Authentication token sign key</strong>, is used to authenticate the user that uses the application. It's a secret key, that only the server should know and is used to decrypt information about the user, assuring that it is indeed the correct user.</p>
+<p>It's important to set this value to some random crazy value that no one will have. A hacker with this key, will be able to impersonate anyone on your web site.</p>
+<p>To read more about it, see <a href="https://jwt.io/">jwt</a></p>
+<p>This key is required, so set it using:</p>
+<pre><code>heroku config:set TOKEN_SIGN_KEY=woEczJuvjuOWmIakjdvH
+</code></pre>
+<h2 id="step-5-deploy-the-application-using-git">Step 5 Deploy the application using git</h2>
+<pre><code>git push heroku master -f
+</code></pre>
+<ul>
+<li>This will take a few minutes, and will report the process of deploying the app to heroku</li>
+<li>You'll need to repeat this command whenever you want to update the code of your application.</li>
+</ul>
+<h2 id="and-were-done">And We're done</h2>
+<p>Just run:</p>
+<pre><code>heroku apps:open
+</code></pre>
+<p>It'll open browser with your application. You'll see the url provided to you in step 2 of this page  (<code>https://desolate-fjord-53965.herokuapp.com/</code> in our case).</p>
+<p>Don't forget to sign in and declare yourself the admin :)</p>
+<h2 id="doing-it-all-with-a-user-interface">Doing it all with a user interface</h2>
+<p>Heroku has a web user interface to setup your app, define the db and set the config vars, you may find it easier to use.</p>
+
+
+                <br />
+                        <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
+
+                        <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
+                        <hr />Help us improve,
+                        <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//85-Deployment/index.md" target="_blank" id="link">Edit this page on GitHub</a>        
+                </div>
+                
+                <!-- .content -->
+
+                
+
+
+            </div>
+            
+            <!-- .container-->
+            
+            <aside class="left-sidebar">
+                <div class="wy-side-nav-search-ff">
+                    <a href="" class="test">
+                        <h3>remult ts</h3>
+                    </a>
+                </div>
+                <div id="menuTree" </div>
+            </aside>
+            <!-- .left-sidebar -->
+
+            <aside class="right-sidebar"></aside>
+            <!-- .right-sidebar -->
+
+            </div>
+            <!-- .middle-->
+
+            
+
+        </div>
+
+
+        <script src="assets/js/mermaid.js"></script>
+        <script src="assets/js/prism-start.js"></script>
+        <script src="assets/js/prism-clike.js"></script>
+        <script src="assets/js/prism-markup.js"></script>
+        <script src="assets/js/prism-css.js"></script>
+        <script src="assets/js/prism-javascript.js"></script>
+
+        <script src="assets/js/prism-diff.js"></script>
+        <script src="assets/js/prism-csdiff.js"></script>
+        <script src="assets/js/prism-function.js"></script>
+
+        <script src="assets/js/jquery-3.1.1.js"></script>
+
+
+      
+        <script src="assets/js/tree.js"></script>
+        <script language="javascript">
+            buildTree('menuTree', 'deployment.html', 'previousButton', 'nextButton');
+        </script>
+</body>
+
+</html>

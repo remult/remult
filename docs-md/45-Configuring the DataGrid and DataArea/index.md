@@ -120,9 +120,10 @@ ngOnInit() {
 ```
 and in the `products.component.html` we'll use that `productsArea` settings:
 ```csdiff
-+ <data-grid2 [settings]="products" [height]="300"></data-grid2>
-+ <br>
-+ <br>
+  <data-grid2 [settings]="products" [height]="300"></data-grid2>
+  <br>
+  <br>
+- <data-area [settings]="products"></data-area>
 + <data-area [settings]="productsArea"></data-area>
 ```
 

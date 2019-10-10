@@ -136,9 +136,10 @@ productsArea = this.products.addArea({
 ngOnInit() {
 } </code></pre>
 <p>and in the <code>products.component.html</code> we'll use that <code>productsArea</code> settings:</p>
-<pre data-line="1,2,3,4" class="language-csdiff line-numbers"><code>  &lt;data-grid2 [settings]="products" [height]="300"&gt;&lt;/data-grid2&gt;
+<pre data-line="5" class="language-csdiff line-numbers"><code>  &lt;data-grid2 [settings]="products" [height]="300"&gt;&lt;/data-grid2&gt;
   &lt;br&gt;
   &lt;br&gt;
+- &lt;data-area [settings]="products"&gt;&lt;/data-area&gt;
   &lt;data-area [settings]="productsArea"&gt;&lt;/data-area&gt; </code></pre>
 <p>Data Areas are extremely powerful, as they allow us to define a set of columns and their fields, without worrying too much about designing them and their functionality.</p>
 
