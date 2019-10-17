@@ -8,7 +8,7 @@ import {
   , ColumnStorage,
   EntitySourceFindOptions
 } from './dataInterfaces1';
-import { Allowed, Context, EntityType } from '../context/Context';
+import { Allowed, Context, EntityType, DirectSQL } from '../context/Context';
 import { DataApiSettings } from '../server/DataApi';
 import { isBoolean, isString } from 'util';
 
@@ -2307,6 +2307,9 @@ export interface SQLQueryResult {
 
 export interface SQLConnectionProvider {
   createCommand(): SQLCommand;
+}
+export interface SupportsDirectSql{
+  getDirectSql():DirectSQL;
 }
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {

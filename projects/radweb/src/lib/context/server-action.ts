@@ -3,8 +3,9 @@ import 'reflect-metadata';
 import { SupportsTransaction, DataProviderFactory, DataApiRequest } from "../core/dataInterfaces1";
 import { Action } from '../core/restDataProvider';
 import { Context, ServerContext, DirectSQL, Allowed } from './Context';
-import { SQLConnectionProvider, SQLCommand } from '../core/utils';
+import { SQLConnectionProvider,  SupportsDirectSql } from '../core/utils';
 import { BusyService } from '../angular-components/wait/busy-service';
+import { ActualSQLServerDataProvider } from '../core/SQLDatabaseShared';
 
 
 interface inArgs {
@@ -16,11 +17,13 @@ interface result {
 export class ActualDirectSQL extends DirectSQL {
 
     execute(sql: string) {
-        let c = this.dp.createDirectSQLCommand() as SQLCommand;
+        let c = this.dp.createCommand();
         return c.query(sql);
     }
-    constructor(private dp: any) {
+    constructor(private dp: SQLConnectionProvider) {
         super();
+        this.dp = ActualSQLServerDataProvider.decorateSqlConnectionProvider(dp);
+        let y = 1+1;
     }
 }
 
@@ -47,7 +50,7 @@ export class myServerAction extends Action<inArgs, result>
 
                         info.args[i] = context;
                     } else if (this.types[i] == DirectSQL && ds) {
-                        info.args[i] = new ActualDirectSQL(ds);
+                        info.args[i] = (<SupportsDirectSql><any>ds).getDirectSql();
                     }
                 }
             try {
@@ -86,8 +89,8 @@ export function ServerFunction(options: ServerFunctionOptions) {
 
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
-                if (options.blockUser===false){
-                    return await BusyService.singleInstance.donotWait(async ()=> (await serverAction.run({ args })).data);
+                if (options.blockUser === false) {
+                    return await BusyService.singleInstance.donotWait(async () => (await serverAction.run({ args })).data);
                 }
                 else
                     return (await serverAction.run({ args })).data;

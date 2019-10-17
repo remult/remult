@@ -1,7 +1,8 @@
-import { ServerContext, DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn, allEntities } from 'radweb';
+import { ServerContext, DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn, allEntities, SupportsDirectSql, DirectSQL } from 'radweb';
 
 import { Pool, QueryResult } from 'pg';
-import { ActualSQLServerDataProvider } from 'radweb';
+import { ActualSQLServerDataProvider,ActualDirectSQL } from 'radweb';
+
 
 
 export class PostgresDataProvider implements DataProviderFactory {
@@ -29,15 +30,19 @@ export class PostgresDataProvider implements DataProviderFactory {
         finally {
             await client.release();
         }
-        
+
     }
+
     createDirectSQLCommand(): SQLCommand {
         return new PostgrestBridgeToSQLCommand(this.pool);
     }
 
 }
 
-class PostgresDataTransaction implements DataProviderFactory {
+class PostgresDataTransaction implements DataProviderFactory, SupportsDirectSql {
+    getDirectSql(): DirectSQL {
+        return new ActualDirectSQL(new PostgresBridgeToSQLConnection(this.source));
+    }
 
 
     constructor(private source: PostgresCommandSource) {
@@ -110,7 +115,7 @@ export class PostgrestSchemaBuilder {
                 }
             }
             catch (err) {
-                console.log("failed verify structore of " + x.__getDbName()+" ",err);
+                console.log("failed verify structore of " + x.__getDbName() + " ", err);
             }
         }
     }

@@ -11,11 +11,11 @@ export class CustomModuleLoader {
 
             if (request.startsWith('radweb')) {
                 request = process.cwd() + root + '/projects/' + request + '/';
-                console.log(request);
+               // console.log(request);
             }
 
 
             return (<any>customModuleLoader)._originalResolveFilename(request, parent, isMain);
         }
     }
-};
+}; 
