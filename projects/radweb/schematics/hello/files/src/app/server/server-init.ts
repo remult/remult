@@ -7,7 +7,7 @@ import * as passwordHash from 'password-hash';
 
 import '../app.module';
 
-import { ActualSQLServerDataProvider } from 'radweb-server';
+import { ActualSQLServerDataProvider } from 'radweb';
 import { Users } from '../users/users';
 
 

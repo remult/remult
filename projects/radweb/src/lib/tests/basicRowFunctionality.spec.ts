@@ -7,14 +7,14 @@ import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
 import { Categories, environment } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
-import { Context, Role, Allowed, EntityClass } from '../context/Context';
+import { Context, Role, Allowed, EntityClass, ServerContext } from '../context/Context';
 import { WebSqlDataProvider } from '../core/WebSqlDataProvider';
 import { DataProviderFactory, RowsOfDataForTesting } from '../core/dataInterfaces1';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProviderFactory, rows?: RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
   itAsyncForEach<any>(name, [new InMemoryDataProvider(), webSql],
-    (dp) => new Promise((res, rej) =>{
+    (dp) => new Promise((res, rej) => {
       webSql.db.transaction(t => {
         t.executeSql("select name from sqlite_master where type='table'", null,
           (t1, r) => {
@@ -345,6 +345,20 @@ describe("data api", () => {
 
 
   });
+  itWithDataProvider("empty find works", async (dp) => {
+    let ctx = new ServerContext();
+    ctx.setDataProvider(dp);
+    let c = ctx.for(Categories).create();
+    c.id.value = 5;
+    c.categoryName.value = 'test';
+    await c.save();
+    let l = await ctx.for(Categories).find();
+    expect(l.length).toBe(1);
+    expect(l[0].categoryName.value).toBe('test');
+
+
+  });
+
 
   itAsync("put updates", async () => {
     let c = await createData(async insert => insert(1, 'noam'));

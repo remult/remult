@@ -124,8 +124,8 @@ export function hello(_options: Schema): Rule {
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
       json.dependencies["radweb"] = "^3.0.11";
-      json.dependencies["radweb-server"] = "^3.0.4";
-      json.dependencies["radweb-server-postgres"] = "^3.0.1";
+      json.dependencies["radweb-server"] = "^3.0.5";
+      json.dependencies["radweb-server-postgres"] = "^3.0.2";
       json.dependencies["@angular/material"] = "^7.3.4";
       json.dependencies["pg"] = "^7.6.1";
       json.dependencies["express-force-https"] = "^1.0.0";
