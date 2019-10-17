@@ -34,13 +34,14 @@ class LogSQLCommand implements SQLCommand {
     }
   }
 }
+// @dynamic
 export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
   public static LogToConsole = false;
   constructor(private entityFactory: () => Entity<any>, private name: string, private sql: SQLConnectionProvider, private factory: () => T) {
 
     this.sql = ActualSQLServerDataProvider.decorateSqlConnectionProvider(sql);
   }
-  static decorateSqlConnectionProvider(sql: SQLConnectionProvider) {
+  static decorateSqlConnectionProvider(sql: SQLConnectionProvider):SQLConnectionProvider {
     return new LogSQLConnectionProvider(sql, ActualSQLServerDataProvider.LogToConsole);
   }
   createDirectSQLCommand() {

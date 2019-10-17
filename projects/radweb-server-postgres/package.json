@@ -1,6 +1,6 @@
 {
   "name": "radweb-server-postgres",
-  "version": "3.0.2",
+  "version": "3.0.4",
   "main":"index.js",
   "Dependencies": {
     "pg": "^7.6.1"

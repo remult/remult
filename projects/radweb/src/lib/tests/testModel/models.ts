@@ -20,6 +20,6 @@ export class Categories extends Entity<number> {
   });
   constructor(settings?: EntityOptions|string) {
     super(settings, () => new Categories(settings));
-    this.initColumns();
+    this.__initColumns();
   }
 }

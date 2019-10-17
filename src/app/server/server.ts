@@ -41,7 +41,7 @@ class testEntity extends Entity<number>{
     datet = new DateTimeColumn();
     constructor() {
         super( 'testdt');
-        this.initColumns(this.id);
+        this.__initColumns(this.id);
     }
 }
 

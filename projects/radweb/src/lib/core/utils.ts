@@ -1111,8 +1111,11 @@ export interface EntityOptions {
 
   onValidate?: (e: Entity<any>) => Promise<any> | any;
 }
+//@dynamic
 export class Entity<idType> {
-  constructor(options?: EntityOptions | string, private factory?: () => Entity<idType>) {
+  constructor(options?: EntityOptions | string, 
+    //@internal
+    public factory?: () => Entity<idType>) {
     if (!factory) {
       this.factory = () => this.__createInstance();
     }
@@ -1122,9 +1125,9 @@ export class Entity<idType> {
       } else {
         this.__options = options;
         if (options.onSavingRow)
-          this.onSavingRow = () => options.onSavingRow();
+          this.__onSavingRow = () => options.onSavingRow();
         if (options.onValidate)
-          this.onValidate = () => options.onValidate(this);
+          this.__onValidate = () => options.onValidate(this);
       }
 
     }
@@ -1137,10 +1140,13 @@ export class Entity<idType> {
     this._noContextErrorWithStack = new Error('@EntityClass not used or context was not set for ' + this.constructor.name);
 
   }
+  
   static __key: string;
-  private entityType: EntityType;
+  //@internal
+   __entityType: EntityType;
   _noContextErrorWithStack: Error;
-  private __context: Context;
+  //@internal
+   __context: Context;
   _setContext(context: Context) {
     this.__context = context;
   }
@@ -1150,8 +1156,8 @@ export class Entity<idType> {
     return this.__context.isAllowed(allowed);
   }
   _setFactoryClassAndDoInitColumns(entityType: EntityType) {
-    this.entityType = entityType;
-    this.initColumns((<any>this).id);
+    this.__entityType = entityType;
+    this.__initColumns((<any>this).id);
 
   }
   _getExcludedColumns(x: Entity<any>, context: Context) {
@@ -1163,7 +1169,7 @@ export class Entity<idType> {
   _getEntityApiSettings(r: Context): DataApiSettings<Entity<any>> {
 
 
-    let x = r.for(this.entityType).create() as Entity<any>;
+    let x = r.for(this.__entityType).create() as Entity<any>;
 
     let options = x.__options;
     if (options.allowApiCRUD) {
@@ -1188,15 +1194,16 @@ export class Entity<idType> {
     }
 
   }
-  private __createInstance() {
+  //@internal
+   __createInstance() {
     if (!this.__context) {
 
       throw this._noContextErrorWithStack;
     }
-    if (!this.entityType) {
+    if (!this.__entityType) {
       throw this._noContextErrorWithStack;
     }
-    return this.__context.create(this.entityType);
+    return this.__context.create(this.__entityType);
   }
   __options: EntityOptions;
 
@@ -1215,15 +1222,18 @@ export class Entity<idType> {
     }
     return this.__options.caption;
   }
-  /** @internal */
+  
   __entityData: __EntityValueProvider;
 
-  protected onSavingRow: () => void | Promise<void> = () => { };
-  protected onValidate: () => void | Promise<void> = () => { };
+  //@internal
+   __onSavingRow: () => void | Promise<void> = () => { };
+  //@internal
+   __onValidate: () => void | Promise<void> = () => { };
 
   error: string;
   __idColumn: Column<idType>;
-  protected initColumns(idColumn?: Column<idType>) {
+  
+   __initColumns(idColumn?: Column<idType>) {
     if (idColumn)
       this.__idColumn = idColumn;
     let x = <any>this;
@@ -1237,7 +1247,7 @@ export class Entity<idType> {
           this.__idColumn = y;
 
 
-        this.applyColumn(y);
+        this.__applyColumn(y);
       }
     }
     if (!this.__idColumn)
@@ -1281,15 +1291,15 @@ export class Entity<idType> {
       c.__performValidation();
     });
 
-    if (this.onValidate)
-      this.onValidate();
+    if (this.__onValidate)
+      this.__onValidate();
     if (validate)
       validate(this);
     this.__assertValidity();
 
 
     let performEntitySave = () => {
-      let x = this.onSavingRow();
+      let x = this.__onSavingRow();
 
       let doSave = () => {
         this.__assertValidity();
@@ -1353,7 +1363,8 @@ export class Entity<idType> {
     this.__entityData.reset();
     this.__clearErrors();
   }
-  private __clearErrors() {
+  //@internal
+   __clearErrors() {
     this.__iterateColumns().forEach(c => c.__clearErrors());
     this.error = undefined;
   }
@@ -1384,7 +1395,8 @@ export class Entity<idType> {
   }
 
   source: EntitySource<this>;
-  private applyColumn(y: Column<any>) {
+  //@internal
+   __applyColumn(y: Column<any>) {
     if (!y.caption)
       y.caption = makeTitle(y.jsonName);
     y.__valueProvider = this.__entityData;
@@ -1392,7 +1404,8 @@ export class Entity<idType> {
       this.__columns.push(y);
     y.__setEntity(this);
   }
-  private __columns: Column<any>[] = [];
+  //@internal
+   __columns: Column<any>[] = [];
   __getColumn<T>(col: Column<T>) {
 
     return this.__getColumnByJsonName(col.jsonName);
@@ -1490,7 +1503,10 @@ export class CompoundIdColumn extends Column<string>
 export class EntitySource<T extends Entity<any>>
 {
   private _provider: DataProvider;
-  constructor(name: string, private factory: () => T, dataProvider: DataProviderFactory) {
+  constructor(name: string, 
+    
+    private  factory: () => T,
+     dataProvider: DataProviderFactory) {
     if (dataProvider)
       this._provider = dataProvider.provideFor(name, factory);
   }

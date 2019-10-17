@@ -17,7 +17,7 @@ export class Categories extends radweb.Entity<number> {
   });
   constructor(settings?: radweb.EntityOptions) {
     super(settings, () => new Categories(settings));
-    this.initColumns();
+    this.__initColumns();
   }
 }
 @EntityClass
@@ -40,7 +40,7 @@ export class Orders extends radweb.Entity<number> {
   constructor() {
     super('Orders');
 
-    this.initColumns(this.id);
+    this.__initColumns(this.id);
   }
 
 
@@ -56,7 +56,7 @@ export class Order_details extends radweb.Entity<string> {
 
   constructor() {
     super({ name: "OrderDetails", dbName: 'Order_Details' });
-    this.initColumns(this.id);
+    this.__initColumns(this.id);
   }
 }
 
@@ -76,7 +76,7 @@ export class Customers extends radweb.Entity<string> {
 
   constructor() {
     super('Customers');
-    this.initColumns(this.id);
+    this.__initColumns(this.id);
   }
 }
 @EntityClass
@@ -98,7 +98,7 @@ export class Products extends radweb.Entity<number> {
       allowApiCRUD: true,
 
     });
-    this.initColumns(this.id);
+    this.__initColumns(this.id);
   }
 }
 @EntityClass
@@ -109,6 +109,6 @@ export class Shippers extends radweb.Entity<number> {
 
   constructor() {
     super('Shippers');
-    this.initColumns(this.id);
+    this.__initColumns(this.id);
   }
 }

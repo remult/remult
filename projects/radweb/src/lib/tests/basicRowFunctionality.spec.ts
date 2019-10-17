@@ -135,7 +135,7 @@ class myTestEntity extends Entity<number>{
   name1 = new StringColumn({ jsonName: 'name' });
   constructor() {
     super('myTestEntity');
-    this.initColumns();
+    this.__initColumns();
   }
 
 }
@@ -1203,7 +1203,7 @@ class CompoundIdEntity extends Entity<string>
   id = new CompoundIdColumn(this, this.a, this.b);
   constructor() {
     super("compountIdEntity");
-    this.initColumns();
+    this.__initColumns();
   }
 }
 @EntityClass
@@ -1213,8 +1213,8 @@ export class entityWithValidations extends Entity<number>{
   static savingRowCount = 0;
   constructor() {
     super();
-    this.initColumns();
-    this.onSavingRow = async () => {
+    this.__initColumns();
+    this.__onSavingRow = async () => {
       if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid';
 
@@ -1239,7 +1239,7 @@ export class entityWithValidationsOnColumn extends Entity<number>{
   });
   constructor() {
     super();
-    this.initColumns();
+    this.__initColumns();
   }
 }
 @EntityClass
@@ -1248,8 +1248,8 @@ export class entityWithValidationsOnEntityEvent extends Entity<number>{
   name = new StringColumn();
   constructor() {
     super();
-    this.initColumns();
-    this.onValidate = () => {
+    this.__initColumns();
+    this.__onValidate = () => {
       if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid';
     };
@@ -1265,6 +1265,6 @@ export class EntityWithLateBoundDbName extends Entity<number> {
         dbName: () => '(select ' + this.id.__getDbName() + ')'
 
       });
-    this.initColumns();
+    this.__initColumns();
   }
 }

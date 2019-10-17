@@ -12,8 +12,8 @@ export class IdEntity extends Entity<string>
     super(options);
     
     this.id.allowApiUpdate = false;
-    let x = this.onSavingRow;
-    this.onSavingRow = () => {
+    let x = this.__onSavingRow;
+    this.__onSavingRow = () => {
       if (this.isNew() && !this.id.value && !this.disableNewId)
         this.id.setToNewId();
       return x();

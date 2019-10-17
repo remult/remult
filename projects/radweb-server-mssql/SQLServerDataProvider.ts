@@ -160,7 +160,7 @@ class Tables extends Entity<string> {
   id = new CompoundIdColumn(this, this.Table_Name, this.Table_Schema, this.Table_Catalog);
   constructor() {
     super({ name: 'INFORMATION_SCHEMA.TABLES' });
-    this.initColumns();
+    this.__initColumns();
   }
 }
 @EntityClass
@@ -177,6 +177,6 @@ class Columns extends Entity<string> {
 
   constructor() {
     super( { name: 'INFORMATION_SCHEMA.Columns' });
-    this.initColumns(new CompoundIdColumn(this, this.Table_Name, this.Table_Schema, this.Table_Catalog, this.Ordinal_Position));
+    this.__initColumns(new CompoundIdColumn(this, this.Table_Name, this.Table_Schema, this.Table_Catalog, this.Ordinal_Position));
   }
 }

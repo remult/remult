@@ -5,7 +5,7 @@ import { ActualSQLServerDataProvider,ActualDirectSQL } from 'radweb';
 
 
 
-export class PostgresDataProvider implements DataProviderFactory {
+export class PostgresDataProvider implements DataProviderFactory,SupportsDirectSql {
 
 
     constructor(private pool: Pool) {
@@ -13,6 +13,9 @@ export class PostgresDataProvider implements DataProviderFactory {
     }
     provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
         return new ActualSQLServerDataProvider(factory, name, new PostgresBridgeToSQLConnection(this.pool), factory);
+    }
+    getDirectSql(): DirectSQL {
+        return new ActualDirectSQL(new PostgresBridgeToSQLConnection(this.pool));
     }
 
     async doInTransaction(what: (dp: DataProviderFactory) => Promise<void>) {
@@ -33,9 +36,7 @@ export class PostgresDataProvider implements DataProviderFactory {
 
     }
 
-    createDirectSQLCommand(): SQLCommand {
-        return new PostgrestBridgeToSQLCommand(this.pool);
-    }
+  
 
 }
 
