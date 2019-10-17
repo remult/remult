@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
 import { RestDataProvider, Action, angularHttpProvider, wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult } from "../core/utils";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult, LookupCache, Lookup } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
@@ -15,9 +15,7 @@ import { BusyService } from "../angular-components/wait/busy-service";
 export class Context {
     clearAllCache(): any {
         this.cache = {};
-        this._lookupCache = new stamEntity();
-        this._lookupCache._setContext(this);
-        this._lookupCache.setSource(this._dataSource);
+        this._lookupCache = [];
     }
 
     isSignedIn() {
@@ -35,9 +33,6 @@ export class Context {
         else {
             this._dataSource = new InMemoryDataProvider();
         }
-        this._lookupCache.setSource(this._dataSource);
-
-
     }
 
 
@@ -102,7 +97,7 @@ export class Context {
         return this.cache[classType.__key] = new SpecificEntityHelper<lookupIdType, T>(this.create(c), this._lookupCache, this);
     }
 
-    private _lookupCache = new stamEntity();
+    _lookupCache: LookupCache<any>[] = [];
 }
 export class ServerContext extends Context {
     constructor() {
@@ -127,31 +122,43 @@ export class ServerContext extends Context {
 }
 
 
-
-
-
-class stamEntity extends Entity<number> {
-
-    id = new NumberColumn();
-    constructor() {
-        super("stamEntity");
-        this.initColumns();
-    }
-
-}
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> {
-    constructor(private entity: T, private _lookupCache: Entity<any>, private context: Context) {
+    constructor(private entity: T, private _lookupCache: LookupCache<any>[], private context: Context) {
 
     }
-    lookupAsync(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): Promise<T> {
-        return this._lookupCache.lookupAsync(this.entity, filter);
-    }
+
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
-        if (BusyService.singleInstance)
-            return BusyService.singleInstance.donotWaitNonAsync(() => this._lookupCache.lookup(this.entity, filter));
-        else
-            return this._lookupCache.lookup(this.entity, filter);
-    }
+
+        let key = this.entity.__getName();
+        let lookup: Lookup<lookupIdType, T>;
+        this._lookupCache.forEach(l => {
+          if (l.key == key)
+            lookup = l.lookup;
+        });
+        if (!lookup) {
+          lookup = new Lookup(this.entity);
+          this._lookupCache.push({ key, lookup });
+        }
+        return lookup.get(filter);
+    
+      }
+      lookupAsync( filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): Promise<T> {
+    
+        let key = this.entity.__getName();
+        let lookup: Lookup<lookupIdType, T>;
+        this._lookupCache.forEach(l => {
+          if (l.key == key)
+            lookup = l.lookup;
+        });
+        if (!lookup) {
+          lookup = new Lookup(this.entity);
+          this._lookupCache.push({ key, lookup });
+        }
+        return lookup.whenGet(filter);
+    
+      }
+
+
     async count(where?: (entity: T) => FilterBase) {
         let dl = new DataList(this.entity);
         return await dl.count(where);

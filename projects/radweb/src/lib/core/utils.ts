@@ -869,17 +869,7 @@ export class Column<dataType>  {
   __setEntity(e: Entity<any>) {
     this._entity = e;
   }
-  get entity() { return this._entity.lookup; }
-  lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter?: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
-    if (!filter)
-      filter = <any>this;
-    return this._entity.lookup(lookupEntity, filter);
-  }
-  async  lookupAsync<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter?: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): Promise<entityType> {
-    if (!filter)
-      filter = <any>this;
-    return this._entity.lookupAsync(lookupEntity, filter);
-  }
+
   __isVirtual() {
     if (this.__settings && this.__settings.virtualData)
       return true;
@@ -1422,36 +1412,6 @@ export class Entity<idType> {
 
   }
 
-  lookup<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
-
-    let key = lookupEntity.__getName();
-    let lookup: Lookup<lookupIdType, entityType>;
-    this.source.__lookupCache.forEach(l => {
-      if (l.key == key)
-        lookup = l.lookup;
-    });
-    if (!lookup) {
-      lookup = new Lookup(lookupEntity);
-      this.source.__lookupCache.push({ key, lookup });
-    }
-    return lookup.get(filter);
-
-  }
-  lookupAsync<lookupIdType, entityType extends Entity<lookupIdType>>(lookupEntity: entityType, filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): Promise<entityType> {
-
-    let key = lookupEntity.__getName();
-    let lookup: Lookup<lookupIdType, entityType>;
-    this.source.__lookupCache.forEach(l => {
-      if (l.key == key)
-        lookup = l.lookup;
-    });
-    if (!lookup) {
-      lookup = new Lookup(lookupEntity);
-      this.source.__lookupCache.push({ key, lookup });
-    }
-    return lookup.whenGet(filter);
-
-  }
 
 }
 export class ColumnHashSet {
@@ -1559,7 +1519,7 @@ export class EntitySource<T extends Entity<any>>
   async count(where?: FilterBase) {
     return this._provider.count(where);
   }
-  __lookupCache: LookupCache<any>[] = [];
+  
 
   async max(col: NumberColumn, filter?: FilterBase): Promise<number> {
     let x = await this.find({ where: filter, limit: 1, orderBy: new Sort({ column: col, descending: true }) });
