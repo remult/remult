@@ -132,31 +132,31 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         let key = this.entity.__getName();
         let lookup: Lookup<lookupIdType, T>;
         this._lookupCache.forEach(l => {
-          if (l.key == key)
-            lookup = l.lookup;
+            if (l.key == key)
+                lookup = l.lookup;
         });
         if (!lookup) {
-          lookup = new Lookup(this.entity);
-          this._lookupCache.push({ key, lookup });
+            lookup = new Lookup(this.entity);
+            this._lookupCache.push({ key, lookup });
         }
         return lookup.get(filter);
-    
-      }
-      lookupAsync( filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): Promise<T> {
-    
+
+    }
+    lookupAsync(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): Promise<T> {
+
         let key = this.entity.__getName();
         let lookup: Lookup<lookupIdType, T>;
         this._lookupCache.forEach(l => {
-          if (l.key == key)
-            lookup = l.lookup;
+            if (l.key == key)
+                lookup = l.lookup;
         });
         if (!lookup) {
-          lookup = new Lookup(this.entity);
-          this._lookupCache.push({ key, lookup });
+            lookup = new Lookup(this.entity);
+            this._lookupCache.push({ key, lookup });
         }
         return lookup.whenGet(filter);
-    
-      }
+
+    }
 
 
     async count(where?: (entity: T) => FilterBase) {
@@ -207,19 +207,18 @@ export const allEntities: EntityType[] = [];
 
 
 export function EntityClass<T extends EntityType>(theEntityClass: T) {
-
+    let original =  theEntityClass;
     let f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);
             this._setFactoryClassAndDoInitColumns(f);
-
+            if (!this.__options.name) {
+                this.__options.name = original.name;
+            }
         }
-        newProperty = "new property";
-        hello = "override";
     }
     allEntities.push(f);
     f.__key = theEntityClass.name + allEntities.indexOf(f);
-    // return new constructor (will override original)
     return f;
 }
 export interface UserInfo {

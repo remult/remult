@@ -1130,7 +1130,7 @@ export class Entity<idType> {
     }
     else {
       this.__options = {
-        name: this.constructor.name
+        name:undefined
       };
     }
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
@@ -1202,9 +1202,6 @@ export class Entity<idType> {
 
 
   __getName() {
-    if (!this.__options.name) {
-      this.__options.name = this.constructor.name;
-    }
     return this.__options.name;
   }
   __getDbName() {
