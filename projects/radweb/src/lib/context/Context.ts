@@ -201,40 +201,24 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 }
 export interface EntityType {
     new(...args: any[]): Entity<any>;
+    __key: string;
 }
 export const allEntities: EntityType[] = [];
 
 
-export function EntityClass(theEntityClass: EntityType) {
+export function EntityClass<T extends EntityType>(theEntityClass: T) {
 
-    var original = theEntityClass;
+    let f = class extends theEntityClass {
+        constructor(...args: any[]) {
+            super(...args);
+            this._setFactoryClassAndDoInitColumns(f);
 
-    // a utility function to generate instances of a class
-    function construct(constructor: any, args: any[]) {
-        var c: any = function () {
-            return constructor.apply(this, args);
         }
-        c.prototype = constructor.prototype;
-        return new c();
-    }
-    let newEntityType: any;
-    // the new constructor behaviour
-    var f: any = function (...args: any[]) {
-
-        let r = construct(original, args);
-        r._setFactoryClassAndDoInitColumns(newEntityType);
-        return r;
-    }
-    newEntityType = f;
-
-    // copy prototype so intanceof operator still works
-    f.prototype = original.prototype;
-    // copy static methods
-    for (let x in original) {
-        f[x] = (<any>original)[x];
+        newProperty = "new property";
+        hello = "override";
     }
     allEntities.push(f);
-    f.__key = original.name + allEntities.indexOf(f);
+    f.__key = theEntityClass.name + allEntities.indexOf(f);
     // return new constructor (will override original)
     return f;
 }

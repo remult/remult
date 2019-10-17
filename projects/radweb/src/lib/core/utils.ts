@@ -1137,6 +1137,7 @@ export class Entity<idType> {
     this._noContextErrorWithStack = new Error('@EntityClass not used or context was not set for ' + this.constructor.name);
 
   }
+  static __key: string;
   private entityType: EntityType;
   _noContextErrorWithStack: Error;
   private __context: Context;
