@@ -3,13 +3,13 @@ import { DataProvider, FilterBase, FindOptions } from "./dataInterfaces1";
 
 
 class LogSQLConnectionProvider implements SQLConnectionProvider {
-  constructor(private origin: SQLConnectionProvider) { }
+  constructor(private origin: SQLConnectionProvider, private allQueries: boolean) { }
   createCommand(): SQLCommand {
-    return new LogSQLCommand(this.origin.createCommand());
+    return new LogSQLCommand(this.origin.createCommand(), this.allQueries);
   }
 }
 class LogSQLCommand implements SQLCommand {
-  constructor(private origin: SQLCommand) {
+  constructor(private origin: SQLCommand, private allQueries: boolean) {
 
   }
   args: any = {};
@@ -19,12 +19,17 @@ class LogSQLCommand implements SQLCommand {
     return r;
   }
   async query(sql: string): Promise<SQLQueryResult> {
-    console.log(sql, this.args);
+    if (this.allQueries) {
+      console.log('Query:', sql);
+      console.log("Arguments:", this.args);
+    }
     try {
       return await this.origin.query(sql);
     }
     catch (err) {
-      console.log('error:', err, sql);
+      console.log('Query:', sql);
+      console.log("Arguments", this.args);
+      console.log('Error:', err);
       throw err;
     }
   }
@@ -36,9 +41,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     this.sql = ActualSQLServerDataProvider.decorateSqlConnectionProvider(sql);
   }
   static decorateSqlConnectionProvider(sql: SQLConnectionProvider) {
-    if (ActualSQLServerDataProvider.LogToConsole)
-      return new LogSQLConnectionProvider(sql);
-    return sql;
+    return new LogSQLConnectionProvider(sql, ActualSQLServerDataProvider.LogToConsole);
   }
   createDirectSQLCommand() {
     return this.sql.createCommand();
