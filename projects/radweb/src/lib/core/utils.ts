@@ -29,70 +29,9 @@ export const testing = 'testing 123';
 
 
 
-declare var $: any;
-export class SelectPopup<rowType extends Entity<any>> {
-  constructor(
-    private modalList: GridSettings<rowType>, settings?: SelectPopupSettings) {
-    this.modalId = makeid();
-    if (settings) {
-      if (settings.title)
-        this.title = settings.title;
-      if (settings.searchColumn)
-        this.searchColumn = settings.searchColumn;
-    }
-    if (!this.title)
-      this.title = "Select " + modalList.caption;
-  }
-  title: string;
-  search() {
-    this.modalList.get({ where: x => this.searchColumn.isEqualTo(this.searchText + "*") });
 
-  }
-  searchText: string;
-  private searchColumn: Column<any>;
 
-  modalId: string = "myModal";
-  private onSelect: (selected: rowType) => void;
-  modalSelect() {
-    this.onSelect(this.modalList.currentRow);
-    $("#" + this.modalId).modal('hide');
-  }
-  show(onSelect: (selected: rowType) => void) {
-    if (!this.searchColumn) {
-      for (let col of this.modalList.columns.items) {
-        if (col.column && col.column.jsonName != "id" && (!col.inputType || col.inputType == "text")) {
-          this.searchColumn = col.column;
-          break;
-        }
-      }
-    }
-    this.onSelect = onSelect;
-    $("#" + this.modalId).modal('show');
-  }
-  searchColumnCaption() {
-    /*for (let item of this.modalList.columns.items) {
-      if (item.key == this.searchColumn)
-        return item.caption;
-    }*/
-    if (this.searchColumn)
-      return this.searchColumn.caption;
-    return "";
-  }
-}
-export interface SelectPopupSettings {
-  title?: string;
-  searchColumn?: Column<any>;
-}
 
-function makeid() {
-  var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (var i = 0; i < 5; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;
-}
 
 
 
@@ -197,7 +136,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
     }
 
-    this.popupSettings = new SelectPopup(this);
+    
   }
 
   currList: ColumnSetting<any>[];
@@ -260,12 +199,8 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   }
 
-  popupSettings: SelectPopup<rowType>;
-  showSelectPopup(onSelect: (selected: rowType) => void) {
-
-
-    this.popupSettings.show(onSelect);
-  }
+  
+  
 
 
 
