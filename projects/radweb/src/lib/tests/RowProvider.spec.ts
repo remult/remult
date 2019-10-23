@@ -6,7 +6,7 @@ import { GridSettings, Lookup, ColumnSetting } from '../core/utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase'
 import { itAsync, Done } from './testHelper.spec';
 
-import { Categories } from './testModel/models';
+import { Categories, Status } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
 import { Context } from '../context/Context';
@@ -39,15 +39,17 @@ export class Language {
 
 
 
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string) => Promise<void>) => Promise<void>, settings?: EntityOptions) {
+export async function createData(doInsert: (insert: (id: number, name: string, description?: string,status?:Status) => Promise<void>) => Promise<void>, settings?: EntityOptions) {
 
   let c = new Categories(settings);
   c.setSource(new InMemoryDataProvider());
-  await doInsert(async (id, name, description) => {
+  await doInsert(async (id, name, description,status) => {
     await c.source.Insert(c => {
       c.id.value = id;
       c.categoryName.value = name;
       c.description.value = description;
+      if (status)
+        c.status.value = status;
     });
   });
   return c;

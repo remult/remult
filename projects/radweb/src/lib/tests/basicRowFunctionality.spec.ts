@@ -5,7 +5,7 @@ import { DataApi, DataApiError, DataApiResponse } from '../server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase';
 import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
-import { Categories, environment } from './testModel/models';
+import { Categories, environment, Status } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { Context, Role, Allowed, EntityClass, ServerContext } from '../context/Context';
 import { WebSqlDataProvider } from '../core/WebSqlDataProvider';
@@ -651,6 +651,29 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("getArray works with filter and multiple values with closed list columns", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam',undefined,Status.open);
+      i(2, 'yael',undefined,Status.closed);
+      i(3, 'yoni',undefined,Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+      expect(data[0].id).toBe(2);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "status_ne")
+          return ["0", "2"];
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+    });
+    d.test();
+  });
   itAsync("getArray works with filter contains", async () => {
     let c = await createData(async (i) => {
       i(1, 'noam');
@@ -933,7 +956,7 @@ describe("data api", () => {
 
   it("columnsAreOk", () => {
     let c = new Categories();
-    expect(c.__iterateColumns().length).toBe(5);
+    expect(c.__iterateColumns().length).toBe(6);
 
   });
 

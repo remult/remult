@@ -270,6 +270,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     //this.dataGridDiv.nativeElement.scrollTop = 0;
   }
   rightToLeft = false;
+  //@ts-ignore
   @ViewChild('dataGridDiv')
   dataGridDiv: ElementRef;
   getTotalRows() {
