@@ -41,8 +41,9 @@ export class DataAreaCompnent implements OnChanges {
 
   }
   getColumnsClass() {
-    if (this.columns > 1)
+    if (this.columns >= 1)
       return "col-sm-" + 12 / this.columns;
+      
   }
 
 
