@@ -1,7 +1,7 @@
 {
   "name": "radweb",
   "schematics": "./schematics/collection.json",
-  "version": "3.1.30",
+  "version": "3.1.31",
   "description": "radweb",
   "license": "MIT",
   "author": {

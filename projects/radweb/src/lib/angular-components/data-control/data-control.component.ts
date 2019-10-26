@@ -1,5 +1,5 @@
 
-import { ColumnCollection, ColumnSetting, Entity } from '../../core/utils';
+import { ColumnCollection, ColumnSetting, Entity, Column } from '../../core/utils';
 import { Component, Input } from '@angular/core';
 @Component({
   selector: 'data-control',
@@ -34,9 +34,14 @@ import { Component, Input } from '@angular/core';
 })
 export class DataControlComponent {
   @Input() map: ColumnSetting<any>;
+  @Input() set column(value:Column<any>){
+    this.map = {
+      column:value
+    };
+  }
   @Input() record: Entity<any>;
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection<any>;
+  @Input() settings: ColumnCollection<any> = new ColumnCollection<any>(undefined, () => true, undefined, undefined);
   showDescription() {
 
     return (this.map.column) && this.map.getValue;
@@ -64,7 +69,7 @@ export class DataControlComponent {
   showTextBox() {
     return !this.isSelect() && !this.showCheckbox();
   }
-  showCheckbox(){
+  showCheckbox() {
     return this.settings._getColDataType(this.map) == 'checkbox'
   }
 
