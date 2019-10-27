@@ -136,7 +136,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
     }
 
-    
+
   }
 
   currList: ColumnSetting<any>[];
@@ -199,8 +199,8 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   }
 
-  
-  
+
+
 
 
 
@@ -1113,7 +1113,7 @@ export interface EntityOptions {
 }
 //@dynamic
 export class Entity<idType> {
-  constructor(options?: EntityOptions | string, 
+  constructor(options?: EntityOptions | string,
     //@internal
     public factory?: () => Entity<idType>) {
     if (!factory) {
@@ -1133,20 +1133,20 @@ export class Entity<idType> {
     }
     else {
       this.__options = {
-        name:undefined
+        name: undefined
       };
     }
     this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
     this._noContextErrorWithStack = new Error('@EntityClass not used or context was not set for ' + this.constructor.name);
 
   }
-  
+
   static __key: string;
   //@internal
-   __entityType: EntityType;
+  __entityType: EntityType;
   _noContextErrorWithStack: Error;
   //@internal
-   __context: Context;
+  __context: Context;
   _setContext(context: Context) {
     this.__context = context;
   }
@@ -1195,7 +1195,7 @@ export class Entity<idType> {
 
   }
   //@internal
-   __createInstance() {
+  __createInstance() {
     if (!this.__context) {
 
       throw this._noContextErrorWithStack;
@@ -1222,18 +1222,18 @@ export class Entity<idType> {
     }
     return this.__options.caption;
   }
-  
+
   __entityData: __EntityValueProvider;
 
   //@internal
-   __onSavingRow: () => void | Promise<void> = () => { };
+  __onSavingRow: () => void | Promise<void> = () => { };
   //@internal
-   __onValidate: () => void | Promise<void> = () => { };
+  __onValidate: () => void | Promise<void> = () => { };
 
   error: string;
   __idColumn: Column<idType>;
-  
-   __initColumns(idColumn?: Column<idType>) {
+
+  __initColumns(idColumn?: Column<idType>) {
     if (idColumn)
       this.__idColumn = idColumn;
     let x = <any>this;
@@ -1364,7 +1364,7 @@ export class Entity<idType> {
     this.__clearErrors();
   }
   //@internal
-   __clearErrors() {
+  __clearErrors() {
     this.__iterateColumns().forEach(c => c.__clearErrors());
     this.error = undefined;
   }
@@ -1396,7 +1396,7 @@ export class Entity<idType> {
 
   source: EntitySource<this>;
   //@internal
-   __applyColumn(y: Column<any>) {
+  __applyColumn(y: Column<any>) {
     if (!y.caption)
       y.caption = makeTitle(y.jsonName);
     y.__valueProvider = this.__entityData;
@@ -1405,7 +1405,7 @@ export class Entity<idType> {
     y.__setEntity(this);
   }
   //@internal
-   __columns: Column<any>[] = [];
+  __columns: Column<any>[] = [];
   __getColumn<T>(col: Column<T>) {
 
     return this.__getColumnByJsonName(col.jsonName);
@@ -1503,10 +1503,10 @@ export class CompoundIdColumn extends Column<string>
 export class EntitySource<T extends Entity<any>>
 {
   private _provider: DataProvider;
-  constructor(name: string, 
-    
-    private  factory: () => T,
-     dataProvider: DataProviderFactory) {
+  constructor(name: string,
+
+    private factory: () => T,
+    dataProvider: DataProviderFactory) {
     if (dataProvider)
       this._provider = dataProvider.provideFor(name, factory);
   }
@@ -1533,7 +1533,7 @@ export class EntitySource<T extends Entity<any>>
   async count(where?: FilterBase) {
     return this._provider.count(where);
   }
-  
+
 
   async max(col: NumberColumn, filter?: FilterBase): Promise<number> {
     let x = await this.find({ where: filter, limit: 1, orderBy: new Sort({ column: col, descending: true }) });
@@ -1786,7 +1786,7 @@ export class BoolStorage implements ColumnStorage<any>{
   }
   fromDb(val: any): any {
     if (isString(val))
-      return val==="true";
+      return val === "true";
     return val;
   }
 
@@ -2066,6 +2066,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
   }
 
   _getError(col: ColumnSetting<any>, r: Entity<any>) {
+    if (!col.column)
+      return undefined;
     return this.__getColumn(col, r).error;
   }
   autoGenerateColumnsBasedOnData(r: Entity<any>) {
@@ -2217,8 +2219,8 @@ export interface SQLQueryResult {
 export interface SQLConnectionProvider {
   createCommand(): SQLCommand;
 }
-export interface SupportsDirectSql{
-  getDirectSql():DirectSQL;
+export interface SupportsDirectSql {
+  getDirectSql(): DirectSQL;
 }
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {

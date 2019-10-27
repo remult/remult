@@ -7,9 +7,11 @@ export class WebSqlDataProvider implements DataProviderFactory, RowsOfDataForTes
         [tableName: string]: any;
     };
     /** @internal */
+    //@ts-ignore
     db: Database;
 
     constructor(private databaseName: string) {
+        //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
     provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
