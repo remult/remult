@@ -10,7 +10,7 @@ import {
 } from './dataInterfaces1';
 import { Allowed, Context, EntityType, DirectSQL } from '../context/Context';
 import { DataApiSettings } from '../server/DataApi';
-import { isBoolean, isString } from 'util';
+import { isBoolean, isString, isArray } from 'util';
 
 
 
@@ -21,6 +21,7 @@ import { isBoolean, isString } from 'util';
 
 export interface dataAreaSettings {
   columns: ColumnCollection<any>;
+  lines:ColumnSetting<any>[][];
 }
 
 
@@ -51,7 +52,7 @@ export interface DropDownItem {
   caption?: any;
 }
 
-
+export type DataArealColumnSetting<rowType> = ColumnSetting<rowType> | ColumnSetting<rowType>[];
 
 
 
@@ -59,23 +60,41 @@ export interface DropDownItem {
 
 
 export interface IDataAreaSettings<rowType> {
-  columnSettings?: (rowType: rowType) => ColumnSetting<rowType>[];
+  columnSettings?: (rowType: rowType) => DataArealColumnSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
 }
 
 export class DataAreaSettings<rowType extends Entity<any>>
 {
-
+  lines: ColumnSetting<any>[][] = [];
   constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
     if (columns == undefined) {
       columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true);
       columns.numOfColumnsInGrid = 0;
       this.columns = columns;
-
     }
-    if (settings && settings.columnSettings)
-      columns.add(...settings.columnSettings(entity));
+    if (settings && settings.columnSettings) {
+
+
+      for (const colSettings of settings.columnSettings(entity)) {
+        if (isArray(colSettings)) {
+          let x = columns.items.length;
+          columns.add(...colSettings);
+          let line = [];
+          for (let index = x; index < columns.items.length; index++) {
+            line.push(columns.items[index]);
+          }
+          this.lines.push(line);
+        } else {
+          columns.add(<ColumnSetting<rowType>>colSettings);
+          this.lines.push([columns.items[columns.items.length - 1]]);
+
+        }
+      }
+      console.log(this.lines);
+      
+    }
 
   }
 }
@@ -531,6 +550,8 @@ export interface ColumnSetting<rowType> {
   defaultValue?: (row: rowType) => any;
   onUserChangedValue?: (row: rowType) => void;
   click?: rowEvent<rowType>;
+  allowClick?:(row:rowType)=>boolean;
+  clickIcon?:string;
   dropDown?: DropDownOptions;
   column?: Column<any>;
   width?: string;

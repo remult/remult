@@ -20,8 +20,8 @@
             </select>
         </div>
 
-        <button mat-icon-button matSuffix *ngIf="map.click" (click)="settings._click(map,record)">
-            <mat-icon>keyboard_arrow_down</mat-icon>
+        <button mat-icon-button matSuffix *ngIf="showClick()" (click)="settings._click(map,record)">
+            <mat-icon>{{getClickIcon()}}  </mat-icon>
         </button>
 
         <mat-error *ngIf="getError()" [id]="theId">{{getError()}}</mat-error>

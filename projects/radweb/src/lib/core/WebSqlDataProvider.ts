@@ -59,6 +59,7 @@ export class WebSqlDataProvider implements DataProviderFactory, RowsOfDataForTes
 }
 
 class WebSqlBridgeToSQLConnection implements SQLConnectionProvider {
+    //@ts-ignore
     constructor(private source: Database) {
     }
     createCommand(): SQLCommand {
@@ -67,6 +68,7 @@ class WebSqlBridgeToSQLConnection implements SQLConnectionProvider {
 }
 
 class WebSqlBridgeToSQLCommand implements SQLCommand {
+    //@ts-ignore
     constructor(private source: Database) {
     }
     values: any[] = [];
@@ -107,6 +109,7 @@ class WebSqlBridgeToSQLQueryResult implements SQLQueryResult {
         }
         return -1;
     }
+    //@ts-ignore
     constructor(private r: SQLResultSet) {
         this.rows = [];
         for (let i = 0; i < r.rows.length; i++) {

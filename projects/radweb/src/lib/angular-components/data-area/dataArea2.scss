@@ -1,0 +1,17 @@
+.one-line {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .one-line >  * {
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+    flex-basis: 1px;
+    flex-grow: 1;
+  }
+  .one-line >  :first-child {
+    padding-right: 0em;
+  }
+  .one-line >  :last-child {
+    padding-left: 0em;
+  }

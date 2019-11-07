@@ -6,7 +6,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 @Component({
   selector: 'data-control2',
   templateUrl: './data-control2.component.html',
-  styleUrls:['./data-control2.component.scss']
+  styleUrls: ['./data-control2.component.scss']
 })
 export class DataControl2Component {
   @Input() map: ColumnSetting<any>;
@@ -16,20 +16,34 @@ export class DataControl2Component {
     };
     this.map.column.__decorateDataSettings(this.map);
   }
-  theId:any;
+  theId: any;
   @Input() record: Entity<any>;
   @Input() notReadonly: false;
   @Input() settings: ColumnCollection<any> = new ColumnCollection<any>(undefined, () => true, undefined, undefined);
   showDescription() {
 
-    return (this.map.column) && this.map.getValue||!this._getEditable();
+    return (this.map.column) && this.map.getValue || !this._getEditable();
+  }
+  showClick() {
+    if (!this.map.click)
+      return false;
+    if (this.map.allowClick === undefined) {
+      return true;
+    }
+    return this.map.allowClick(this.record);
+  }
+  getClickIcon() {
+    if (this.map.clickIcon)
+      return this.map.clickIcon;
+    return 'keyboard_arrow_down'
   }
   dataControlStyle() {
+
     return this.settings.__dataControlStyle(this.map);
   }
   _getColumn() {
     if (!this.map.column)
-    return new StringColumn();
+      return new StringColumn();
     return this.settings.__getColumn(this.map, this.record);
 
   }
@@ -57,19 +71,19 @@ export class DataControl2Component {
   }
   getStyle() {
     if (this.showDescription()) {
-      if (this.map.hideDataOnInput||!this._getEditable()) {
+      if (this.map.hideDataOnInput || !this._getEditable()) {
         return { display: 'none' };
       }
-      return  {width:'50px'};
+      return { width: '50px' };
     }
     return {};
   }
-  getFloatLabel(){
-    if (this.showDescription()){
-      if (this.settings._getColDisplayValue(this.map,this.record))
-      return 'always';
+  getFloatLabel() {
+    if (this.showDescription()) {
+      if (this.settings._getColDisplayValue(this.map, this.record))
+        return 'always';
     }
-    return'';
+    return '';
   }
 
 
