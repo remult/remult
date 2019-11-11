@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { DataControlComponent } from './angular-components/data-control/data-control.component';
 import { DataControl2Component } from './angular-components/data-control/data-control2.component';
+import { DataControl3Component } from './angular-components/data-control/data-control3.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataGridComponent } from './angular-components/data-grid/data-grid.component';
@@ -27,7 +28,7 @@ import { DataArea2Compnent } from './angular-components/data-area/dataArea2';
 
 
 @NgModule({
-  declarations: [DataControlComponent, DataControl2Component, DataArea2Compnent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, WaitComponent],
+  declarations: [DataControlComponent, DataControl2Component, DataArea2Compnent, DataGridComponent, ColumnDesigner, DataFilterInfoComponent, DataAreaCompnent, DataGrid2Component, WaitComponent,DataControl3Component],
   imports: [FormsModule, CommonModule, HttpClientModule, MatProgressSpinnerModule, MatDialogModule, BrowserAnimationsModule,
     MatFormFieldModule,
     MatButtonModule,

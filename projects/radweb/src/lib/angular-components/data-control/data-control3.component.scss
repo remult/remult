@@ -1,0 +1,27 @@
+.my-select::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  margin-top: -2.5px;
+  pointer-events: none;
+  color: rgba(0, 0, 0, 0.54);
+  margin-top: -5px;
+}
+.rtl-select::after {
+  right: auto;
+  left: 0;
+}
+
+.my-select {
+  position: relative;
+  width:100%;
+}
+.data-control3 {
+  display: flex;
+}

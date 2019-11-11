@@ -1,0 +1,29 @@
+<div *ngIf="this.showFilterButton">
+    <ul>
+        <li *ngFor="let map of settings.columns.filterHelper.filterColumns" (click)="this.showEditFilter(map)">
+            {{map.caption}}: {{this.getCurrentFilterValue(map)}}
+        </li>
+        <li (click)="this.showAddAnotherFilterDialog()" *ngIf="!showAddFilter&&!editFilterVisible">...</li>
+    </ul>
+    <div *ngIf="this.editFilterVisible">
+        {{this.filterColumnToAdd.caption}}:
+        <data-control2 *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
+            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control2>
+        <button mat-icon-button (click)="this.confirmEditFilter()">
+            <mat-icon>check</mat-icon>
+        </button>
+        <button mat-icon-button (click)="this.clearEditFilter()">
+            <mat-icon>clear</mat-icon>
+        </button>
+    </div>
+    <div *ngIf="this.showAddFilter">
+        <select [(ngModel)]="this.filterColumnToAdd" class="form-control selectColumnCombo"
+            (change)="settings.columns.colListChanged()">
+            <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}} </option>
+        </select>
+        <data-control2 *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
+            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control2>
+        <button mat-icon-button (click)="this.addFilter()"><mat-icon>check</mat-icon></button>
+        <button mat-icon-button (click)="this.cancelAddNewFilter()"><mat-icon>clear</mat-icon></button>
+    </div>
+</div>

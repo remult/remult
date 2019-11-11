@@ -92,7 +92,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
         }
       }
-      console.log(this.lines);
+      
       
     }
 
@@ -567,6 +567,7 @@ export interface RowButton<rowType extends Entity<any>> {
   name?: string;
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
+  icon?:string;
   cssClass?: (string | ((row: rowType) => string));
 
 }
