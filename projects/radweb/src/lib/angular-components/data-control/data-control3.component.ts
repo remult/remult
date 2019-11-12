@@ -16,18 +16,11 @@ export class DataControl3Component {
     };
     this.map.column.__decorateDataSettings(this.map);
   }
-  rightToLeft=false;
-  ngAfterViewInit(): void {
-    if (window && window.getComputedStyle && this.dataGridDiv) {
-      this.rightToLeft = window.getComputedStyle(this.dataGridDiv.nativeElement, null).getPropertyValue('direction') == 'rtl';
-
-
-    }
-  }
-  @ViewChild('myDiv')
-  dataGridDiv: ElementRef;
+  @Input()   rightToLeft=false;
+ 
   theId: any;
   @Input() record: Entity<any>;
+  
   @Input() notReadonly: false;
   @Input() settings: ColumnCollection<any> = new ColumnCollection<any>(undefined, () => true, undefined, undefined);
   showDescription() {
@@ -86,7 +79,9 @@ export class DataControl3Component {
       }
       return { width: '50px' };
     }
-    return {};
+    return {
+      width:'100%'
+    };
   }
   getFloatLabel() {
     if (this.showDescription()) {

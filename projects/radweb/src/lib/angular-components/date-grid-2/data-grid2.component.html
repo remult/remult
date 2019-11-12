@@ -43,12 +43,15 @@
             <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns()"
               [className]="_getRowColumnClass(map,record)" [style.flex]="getColFlex(map)"
               [style.width]="getColWidth(map)">
-              <data-control3 [settings]="settings.columns" [map]="map" [record]="record"></data-control3>
+              <data-control3 [settings]="settings.columns" [map]="map" [record]="record" [rightToLeft]="rightToLeft"></data-control3>
             </div>
             <div class="dataGridButtonCell" *ngIf="rowButtons.length>0&&displayButtons" style="white-space:nowrap">
               <ng-container *ngFor="let b of rowButtons">
-                <button mat-icon-button *ngIf="b.visible(record)" (click)="b.click(record)" class="row-button">
+                <button mat-icon-button *ngIf="b.visible(record)&&b.icon" (click)="b.click(record)" class="row-button">
                   <mat-icon *ngIf="b.icon">{{b.icon}} </mat-icon> {{b.name}}
+                </button>
+                <button mat-raised-button *ngIf="b.visible(record)&&!b.icon" (click)="b.click(record)" class="row-button">
+                   {{b.name}}
                 </button>
               </ng-container>
 

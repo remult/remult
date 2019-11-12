@@ -1,3 +1,5 @@
+
+
 .my-select::after {
   content: "";
   width: 0;
@@ -24,4 +26,9 @@
 }
 .data-control3 {
   display: flex;
+  width:100%;
+}
+.row-button{
+  height:auto;
+  line-height: normal;
 }
