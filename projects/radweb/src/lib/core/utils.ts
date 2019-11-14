@@ -80,6 +80,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
       for (const colSettings of settings.columnSettings(entity)) {
         if (isArray(colSettings)) {
           let x = columns.items.length;
+          //@ts-ignore
           columns.add(...colSettings);
           let line = [];
           for (let index = x; index < columns.items.length; index++) {
