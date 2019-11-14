@@ -1,0 +1,30 @@
+.dense-form-field {
+  .mat-form-field-infix {
+    padding: 0.3em 0 0.3em 0 !important;
+  }
+  .mat-form-field-wrapper {
+    padding-bottom: 0.5em !important;
+  }
+  .mat-form-field-subscript-wrapper {
+    padding-top: 0.6666666667em !important;
+  }
+  .mat-form-field-label {
+    top: 1.2em !important;
+  }
+  .mat-error {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label {
+    transform: translateY(-1em) scale(0.75) !important;
+  }
+}
+.dense-form-field.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label {
+  transform: translateY(-1em) scale(0.75) !important;
+}
+.full-width-form-field {
+  width: 100%;
+  .mat-form-field-infix {
+    width: auto !important;
+  }
+}

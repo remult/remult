@@ -71,7 +71,7 @@ export function hello(_options: Schema): Rule {
           const element = j.projects[p];
           element.architect.serve.options.proxyConfig = "proxy.conf.json";
           //remove when we remove bootstrap
-          element.architect.build.options.styles.push("./node_modules/bootstrap3/dist/css/bootstrap.min.css");
+          element.architect.build.options.styles.push("./node_modules/radweb/input-styles.scss");
           return;
         }
       }
@@ -120,7 +120,6 @@ export function hello(_options: Schema): Rule {
       json.scripts["server:build-watch"] = "tsc -p tsconfig.server.json --watch";
       json.scripts["server:build"] = "tsc -p tsconfig.server.json";
       json.scripts["server:debug"] = "node --inspect --debug-brk dist-server/server/server.js";
-      json.dependencies["bootstrap3"] = "^3.3.5";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
       json.dependencies["radweb"] = "^3.0.11";

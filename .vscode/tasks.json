@@ -68,6 +68,11 @@
             "type": "npm",
             "script": "docs",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "radweb:copy:styles",
+            "problemMatcher": []
         }
     ]
 }
