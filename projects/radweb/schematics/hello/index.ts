@@ -32,8 +32,7 @@ export function hello(_options: Schema): Rule {
     editGitIgnore(tree);
     let entryComponents = [{ name: 'YesNoQuestionComponent', path: './common/yes-no-question/yes-no-question.component' },
     { name: 'SignInComponent', path: './common/sign-in/sign-in.component' },
-    { name: 'SelectPopupComponent', path: './common/select-popup/select-popup.component' },
-    { name: 'InputAreaComponent', path: './common/input-area/input-area.component' }
+    
     ];
 
     addToNgModule(tree, {
@@ -58,7 +57,7 @@ export function hello(_options: Schema): Rule {
         { name: 'MatInputModule', path: '@angular/material/input' },
         { name: 'MatButtonModule', path: '@angular/material/button' },
         { name: 'MatIconModule', path: '@angular/material/icon' },
-        { name: 'RadWebModule', path: 'radweb' },
+        { name: 'RemultModule', path: '@remult/core' },
       ],
       providers: [
         { name: 'DialogService', path: './common/dialog' },
@@ -74,7 +73,7 @@ export function hello(_options: Schema): Rule {
         if (j.projects.hasOwnProperty(p)) {
           const element = j.projects[p];
           element.architect.serve.options.proxyConfig = "proxy.conf.json";
-          element.architect.build.options.styles.push("./node_modules/radweb/input-styles.scss");
+          element.architect.build.options.styles.push("./node_modules/@remult/core/input-styles.scss");
           return;
         }
       }
@@ -125,9 +124,9 @@ export function hello(_options: Schema): Rule {
       json.scripts["server:debug"] = "node --inspect --debug-brk dist-server/server/server.js";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["radweb"] = "^3.0.11";
-      json.dependencies["radweb-server"] = "^3.0.5";
-      json.dependencies["radweb-server-postgres"] = "^3.0.2";
+      json.dependencies["@remult/core"] = "^1.0.0";
+      json.dependencies["@remult/server"] = "^1.0.0";
+      json.dependencies["@remult/server-postgres"] = "^1.0.0";
       json.dependencies["@angular/material"] = "^7.3.4";
       json.dependencies["pg"] = "^7.6.1";
       json.dependencies["express-force-https"] = "^1.0.0";

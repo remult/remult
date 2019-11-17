@@ -2,12 +2,12 @@ import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, PostgrestSchemaBuilder } from 'radweb-server-postgres';
+import { PostgresDataProvider, PostgrestSchemaBuilder } from '@remult/server-postgres';
 import * as passwordHash from 'password-hash';
 
 import '../app.module';
 
-import { ActualSQLServerDataProvider } from 'radweb';
+import { ActualSQLServerDataProvider } from '@remult/core';
 import { Users } from '../users/users';
 
 

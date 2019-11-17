@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { JwtSessionManager } from 'radweb';
+import { JwtSessionManager } from '@remult/core';
 import { ServerSignIn } from "../../users/server-sign-in";
 import { DialogService } from '../dialog';
 

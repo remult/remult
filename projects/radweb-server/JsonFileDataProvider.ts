@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import {  DataProviderFactory, DataProvider,Entity, JsonStorageDataProvider, JsonStorage, ActualInMemoryDataProvider  } from 'radweb';
+import {  DataProviderFactory, DataProvider,Entity, JsonStorageDataProvider, JsonStorage, ActualInMemoryDataProvider  } from '@remult/core';
 
 
 

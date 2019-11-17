@@ -4,7 +4,7 @@ We can easily add roles, and configure our application to use them.
 
 In the `roles.ts` file:
 ```csdiff
-import { SignedInGuard } from 'radweb';
+import { SignedInGuard } from '@remult/core';
 import { Injectable } from '@angular/core';
 
 export const Roles = { 
@@ -63,7 +63,7 @@ Now that we've secured the API we would like to restrict access to the component
 
 We'll start by creating a new `Guard` in the `roles.ts` file:
 ```csdiff
-import { SignedInGuard } from 'radweb';
+import { SignedInGuard } from '@remult/core';
 import { Injectable } from '@angular/core';
 
 export const Roles = { 
@@ -183,9 +183,9 @@ export class UsersComponent implements OnInit {
 The `server-sign-in.ts` file contains the `signIn` function that signs the user in. In that function we would like to add the `productManager` role if the user has it.
 ```ts
 import { Roles } from './roles';
-import { JWTCookieAuthorizationHelper } from 'radweb-server';
-import { ServerFunction } from 'radweb';
-import { UserInfo, Context } from 'radweb';
+import { JWTCookieAuthorizationHelper } from '@remult/core-server';
+import { ServerFunction } from '@remult/core';
+import { UserInfo, Context } from '@remult/core';
 import { Users } from './users';
 export class ServerSignIn {
     static helper: JWTCookieAuthorizationHelper;

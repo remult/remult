@@ -1,7 +1,7 @@
 One of the columns that is displayed on the grid is the `id` column, and although this value is important to the application, it has little value for the user, let's configure the `DataGrid` to only show the columns that we want. In the `products.component.ts` file
 ```csdiff
 import { Component, OnInit } from '@angular/core';
-import { Context } from 'radweb';
+import { Context } from '@remult/core';
 import { Products } from './products';
 
 @Component({
@@ -83,7 +83,7 @@ products = this.context.for(Products).gridSettings({
 We can add the `DataArea` with all the columns that are not included in the grid, by adding the `data-area` tag to the `products.component.html`
 
 ```csdiff
-  <data-grid2 [settings]="products" [height]="300"></data-grid2>
+  <data-grid [settings]="products" [height]="300"></data-grid>
 + <br>
 + <br>
 + <data-area [settings]="products"></data-area>
@@ -120,7 +120,7 @@ ngOnInit() {
 ```
 and in the `products.component.html` we'll use that `productsArea` settings:
 ```csdiff
-  <data-grid2 [settings]="products" [height]="300"></data-grid2>
+  <data-grid [settings]="products" [height]="300"></data-grid>
   <br>
   <br>
 - <data-area [settings]="products"></data-area>

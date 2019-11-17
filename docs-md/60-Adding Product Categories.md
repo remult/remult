@@ -28,7 +28,7 @@ const routes: Routes = [
 ## Step 3, add the Categories Entity
 In the `Categories` folder add a file called `categories.ts`
 ```csdiff
-import { IdEntity, StringColumn, EntityClass } from 'radweb';
+import { IdEntity, StringColumn, EntityClass } from '@remult/core';
 
 @EntityClass
 export class Categories extends IdEntity {
@@ -46,7 +46,7 @@ export class Categories extends IdEntity {
 in `categories.component.ts` 
 ```csdiff
 import { Component, OnInit } from '@angular/core';
-+import { Context } from 'radweb';
++import { Context } from '@remult/core';
 +import { Categories } from './categories';
 
 @Component({
@@ -69,7 +69,7 @@ export class CategoriesComponent implements OnInit {
 
 In the `categories.component.html`
 ```csdiff
- <data-grid2 [settings]="categories" height="300"></data-grid2>
+ <data-grid [settings]="categories" height="300"></data-grid>
 ```
 
 ## Add a few categories
@@ -79,7 +79,7 @@ In the `categories.component.html`
 ## Adding the Category to the Products Entity
 In the `products.ts` let's add the `category` field to our Entity
 ```csdiff
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from 'radweb';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {

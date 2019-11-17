@@ -1,4 +1,4 @@
-import { RadWebModule, NotSignedInGuard, SignedInGuard } from 'radweb';
+import { RemultModule as RemultModule, NotSignedInGuard, SignedInGuard } from '@remult/core';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route, ActivatedRouteSnapshot } from '@angular/router';
 import { HomeComponent } from './home/home.component';
@@ -22,7 +22,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes), RadWebModule],
+  imports: [RouterModule.forRoot(routes), RemultModule],
   providers: [AdminGuard],
   exports: [RouterModule]
 })

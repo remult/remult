@@ -1,7 +1,7 @@
-import { ServerContext, DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn, allEntities, SupportsDirectSql, DirectSQL } from 'radweb';
+import { ServerContext, DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn, allEntities, SupportsDirectSql, DirectSQL } from '@remult/core';
 
 import { Pool, QueryResult } from 'pg';
-import { ActualSQLServerDataProvider,ActualDirectSQL } from 'radweb';
+import { ActualSQLServerDataProvider,ActualDirectSQL } from '@remult/core';
 
 
 

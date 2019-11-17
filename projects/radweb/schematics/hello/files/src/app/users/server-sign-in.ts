@@ -1,7 +1,7 @@
 import { Roles } from './roles';
-import { JWTCookieAuthorizationHelper } from 'radweb-server';
-import { ServerFunction } from 'radweb';
-import { UserInfo, Context } from 'radweb';
+import { JWTCookieAuthorizationHelper } from '@remult/server';
+import { ServerFunction } from '@remult/core';
+import { UserInfo, Context } from '@remult/core';
 import { Users } from './users';
 export class ServerSignIn {
     static helper: JWTCookieAuthorizationHelper;

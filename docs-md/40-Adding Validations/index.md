@@ -1,6 +1,6 @@
 To validate that there is a price for the product, we'll define the `onValidate` event for the price column
 ```csdiff
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'radweb';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {
@@ -44,7 +44,7 @@ If you'll try to do the same update via an external tool you'll get an http stat
 
 Let's add some more validations:
 ```csdiff
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'radweb';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {

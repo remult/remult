@@ -1,6 +1,6 @@
 {
-  "name": "radweb-server",
-  "version": "3.0.5",
+  "name": "@remult/server",
+  "version": "1.0.0",
   "main":"index.js",
   "Dependencies": {
     "express": "^4.16.4",

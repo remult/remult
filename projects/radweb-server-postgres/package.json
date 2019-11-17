@@ -1,6 +1,6 @@
 {
-  "name": "radweb-server-postgres",
-  "version": "3.0.4",
+  "name": "@remult/server-postgres",
+  "version": "1.0.0",
   "main":"index.js",
   "Dependencies": {
     "pg": "^7.6.1"

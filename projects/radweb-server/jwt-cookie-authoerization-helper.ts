@@ -1,4 +1,4 @@
-import { DataApiServer, UserInfo } from 'radweb';
+import { DataApiServer, UserInfo } from '@remult/core';
 
 import * as jwt from 'jsonwebtoken';
 import { Request } from 'express';

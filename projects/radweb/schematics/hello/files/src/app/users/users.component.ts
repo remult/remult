@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Users } from './users';
-import { Context, ServerFunction } from 'radweb';
-  
+import { Context, ServerFunction } from '@remult/core';
+
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';
 
@@ -33,17 +33,20 @@ export class UsersComponent implements OnInit {
 
 
     ],
-    confirmDelete: (h, yes) => this.dialog.confirmDelete(h.name.value, yes),
+    confirmDelete: async (h, yes) => {
+      if (await this.dialog.confirmDelete(h.name.value))
+        yes();
+    },
 
 
   });
 
 
-  resetPassword() {
-    this.dialog.YesNoQuestion("Are you sure you want to delete the password of " + this.users.currentRow.name.value, async () => {
+  async resetPassword() {
+    if (await this.dialog.YesNoQuestion("Are you sure you want to delete the password of " + this.users.currentRow.name.value)) {
       await UsersComponent.resetPassword(this.users.currentRow.id.value);
       this.dialog.Info("Password deleted");
-    });
+    };
 
   }
   @ServerFunction({ allowed: c => c.isAllowed(Roles.admin) })

@@ -1,8 +1,8 @@
 import { environment } from './../environments/environment';
 
-import { Entity, EntitySource, DateTimeDateStorage, EntityClass } from 'radweb';
-import { DataProvider, DataProviderFactory } from 'radweb';
-import * as radweb from 'radweb';
+import { Entity, EntitySource, DateTimeDateStorage, EntityClass } from '@remult/core';
+import { DataProvider, DataProviderFactory } from '@remult/core';
+import * as radweb from '@remult/core';
 
 @EntityClass
 export class Categories extends radweb.Entity<number> {

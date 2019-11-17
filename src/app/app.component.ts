@@ -1,4 +1,4 @@
-import { GridSettings, Column, Context, ServerFunction } from 'radweb';
+import { GridSettings, Column, Context, ServerFunction } from '@remult/core';
 import { Component } from '@angular/core';
 import * as models from './models';
 import { MatDialog } from '@angular/material';

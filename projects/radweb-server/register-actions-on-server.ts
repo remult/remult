@@ -1,5 +1,5 @@
 import { SiteArea } from "./expressBridge";
-import { UserInfo, DataProviderFactory, myServerAction, serverActionField,actionInfo } from 'radweb';
+import { UserInfo, DataProviderFactory, myServerAction, serverActionField,actionInfo } from '@remult/core';
 
 export function registerActionsOnServer(area: SiteArea, dataSource: DataProviderFactory) {
     var addAction = (a: any) => {

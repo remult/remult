@@ -1,14 +1,14 @@
 //import { CustomModuleLoader } from '../../../../radweb/src/app/server/CustomModuleLoader';
 //let moduleLoader = new CustomModuleLoader('/dist-server/radweb');
 import * as express from 'express';
-import { ExpressBridge } from 'radweb-server';
+import { ExpressBridge } from '@remult/server';
 import * as fs from 'fs';
 import { serverInit } from './server-init';
 import '../app.module';
 
 
 import { ServerSignIn } from "../users/server-sign-in";
-import { JWTCookieAuthorizationHelper } from 'radweb-server';
+import { JWTCookieAuthorizationHelper } from '@remult/server';
 
 serverInit().then(async (dataSource) => {
 

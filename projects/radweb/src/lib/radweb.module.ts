@@ -38,4 +38,4 @@ import { DataArea2Compnent } from './angular-components/data-area/dataArea2';
   exports: [ DataControl2Component,  ColumnDesigner, DataFilterInfoComponent,  DataGrid2Component, DataArea2Compnent],
   entryComponents: [WaitComponent]
 })
-export class RadWebModule { }
+export class RemultModule { }

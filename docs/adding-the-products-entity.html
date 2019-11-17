@@ -32,7 +32,7 @@
                 <div class="content"><h1 id="adding-the-products-entity">Adding the Products Entity</h1>
 <p>At this stage we would like to define the product Entity, where we will store our product information.
 Let's add a new file under the <code>Products</code> folder, called <code>products.ts</code></p>
-<pre data-line="" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass } from 'radweb';
+<pre data-line="" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {
@@ -47,7 +47,7 @@ export class Products extends IdEntity {
 } </code></pre>
 <p>Let's review:</p>
 <ol>
-<li>We've added a <code>Products</code> class that extends the <code>IdEntity</code> class from <code>radweb</code>. This will create an <code>Entity</code> that will have an <code>id</code> column that is unique, and anything else we would like to add to it.</li>
+<li>We've added a <code>Products</code> class that extends the <code>IdEntity</code> class from <code>@remult/core</code>. This will create an <code>Entity</code> that will have an <code>id</code> column that is unique, and anything else we would like to add to it.</li>
 <li>On line 5 we've defined a <code>name</code> column (the product name)</li>
 <li>On line 7 we've called the <code>super</code> class's constructor and defined:
 <ol>
@@ -63,7 +63,7 @@ export class Products extends IdEntity {
 <p>Now let's add a grid on the <code>ProductsComponent</code> that displays the <code>Products</code> Entity</p>
 <p>in <code>products.component.ts</code></p>
 <pre data-line="2,3,12,14,15,16,17,18" class="language-csdiff line-numbers"><code>import { Component, OnInit } from '@angular/core';
-import { Context } from 'radweb';
+import { Context } from '@remult/core';
 import { Products } from './products';
 
 @Component({
@@ -88,17 +88,17 @@ export class ProductsComponent implements OnInit {
 <p>let's review:</p>
 <ol>
 <li>In line 2 and 3 we've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them)</li>
-<li>In line 12, we've added a parameter to the constructor called <code>context</code> of type <code>Context</code> from <code>radweb</code>. This object will help us get data from the server and more. by tagging it as <code>private</code> we make it available throughout the class, by using <code>this.context</code></li>
+<li>In line 12, we've added a parameter to the constructor called <code>context</code> of type <code>Context</code> from <code>@remilt/core</code>. This object will help us get data from the server and more. by tagging it as <code>private</code> we make it available throughout the class, by using <code>this.context</code></li>
 <li>On line 14 we've added the definition of <code>products</code> in this component. We've asked the context to provide us with <code>gridSettings</code> for the <code>Entity</code> Products - and we've configured it to allow update insert and delete.</li>
 </ol>
 <p>and in the <code>products.component.html</code></p>
 <pre data-line="4" class="language-csdiff line-numbers"><code>-   &lt;p&gt;
 -       products works!
 -   &lt;/p&gt;
-  &lt;data-grid2 [settings]="products" [height]="300"&gt;&lt;/data-grid2&gt; </code></pre>
+  &lt;data-grid [settings]="products" [height]="300"&gt;&lt;/data-grid&gt; </code></pre>
 <p>let's review:</p>
 <ol>
-<li>We've replaced the <code>html</code> with a <code>data-grid2</code> tag that will display the grid settings provided in the <code>products</code> member of the <code>products.component.ts</code> file.</li>
+<li>We've replaced the <code>html</code> with a <code>data-grid</code> tag that will display the grid settings provided in the <code>products</code> member of the <code>products.component.ts</code> file.</li>
 <li>We've determined a fixed height of 300 pixels.</li>
 </ol>
 <p>Now if we'll look at the bottom of our screen, at the Terminal output for the task <code>node-serve</code>, we'll see that the server restarted and a new api is now available:</p>

@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { RadWebModule } from 'radweb';
+import { RemultModule } from '@remult/core';
 import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LoaderInterceptor } from 'projects/radweb/src/lib/angular-components/wait/busy-service';
@@ -15,7 +15,7 @@ import { LoaderInterceptor } from 'projects/radweb/src/lib/angular-components/wa
   imports: [
     BrowserModule,
     AppRoutingModule,
-    RadWebModule,
+    RemultModule,
     FormsModule,
   ],
   

@@ -7,6 +7,7 @@ import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 import { BusyService } from "../angular-components/wait/busy-service";
+import { MatDialog } from '@angular/material/dialog';
 
 
 
@@ -21,7 +22,7 @@ export class Context {
     isSignedIn() {
         return !!this.user;
     }
-    constructor(http?: HttpClient) {
+    constructor(http?: HttpClient, private _dialog?: MatDialog) {
         if (http instanceof HttpClient) {
             var prov = new angularHttpProvider(http);
             this._dataSource = new RestDataProvider(Context.apiBaseUrl
@@ -34,6 +35,7 @@ export class Context {
             this._dataSource = new InMemoryDataProvider();
         }
     }
+   
 
 
 
@@ -96,6 +98,12 @@ export class Context {
             return this.cache[classType.__key] as SpecificEntityHelper<lookupIdType, T>;
         return this.cache[classType.__key] = new SpecificEntityHelper<lookupIdType, T>(this.create(c), this._lookupCache, this);
     }
+    async openDialog<T,C>(component: { new(...args: any[]): C; }, setParameters: (it: C) => void, returnAValue: (it: C) => T) {
+        let ref = this._dialog.open(component);
+        setParameters(ref.componentInstance);
+        await ref.beforeClose().toPromise();
+        return returnAValue(ref.componentInstance);
+      }
 
     _lookupCache: LookupCache<any>[] = [];
 }
@@ -207,7 +215,7 @@ export const allEntities: EntityType[] = [];
 
 
 export function EntityClass<T extends EntityType>(theEntityClass: T) {
-    let original =  theEntityClass;
+    let original = theEntityClass;
     let f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);

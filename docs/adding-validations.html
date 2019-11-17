@@ -31,7 +31,7 @@
                 </div>
                 <div class="content"><h1 id="adding-validations">Adding Validations</h1>
 <p>To validate that there is a price for the product, we'll define the <code>onValidate</code> event for the price column</p>
-<pre data-line="7,8,9,10,11,12,13" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'radweb';
+<pre data-line="7,8,9,10,11,12,13" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {
@@ -70,7 +70,7 @@ If you'll try to do the same update via an external tool you'll get an http stat
 }
 </code></pre>
 <p>Let's add some more validations:</p>
-<pre data-line="14,15,16,17,18,19,21,22,23,24,25,26,27" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'radweb';
+<pre data-line="14,15,16,17,18,19,21,22,23,24,25,26,27" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {

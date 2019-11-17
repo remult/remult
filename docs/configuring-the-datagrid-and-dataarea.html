@@ -32,7 +32,7 @@
                 <div class="content"><h1 id="configuring-the-datagrid-and-dataarea">Configuring the DataGrid and DataArea</h1>
 <p>One of the columns that is displayed on the grid is the <code>id</code> column, and although this value is important to the application, it has little value for the user, let's configure the <code>DataGrid</code> to only show the columns that we want. In the <code>products.component.ts</code> file</p>
 <pre data-line="18,19,20,21,22,23,24,25,26" class="language-csdiff line-numbers"><code>import { Component, OnInit } from '@angular/core';
-import { Context } from 'radweb';
+import { Context } from '@remult/core';
 import { Products } from './products';
 
 @Component({
@@ -104,7 +104,7 @@ export class ProductsComponent implements OnInit {
   ,hideDataArea:true
 }); </code></pre>
 <p>We can add the <code>DataArea</code> with all the columns that are not included in the grid, by adding the <code>data-area</code> tag to the <code>products.component.html</code></p>
-<pre data-line="2,3,4" class="language-csdiff line-numbers"><code>  &lt;data-grid2 [settings]="products" [height]="300"&gt;&lt;/data-grid2&gt;
+<pre data-line="2,3,4" class="language-csdiff line-numbers"><code>  &lt;data-grid [settings]="products" [height]="300"&gt;&lt;/data-grid&gt;
   &lt;br&gt;
   &lt;br&gt;
   &lt;data-area [settings]="products"&gt;&lt;/data-area&gt; </code></pre>
@@ -136,7 +136,7 @@ productsArea = this.products.addArea({
 ngOnInit() {
 } </code></pre>
 <p>and in the <code>products.component.html</code> we'll use that <code>productsArea</code> settings:</p>
-<pre data-line="5" class="language-csdiff line-numbers"><code>  &lt;data-grid2 [settings]="products" [height]="300"&gt;&lt;/data-grid2&gt;
+<pre data-line="5" class="language-csdiff line-numbers"><code>  &lt;data-grid [settings]="products" [height]="300"&gt;&lt;/data-grid&gt;
   &lt;br&gt;
   &lt;br&gt;
 - &lt;data-area [settings]="products"&gt;&lt;/data-area&gt;

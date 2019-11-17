@@ -2,7 +2,7 @@ At this stage we would like to define the product Entity, where we will store ou
 Let's add a new file under the `Products` folder, called `products.ts`
 
 ```csdiff
-import { IdEntity, StringColumn, EntityClass } from 'radweb';
+import { IdEntity, StringColumn, EntityClass } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {
@@ -18,7 +18,7 @@ export class Products extends IdEntity {
 ```
 
 Let's review:
-1. We've added a `Products` class that extends the `IdEntity` class from `radweb`. This will create an `Entity` that will have an `id` column that is unique, and anything else we would like to add to it.
+1. We've added a `Products` class that extends the `IdEntity` class from `@remult/core`. This will create an `Entity` that will have an `id` column that is unique, and anything else we would like to add to it.
 2. On line 5 we've defined a `name` column (the product name)
 3. On line 7 we've called the `super` class's constructor and defined:
    1.  Line 8 - the `name` for our `API` 
@@ -32,7 +32,7 @@ Now let's add a grid on the `ProductsComponent` that displays the `Products` Ent
 in `products.component.ts`
 ```csdiff
 import { Component, OnInit } from '@angular/core';
-+import { Context } from 'radweb';
++import { Context } from '@remult/core';
 +import { Products } from './products';
 
 @Component({
@@ -58,7 +58,7 @@ export class ProductsComponent implements OnInit {
 
 let's review:
 1. In line 2 and 3 we've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them)
-2. In line 12, we've added a parameter to the constructor called `context` of type `Context` from `radweb`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
+2. In line 12, we've added a parameter to the constructor called `context` of type `Context` from `@remilt/core`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
 3. On line 14 we've added the definition of `products` in this component. We've asked the context to provide us with `gridSettings` for the `Entity` Products - and we've configured it to allow update insert and delete.
 
 and in the `products.component.html`
@@ -66,11 +66,11 @@ and in the `products.component.html`
 -   <p>
 -       products works!
 -   </p>
-+ <data-grid2 [settings]="products" [height]="300"></data-grid2>
++ <data-grid [settings]="products" [height]="300"></data-grid>
 ```
 
 let's review:
-1. We've replaced the `html` with a `data-grid2` tag that will display the grid settings provided in the `products` member of the `products.component.ts` file.
+1. We've replaced the `html` with a `data-grid` tag that will display the grid settings provided in the `products` member of the `products.component.ts` file.
 2. We've determined a fixed height of 300 pixels.
 
 Now if we'll look at the bottom of our screen, at the Terminal output for the task `node-serve`, we'll see that the server restarted and a new api is now available:

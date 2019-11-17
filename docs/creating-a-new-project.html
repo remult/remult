@@ -35,18 +35,17 @@
 <p>Open a command prompt in a folder that'll be the parent of your new project (in my case I use <code>c:\repos\</code>) and run the following command, replacing <code>my-project</code> with the name of the project you want to use:</p>
 <pre><code>ng new --style=scss --routing=true  my-project
 </code></pre>
-<h2 id="install-radweb">Install radweb</h2>
+<h2 id="install-remult">Install remult</h2>
 <p>Next go into the folder of your new project</p>
 <pre><code>cd my-project
 </code></pre>
-<p>And run the following command to install the <code>radweb</code> framework starter kit.</p>
-<pre><code>ng add radweb@pre-alpha
+<p>And run the following command to install the <code>remult</code> framework starter kit.</p>
+<pre><code>ng add @remult/core
 </code></pre>
-<p>You'll be prompted to chose a prebuilt theme for the material design, choose one and continue</p>
 <h2 id="commit-to-git">Commit to Git</h2>
 <p>In the command prompt run:</p>
 <pre><code>git add .
-git commit -m &quot;install radweb&quot;
+git commit -m &quot;install remult&quot;
 </code></pre>
 <h2 id="change-the-password-for-the-postgres-connection">Change the password for the postgres connection.</h2>
 <p>If you did not use the default password we've used (MASTERKEY), then you can change the postgres password, in the <code>.env</code> file,

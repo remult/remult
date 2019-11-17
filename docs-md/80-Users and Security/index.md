@@ -30,7 +30,7 @@ Now that we understand how users can be managed, let's start securing the applic
 
 In the `categories.ts`
 ```csdiff
-import { IdEntity, StringColumn, EntityClass } from 'radweb';
+import { IdEntity, StringColumn, EntityClass } from '@remult/core';
 +import { Roles } from '../users/roles';
 
 @EntityClass

@@ -1,7 +1,7 @@
 
-import {  DataProviderFactory, DataProvider,  DataApiRequest,DataApi, DataApiResponse, InMemoryDataProvider ,Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort, SQLConnectionProvider, SQLCommand, SQLQueryResult, EntityClass} from 'radweb';
+import {  DataProviderFactory, DataProvider,  DataApiRequest,DataApi, DataApiResponse, InMemoryDataProvider ,Entity, Column, CompoundIdColumn, StringColumn, NumberColumn, Sort, SQLConnectionProvider, SQLCommand, SQLQueryResult, EntityClass} from '@remult/core';
 import * as sql from 'mssql';
-import { ActualSQLServerDataProvider } from 'radweb-server';
+import { ActualSQLServerDataProvider } from '@remult/core';
 
 export class SQLServerDataProvider implements DataProviderFactory {
 

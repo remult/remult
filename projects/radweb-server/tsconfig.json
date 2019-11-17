@@ -16,7 +16,7 @@
             "dom"
         ],
         "paths": {
-            "radweb": [
+            "@remult/core": [
                 "../../dist/radweb"
             ]
         }

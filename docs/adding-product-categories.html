@@ -55,7 +55,7 @@
 ]; </code></pre>
 <h2 id="step-3-add-the-categories-entity">Step 3, add the Categories Entity</h2>
 <p>In the <code>Categories</code> folder add a file called <code>categories.ts</code></p>
-<pre data-line="" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass } from 'radweb';
+<pre data-line="" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass } from '@remult/core';
 
 @EntityClass
 export class Categories extends IdEntity {
@@ -71,7 +71,7 @@ export class Categories extends IdEntity {
 <h2 id="step-4-add-the-categories-entity-to-the-categories-component">Step 4, add the Categories entity to the Categories Component</h2>
 <p>in <code>categories.component.ts</code></p>
 <pre data-line="2,3,12,13,14,15,16,17" class="language-csdiff line-numbers"><code>import { Component, OnInit } from '@angular/core';
-import { Context } from 'radweb';
+import { Context } from '@remult/core';
 import { Categories } from './categories';
 
 @Component({
@@ -91,7 +91,7 @@ export class CategoriesComponent implements OnInit {
   }
 } </code></pre>
 <p>In the <code>categories.component.html</code></p>
-<pre data-line="" class="language-csdiff line-numbers"><code> &lt;data-grid2 [settings]="categories" height="300"&gt;&lt;/data-grid2&gt; </code></pre>
+<pre data-line="" class="language-csdiff line-numbers"><code> &lt;data-grid [settings]="categories" height="300"&gt;&lt;/data-grid&gt; </code></pre>
 <h2 id="add-a-few-categories">Add a few categories</h2>
 <ol>
 <li>Beverages</li>
@@ -99,7 +99,7 @@ export class CategoriesComponent implements OnInit {
 </ol>
 <h2 id="adding-the-category-to-the-products-entity">Adding the Category to the Products Entity</h2>
 <p>In the <code>products.ts</code> let's add the <code>category</code> field to our Entity</p>
-<pre data-line="27" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from 'radweb';
+<pre data-line="27" class="language-csdiff line-numbers"><code>import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {

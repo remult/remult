@@ -2,8 +2,8 @@ let's add a price, and availability dates to the `Products` entity
 
 In the `products.ts` file
 ```csdiff
--import { IdEntity, StringColumn, EntityClass } from 'radweb';
-+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'radweb';
+-import { IdEntity, StringColumn, EntityClass } from '@remult/core';
++import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {

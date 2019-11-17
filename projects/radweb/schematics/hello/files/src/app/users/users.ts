@@ -1,8 +1,8 @@
-import * as radweb from 'radweb';
-import { ColumnSetting, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "radweb";
+
+import { ColumnSetting, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
 import { changeDate } from '../shared/types';
-import { DataColumnSettings } from 'radweb';
-import { Context, EntityClass } from 'radweb';
+import { DataColumnSettings } from '@remult/core';
+import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
 
 
@@ -42,7 +42,7 @@ export class Users extends IdEntity  {
         });
     }
     public static emptyPassword = 'password';
-    name = new radweb.StringColumn({
+    name = new StringColumn({
         caption: "name",
         onValidate: () => {
 
@@ -55,7 +55,7 @@ export class Users extends IdEntity  {
         dbName: 'password',
         includeInApi: false
     });
-    password = new radweb.StringColumn({ caption: 'password', inputType: 'password', virtualData: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
+    password = new StringColumn({ caption: 'password', inputType: 'password', virtualData: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
 
     createDate = new changeDate('Create Date');
 

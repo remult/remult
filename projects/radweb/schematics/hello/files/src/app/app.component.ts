@@ -4,13 +4,13 @@ import { MatSidenav } from '@angular/material';
 import { MatDialog } from '@angular/material/dialog';
 
 
-import { Context, RouteHelperService } from 'radweb';
+import { Context, RouteHelperService } from '@remult/core';
 
 
 import { SignInComponent } from './common/sign-in/sign-in.component';
 
 import { DialogService } from './common/dialog';
-import { JwtSessionManager } from 'radweb';
+import { JwtSessionManager } from '@remult/core';
 
 @Component({
   selector: 'app-root',
@@ -37,11 +37,12 @@ export class AppComponent {
       return this.context.user.name;
     return 'Sign in';
   }
-  signIn() {
+  async signIn() {
     if (!this.context.user) {
       this.dialog.open(SignInComponent);
     } else {
-      this.dialogService.YesNoQuestion("Would you like to sign out?", () => { this.sessionManager.signout() });
+      if (await this.dialogService.YesNoQuestion("Would you like to sign out?"))
+        this.sessionManager.signout();
     }
   }
 
@@ -75,6 +76,7 @@ export class AppComponent {
       return false;
     return this.routeHelper.canNavigateToRoute(route);
   }
+  //@ts-ignore ignoring this to match angular 7 and 8
   @ViewChild('sidenav') sidenav: MatSidenav;
   routeClicked() {
     if (this.dialogService.isScreenSmall())

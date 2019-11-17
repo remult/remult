@@ -3,7 +3,7 @@
     "compilerOptions": {
         "outDir":"../../dist/radweb-server-postgres",
         "paths": {
-            "radweb": [
+            "@remult/core": [
                 "../../dist/radweb"
             ]
         }

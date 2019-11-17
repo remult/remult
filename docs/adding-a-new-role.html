@@ -33,7 +33,7 @@
 <p>The security system comes with a basic role based system that currently only has the <code>admin</code> role.</p>
 <p>We can easily add roles, and configure our application to use them.</p>
 <p>In the <code>roles.ts</code> file:</p>
-<pre data-line="6" class="language-csdiff line-numbers"><code>import { SignedInGuard } from 'radweb';
+<pre data-line="6" class="language-csdiff line-numbers"><code>import { SignedInGuard } from '@remult/core';
 import { Injectable } from '@angular/core';
 
 export const Roles = { 
@@ -83,7 +83,7 @@ export class Products extends IdEntity {
 <h2 id="adding-a-new-guard">Adding a new Guard</h2>
 <p>Now that we've secured the API we would like to restrict access to the components themselves.</p>
 <p>We'll start by creating a new <code>Guard</code> in the <code>roles.ts</code> file:</p>
-<pre data-line="16,17,18,19,20,21,22" class="language-csdiff line-numbers"><code>import { SignedInGuard } from 'radweb';
+<pre data-line="16,17,18,19,20,21,22" class="language-csdiff line-numbers"><code>import { SignedInGuard } from '@remult/core';
 import { Injectable } from '@angular/core';
 
 export const Roles = { 
@@ -185,9 +185,9 @@ export class UsersComponent implements OnInit {
 <h3 id="step-3-set-role-on-user-sign-in">Step 3, Set Role on User Sign In</h3>
 <p>The <code>server-sign-in.ts</code> file contains the <code>signIn</code> function that signs the user in. In that function we would like to add the <code>productManager</code> role if the user has it.</p>
 <pre><code class="language-ts">import { Roles } from './roles';
-import { JWTCookieAuthorizationHelper } from 'radweb-server';
-import { ServerFunction } from 'radweb';
-import { UserInfo, Context } from 'radweb';
+import { JWTCookieAuthorizationHelper } from '@remult/core-server';
+import { ServerFunction } from '@remult/core';
+import { UserInfo, Context } from '@remult/core';
 import { Users } from './users';
 export class ServerSignIn {
     static helper: JWTCookieAuthorizationHelper;

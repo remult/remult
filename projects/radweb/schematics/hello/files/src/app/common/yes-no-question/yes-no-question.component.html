@@ -1,16 +1,16 @@
 <div >
 
-  <h3 matDialogHeader>{{data.question}}</h3>
+  <h3 matDialogHeader>{{message}}</h3>
 
   <mat-dialog-actions>
 
-    <button mat-raised-button color="warning" (click)="close()" *ngIf="data.onYes">
+    <button mat-raised-button color="warning" (click)="close()" *ngIf="showOk">
       No
     </button>
-    <button mat-raised-button color="primary" (click)="close()" *ngIf="!data.onYes">
+    <button mat-raised-button color="primary" (click)="close()" *ngIf="!showOk">
       Confirm
     </button>
-    <button mat-raised-button color="primary"  (click)="select()" *ngIf="data.onYes">
+    <button mat-raised-button color="primary"  (click)="select()" *ngIf="showOk">
       Yes
     </button>
   </mat-dialog-actions>

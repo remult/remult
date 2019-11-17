@@ -1,5 +1,5 @@
 /*
- * Public API Surface of radweb
+ * Public API Surface of @remult/core
  */
 
 export * from './src/lib/radweb.module';

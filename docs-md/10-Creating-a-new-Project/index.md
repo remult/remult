@@ -6,23 +6,22 @@ Open a command prompt in a folder that'll be the parent of your new project (in 
 ng new --style=scss --routing=true  my-project
 ```
 
-## Install radweb
+## Install remult
 Next go into the folder of your new project
 ```
 cd my-project
 ```
 
-And run the following command to install the `radweb` framework starter kit. 
+And run the following command to install the `remult` framework starter kit. 
 ```
-ng add radweb@pre-alpha
+ng add @remult/core
 ```
-You'll be prompted to chose a prebuilt theme for the material design, choose one and continue
 
 ## Commit to Git
 In the command prompt run:
 ```
 git add .
-git commit -m "install radweb"
+git commit -m "install remult"
 ```
 
 ## Change the password for the postgres connection.

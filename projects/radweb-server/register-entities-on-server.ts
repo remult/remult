@@ -1,5 +1,5 @@
 import { SiteArea } from "./expressBridge";
-import { UserInfo, allEntities, DataProviderFactory, ServerContext, DataApi } from "radweb";
+import { UserInfo, allEntities, DataProviderFactory, ServerContext, DataApi } from "@remult/core";
 
 export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProviderFactory) {
     let errors = '';

@@ -2,7 +2,7 @@ Currently the code that relates to the category is spread across many files - le
 
 Under the `categories` folder, let's add a `categoryId.ts` file
 ```csdiff
-import { IdColumn } from 'radweb';
+import { IdColumn } from '@remult/core';
 
 export class CategoryId extends IdColumn{
 }
@@ -10,7 +10,7 @@ export class CategoryId extends IdColumn{
 
 Now let's use it in the `Products` Entity
 ```csdiff
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from 'radweb';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from '@remult/core';
 +import { CategoryId } from '../categories/categoryId';
 
 @EntityClass

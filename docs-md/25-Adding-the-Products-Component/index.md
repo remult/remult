@@ -20,7 +20,7 @@ to do that we'll add a route for it in the `app-routing.module.ts`.
 > pro tip: you can quickly open a file by clicking <kbd>Control</kbd> + <kbd>P</kbd> and typing the name of the file you want to open.
 
 ```csdiff
-import { RadWebModule, NotSignedInGuard, SignedInGuard } from 'radweb';
+import { RemultModule, NotSignedInGuard, SignedInGuard } from '@remult/core';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route, ActivatedRouteSnapshot } from '@angular/router';
 import { HomeComponent } from './home/home.component';
@@ -46,7 +46,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes), RadWebModule],
+  imports: [RouterModule.forRoot(routes), RemultModule],
   providers: [AdminGuard],
   exports: [RouterModule]
 })
