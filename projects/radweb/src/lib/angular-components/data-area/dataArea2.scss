@@ -1,17 +1,30 @@
 .one-line {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .one-line >  * {
-    padding-left: 0.2em;
-    padding-right: 0.2em;
-    flex-basis: 1px;
-    flex-grow: 1;
-  }
-  .one-line >  :first-child {
-    padding-right: 0em;
-  }
-  .one-line >  :last-child {
-    padding-left: 0em;
-  }
+  display: flex;
+  justify-content: space-between;
+}
+
+.one-line > * {
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  flex-basis: 1px;
+  flex-grow: 1;
+}
+.one-line > :first-child {
+  padding-right: 0em;
+}
+.one-line > :last-child {
+  padding-left: 0em;
+}
+@media only screen and (min-width: 768px){
+.column-container {
+  display: flex;
+  width: 100%;
+}
+.column-container div {
+  width: 100%;
+  margin-right: 5px;
+}
+.column-container :last-child{
+  margin-right:0px;
+}
+}
