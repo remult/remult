@@ -73,6 +73,15 @@
             "type": "npm",
             "script": "radweb:copy:styles",
             "problemMatcher": []
+        },
+        {
+            "label": "schemas:build",
+            "type": "npm",
+            "script": "schemas:build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build"
         }
     ]
 }

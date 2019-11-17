@@ -20,8 +20,12 @@ export function hello(_options: Schema): Rule {
 
     editPackageJson(tree);
     const installTaskId = _context.addTask(new NodePackageInstallTask());
-    _context.addTask(new RunSchematicTask('@angular/material/schematics/collection.json', 'ng-add', { gestures: true, animations: true }), [installTaskId]);
-    editJson(tree, "./src/tsconfig.app.json", j => {
+    _context.addTask(new RunSchematicTask('@angular/material/schematics/collection.json', 'ng-add', { gestures: true, animations: true, theme: 'indigo-pink' }), [installTaskId]);
+    let appTsConfig = "./tsconfig.app.json";
+    if (!tree.exists(appTsConfig))
+      appTsConfig = "./src/tsconfig.app.json";
+
+    editJson(tree, appTsConfig, j => {
       j.exclude.push("./app/server**");
     });
 
@@ -70,7 +74,6 @@ export function hello(_options: Schema): Rule {
         if (j.projects.hasOwnProperty(p)) {
           const element = j.projects[p];
           element.architect.serve.options.proxyConfig = "proxy.conf.json";
-          //remove when we remove bootstrap
           element.architect.build.options.styles.push("./node_modules/radweb/input-styles.scss");
           return;
         }
@@ -141,6 +144,8 @@ export function hello(_options: Schema): Rule {
   function editJson(tree: Tree, path: string, edit: (j: any) => void) {
     let r = tree.read(path);
     let json = JSON.parse(r!.toString('utf-8'));
+    if (!json)
+      console.error("couldn't find json file: " + path);
     edit(json);
     tree.overwrite(path, JSON.stringify(json, null, 2));
   }
