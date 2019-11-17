@@ -1,8 +1,8 @@
 {
-  "name": "radweb",
+  "name": "@remult/core",
   "schematics": "./schematics/collection.json",
-  "version": "3.1.42",
-  "description": "radweb",
+  "version": "1.0.1",
+  "description": "remult core lib",
   "license": "MIT",
   "author": {
     "name": "Noam Honig"

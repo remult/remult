@@ -4,7 +4,7 @@ import { Component, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 @Component({
-  selector: 'data-control2',
+  selector: 'data-control',
   templateUrl: './data-control2.component.html',
   styleUrls: ['./data-control2.component.scss']
 })

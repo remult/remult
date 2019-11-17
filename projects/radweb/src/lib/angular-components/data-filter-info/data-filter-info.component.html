@@ -7,8 +7,8 @@
     </ul>
     <div *ngIf="this.editFilterVisible">
         {{this.filterColumnToAdd.caption}}:
-        <data-control2 *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
-            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control2>
+        <data-control *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
+            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
         <button mat-icon-button (click)="this.confirmEditFilter()">
             <mat-icon>check</mat-icon>
         </button>
@@ -21,8 +21,8 @@
             (change)="settings.columns.colListChanged()">
             <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}} </option>
         </select>
-        <data-control2 *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
-            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control2>
+        <data-control *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
+            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
         <button mat-icon-button (click)="this.addFilter()"><mat-icon>check</mat-icon></button>
         <button mat-icon-button (click)="this.cancelAddNewFilter()"><mat-icon>clear</mat-icon></button>
     </div>

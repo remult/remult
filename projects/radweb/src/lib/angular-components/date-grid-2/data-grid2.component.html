@@ -17,8 +17,8 @@
               </span>
               <div class="filterDialog col-sm-4" *ngIf="settings.columns._shouldShowFilterDialog(map)">
                 <div class="form-group">
-                  <data-control2 [settings]="settings.columns" [map]="map"
-                    [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control2>
+                  <data-control [settings]="settings.columns" [map]="map"
+                    [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
                 </div>
                 <button mat-icon-button (click)="settings.columns.filterRows(map)">
                   <mat-icon>check</mat-icon>
@@ -115,4 +115,4 @@
       </div>
     </div>
   </div>
-  <data-area2 *ngIf="!settings.hideDataArea" [settings]="settings" [columns]="2"></data-area2>
+  <data-area *ngIf="!settings.hideDataArea" [settings]="settings" [columns]="2"></data-area>

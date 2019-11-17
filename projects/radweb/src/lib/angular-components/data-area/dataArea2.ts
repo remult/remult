@@ -3,7 +3,7 @@ import { ColumnCollection, DataAreaSettings, dataAreaSettings, ColumnSetting } f
 
 import { Component,  Input, ViewEncapsulation, OnChanges } from '@angular/core';
 @Component({
-  selector: 'data-area2',
+  selector: 'data-area',
   
   templateUrl:'./dataArea2.html',
   styleUrls:['./dataArea2.scss'],

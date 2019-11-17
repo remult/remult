@@ -1,17 +1,17 @@
 <ng-container *ngFor="let line of settings.lines">
   
     <div class="one-line">
-        <data-control2 [settings]="settings.columns" [map]="map" [record]="settings.columns.currentRow()"
+        <data-control [settings]="settings.columns" [map]="map" [record]="settings.columns.currentRow()"
             *ngFor="let map of line">
-        </data-control2>
+        </data-control>
     </div>
 </ng-container>
 <div  *ngIf="!settings.lines" class="column-container">
     <div *ngFor="let col of theColumns()">
-    <data-control2 [settings]="settings.columns" 
+    <data-control [settings]="settings.columns" 
     [map]="map" 
     [record]="settings.columns.currentRow()"
         *ngFor="let map of col">
-    </data-control2>
+    </data-control>
 </div>
 </div>
