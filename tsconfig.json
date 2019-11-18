@@ -19,7 +19,7 @@
       "dom"
     ],
     "paths": {
-      "radweb": [
+      "@remult/core": [
         "projects/radweb"
       ],
       "radweb-server": [

@@ -35,7 +35,7 @@ export class Context {
             this._dataSource = new InMemoryDataProvider();
         }
     }
-   
+
 
 
 
@@ -98,12 +98,13 @@ export class Context {
             return this.cache[classType.__key] as SpecificEntityHelper<lookupIdType, T>;
         return this.cache[classType.__key] = new SpecificEntityHelper<lookupIdType, T>(this.create(c), this._lookupCache, this);
     }
-    async openDialog<T,C>(component: { new(...args: any[]): C; }, setParameters: (it: C) => void, returnAValue: (it: C) => T) {
+    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters: (it: C) => void, returnAValue?: (it: C) => T) {
         let ref = this._dialog.open(component);
         setParameters(ref.componentInstance);
         await ref.beforeClose().toPromise();
-        return returnAValue(ref.componentInstance);
-      }
+        if (returnAValue)
+            return returnAValue(ref.componentInstance);
+    }
 
     _lookupCache: LookupCache<any>[] = [];
 }

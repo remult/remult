@@ -12,7 +12,7 @@ import { Component,  Input, ViewEncapsulation, OnChanges } from '@angular/core';
 })
 export class DataArea2Compnent  implements OnChanges  {
  
-  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true),lines:[] };
+  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true),lines:undefined };
   
   ngOnChanges(): void {
     if (this.settings && this.settings.columns) {
