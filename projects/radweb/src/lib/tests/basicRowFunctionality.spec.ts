@@ -971,9 +971,16 @@ describe("data api", () => {
     expect(await c.source.max(c.id, c.categoryName.isEqualTo('z'))).toBe(0);
   });
 
-
-
-
+  itWithDataProvider("count", async (dp) => {
+    let ctx = new ServerContext();
+    ctx.setDataProvider(dp);
+    expect(await ctx.for(Categories).count()).toBe(0);
+    let c = ctx.for(Categories).create();
+    c.id.value = 5;
+    c.categoryName.value = 'test';
+    await c.save();
+    expect(await ctx.for(Categories).count()).toBe(1);
+    });
 
 });
 
