@@ -22,10 +22,10 @@
       "@remult/core": [
         "projects/radweb"
       ],
-      "radweb-server": [
+      "@remult/server": [
         "projects/radweb-server"
       ],
-      "radweb-server-postgres": [
+      "@remult/server-postgres": [
         "projects/radweb-server-postgres"
       ]
     }
