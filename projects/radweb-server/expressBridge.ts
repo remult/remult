@@ -1,6 +1,6 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApiServer, Action, UserInfo, DataProviderFactory, Context } from '@remult/core';
+import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApiServer, Action, UserInfo, DataProviderFactory, Context, DataProviderFactoryBuilder } from '@remult/core';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
@@ -8,6 +8,7 @@ import * as compression from 'compression';
 import * as secure from 'express-force-https';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
+import { isFunction } from 'util';
 
 
 
@@ -24,55 +25,43 @@ export class ExpressBridge implements DataApiServer {
 
   private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
 
-  constructor(private app: express.Express, dataSource: DataProviderFactory, disableHttpForDevOnly?: boolean) {
+  constructor(private app: express.Express, dataProvider: DataProviderFactory | DataProviderFactoryBuilder, disableHttpForDevOnly?: boolean, autoCreateApiArea = true) {
     app.use(compression());
     if (!disableHttpForDevOnly) {
       app.use(secure);
     }
     app.use(bodyParser.json({ limit: '10mb' }));
     app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
-    let apiArea = this.addArea('/' + Context.apiBaseUrl);
 
-    registerActionsOnServer(apiArea, dataSource);
-    registerEntitiesOnServer(apiArea, dataSource);
+    let builder: DataProviderFactoryBuilder;
+    if (isFunction(dataProvider))
+      builder = <DataProviderFactoryBuilder>dataProvider;
+    else
+      builder = () => <DataProviderFactory>dataProvider;
+    if (autoCreateApiArea) {
+      let apiArea = this.addArea('/' + Context.apiBaseUrl);
+      registerActionsOnServer(apiArea, builder);
+      registerEntitiesOnServer(apiArea, builder);
+    }
   }
   addArea(
     rootUrl: string,
-    processAndReturnTrueToAouthorise?: (req: DataApiRequest) => Promise<boolean>
+    processRequest?: (req: DataApiRequest) => Promise<void>
   ) {
-    return new SiteArea(this, this.app, rootUrl, processAndReturnTrueToAouthorise);
+    return new SiteArea(this, this.app, rootUrl, processRequest);
   }
 
 }
+
 export class SiteArea {
   constructor(
     private bridge: ExpressBridge,
     private app: express.Express,
     private rootUrl: string,
-    private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>) {
+    private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<void>) {
 
-  }/*
-  addSqlDevHelpers(server: SQLServerDataProvider) {
+  }
 
-    let r = this.rootUrl + '/sqlHelper/typescript/:tableName';
-    console.log(r);
-    this.app.route(r).get(
-      async (req, res) => {
-        let s = await server.getTypeScript(req.params.tableName);
-        res.type('text/plain');
-        res.send(s);
-      });
-    r = this.rootUrl + '/sqlHelper/tables';
-    console.log(r);
-    this.app.route(r).get(
-      async (req, res) => {
-        server.listOfTables(new ExpressResponseBridgeToDataApiResponse(res), {
-          get: key => {
-            return req.query[key]
-          }, clientIp: '', authInfo: undefined, getHeader: x => "",
-        });
-      });
-  }*/
 
   add(entityOrDataApiFactory: Entity<any> | ((req: DataApiRequest) => DataApi<any>)) {
 
@@ -82,7 +71,7 @@ export class SiteArea {
       api = () => new DataApi(entityOrDataApiFactory);
     else api = entityOrDataApiFactory;
 
-    let myRoute = api({ clientIp: 'onServer', user: undefined, get: (r: any) => '', getHeader: (x: any) => "" }).getRoute();
+    let myRoute = api({ clientIp: 'onServer', user: undefined, get: (r: any) => '', getHeader: (x: any) => "", getBaseUrl: () => '' }).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
     console.log(myRoute);
 
@@ -110,19 +99,13 @@ export class SiteArea {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
-      let ok = true;
       for (let i = 0; i < this.bridge.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
         await this.bridge.preProcessRequestAndReturnTrueToAuthorize[i](myReq);
 
       }
       if (this.processAndReturnTrueToAouthorise)
-        if (!await this.processAndReturnTrueToAouthorise(myReq))
-          ok = false;
-
-      if (!ok)
-        myRes.forbidden();
-      else
-        what(myReq, myRes, req);
+        await this.processAndReturnTrueToAouthorise(myReq);
+      what(myReq, myRes, req);
     }
   };
   addAction<T extends Action<any, any>>(action: T) {
@@ -136,9 +119,14 @@ export class SiteArea {
     });
   }
 }
-class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
+export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): string {
     return this.r.query[key];
+  }
+  getBaseUrl() {
+    if (this.r.originalUrl)
+      return this.r.originalUrl
+    return this.r.path;
   }
   getHeader(key: string) { return this.r.headers[key] as string };
   user: UserInfo = undefined;

@@ -1,12 +1,9 @@
 {
   "name": "@remult/server",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main":"index.js",
   "Dependencies": {
-    "express": "^4.16.4",
-    "body-parser": "^1.18.3",
-    "compression": "^1.7.3",
-    "express-force-https": "^1.0.0",
-    "jsonwebtoken": "^8.5.1"
+    
+    "body-parser": "^1.18.3"
   }
 }

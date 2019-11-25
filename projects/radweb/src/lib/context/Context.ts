@@ -15,7 +15,7 @@ import { MatDialog } from '@angular/material/dialog';
 @Injectable()
 export class Context {
     clearAllCache(): any {
-        this.cache = {};
+        this.cache.clear();
         this._lookupCache = [];
     }
 
@@ -36,9 +36,17 @@ export class Context {
         }
     }
 
+    getCookie(name: string) {
+        return '';
+    }
+    getHost() {
+        return '';
+    }
+    getPathInUrl(){
+        return window.location.pathname;
+    }
 
-
-
+ 
     protected _dataSource: DataProviderFactory;
     protected _onServer = false;
     get onServer(): boolean {
@@ -83,20 +91,32 @@ export class Context {
         return false;
     }
 
-    public create<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }) {
-        let e = new c(this);
-        e.setSource(this._dataSource);
-        e._setContext(this);
-        return e;
-    }
-    cache: any = {};
-    public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }) {
+    cache = new Map<DataProviderFactory, Map<string, SpecificEntityHelper<any, Entity<any>>>>();
+    public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProviderFactory) {
+        if (!dataSource)
+            dataSource = this._dataSource;
 
+        let dsCache = this.cache.get(dataSource);
+        if (!dsCache) {
+            dsCache = new Map<string, SpecificEntityHelper<any, Entity<any>>>();
+            this.cache.set(dataSource, dsCache);
+        }
         let classType = c as any;
+        let classKey = classType.__key;
+        let r = dsCache.get(classKey) as SpecificEntityHelper<lookupIdType, T>;
+        if (!r) {
+            r = new SpecificEntityHelper<lookupIdType, T>(() => {
+                let e = new c(this);
+                e.setSource(dataSource);
+                e._setContext(this);
+                return e;
+            }, this._lookupCache, this);
+            dsCache.set(classKey, r);
+        }
 
-        if (this.cache[classType.__key])
-            return this.cache[classType.__key] as SpecificEntityHelper<lookupIdType, T>;
-        return this.cache[classType.__key] = new SpecificEntityHelper<lookupIdType, T>(this.create(c), this._lookupCache, this);
+
+
+        return r;
     }
     async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters: (it: C) => void, returnAValue?: (it: C) => T) {
         let ref = this._dialog.open(component);
@@ -108,6 +128,7 @@ export class Context {
 
     _lookupCache: LookupCache<any>[] = [];
 }
+export declare type DataProviderFactoryBuilder = (req: Context) => DataProviderFactory;
 export class ServerContext extends Context {
     constructor() {
         super(undefined);
@@ -115,7 +136,23 @@ export class ServerContext extends Context {
 
 
     }
-
+    getHost() {
+        return this.req.getHeader('host');
+    }
+    getPathInUrl(){
+        return this.req.getBaseUrl();
+    }
+    getCookie(name: string) {
+        let cookie = this.req.getHeader('cookie');
+        if (cookie)
+            for (const iterator of cookie.split(';')) {
+                let itemInfo = iterator.split('=');
+                if (itemInfo && itemInfo[0].trim() == name) {
+                    return itemInfo[1];
+                }
+            }
+        return undefined;
+    }
     private req: DataApiRequest;
 
     setReq(req: DataApiRequest) {
@@ -132,8 +169,9 @@ export class ServerContext extends Context {
 
 
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> {
-    constructor(private entity: T, private _lookupCache: LookupCache<any>[], private context: Context) {
-
+    private entity: T;
+    constructor(private factory: () => T, private _lookupCache: LookupCache<any>[], private context: Context) {
+        this.entity = this.create();
     }
 
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
@@ -202,7 +240,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return Promise.all(items.map(f => f.__toPojo(exc)));
     }
     create() {
-        return this.entity.source.createNewItem();
+        return this.factory();
     }
     gridSettings(settings?: IDataSettings<T>) {
         return new GridSettings(this.entity, settings);

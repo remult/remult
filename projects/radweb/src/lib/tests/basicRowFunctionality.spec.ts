@@ -276,8 +276,8 @@ describe("data api", () => {
   let ctx = new Context();
   itWithDataProvider("put with validations on entity fails",
     async (dataProvider) => {
-      let c = ctx.create(entityWithValidations);
-      c.setSource(dataProvider);
+      let c = ctx.for(entityWithValidations, dataProvider).create();
+
       await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
       let api = new DataApi(c, { allowUpdate: true });
       let t = new TestDataApiResponse();
@@ -296,8 +296,8 @@ describe("data api", () => {
     });
   itWithDataProvider("put with validations on column fails", async (dp) => {
 
-    let c = ctx.create(entityWithValidationsOnColumn);
-    c.setSource(dp);
+    let c = ctx.for(entityWithValidationsOnColumn, dp).create();
+
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
@@ -315,8 +315,8 @@ describe("data api", () => {
 
   });
   itWithDataProvider("put with validations on entity fails", async (dp) => {
-    let c = ctx.create(entityWithValidations);
-    c.setSource(dp);
+    let c = ctx.for(entityWithValidations, dp).create();
+
     await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
@@ -335,8 +335,8 @@ describe("data api", () => {
   });
   itWithDataProvider("entity with different id column still works well", async (dp) => {
 
-    let c = ctx.create(entityWithValidations);
-    c.setSource(dp);
+    let c = ctx.for(entityWithValidations, dp).create();
+
     c = await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     c.name.value = 'yael';
     await c.save();
@@ -525,7 +525,7 @@ describe("data api", () => {
   });
   itAsync("post with logic works and max in entity", async () => {
 
-    let c = ctx.create(entityWithValidations);
+    let c = ctx.for(entityWithValidations).create();
 
     var api = new DataApi(c, { allowInsert: true });
     let t = new TestDataApiResponse();
@@ -653,9 +653,9 @@ describe("data api", () => {
   });
   itAsync("getArray works with filter and multiple values with closed list columns", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam',undefined,Status.open);
-      i(2, 'yael',undefined,Status.closed);
-      i(3, 'yoni',undefined,Status.hold);
+      i(1, 'noam', undefined, Status.open);
+      i(2, 'yael', undefined, Status.closed);
+      i(3, 'yoni', undefined, Status.hold);
     });
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -1003,10 +1003,10 @@ describe("column validation", () => {
 describe("compund id", () => {
   const ctx = new Context();
   itAsync("start", async () => {
-    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
-    c.setSource(mem);
+    let c = ctx.for(CompoundIdEntity, mem).create();
+    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+
 
     var r = await c.source.find();
     expect(r.length).toBe(2);
@@ -1018,16 +1018,16 @@ describe("compund id", () => {
     expect(r[0].a.value).toBe(1);
   });
   it("test id filter", () => {
-    let c = ctx.create(CompoundIdEntity);
+    let c = ctx.for(CompoundIdEntity).create();
     let u = new UrlBuilder("");
     c.id.isEqualTo('1,11').__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(u));
     expect(u.url).toBe('?a=1&b=11');
   });
   itAsync("update", async () => {
-    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
-    c.setSource(mem);
+    let c = ctx.for(CompoundIdEntity, mem).create();
+    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+
 
     var r = await c.source.find();
     expect(r[0].c.value).toBe(111);
@@ -1043,10 +1043,10 @@ describe("compund id", () => {
     expect(r[0].id.value).toBe('1,11');
   });
   itAsync("update2", async () => {
-    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
-    c.setSource(mem);
+    let c = ctx.for(CompoundIdEntity, mem).create();
+    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+
 
     var r = await c.source.find();
     r[0].b.value = 55;
@@ -1058,9 +1058,9 @@ describe("compund id", () => {
     expect(r[0].id.value).toBe('1,55');
   });
   itAsync("insert", async () => {
-    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    let c = ctx.for(CompoundIdEntity, mem).create();
+    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
     c.setSource(mem);
 
     c.a.value = 3;
@@ -1072,10 +1072,10 @@ describe("compund id", () => {
     expect(c.id.value).toBe('3,33');
   });
   itAsync("delete", async () => {
-    let c = ctx.create(CompoundIdEntity);
     let mem = new InMemoryDataProvider();
-    mem.rows[c.__getName()] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
-    c.setSource(mem);
+    let c = ctx.for(CompoundIdEntity, mem).create();
+    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    
     let r = await c.source.find();
     await r[1].delete();
     expect(mem.rows[c.__getName()].length).toBe(1);

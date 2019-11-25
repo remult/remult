@@ -1,20 +1,14 @@
 {
   "name": "@remult/core",
   "schematics": "./schematics/collection.json",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "remult core lib",
   "license": "MIT",
   "author": {
     "name": "Noam Honig"
   },
   "dependencies": {
-    "jsonwebtoken": "^8.5.1",
-    "uuid": "^3.3.2",
-    "@auth0/angular-jwt": "^3.0.0"
-  },
-  "peerDependencies": {
-    "@angular/common": "^7.0.0",
-    "@angular/core": "^7.0.0",
-    "@angular/forms": "^7.0.0"
+    "uuid": "^3.3.2"
   }
+  
 }

@@ -1,7 +1,8 @@
 import { SiteArea } from "./expressBridge";
-import { UserInfo, allEntities, DataProviderFactory, ServerContext, DataApi } from "@remult/core";
+import { UserInfo, allEntities, DataProviderFactory, ServerContext, DataApi, Context, DataProviderFactoryBuilder } from "@remult/core";
+import { isFunction } from "util";
 
-export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProviderFactory) {
+export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProviderFactoryBuilder) {
     let errors = '';
     //add Api Entries
     allEntities.forEach(e => {
@@ -10,12 +11,14 @@ export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProvi
         let j = x;
         area.add(r => {
             let c = new ServerContext();
-            c.setDataProvider(dataProvider);
             c.setReq(r);
+
+            c.setDataProvider((dataProvider)(c));
+
             let y = j._getEntityApiSettings(c);
             if (y.allowRead === undefined)
                 errors += '\r\n' + j.__getName()
-            return new DataApi(c.create(e), y);
+            return new DataApi(c.for(e).create(), y);
         });
 
     });

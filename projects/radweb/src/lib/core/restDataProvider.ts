@@ -3,6 +3,7 @@ import { UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest, FilterBase } from './dataInterfaces1';
 import { DataApiResponse } from '../server/DataApi';
 import { HttpClient } from '@angular/common/http';
+import { Context } from '../context/Context';
 
 export class RestDataProvider implements DataProviderFactory {
   constructor(private url: string, private http: restDataProviderHttpProvider) {
@@ -192,7 +193,7 @@ function onError(error: any) {
   static provider: restDataProviderHttpProvider = new restDataProviderHttpProviderUsingFetch();
   run(pIn: inParam): Promise<outParam> {
 
-    return Action.provider.post(this.serverUrl + this.actionUrl, pIn);
+    return Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);
 
 
   }
