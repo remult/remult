@@ -51,7 +51,7 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
   public count(where: FilterBase): Promise<number> {
     if (!this.entity)
       this.entity = this.entityFactory();
-    let select = 'select count(*) from ' + this.entity.__getDbName();
+    let select = 'select count(*) count from ' + this.entity.__getDbName();
     let r = this.sql.createCommand();
     if (where) {
       let wc = new FilterConsumerBridgeToSqlRequest(r);
