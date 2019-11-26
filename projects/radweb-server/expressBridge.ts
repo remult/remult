@@ -1,6 +1,6 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApiServer, Action, UserInfo, DataProviderFactory, Context, DataProviderFactoryBuilder } from '@remult/core';
+import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApiServer, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder } from '@remult/core';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
@@ -25,7 +25,7 @@ export class ExpressBridge implements DataApiServer {
 
   private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
 
-  constructor(private app: express.Express, dataProvider: DataProviderFactory | DataProviderFactoryBuilder, disableHttpForDevOnly?: boolean, autoCreateApiArea = true) {
+  constructor(private app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpForDevOnly?: boolean, autoCreateApiArea = true) {
     app.use(compression());
     if (!disableHttpForDevOnly) {
       app.use(secure);
@@ -37,7 +37,7 @@ export class ExpressBridge implements DataApiServer {
     if (isFunction(dataProvider))
       builder = <DataProviderFactoryBuilder>dataProvider;
     else
-      builder = () => <DataProviderFactory>dataProvider;
+      builder = () => <DataProvider>dataProvider;
     if (autoCreateApiArea) {
       let apiArea = this.addArea('/' + Context.apiBaseUrl);
       registerActionsOnServer(apiArea, builder);

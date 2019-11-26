@@ -4,7 +4,7 @@
 import { makeTitle, isFunction, functionOrString } from './common';
 
 import {
-  DataColumnSettings, ColumnOptions, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, DataProvider, DataProviderFactory, FilterConsumer
+  DataColumnSettings, ColumnOptions, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, EntityDataProvider, DataProvider, FilterConsumer
   , ColumnStorage,
   EntitySourceFindOptions
 } from './dataInterfaces1';
@@ -108,7 +108,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   constructor(private entity?: rowType, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entity);
     if (entity)
-      this.filterHelper.filterRow = entity.source.createNewItem();
+      this.filterHelper.filterRow = entity.__killMeSource.createNewItem();
 
     this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false)
 
@@ -150,7 +150,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       if (settings.caption)
         this.caption = settings.caption;
       if (!this.caption && entity) {
-        this.caption = entity.source.createNewItem().__getCaption();
+        this.caption = entity.__killMeSource.createNewItem().__getCaption();
       }
       this.setGetOptions(settings.get);
 
@@ -661,13 +661,13 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
     let w: FilterBase = undefined;
     if (where)
       w = where(this.entity);
-    return this.entity.source.count(w);
+    return this.entity.__killMeSource.count(w);
   }
   get(options?: FindOptionsPerEntity<T>) {
 
     let getId = ++this.lastGetId;
 
-    return this.entity.source.find(this.translateOptions(options)).then(r => {
+    return this.entity.__killMeSource.find(this.translateOptions(options)).then(r => {
       let x: T[] = r;
       let result = r.map((x: any) => this.map(x));
       if (getId == this.lastGetId)
@@ -676,7 +676,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
     });
   }
   add(): T {
-    let x = this.map(this.entity.source.createNewItem());
+    let x = this.map(this.entity.__killMeSource.createNewItem());
     this.items.push(x);
     return x;
   }
@@ -750,7 +750,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
         res.found = false;
         return res;
       } else {
-        res.value = this.entity.source.createNewItem();
+        res.value = this.entity.__killMeSource.createNewItem();
         res.promise = this.restList.get(find).then(r => {
           res.loading = false;
           if (r.length > 0) {
@@ -1159,7 +1159,7 @@ export class Entity<idType> {
         name: undefined
       };
     }
-    this.__entityData = new __EntityValueProvider(() => this.source.__getDataProvider());
+    this.__entityData = new __EntityValueProvider(() => this.__killMeSource.__getDataProvider());
     this._noContextErrorWithStack = new Error('@EntityClass not used or context was not set for ' + this.constructor.name);
 
   }
@@ -1298,8 +1298,8 @@ export class Entity<idType> {
     return result;
   }
 
-  setSource(dp: DataProviderFactory) {
-    this.source = new EntitySource<this>(this.__getName(), () => <this>this.factory(), dp);
+  setSource(dp: DataProvider) {
+    this.__killMeSource = new EntitySource<this>(this, dp);
   }
   __assertValidity() {
     if (!this.isValid()) {
@@ -1417,7 +1417,7 @@ export class Entity<idType> {
 
   }
 
-  source: EntitySource<this>;
+  __killMeSource: EntitySource<this>;   
   //@internal
   __applyColumn(y: Column<any>) {
     if (!y.caption)
@@ -1525,13 +1525,11 @@ export class CompoundIdColumn extends Column<string>
 
 export class EntitySource<T extends Entity<any>>
 {
-  private _provider: DataProvider;
-  constructor(name: string,
-
-    private factory: () => T,
-    dataProvider: DataProviderFactory) {
+  private _provider: EntityDataProvider;
+  ;
+  constructor(private _entity:T,    dataProvider: DataProvider) {
     if (dataProvider)
-      this._provider = dataProvider.provideFor(name, factory);
+      this._provider = dataProvider.getEntityDataProvider(_entity);
   }
   find(options?: EntitySourceFindOptions): Promise<T[]> {
     if (options)
@@ -1539,18 +1537,18 @@ export class EntitySource<T extends Entity<any>>
     return this._provider.find(<FindOptions>options)
       .then(arr => {
         return arr.map(i => {
-          let r = this.factory();
+          let r = <T>this._entity.factory();
 
           r.__entityData.setData(i, r);
-          r.source = this;
+          r.__killMeSource = this;
           return r;
         })
       });
   }
   fromPojo(r: any): T {
-    let f = this.factory();
+    let f = <T>this._entity.factory();
     f.__entityData.setData(r, f);
-    f.source = this;
+    f.__killMeSource = this;
     return f;
   }
   async count(where?: FilterBase) {
@@ -1573,8 +1571,8 @@ export class EntitySource<T extends Entity<any>>
   }
 
   createNewItem(): T {
-    let r = this.factory();
-    r.source = this;
+    let r = <T>this._entity.factory();
+    r.__killMeSource = this;
     return r;
   }
 
@@ -1601,7 +1599,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     });
   }
-  constructor(private getDataProvider: () => DataProvider) {
+  constructor(private getDataProvider: () => EntityDataProvider) {
 
   }
   isNewRow(): boolean {

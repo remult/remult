@@ -9,9 +9,9 @@ import { Categories, environment, Status } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { Context, Role, Allowed, EntityClass, ServerContext } from '../context/Context';
 import { WebSqlDataProvider } from '../core/WebSqlDataProvider';
-import { DataProviderFactory, RowsOfDataForTesting } from '../core/dataInterfaces1';
+import { DataProvider, RowsOfDataForTesting } from '../core/dataInterfaces1';
 
-function itWithDataProvider(name: string, runAsync: (dpf: DataProviderFactory, rows?: RowsOfDataForTesting) => Promise<any>) {
+function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
   itAsyncForEach<any>(name, [new InMemoryDataProvider(), webSql],
     (dp) => new Promise((res, rej) => {
@@ -248,7 +248,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
   itAsync("put with validations works", async () => {
@@ -269,7 +269,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam 1');
     expect(count).toBe(1);
   });
@@ -278,7 +278,7 @@ describe("data api", () => {
     async (dataProvider) => {
       let c = ctx.for(entityWithValidations, dataProvider).create();
 
-      await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+      await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
       let api = new DataApi(c, { allowUpdate: true });
       let t = new TestDataApiResponse();
       let d = new Done();
@@ -290,7 +290,7 @@ describe("data api", () => {
         name: '1'
       });
       d.test();
-      var x = await c.source.find({ where: c.myId.isEqualTo(1) });
+      var x = await c.__killMeSource.find({ where: c.myId.isEqualTo(1) });
       expect(x[0].name.value).toBe('noam');
 
     });
@@ -298,7 +298,7 @@ describe("data api", () => {
 
     let c = ctx.for(entityWithValidationsOnColumn, dp).create();
 
-    await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -310,14 +310,14 @@ describe("data api", () => {
       name: '1'
     });
     d.test();
-    var x = await c.source.find({ where: c.myId.isEqualTo(1) });
+    var x = await c.__killMeSource.find({ where: c.myId.isEqualTo(1) });
     expect(x[0].name.value).toBe('noam');
 
   });
   itWithDataProvider("put with validations on entity fails", async (dp) => {
     let c = ctx.for(entityWithValidations, dp).create();
 
-    await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -329,7 +329,7 @@ describe("data api", () => {
       name: '1'
     });
     d.test();
-    var x = await c.source.find({ where: c.myId.isEqualTo(1) });
+    var x = await c.__killMeSource.find({ where: c.myId.isEqualTo(1) });
     expect(x[0].name.value).toBe('noam');
 
   });
@@ -337,11 +337,11 @@ describe("data api", () => {
 
     let c = ctx.for(entityWithValidations, dp).create();
 
-    c = await c.source.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    c = await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
     c.name.value = 'yael';
     await c.save();
     expect(c.name.value).toBe('yael');
-    expect((await c.source.find()).length).toBe(1);
+    expect((await c.__killMeSource.find()).length).toBe(1);
 
 
   });
@@ -374,7 +374,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam 1');
   });
   itAsync("put updates and excluded columns", async () => {
@@ -391,7 +391,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
   itAsync("put updates and readonly columns", async () => {
@@ -408,7 +408,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.source.find({ where: c.id.isEqualTo(1) });
+    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
   itAsync("delete fails when not found", async () => {
@@ -430,15 +430,15 @@ describe("data api", () => {
     t.deleted = () => d.ok();
     await api.delete(t, 1);
 
-    let r = await c.source.find();
+    let r = await c.__killMeSource.find();
     expect(r.length).toBe(0);
   });
   itAsync("delete falis nicely ", async () => {
 
     let c = new Categories();
     c.setSource({
-      provideFor: () => {
-        let r = new ActualInMemoryDataProvider(() => new Categories(), [{ id: 1 }]);
+      getEntityDataProvider: (x) => {
+        let r = new ActualInMemoryDataProvider(x, [{ id: 1 }]);
         r.delete = () => { throw "ERROR"; };
         return r;
       }
@@ -507,7 +507,7 @@ describe("data api", () => {
       onSavingRow: async c => {
         count++;
         if (c.isNew)
-          c.id.value = (await c.source.max(c.id)) + 1;
+          c.id.value = (await c.__killMeSource.max(c.id)) + 1;
       }
     });
     let t = new TestDataApiResponse();
@@ -555,7 +555,7 @@ describe("data api", () => {
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
-    expect((await c.source.find()).length).toBe(0);
+    expect((await c.__killMeSource.find()).length).toBe(0);
   });
   itAsync("post with syntax error fails well", async () => {
 
@@ -571,7 +571,7 @@ describe("data api", () => {
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
-    expect((await c.source.find()).length).toBe(0);
+    expect((await c.__killMeSource.find()).length).toBe(0);
   });
   itAsync("post fails on duplicate index", async () => {
 
@@ -625,6 +625,7 @@ describe("data api", () => {
           return "2";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -648,6 +649,7 @@ describe("data api", () => {
           return ["1", "3"];
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -671,6 +673,7 @@ describe("data api", () => {
           return ["0", "2"];
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -695,6 +698,7 @@ describe("data api", () => {
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -719,6 +723,7 @@ describe("data api", () => {
           return "y";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -742,6 +747,7 @@ describe("data api", () => {
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -768,6 +774,7 @@ describe("data api", () => {
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -950,6 +957,7 @@ describe("data api", () => {
           return "asc,desc";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
+      ,getBaseUrl:()=>''
     });
     d.test();
   });
@@ -966,9 +974,9 @@ describe("data api", () => {
       i(2, 'a');
       i(3, 'b');
     });
-    expect(await c.source.max(c.id)).toBe(3);
-    expect(await c.source.max(c.id, c.categoryName.isEqualTo('a'))).toBe(2);
-    expect(await c.source.max(c.id, c.categoryName.isEqualTo('z'))).toBe(0);
+    expect(await c.__killMeSource.max(c.id)).toBe(3);
+    expect(await c.__killMeSource.max(c.id, c.categoryName.isEqualTo('a'))).toBe(2);
+    expect(await c.__killMeSource.max(c.id, c.categoryName.isEqualTo('z'))).toBe(0);
   });
 
   itWithDataProvider("count", async (dp) => {
@@ -1015,11 +1023,11 @@ describe("compund id", () => {
     mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
-    var r = await c.source.find();
+    var r = await c.__killMeSource.find();
     expect(r.length).toBe(2);
     expect(r[0].a.value).toBe(1);
     expect(r[0].id.value).toBe('1,11');
-    r = await c.source.find({ where: c.id.isEqualTo('1,11') });
+    r = await c.__killMeSource.find({ where: c.id.isEqualTo('1,11') });
 
     expect(r.length).toBe(1);
     expect(r[0].a.value).toBe(1);
@@ -1036,7 +1044,7 @@ describe("compund id", () => {
     mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
-    var r = await c.source.find();
+    var r = await c.__killMeSource.find();
     expect(r[0].c.value).toBe(111);
     r[0].c.value = 55;
     expect(r[0].c.originalValue).toBe(111);
@@ -1055,7 +1063,7 @@ describe("compund id", () => {
     mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
-    var r = await c.source.find();
+    var r = await c.__killMeSource.find();
     r[0].b.value = 55;
     let saved = await r[0].save();
 
@@ -1083,7 +1091,7 @@ describe("compund id", () => {
     let c = ctx.for(CompoundIdEntity, mem).create();
     mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
     
-    let r = await c.source.find();
+    let r = await c.__killMeSource.find();
     await r[1].delete();
     expect(mem.rows[c.__getName()].length).toBe(1);
     expect(mem.rows[c.__getName()][0].a).toBe(1);
@@ -1130,8 +1138,8 @@ describe("test data list", () => {
   itAsync("delete fails nicely", async () => {
     let c = new Categories();
     c.setSource({
-      provideFor: () => {
-        let r = new ActualInMemoryDataProvider(() => c, [{ id: 1 }, { id: 2 }, { id: 3 }]);
+      getEntityDataProvider: x => {
+        let r = new ActualInMemoryDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
         r.delete = id => { return Promise.resolve().then(() => { throw Promise.resolve("error"); }) };
         return r;
       }
@@ -1250,7 +1258,7 @@ export class entityWithValidations extends Entity<number>{
 
       if (this.isNew() && (!this.myId.value || this.myId.value == 0)) {
 
-        this.myId.value = await this.source.max(this.myId) + 1;
+        this.myId.value = await this.__killMeSource.max(this.myId) + 1;
 
       }
       entityWithValidations.savingRowCount++;

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { SupportsTransaction, DataProviderFactory, DataApiRequest } from "../core/dataInterfaces1";
+import { SupportsTransaction, DataProvider, DataApiRequest } from "../core/dataInterfaces1";
 import { Action } from '../core/restDataProvider';
 import { Context, ServerContext, DirectSQL, Allowed, DataProviderFactoryBuilder } from './Context';
 import { SQLConnectionProvider, SupportsDirectSql } from '../core/utils';

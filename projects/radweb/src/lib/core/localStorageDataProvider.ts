@@ -1,23 +1,23 @@
 import { ActualInMemoryDataProvider } from './inMemoryDatabase';
 import { JsonStorageDataProvider, JsonStorage } from './JsonStorageDataProvider';
 import { Entity } from './utils';
-import { DataProviderFactory, DataProvider } from './dataInterfaces1';
+import { DataProvider, EntityDataProvider } from './dataInterfaces1';
 
 
-export class LocalStorageDataProvider implements DataProviderFactory {
+export class LocalStorageDataProvider implements DataProvider {
   constructor() {
 
   }
-  public provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
-    return new JsonStorageDataProvider<T>(new LocalJsonStorage(name, factory));
+  public getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
+    return new JsonStorageDataProvider(new LocalJsonStorage( entity.__getName(), entity));
   }
 }
 
 class LocalJsonStorage implements JsonStorage {
-  constructor(private key: string, private factory: () => Entity<any>) {
+  constructor(private key: string, private entity: Entity<any>) {
 
   }
-  doWork<T>(what: (dp: DataProvider, save: () => void) => T): T {
+  doWork<T>(what: (dp: EntityDataProvider, save: () => void) => T): T {
     let data: any = localStorage.getItem(this.key);
     try {
       data = JSON.parse(data);
@@ -27,7 +27,7 @@ class LocalJsonStorage implements JsonStorage {
     }
     if (!(data instanceof Array))
       data = [];
-    let dp = new ActualInMemoryDataProvider(this.factory, data);
+    let dp = new ActualInMemoryDataProvider(this.entity, data);
     return what(dp, () => localStorage.setItem(this.key, JSON.stringify(data, undefined, 2)));
   }
 }

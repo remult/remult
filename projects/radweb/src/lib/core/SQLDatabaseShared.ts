@@ -1,5 +1,5 @@
 import { SQLConnectionProvider, SQLCommand, Column, SQLQueryResult, Entity, FilterConsumerBridgeToSqlRequest, CompoundIdColumn } from "./utils";
-import { DataProvider, FilterBase, FindOptions } from "./dataInterfaces1";
+import { EntityDataProvider, FilterBase, FindOptions } from "./dataInterfaces1";
 
 
 class LogSQLConnectionProvider implements SQLConnectionProvider {
@@ -35,9 +35,9 @@ class LogSQLCommand implements SQLCommand {
   }
 }
 // @dynamic
-export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataProvider {
+export class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entityFactory: () => Entity<any>, private name: string, private sql: SQLConnectionProvider, private factory: () => T) {
+  constructor(private entity:Entity<any>,  private sql: SQLConnectionProvider) {
 
     this.sql = ActualSQLServerDataProvider.decorateSqlConnectionProvider(sql);
   }
@@ -47,10 +47,8 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
   createDirectSQLCommand() {
     return this.sql.createCommand();
   }
-  private entity: Entity<any>;
+  
   public count(where: FilterBase): Promise<number> {
-    if (!this.entity)
-      this.entity = this.entityFactory();
     let select = 'select count(*) count from ' + this.entity.__getDbName();
     let r = this.sql.createCommand();
     if (where) {
@@ -65,8 +63,6 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
 
   }
   find(options?: FindOptions): Promise<any[]> {
-    if (!this.entity)
-      this.entity = this.entityFactory();
     let select = 'select ';
     let colKeys: Column<any>[] = [];
     this.entity.__iterateColumns().forEach(x => {
@@ -127,8 +123,6 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
     });
   }
   update(id: any, data: any): Promise<any> {
-    if (!this.entity)
-      this.entity = this.entityFactory();
 
 
     let r = this.sql.createCommand();
@@ -165,8 +159,6 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
 
   }
   delete(id: any): Promise<void> {
-    if (!this.entity)
-      this.entity = this.entityFactory();
 
 
     let r = this.sql.createCommand();
@@ -183,8 +175,6 @@ export class ActualSQLServerDataProvider<T extends Entity<any>> implements DataP
 
   }
   insert(data: any): Promise<any> {
-    if (!this.entity)
-      this.entity = this.entityFactory();
 
 
     let r = this.sql.createCommand();

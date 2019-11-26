@@ -4,19 +4,20 @@
 
 
 import { Entity, Column, StringColumn } from './utils';
-import { FilterBase, DataProviderFactory, DataProvider, FindOptions, FilterConsumer, RowsOfDataForTesting } from './dataInterfaces1';
+import { FilterBase, DataProvider, EntityDataProvider, FindOptions, FilterConsumer, RowsOfDataForTesting } from './dataInterfaces1';
 
 
 import { isFunction, makeTitle } from './common';
 
 
 
-export class InMemoryDataProvider implements DataProviderFactory, RowsOfDataForTesting {
+export class InMemoryDataProvider implements DataProvider, RowsOfDataForTesting {
   rows: any = {};
-  public provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
+  public getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
+    let name = entity.__getName();
     if (!this.rows[name])
       this.rows[name] = [];
-    return new ActualInMemoryDataProvider(factory, this.rows[name]);
+    return new ActualInMemoryDataProvider(entity, this.rows[name]);
   }
   toString() { return "InMemoryDataProvider" }
 }
@@ -24,11 +25,11 @@ export class InMemoryDataProvider implements DataProviderFactory, RowsOfDataForT
 
 
 
-export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataProvider {
+export class ActualInMemoryDataProvider implements EntityDataProvider {
 
 
 
-  constructor(private factory: () => T, private rows?: any[]) {
+  constructor(private entity:Entity<any>, private rows?: any[]) {
     if (!rows)
       rows = [];
 
@@ -94,10 +95,8 @@ export class ActualInMemoryDataProvider<T extends Entity<any>> implements DataPr
     let r = JSON.parse(JSON.stringify(i));
     return r;
   }
-  private entity: Entity<any>;
+  
   private idMatches(id: any): (item: any) => boolean {
-    if (!this.entity)
-      this.entity = this.factory();
     let f = this.entity.__idColumn.isEqualTo(id);
     return item => {
       let x = new FilterConsumerBridgeToObject(item);

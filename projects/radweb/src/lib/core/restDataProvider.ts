@@ -1,21 +1,21 @@
 
-import { UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
-import { DataProvider, DataProviderFactory, FindOptions, DataApiRequest, FilterBase } from './dataInterfaces1';
+import { UrlBuilder, FilterConsumnerBridgeToUrlBuilder, Entity } from './utils';
+import { EntityDataProvider, DataProvider, FindOptions, DataApiRequest, FilterBase } from './dataInterfaces1';
 import { DataApiResponse } from '../server/DataApi';
 import { HttpClient } from '@angular/common/http';
 import { Context } from '../context/Context';
 
-export class RestDataProvider implements DataProviderFactory {
-  constructor(private url: string, private http: restDataProviderHttpProvider) {
+export class RestDataProvider implements DataProvider {
+  constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
   }
-  public provideFor(name: string): DataProvider {
-    return new ActualRestDataProvider(this.url + '/' + name, this.http);
+  public getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+    return new ActualRestDataProvider(this.url + '/' + entity.__getName(), this.http);
   }
 }
-class ActualRestDataProvider implements DataProvider {
+class ActualRestDataProvider implements EntityDataProvider {
 
-  constructor(private url: string, private http: restDataProviderHttpProvider) {
+  constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
   }
 
@@ -76,14 +76,14 @@ function JsonContent(add: (name: string, value: string) => void) {
   add('Content-type', "application/json");
 }
 
-export interface restDataProviderHttpProvider {
+export interface RestDataProviderHttpProvider {
   post(url: string, data: any): Promise<any>;
   delete(url: string): Promise<void>;
   put(url: string, data: any): Promise<any>;
   get(url: string): Promise<any>;
 
 }
-export class angularHttpProvider implements restDataProviderHttpProvider {
+export class AngularHttpProvider implements RestDataProviderHttpProvider {
   constructor(private http: HttpClient) {
 
   }
@@ -104,7 +104,7 @@ export class angularHttpProvider implements restDataProviderHttpProvider {
 }
 
 
-export class restDataProviderHttpProviderUsingFetch implements restDataProviderHttpProvider {
+export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderHttpProvider {
   constructor(private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)
       this.addRequestHeader = () => { };
@@ -190,7 +190,7 @@ function onError(error: any) {
         this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
     }
   }
-  static provider: restDataProviderHttpProvider = new restDataProviderHttpProviderUsingFetch();
+  static provider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
   run(pIn: inParam): Promise<outParam> {
 
     return Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);

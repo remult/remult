@@ -1,11 +1,11 @@
 import { Entity } from './utils';
-import { DataProvider, FindOptions, FilterBase } from './dataInterfaces1';
+import { EntityDataProvider, FindOptions, FilterBase } from './dataInterfaces1';
 export interface JsonStorage {
-  doWork<T>(what: (dp: DataProvider, save: () => void) => T): T;
+  doWork<T>(what: (dp: EntityDataProvider, save: () => void) => T): T;
 }
 
 
-export class JsonStorageDataProvider<T extends Entity<any>> implements DataProvider {
+export class JsonStorageDataProvider<T extends Entity<any>> implements EntityDataProvider {
 
   constructor(private helper: JsonStorage) {
 

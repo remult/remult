@@ -5,7 +5,7 @@ import { UserInfo, Allowed } from '../context/Context';
 
 
 
-export interface DataProvider {
+export interface EntityDataProvider {
   count(where: FilterBase): Promise<number>;
   find(options?: FindOptions): Promise<Array<any>>;
   update(id: any, data: any): Promise<any>;
@@ -34,16 +34,16 @@ export interface FindOptionsPerEntity<rowType extends Entity<any>> {
   additionalUrlParameters?: any;
 }
 
-export interface DataProviderFactory {
-  provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider;
+export interface DataProvider {
+  getEntityDataProvider(entity:Entity<any>): EntityDataProvider;
 
 }
 
 export interface RowsOfDataForTesting {
   rows: any;
 }
-export interface SupportsTransaction extends DataProviderFactory {
-  doInTransaction(what: (dp: DataProviderFactory) => Promise<void>): Promise<void>;
+export interface SupportsTransaction extends DataProvider {
+  doInTransaction(what: (dp: DataProvider) => Promise<void>): Promise<void>;
 
 }
 export interface ColumnValueProvider {

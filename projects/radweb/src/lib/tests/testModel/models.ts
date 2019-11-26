@@ -1,11 +1,11 @@
 import { Entity, EntityOptions, NumberColumn, StringColumn, ClosedListColumn } from "../../core/utils";
-import { DataProviderFactory } from "../../core/dataInterfaces1";
+import { DataProvider } from "../../core/dataInterfaces1";
 import { LocalStorageDataProvider } from "../../core/localStorageDataProvider";
 import { EntityClass } from "../../context/Context";
 
 export const environment = {
   production: false,
-  dataSource: new LocalStorageDataProvider() as DataProviderFactory
+  dataSource: new LocalStorageDataProvider() as DataProvider
 };
 @EntityClass
 export class Categories extends Entity<number> {

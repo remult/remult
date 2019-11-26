@@ -33,7 +33,7 @@ export class DataApi<T extends Entity<any>> {
   async count(response: DataApiResponse, request: DataApiRequest) {
     try {
       let where = this.buildWhere(request);
-      response.success({ count: +await this.rowType.source.count(where) });
+      response.success({ count: +await this.rowType.__killMeSource.count(where) });
     } catch (err) {
       response.error(err);
     }
@@ -77,7 +77,7 @@ export class DataApi<T extends Entity<any>> {
         findOptions.page = +request.get("_page");
 
       }
-      await this.rowType.source.find(findOptions)
+      await this.rowType.__killMeSource.find(findOptions)
         .then(async r => {
           response.success(await Promise.all(r.map(async y => await y.__toPojo(this.excludedColumns))));
         });
@@ -147,7 +147,7 @@ export class DataApi<T extends Entity<any>> {
       if (this.options && this.options.get && this.options.get.where)
         where = new AndFilter(where, this.options.get.where(this.rowType));
 
-      await this.rowType.source.find({ where })
+      await this.rowType.__killMeSource.find({ where })
         .then(async r => {
           if (r.length == 0)
             response.notFound();
@@ -188,7 +188,7 @@ export class DataApi<T extends Entity<any>> {
     }
     try {
 
-      let r = this.rowType.source.createNewItem();
+      let r = this.rowType.__killMeSource.createNewItem();
       r.__fromPojo(body, this.readonlyColumns);
       await r.save(this.options.validate, this.options.onSavingRow);
       response.created(await r.__toPojo(this.excludedColumns));

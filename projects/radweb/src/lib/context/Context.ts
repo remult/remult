@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { DataProviderFactory, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
-import { RestDataProvider, Action, angularHttpProvider, wrapFetch } from "../core/restDataProvider";
+import { DataProvider, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
+import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/restDataProvider";
 import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult, LookupCache, Lookup } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
@@ -24,7 +24,7 @@ export class Context {
     }
     constructor(http?: HttpClient, private _dialog?: MatDialog) {
         if (http instanceof HttpClient) {
-            var prov = new angularHttpProvider(http);
+            var prov = new AngularHttpProvider(http);
             this._dataSource = new RestDataProvider(Context.apiBaseUrl
                 , prov
                 //,new restDataProviderHttpProviderUsingFetch()
@@ -47,7 +47,7 @@ export class Context {
     }
 
  
-    protected _dataSource: DataProviderFactory;
+    protected _dataSource: DataProvider;
     protected _onServer = false;
     get onServer(): boolean {
         return this._onServer;
@@ -91,8 +91,8 @@ export class Context {
         return false;
     }
 
-    cache = new Map<DataProviderFactory, Map<string, SpecificEntityHelper<any, Entity<any>>>>();
-    public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProviderFactory) {
+    cache = new Map<DataProvider, Map<string, SpecificEntityHelper<any, Entity<any>>>>();
+    public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProvider) {
         if (!dataSource)
             dataSource = this._dataSource;
 
@@ -128,7 +128,7 @@ export class Context {
 
     _lookupCache: LookupCache<any>[] = [];
 }
-export declare type DataProviderFactoryBuilder = (req: Context) => DataProviderFactory;
+export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
     constructor() {
         super(undefined);
@@ -159,7 +159,7 @@ export class ServerContext extends Context {
         this.req = req;
         this._user = req.user ? req.user : undefined;
     }
-    setDataProvider(dataProvider: DataProviderFactory) {
+    setDataProvider(dataProvider: DataProvider) {
         this._dataSource = dataProvider;
     }
     getOrigin() {
@@ -216,7 +216,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         if (where) {
             options.where = where(this.entity);
         }
-        let items = await this.entity.source.find(options);
+        let items = await this.entity.__killMeSource.find(options);
         for (const item of items) {
             await what(item);
         }
@@ -227,7 +227,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return await dl.get(options);
     }
     async findFirst(where?: (entity: T) => FilterBase) {
-        let r = await this.entity.source.find({ where: where ? where(this.entity) : undefined });
+        let r = await this.entity.__killMeSource.find({ where: where ? where(this.entity) : undefined });
         if (r.length == 0)
             return undefined;
         return r[0];

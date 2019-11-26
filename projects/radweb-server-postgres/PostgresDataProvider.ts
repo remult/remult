@@ -1,4 +1,4 @@
-import { ServerContext, DataProviderFactory, DataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn, allEntities, SupportsDirectSql, DirectSQL } from '@remult/core';
+import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SQLConnectionProvider, SQLCommand, SQLQueryResult, ClosedListColumn, allEntities, SupportsDirectSql, DirectSQL } from '@remult/core';
 
 import { Pool, QueryResult } from 'pg';
 import { ActualSQLServerDataProvider,ActualDirectSQL } from '@remult/core';
@@ -12,20 +12,20 @@ export interface PostgresClient extends PostgresCommandSource{
     release():void;
 }
 
-export class PostgresDataProvider implements DataProviderFactory,SupportsDirectSql {
+export class PostgresDataProvider implements DataProvider,SupportsDirectSql {
 
 
     constructor(private pool: PostgresPool) {
 
     }
-    provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
-        return new ActualSQLServerDataProvider(factory, name, new PostgresBridgeToSQLConnection(this.pool), factory);
+    getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
+        return new ActualSQLServerDataProvider(entity, new PostgresBridgeToSQLConnection(this.pool));
     }
     getDirectSql(): DirectSQL {
         return new ActualDirectSQL(new PostgresBridgeToSQLConnection(this.pool));
     }
 
-    async doInTransaction(what: (dp: DataProviderFactory) => Promise<void>) {
+    async doInTransaction(what: (dp: DataProvider) => Promise<void>) {
         let client = await this.pool.connect();
         let dp = new PostgresDataTransaction(client);
         try {
@@ -47,7 +47,7 @@ export class PostgresDataProvider implements DataProviderFactory,SupportsDirectS
 
 }
 
-class PostgresDataTransaction implements DataProviderFactory, SupportsDirectSql {
+class PostgresDataTransaction implements DataProvider, SupportsDirectSql {
     getDirectSql(): DirectSQL {
         return new ActualDirectSQL(new PostgresBridgeToSQLConnection(this.source));
     }
@@ -56,8 +56,8 @@ class PostgresDataTransaction implements DataProviderFactory, SupportsDirectSql 
     constructor(private source: PostgresCommandSource) {
 
     }
-    provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
-        return new ActualSQLServerDataProvider(factory, name, new PostgresBridgeToSQLConnection(this.source), factory);
+    getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
+        return new ActualSQLServerDataProvider(entity, new PostgresBridgeToSQLConnection(this.source));
     }
     createDirectSQLCommand(): SQLCommand {
         return new PostgrestBridgeToSQLCommand(this.source);

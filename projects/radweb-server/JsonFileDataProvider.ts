@@ -1,27 +1,27 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import {  DataProviderFactory, DataProvider,Entity, JsonStorageDataProvider, JsonStorage, ActualInMemoryDataProvider  } from '@remult/core';
+import {  DataProvider, EntityDataProvider,Entity, JsonStorageDataProvider, JsonStorage, ActualInMemoryDataProvider  } from '@remult/core';
 
 
 
 
 
-export class JsonFileDataProvider implements DataProviderFactory {
+export class JsonFileDataProvider implements DataProvider {
   constructor(private folderPath: string) {
 
   }
-  public provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
-    return new JsonStorageDataProvider<T>(new FileJsonStorage(path.join(this.folderPath, name) + '.json',factory));
+  public getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
+    return new JsonStorageDataProvider(new FileJsonStorage(path.join(this.folderPath, entity.__getName()) + '.json',entity));
   }
 }
 
 class FileJsonStorage implements JsonStorage {
-  constructor(private filePath: string,private  factory: () => Entity<any>) {
+  constructor(private filePath: string,private  entity:Entity<any>) {
 
   }
-  doWork<T>(what: (dp: DataProvider, save: () => void) => T): T {
+  doWork<T>(what: (dp: EntityDataProvider, save: () => void) => T): T {
     let data = JSON.parse(fs.readFileSync(this.filePath).toString());
-    let dp = new ActualInMemoryDataProvider(this.factory,data);
+    let dp = new ActualInMemoryDataProvider(this.entity,data);
     return what(dp, () => fs.writeFileSync(this.filePath, JSON.stringify(data, undefined, 2)));
   }
 }

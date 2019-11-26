@@ -1,37 +1,36 @@
-import { DataProviderFactory, DataProvider, RowsOfDataForTesting } from "./dataInterfaces1";
+import { DataProvider, EntityDataProvider, RowsOfDataForTesting } from "./dataInterfaces1";
 import { Entity, SQLConnectionProvider, SQLCommand, Column, SQLQueryResult, DateTimeColumn, DateColumn, BoolColumn, NumberColumn, ClosedListColumn } from "./utils";
 import { ActualSQLServerDataProvider } from "./SQLDatabaseShared";
 
-export class WebSqlDataProvider implements DataProviderFactory, RowsOfDataForTesting {
+export class WebSqlDataProvider implements DataProvider, RowsOfDataForTesting {
     rows: {
         [tableName: string]: any;
     };
     /** @internal */
     //@ts-ignore
     db: Database;
-
+    private createdEntities: string[] = [];
     constructor(private databaseName: string) {
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-    provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
+    getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+        if (this.createdEntities.indexOf(entity.__getDbName()) < 0) {
 
-        return new ActualSQLServerDataProvider(() => {
-            var e = factory();
             let result = '';
-            e.__iterateColumns().forEach(x => {
+            entity.__iterateColumns().forEach(x => {
                 if (!x.__dbReadOnly()) {
                     if (result.length != 0)
                         result += ',';
                     result += '\r\n  ';
                     result += this.addColumnSqlSyntax(x);
-                    if (x == e.__idColumn)
+                    if (x == entity.__idColumn)
                         result += ' primary key';
                 }
             });
-            this.db.transaction(t => t.executeSql('create table if not exists ' + e.__getDbName() + ' (' + result + '\r\n)'));
-            return e;
-        }, name, new WebSqlBridgeToSQLConnection(this.db), factory);
+            this.db.transaction(t => t.executeSql('create table if not exists ' + entity.__getDbName() + ' (' + result + '\r\n)'));
+        }
+        return new ActualSQLServerDataProvider(entity, new WebSqlBridgeToSQLConnection(this.db));
     }
 
     private addColumnSqlSyntax(x: Column<any>) {
@@ -80,7 +79,7 @@ class WebSqlBridgeToSQLCommand implements SQLCommand {
         return new Promise((resolve, reject) =>
             this.source.transaction(t => {
                 let s = sql;
-                let v :any[] = [];
+                let v: any[] = [];
                 var m = s.match(/~\d+~/g);
                 if (m != null)
                     m.forEach(mr => {

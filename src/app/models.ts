@@ -1,7 +1,7 @@
 import { environment } from './../environments/environment';
 
 import { Entity, EntitySource, DateTimeDateStorage, EntityClass } from '@remult/core';
-import { DataProvider, DataProviderFactory } from '@remult/core';
+import { EntityDataProvider, DataProvider } from '@remult/core';
 import * as radweb from '@remult/core';
 
 @EntityClass
