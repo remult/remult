@@ -82,6 +82,11 @@
                 "$tsc"
             ],
             "group": "build"
+        },
+        {
+            "type": "npm",
+            "script": "publish-radweb-local",
+            "problemMatcher": []
         }
     ]
 }

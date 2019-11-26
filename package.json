@@ -24,8 +24,11 @@
     "publish-radweb": " npm run radweb-build && cd dist/radweb && npm publish --access public && cd.. && cd.. && cd projects/radweb && npm version patch",
     "publish-radweb-server": "cd dist/radweb-server && npm publish  --access public",
     "publish-radweb-server-postgres": "cd dist/radweb-server-postgres && npm publish  --access public",
-    "docs":"c:/repos/radweb/docs-builder/buildsite.exe ./docs-md ./docs"
-    
+    "docs":"c:/repos/radweb/docs-builder/buildsite.exe ./docs-md ./docs",
+    "publish-radweb-local": " npm run radweb-build && cd dist/radweb && npm publish --registry http://localhost:4873",
+    "publish-radweb-server-local": "cd dist/radweb-server && npm publish --registry http://localhost:4873 --access public",
+    "publish-radweb-server-postgres-local": "cd dist/radweb-server-postgres && npm publish --registry http://localhost:4873 --access public"
+
   },
   "private": true,
   "dependencies": {
