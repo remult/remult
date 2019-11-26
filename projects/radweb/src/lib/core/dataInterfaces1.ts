@@ -93,6 +93,7 @@ export interface FilterConsumer {
 }
 
 export interface DataApiRequest {
+  getBaseUrl():string;
   get(key: string): any;
   getHeader(key: string): string;
   user: UserInfo;

@@ -34,15 +34,19 @@ export class JwtSessionManager {
         }
     }
 
-    async setToken(jwtToken: string, rememberOnDevice = false) {
+    async setToken(jwtToken: string, rememberOnDevice = false, pathForCookie?: string) {
 
 
         if (jwtToken) {
             this._setToken(jwtToken);
             let c = authToken + "=" + jwtToken;
-            c+=';path=/'
+
             if (rememberOnDevice)
                 c += '; expires = Thu, 01 Jan 2076 00:00:00 GMT';
+            if (pathForCookie)
+                c += '; path=' + pathForCookie;
+            else
+                c += ';path=/'
             document.cookie = c;
             return true;
         }

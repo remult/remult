@@ -2,13 +2,20 @@ import { ServerContext, DataProviderFactory, DataProvider, Entity, Column, Numbe
 
 import { Pool, QueryResult } from 'pg';
 import { ActualSQLServerDataProvider,ActualDirectSQL } from '@remult/core';
+import { connect } from 'net';
 
 
+export interface PostgresPool extends PostgresCommandSource{
+    connect():Promise<PostgresClient>;
+}
+export interface PostgresClient extends PostgresCommandSource{
+    release():void;
+}
 
 export class PostgresDataProvider implements DataProviderFactory,SupportsDirectSql {
 
 
-    constructor(private pool: Pool) {
+    constructor(private pool: PostgresPool) {
 
     }
     provideFor<T extends Entity<any>>(name: string, factory: () => T): DataProvider {
@@ -58,7 +65,7 @@ class PostgresDataTransaction implements DataProviderFactory, SupportsDirectSql 
 
 
 }
-interface PostgresCommandSource {
+export interface PostgresCommandSource {
     query(queryText: string, values?: any[]): Promise<QueryResult>;
 }
 class PostgresBridgeToSQLConnection implements SQLConnectionProvider {
@@ -121,7 +128,8 @@ export class PostgrestSchemaBuilder {
         }
     }
     async CreateIfNotExist(e: Entity<any>): Promise<void> {
-        await this.pool.query("select 1 from information_Schema.tables where table_name=$1", [e.__getDbName().toLowerCase()]).then(async r => {
+        await this.pool.query("select 1 from information_Schema.tables where table_name=$1"+this.additionalWhere, [e.__getDbName().toLowerCase()]).then(async r => {
+            
             if (r.rowCount == 0) {
                 let result = '';
                 e.__iterateColumns().forEach(x => {
@@ -168,7 +176,7 @@ export class PostgrestSchemaBuilder {
             if (
                 (await this.pool.query(`select 1   
         FROM information_schema.columns 
-        WHERE table_name=$1 and column_name=$2`,
+        WHERE table_name=$1 and column_name=$2`+this.additionalWhere,
                     [e.__getDbName().toLocaleLowerCase(),
                     c(e).__getDbName().toLocaleLowerCase()])).rowCount == 0) {
                 let sql = `alter table ${e.__getDbName()} add column ${this.addColumnSqlSyntax(c(e))}`;
@@ -185,8 +193,10 @@ export class PostgrestSchemaBuilder {
             await this.addColumnIfNotExist(e, () => column);
         }));
     }
-
-    constructor(private pool: Pool) {
-
+    additionalWhere='';
+    constructor(private pool: PostgresPool,schema?:string) {
+        if (schema){
+            this.additionalWhere = ' and table_schema=\''+schema+'\'';
+        }
     }
 }

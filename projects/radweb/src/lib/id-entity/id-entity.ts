@@ -34,7 +34,6 @@ export class IdColumn extends StringColumn {
 export async function checkForDuplicateValue(row: Entity<any>, column: Column<any>, message?: string) {
   if (row.isNew() || column.value != column.originalValue) {
     let rows = await row.source.find({ where: column.isEqualTo(column.value) });
-    console.log(rows.length);
     if (rows.length > 0)
       column.error = message || 'Already exists';
   }

@@ -333,7 +333,7 @@ describe("test row provider", () => {
   });
   itAsync("column drop down 1", async () => {
     let ctx = new Context(undefined);
-    let c = ctx.create(Categories);
+    let c = ctx.for(Categories).create();
     c.setSource(new InMemoryDataProvider());
 
     await c.source.Insert(c => {
@@ -344,7 +344,7 @@ describe("test row provider", () => {
       c.id.value = 2;
       c.categoryName.value = 'yael';
     });
-    let c1 = ctx.create(Categories);
+    let c1 = ctx.for(Categories).create();
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
     let cs = { column: c1.id, dropDown: { source: c } } as ColumnSetting<Categories>
     await cc.add(cs);
@@ -354,7 +354,7 @@ describe("test row provider", () => {
     expect(cs.dropDown.items[1].id).toBe(2);
     expect(cs.dropDown.items[0].caption).toBe('noam');
     expect(cs.dropDown.items[1].caption).toBe('yael');
-    var c2 = ctx.create(Categories);
+    var c2 = ctx.for(Categories).create();
     c2.id.value = 1;
     expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
 
@@ -395,7 +395,7 @@ describe("test row provider", () => {
 describe("column collection", () => {
   let ctx = new Context(undefined);
   itAsync("uses a saparate column", async () => {
-    let c = ctx.create(Categories);
+    let c = ctx.for(Categories).create();
     c.categoryName.allowApiUpdate = false;
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
@@ -406,7 +406,7 @@ describe("column collection", () => {
     expect(cc.items[0].inputType == c.categoryName.inputType).toBe(true);
   })
   itAsync("jsonSaverIsNice", async () => {
-    let c = ctx.create(Categories);
+    let c = ctx.for(Categories).create();
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe("x.categoryName");
@@ -417,7 +417,7 @@ describe("column collection", () => {
   }`);
   })
   itAsync("works ok with filter", async () => {
-    let c = ctx.create(Categories);
+    let c = ctx.for(Categories).create();
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }), () => true);
     await cc.add(c.id);
     cc.filterHelper.filterColumn(cc.items[0].column, false, false);
@@ -429,7 +429,7 @@ describe("grid settings ",
   () => {
     let ctx = new Context(undefined);
     it("sort is displayed right", () => {
-      let c = ctx.create(Categories);
+      let c = ctx.for(Categories).create();
       c.setSource(new InMemoryDataProvider());
       let gs = new GridSettings(c);
       expect(gs.sortedAscending(c.id)).toBe(false);
@@ -442,7 +442,7 @@ describe("grid settings ",
       expect(gs.sortedDescending(c.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let c = ctx.create(Categories);
+      let c = ctx.for(Categories).create();
       c.setSource(new InMemoryDataProvider());
       let gs = new GridSettings(c, { get: { orderBy: c => new Sort({ column: c.categoryName }) } });
       expect(gs.sortedAscending(c.categoryName)).toBe(true);

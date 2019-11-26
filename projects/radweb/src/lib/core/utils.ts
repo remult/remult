@@ -1226,7 +1226,7 @@ export class Entity<idType> {
     if (!this.__entityType) {
       throw this._noContextErrorWithStack;
     }
-    return this.__context.create(this.__entityType);
+    return this.__context.for(this.__entityType).create();
   }
   __options: EntityOptions;
 

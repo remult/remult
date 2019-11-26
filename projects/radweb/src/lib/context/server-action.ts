@@ -2,8 +2,8 @@ import 'reflect-metadata';
 
 import { SupportsTransaction, DataProviderFactory, DataApiRequest } from "../core/dataInterfaces1";
 import { Action } from '../core/restDataProvider';
-import { Context, ServerContext, DirectSQL, Allowed } from './Context';
-import { SQLConnectionProvider,  SupportsDirectSql } from '../core/utils';
+import { Context, ServerContext, DirectSQL, Allowed, DataProviderFactoryBuilder } from './Context';
+import { SQLConnectionProvider, SupportsDirectSql } from '../core/utils';
 import { BusyService } from '../angular-components/wait/busy-service';
 import { ActualSQLServerDataProvider } from '../core/SQLDatabaseShared';
 
@@ -23,21 +23,22 @@ export class ActualDirectSQL extends DirectSQL {
     constructor(private dp: SQLConnectionProvider) {
         super();
         this.dp = ActualSQLServerDataProvider.decorateSqlConnectionProvider(dp);
-        let y = 1+1;
+        let y = 1 + 1;
     }
 }
 
 export class myServerAction extends Action<inArgs, result>
 {
     constructor(name: string, private types: any[], private options: ServerFunctionOptions, private originalMethod: (args: any[]) => any) {
-        super(Context.apiBaseUrl + '/', name)
+        super('', name)
     }
-    dataSource: DataProviderFactory;
+    dataProvider: DataProviderFactoryBuilder;
     protected async execute(info: inArgs, req: DataApiRequest): Promise<result> {
         let result = { data: {} };
-        await (<SupportsTransaction>this.dataSource).doInTransaction(async ds => {
-            let context = new ServerContext();
-            context.setReq(req);
+        let context = new ServerContext();
+        context.setReq(req);
+        let ds = this.dataProvider(context);
+        await (<SupportsTransaction>ds).doInTransaction(async ds => {
             context.setDataProvider(ds);
             if (!context.isAllowed(this.options.allowed))
                 throw 'not allowed';
@@ -78,7 +79,7 @@ export const actionInfo = {
 
 export function ServerFunction(options: ServerFunctionOptions) {
     return (target: any, key: string, descriptor: any) => {
-
+        
         var originalMethod = descriptor.value;
         var types = Reflect.getMetadata("design:paramtypes", target, key);
 
