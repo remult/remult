@@ -6,10 +6,11 @@ import { GridSettings, Lookup, ColumnSetting } from '../core/utils';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase'
 import { itAsync, Done } from './testHelper.spec';
 
-import { Categories, Status } from './testModel/models';
+import { Categories, Status, CategoriesWithValidation } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { error } from 'util';
-import { Context } from '../context/Context';
+import { Context, ServerContext } from '../context/Context';
+
 
 //import { DataAreaCompnent } from '../utils/angular/dataArea';
 
@@ -39,30 +40,32 @@ export class Language {
 
 
 
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string,status?:Status) => Promise<void>) => Promise<void>, settings?: EntityOptions) {
+export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>) {
+  let context = new ServerContext();
+  context.setDataProvider(new InMemoryDataProvider());
 
-  let c = new Categories(settings);
-  c.setSource(new InMemoryDataProvider());
-  await doInsert(async (id, name, description,status) => {
-    await c.__killMeSource.Insert(c => {
-      c.id.value = id;
-      c.categoryName.value = name;
-      c.description.value = description;
-      if (status)
-        c.status.value = status;
-    });
+  await doInsert(async (id, name, description, status) => {
+
+    let c = context.for(Categories).create();
+    c.id.value = id;
+    c.categoryName.value = name;
+    c.description.value = description;
+    if (status)
+      c.status.value = status;
+    await c.save();
+
   });
-  return c;
+  return context.for(Categories);
 }
 
-async function insertFourRows(settings?: EntityOptions) {
+async function insertFourRows() {
 
   return createData(async i => {
     await i(1, 'noam', 'x');
     await i(4, 'yael', 'x');
     await i(2, 'yoni', 'y');
     await i(3, 'maayan', 'y');
-  }, settings);
+  });
 };
 
 describe("Closed List  column", () => {
@@ -98,114 +101,66 @@ describe("test row provider", () => {
   });
   itAsync("Insert", async () => {
 
-
-    var cat = new Categories();
-
-    cat.setSource(new InMemoryDataProvider());
-
-    let rows = await cat.__killMeSource.find();
+    let forCat = await createData(async x => { });
+    let rows = await forCat.find();
     expect(rows.length).toBe(0);
-    await cat.__killMeSource.Insert(c => {
-      c.id.value = 1;
-      c.categoryName.value = 'noam';
-    });
-    rows = await cat.__killMeSource.find();
-    expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(1);
-    expect(rows[0].categoryName.value).toBe('noam');
-  });
-
-  itAsync("Insert another way", async () => {
-    let x = new Categories();
-    x.setSource(new InMemoryDataProvider());
-    let rows = await x.__killMeSource.find();
-    expect(rows.length).toBe(0);
-    var c = new Categories();
+    let c = forCat.create();
     c.id.value = 1;
     c.categoryName.value = 'noam';
-    c.__killMeSource = x.__killMeSource;
     await c.save();
-    rows = await x.__killMeSource.find();
+    rows = await forCat.find();
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(1);
     expect(rows[0].categoryName.value).toBe('noam');
   });
 
-  itAsync("one more insert", async () => {
-    let x = new Categories();
-    x.setSource(new InMemoryDataProvider());
-    var c = x.__killMeSource.createNewItem();
-    c.id.value = 1;
-    c.categoryName.value = 'noam';
-    c.save();
-    var r = await x.__killMeSource.find();
-    expect(r[0].categoryName.value).toBe('noam');
-  });
-  itAsync("Yet Another Test", async () => {
-    let x = new Categories();
-    x.setSource(new InMemoryDataProvider());
-    let rows = await x.__killMeSource.find();
-    expect(rows.length).toBe(0);
-    await x.__killMeSource.Insert(c => {
-      c.id.value = 1;
-      c.categoryName.value = 'noam';
-    });
-    rows = await x.__killMeSource.find();
-    expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(1);
-    expect(rows[0].categoryName.value).toBe('noam');
-  });
+
+
   itAsync("test  delete", async () => {
-    let c = new Categories();
-    c.setSource(new InMemoryDataProvider());
-    c.id.value = 5;
-    c.categoryName.value = 'noam';
-    c.save();
-    let rows = await c.__killMeSource.find();
+
+    let c = await createData(async insert => await insert(5, 'noam'));
+
+    let rows = await c.find();
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(5);
-    await c.delete();
-    rows = await c.__killMeSource.find();
+    await rows[0].delete();
+    rows = await c.find();
     expect(rows.length).toBe(0);
 
   });
   itAsync("test update", async () => {
-    let c = new Categories();
-    c.setSource(new InMemoryDataProvider());
-    c.id.value = 5;
-    c.categoryName.value = 'noam';
-    c.save();
-    let r = await c.__killMeSource.find();
+    let c = await createData(async insert => await insert(5, 'noam'));
+    let r = await c.find();
     expect(r[0].categoryName.value).toBe('noam');
-    c.categoryName.value = 'yael';
-    c.save();
-    r = await c.__killMeSource.find();
+    r[0].categoryName.value = 'yael';
+    await r[0].save();
+    r = await c.find();
     expect(r[0].categoryName.value).toBe('yael');
   });
 
   itAsync("test filter", async () => {
     let c = await insertFourRows();
 
-    let rows = await c.__killMeSource.find();
+    let rows = await c.find();
     expect(rows.length).toBe(4);
-    rows = await c.__killMeSource.find({ where: c.description.isEqualTo('x') });
+    rows = await c.find({ where: c => c.description.isEqualTo('x') });
     expect(rows.length).toBe(2);
-    rows = await c.__killMeSource.find({ where: c.id.isEqualTo(4) });
+    rows = await c.find({ where: c => c.id.isEqualTo(4) });
     expect(rows.length).toBe(1);
     expect(rows[0].categoryName.value).toBe('yael');
-    rows = await c.__killMeSource.find({ where: c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
+    rows = await c.find({ where: c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
   });
   itAsync("sort", async () => {
     let c = await insertFourRows();
-    let rows = await c.__killMeSource.find({ orderBy: new Sort({ column: c.id }) });
+    let rows = await c.find({ orderBy: c => new Sort({ column: c.id }) });
     expect(rows[0].id.value).toBe(1);
     expect(rows[1].id.value).toBe(2);
     expect(rows[2].id.value).toBe(3);
     expect(rows[3].id.value).toBe(4);
 
-    rows = await c.__killMeSource.find({ orderBy: new Sort({ column: c.categoryName, descending: true }) });
+    rows = await c.find({ orderBy: c => new Sort({ column: c.categoryName, descending: true }) });
     expect(rows[0].id.value).toBe(2);
     expect(rows[1].id.value).toBe(4);
     expect(rows[2].id.value).toBe(1);
@@ -213,17 +168,17 @@ describe("test row provider", () => {
   });
   itAsync("counts", async () => {
     let c = await insertFourRows();
-    let count = await c.__killMeSource.count();
+    let count = await c.count();
     expect(count).toBe(4);
   });
   itAsync("counts with filter", async () => {
     let c = await insertFourRows();
-    let count = await c.__killMeSource.count(c.id.isLessOrEqualTo(2));
+    let count = await c.count(c => c.id.isLessOrEqualTo(2));
     expect(count).toBe(2);
   });
   itAsync("test grid update", async () => {
     let c = await insertFourRows();
-    let ds = new GridSettings(c, {
+    let ds = c.gridSettings({
       get: {
         orderBy: c => new Sort({ column: c.id })
       }
@@ -236,33 +191,36 @@ describe("test row provider", () => {
     expect(ds.items[0].categoryName.value).toBe('noam honig');
   });
   itAsync("test grid update and validation cycle", async () => {
-    let orderOfOperation = '';
-    let c = await insertFourRows({
-      name: undefined,
-      onSavingRow: () => orderOfOperation += "EntityOnSavingRow,",
-      onValidate: r => orderOfOperation += "EntityValidate,",
-    });
-    let ds = new GridSettings(c, {
-      onSavingRow: r => orderOfOperation += "GridOnSavingRow,",
-      onValidate: r => orderOfOperation += "GridValidate,",
+    var context = new ServerContext();
+    context.setDataProvider(new InMemoryDataProvider());
+    var c = context.for(CategoriesWithValidation);
+    var newC = c.create();
+    newC.categoryName.value = 'noam';
+    newC.id.value = 1;
+    await newC.save();
+
+    CategoriesWithValidation.orderOfOperation = '';
+    let ds = c.gridSettings({
+      onSavingRow: r => CategoriesWithValidation.orderOfOperation += "GridOnSavingRow,",
+      onValidate: r => CategoriesWithValidation.orderOfOperation += "GridValidate,",
       get: {
         orderBy: c => new Sort({ column: c.id })
       }
     });
-    orderOfOperation = "";
+
     await ds.getRecords();
 
     let r = ds.items[0];
-    r.categoryName.onValidate = () => orderOfOperation += "ColumnValidate,";
+    r.categoryName.onValidate = () => CategoriesWithValidation.orderOfOperation += "ColumnValidate,";
 
     expect(r.categoryName.value).toBe('noam');
     r.categoryName.value = 'noam honig';
     await ds._doSavingRow(r);
     expect(ds.items[0].categoryName.value).toBe('noam honig');
-    expect(orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
+    expect(CategoriesWithValidation.orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
   });
   itAsync("test that it fails nicely", async () => {
-    let c = await insertFourRows();
+    let c = (await insertFourRows()).create();
     c.id.value = 1;
     c.categoryName.value = 'bla bla';
     try {
@@ -291,25 +249,20 @@ describe("test row provider", () => {
   itAsync("filter should return none", async () => {
 
     let c = await insertFourRows();
-    let n = c.__killMeSource.createNewItem();
-    let lookup = new Lookup(c);
-    let r = await lookup.whenGet(c => c.categoryName.isEqualTo(undefined));
+
+
+    let r = await c.lookupAsync(c => c.categoryName.isEqualTo(undefined));
     expect(r.categoryName.value).toBe(undefined);
 
   });
   itAsync("column drop down", async () => {
-    let c = new Categories();
-    c.setSource(new InMemoryDataProvider());
-    await c.__killMeSource.Insert(c => {
-      c.id.value = 1;
-      c.categoryName.value = 'noam'
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
     });
-    await c.__killMeSource.Insert(c => {
-      c.id.value = 2;
-      c.categoryName.value = 'yael';
-    });
-    let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { dropDown: { source: c } } as ColumnSetting<Categories>
+
+    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+    let cs = { dropDown: { source: c.create() } } as ColumnSetting<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
@@ -332,21 +285,13 @@ describe("test row provider", () => {
 
   });
   itAsync("column drop down 1", async () => {
-    let ctx = new Context(undefined);
-    let c = ctx.for(Categories).create();
-    c.setSource(new InMemoryDataProvider());
-
-    await c.__killMeSource.Insert(c => {
-      c.id.value = 1;
-      c.categoryName.value = 'noam'
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
     });
-    await c.__killMeSource.Insert(c => {
-      c.id.value = 2;
-      c.categoryName.value = 'yael';
-    });
-    let c1 = ctx.for(Categories).create();
-    let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { column: c1.id, dropDown: { source: c } } as ColumnSetting<Categories>
+    let c1 = c.create();
+    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+    let cs = { column: c1.id, dropDown: { source: c.create() } } as ColumnSetting<Categories>
     await cc.add(cs);
 
     expect(cs.dropDown.items.length).toBe(2);
@@ -354,7 +299,7 @@ describe("test row provider", () => {
     expect(cs.dropDown.items[1].id).toBe(2);
     expect(cs.dropDown.items[0].caption).toBe('noam');
     expect(cs.dropDown.items[1].caption).toBe('yael');
-    var c2 = ctx.for(Categories).create();
+    var c2 = c.create();
     c2.id.value = 1;
     expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
 
@@ -467,7 +412,7 @@ describe("grid settings ",
         i(8, "b");
       });
 
-      let ds = new GridSettings(c, { get: { limit: 2 } });
+      let ds = c.gridSettings({ get: { limit: 2 } });
       await ds.getRecords();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id.value).toBe(1);
@@ -493,7 +438,7 @@ describe("grid settings ",
         i(8, "b");
       });
 
-      let ds = new GridSettings(c, { get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
+      let ds = c.gridSettings({ get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
       await ds.getRecords();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id.value).toBe(2);
@@ -556,15 +501,15 @@ describe("order by api", () => {
       i(2, 'y');
     });
 
-    let r = await c.__killMeSource.find({ orderBy: c.categoryName });
+    let r = await c.find({ orderBy: c => c.categoryName });
     expect(r.length).toBe(2);
     expect(r[0].id.value).toBe(2);
 
-    r = await c.__killMeSource.find({ orderBy: [c.categoryName] });
+    r = await c.find({ orderBy: c => [c.categoryName] });
     expect(r.length).toBe(2);
     expect(r[0].id.value).toBe(2);
 
-    r = await c.__killMeSource.find({ orderBy: [{ column: c.categoryName, descending: true }] });
+    r = await c.find({ orderBy: c => [{ column: c.categoryName, descending: true }] });
     expect(r.length).toBe(2);
     expect(r[0].id.value).toBe(1);
 
@@ -709,13 +654,13 @@ describe("test parameter priority", () => {
     expect(s.caption).toBe('test');
   });
   it("d", () => {
-    let s = new AnotherTest({caption:'test'});
+    let s = new AnotherTest({ caption: 'test' });
     expect(s.caption).toBe('test');
   });
 });
 
-class myDp extends ActualInMemoryDataProvider{
-  constructor(entity:Entity<any>) {
+class myDp extends ActualInMemoryDataProvider {
+  constructor(entity: Entity<any>) {
     super(entity, []);
   }
   public update(id: any, data: any): Promise<any> {

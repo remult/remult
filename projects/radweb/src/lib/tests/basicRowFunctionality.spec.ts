@@ -146,7 +146,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
 
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -163,7 +163,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
 
-    var api = new DataApi(c, { excludeColumns: c => [c.categoryName] });
+    var api = new DataApi(c.create(), { excludeColumns: c => [c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -180,7 +180,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
 
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -197,7 +197,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
 
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -212,7 +212,7 @@ describe("data api", () => {
 
   itAsync("get based on id can fail", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
@@ -223,7 +223,7 @@ describe("data api", () => {
   itAsync("put fails when not found", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true });
+    var api = new DataApi(c.create(), { allowUpdate: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
@@ -233,7 +233,7 @@ describe("data api", () => {
   itAsync("put with validations fails", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       onSavingRow: c => c.categoryName.error = 'invalid',
       allowUpdate: true
     });
@@ -248,13 +248,13 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
   itAsync("put with validations works", async () => {
     let count = 0;
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       onSavingRow: c => { count++; },
       allowUpdate: true
     });
@@ -269,16 +269,18 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam 1');
     expect(count).toBe(1);
   });
   let ctx = new Context();
   itWithDataProvider("put with validations on entity fails",
     async (dataProvider) => {
-      let c = ctx.for(entityWithValidations, dataProvider).create();
-
-      await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+      let s = ctx.for(entityWithValidations, dataProvider);
+      let c = s.create();
+      c.myId.value = 1;
+      c.name.value = 'noam';
+      await c.save();
       let api = new DataApi(c, { allowUpdate: true });
       let t = new TestDataApiResponse();
       let d = new Done();
@@ -290,15 +292,17 @@ describe("data api", () => {
         name: '1'
       });
       d.test();
-      var x = await c.__killMeSource.find({ where: c.myId.isEqualTo(1) });
+      var x = await s.find({ where: c => c.myId.isEqualTo(1) });
       expect(x[0].name.value).toBe('noam');
 
     });
   itWithDataProvider("put with validations on column fails", async (dp) => {
+    var s = ctx.for(entityWithValidationsOnColumn, dp);
+    let c = s.create();
 
-    let c = ctx.for(entityWithValidationsOnColumn, dp).create();
-
-    await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    c.myId.value = 1;
+    c.name.value = 'noam';
+    await c.save();
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -310,14 +314,16 @@ describe("data api", () => {
       name: '1'
     });
     d.test();
-    var x = await c.__killMeSource.find({ where: c.myId.isEqualTo(1) });
+    var x = await s.find({ where: c => c.myId.isEqualTo(1) });
     expect(x[0].name.value).toBe('noam');
 
   });
   itWithDataProvider("put with validations on entity fails", async (dp) => {
-    let c = ctx.for(entityWithValidations, dp).create();
+    var s = ctx.for(entityWithValidations, dp);
+    let c = s.create();
 
-    await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    c.myId.value = 1; c.name.value = 'noam';
+    await c.save();
     let api = new DataApi(c, { allowUpdate: true });
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -329,19 +335,20 @@ describe("data api", () => {
       name: '1'
     });
     d.test();
-    var x = await c.__killMeSource.find({ where: c.myId.isEqualTo(1) });
+    var x = await s.find({ where: c => c.myId.isEqualTo(1) });
     expect(x[0].name.value).toBe('noam');
 
   });
   itWithDataProvider("entity with different id column still works well", async (dp) => {
+    let s = ctx.for(entityWithValidations, dp);
+    let c = s.create();
 
-    let c = ctx.for(entityWithValidations, dp).create();
-
-    c = await c.__killMeSource.Insert(c => { c.myId.value = 1; c.name.value = 'noam'; });
+    c.myId.value = 1; c.name.value = 'noam';
+    await c.save();
     c.name.value = 'yael';
     await c.save();
     expect(c.name.value).toBe('yael');
-    expect((await c.__killMeSource.find()).length).toBe(1);
+    expect((await s.find()).length).toBe(1);
 
 
   });
@@ -362,7 +369,7 @@ describe("data api", () => {
 
   itAsync("put updates", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true });
+    var api = new DataApi(c.create(), { allowUpdate: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -374,12 +381,12 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam 1');
   });
   itAsync("put updates and excluded columns", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true, excludeColumns: c => [c.categoryName] });
+    var api = new DataApi(c.create(), { allowUpdate: true, excludeColumns: c => [c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -391,12 +398,12 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
   itAsync("put updates and readonly columns", async () => {
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowUpdate: true, readonlyColumns: c => [c.categoryName] });
+    var api = new DataApi(c.create(), { allowUpdate: true, readonlyColumns: c => [c.categoryName] });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -408,13 +415,13 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.__killMeSource.find({ where: c.id.isEqualTo(1) });
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
   itAsync("delete fails when not found", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowDelete: true });
+    var api = new DataApi(c.create(), { allowDelete: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
@@ -424,13 +431,13 @@ describe("data api", () => {
   itAsync("delete works ", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, { allowDelete: true });
+    var api = new DataApi(c.create(), { allowDelete: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.deleted = () => d.ok();
     await api.delete(t, 1);
 
-    let r = await c.__killMeSource.find();
+    let r = await c.find();
     expect(r.length).toBe(0);
   });
   itAsync("delete falis nicely ", async () => {
@@ -457,7 +464,7 @@ describe("data api", () => {
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c, { allowInsert: true });
+    var api = new DataApi(c.create(), { allowInsert: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.created = async (data: any) => {
@@ -473,7 +480,7 @@ describe("data api", () => {
 
     let c = await createData(async (i) => { i(1, 'a'); });
 
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       allowInsert: true,
       onSavingRow: async c => {
         if (c.isNew()) {
@@ -502,12 +509,17 @@ describe("data api", () => {
 
     let c = await createData(async (i) => { i(1, 'a'); });
     let count = 0;
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       allowInsert: true,
-      onSavingRow: async c => {
+      onSavingRow: async cc => {
         count++;
-        if (c.isNew)
-          c.id.value = (await c.__killMeSource.max(c.id)) + 1;
+        if (cc.isNew) {
+          let exisitng = await c.find({
+            limit: 1,
+            orderBy: c => [{ column: c.id, descending: true }]
+          });
+          cc.id.value = exisitng.length == 0 ? 1 : exisitng[0].id.value + 1
+        }
       }
     });
     let t = new TestDataApiResponse();
@@ -546,7 +558,7 @@ describe("data api", () => {
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c, { onSavingRow: c => c.categoryName.error = 'invalid', allowInsert: true });
+    var api = new DataApi(c.create(), { onSavingRow: c => c.categoryName.error = 'invalid', allowInsert: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -555,14 +567,14 @@ describe("data api", () => {
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
-    expect((await c.__killMeSource.find()).length).toBe(0);
+    expect((await c.find()).length).toBe(0);
   });
   itAsync("post with syntax error fails well", async () => {
 
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c, { onSavingRow: async c => { c.description.value.length + 1 }, allowInsert: true });
+    var api = new DataApi(c.create(), { onSavingRow: async c => { c.description.value.length + 1 }, allowInsert: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -571,14 +583,14 @@ describe("data api", () => {
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
-    expect((await c.__killMeSource.find()).length).toBe(0);
+    expect((await c.find()).length).toBe(0);
   });
   itAsync("post fails on duplicate index", async () => {
 
 
     let c = await createData(async (i) => { i(1, 'noam'); });
 
-    var api = new DataApi(c, { allowInsert: true });
+    var api = new DataApi(c.create(), { allowInsert: true });
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = err => {
@@ -595,7 +607,7 @@ describe("data api", () => {
       i(1, 'noam');
       i(2, 'yael');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -611,7 +623,7 @@ describe("data api", () => {
       i(1, 'noam');
       i(2, 'yael');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -625,7 +637,7 @@ describe("data api", () => {
           return "2";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -635,7 +647,7 @@ describe("data api", () => {
       i(2, 'yael');
       i(3, 'yoni');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -649,7 +661,7 @@ describe("data api", () => {
           return ["1", "3"];
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -659,7 +671,7 @@ describe("data api", () => {
       i(2, 'yael', undefined, Status.closed);
       i(3, 'yoni', undefined, Status.hold);
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -673,7 +685,7 @@ describe("data api", () => {
           return ["0", "2"];
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -683,7 +695,7 @@ describe("data api", () => {
       i(2, 'yael');
       i(3, 'yoni');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -694,11 +706,11 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.categoryName.jsonName + '_contains')
+        if (x == c.create().categoryName.jsonName + '_contains')
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -708,7 +720,7 @@ describe("data api", () => {
       i(2, 'yael');
       i(3, 'yoni');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -719,11 +731,11 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.categoryName.jsonName + '_st')
+        if (x == c.create().categoryName.jsonName + '_st')
           return "y";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -733,7 +745,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -743,11 +755,11 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.description.jsonName)
+        if (x == c.create().description.jsonName)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -757,7 +769,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       get: { where: c => c.description.isEqualTo('b') }
 
     });
@@ -770,11 +782,11 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.description.jsonName)
+        if (x == c.create().description.jsonName)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -784,7 +796,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       get: { where: c => c.description.isEqualTo('b') }
 
     });
@@ -805,7 +817,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       get: { where: c => c.description.isEqualTo('b') }
 
     });
@@ -826,7 +838,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       get: { where: c => c.description.isEqualTo('b') }
 
     });
@@ -844,7 +856,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       allowDelete: true,
       get: { where: c => c.description.isEqualTo('b') }
 
@@ -863,7 +875,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       allowDelete: true,
       get: { where: c => c.description.isEqualTo('b') }
 
@@ -882,7 +894,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       allowDelete: false
     });
     let t = new TestDataApiResponse();
@@ -899,7 +911,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       allowUpdate: true,
       get: { where: c => c.description.isEqualTo('b') }
 
@@ -918,7 +930,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, {
+    var api = new DataApi(c.create(), {
       allowUpdate: true,
       get: { where: c => c.description.isEqualTo('b') }
 
@@ -938,7 +950,7 @@ describe("data api", () => {
       i(3, 'b');
       i(4, 'c');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c.create());
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -957,7 +969,7 @@ describe("data api", () => {
           return "asc,desc";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
-      ,getBaseUrl:()=>''
+      , getBaseUrl: () => ''
     });
     d.test();
   });
@@ -968,16 +980,7 @@ describe("data api", () => {
 
   });
 
-  itAsync("max works", async () => {
-    let c = await createData(async i => {
-      i(1, 'a');
-      i(2, 'a');
-      i(3, 'b');
-    });
-    expect(await c.__killMeSource.max(c.id)).toBe(3);
-    expect(await c.__killMeSource.max(c.id, c.categoryName.isEqualTo('a'))).toBe(2);
-    expect(await c.__killMeSource.max(c.id, c.categoryName.isEqualTo('z'))).toBe(0);
-  });
+
 
   itWithDataProvider("count", async (dp) => {
     let ctx = new ServerContext();
@@ -988,7 +991,7 @@ describe("data api", () => {
     c.categoryName.value = 'test';
     await c.save();
     expect(await ctx.for(Categories).count()).toBe(1);
-    });
+  });
 
 });
 
@@ -1019,15 +1022,16 @@ describe("compund id", () => {
   const ctx = new Context();
   itAsync("start", async () => {
     let mem = new InMemoryDataProvider();
-    let c = ctx.for(CompoundIdEntity, mem).create();
-    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    let s=ctx.for(CompoundIdEntity, mem);
+    
+    mem.rows[s.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
-    var r = await c.__killMeSource.find();
+    var r = await s.find();
     expect(r.length).toBe(2);
     expect(r[0].a.value).toBe(1);
     expect(r[0].id.value).toBe('1,11');
-    r = await c.__killMeSource.find({ where: c.id.isEqualTo('1,11') });
+    r = await s.find({ where:c=> c.id.isEqualTo('1,11') });
 
     expect(r.length).toBe(1);
     expect(r[0].a.value).toBe(1);
@@ -1040,11 +1044,11 @@ describe("compund id", () => {
   });
   itAsync("update", async () => {
     let mem = new InMemoryDataProvider();
-    let c = ctx.for(CompoundIdEntity, mem).create();
-    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    let c = ctx.for(CompoundIdEntity, mem);
+    mem.rows[c.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
-    var r = await c.__killMeSource.find();
+    var r = await c.find();
     expect(r[0].c.value).toBe(111);
     r[0].c.value = 55;
     expect(r[0].c.originalValue).toBe(111);
@@ -1053,23 +1057,23 @@ describe("compund id", () => {
     expect(r[0].c.value).toBe(55);
 
 
-    expect(mem.rows[c.__getName()][0].c).toBe(55);
-    expect(mem.rows[c.__getName()][0].id).toBe(undefined);
+    expect(mem.rows[c.create().__getName()][0].c).toBe(55);
+    expect(mem.rows[c.create().__getName()][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,11');
   });
   itAsync("update2", async () => {
     let mem = new InMemoryDataProvider();
-    let c = ctx.for(CompoundIdEntity, mem).create();
-    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    let c = ctx.for(CompoundIdEntity, mem);
+    mem.rows[c.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
-    var r = await c.__killMeSource.find();
+    var r = await c.find();
     r[0].b.value = 55;
     let saved = await r[0].save();
 
 
-    expect(mem.rows[c.__getName()][0].b).toBe(55);
-    expect(mem.rows[c.__getName()][0].id).toBe(undefined);
+    expect(mem.rows[c.create().__getName()][0].b).toBe(55);
+    expect(mem.rows[c.create().__getName()][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,55');
   });
   itAsync("insert", async () => {
@@ -1088,13 +1092,13 @@ describe("compund id", () => {
   });
   itAsync("delete", async () => {
     let mem = new InMemoryDataProvider();
-    let c = ctx.for(CompoundIdEntity, mem).create();
-    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
-    
-    let r = await c.__killMeSource.find();
+    let c = ctx.for(CompoundIdEntity, mem);
+    mem.rows[c.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+
+    let r = await c.find();
     await r[1].delete();
-    expect(mem.rows[c.__getName()].length).toBe(1);
-    expect(mem.rows[c.__getName()][0].a).toBe(1);
+    expect(mem.rows[c.create().__getName()].length).toBe(1);
+    expect(mem.rows[c.create().__getName()][0].a).toBe(1);
   });
 
 });
@@ -1105,7 +1109,7 @@ describe("test data list", () => {
       await i(2, 'b');
       await i(3, 'c');
     });
-    let rl = new DataList(c);
+    let rl = new DataList(c.create());
     await rl.get();
     expect(rl.items.length).toBe(3);
     await rl.items[1].delete();
@@ -1249,7 +1253,7 @@ export class entityWithValidations extends Entity<number>{
   myId = new NumberColumn();
   name = new StringColumn();
   static savingRowCount = 0;
-  constructor() {
+  constructor(context: Context) {
     super();
     this.__initColumns();
     this.__onSavingRow = async () => {
@@ -1257,8 +1261,12 @@ export class entityWithValidations extends Entity<number>{
         this.name.error = 'invalid';
 
       if (this.isNew() && (!this.myId.value || this.myId.value == 0)) {
+        let e = await context.for(entityWithValidations).find({
+          orderBy: x => [{ column: x.myId, descending: true }],
+          limit: 1
+        });
 
-        this.myId.value = await this.__killMeSource.max(this.myId) + 1;
+        this.myId.value = e.length ? e[0].myId.value + 1 : 1;
 
       }
       entityWithValidations.savingRowCount++;

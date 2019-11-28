@@ -108,7 +108,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   constructor(private entity?: rowType, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entity);
     if (entity)
-      this.filterHelper.filterRow = entity.__killMeSource.createNewItem();
+      this.filterHelper.filterRow = <rowType>entity.factory();
 
     this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false)
 
@@ -150,7 +150,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       if (settings.caption)
         this.caption = settings.caption;
       if (!this.caption && entity) {
-        this.caption = entity.__killMeSource.createNewItem().__getCaption();
+        this.caption = entity.__getCaption();
       }
       this.setGetOptions(settings.get);
 
@@ -750,7 +750,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
         res.found = false;
         return res;
       } else {
-        res.value = this.entity.__killMeSource.createNewItem();
+        res.value = <entityType>this.entity.factory();
         res.promise = this.restList.get(find).then(r => {
           res.loading = false;
           if (r.length > 0) {
@@ -1554,18 +1554,6 @@ export class EntitySource<T extends Entity<any>>
   async count(where?: FilterBase) {
     return this._provider.count(where);
   }
-
-
-  async max(col: NumberColumn, filter?: FilterBase): Promise<number> {
-    let x = await this.find({ where: filter, limit: 1, orderBy: new Sort({ column: col, descending: true }) });
-
-    if (x.length == 0) {
-      return 0;
-    }
-    return x[0].__getColumn(col).value;
-  }
-
-
   __getDataProvider() {
     return this._provider;
   }
@@ -1574,15 +1562,6 @@ export class EntitySource<T extends Entity<any>>
     let r = <T>this._entity.factory();
     r.__killMeSource = this;
     return r;
-  }
-
-  async Insert(doOnRow: (item: T) => Promise<void> | void): Promise<T> {
-    var i = this.createNewItem();
-    let x = doOnRow(i);
-    if (x instanceof Promise)
-      await x;
-    await i.save();
-    return i;
   }
 }
 

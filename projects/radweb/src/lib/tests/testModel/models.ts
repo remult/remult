@@ -24,6 +24,16 @@ export class Categories extends Entity<number> {
     this.__initColumns();
   }
 }
+export class CategoriesWithValidation extends Categories {
+  static orderOfOperation: string;
+  constructor() {
+    super({
+      name: undefined,
+      onSavingRow: () => CategoriesWithValidation.orderOfOperation += "EntityOnSavingRow,",
+      onValidate: r => CategoriesWithValidation.orderOfOperation += "EntityValidate,",
+    });
+  }
+}
 
 export class Status {
   static open = new Status(0, "open");
