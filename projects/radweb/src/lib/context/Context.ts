@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity } from "../core/dataInterfaces1";
+import { DataProvider, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
 import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult, LookupCache, Lookup } from "../core/utils";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
@@ -42,11 +42,11 @@ export class Context {
     getHost() {
         return '';
     }
-    getPathInUrl(){
+    getPathInUrl() {
         return window.location.pathname;
     }
 
- 
+
     protected _dataSource: DataProvider;
     protected _onServer = false;
     get onServer(): boolean {
@@ -107,10 +107,8 @@ export class Context {
         if (!r) {
             r = new SpecificEntityHelper<lookupIdType, T>(() => {
                 let e = new c(this);
-                e.setSource(dataSource);
-                e._setContext(this);
                 return e;
-            }, this._lookupCache, this);
+            }, this._lookupCache, this, dataSource);
             dsCache.set(classKey, r);
         }
 
@@ -139,7 +137,7 @@ export class ServerContext extends Context {
     getHost() {
         return this.req.getHeader('host');
     }
-    getPathInUrl(){
+    getPathInUrl() {
         return this.req.getBaseUrl();
     }
     getCookie(name: string) {
@@ -168,11 +166,21 @@ export class ServerContext extends Context {
 }
 
 
-export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> {
+export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
     private entity: T;
-    constructor(private factory: () => T, private _lookupCache: LookupCache<any>[], private context: Context) {
+    private _edp: EntityDataProvider;
+    constructor(public create: () => T, private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
+        this.create = () => {
+            let e = create();
+            e.setSource(dataSource);
+            e._setContext(context);
+            e.__KillMeEntityProvider = this;
+            return e;
+        };
         this.entity = this.create();
+        this._edp = dataSource.getEntityDataProvider(this.entity);
     }
+    __getDataProvider() { return this._edp; }
 
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
 
@@ -183,7 +191,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                 lookup = l.lookup;
         });
         if (!lookup) {
-            lookup = new Lookup(this.entity);
+            lookup = new Lookup(this.entity,this);
             this._lookupCache.push({ key, lookup });
         }
         return lookup.get(filter);
@@ -198,7 +206,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                 lookup = l.lookup;
         });
         if (!lookup) {
-            lookup = new Lookup(this.entity);
+            lookup = new Lookup(this.entity,this);
             this._lookupCache.push({ key, lookup });
         }
         return lookup.whenGet(filter);
@@ -207,27 +215,44 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
 
     async count(where?: (entity: T) => FilterBase) {
-        let dl = new DataList(this.entity);
-        return await dl.count(where);
+        return await this._edp.count(where? where(this.entity):undefined);
     }
     async foreach(where: (entity: T) => FilterBase, what?: (entity: T) => Promise<void>) {
-
-        let options: EntitySourceFindOptions = {};
-        if (where) {
-            options.where = where(this.entity);
-        }
-        let items = await this.entity.__killMeSource.find(options);
+        let items = await this.find({
+            where: where
+        });
         for (const item of items) {
             await what(item);
         }
-
     }
+    private translateOptions(options: FindOptionsPerEntity<T>) {
+        if (!options)
+            return undefined;
+        let getOptions: FindOptions = {};
+        if (options.where)
+            getOptions.where = options.where(this.entity);
+        if (options.orderBy)
+            getOptions.orderBy = extractSortFromSettings(this.entity, options);
+        if (options.limit)
+            getOptions.limit = options.limit;
+        if (options.page)
+            getOptions.page = options.page;
+        if (options.additionalUrlParameters)
+            getOptions.additionalUrlParameters = options.additionalUrlParameters;
+        return getOptions;
+    }
+
     async find(options?: FindOptionsPerEntity<T>) {
-        let dl = new DataList(this.entity);
-        return await dl.get(options);
+        let r = await this._edp.find(this.translateOptions(options));
+        return r.map(i => {
+            let r = this.create();
+            r.__entityData.setData(i, r);
+            r.__killMeSource = this.entity.__killMeSource;
+            return r;
+        });
     }
     async findFirst(where?: (entity: T) => FilterBase) {
-        let r = await this.entity.__killMeSource.find({ where: where ? where(this.entity) : undefined });
+        let r = await this.find({ where });
         if (r.length == 0)
             return undefined;
         return r[0];
@@ -239,11 +264,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
         return Promise.all(items.map(f => f.__toPojo(exc)));
     }
-    create() {
-        return this.factory();
-    }
+   
     gridSettings(settings?: IDataSettings<T>) {
-        return new GridSettings(this.entity, settings);
+        return new GridSettings(this, settings);
     }
 }
 export interface EntityType {

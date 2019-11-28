@@ -18,7 +18,12 @@ export interface FindOptions extends FindOptionsBase {
 export interface EntitySourceFindOptions extends FindOptionsBase {
   orderBy?: Sort | Column<any> | (Column<any> | SortSegment)[];
 }
-
+export interface EntityProvider<T extends Entity<any>>{
+  find(options?: FindOptionsPerEntity<T>):Promise<T[]>
+  count(where?: (entity: T) => FilterBase):Promise<number>;
+  create():T;
+  __getDataProvider():EntityDataProvider;
+}
 export interface FindOptionsBase {
   where?: FilterBase;
 

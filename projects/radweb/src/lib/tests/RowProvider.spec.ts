@@ -233,8 +233,9 @@ describe("test row provider", () => {
     expect(c.categoryName.value).toBe('bla bla');
   });
   itAsync("update should fail nicely", async () => {
-    let c = new Categories();
-    c.setSource({ getEntityDataProvider: (x) => new myDp(x) });
+    let cont = new ServerContext();
+    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x) });
+    let c = cont.for(Categories).create();
     c.id.value = 1;
     c.categoryName.value = 'noam';
     await c.save();
@@ -374,9 +375,10 @@ describe("grid settings ",
   () => {
     let ctx = new Context(undefined);
     it("sort is displayed right", () => {
-      let c = ctx.for(Categories).create();
-      c.setSource(new InMemoryDataProvider());
-      let gs = new GridSettings(c);
+      let s = ctx.for(Categories,new InMemoryDataProvider());
+      let c = s.create();
+      
+      let gs = s.gridSettings();
       expect(gs.sortedAscending(c.id)).toBe(false);
       expect(gs.sortedDescending(c.id)).toBe(false);
       gs.sort(c.id);
@@ -387,11 +389,12 @@ describe("grid settings ",
       expect(gs.sortedDescending(c.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let c = ctx.for(Categories).create();
-      c.setSource(new InMemoryDataProvider());
-      let gs = new GridSettings(c, { get: { orderBy: c => new Sort({ column: c.categoryName }) } });
-      expect(gs.sortedAscending(c.categoryName)).toBe(true);
-      expect(gs.sortedDescending(c.categoryName)).toBe(false);
+      let s = ctx.for(Categories,new InMemoryDataProvider());
+      let c = s.create();
+      let y :Column<any>;
+      let gs = s.gridSettings({ get: { orderBy: c => new Sort({ column: y=c.categoryName }) } });
+      expect(gs.sortedAscending(y)).toBe(true);
+      expect(gs.sortedDescending(y)).toBe(false);
       expect(gs.sortedAscending(c.id)).toBe(false);
       expect(gs.sortedDescending(c.id)).toBe(false);
       gs.sort(c.id);

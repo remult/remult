@@ -45,16 +45,3 @@ class testEntity extends Entity<number>{
     }
 }
 
-async function test() {
-    var sb = new PostgrestSchemaBuilder(p);
-    await sb.CreateIfNotExist(new testEntity());
-
-    let x = new testEntity();
-    x.datet.value = new Date();
-    await x.save();
-    var r = await x.__killMeSource.find({});
-    r[0].datet.value = new Date();
-    await r[0].save();
-
-
-}

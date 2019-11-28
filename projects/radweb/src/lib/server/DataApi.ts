@@ -1,22 +1,23 @@
 import { DataApiError } from './DataApi';
 
 import { Entity, AndFilter, Sort, Column, ColumnHashSet, StringColumn, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from '../core/utils';
-import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest } from '../core/dataInterfaces1';
+import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest, EntityProvider } from '../core/dataInterfaces1';
 
 export class DataApi<T extends Entity<any>> {
   getRoute() {
     if (!this.options.name)
-      return this.rowType.__getName();
+      return this.entityProvider.create().__getName();
     return this.options.name;
   }
-  constructor(private rowType: T, private options?: DataApiSettings<T>) {
+  constructor(private entityProvider: EntityProvider<T>, private options?: DataApiSettings<T>) {
     if (!options)
       this.options = {};
+    let t = entityProvider.create();
     if (this.options.readonlyColumns)
-      this.readonlyColumns.add(...this.options.readonlyColumns(rowType));
+      this.readonlyColumns.add(...this.options.readonlyColumns(t));
     if (this.options.excludeColumns) {
-      this.excludedColumns.add(...this.options.excludeColumns(rowType));
-      this.readonlyColumns.add(...this.options.excludeColumns(rowType));
+      this.excludedColumns.add(...this.options.excludeColumns(t));
+      this.readonlyColumns.add(...this.options.excludeColumns(t));
     }
 
   }
@@ -32,8 +33,8 @@ export class DataApi<T extends Entity<any>> {
   }
   async count(response: DataApiResponse, request: DataApiRequest) {
     try {
-      let where = this.buildWhere(request);
-      response.success({ count: +await this.rowType.__killMeSource.count(where) });
+      
+      response.success({ count: +await this.entityProvider.count(t => this.buildWhere(t,request)) });
     } catch (err) {
       response.error(err);
     }
@@ -45,11 +46,11 @@ export class DataApi<T extends Entity<any>> {
       return;
     }
     try {
-      let findOptions: FindOptions = {};
+      let findOptions: FindOptionsPerEntity<any> = {};
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
-      findOptions.where = this.buildWhere(request);
+      findOptions.where = t => this.buildWhere(t,request);
       if (request) {
 
         let sort = <string>request.get("_sort");
@@ -58,16 +59,19 @@ export class DataApi<T extends Entity<any>> {
           let dirItems: string[] = [];
           if (dir)
             dirItems = dir.split(',');
-          findOptions.orderBy = new Sort();
-          sort.split(',').forEach((name, i) => {
-            let col = this.rowType.__getColumnByJsonName(name.trim());
-            if (col) {
-              findOptions.orderBy.Segments.push({
-                column: col,
-                descending: i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d")
-              });
-            }
-          });
+          findOptions.orderBy = x => {
+            let r = new Sort();
+            sort.split(',').forEach((name, i) => {
+              let col = x.__getColumnByJsonName(name.trim());
+              if (col) {
+                r.Segments.push({
+                  column: col,
+                  descending: i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d")
+                });
+              }
+            });
+            return r;
+          }
 
         }
         let limit = +request.get("_limit");
@@ -77,7 +81,7 @@ export class DataApi<T extends Entity<any>> {
         findOptions.page = +request.get("_page");
 
       }
-      await this.rowType.__killMeSource.find(findOptions)
+      await this.entityProvider.find(findOptions)
         .then(async r => {
           response.success(await Promise.all(r.map(async y => await y.__toPojo(this.excludedColumns))));
         });
@@ -86,12 +90,12 @@ export class DataApi<T extends Entity<any>> {
       response.error(err);
     }
   }
-  private buildWhere(request: DataApiRequest) {
+  private buildWhere(rowType:T, request: DataApiRequest) {
     var where: FilterBase;
     if (this.options && this.options.get && this.options.get.where)
-      where = this.options.get.where(this.rowType);
+      where = this.options.get.where(rowType);
     if (request) {
-      this.rowType.__iterateColumns().forEach(col => {
+      rowType.__iterateColumns().forEach(col => {
         function addFilter(key: string, theFilter: (val: any) => FilterBase) {
           let val = request.get(col.jsonName + key);
           if (val != undefined) {
@@ -143,11 +147,16 @@ export class DataApi<T extends Entity<any>> {
   private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
 
-      let where: FilterBase = this.rowType.__idColumn.isEqualTo(id);
-      if (this.options && this.options.get && this.options.get.where)
-        where = new AndFilter(where, this.options.get.where(this.rowType));
 
-      await this.rowType.__killMeSource.find({ where })
+
+      await this.entityProvider.find({
+        where: x => {
+          let where: FilterBase = x.__idColumn.isEqualTo(id);
+          if (this.options && this.options.get && this.options.get.where)
+            where = new AndFilter(where, this.options.get.where(x));
+          return where;
+        }
+      })
         .then(async r => {
           if (r.length == 0)
             response.notFound();
@@ -188,7 +197,7 @@ export class DataApi<T extends Entity<any>> {
     }
     try {
 
-      let r = this.rowType.__killMeSource.createNewItem();
+      let r = this.entityProvider.create();
       r.__fromPojo(body, this.readonlyColumns);
       await r.save(this.options.validate, this.options.onSavingRow);
       response.created(await r.__toPojo(this.excludedColumns));
