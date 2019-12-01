@@ -41,3 +41,11 @@ export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, 
   addValues(result);
   return result;
 }
+export async function checkForDuplicateValue(row: Entity<any>, column: Column<any>, message?: string) {
+  if (row.isNew() || column.value != column.originalValue) {
+    let rows = await row.__KillMeEntityProvider.find({ where:r=>r.__getColumn(column).isEqualTo(column.value) });
+    if (rows.length > 0)
+      column.error = message || 'Already exists';
+  }
+
+}
