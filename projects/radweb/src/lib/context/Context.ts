@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, DataApiRequest, FilterBase, EntitySourceFindOptions, FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
-import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/restDataProvider";
+import { DataProvider, DataApiRequest, FilterBase,  FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
+import { RestDataProvider, Action, AngularHttpProvider , wrapFetch } from "../core/restDataProvider";
 import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
@@ -191,7 +191,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                 lookup = l.lookup;
         });
         if (!lookup) {
-            lookup = new Lookup(this.entity,this);
+            lookup = new Lookup(this.entity, this);
             this._lookupCache.push({ key, lookup });
         }
         return lookup.get(filter);
@@ -206,7 +206,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                 lookup = l.lookup;
         });
         if (!lookup) {
-            lookup = new Lookup(this.entity,this);
+            lookup = new Lookup(this.entity, this);
             this._lookupCache.push({ key, lookup });
         }
         return lookup.whenGet(filter);
@@ -215,7 +215,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
 
     async count(where?: (entity: T) => FilterBase) {
-        return await this._edp.count(where? where(this.entity):undefined);
+        return await this._edp.count(where ? where(this.entity) : undefined);
     }
     async foreach(where: (entity: T) => FilterBase, what?: (entity: T) => Promise<void>) {
         let items = await this.find({
@@ -264,7 +264,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
         return Promise.all(items.map(f => f.__toPojo(exc)));
     }
-   
+
     gridSettings(settings?: IDataSettings<T>) {
         return new GridSettings(this, settings);
     }

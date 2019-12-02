@@ -6,7 +6,7 @@ import { makeTitle, isFunction, functionOrString } from './common';
 import {
   DataColumnSettings, ColumnOptions, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, EntityDataProvider, DataProvider, FilterConsumer
   , ColumnStorage,
-  EntitySourceFindOptions,
+
   EntityProvider
 } from './dataInterfaces1';
 import { Allowed, Context, EntityType, DirectSQL } from '../context/Context';
