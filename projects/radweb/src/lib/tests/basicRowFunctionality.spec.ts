@@ -1080,7 +1080,7 @@ describe("compund id", () => {
     let mem = new InMemoryDataProvider();
     let c = ctx.for(CompoundIdEntity, mem).create();
     mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
-    c.setSource(mem);
+    
 
     c.a.value = 3;
     c.b.value = 33;

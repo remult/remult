@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DataProvider, DataApiRequest, FilterBase,  FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
 import { RestDataProvider, Action, AngularHttpProvider , wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, EntitySource, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings } from "../core/utils";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings,  SQLQueryResult, LookupCache, Lookup, extractSortFromSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
@@ -172,7 +172,6 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     constructor(public create: () => T, private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
         this.create = () => {
             let e = create();
-            e.setSource(dataSource);
             e._setContext(context);
             e.__KillMeEntityProvider = this;
             return e;
@@ -247,7 +246,6 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return r.map(i => {
             let r = this.create();
             r.__entityData.setData(i, r);
-            r.__killMeSource = this.entity.__killMeSource;
             return r;
         });
     }

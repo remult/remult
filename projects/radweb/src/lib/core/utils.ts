@@ -1265,9 +1265,7 @@ export class Entity<idType> {
     return result;
   }
 
-  setSource(dp: DataProvider) {
-    this.__killMeSource = new EntitySource<this>(this);
-  }
+
   __assertValidity() {
     if (!this.isValid()) {
 
@@ -1384,7 +1382,6 @@ export class Entity<idType> {
 
   }
 
-  __killMeSource: EntitySource<this>;   
   __KillMeEntityProvider:EntityProvider<this>;
   //@internal
   __applyColumn(y: Column<any>) {
@@ -1488,26 +1485,6 @@ export class CompoundIdColumn extends Column<string>
   }
 }
 
-
-
-
-export class EntitySource<T extends Entity<any>>
-{
-  
-  ;
-  constructor(private _entity:T,) {
-    
-  }
-  
-  
-  
-
-  createNewItem(): T {
-    let r = <T>this._entity.factory();
-    r.__killMeSource = this;
-    return r;
-  }
-}
 
 export class __EntityValueProvider implements ColumnValueProvider {
   listeners: RowEvents[] = [];
