@@ -1,19 +1,19 @@
 
 import { ColumnCollection, DataAreaSettings, dataAreaSettings, ColumnSetting } from '../../core/utils';
 
-import { Component,  Input, ViewEncapsulation, OnChanges } from '@angular/core';
+import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 @Component({
   selector: 'data-area',
-  
-  templateUrl:'./dataArea2.html',
-  styleUrls:['./dataArea2.scss'],
-  encapsulation:ViewEncapsulation.None
-  
+
+  templateUrl: './dataArea2.html',
+  styleUrls: ['./dataArea2.scss'],
+  encapsulation: ViewEncapsulation.None
+
 })
-export class DataArea2Compnent  implements OnChanges  {
- 
-  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true),lines:undefined };
-  
+export class DataArea2Compnent implements OnChanges {
+
+  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true), lines: undefined };
+
   ngOnChanges(): void {
     if (this.settings && this.settings.columns) {
       this.settings.columns.onColListChange(() => this.lastCols = undefined);
@@ -27,10 +27,10 @@ export class DataArea2Compnent  implements OnChanges  {
 
   }
 
-  lastCols: Array<ColumnSetting<any>[]>;
+  lastCols: ColumnSetting<any>[][][];
   lastAllCols: ColumnSetting<any>[];
 
-  theColumns(): Array<ColumnSetting<any>[]> {
+  theColumns(): ColumnSetting<any>[][][] {
 
 
 
@@ -39,18 +39,24 @@ export class DataArea2Compnent  implements OnChanges  {
       return this.lastCols;
     this.lastAllCols = cols;
 
-    let r: Array<ColumnSetting<any>[]> = [];
+    let r: ColumnSetting<any>[][][] = [];
     this.lastCols = r;
     for (var i = 0; i < this.columns; i++) {
       r.push([]);
     }
-    let itemsPerCol = Math.round(cols.length / this.columns);
-    for (var i = 0; i < cols.length; i++) {
-      r[Math.floor(i / itemsPerCol)].push(cols[i]);
+    let linesToPlaceInColumns: ColumnSetting<any>[][];
+    if (this.settings.lines)
+      linesToPlaceInColumns = this.settings.lines;
+    else {
+      linesToPlaceInColumns = cols.map(x => [x]);
+    }
+    let itemsPerCol = Math.round(linesToPlaceInColumns.length / this.columns);
+    for (var i = 0; i < linesToPlaceInColumns.length; i++) {
+      r[Math.floor(i / itemsPerCol)].push(linesToPlaceInColumns[i]);
     }
 
     return this.lastCols;
-    
+
   }
   @Input() columns = 1;
 }
