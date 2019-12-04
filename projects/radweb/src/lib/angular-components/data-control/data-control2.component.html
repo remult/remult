@@ -9,7 +9,7 @@
             <div *ngIf="showDescription()" style="white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-left:10px;">
+            padding-left:10px;width:100%;" (click)="settings._click(map,record)">
                 {{settings._getColDisplayValue(map,record)}}&nbsp;</div>
         </div>
         <div *ngIf="isSelect()">
