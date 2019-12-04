@@ -15,16 +15,15 @@
 .one-line > :last-child {
   padding-left: 0em;
 }
-@media only screen and (min-width: 768px){
-.column-container {
-  display: flex;
-  width: 100%;
-}
-.column-container div {
-  width: 100%;
-  margin-right: 5px;
-}
-.column-container :last-child{
-  margin-right:0px;
-}
+@media only screen and (min-width: 768px) {
+  .column-container {
+    display: flex;
+    width: 100%;
+    margin-right:-5px;
+  }
+  .column-container > div {
+    width: 100%;
+    margin-right:5px;
+  }
+  
 }
