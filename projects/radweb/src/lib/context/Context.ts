@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DataProvider, DataApiRequest, FilterBase, FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
 import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings } from "../core/utils";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings, DropDownSource, DropDownSourceArgs, __EntityValueProvider } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
@@ -117,7 +117,7 @@ export class Context {
         return r;
     }
     async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters: (it: C) => void, returnAValue?: (it: C) => T) {
-        
+
         let ref = this._dialog.open(component, component[dialogConfigMember]);
         setParameters(ref.componentInstance);
         await ref.beforeClose().toPromise();
@@ -173,14 +173,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     constructor(public create: () => T, private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
         this.create = () => {
             let e = create();
-            e._setContext(context);
-            e.__KillMeEntityProvider = this;
+            e.__entityData.dataProvider = this._edp;
             return e;
         };
         this.entity = this.create();
         this._edp = dataSource.getEntityDataProvider(this.entity);
     }
-    __getDataProvider() { return this._edp; }
+    
 
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
 
@@ -270,7 +269,10 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
 
     gridSettings(settings?: IDataSettings<T>) {
-        return new GridSettings(this, settings);
+        return new GridSettings(this, this.context, settings);
+    }
+    dropDownSource(args?: DropDownSourceArgs<T>) {
+        return new DropDownSource(this, args);
     }
 }
 export interface EntityType {
@@ -285,7 +287,7 @@ export function EntityClass<T extends EntityType>(theEntityClass: T) {
     let f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);
-            this._setFactoryClassAndDoInitColumns(f);
+            this.__initColumns((<any>this).id);
             if (!this.__options.name) {
                 this.__options.name = original.name;
             }

@@ -8,7 +8,9 @@ import {
   , ColumnStorage,
 
   EntityProvider,
-  ColumnDisplay
+  ColumnDisplay,
+  EntityOrderBy,
+  EntityWhere
 } from './dataInterfaces1';
 import { Allowed, Context, EntityType, DirectSQL } from '../context/Context';
 import { DataApiSettings } from '../server/DataApi';
@@ -43,10 +45,45 @@ export const testing = 'testing 123';
 export interface DropDownOptions {
 
   items?: DropDownItem[] | string[] | any[];
-  source?: Entity<any>;
-  idColumn?: Column<any>;
-  captionColumn?: Column<any>;
-  orderBy?: ((rowType: Entity<any>) => Sort) | ((rowType: Entity<any>) => (Column<any>)) | ((rowType: Entity<any>) => (Column<any> | SortSegment)[]);//tobe improved
+  source?: DropDownSource<any>;
+}
+export class DropDownSource<rowType extends Entity<any>>{
+  async provideItems(): Promise<DropDownItem[]> {
+
+    return (await this.provider.find({
+      where: this.args.where,
+      orderBy: this.args.orderBy
+    })).map(x => {
+      return {
+        id: this.args.idColumn(x).value,
+        caption: this.args.captionColumn(x).value
+      }
+    });
+  }
+  constructor(private provider: EntityProvider<rowType>, private args?: DropDownSourceArgs<rowType>) {
+    if (!args) {
+      this.args = args = {};
+    }
+    if (!args.idColumn) {
+      args.idColumn = x => x.__idColumn;
+    }
+    if (!args.captionColumn) {
+      let item = provider.create();
+      let idCol = args.idColumn(item);
+      for (const keyInItem of item.__iterateColumns()) {
+        if (keyInItem != idCol) {
+          args.captionColumn = x => x.__getColumn(keyInItem);
+          break;
+        }
+      }
+    }
+  }
+}
+export interface DropDownSourceArgs<rowType extends Entity<any>> {
+  idColumn?: (e: rowType) => Column<any>,
+  captionColumn?: (e: rowType) => Column<any>,
+  orderBy?: EntityOrderBy<rowType>,
+  where?: EntityWhere<rowType>
 }
 
 export interface DropDownItem {
@@ -106,14 +143,15 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
 
 
+
 export class GridSettings<rowType extends Entity<any>>  {
-  constructor(private entityProvider?: EntityProvider<rowType>, public settings?: IDataSettings<rowType>) {
+  constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entityProvider);
     if (entityProvider) {
       this.filterHelper.filterRow = <rowType>entityProvider.create();
     }
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false)
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, context)
 
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
@@ -924,12 +962,18 @@ export class Column<dataType>  {
 
   }
   //reconsider approach - this prevents the user from overriding in a specific component
-  __decorateDataSettings(x: ColumnSetting<any>) {
+  __decorateDataSettings(x: ColumnSetting<any>, context?: Context) {
     if (!x.caption && this.caption)
       x.caption = this.caption;
-    if (x.readonly == undefined)
-      if (this._entity)
-        x.readonly = !this._entity.__getApiAllowUpdate(this.allowApiUpdate);
+    if (x.readonly == undefined) {
+      if (!context) {
+        if (isBoolean(this.allowApiUpdate))
+          x.readonly = !this.allowApiUpdate;
+      }
+      else
+        x.readonly = !context.isAllowed(this.allowApiUpdate);
+    }
+
     if (x.inputType == undefined)
       x.inputType = this.inputType;
     if (x.getValue == undefined) {
@@ -1149,12 +1193,7 @@ export interface EntityOptions {
 }
 //@dynamic
 export class Entity<idType> {
-  constructor(options?: EntityOptions | string,
-    //@internal
-    public factory?: () => Entity<idType>) {
-    if (!factory) {
-      this.factory = () => this.__createInstance();
-    }
+  constructor(options?: EntityOptions | string) {
     if (options) {
       if (typeof (options) === "string") {
         this.__options = { name: options };
@@ -1165,37 +1204,17 @@ export class Entity<idType> {
         if (options.onValidate)
           this.__onValidate = () => options.onValidate(this);
       }
-
     }
     else {
       this.__options = {
         name: undefined
       };
     }
-    this.__entityData = new __EntityValueProvider(() => this.__KillMeEntityProvider.__getDataProvider());
-    this._noContextErrorWithStack = new Error('@EntityClass not used or context was not set for ' + this.constructor.name);
-
   }
 
   static __key: string;
-  //@internal
-  __entityType: EntityType;
-  _noContextErrorWithStack: Error;
-  //@internal
-  __context: Context;
-  _setContext(context: Context) {
-    this.__context = context;
-  }
-  __getApiAllowUpdate(allowed: Allowed) {
-    if (!this.__context && isBoolean(allowed))
-      return allowed;
-    return this.__context.isAllowed(allowed);
-  }
-  _setFactoryClassAndDoInitColumns(entityType: EntityType) {
-    this.__entityType = entityType;
-    this.__initColumns((<any>this).id);
 
-  }
+
   _getExcludedColumns(x: Entity<any>, context: Context) {
     let r = x.__iterateColumns().filter(c => {
       return !context.isAllowed(c.includeInApi);
@@ -1204,10 +1223,7 @@ export class Entity<idType> {
   }
   _getEntityApiSettings(r: Context): DataApiSettings<Entity<any>> {
 
-
-    let x = r.for(this.__entityType).create() as Entity<any>;
-
-    let options = x.__options;
+    let options = this.__options;
     if (options.allowApiCRUD) {
       options.allowApiDelete = true;
       options.allowApiInsert = true;
@@ -1230,17 +1246,7 @@ export class Entity<idType> {
     }
 
   }
-  //@internal
-  __createInstance() {
-    if (!this.__context) {
 
-      throw this._noContextErrorWithStack;
-    }
-    if (!this.__entityType) {
-      throw this._noContextErrorWithStack;
-    }
-    return this.__context.for(this.__entityType).create();
-  }
   __options: EntityOptions;
 
 
@@ -1259,7 +1265,7 @@ export class Entity<idType> {
     return this.__options.caption;
   }
 
-  __entityData: __EntityValueProvider;
+  __entityData = new __EntityValueProvider();
 
   //@internal
   __onSavingRow: () => void | Promise<void> = () => { };
@@ -1428,7 +1434,7 @@ export class Entity<idType> {
 
   }
 
-  __KillMeEntityProvider: EntityProvider<this>;
+  
   //@internal
   __applyColumn(y: Column<any>) {
     if (!y.caption)
@@ -1537,17 +1543,16 @@ export class __EntityValueProvider implements ColumnValueProvider {
   register(listener: RowEvents) {
     this.listeners.push(listener);
   }
+  dataProvider:EntityDataProvider;
   delete() {
-    return this.getDataProvider().delete(this.id).then(() => {
+    return this.dataProvider.delete(this.id).then(() => {
       this.listeners.forEach(x => {
         if (x.rowDeleted)
           x.rowDeleted();
       });
     });
   }
-  constructor(private getDataProvider: () => EntityDataProvider) {
-
-  }
+  
   isNewRow(): boolean {
     return this.newRow;
   }
@@ -1567,7 +1572,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
     if (e.__idColumn instanceof CompoundIdColumn)
       d.id = undefined;
     if (this.newRow) {
-      return this.getDataProvider().insert(d).then((newData: any) => {
+      return this.dataProvider.insert(d).then((newData: any) => {
         this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
@@ -1575,7 +1580,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
         });
       });
     } else {
-      return this.getDataProvider().update(this.id, d).then((newData: any) => {
+      return this.dataProvider.update(this.id, d).then((newData: any) => {
         this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
@@ -1802,7 +1807,7 @@ export class ClosedListColumn<closedListType extends ClosedListItem> extends Col
   }
 }
 export class ColumnCollection<rowType extends Entity<any>> {
-  constructor(public currentRow: () => Entity<any>, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean) {
+  constructor(public currentRow: () => Entity<any>, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private context?: Context) {
 
     if (this.allowDesignMode == undefined) {
       if (location.search)
@@ -1873,61 +1878,22 @@ export class ColumnCollection<rowType extends Entity<any>> {
       let orig = s.dropDown.items;
       let result: DropDownItem[] = [];
       s.dropDown.items = result;
-      let populateBasedOnArray = (arr: Array<any>) => {
-        for (let item of arr) {
+
+      if (orig instanceof Array) {
+        for (let item of orig) {
           let type = typeof (item);
           if (type == "string" || type == "number")
             result.push({ id: item, caption: item });
-          else if (item instanceof Entity) {
-            let col: Column<any>;
-            if (!s.dropDown.idColumn) {
-              if (col = item.__getColumnByJsonName('id'))
-                s.dropDown.idColumn = col;
-              else {
-                for (let colInEntity of item.__iterateColumns()) {
-                  s.dropDown.idColumn = colInEntity;
-                  break;
-                }
-              }
-            }
-            if (!s.dropDown.captionColumn) {
-              if (col = item.__getColumnByJsonName('caption'))
-                s.dropDown.captionColumn = col;
-              else {
-                for (let keyInItem of item.__iterateColumns()) {
-                  if (keyInItem != item.__getColumn(s.dropDown.idColumn)) {
-                    s.dropDown.captionColumn = keyInItem;
-                    break;
-                  }
-                }
-              }
-            }
-            let p = { id: item.__getColumn(s.dropDown.idColumn).value, caption: item.__getColumn(s.dropDown.captionColumn).value };
-            if (p.id instanceof Column) {
-              p.id = p.id.value;
-            }
-            if (p.caption instanceof Column)
-              p.caption = p.caption.value;
-            if (!p.caption)
-              p.caption = p.id;
-            result.push(p);
-          } else {
+          else {
             let x = item as DropDownItem;
             if (x && x.id != undefined) {
               result.push(x);
             }
           }
         }
-      };
-      if (orig instanceof Array) {
-        populateBasedOnArray(orig);
       }
       else if (s.dropDown.source) {
-        if (s.dropDown.source instanceof Entity) {
-          return new DataList(s.dropDown.source.__KillMeEntityProvider).get({ limit: 5000, orderBy: s.dropDown.orderBy }).then(arr =>
-            populateBasedOnArray(arr));
-        }
-
+        result.push(...(await s.dropDown.source.provideItems()));
       }
     }
     return Promise.resolve();

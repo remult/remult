@@ -9,10 +9,11 @@ export class DataApi<T extends Entity<any>> {
       return this.entityProvider.create().__getName();
     return this.options.name;
   }
-  constructor(private entityProvider: EntityProvider<T>, private options?: DataApiSettings<T>) {
+  constructor(private entityProvider: EntityProvider<T>, private options?: DataApiSettings<T>,t?:T) {
     if (!options)
       this.options = {};
-    let t = entityProvider.create();
+    if (!t)
+      t = entityProvider.create();
     if (this.options.readonlyColumns)
       this.readonlyColumns.add(...this.options.readonlyColumns(t));
     if (this.options.excludeColumns) {

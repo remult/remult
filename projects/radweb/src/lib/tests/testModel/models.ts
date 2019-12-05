@@ -20,7 +20,7 @@ export class Categories extends Entity<number> {
   });
   status = new StatusColumn();
   constructor(settings?: EntityOptions | string) {
-    super(settings, () => new Categories(settings));
+    super(settings);
     this.__initColumns();
   }
 }

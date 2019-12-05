@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { StringColumn, Entity, Column, EntityOptions } from "../core/utils";
 
-import { ColumnOptions, DataColumnSettings } from '../core/dataInterfaces1';
+import { ColumnOptions, DataColumnSettings, EntityProvider } from '../core/dataInterfaces1';
 
 
 
@@ -41,9 +41,9 @@ export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, 
   addValues(result);
   return result;
 }
-export async function checkForDuplicateValue(row: Entity<any>, column: Column<any>, message?: string) {
+export async function checkForDuplicateValue(row: Entity<any>, column: Column<any>,provider: EntityProvider<any>, message?: string) {
   if (row.isNew() || column.value != column.originalValue) {
-    let rows = await row.__KillMeEntityProvider.find({ where:r=>r.__getColumn(column).isEqualTo(column.value) });
+    let rows = await provider.find({ where:r=>r.__getColumn(column).isEqualTo(column.value) });
     if (rows.length > 0)
       column.error = message || 'Already exists';
   }

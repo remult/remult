@@ -20,7 +20,6 @@ export interface EntityProvider<T extends Entity<any>> {
     find(options?: FindOptionsPerEntity<T>): Promise<T[]>
     count(where?: (entity: T) => FilterBase): Promise<number>;
     create(): T;
-    __getDataProvider(): EntityDataProvider;
 }
 export interface FindOptionsBase {
     where?: FilterBase;
@@ -29,9 +28,11 @@ export interface FindOptionsBase {
     page?: number;
     additionalUrlParameters?: any;
 }
+export declare type EntityWhere<rowType extends Entity<any>> = (rowType: rowType) => FilterBase;
+export declare type EntityOrderBy<rowType extends Entity<any>> = ((rowType: rowType) => Sort) | ((rowType: rowType) => (Column<any>)) | ((rowType: rowType) => (Column<any> | SortSegment)[]);
 export interface FindOptionsPerEntity<rowType extends Entity<any>> {
-    where?: (rowType: rowType) => FilterBase;
-    orderBy?: ((rowType: rowType) => Sort) | ((rowType: rowType) => (Column<any>)) | ((rowType: rowType) => (Column<any> | SortSegment)[]);
+    where?: EntityWhere<rowType>;
+    orderBy?: EntityOrderBy<rowType>;
     limit?: number;
     page?: number;
     additionalUrlParameters?: any;
