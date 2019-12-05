@@ -7,7 +7,8 @@ import {
   DataColumnSettings, ColumnOptions, FilterBase, ColumnValueProvider, FindOptions, FindOptionsPerEntity, RowEvents, EntityDataProvider, DataProvider, FilterConsumer
   , ColumnStorage,
 
-  EntityProvider
+  EntityProvider,
+  ColumnDisplay
 } from './dataInterfaces1';
 import { Allowed, Context, EntityType, DirectSQL } from '../context/Context';
 import { DataApiSettings } from '../server/DataApi';
@@ -22,7 +23,7 @@ import { isBoolean, isString, isArray } from 'util';
 
 export interface dataAreaSettings {
   columns: ColumnCollection<any>;
-  lines:ColumnSetting<any>[][];
+  lines: ColumnSetting<any>[][];
 }
 
 
@@ -94,8 +95,8 @@ export class DataAreaSettings<rowType extends Entity<any>>
 
         }
       }
-      
-      
+
+
     }
 
   }
@@ -108,7 +109,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
 export class GridSettings<rowType extends Entity<any>>  {
   constructor(private entityProvider?: EntityProvider<rowType>, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entityProvider);
-    if (entityProvider){
+    if (entityProvider) {
       this.filterHelper.filterRow = <rowType>entityProvider.create();
     }
 
@@ -553,8 +554,8 @@ export interface ColumnSetting<rowType> {
   defaultValue?: (row: rowType) => any;
   onUserChangedValue?: (row: rowType) => void;
   click?: rowEvent<rowType>;
-  allowClick?:(row:rowType)=>boolean;
-  clickIcon?:string;
+  allowClick?: (row: rowType) => boolean;
+  clickIcon?: string;
   dropDown?: DropDownOptions;
   column?: Column<any>;
   width?: string;
@@ -570,7 +571,7 @@ export interface RowButton<rowType extends Entity<any>> {
   name?: string;
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
-  icon?:string;
+  icon?: string;
   cssClass?: (string | ((row: rowType) => string));
 
 }
@@ -615,7 +616,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
   constructor(private entityProvider: EntityProvider<T>) {
 
   }
-  
+
   _rowReplacedListeners: ((oldRow: T, newRow: T) => void)[] = [];
 
   private map(item: T): T {
@@ -651,7 +652,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
     this.items.push(x);
     return x;
   }
-  
+
 }
 
 
@@ -669,7 +670,7 @@ export interface SortSegment {
 
 export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
 
-  constructor(private entity:  entityType,private entityProvider:EntityProvider<entityType>) {
+  constructor(private entity: entityType, private entityProvider: EntityProvider<entityType>) {
     this.restList = new DataList<entityType>(entityProvider);
 
   }
@@ -717,7 +718,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
         res.found = false;
         return res;
       } else {
-        res.value = <entityType>this.entity.factory();
+        res.value = <entityType>this.entityProvider.create();
         res.promise = this.restList.get(find).then(r => {
           res.loading = false;
           if (r.length > 0) {
@@ -846,6 +847,7 @@ function addZeros(number: number, stringLength: number = 2) {
   return to;
 }
 export class Column<dataType>  {
+
   async __calcVirtuals() {
     if (this.__settings && this.__settings.virtualData) {
       let x = this.__settings.virtualData();
@@ -921,6 +923,7 @@ export class Column<dataType>  {
 
 
   }
+  //reconsider approach - this prevents the user from overriding in a specific component
   __decorateDataSettings(x: ColumnSetting<any>) {
     if (!x.caption && this.caption)
       x.caption = this.caption;
@@ -938,7 +941,50 @@ export class Column<dataType>  {
           return c.__settings.getValue(c.value);
         };
     }
+    if (this.__settings && this.__settings.display) {
+      this.__displayResult = this.__settings.display();
+      if (!x.dropDown)
+        x.dropDown = this.__displayResult.dropDown;
+      if (x.hideDataOnInput === undefined)
+        x.hideDataOnInput = this.__displayResult.hideDataOnInput;
+      if (!x.width)
+        x.width = this.__displayResult.width;
+      if (!x.clickIcon)
+        x.clickIcon = this.__displayResult.clickIcon;
+      if (!x.getValue && this.__displayResult.getValue) {
+        x.getValue = e => {
+          let c: Column<dataType> = this;
+          if (e)
+            c = e.__getColumn(c) as Column<dataType>;
+          if (!c.__displayResult)
+            c.__displayResult = c.__settings.display();
+          return c.__displayResult.getValue();
+        };
+      }
+      if (!x.click && this.__displayResult.click) {
+        x.click = e => {
+          let c: Column<dataType> = this;
+          if (e)
+            c = e.__getColumn(c) as Column<dataType>;
+          if (!c.__displayResult)
+            c.__displayResult = c.__settings.display();
+          c.__displayResult.click();
+        };
+      }
+      if (!x.allowClick && this.__displayResult.allowClick) {
+        x.allowClick = e => {
+          let c: Column<dataType> = this;
+          if (e)
+            c = e.__getColumn(c) as Column<dataType>;
+          if (!c.__displayResult)
+            c.__displayResult = c.__settings.display();
+          return c.__displayResult.allowClick();
+        };
+      }
+
+    }
   }
+  private __displayResult: ColumnDisplay;
 
 
   __getStorage() {
@@ -1382,7 +1428,7 @@ export class Entity<idType> {
 
   }
 
-  __KillMeEntityProvider:EntityProvider<this>;
+  __KillMeEntityProvider: EntityProvider<this>;
   //@internal
   __applyColumn(y: Column<any>) {
     if (!y.caption)
@@ -1794,6 +1840,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
   async add(...columns: any[]) {
     var promises: Promise<void>[] = [];
     for (let c of columns) {
+      if (!c)
+        continue;
       let s: ColumnSetting<rowType>;
       let x = c as ColumnSetting<rowType>;
       if (!x.column && c instanceof Column) {

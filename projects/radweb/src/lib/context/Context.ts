@@ -1,13 +1,13 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, DataApiRequest, FilterBase,  FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
-import { RestDataProvider, Action, AngularHttpProvider , wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings,  SQLQueryResult, LookupCache, Lookup, extractSortFromSettings } from "../core/utils";
+import { DataProvider, DataApiRequest, FilterBase, FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
+import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/restDataProvider";
+import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 import { BusyService } from "../angular-components/wait/busy-service";
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 
 
 
@@ -117,7 +117,8 @@ export class Context {
         return r;
     }
     async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters: (it: C) => void, returnAValue?: (it: C) => T) {
-        let ref = this._dialog.open(component);
+        
+        let ref = this._dialog.open(component, component[dialogConfigMember]);
         setParameters(ref.componentInstance);
         await ref.beforeClose().toPromise();
         if (returnAValue)
@@ -249,6 +250,11 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             return r;
         });
     }
+    fromPojo(r: any): T {
+        let f = <T>this.create();
+        f.__entityData.setData(r, f);
+        return f;
+    }
     async findFirst(where?: (entity: T) => FilterBase) {
         let r = await this.find({ where });
         if (r.length == 0)
@@ -310,3 +316,13 @@ export class Role {
 declare type AllowedRule = string | Role | ((c: Context) => boolean) | boolean;;
 export declare type Allowed = AllowedRule | AllowedRule[];
 export declare type AngularComponent = { new(...args: any[]): any };
+
+export function DialogConfig(config: MatDialogConfig) {
+    return function (target) {
+        target[dialogConfigMember] = config;
+        return target;
+    };
+}
+
+
+const dialogConfigMember = Symbol("dialogConfigMember");

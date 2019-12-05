@@ -36,7 +36,7 @@ export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, 
   let result: DataColumnSettings<type> = {};
   if (typeof (original) == "string")
     result.caption = original;
-  else
+  else if (original)
     result = original;
   addValues(result);
   return result;
