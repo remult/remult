@@ -108,6 +108,13 @@
             "type": "npm",
             "script": "patch-versions",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "publish",
+            "problemMatcher": [
+                "$tsc"
+            ]
         }
     ]
 }
