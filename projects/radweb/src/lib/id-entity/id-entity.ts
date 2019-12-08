@@ -1,7 +1,9 @@
 import { v4 as uuid } from 'uuid';
-import { StringColumn, Entity, Column, EntityOptions } from "../core/utils";
+import { StringColumn, Entity,  EntityOptions } from "../core/utils";
+
 
 import { ColumnOptions, DataColumnSettings, EntityProvider } from '../core/dataInterfaces1';
+import { Column } from '../core/column';
 
 
 

@@ -1,8 +1,9 @@
 
-import { ColumnCollection, ColumnSetting, Entity, Column, StringColumn } from '../../core/utils';
+import { ColumnCollection, ColumnSetting, Entity,  StringColumn } from '../../core/utils';
 import { Component, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
+import { Column } from '../../core/column';
 @Component({
   selector: 'data-control',
   templateUrl: './data-control2.component.html',
@@ -27,10 +28,16 @@ export class DataControl2Component {
   showClick() {
     if (!this.map.click)
       return false;
+    if (!this._getEditable())
+      return false;
     if (this.map.allowClick === undefined) {
       return true;
     }
     return this.map.allowClick(this.record);
+  }
+  click() {
+    if (this.showClick())
+      this.settings._click(this.map, this.record);
   }
   getClickIcon() {
     if (this.map.clickIcon)

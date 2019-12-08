@@ -1,6 +1,6 @@
-
 <div class="data-control2">
-    <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="!showCheckbox()" class="full-width-form-field dense-form-field">
+    <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="!showCheckbox()"
+        class="full-width-form-field dense-form-field">
         <mat-label>{{map.caption}}</mat-label>
         <div style="display:flex;" *ngIf="showTextBox()">
             <input #theId matInput [(ngModel)]="_getColumn().inputValue" type="{{settings._getColDataType(map)}}"
@@ -9,7 +9,7 @@
             <div *ngIf="showDescription()" style="white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-left:10px;width:100%;" (click)="settings._click(map,record)">
+            padding-left:10px;width:100%;" (click)="click()">
                 {{settings._getColDisplayValue(map,record)}}&nbsp;</div>
         </div>
         <div *ngIf="isSelect()">
@@ -20,8 +20,8 @@
             </select>
         </div>
 
-        <button mat-icon-button matSuffix *ngIf="showClick()" (click)="settings._click(map,record)">
-            <mat-icon>{{getClickIcon()}}  </mat-icon>
+        <button mat-icon-button matSuffix *ngIf="showClick()" (click)="click()">
+            <mat-icon>{{getClickIcon()}} </mat-icon>
         </button>
 
         <mat-error *ngIf="getError()" [id]="theId">{{getError()}}</mat-error>

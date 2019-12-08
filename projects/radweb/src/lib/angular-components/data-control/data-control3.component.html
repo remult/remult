@@ -6,7 +6,7 @@
         <div *ngIf="showDescription()" style="white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-left:10px; width:100%;"  (click)="settings._click(map,record)">
+            padding-left:10px; width:100%;"  (click)="click()">
             {{settings._getColDisplayValue(map,record)}}&nbsp;</div>
     </div>
     <div *ngIf="isSelect()" class="my-select" [class.rtl-select]="rightToLeft">
@@ -17,7 +17,7 @@
         </select>
     </div>
 
-    <button mat-icon-button *ngIf="showClick()" (click)="settings._click(map,record)" class="row-button">
+    <button mat-icon-button *ngIf="showClick()" (click)="click()" class="row-button">
         <mat-icon style="height:19px;">{{getClickIcon()}} </mat-icon>
     </button>
 

@@ -1,8 +1,9 @@
 
-import { GridSettings, Column, ColumnSetting } from '../../core/utils';
+import { GridSettings,  ColumnSetting } from '../../core/utils';
 
 
 import { Component, Input } from '@angular/core';
+import { Column } from '../../core/column';
 @Component({
     selector: 'Data-Filter',
     templateUrl:'./data-filter-info.component.html'

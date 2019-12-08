@@ -1,6 +1,7 @@
-import { Column, Entity, Sort, SortSegment, StringColumn, DropDownOptions } from './utils';
+import {  Entity, Sort, SortSegment, StringColumn, DropDownOptions } from './utils';
 import { FindOptions } from './dataInterfaces1';
 import { UserInfo, Allowed } from '../context/Context';
+import { Column } from './column';
 
 
 
@@ -70,9 +71,7 @@ export interface DataColumnSettings<type> {
     valueChange?: (val: type) => void;
     virtualData?: () => type | Promise<type>;
     dbReadOnly?: boolean;
-    display?: () => ColumnDisplay; //I don't like this structure for two reasons:
-    //1. the interface of the returned object is not verified, if I make a spelling mistake I don't get it
-    //2. Anywhere I've used it in a Type class, it required me to call the DecorateDataColumnSettings function which made it complicated and error prone
+    display?: (sendDisplay:(to:ColumnDisplay)=>void) => void; 
 }
 export interface ColumnDisplay {
     dropDown?: DropDownOptions;

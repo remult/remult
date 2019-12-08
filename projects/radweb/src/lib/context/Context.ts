@@ -1,13 +1,14 @@
 import { Injectable } from "@angular/core";
 import { DataProvider, DataApiRequest, FilterBase, FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/dataInterfaces1";
 import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/restDataProvider";
-import { Entity, EntityOptions, NumberColumn, Column, DataList, ColumnHashSet, IDataSettings, GridSettings, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings, DropDownSource, DropDownSourceArgs, __EntityValueProvider } from "../core/utils";
+import { Entity, EntityOptions, NumberColumn,  DataList, ColumnHashSet, IDataSettings, GridSettings, SQLQueryResult, LookupCache, Lookup, extractSortFromSettings, DropDownSource, DropDownSourceArgs, __EntityValueProvider } from "../core/utils";
 import { InMemoryDataProvider } from "../core/inMemoryDatabase";
 import { DataApiSettings } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 import { BusyService } from "../angular-components/wait/busy-service";
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { Column } from "../core/column";
 
 
 

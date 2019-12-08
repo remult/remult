@@ -12,9 +12,10 @@ import {
   EntityOrderBy,
   EntityWhere
 } from './dataInterfaces1';
-import { Allowed, Context, EntityType, DirectSQL } from '../context/Context';
+import { Allowed, Context, DirectSQL } from '../context/Context';
 import { DataApiSettings } from '../server/DataApi';
 import { isBoolean, isString, isArray } from 'util';
+import { Column } from './column';
 
 
 
@@ -884,267 +885,7 @@ function addZeros(number: number, stringLength: number = 2) {
     to = '0' + to;
   return to;
 }
-export class Column<dataType>  {
 
-  async __calcVirtuals() {
-    if (this.__settings && this.__settings.virtualData) {
-      let x = this.__settings.virtualData();
-      if (x instanceof Promise)
-        x = await x;
-      this.value = x;
-
-    }
-  }
-  private _entity: Entity<any>;
-  __setEntity(e: Entity<any>) {
-    this._entity = e;
-  }
-
-  __isVirtual() {
-    if (this.__settings && this.__settings.virtualData)
-      return true;
-    return false;
-
-  }
-  __dbReadOnly() {
-    if (this.__settings && this.__settings.dbReadOnly)
-      return true;
-    return this.__isVirtual();
-  }
-  __clearErrors(): any {
-    this.error = undefined;
-  }
-  __performValidation() {
-    if (this.onValidate) {
-      this.onValidate();
-    }
-
-  }
-  onValidate: () => void;
-  onValueChange: () => void;
-  jsonName: string;
-  caption: string;
-  includeInApi: Allowed = true;
-  dbName: string | (() => string);
-  private __settings: DataColumnSettings<dataType>;
-  __getMemberName() { return this.jsonName; }
-  constructor(settingsOrCaption?: ColumnOptions<dataType>) {
-    if (settingsOrCaption) {
-      if (typeof (settingsOrCaption) === "string") {
-        this.caption = settingsOrCaption;
-        this.__settings = { caption: settingsOrCaption };
-      } else {
-        this.__settings = settingsOrCaption;
-        if (settingsOrCaption.jsonName)
-          this.jsonName = settingsOrCaption.jsonName;
-        if (settingsOrCaption.caption)
-          this.caption = settingsOrCaption.caption;
-        if (settingsOrCaption.includeInApi != undefined)
-          this.includeInApi = settingsOrCaption.includeInApi;
-        if (settingsOrCaption.allowApiUpdate != undefined)
-          this.allowApiUpdate = settingsOrCaption.allowApiUpdate;
-        if (settingsOrCaption.inputType)
-          this.inputType = settingsOrCaption.inputType;
-        if (settingsOrCaption.dbName)
-          this.dbName = settingsOrCaption.dbName;
-        if (settingsOrCaption.value != undefined)
-          this.value = settingsOrCaption.value;
-        if (settingsOrCaption.valueChange)
-          this.onValueChange = () => this.__settings.valueChange(this.value);
-        if (settingsOrCaption.onValidate)
-          this.onValidate = () => settingsOrCaption.onValidate();
-      }
-
-
-    }
-
-
-
-  }
-  //reconsider approach - this prevents the user from overriding in a specific component
-  __decorateDataSettings(x: ColumnSetting<any>, context?: Context) {
-    if (!x.caption && this.caption)
-      x.caption = this.caption;
-    if (x.readonly == undefined) {
-      if (!context) {
-        if (isBoolean(this.allowApiUpdate))
-          x.readonly = !this.allowApiUpdate;
-      }
-      else
-        x.readonly = !context.isAllowed(this.allowApiUpdate);
-    }
-
-    if (x.inputType == undefined)
-      x.inputType = this.inputType;
-    if (x.getValue == undefined) {
-      if (this.__settings && this.__settings.getValue)
-        x.getValue = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.__getColumn(c) as Column<dataType>;
-          return c.__settings.getValue(c.value);
-        };
-    }
-    if (this.__settings && this.__settings.display) {
-      this.__displayResult = this.__settings.display();
-      if (!x.dropDown)
-        x.dropDown = this.__displayResult.dropDown;
-      if (x.hideDataOnInput === undefined)
-        x.hideDataOnInput = this.__displayResult.hideDataOnInput;
-      if (!x.width)
-        x.width = this.__displayResult.width;
-      if (!x.clickIcon)
-        x.clickIcon = this.__displayResult.clickIcon;
-      if (!x.getValue && this.__displayResult.getValue) {
-        x.getValue = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.__getColumn(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.display();
-          return c.__displayResult.getValue();
-        };
-      }
-      if (!x.click && this.__displayResult.click) {
-        x.click = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.__getColumn(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.display();
-          c.__displayResult.click();
-        };
-      }
-      if (!x.allowClick && this.__displayResult.allowClick) {
-        x.allowClick = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.__getColumn(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.display();
-          return c.__displayResult.allowClick();
-        };
-      }
-
-    }
-  }
-  private __displayResult: ColumnDisplay;
-
-
-  __getStorage() {
-    if (!this.__settings)
-      this.__settings = {};
-    if (!this.__settings.storage)
-      this.__settings.storage = this.__defaultStorage();
-    return this.__settings.storage;
-
-  }
-  __defaultStorage() {
-    return new DefaultStorage<any>();
-  }
-  error: string;
-  __getDbName(): string {
-    if (this.dbName)
-      return functionOrString(this.dbName);
-
-    return this.jsonName;
-  }
-
-  allowApiUpdate: Allowed = true;
-  inputType: string;
-  isEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
-  }
-  isDifferentFrom(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isDifferentFrom(this, this.__getVal(value)));
-  }
-  isGreaterOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
-  }
-  isGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
-  }
-  isLessOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
-  }
-  isLessThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
-  }
-  __getVal(value: Column<dataType> | dataType): dataType {
-
-
-    if (value instanceof Column)
-      return this.toRawValue(value.value);
-    else
-      return this.toRawValue(value);
-  }
-  __valueProvider: ColumnValueProvider = new dummyColumnStorage();
-  get value() {
-    return this.fromRawValue(this.rawValue);
-  }
-  get originalValue() {
-    return this.fromRawValue(this.__valueProvider.getOriginalValue(this.jsonName));
-  }
-  get displayValue() {
-    if (this.value)
-      return this.value.toString();
-    return '';
-  }
-  protected __processValue(value: dataType) {
-    return value;
-
-  }
-  fromRawValue(value: any): dataType {
-    return value;
-  }
-  toRawValue(value: dataType): any {
-    return value;
-  }
-  set rawValue(value: any) {
-    this.__valueProvider.setValue(this.jsonName, this.__processValue(value));
-    this.error = undefined;
-    if (this.onValueChange)
-      this.onValueChange();
-  }
-  get rawValue() {
-    return this.__valueProvider.getValue(this.jsonName);
-  }
-  get inputValue() {
-    return this.rawValue;
-  }
-  set inputValue(value: string) {
-    this.rawValue = value;
-  }
-  set value(value: dataType) {
-
-    this.rawValue = this.toRawValue(value);
-  }
-  __addToPojo(pojo: any) {
-    pojo[this.jsonName] = this.rawValue;
-  }
-  __loadFromToPojo(pojo: any) {
-    let x = pojo[this.jsonName];
-    if (x != undefined)
-      this.rawValue = x;
-  }
-}
-
-class dummyColumnStorage implements ColumnValueProvider {
-
-  private _val: string;
-  public getValue(key: string): any {
-    return this._val;
-  }
-  public getOriginalValue(key: string): any {
-    return this._val;
-  }
-
-
-
-  public setValue(key: string, value: string): void {
-    this._val = value;
-  }
-}
 
 
 export class Filter implements FilterBase {
@@ -1434,7 +1175,7 @@ export class Entity<idType> {
 
   }
 
-  
+
   //@internal
   __applyColumn(y: Column<any>) {
     if (!y.caption)
@@ -1543,7 +1284,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
   register(listener: RowEvents) {
     this.listeners.push(listener);
   }
-  dataProvider:EntityDataProvider;
+  dataProvider: EntityDataProvider;
   delete() {
     return this.dataProvider.delete(this.id).then(() => {
       this.listeners.forEach(x => {
@@ -1552,7 +1293,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     });
   }
-  
+
   isNewRow(): boolean {
     return this.newRow;
   }
@@ -1622,9 +1363,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export class StringColumn extends Column<string>{
-  constructor(settingsOrCaption?: ColumnOptions<string>) {
-    super(settingsOrCaption);
-  }
+ 
   isContains(value: StringColumn | string) {
     return new Filter(add => add.isContains(this, this.__getVal(value)));
   }
@@ -1769,8 +1508,8 @@ export interface ClosedListItem {
   toString(): string;
 }
 export class ClosedListColumn<closedListType extends ClosedListItem> extends Column<closedListType> {
-  constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<closedListType>) {
-    super(settingsOrCaption);
+  constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<closedListType>,settingsOrCaption1?: ColumnOptions<closedListType>) {
+    super(settingsOrCaption,settingsOrCaption1);
   }
   getOptions(): DropDownItem[] {
     let result = [];

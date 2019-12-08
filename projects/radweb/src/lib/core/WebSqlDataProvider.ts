@@ -1,6 +1,7 @@
 import { DataProvider, EntityDataProvider, RowsOfDataForTesting } from "./dataInterfaces1";
-import { Entity, SQLConnectionProvider, SQLCommand, Column, SQLQueryResult, DateTimeColumn, DateColumn, BoolColumn, NumberColumn, ClosedListColumn } from "./utils";
+import { Entity, SQLConnectionProvider, SQLCommand,  SQLQueryResult, DateTimeColumn, DateColumn, BoolColumn, NumberColumn, ClosedListColumn } from "./utils";
 import { ActualSQLServerDataProvider } from "./SQLDatabaseShared";
+import { Column } from "./column";
 
 export class WebSqlDataProvider implements DataProvider, RowsOfDataForTesting {
     rows: {

@@ -1,5 +1,5 @@
 
-import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage, DataList, ColumnHashSet, BoolColumn } from '../core/utils';
+import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage, DataList, ColumnHashSet, BoolColumn, Column } from '../core/utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../server/DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase';
@@ -449,7 +449,7 @@ describe("data api", () => {
         return r;
       }
     });
-    
+
     var api = new DataApi(ctx.for(Categories), { allowDelete: true });
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -1022,8 +1022,8 @@ describe("compund id", () => {
   const ctx = new Context();
   itAsync("start", async () => {
     let mem = new InMemoryDataProvider();
-    let s=ctx.for(CompoundIdEntity, mem);
-    
+    let s = ctx.for(CompoundIdEntity, mem);
+
     mem.rows[s.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
@@ -1031,7 +1031,7 @@ describe("compund id", () => {
     expect(r.length).toBe(2);
     expect(r[0].a.value).toBe(1);
     expect(r[0].id.value).toBe('1,11');
-    r = await s.find({ where:c=> c.id.isEqualTo('1,11') });
+    r = await s.find({ where: c => c.id.isEqualTo('1,11') });
 
     expect(r.length).toBe(1);
     expect(r[0].a.value).toBe(1);
@@ -1080,7 +1080,7 @@ describe("compund id", () => {
     let mem = new InMemoryDataProvider();
     let c = ctx.for(CompoundIdEntity, mem).create();
     mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
-    
+
 
     c.a.value = 3;
     c.b.value = 33;
@@ -1183,6 +1183,29 @@ describe("test bool value", () => {
     bc.__loadFromToPojo({ 'x': false });
     expect(bc.value).toBe(false);
   });
+});
+describe("Column settings stuff", () => {
+  it("should translate caption", () => {
+
+    let x = Column.consolidateOptions("noam");
+    expect(x.caption).toBe("noam");
+  });
+  it("should translate caption2", () => {
+    let x = Column.consolidateOptions({ caption: 'noam' });
+    expect(x.caption).toBe("noam");
+  });
+  it("should translate caption2", () => {
+    let x = Column.consolidateOptions('noam', { jsonName: 'yael' });
+    expect(x.caption).toBe("noam");
+    expect(x.jsonName).toBe("yael");
+  });
+  it("should translate caption2", () => {
+    let x = Column.consolidateOptions('noam', {jsonName:'yael'});
+
+    expect(x.caption).toBe("noam");
+    expect(x.jsonName).toBe("yael");
+  });
+
 });
 describe("check allowedDataType", () => {
   let c = new Context(undefined);

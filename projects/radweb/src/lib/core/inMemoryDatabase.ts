@@ -3,7 +3,8 @@
 
 
 
-import { Entity, Column, StringColumn } from './utils';
+import { Entity,  StringColumn } from './utils';
+import { Column } from './column';
 import { FilterBase, DataProvider, EntityDataProvider, FindOptions, FilterConsumer, RowsOfDataForTesting } from './dataInterfaces1';
 
 

@@ -1,8 +1,9 @@
 
-import { ColumnCollection, ColumnSetting, Entity, Column, StringColumn } from '../../core/utils';
-import { Component, Input ,ViewChild, ElementRef, AfterViewInit} from '@angular/core';
+import { ColumnCollection, ColumnSetting, Entity,  StringColumn } from '../../core/utils';
+import { Component, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
+import { Column } from '../../core/column';
 @Component({
   selector: 'data-control3',
   templateUrl: './data-control3.component.html',
@@ -16,11 +17,11 @@ export class DataControl3Component {
     };
     this.map.column.__decorateDataSettings(this.map);
   }
-  @Input()   rightToLeft=false;
- 
+  @Input() rightToLeft = false;
+
   theId: any;
   @Input() record: Entity<any>;
-  
+
   @Input() notReadonly: false;
   @Input() settings: ColumnCollection<any> = new ColumnCollection<any>(undefined, () => true, undefined, undefined);
   showDescription() {
@@ -29,6 +30,8 @@ export class DataControl3Component {
   }
   showClick() {
     if (!this.map.click)
+      return false;
+    if (!this._getEditable())
       return false;
     if (this.map.allowClick === undefined) {
       return true;
@@ -49,6 +52,10 @@ export class DataControl3Component {
       return new StringColumn();
     return this.settings.__getColumn(this.map, this.record);
 
+  }
+  click() {
+    if (this.showClick())
+      this.settings._click(this.map, this.record);
   }
   _getEditable() {
     if (this.notReadonly)
@@ -80,7 +87,7 @@ export class DataControl3Component {
       return { width: '50px' };
     }
     return {
-      width:'100%'
+      width: '100%'
     };
   }
   getFloatLabel() {
