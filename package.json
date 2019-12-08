@@ -22,6 +22,7 @@
     
     
     "publish": " npm run build  cd projects/core && npm version patch && cd.. && cd server          && cd dist/radweb && npm publish --access public --tag pre-release && cd.. && cd.. && cd projects/core && npm version patch",
+    "patch-versions":"cd projects/core && npm version patch && cd.. && cd server && npm version patch && cd.. && cd server-postgres && npm version patch && cd.. && cd..",
     "publish-server": "cd dist/radweb-server && npm publish  --access public --tag pre-release",
     "publish-server-postgres": "cd dist/radweb-server-postgres && npm publish  --access public --tag pre-release",
     "docs":"c:/repos/radweb/docs-builder/buildsite.exe ./docs-md ./docs",

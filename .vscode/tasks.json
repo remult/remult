@@ -103,6 +103,11 @@
                 "$tsc"
             ],
             "group": "build"
+        },
+        {
+            "type": "npm",
+            "script": "patch-versions",
+            "problemMatcher": []
         }
     ]
 }
