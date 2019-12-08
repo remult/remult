@@ -3,12 +3,13 @@
 
 
 
-import { Entity,  StringColumn } from './utils';
+import { StringColumn } from './utils';
 import { Column } from './column';
 import { FilterBase, DataProvider, EntityDataProvider, FindOptions, FilterConsumer, RowsOfDataForTesting } from './dataInterfaces1';
 
 
 import { isFunction, makeTitle } from './common';
+import { Entity } from './entity';
 
 
 

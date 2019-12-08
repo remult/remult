@@ -1,7 +1,9 @@
-import {  Entity, Sort, SortSegment, StringColumn, DropDownOptions } from './utils';
+import {  StringColumn, DropDownOptions } from './utils';
 import { FindOptions } from './dataInterfaces1';
 import { UserInfo, Allowed } from '../context/Context';
 import { Column } from './column';
+import { Entity } from './entity';
+import { Sort, SortSegment } from './sort';
 
 
 

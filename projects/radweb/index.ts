@@ -19,4 +19,10 @@ export * from './src/lib/navigate-to-component-route-service';
 export * from './src/lib/context/server-action';
 export * from './src/lib/id-entity/id-entity';
 export { BusyService } from './src/lib/angular-components/wait/busy-service';
+export * from './src/lib/core/entity';
+export * from './src/lib/core/column';
+export * from './src/lib/core/dataList';
+export * from './src/lib/core/gridSettings';
+export * from './src/lib/core/lookup';
+export * from './src/lib/core/sort';
 //server

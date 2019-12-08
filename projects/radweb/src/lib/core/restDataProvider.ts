@@ -1,9 +1,10 @@
 
-import { UrlBuilder, FilterConsumnerBridgeToUrlBuilder, Entity } from './utils';
+import { UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from './utils';
 import { EntityDataProvider, DataProvider, FindOptions, DataApiRequest, FilterBase } from './dataInterfaces1';
 import { DataApiResponse } from '../server/DataApi';
 import { HttpClient } from '@angular/common/http';
 import { Context } from '../context/Context';
+import { Entity } from './entity';
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {

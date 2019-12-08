@@ -16,10 +16,6 @@ export class Column<dataType>  {
   
       }
     }
-    private _entity: import('./utils').Entity<any>;
-    __setEntity(e: import('./utils').Entity<any>) {
-      this._entity = e;
-    }
   
     __isVirtual() {
       if (this.__settings && this.__settings.virtualData)

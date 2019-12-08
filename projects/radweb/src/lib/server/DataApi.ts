@@ -1,8 +1,10 @@
 import { DataApiError } from './DataApi';
 
-import { Entity, AndFilter, Sort,  ColumnHashSet, StringColumn } from '../core/utils';
+import { AndFilter,   ColumnHashSet, StringColumn } from '../core/utils';
 import { FindOptions, FilterBase, FindOptionsPerEntity, DataApiRequest, EntityProvider } from '../core/dataInterfaces1';
 import { Column } from '../core/column';
+import { Entity } from '../core/entity';
+import { Sort } from '../core/sort';
 
 export class DataApi<T extends Entity<any>> {
   getRoute() {

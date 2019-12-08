@@ -1,7 +1,9 @@
-import { GridSettings, RowButton,  Entity, ColumnSetting } from '../../core/utils';
+import {  ColumnSetting } from '../../core/utils';
 import { Component, OnChanges, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { isFunction } from '../../core/common';
 import { Column } from '../../core/column';
+import { Entity } from '../../core/entity';
+import { GridSettings, RowButton } from '../../core/gridSettings';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
