@@ -87,6 +87,22 @@
             "type": "npm",
             "script": "publish-radweb-local",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "server-build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "npm",
+            "script": "server-postgres-build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build"
         }
     ]
 }

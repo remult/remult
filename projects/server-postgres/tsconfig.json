@@ -1,0 +1,6 @@
+{
+    "extends": "../server/tsconfig.json",
+    "compilerOptions": {
+        "outDir":"../../dist/server-postgres"
+    }
+}

@@ -1,15 +1,27 @@
-import { FindOptionsPerEntity, ColumnOptions } from '../core/dataInterfaces1';
-import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions, DateTimeColumn, DateColumn, StringColumn } from '../core/utils';
+import { FindOptionsPerEntity, ColumnOptions, ColumnSetting } from '../core/dataInterfaces1';
+import {  extractSortFromSettings } from '../core/utils';
 
-import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage, DropDownItem, ClosedListColumn, DateTimeDateStorage } from '../core/utils';
-import { GridSettings, Lookup, ColumnSetting } from '../core/utils';
+
+
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/data-providers/inMemoryDatabase'
 import { itAsync, Done } from './testHelper.spec';
 
 import { Categories, Status, CategoriesWithValidation } from './testModel/models';
-import { TestBed, async } from '@angular/core/testing';
-import { error } from 'util';
+
 import { Context, ServerContext } from '../context/Context';
+import { ClosedListColumn } from '../core/columns/closed-list-column';
+import { Sort } from '../core/sort';
+import { ColumnCollection } from '../core/column-collection';
+import { NumberColumn } from '../core/columns/number-column';
+import { DataAreaSettings } from '../core/data-area-settings';
+import { FilterHelper } from '../core/filter/filter-helper';
+import { Column } from '../core/column';
+import { DateTimeColumn } from '../core/columns/datetime-column';
+import { DateColumn } from '../core/columns/date-column';
+import { DateTimeDateStorage } from '../core/columns/storage/datetime-date-storage';
+import { CharDateStorage } from '../core/columns/storage/char-date-storage';
+import { StringColumn } from '../core/columns/string-column';
+import { Entity } from '../core/entity';
 
 
 //import { DataAreaCompnent } from '../utils/angular/dataArea';

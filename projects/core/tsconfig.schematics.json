@@ -15,7 +15,7 @@
       "noUnusedParameters": true,
       "noUnusedLocals": true,
       "rootDir": "schematics",
-      "outDir": "../../dist/radweb/schematics",
+      "outDir": "../../dist/core/schematics",
       "skipDefaultLibCheck": true,
       "skipLibCheck": true,
       "sourceMap": true,

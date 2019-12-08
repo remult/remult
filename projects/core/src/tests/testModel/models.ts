@@ -1,7 +1,11 @@
-import { Entity, EntityOptions, NumberColumn, StringColumn, ClosedListColumn } from "../../core/utils";
+
 import { DataProvider } from "../../core/dataInterfaces1";
 import { LocalStorageDataProvider } from "../../core/data-providers/localStorageDataProvider";
 import { EntityClass } from "../../context/Context";
+import { Entity, EntityOptions } from "../../core/entity";
+import { NumberColumn } from "../../core/columns/number-column";
+import { StringColumn } from "../../core/columns/string-column";
+import { ClosedListColumn } from "../../core/columns/closed-list-column";
 
 export const environment = {
   production: false,
@@ -21,7 +25,7 @@ export class Categories extends Entity<number> {
   status = new StatusColumn();
   constructor(settings?: EntityOptions | string) {
     super(settings);
-    this.__initColumns();
+    
   }
 }
 export class CategoriesWithValidation extends Categories {

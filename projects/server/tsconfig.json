@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "../../dist/radweb-server",
+        "outDir": "../../dist/server",
         "baseUrl": ".",
         "declaration": true,
         "stripInternal": true,
@@ -17,7 +17,7 @@
         ],
         "paths": {
             "@remult/core": [
-                "../../dist/radweb"
+                "../../dist/core"
             ]
         }
     }

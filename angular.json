@@ -136,33 +136,33 @@
         }
       }
     },
-    "radweb": {
-      "root": "projects/radweb",
-      "sourceRoot": "projects/radweb/src",
+    "core": {
+      "root": "projects/core",
+      "sourceRoot": "projects/core/src",
       "projectType": "library",
       "prefix": "rw",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/radweb/tsconfig.lib.json",
-            "project": "projects/radweb/ng-package.json"
+            "tsConfig": "projects/core/tsconfig.lib.json",
+            "project": "projects/core/ng-package.json"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/radweb/src/test.ts",
-            "tsConfig": "projects/radweb/tsconfig.spec.json",
-            "karmaConfig": "projects/radweb/karma.conf.js"
+            "main": "projects/core/src/test.ts",
+            "tsConfig": "projects/core/tsconfig.spec.json",
+            "karmaConfig": "projects/core/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/radweb/tsconfig.lib.json",
-              "projects/radweb/tsconfig.spec.json"
+              "projects/core/tsconfig.lib.json",
+              "projects/core/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"

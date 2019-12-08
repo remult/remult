@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/radweb",
+    "outDir": "../../dist/core",
     "target": "es2015",
     "module": "es2015",
     "moduleResolution": "node",

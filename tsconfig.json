@@ -19,15 +19,10 @@
       "dom"
     ],
     "paths": {
-      "@remult/core": [
-        "projects/radweb"
-      ],
-      "@remult/server": [
-        "projects/radweb-server"
-      ],
-      "@remult/server-postgres": [
-        "projects/radweb-server-postgres"
+      "@remult/*": [
+        "projects/*"
       ]
+      
     }
   }
 }

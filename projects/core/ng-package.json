@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../dist/radweb",
+  "dest": "../../dist/core",
   
   "lib": {
     "entryFile": "index.ts"
