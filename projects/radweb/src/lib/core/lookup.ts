@@ -2,8 +2,10 @@ import { Entity } from "./entity";
 import { DataList } from "./dataList";
 import { EntityProvider, FilterBase, FindOptionsPerEntity } from "./dataInterfaces1";
 import { Column } from "./column";
-import { lookupRowInfo, UrlBuilder, FilterConsumnerBridgeToUrlBuilder } from "./utils";
+
 import { isFunction } from "util";
+import { UrlBuilder } from "./url-builder";
+import { FilterConsumnerBridgeToUrlBuilder } from "./filter/filter-consumer-bridge-to-url-builder";
 
 export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
 
@@ -72,4 +74,12 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
     whenGet(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)) {
       return this.getInternal(filter).promise.then(r => r.value);
     }
+  }
+
+  export class lookupRowInfo<type> {
+    found = false;
+    loading = true;
+    value: type = {} as type;
+    promise: Promise<lookupRowInfo<type>>
+  
   }

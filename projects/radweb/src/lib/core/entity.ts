@@ -2,8 +2,10 @@ import { Context, Allowed } from "../context/Context";
 import { DataApiSettings } from "../server/DataApi";
 import { functionOrString, makeTitle } from "./common";
 import { Column } from "./column";
-import { ColumnHashSet, CompoundIdColumn } from "./utils";
+
 import { ColumnValueProvider, FilterBase, RowEvents, EntityDataProvider } from "./dataInterfaces1";
+import { ColumnHashSet } from "./column-hash-set";
+import { CompoundIdColumn } from "./columns/compound-id-column";
 
 //@dynamic
 export class Entity<idType> {

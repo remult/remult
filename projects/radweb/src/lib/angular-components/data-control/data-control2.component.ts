@@ -1,10 +1,13 @@
 
-import { ColumnCollection, ColumnSetting, StringColumn } from '../../core/utils';
+
 import { Component, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { Column } from '../../core/column';
 import { Entity } from '../../core/entity';
+import { ColumnSetting } from '../../core/dataInterfaces1';
+import { ColumnCollection } from '../../core/column-collection';
+import { StringColumn } from '../../core/columns/string-column';
 @Component({
   selector: 'data-control',
   templateUrl: './data-control2.component.html',

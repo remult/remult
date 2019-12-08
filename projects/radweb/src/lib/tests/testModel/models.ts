@@ -1,6 +1,6 @@
 import { Entity, EntityOptions, NumberColumn, StringColumn, ClosedListColumn } from "../../core/utils";
 import { DataProvider } from "../../core/dataInterfaces1";
-import { LocalStorageDataProvider } from "../../core/localStorageDataProvider";
+import { LocalStorageDataProvider } from "../../core/data-providers/localStorageDataProvider";
 import { EntityClass } from "../../context/Context";
 
 export const environment = {

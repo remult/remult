@@ -1,8 +1,8 @@
 import { ActualInMemoryDataProvider } from './inMemoryDatabase';
 import { JsonStorageDataProvider, JsonStorage } from './JsonStorageDataProvider';
 
-import { DataProvider, EntityDataProvider } from './dataInterfaces1';
-import { Entity } from './entity';
+import { DataProvider, EntityDataProvider } from '../dataInterfaces1';
+import { Entity } from '../entity';
 
 
 export class LocalStorageDataProvider implements DataProvider {

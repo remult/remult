@@ -1,8 +1,12 @@
-import { DataProvider, EntityDataProvider, RowsOfDataForTesting } from "./dataInterfaces1";
-import {  SQLConnectionProvider, SQLCommand,  SQLQueryResult, DateTimeColumn, DateColumn, BoolColumn, NumberColumn, ClosedListColumn } from "./utils";
+import { DataProvider, EntityDataProvider, RowsOfDataForTesting, SQLConnectionProvider, SQLCommand, SQLQueryResult } from "../dataInterfaces1";
+
 import { ActualSQLServerDataProvider } from "./SQLDatabaseShared";
-import { Column } from "./column";
-import { Entity } from "./entity";
+import { Column } from "../column";
+import { Entity } from "../entity";
+import { DateTimeColumn } from "../columns/datetime-column";
+import { DateColumn } from "../columns/date-column";
+import { BoolColumn, NumberColumn } from "../columns/number-column";
+import { ClosedListColumn } from "../columns/closed-list-column";
 
 export class WebSqlDataProvider implements DataProvider, RowsOfDataForTesting {
     rows: {

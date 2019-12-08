@@ -1,9 +1,11 @@
 import { Allowed, Context } from '../context/Context';
-import { DataColumnSettings,ColumnOptions, ColumnDisplay, ColumnValueProvider } from './dataInterfaces1';
+import { DataColumnSettings,ColumnOptions, ColumnDisplay, ColumnValueProvider, ColumnSetting } from './dataInterfaces1';
 
 import { isBoolean } from 'util';
-import { DefaultStorage, Filter } from './utils';
+
 import { functionOrString } from './common';
+import { DefaultStorage } from './columns/storage/default-storage';
+import { Filter } from './filter/filter';
 
 export class Column<dataType>  {
 
@@ -96,7 +98,7 @@ export class Column<dataType>  {
   
     }
     //reconsider approach - this prevents the user from overriding in a specific component
-    __decorateDataSettings(x: import('./utils').ColumnSetting<any>, context?: Context) {
+    __decorateDataSettings(x: ColumnSetting<any>, context?: Context) {
       if (!x.caption && this.caption)
         x.caption = this.caption;
       if (x.readonly == undefined) {

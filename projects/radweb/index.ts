@@ -3,16 +3,16 @@
  */
 
 export * from './src/lib/radweb.module';
-export * from './src/lib/core/restDataProvider';
+export * from './src/lib/core/data-providers/restDataProvider';
 export * from './src/lib/core/dataInterfaces1';
 export * from './src/lib/core/utils';
 export * from './src/lib/core/common';
-export * from './src/lib/core/inMemoryDatabase';
-export * from './src/lib/core/WebSqlDataProvider';
-export * from './src/lib/core/SQLDatabaseShared';
-export * from './src/lib/core/JsonStorageDataProvider';
+export * from './src/lib/core/data-providers/inMemoryDatabase';
+export * from './src/lib/core/data-providers/WebSqlDataProvider';
+export * from './src/lib/core/data-providers/SQLDatabaseShared';
+export * from './src/lib/core/data-providers/JsonStorageDataProvider';
 export * from './src/lib/server/DataApi';
-export * from './src/lib/core/localStorageDataProvider';
+export * from './src/lib/core/data-providers/localStorageDataProvider';
 export * from './src/lib/context/Context';
 export * from './src/lib/jwt-session-manager';
 export * from './src/lib/navigate-to-component-route-service';

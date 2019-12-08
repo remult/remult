@@ -1,9 +1,11 @@
-import {  StringColumn, DropDownOptions } from './utils';
+
 import { FindOptions } from './dataInterfaces1';
-import { UserInfo, Allowed } from '../context/Context';
+import { UserInfo, Allowed, DirectSQL } from '../context/Context';
 import { Column } from './column';
 import { Entity } from './entity';
 import { Sort, SortSegment } from './sort';
+import { StringColumn } from './columns/string-column';
+import { DropDownSource } from './drop-down-source';
 
 
 
@@ -75,6 +77,27 @@ export interface DataColumnSettings<type> {
     dbReadOnly?: boolean;
     display?: (sendDisplay:(to:ColumnDisplay)=>void) => void; 
 }
+
+export interface ColumnSetting<rowType> {
+
+    caption?: string;
+    readonly?: boolean;
+    inputType?: string;
+    designMode?: boolean;
+    getValue?: (row: rowType) => any;
+    hideDataOnInput?: boolean;
+    cssClass?: (string | ((row: rowType) => string));
+    defaultValue?: (row: rowType) => any;
+    onUserChangedValue?: (row: rowType) => void;
+    click?: rowEvent<rowType>;
+    allowClick?: (row: rowType) => boolean;
+    clickIcon?: string;
+    dropDown?: DropDownOptions;
+    column?: Column<any>;
+    width?: string;
+  }
+  
+  
 export interface ColumnDisplay {
     dropDown?: DropDownOptions;
     width?: string;
@@ -121,3 +144,48 @@ export interface DataApiServer {
     addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void;
 
 }
+export interface SQLCommand {
+    addParameterToCommandAndReturnParameterName(col: Column<any>, val: any): string;
+    query(sql: string): Promise<SQLQueryResult>;
+  }
+  export interface SQLQueryResult {
+    rows: any[];
+    getColumnIndex(name: string): number;
+    getcolumnNameAtIndex(index: number): string;
+  }
+  
+  
+  
+  export interface SQLConnectionProvider {
+    createCommand(): SQLCommand;
+  }
+  export interface SupportsDirectSql {
+    getDirectSql(): DirectSQL;
+  }
+  
+  
+  
+
+
+export interface DropDownOptions {
+
+    items?: DropDownItem[] | string[] | any[];
+    source?: DropDownSource<any>;
+  }
+  
+  
+  export interface DropDownItem {
+    id?: any;
+    caption?: any;
+  }
+  
+  
+  
+  
+  
+  export type rowEvent<T> = (row: T, doInScope: ((what: (() => void)) => void)) => void;
+  
+  
+  export interface FilteredColumnSetting<rowType> extends ColumnSetting<rowType> {
+    _showFilter?: boolean;
+  }

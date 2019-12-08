@@ -1,7 +1,9 @@
-import { SQLConnectionProvider, SQLCommand,  SQLQueryResult,  FilterConsumerBridgeToSqlRequest, CompoundIdColumn } from "./utils";
-import { EntityDataProvider, FilterBase, FindOptions } from "./dataInterfaces1";
-import { Column } from "./column";
-import { Entity } from "./entity";
+
+import { EntityDataProvider, FilterBase, FindOptions, SQLConnectionProvider, SQLCommand, SQLQueryResult } from "../dataInterfaces1";
+import { Column } from "../column";
+import { Entity } from "../entity";
+import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
+import { CompoundIdColumn } from "../columns/compound-id-column";
 
 
 class LogSQLConnectionProvider implements SQLConnectionProvider {

@@ -1,11 +1,11 @@
 import 'reflect-metadata';
 
-import { SupportsTransaction, DataProvider, DataApiRequest } from "../core/dataInterfaces1";
-import { Action } from '../core/restDataProvider';
+import { SupportsTransaction, DataApiRequest, SQLConnectionProvider, SupportsDirectSql } from "../core/dataInterfaces1";
+import { Action } from '../core/data-providers/restDataProvider';
 import { Context, ServerContext, DirectSQL, Allowed, DataProviderFactoryBuilder } from './Context';
-import { SQLConnectionProvider, SupportsDirectSql } from '../core/utils';
+
 import { BusyService } from '../angular-components/wait/busy-service';
-import { ActualSQLServerDataProvider } from '../core/SQLDatabaseShared';
+import { ActualSQLServerDataProvider } from '../core/data-providers/SQLDatabaseShared';
 
 
 interface inArgs {

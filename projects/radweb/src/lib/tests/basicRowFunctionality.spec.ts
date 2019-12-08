@@ -2,13 +2,13 @@
 import { __EntityValueProvider, NumberColumn, StringColumn, Entity, CompoundIdColumn, FilterConsumnerBridgeToUrlBuilder, UrlBuilder, DateTimeDateStorage, DataList, ColumnHashSet, BoolColumn, Column } from '../core/utils';
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../server/DataApi';
-import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase';
+import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/data-providers/inMemoryDatabase';
 import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
 import { Categories, environment, Status } from './testModel/models';
 import { TestBed, async } from '@angular/core/testing';
 import { Context, Role, Allowed, EntityClass, ServerContext } from '../context/Context';
-import { WebSqlDataProvider } from '../core/WebSqlDataProvider';
+import { WebSqlDataProvider } from '../core/data-providers/WebSqlDataProvider';
 import { DataProvider, RowsOfDataForTesting } from '../core/dataInterfaces1';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: RowsOfDataForTesting) => Promise<any>) {

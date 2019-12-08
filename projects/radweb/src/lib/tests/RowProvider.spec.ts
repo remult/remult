@@ -3,7 +3,7 @@ import { NumberColumn, extractSortFromSettings, DataAreaSettings, EntityOptions,
 
 import { Entity, Column, Sort, ColumnCollection, FilterHelper, FilterConsumnerBridgeToUrlBuilder, CharDateStorage, DropDownItem, ClosedListColumn, DateTimeDateStorage } from '../core/utils';
 import { GridSettings, Lookup, ColumnSetting } from '../core/utils';
-import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/inMemoryDatabase'
+import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/data-providers/inMemoryDatabase'
 import { itAsync, Done } from './testHelper.spec';
 
 import { Categories, Status, CategoriesWithValidation } from './testModel/models';

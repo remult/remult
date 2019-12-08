@@ -2,11 +2,14 @@ import { Entity } from "./entity";
 
 
 import { Column } from "./column";
-import { EntityProvider, FindOptionsPerEntity } from "./dataInterfaces1";
+import { EntityProvider, FindOptionsPerEntity, ColumnSetting } from "./dataInterfaces1";
 import { Context } from "../context/Context";
-import { ColumnSetting, ColumnCollection, FilterHelper, isNewRow, IDataAreaSettings, DataAreaSettings, extractSortFromSettings } from "./utils";
+import {  extractSortFromSettings } from "./utils";
 import { DataList } from "./dataList";
 import { Sort } from "./sort";
+import { ColumnCollection } from "./column-collection";
+import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
+import { FilterHelper } from "./filter/filter-helper";
 
 export class GridSettings<rowType extends Entity<any>>  {
     constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {
@@ -396,3 +399,10 @@ export class GridSettings<rowType extends Entity<any>>  {
   
   }
   
+  
+ function isNewRow(r: Entity<any>) {
+    if (r) {
+      r.__entityData.isNewRow();
+    }
+    return false;
+  }

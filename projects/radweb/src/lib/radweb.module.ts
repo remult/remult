@@ -3,7 +3,7 @@ import { DataControl2Component } from './angular-components/data-control/data-co
 import { DataControl3Component } from './angular-components/data-control/data-control3.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ColumnDesigner } from './angular-components/column-designer/column-designer.component';
+
 import { DataFilterInfoComponent } from './angular-components/data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './angular-components/date-grid-2/data-grid2.component';
 
@@ -25,7 +25,7 @@ import { DataArea2Compnent } from './angular-components/data-area/dataArea2';
 
 
 @NgModule({
-  declarations: [ DataControl2Component, DataArea2Compnent,  ColumnDesigner, DataFilterInfoComponent,  DataGrid2Component, WaitComponent,DataControl3Component],
+  declarations: [ DataControl2Component, DataArea2Compnent,   DataFilterInfoComponent,  DataGrid2Component, WaitComponent,DataControl3Component],
   imports: [FormsModule, CommonModule, HttpClientModule, MatProgressSpinnerModule, MatDialogModule, BrowserAnimationsModule,
     MatFormFieldModule,
     MatButtonModule,
@@ -35,7 +35,7 @@ import { DataArea2Compnent } from './angular-components/data-area/dataArea2';
 
     { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
   ,
-  exports: [ DataControl2Component,  ColumnDesigner, DataFilterInfoComponent,  DataGrid2Component, DataArea2Compnent],
+  exports: [ DataControl2Component,   DataFilterInfoComponent,  DataGrid2Component, DataArea2Compnent],
   entryComponents: [WaitComponent]
 })
 export class RemultModule { }
