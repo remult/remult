@@ -28,7 +28,7 @@ export class Users extends IdEntity  {
                     if ((await context.for(Users).count()) == 0)
                         this.admin.value = true;
 
-                    await checkForDuplicateValue(this, this.name);
+                    await checkForDuplicateValue(this, this.name,context.for(Users));
                     if (this.isNew())
                         this.createDate.value = new Date();
                 }
