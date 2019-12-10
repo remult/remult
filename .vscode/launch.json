@@ -24,7 +24,9 @@
             "preLaunchTask": "schemas:build",
             "program": "/Users/Yoni/AppData/Roaming/npm/node_modules/@angular-devkit/schematics-cli/bin/schematics.js",
             "args": [
-                "/repos/radweb/dist/radweb/schematics/collection.json:ng-add"
+                "/repos/radweb/dist/core/schematics/collection.json:ng-add",
+                "--dry-run=false"
+
             ],
             "outFiles": []
         }

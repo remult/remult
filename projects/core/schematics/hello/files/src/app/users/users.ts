@@ -1,7 +1,6 @@
 
 import { ColumnSetting, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
 import { changeDate } from '../shared/types';
-import { DataColumnSettings } from '@remult/core';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
 
