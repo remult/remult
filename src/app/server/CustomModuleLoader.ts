@@ -10,13 +10,13 @@ export class CustomModuleLoader {
         (<any>customModuleLoader)._resolveFilename = (request: string, parent: customModuleLoader, isMain: boolean) => {
             switch (request) {
                 case "@remult/core":
-                    request = request = process.cwd() + root + '/projects/radweb';
+                    request = request = process.cwd() + root + '/core';
                     break;
                 case "@remult/server":
-                    request = request = process.cwd() + root + '/projects/radweb-server';
+                    request = request = process.cwd() + root + '/server';
                     break;
                 case "@remult/server-postgres":
-                    request = request = process.cwd() + root + '/projects/radweb-server-postgres';
+                    request = request = process.cwd() + root + '/server-postgres';
                     break;
             }
 

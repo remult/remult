@@ -5,17 +5,48 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { RemultModule } from '@remult/core';
 import { FormsModule } from '@angular/forms';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { LoaderInterceptor } from 'projects/radweb/src/lib/angular-components/wait/busy-service';
+import { ProductsComponent } from './products/products.component';
+import {DialogService} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
+
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { CategoriesComponent } from './categories/categories.component';
+
+
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ProductsComponent,
+    CategoriesComponent
+  ],
+  providers:[
+    DialogService
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     RemultModule,
+    MatSidenavModule,
+    MatListModule,
+    MatToolbarModule,
+    MatCheckboxModule,
+    MatCardModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
     FormsModule,
   ],
   

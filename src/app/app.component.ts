@@ -1,52 +1,84 @@
-import { GridSettings, Column, Context, ServerFunction } from '@remult/core';
-import { Component } from '@angular/core';
-import * as models from './models';
-import { MatDialog } from '@angular/material';
-import { WaitComponent } from 'projects/radweb/src/lib/angular-components/wait/wait.component';
+import { Component, Injector, ViewChild } from '@angular/core';
+import { Router, Route, CanActivate, ActivatedRoute } from '@angular/router';
+import { MatSidenav } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+
+
+import { Context, RouteHelperService } from '@remult/core';
+import {DialogService} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
 
 
 
 
+
+import { JwtSessionManager } from '@remult/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  constructor(private context: Context, private dialog: MatDialog) {
+
+
+  constructor(
+    public sessionManager: JwtSessionManager,
+    public router: Router,
+    public activeRoute: ActivatedRoute,
+    private dialog: MatDialog,
+    private routeHelper: RouteHelperService,
+
+    public dialogService: DialogService,
+    public context: Context) {
+    sessionManager.loadSessionFromCookie();
 
   }
-  x = this.context.for(models.Products).gridSettings({
-    allowUpdate: true,
-    allowDelete: true,
-    allowInsert: true,
-    knowTotalRows: true,
-    //numOfColumnsInGrid: 100,
-    get: { limit: 100 },
-    hideDataArea: true,
-    onValidate: o => {
+  signInText() {
+    if (this.context.user)
+      return this.context.user.name;
+    return 'Sign in';
+  }
 
-    },
-    columnSettings: p => [
-      p.id, p.productName, p.discontinued,
-      {
-        getValue: p => this.context.for(models.Products).lookup(x => x.id.isEqualTo(p.id)).productName.value
+
+  routeName(route: Route) {
+    let name = route.path;
+    if (route.data && route.data.name)
+      name = route.data.name;
+    return name;
+  }
+
+  currentTitle() {
+    if (this.activeRoute && this.activeRoute.snapshot && this.activeRoute.firstChild)
+      if (this.activeRoute.firstChild.data && this.activeRoute.snapshot.firstChild.data.name) {
+        return this.activeRoute.snapshot.firstChild.data.name;
       }
-    ]
+      else {
+        if (this.activeRoute.firstChild.routeConfig)
+          return this.activeRoute.firstChild.routeConfig.path;
+      }
+    return 'my-project';
+  }
 
 
-  });
-  inputType = 'checkbox';
-  test: any;
-  filterColumn: Column<any>;
-  async testIt() {
-    await AppComponent.testServer();
+  signOut() {
+
+    this.routeClicked();
+    this.sessionManager.signout();
   }
-  @ServerFunction({ allowed: true })
-  static async testServer() {
-    console.log("I'm here");
-    return "";
+  shouldDisplayRoute(route: Route) {
+    if (!(route.path && route.path.indexOf(':') < 0 && route.path.indexOf('**') < 0))
+      return false;
+    return this.routeHelper.canNavigateToRoute(route);
   }
+  //@ts-ignore ignoring this to match angular 7 and 8
+  @ViewChild('sidenav') sidenav: MatSidenav;
+  routeClicked() {
+    if (this.dialogService.isScreenSmall())
+      this.sidenav.close();
+
+  }
+  test() {
+
+  }
+
 }

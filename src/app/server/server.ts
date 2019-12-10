@@ -1,47 +1,33 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
-let moduleLoader = new CustomModuleLoader();
-
-import { DataApi, Entity, NumberColumn, DateTimeColumn, EntityClass, ActualSQLServerDataProvider } from '@remult/core';
-import { Pool } from 'pg';
-import { Orders, Customers, Shippers, Products, Order_details } from './../models';
-import { environment } from './../../environments/environment';
-import { Categories } from '../models';
+let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
-import { JsonFileDataProvider, ExpressBridge } from 'radweb-server';
+import { ExpressBridge } from '@remult/server';
+import * as fs from 'fs';
 
-import { PostgrestSchemaBuilder, PostgresDataProvider } from 'radweb-server-postgres';
 import '../app.module';
-var p = new Pool({
-    database: 'postgres', user: 'postgres', password: 'MASTERKEY', host: 'localhost'
+import {serverInit} from './server-init';
+
+
+serverInit().then(async (dataSource) => {
+
+    let app = express();
+    let eb = new ExpressBridge(app, dataSource, process.env.DISABLE_HTTPS == "true");
+    
+
+    app.use(express.static('dist/my-project'));
+
+    app.use('/*', async (req, res) => {
+
+        const index = 'dist/my-project/index.html';
+        if (fs.existsSync(index)) {
+            res.send(fs.readFileSync(index).toString());
+        }
+        else {
+            res.send('No Result' + index);
+
+        }
+    });
+
+    let port = process.env.PORT || 3000;
+    app.listen(port);
 });
-
-
-
-let app = express();
-let port = 3001;
-
-
-
-//environment.dataSource = new JsonFileDataProvider('./appData');
-//let sqlServer = new SQLServerDataProvider('sa', 'MASTERKEY', '127.0.0.1', 'northwind', 'sqlexpress');
-//environment.dataSource = sqlServer;
-environment.dataSource = new PostgresDataProvider(p);
-ActualSQLServerDataProvider.LogToConsole = true;
-new PostgrestSchemaBuilder(p).verifyStructureOfAllEntities();
-let eb = new ExpressBridge(app, environment.dataSource,true);
-
-
-
-
-app.listen(port);
-
-@EntityClass
-class testEntity extends Entity<number>{
-    id = new NumberColumn();
-    datet = new DateTimeColumn();
-    constructor() {
-        super( 'testdt');
-        this.__initColumns(this.id);
-    }
-}
-

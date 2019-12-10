@@ -38,5 +38,7 @@ testem.log
 .DS_Store
 Thumbs.db
 
+.env
 distServer/*
 !/distServer/package.json
+dist-server/*

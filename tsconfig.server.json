@@ -1,37 +1,12 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    
-    "declaration": false,"baseUrl": ".",
-    "stripInternal": true,
-    "experimentalDecorators": true,
-
-    "target": "es5",
+    "outDir": "./dist-server/",
     "module": "commonjs",
-    "moduleResolution": "node",
-    "rootDir": ".",
-    "outDir": "distServer",
-    "sourceMap": true,
-    "inlineSources": true,
-    "skipLibCheck": true,
-    "lib": [
-      "es2015",
-      "dom"
-    ],
-    
-    "paths": {
-      "radweb": [
-        "projects/radweb"
-      ],
-      "radweb-server": [
-        "projects/radweb-server"
-      ],
-      "radweb-server-postgres": [
-        "projects/radweb-server-postgres"
-      ]
-    }
+    "target": "es5",
+    "skipLibCheck": true
   },
-  "exclude": ["projects/radweb-server-mssql/SQLServerDataProvider.ts"],
-  "angularCompilerOptions": {
-    "strictMetadataEmit": true
-  }
+  "files": [
+    "./src/app/server/server.ts"
+  ]
 }

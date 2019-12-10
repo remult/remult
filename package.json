@@ -3,35 +3,32 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "ng-serve": "ng serve --port 4201",
+    "ng-serve-noam-ip-10.0.0.6": "ng serve --port 4201 --host 10.0.0.6",
     "test": "ng test core",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "app-server-watch": "tsc -p tsconfig.server.json --watch",
     "build": "ng build core && npm run schemas:build && npm run copy:styles && npm run server-build && npm run server-postgres-build",
     "copy:styles": "copyfiles -V -u 2  projects/core/input-styles.scss dist/core/",
-
     "schemas:build": "tsc -p projects/core/tsconfig.schematics.json",
     "schemas:copy:schemas": "copyfiles -V -u 2  projects/core/schematics/*/schema.json dist/core/",
     "schemas:copy:files": "copyfiles -a -p -V -u 2 projects/core/schematics/*/files/** dist/core/",
     "schemas:copy:collection": "copyfiles -V -u 3 projects/core/schematics/collection.json dist/core/schematics/",
     "postschemas:build": "npm run schemas:copy:schemas && npm run schemas:copy:files && npm run schemas:copy:collection",
-
     "server-build": "tsc -p projects/server/tsconfig.json && copyfiles -u 2 projects/server/package.json dist/server",
     "server-postgres-build": "tsc -p projects/server-postgres/tsconfig.json && copyfiles -u 2 projects/server-postgres/package.json dist/server-postgres",
-    
-    
     "publish": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd server && npm publish  --access public --tag pre-release && cd.. && cd server-postgres &&  npm publish  --access public --tag pre-release",
-    "patch-versions":"cd projects/core && npm version patch && cd.. && cd server && npm version patch && cd.. && cd server-postgres && npm version patch && cd.. && cd..",
-    "publish-server": "cd dist/radweb-server && npm publish  --access public --tag pre-release",
-    "publish-server-postgres": "cd dist/radweb-server-postgres && npm publish  --access public --tag pre-release",
-    "docs":"c:/repos/radweb/docs-builder/buildsite.exe ./docs-md ./docs",
+    "patch-versions": "cd projects/core && npm version patch && cd.. && cd server && npm version patch && cd.. && cd server-postgres && npm version patch && cd.. && cd..",
+    "docs": "c:/repos/radweb/docs-builder/buildsite.exe ./docs-md ./docs",
     "publish-radweb-local": " npm run radweb-build && cd dist/radweb && npm publish --registry http://localhost:4873",
     "publish-radweb-server-local": "cd dist/radweb-server && npm publish --registry http://localhost:4873 --access public",
     "publish-radweb-server-postgres-local": "cd dist/radweb-server-postgres && npm publish --registry http://localhost:4873 --access public",
-    "server-run": "node distServer/src/app/server/server.js",
-    "server:debug": "node --inspect --debug-brk distServer/src/app/server/server.js"
-
+    
+    
+    "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run",
+    "build-server-watch": "tsc -p tsconfig.server.json --watch",
+    "server:dev-run": "node --inspect dist-server/src/app/server/server.js"
   },
   "private": true,
   "dependencies": {
@@ -61,7 +58,9 @@
     "pg": "^7.6.1",
     "rxjs": "~6.3.3",
     "uuid": "^3.3.2",
-    "zone.js": "~0.8.26"
+    "zone.js": "~0.8.26",
+    "dotenv": "^8.1.0",
+    "password-hash": "^1.2.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.10.0",
@@ -90,6 +89,7 @@
     "tsickle": ">=0.29.0",
     "tslib": "^1.9.0",
     "tslint": "~5.11.0",
-    "typescript": "~3.1.6"
+    "typescript": "~3.1.6",
+    "tsc-watch": "^4.0.0"
   }
 }

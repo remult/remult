@@ -115,6 +115,50 @@
             "problemMatcher": [
                 "$tsc"
             ]
+        },
+        {
+            "type": "npm",
+            "script": "node-serve",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true,
+            "presentation": {
+                "group": "groupA"
+            }
+        },
+        {
+            "type": "npm",
+            "script": "ng-serve",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true,
+            "presentation": {
+                "group": "groupA"
+            }
+        },
+        {
+            "type": "npm",
+            "script": "ng-serve-noam-ip-10.0.0.6",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true,
+            "presentation": {
+                "group": "groupA"
+            }
+        },
+        {
+            "type": "npm",
+            "script": "server:build-watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "presentation": {
+                "group": "groupA"
+            },
+            "isBackground": true
         }
     ]
 }

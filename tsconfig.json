@@ -7,8 +7,10 @@
     "declaration": false,
     "module": "es2015",
     "moduleResolution": "node",
+    "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "importHelpers": true,
     "target": "es5",
     "skipLibCheck": true,
     "typeRoots": [
@@ -22,7 +24,6 @@
       "@remult/*": [
         "projects/*"
       ]
-      
     }
   }
 }
