@@ -30,14 +30,14 @@ export interface DataColumnSettings<type> {
     valueChange?: (val: type) => void;
     virtualData?: () => type | Promise<type>;
     dbReadOnly?: boolean;
-    display?: () => ColumnDisplay;
+    display?: () => ColumnInEntityDisplaySettings;
 }
 export declare type ColumnOptions<type> = DataColumnSettings<type> | string;
 
 
 
 
-export interface ColumnSetting<rowType> {
+export interface ColumnInAreaDisplaySettings<rowType> {
 
     caption?: string;
     readonly?: boolean;
@@ -57,7 +57,7 @@ export interface ColumnSetting<rowType> {
 }
 
 
-export interface ColumnDisplay {
+export interface ColumnInEntityDisplaySettings {
     dropDown?: DropDownOptions;
     width?: string;
     getValue?: () => any;
@@ -77,7 +77,7 @@ export interface DropDownItem {
     id?: any;
     caption?: any;
 }
-export interface FilteredColumnSetting<rowType> extends ColumnSetting<rowType> {
+export interface FilteredColumnSetting<rowType> extends ColumnInAreaDisplaySettings<rowType> {
     _showFilter?: boolean;
 }
 

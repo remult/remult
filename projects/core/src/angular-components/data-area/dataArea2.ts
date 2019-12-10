@@ -4,7 +4,7 @@
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 import { dataAreaSettings, DataAreaSettings } from '../../core/data-area-settings';
 import { ColumnCollection } from '../../core/column-collection';
-import { ColumnSetting } from '../../core/column-interfaces';
+import { ColumnInAreaDisplaySettings } from '../../core/column-interfaces';
 @Component({
   selector: 'data-area',
 
@@ -30,10 +30,10 @@ export class DataArea2Compnent implements OnChanges {
 
   }
 
-  lastCols: ColumnSetting<any>[][][];
-  lastAllCols: ColumnSetting<any>[];
+  lastCols: ColumnInAreaDisplaySettings<any>[][][];
+  lastAllCols: ColumnInAreaDisplaySettings<any>[];
 
-  theColumns(): ColumnSetting<any>[][][] {
+  theColumns(): ColumnInAreaDisplaySettings<any>[][][] {
 
 
 
@@ -42,12 +42,12 @@ export class DataArea2Compnent implements OnChanges {
       return this.lastCols;
     this.lastAllCols = cols;
 
-    let r: ColumnSetting<any>[][][] = [];
+    let r: ColumnInAreaDisplaySettings<any>[][][] = [];
     this.lastCols = r;
     for (var i = 0; i < this.columns; i++) {
       r.push([]);
     }
-    let linesToPlaceInColumns: ColumnSetting<any>[][];
+    let linesToPlaceInColumns: ColumnInAreaDisplaySettings<any>[][];
     if (this.settings.lines)
       linesToPlaceInColumns = this.settings.lines;
     else {

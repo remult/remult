@@ -1,4 +1,4 @@
-import { ColumnOptions, ColumnSetting } from '../core/column-interfaces';
+import { ColumnOptions, ColumnInAreaDisplaySettings } from '../core/column-interfaces';
 import {  extractSortFromSettings } from '../core/utils';
 
 
@@ -276,7 +276,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { dropDown: { source:  c.dropDownSource() } } as ColumnSetting<Categories>
+    let cs = { dropDown: { source:  c.dropDownSource() } } as ColumnInAreaDisplaySettings<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
@@ -289,7 +289,7 @@ describe("test row provider", () => {
     let c = new Categories();
 
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } } as ColumnSetting<Categories>
+    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } } as ColumnInAreaDisplaySettings<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
@@ -305,7 +305,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, dropDown: { source: c.dropDownSource() } } as ColumnSetting<Categories>
+    let cs = { column: c1.id, dropDown: { source: c.dropDownSource() } } as ColumnInAreaDisplaySettings<Categories>
     await cc.add(cs);
 
     expect(cs.dropDown.items.length).toBe(2);

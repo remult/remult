@@ -1,5 +1,5 @@
 
-import { ColumnSetting, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
+import { ColumnInAreaDisplaySettings, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
 import { changeDate } from '../shared/types';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
@@ -78,7 +78,7 @@ export class UserId extends IdColumn {
     constructor(private context: Context, settingsOrCaption?: ColumnOptions<string>) {
         super(settingsOrCaption);
     }
-    getColumn(): ColumnSetting<Entity<any>> {
+    getColumn(): ColumnInAreaDisplaySettings<Entity<any>> {
         return {
             column: this,
             getValue: f => (f ? ((f).__getColumn(this)) : this).displayValue,

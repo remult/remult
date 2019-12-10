@@ -1,5 +1,5 @@
 import { Allowed, Context } from '../context/Context';
-import { DataColumnSettings,ColumnOptions, ColumnDisplay, ColumnValueProvider, ColumnSetting } from './column-interfaces';
+import { DataColumnSettings,ColumnOptions, ColumnInEntityDisplaySettings, ColumnValueProvider, ColumnInAreaDisplaySettings } from './column-interfaces';
 
 import { isBoolean } from 'util';
 
@@ -98,7 +98,7 @@ export class Column<dataType>  {
   
     }
     //reconsider approach - this prevents the user from overriding in a specific component
-    __decorateDataSettings(x: ColumnSetting<any>, context?: Context) {
+    __decorateDataSettings(x: ColumnInAreaDisplaySettings<any>, context?: Context) {
       if (!x.caption && this.caption)
         x.caption = this.caption;
       if (x.readonly == undefined) {
@@ -164,7 +164,7 @@ export class Column<dataType>  {
   
       }
     }
-    private __displayResult: ColumnDisplay;
+    private __displayResult: ColumnInEntityDisplaySettings;
   
   
     __getStorage() {

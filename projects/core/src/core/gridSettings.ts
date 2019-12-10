@@ -2,7 +2,7 @@ import { Entity } from "./entity";
 
 
 import { Column } from "./column";
-import {  ColumnSetting } from "./column-interfaces";
+import {  ColumnInAreaDisplaySettings } from "./column-interfaces";
 import { Context } from "../context/Context";
 import {  extractSortFromSettings } from "./utils";
 import { DataList } from "./dataList";
@@ -68,8 +68,8 @@ export class GridSettings<rowType extends Entity<any>>  {
   
     }
   
-    currList: ColumnSetting<any>[];
-    origList: ColumnSetting<any>[];
+    currList: ColumnInAreaDisplaySettings<any>[];
+    origList: ColumnInAreaDisplaySettings<any>[];
     origNumOfColumns: number;
     showSelectColumn = false;
   
@@ -99,11 +99,11 @@ export class GridSettings<rowType extends Entity<any>>  {
       }
   
     }
-    addCol(c: ColumnSetting<any>) {
+    addCol(c: ColumnInAreaDisplaySettings<any>) {
       this.columns.addCol(c);
       this.adjustColumns();
     }
-    deleteCol(c: ColumnSetting<any>) {
+    deleteCol(c: ColumnInAreaDisplaySettings<any>) {
       this.columns.deleteCol(c)
       this.adjustColumns();
     }
@@ -376,8 +376,8 @@ export class GridSettings<rowType extends Entity<any>>  {
     hideDataArea?: boolean,
     confirmDelete?: (r: rowType, yes: () => void) => void;
   
-    columnSettings?: (row: rowType) => ColumnSetting<rowType>[],
-    areas?: { [areaKey: string]: ColumnSetting<any>[] },
+    columnSettings?: (row: rowType) => ColumnInAreaDisplaySettings<rowType>[],
+    areas?: { [areaKey: string]: ColumnInAreaDisplaySettings<any>[] },
   
     rowCssClass?: (row: rowType) => string;
     rowButtons?: RowButton<rowType>[],

@@ -4,7 +4,7 @@ import { isFunction } from '../../core/common';
 import { Column } from '../../core/column';
 import { Entity } from '../../core/entity';
 import { GridSettings, RowButton } from '../../core/gridSettings';
-import { ColumnSetting } from '../../core/column-interfaces';
+import { ColumnInAreaDisplaySettings } from '../../core/column-interfaces';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
@@ -22,10 +22,10 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
 
     }
   }
-  getColFlex(map: ColumnSetting<any>) {
+  getColFlex(map: ColumnInAreaDisplaySettings<any>) {
     return '0 0 ' + this.getColWidth(map);
   }
-  getColWidth(map: ColumnSetting<any>) {
+  getColWidth(map: ColumnInAreaDisplaySettings<any>) {
     let x = this.settings.columns.__dataControlStyle(map);
     if (!x)
       x = '200px';
