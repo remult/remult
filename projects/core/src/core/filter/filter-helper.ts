@@ -1,9 +1,10 @@
 import { Entity } from "../entity";
 import { Column } from "../column";
-import { FindOptionsPerEntity, FilterBase } from "../dataInterfaces1";
+import { FindOptionsPerEntity } from "../data-interfaces";
 import { DateTimeColumn } from "../columns/datetime-column";
 import { StringColumn } from "../columns/string-column";
 import { AndFilter } from "./and-filter";
+import { FilterBase } from './filter-interfaces';
 
 export class FilterHelper<rowType extends Entity<any>> {
     filterRow: rowType;

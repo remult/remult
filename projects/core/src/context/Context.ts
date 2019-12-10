@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, DataApiRequest, FilterBase, FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider, SQLQueryResult } from "../core/dataInterfaces1";
+import { DataProvider,  FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/data-interfaces";
 import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/data-providers/restDataProvider";
 import {    extractSortFromSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/data-providers/inMemoryDatabase";
-import { DataApiSettings } from "../server/DataApi";
+import { DataApiSettings, DataApiRequest } from "../server/DataApi";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 import { BusyService } from "../angular-components/wait/busy-service";
@@ -14,6 +14,7 @@ import { Lookup } from "../core/lookup";
 import { IDataSettings, GridSettings } from "../core/gridSettings";
 import { ColumnHashSet } from "../core/column-hash-set";
 import { DropDownSourceArgs, DropDownSource } from "../core/drop-down-source";
+import { FilterBase } from '../core/filter/filter-interfaces';
 
 
 
@@ -309,9 +310,7 @@ export interface UserInfo {
     roles: string[];
 }
 
-export abstract class DirectSQL {
-    abstract execute(sql: string): Promise<SQLQueryResult>;
-}
+
 // @dynamic
 export class Role {
     constructor(public key: string) {

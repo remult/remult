@@ -1,13 +1,15 @@
 import { DataApiError } from './DataApi';
 
 
-import {  FilterBase, FindOptionsPerEntity, DataApiRequest, EntityProvider } from '../core/dataInterfaces1';
+import { FindOptionsPerEntity, EntityProvider } from '../core/data-interfaces';
 import { Column } from '../core/column';
 import { Entity } from '../core/entity';
 import { Sort } from '../core/sort';
 import { ColumnHashSet } from '../core/column-hash-set';
 import { AndFilter } from '../core/filter/and-filter';
 import { StringColumn } from '../core/columns/string-column';
+import { UserInfo } from '../context/Context';
+import { FilterBase } from '../core/filter/filter-interfaces';
 
 export class DataApi<T extends Entity<any>> {
   getRoute() {
@@ -15,7 +17,7 @@ export class DataApi<T extends Entity<any>> {
       return this.entityProvider.create().__getName();
     return this.options.name;
   }
-  constructor(private entityProvider: EntityProvider<T>, private options?: DataApiSettings<T>,t?:T) {
+  constructor(private entityProvider: EntityProvider<T>, private options?: DataApiSettings<T>, t?: T) {
     if (!options)
       this.options = {};
     if (!t)
@@ -40,8 +42,8 @@ export class DataApi<T extends Entity<any>> {
   }
   async count(response: DataApiResponse, request: DataApiRequest) {
     try {
-      
-      response.success({ count: +await this.entityProvider.count(t => this.buildWhere(t,request)) });
+
+      response.success({ count: +await this.entityProvider.count(t => this.buildWhere(t, request)) });
     } catch (err) {
       response.error(err);
     }
@@ -57,7 +59,7 @@ export class DataApi<T extends Entity<any>> {
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
-      findOptions.where = t => this.buildWhere(t,request);
+      findOptions.where = t => this.buildWhere(t, request);
       if (request) {
 
         let sort = <string>request.get("_sort");
@@ -97,7 +99,7 @@ export class DataApi<T extends Entity<any>> {
       response.error(err);
     }
   }
-  private buildWhere(rowType:T, request: DataApiRequest) {
+  private buildWhere(rowType: T, request: DataApiRequest) {
     var where: FilterBase;
     if (this.options && this.options.get && this.options.get.where)
       where = this.options.get.where(rowType);
@@ -242,4 +244,16 @@ export interface DataApiResponse {
 
 export interface DataApiError {
   message: string;
+}
+export interface DataApiRequest {
+  getBaseUrl(): string;
+  get(key: string): any;
+  getHeader(key: string): string;
+  user: UserInfo;
+  clientIp: string;
+}
+export interface DataApiServer {
+  addAllowedHeader(name: string): void;
+  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void;
+
 }

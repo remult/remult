@@ -2,7 +2,7 @@ import { Entity } from "./entity";
 
 
 import { Column } from "./column";
-import { EntityProvider, FindOptionsPerEntity, ColumnSetting } from "./dataInterfaces1";
+import {  ColumnSetting } from "./column-interfaces";
 import { Context } from "../context/Context";
 import {  extractSortFromSettings } from "./utils";
 import { DataList } from "./dataList";
@@ -10,6 +10,7 @@ import { Sort } from "./sort";
 import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
+import { EntityProvider, FindOptionsPerEntity } from './data-interfaces';
 
 export class GridSettings<rowType extends Entity<any>>  {
     constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {

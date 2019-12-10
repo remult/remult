@@ -1,11 +1,12 @@
 import { Entity } from "./entity";
 import { DataList } from "./dataList";
-import { EntityProvider, FilterBase, FindOptionsPerEntity } from "./dataInterfaces1";
+import { EntityProvider,  FindOptionsPerEntity } from "./data-interfaces";
 import { Column } from "./column";
 
 import { isFunction } from "util";
 import { UrlBuilder } from "./url-builder";
 import { FilterConsumnerBridgeToUrlBuilder } from "./filter/filter-consumer-bridge-to-url-builder";
+import { FilterBase } from './filter/filter-interfaces';
 
 export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
 

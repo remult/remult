@@ -1,4 +1,4 @@
-import { FindOptionsPerEntity, ColumnOptions, ColumnSetting } from '../core/dataInterfaces1';
+import { ColumnOptions, ColumnSetting } from '../core/column-interfaces';
 import {  extractSortFromSettings } from '../core/utils';
 
 
@@ -22,6 +22,7 @@ import { DateTimeDateStorage } from '../core/columns/storage/datetime-date-stora
 import { CharDateStorage } from '../core/columns/storage/char-date-storage';
 import { StringColumn } from '../core/columns/string-column';
 import { Entity } from '../core/entity';
+import { FindOptionsPerEntity } from '../core/data-interfaces';
 
 
 //import { DataAreaCompnent } from '../utils/angular/dataArea';

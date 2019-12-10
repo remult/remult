@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
-import { ColumnSetting, DropDownItem, FilteredColumnSetting } from "./dataInterfaces1";
+import { ColumnSetting, DropDownItem, FilteredColumnSetting } from "./column-interfaces";
 import { Column } from "./column";
 import { Context } from "../context/Context";
 import { isFunction } from "util";
@@ -153,9 +153,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       return !col.readonly;
     }
     _click(col: ColumnSetting<any>, row: any) {
-      col.click(row, what => {
-        what();
-      });
+      col.click(row);
     }
   
     _getColDisplayValue(col: ColumnSetting<any>, row: rowType) {

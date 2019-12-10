@@ -1,5 +1,5 @@
 import { Allowed, Context } from '../context/Context';
-import { DataColumnSettings,ColumnOptions, ColumnDisplay, ColumnValueProvider, ColumnSetting } from './dataInterfaces1';
+import { DataColumnSettings,ColumnOptions, ColumnDisplay, ColumnValueProvider, ColumnSetting } from './column-interfaces';
 
 import { isBoolean } from 'util';
 
@@ -122,7 +122,7 @@ export class Column<dataType>  {
           };
       }
       if (this.__settings && this.__settings.display) {
-        this.__settings.display(x => this.__displayResult = x);
+        this.__displayResult = this.__settings.display();
         if (!x.dropDown)
           x.dropDown = this.__displayResult.dropDown;
         if (x.hideDataOnInput === undefined)
@@ -137,7 +137,7 @@ export class Column<dataType>  {
             if (e)
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
-              c.__settings.display(x => c.__displayResult = x);
+              this.__displayResult = this.__settings.display();
             return c.__displayResult.getValue();
           };
         }
@@ -147,7 +147,7 @@ export class Column<dataType>  {
             if (e)
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
-              c.__settings.display(x => c.__displayResult = x);
+              this.__displayResult = this.__settings.display();
             c.__displayResult.click();
           };
         }
@@ -157,7 +157,7 @@ export class Column<dataType>  {
             if (e)
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
-              c.__settings.display(x => c.__displayResult = x);
+              this.__displayResult = this.__settings.display();
             return c.__displayResult.allowClick();
           };
         }

@@ -1,7 +1,7 @@
 import { ActualInMemoryDataProvider } from './inMemoryDatabase';
 import { JsonStorageDataProvider, JsonStorage } from './JsonStorageDataProvider';
 
-import { DataProvider, EntityDataProvider } from '../dataInterfaces1';
+import { DataProvider, EntityDataProvider } from '../data-interfaces';
 import { Entity } from '../entity';
 
 

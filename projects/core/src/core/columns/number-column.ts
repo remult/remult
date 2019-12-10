@@ -1,5 +1,5 @@
 import { Column } from "../column";
-import { DataColumnSettings, ColumnOptions } from "../dataInterfaces1";
+import { DataColumnSettings, ColumnOptions } from "../column-interfaces";
 import { BoolStorage } from "./storage/bool-storage";
 
 export class NumberColumn extends Column<number>{

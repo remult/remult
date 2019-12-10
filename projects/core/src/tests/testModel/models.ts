@@ -1,5 +1,5 @@
 
-import { DataProvider } from "../../core/dataInterfaces1";
+import { DataProvider } from "../../core/data-interfaces";
 import { LocalStorageDataProvider } from "../../core/data-providers/localStorageDataProvider";
 import { EntityClass } from "../../context/Context";
 import { Entity, EntityOptions } from "../../core/entity";

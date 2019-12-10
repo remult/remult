@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 import { Column } from '../../core/column';
 import { GridSettings } from '../../core/gridSettings';
-import { ColumnSetting } from '../../core/dataInterfaces1';
+import { ColumnSetting } from '../../core/column-interfaces';
 @Component({
     selector: 'Data-Filter',
     templateUrl:'./data-filter-info.component.html'

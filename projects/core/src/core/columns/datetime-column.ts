@@ -1,5 +1,5 @@
 import { Column } from "../column";
-import { ColumnOptions } from "../dataInterfaces1";
+import { ColumnOptions } from "../column-interfaces";
 import { DateTimeStorage } from "./storage/datetime-storage";
 
 export class DateTimeColumn extends Column<Date>{

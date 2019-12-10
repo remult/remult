@@ -1,4 +1,4 @@
-import { ColumnStorage } from "../../dataInterfaces1";
+import { ColumnStorage } from "../../column-interfaces";
 
 export class DefaultStorage<dataType> implements ColumnStorage<dataType>{
     toDb(val: dataType) {

@@ -1,5 +1,5 @@
 import { Column } from "../column";
-import { ColumnOptions, DropDownItem } from "../dataInterfaces1";
+import { ColumnOptions, DropDownItem } from "../column-interfaces";
 
 export interface ClosedListItem {
     id: number;

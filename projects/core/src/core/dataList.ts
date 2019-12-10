@@ -1,5 +1,6 @@
 import { Entity } from "./entity";
-import { EntityProvider, FilterBase, FindOptionsPerEntity } from "./dataInterfaces1";
+import { EntityProvider,  FindOptionsPerEntity } from "./data-interfaces";
+import { FilterBase } from './filter/filter-interfaces';
 
 export class DataList<T extends Entity<any>> implements Iterable<T>{
     [Symbol.iterator](): Iterator<T> {

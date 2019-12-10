@@ -159,6 +159,14 @@
                 "group": "groupA"
             },
             "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build"
         }
     ]
 }

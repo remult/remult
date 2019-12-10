@@ -3,8 +3,9 @@
  */
 
 export * from './src/remult-core.module';
+export * from './src/core/column-interfaces'; 
+export * from './src/core/SQLCommand';
 export * from './src/core/data-providers/restDataProvider';
-export * from './src/core/dataInterfaces1';
 export * from './src/core/utils';
 export * from './src/core/common';
 export * from './src/core/data-providers/inMemoryDatabase';
@@ -46,3 +47,5 @@ export * from './src/core/column-hash-set';
 export * from './src/core/data-area-settings';
 export * from './src/core/drop-down-source';
 export * from './src/core/url-builder';
+export * from './src/core/data-interfaces';
+export * from './src/core/filter/filter-interfaces';

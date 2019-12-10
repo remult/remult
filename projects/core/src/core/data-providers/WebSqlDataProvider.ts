@@ -1,4 +1,5 @@
-import { DataProvider, EntityDataProvider, RowsOfDataForTesting, SQLConnectionProvider, SQLCommand, SQLQueryResult } from "../dataInterfaces1";
+import { DataProvider, EntityDataProvider, RowsOfDataForTesting } from "../data-interfaces";
+import { SQLCommand , SQLConnectionProvider, SQLQueryResult } from "../SQLCommand";
 
 import { ActualSQLServerDataProvider } from "./SQLDatabaseShared";
 import { Column } from "../column";

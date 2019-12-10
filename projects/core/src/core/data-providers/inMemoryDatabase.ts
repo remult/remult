@@ -1,9 +1,10 @@
 
 import { Column } from '../column';
-import { FilterBase, DataProvider, EntityDataProvider, FindOptions, FilterConsumer, RowsOfDataForTesting } from '../dataInterfaces1';
+import {  DataProvider, EntityDataProvider, FindOptions,  RowsOfDataForTesting } from '../data-interfaces';
 
 import { Entity } from '../entity';
 import { StringColumn } from '../columns/string-column';
+import { FilterBase, FilterConsumer } from '../filter/filter-interfaces';
 
 
 

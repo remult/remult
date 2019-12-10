@@ -1,5 +1,6 @@
-import { FilterBase, FilterConsumer } from "../dataInterfaces1";
+
 import { AndFilter } from "./and-filter";
+import { FilterBase, FilterConsumer } from './filter-interfaces';
 
 export class Filter implements FilterBase {
     constructor(private apply: (add: FilterConsumer) => void) {

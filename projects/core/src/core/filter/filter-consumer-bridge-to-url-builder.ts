@@ -1,7 +1,8 @@
-import { FilterConsumer } from "../dataInterfaces1";
+
 import { UrlBuilder } from "../url-builder";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
+import { FilterConsumer } from './filter-interfaces';
 
 export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
     constructor(private url: UrlBuilder) {

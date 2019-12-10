@@ -1,4 +1,4 @@
-import { ColumnStorage } from "../../dataInterfaces1";
+import { ColumnStorage } from "../../column-interfaces";
 import { isString } from "util";
 
 export class BoolStorage implements ColumnStorage<any>{

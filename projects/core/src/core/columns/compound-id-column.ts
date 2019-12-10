@@ -1,8 +1,9 @@
 import { Column } from "../column";
 import { Entity } from "../entity";
 import { Filter } from "../filter/filter";
-import { FilterBase } from "../dataInterfaces1";
+
 import { AndFilter } from "../filter/and-filter";
+import { FilterBase } from '../filter/filter-interfaces';
 
 export class CompoundIdColumn extends Column<string>
 {

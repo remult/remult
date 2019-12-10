@@ -1,20 +1,8 @@
 
-
-
-import {  isFunction } from './common';
-
 import {
-  DataColumnSettings, ColumnOptions, FilterBase,  FindOptionsPerEntity,  FilterConsumer
-  , ColumnStorage,
+    FindOptionsPerEntity
+} from './data-interfaces';
 
-  EntityProvider,
-  
-  EntityOrderBy,
-  EntityWhere
-} from './dataInterfaces1';
-import { Allowed, Context, DirectSQL } from '../context/Context';
-
-import {  isString, isArray } from 'util';
 import { Column } from './column';
 import { Entity } from './entity';
 import { Sort } from './sort';

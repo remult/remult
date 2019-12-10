@@ -1,5 +1,5 @@
 import { Entity } from "./entity";
-import { ColumnSetting } from "./dataInterfaces1";
+import { ColumnSetting } from "./column-interfaces";
 import { ColumnCollection } from "./column-collection";
 import { isArray } from "util";
 

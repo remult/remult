@@ -3,9 +3,11 @@ import { DataApiSettings } from "../server/DataApi";
 import { functionOrString, makeTitle } from "./common";
 import { Column } from "./column";
 
-import { ColumnValueProvider, FilterBase, RowEvents, EntityDataProvider } from "./dataInterfaces1";
+import { ColumnValueProvider,  RowEvents } from "./column-interfaces";
 import { ColumnHashSet } from "./column-hash-set";
 import { CompoundIdColumn } from "./columns/compound-id-column";
+import { FilterBase } from './filter/filter-interfaces';
+import { EntityDataProvider } from './data-interfaces';
 
 //@dynamic
 export class Entity<idType> {

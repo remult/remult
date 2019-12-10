@@ -1,6 +1,8 @@
-import { FilterConsumer, SQLCommand } from "../dataInterfaces1";
+
+import { SQLCommand } from "../SQLCommand";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
+import { FilterConsumer } from './filter-interfaces';
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     where = "";

@@ -9,7 +9,7 @@ import { Categories,  Status } from './testModel/models';
 
 import { Context, Role, Allowed, EntityClass, ServerContext } from '../context/Context';
 import { WebSqlDataProvider } from '../core/data-providers/WebSqlDataProvider';
-import { DataProvider, RowsOfDataForTesting } from '../core/dataInterfaces1';
+import { DataProvider, RowsOfDataForTesting } from '../core/data-interfaces';
 import { ColumnHashSet } from '../core/column-hash-set';
 import { Entity } from '../core/entity';
 import { NumberColumn, BoolColumn } from '../core/columns/number-column';

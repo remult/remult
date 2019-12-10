@@ -1,4 +1,4 @@
-import { ColumnStorage } from "../../dataInterfaces1";
+import { ColumnStorage } from "../../column-interfaces";
 import { DateTimeColumn } from "../datetime-column";
 export class DateTimeStorage implements ColumnStorage<string>{
     toDb(val: string) {
