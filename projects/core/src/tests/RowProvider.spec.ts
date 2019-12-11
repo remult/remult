@@ -3,7 +3,8 @@ import {  extractSortFromSettings } from '../utils';
 
 
 
-import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../data-providers/inMemoryDatabase'
+import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase'
+import { ArrayEntityDataProvider } from "../data-providers/ArrayEntityDataProvider";
 import { itAsync, Done } from './testHelper.spec';
 
 import { Categories, Status, CategoriesWithValidation } from './testModel/models';
@@ -675,7 +676,7 @@ describe("test parameter priority", () => {
   });
 });
 
-class myDp extends ActualInMemoryDataProvider {
+class myDp extends ArrayEntityDataProvider {
   constructor(entity: Entity<any>) {
     super(entity, []);
   }

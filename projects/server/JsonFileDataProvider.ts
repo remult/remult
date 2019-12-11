@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import {  DataProvider, EntityDataProvider,Entity, JsonStorageDataProvider, JsonStorage, ActualInMemoryDataProvider  } from '@remult/core';
+import {  DataProvider, EntityDataProvider,Entity, JsonStorageDataProvider, JsonStorage,ArrayEntityDataProvider  } from '@remult/core';
 
 
 
@@ -24,7 +24,7 @@ class FileJsonStorage implements JsonStorage {
   }
   doWork<T>(what: (dp: EntityDataProvider, save: () => void) => T): T {
     let data = JSON.parse(fs.readFileSync(this.filePath).toString());
-    let dp = new ActualInMemoryDataProvider(this.entity,data);
+    let dp = new ArrayEntityDataProvider(this.entity,data);
     return what(dp, () => fs.writeFileSync(this.filePath, JSON.stringify(data, undefined, 2)));
   }
 }

@@ -9,7 +9,8 @@ export * from './src/column-interfaces';
 export * from './src/data-providers/restDataProvider'; //V
 export * from './src/utils';
 export * from './src/common';
-export * from './src/data-providers/inMemoryDatabase';
+export * from './src/data-providers/inMemoryDatabase'; //V
+export * from './src/data-providers/ArrayEntityDataProvider';//V
 export * from './src/data-providers/WebSqlDataProvider';
 export * from './src/data-providers/SQLDatabaseShared';
 export * from './src/data-providers/JsonStorageDataProvider';

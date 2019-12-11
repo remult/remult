@@ -11,8 +11,9 @@ export class JsonStorageDataProvider implements EntityDataProvider {
   constructor(private helper: JsonStorage) {
 
   }
+  p:Promise<any>=Promise.resolve();
   find(options?: EntityDataProviderFindOptions): Promise<any[]> {
-    return this.helper.doWork((dp, save) => dp.find(options));
+    return this.p=this.p.then(()=> this.helper.doWork((dp, save) => dp.find(options)));
   }
   count(where?: FilterBase): Promise<number> {
     return this.helper.doWork((dp, save) => dp.count(where));

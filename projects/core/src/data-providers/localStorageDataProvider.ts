@@ -1,4 +1,4 @@
-import { ActualInMemoryDataProvider } from './inMemoryDatabase';
+import { ArrayEntityDataProvider } from "./ArrayEntityDataProvider";
 import { JsonStorageDataProvider, JsonStorage } from './JsonStorageDataProvider';
 
 import { DataProvider, EntityDataProvider } from '../data-interfaces';
@@ -31,7 +31,7 @@ class LocalJsonStorage implements JsonStorage {
     }
     if (!(data instanceof Array))
       data = [];
-    let dp = new ActualInMemoryDataProvider(this.entity, data);
+    let dp = new ArrayEntityDataProvider(this.entity, data);
     return what(dp, () => localStorage.setItem(this.key, JSON.stringify(data, undefined, 2)));
   }
 }

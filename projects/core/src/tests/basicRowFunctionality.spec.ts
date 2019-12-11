@@ -2,7 +2,8 @@
 
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../DataApi';
-import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../data-providers/inMemoryDatabase';
+import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase';
+import { ArrayEntityDataProvider } from "../data-providers/ArrayEntityDataProvider";
 import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
 import { Categories,  Status } from './testModel/models';
@@ -454,7 +455,7 @@ describe("data api", () => {
     let ctx = new ServerContext();
     ctx.setDataProvider({
       getEntityDataProvider: (x) => {
-        let r = new ActualInMemoryDataProvider(x, [{ id: 1 }]);
+        let r = new ArrayEntityDataProvider(x, [{ id: 1 }]);
         r.delete = () => { throw "ERROR"; };
         return r;
       },transaction:undefined
@@ -1154,7 +1155,7 @@ describe("test data list", () => {
     let cont = new ServerContext();
     cont.setDataProvider({
       getEntityDataProvider: x => {
-        let r = new ActualInMemoryDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
+        let r = new ArrayEntityDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
         r.delete = id => { return Promise.resolve().then(() => { throw Promise.resolve("error"); }) };
         return r;
       },transaction:undefined
