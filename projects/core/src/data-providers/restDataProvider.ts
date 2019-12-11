@@ -1,8 +1,6 @@
 
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
-import { DataApiResponse, DataApiRequest } from '../../server/DataApi';
-import { Context } from '../../context/Context';
 import { Entity } from '../entity';
 import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';

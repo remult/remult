@@ -2,24 +2,24 @@
 
 import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../server/DataApi';
-import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../core/data-providers/inMemoryDatabase';
+import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../data-providers/inMemoryDatabase';
 import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
 import { Categories,  Status } from './testModel/models';
 
-import { Context, Role, Allowed, EntityClass, ServerContext } from '../context/Context';
-import { WebSqlDataProvider } from '../core/data-providers/WebSqlDataProvider';
-import { DataProvider, __RowsOfDataForTesting } from '../core/data-interfaces';
-import { ColumnHashSet } from '../core/column-hash-set';
-import { Entity } from '../core/entity';
-import { NumberColumn, BoolColumn } from '../core/columns/number-column';
-import { StringColumn } from '../core/columns/string-column';
-import { CompoundIdColumn } from '../core/columns/compound-id-column';
-import { Column } from '../core/column';
-import { DateTimeDateStorage } from '../core/columns/storage/datetime-date-storage';
-import { DataList } from '../core/dataList';
-import { UrlBuilder } from '../core/url-builder';
-import { FilterConsumnerBridgeToUrlBuilder } from '../core/filter/filter-consumer-bridge-to-url-builder';
+import { Context, Role, Allowed, EntityClass, ServerContext } from '../Context';
+import { WebSqlDataProvider } from '../data-providers/WebSqlDataProvider';
+import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
+import { ColumnHashSet } from '../column-hash-set';
+import { Entity } from '../entity';
+import { NumberColumn, BoolColumn } from '../columns/number-column';
+import { StringColumn } from '../columns/string-column';
+import { CompoundIdColumn } from '../columns/compound-id-column';
+import { Column } from '../column';
+import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
+import { DataList } from '../dataList';
+import { UrlBuilder } from '../url-builder';
+import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');

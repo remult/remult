@@ -3,7 +3,7 @@ import { Entity } from "./entity";
 
 import { Column } from "./column";
 import {  ColumnInAreaDisplaySettings } from "./column-interfaces";
-import { Context } from "../context/Context";
+import { Context } from "./Context";
 import {  extractSortFromSettings } from "./utils";
 import { DataList } from "./dataList";
 import { Sort } from "./sort";

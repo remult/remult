@@ -3,11 +3,11 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Column } from '../../core/column';
-import { Entity } from '../../core/entity';
-import { ColumnInAreaDisplaySettings } from '../../core/column-interfaces';
-import { ColumnCollection } from '../../core/column-collection';
-import { StringColumn } from '../../core/columns/string-column';
+import { Column } from '../../column';
+import { Entity } from '../../entity';
+import { ColumnInAreaDisplaySettings } from '../../column-interfaces';
+import { ColumnCollection } from '../../column-collection';
+import { StringColumn } from '../../columns/string-column';
 @Component({
   selector: 'data-control3',
   templateUrl: './data-control3.component.html',

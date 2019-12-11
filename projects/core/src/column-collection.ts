@@ -2,7 +2,7 @@ import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
 import { ColumnInAreaDisplaySettings, DropDownItem, FilteredColumnSetting } from "./column-interfaces";
 import { Column } from "./column";
-import { Context } from "../context/Context";
+import { Context } from "./Context";
 import { isFunction } from "util";
 
 export class ColumnCollection<rowType extends Entity<any>> {

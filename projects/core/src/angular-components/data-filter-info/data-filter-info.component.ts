@@ -1,8 +1,8 @@
 
 import { Component, Input } from '@angular/core';
-import { Column } from '../../core/column';
-import { GridSettings } from '../../core/gridSettings';
-import { ColumnInAreaDisplaySettings } from '../../core/column-interfaces';
+import { Column } from '../../column';
+import { GridSettings } from '../../gridSettings';
+import { ColumnInAreaDisplaySettings } from '../../column-interfaces';
 @Component({
     selector: 'Data-Filter',
     templateUrl:'./data-filter-info.component.html'

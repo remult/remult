@@ -1,8 +1,8 @@
 import { Entity } from "../entity";
 import { Column } from "../column";
 import { FindOptions } from "../data-interfaces";
-import { DateTimeColumn } from "../../columns/datetime-column";
-import { StringColumn } from "../../columns/string-column";
+import { DateTimeColumn } from "../columns/datetime-column";
+import { StringColumn } from "../columns/string-column";
 import { AndFilter } from "./and-filter";
 import { FilterBase } from './filter-interfaces';
 

@@ -4,11 +4,11 @@ import 'reflect-metadata';
 
 import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './Context';
 
-import { BusyService } from '../angular-components/wait/busy-service';
-import { ActualSQLServerDataProvider } from '../core/data-providers/SQLDatabaseShared';
-import { SqlDatabase } from '../core/SqlCommand';
-import { DataApiRequest, DataApiResponse } from '../server/DataApi';
-import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from '../core/data-providers/restDataProvider';
+import { BusyService } from './angular-components/wait/busy-service';
+
+import { SqlDatabase } from './SqlCommand';
+import { DataApiRequest, DataApiResponse } from './server/DataApi';
+import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/restDataProvider';
 
 
 interface inArgs {

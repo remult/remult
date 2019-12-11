@@ -1,4 +1,4 @@
-import {  Allowed } from '../context/Context';
+import {  Allowed } from './Context';
 import { Column } from './column';
 import { DropDownSource } from './drop-down-source';
 
