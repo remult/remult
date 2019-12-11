@@ -118,13 +118,7 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   }
 
 }
-export interface WrapFetchInterface {
-  wrap: () => (() => void);
-}
-export const wrapFetch: WrapFetchInterface = {
-  wrap: () => () => { }
-};
-export function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
+ function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
   if (!init)
     init = {};
   if (!init.headers)
@@ -132,14 +126,13 @@ export function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((a
   var h = init.headers as Headers;
   addRequestHeader.forEach(x => x((n, v) => h.append(n, v)));
   init.credentials = 'include';
-  let x = wrapFetch.wrap();
+  
   return fetch(url, init).then(response => {
-    x();
+    
     return onSuccess(response);
 
   }, error => {
     console.log(error);
-    x();
     throw Promise.resolve(error);
   });
 }

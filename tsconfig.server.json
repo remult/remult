@@ -4,7 +4,8 @@
     "outDir": "./dist-server/",
     "module": "commonjs",
     "target": "es5",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "declaration": true,
   },
   "files": [
     "./src/app/server/server.ts"
