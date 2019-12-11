@@ -4,7 +4,7 @@
 
 export * from './src/remult-core.module';//V
 export * from './src/core/data-interfaces';//V
-export * from './src/core/SQLCommand';
+export * from './src/core/SqlCommand';//noam todo
 export * from './src/core/column-interfaces'; 
 export * from './src/core/data-providers/restDataProvider';
 export * from './src/core/utils';

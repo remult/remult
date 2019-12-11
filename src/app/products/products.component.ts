@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase } from '@remult/core';
 import { Products } from './products';
 
 @Component({
@@ -18,8 +18,8 @@ export class ProductsComponent implements OnInit {
     await ProductsComponent.testIt();
   }
   @ServerFunction({ allowed: true })
-  static testIt() {
-    console.log('testing');
+  static async testIt(sql?:SqlDatabase) {
+    console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
   }
 
 }

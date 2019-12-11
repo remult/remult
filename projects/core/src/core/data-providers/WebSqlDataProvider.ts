@@ -1,5 +1,5 @@
 import { DataProvider, EntityDataProvider, __RowsOfDataForTesting } from "../data-interfaces";
-import { SQLCommand , SQLConnectionProvider, SQLQueryResult } from "../SQLCommand";
+import { SqlCommand , SqlDatabase, SqlResult } from "../SqlCommand";
 
 import { ActualSQLServerDataProvider } from "./SQLDatabaseShared";
 import { Column } from "../column";
@@ -9,7 +9,7 @@ import { DateColumn } from "../columns/date-column";
 import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { ClosedListColumn } from "../columns/closed-list-column";
 
-export class WebSqlDataProvider implements DataProvider, __RowsOfDataForTesting {
+export class WebSqlDataProvider  implements SqlDatabase, DataProvider, __RowsOfDataForTesting {
     rows: {
         [tableName: string]: any;
     };
@@ -20,6 +20,9 @@ export class WebSqlDataProvider implements DataProvider, __RowsOfDataForTesting 
     constructor(private databaseName: string) {
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
+    }
+    createCommand(): SqlCommand {
+        return new WebSqlBridgeToSQLCommand(this.db);
     }
     getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
         if (this.createdEntities.indexOf(entity.__getDbName()) < 0) {
@@ -37,7 +40,7 @@ export class WebSqlDataProvider implements DataProvider, __RowsOfDataForTesting 
             });
             this.db.transaction(t => t.executeSql('create table if not exists ' + entity.__getDbName() + ' (' + result + '\r\n)'));
         }
-        return new ActualSQLServerDataProvider(entity, new WebSqlBridgeToSQLConnection(this.db));
+        return new ActualSQLServerDataProvider(entity, this);
     }
     async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
         throw new Error("Method not implemented.");
@@ -67,25 +70,18 @@ export class WebSqlDataProvider implements DataProvider, __RowsOfDataForTesting 
     toString() { return "WebSqlDataProvider" }
 }
 
-class WebSqlBridgeToSQLConnection implements SQLConnectionProvider {
-    //@ts-ignore
-    constructor(private source: Database) {
-    }
-    createCommand(): SQLCommand {
-        return new WebSqlBridgeToSQLCommand(this.source);
-    }
-}
 
-class WebSqlBridgeToSQLCommand implements SQLCommand {
+
+class WebSqlBridgeToSQLCommand implements SqlCommand {
     //@ts-ignore
     constructor(private source: Database) {
     }
     values: any[] = [];
-    addParameterToCommandAndReturnParameterName(col: Column<any>, val: any): string {
+    addParameterAndReturnSqlToken(col: Column<any>, val: any): string {
         this.values.push(val);
         return '~' + this.values.length + '~';
     }
-    query(sql: string): Promise<SQLQueryResult> {
+    execute(sql: string): Promise<SqlResult> {
         return new Promise((resolve, reject) =>
             this.source.transaction(t => {
                 let s = sql;
@@ -105,7 +101,7 @@ class WebSqlBridgeToSQLCommand implements SQLCommand {
     }
 }
 
-class WebSqlBridgeToSQLQueryResult implements SQLQueryResult {
+class WebSqlBridgeToSQLQueryResult implements SqlResult {
     getcolumnNameAtIndex(index: number): string {
         return undefined;
     }

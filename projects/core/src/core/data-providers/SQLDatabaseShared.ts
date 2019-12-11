@@ -1,6 +1,6 @@
 
 import { EntityDataProvider,  EntityDataProviderFindOptions } from "../data-interfaces";
-import { SQLCommand, SQLConnectionProvider, SQLQueryResult } from "../SQLCommand";
+import { SqlCommand, SqlDatabase, SqlResult } from "../SqlCommand";
 import { Column } from "../column";
 import { Entity } from "../entity";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
@@ -8,29 +8,29 @@ import { CompoundIdColumn } from "../columns/compound-id-column";
 import { FilterBase } from '../filter/filter-interfaces';
 
 
-class LogSQLConnectionProvider implements SQLConnectionProvider {
-  constructor(private origin: SQLConnectionProvider, private allQueries: boolean) { }
-  createCommand(): SQLCommand {
+class LogSQLConnectionProvider implements SqlDatabase {
+  constructor(private origin: SqlDatabase, private allQueries: boolean) { }
+  createCommand(): SqlCommand {
     return new LogSQLCommand(this.origin.createCommand(), this.allQueries);
   }
 }
-class LogSQLCommand implements SQLCommand {
-  constructor(private origin: SQLCommand, private allQueries: boolean) {
+class LogSQLCommand implements SqlCommand {
+  constructor(private origin: SqlCommand, private allQueries: boolean) {
 
   }
   args: any = {};
-  addParameterToCommandAndReturnParameterName(col: Column<any>, val: any): string {
-    let r = this.origin.addParameterToCommandAndReturnParameterName(col, val);
+  addParameterAndReturnSqlToken(col: Column<any>, val: any): string {
+    let r = this.origin.addParameterAndReturnSqlToken(col, val);
     this.args[r] = val;
     return r;
   }
-  async query(sql: string): Promise<SQLQueryResult> {
+  async execute(sql: string): Promise<SqlResult> {
     if (this.allQueries) {
       console.log('Query:', sql);
       console.log("Arguments:", this.args);
     }
     try {
-      return await this.origin.query(sql);
+      return await this.origin.execute(sql);
     }
     catch (err) {
       console.log('Query:', sql);
@@ -43,11 +43,11 @@ class LogSQLCommand implements SQLCommand {
 // @dynamic
 export class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity:Entity<any>,  private sql: SQLConnectionProvider) {
+  constructor(private entity:Entity<any>,  private sql: SqlDatabase) {
 
     this.sql = ActualSQLServerDataProvider.decorateSqlConnectionProvider(sql);
   }
-  static decorateSqlConnectionProvider(sql: SQLConnectionProvider):SQLConnectionProvider {
+  static decorateSqlConnectionProvider(sql: SqlDatabase):SqlDatabase {
     return new LogSQLConnectionProvider(sql, ActualSQLServerDataProvider.LogToConsole);
   }
   createDirectSQLCommand() {
@@ -63,7 +63,7 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
       select += wc.where;
     }
 
-    return r.query(select).then(r => {
+    return r.execute(select).then(r => {
       return r.rows[0].count;
     });
 
@@ -117,7 +117,7 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
       }
     }
 
-    return r.query(select).then(r => {
+    return r.execute(select).then(r => {
       return r.rows.map(y => {
         let result: any = {};
         for (let x in y) {
@@ -152,13 +152,13 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             statement += ', ';
 
-          statement += x.__getDbName() + ' = ' + r.addParameterToCommandAndReturnParameterName(x, v);
+          statement += x.__getDbName() + ' = ' + r.addParameterAndReturnSqlToken(x, v);
         }
       }
     });
     statement += f.where;
 
-    return r.query(statement).then(() => {
+    return r.execute(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => y[0]);
     });
 
@@ -175,7 +175,7 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
 
     statement += f.where;
 
-    return r.query(statement).then(() => {
+    return r.execute(statement).then(() => {
       return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
     });
 
@@ -209,14 +209,14 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
           }
 
           cols += x.__getDbName();
-          vals += r.addParameterToCommandAndReturnParameterName(x, v);
+          vals += r.addParameterAndReturnSqlToken(x, v);
         }
       }
     });
 
     let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
 
-    return r.query(statement).then(() => {
+    return r.execute(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => {
 
         return y[0];

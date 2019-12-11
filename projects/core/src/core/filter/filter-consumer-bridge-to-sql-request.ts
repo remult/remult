@@ -1,12 +1,12 @@
 
-import { SQLCommand } from "../SQLCommand";
+import { SqlCommand } from "../SqlCommand";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
 import { FilterConsumer } from './filter-interfaces';
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     where = "";
-    constructor(private r: SQLCommand) { }
+    constructor(private r: SqlCommand) { }
     isEqualTo(col: Column<any>, val: any): void {
       this.add(col, val, "=");
     }
@@ -36,7 +36,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   
         this.where += ' where ';
       } else this.where += ' and ';
-      this.where += col.__getDbName() + ' ' + operator + ' ' + this.r.addParameterToCommandAndReturnParameterName(col, val);
+      this.where += col.__getDbName() + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col, val);
   
     }
   

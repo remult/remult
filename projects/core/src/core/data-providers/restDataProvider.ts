@@ -2,7 +2,6 @@
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { DataApiResponse, DataApiRequest } from '../../server/DataApi';
-import { HttpClient } from '@angular/common/http';
 import { Context } from '../../context/Context';
 import { Entity } from '../entity';
 import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
@@ -14,13 +13,13 @@ export class RestDataProvider implements DataProvider {
 
   }
   public getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
-    return new ActualRestDataProvider(this.url + '/' + entity.__getName(), this.http);
+    return new RestEntityDataProvider(this.url + '/' + entity.__getName(), this.http);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }
-class ActualRestDataProvider implements EntityDataProvider {
+class RestEntityDataProvider implements EntityDataProvider {
 
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
@@ -90,27 +89,6 @@ export interface RestDataProviderHttpProvider {
   get(url: string): Promise<any>;
 
 }
-export class AngularHttpProvider implements RestDataProviderHttpProvider {
-  constructor(private http: HttpClient) {
-
-  }
-  post(url: string, data: any): Promise<any> {
-    return this.http.post(url, data).toPromise();
-  }
-  delete(url: string): Promise<void> {
-    return this.http.delete(url).toPromise().then(x => { });
-  }
-  put(url: string, data: any): Promise<any> {
-    return this.http.put(url, data).toPromise();
-  }
-  get(url: string): Promise<any> {
-    return this.http.get(url).toPromise();
-  }
-
-
-}
-
-
 export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderHttpProvider {
   constructor(private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)
@@ -187,36 +165,3 @@ function onError(error: any) {
 }
 
 
- export abstract class Action<inParam, outParam>{
-  constructor(private serverUrl: string, private actionUrl?: string, addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
-    if (!addRequestHeader)
-      addRequestHeader = () => { };
-    if (!actionUrl) {
-      this.actionUrl = this.constructor.name;
-      if (this.actionUrl.endsWith('Action'))
-        this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
-    }
-  }
-  static provider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
-  run(pIn: inParam): Promise<outParam> {
-
-    return Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);
-
-
-  }
-  protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;
-
-  __register(reg: (url: string, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
-    reg(this.actionUrl, async (d, req, res) => {
-
-      try {
-        var r = await this.execute(d, req);
-        res.success(r);
-      }
-      catch (err) {
-        res.error(err);
-      }
-
-    });
-  }
-}

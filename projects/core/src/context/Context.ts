@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DataProvider,  FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider } from "../core/data-interfaces";
-import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/data-providers/restDataProvider";
+import { RestDataProvider,  wrapFetch } from "../core/data-providers/restDataProvider";
+import { AngularHttpProvider } from "../angular-components/AngularHttpProvider";
 import {    extractSortFromSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/data-providers/inMemoryDatabase";
 import { DataApiSettings, DataApiRequest } from "../server/DataApi";
@@ -15,6 +16,7 @@ import { IDataSettings, GridSettings } from "../core/gridSettings";
 import { ColumnHashSet } from "../core/column-hash-set";
 import { DropDownSourceArgs, DropDownSource } from "../core/drop-down-source";
 import { FilterBase } from '../core/filter/filter-interfaces';
+import { Action } from './server-action';
 
 
 

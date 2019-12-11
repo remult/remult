@@ -1,13 +1,14 @@
 import 'reflect-metadata';
 
 
-import { Action } from '../core/data-providers/restDataProvider';
+
 import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './Context';
 
 import { BusyService } from '../angular-components/wait/busy-service';
 import { ActualSQLServerDataProvider } from '../core/data-providers/SQLDatabaseShared';
-import { DirectSQL, SQLConnectionProvider, SupportsDirectSql } from '../core/SQLCommand';
-import { DataApiRequest } from '../server/DataApi';
+import { SqlDatabase } from '../core/SqlCommand';
+import { DataApiRequest, DataApiResponse } from '../server/DataApi';
+import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from '../core/data-providers/restDataProvider';
 
 
 interface inArgs {
@@ -16,18 +17,40 @@ interface inArgs {
 interface result {
     data: any;
 }
-export class ActualDirectSQL extends DirectSQL {
-
-    execute(sql: string) {
-        let c = this.dp.createCommand();
-        return c.query(sql);
+export abstract class Action<inParam, outParam>{
+    constructor(private serverUrl: string, private actionUrl?: string, addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
+      if (!addRequestHeader)
+        addRequestHeader = () => { };
+      if (!actionUrl) {
+        this.actionUrl = this.constructor.name;
+        if (this.actionUrl.endsWith('Action'))
+          this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
+      }
     }
-    constructor(private dp: SQLConnectionProvider) {
-        super();
-        this.dp = ActualSQLServerDataProvider.decorateSqlConnectionProvider(dp);
-        let y = 1 + 1;
+    static provider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
+    run(pIn: inParam): Promise<outParam> {
+  
+      return Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);
+  
+  
     }
-}
+    protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;
+  
+    __register(reg: (url: string, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
+      reg(this.actionUrl, async (d, req, res) => {
+  
+        try {
+          var r = await this.execute(d, req);
+          res.success(r);
+        }
+        catch (err) {
+          res.error(err);
+        }
+  
+      });
+    }
+  }
+  
 
 export class myServerAction extends Action<inArgs, result>
 {
@@ -52,8 +75,8 @@ export class myServerAction extends Action<inArgs, result>
                     if (this.types[i] == Context || this.types[i] == ServerContext) {
 
                         info.args[i] = context;
-                    } else if (this.types[i] == DirectSQL && ds) {
-                        info.args[i] = (<SupportsDirectSql><any>ds).getDirectSql();
+                    } else if (this.types[i] == SqlDatabase && ds) {
+                        info.args[i] = ds;
                     }
                 }
             try {
@@ -81,7 +104,7 @@ export const actionInfo = {
 
 export function ServerFunction(options: ServerFunctionOptions) {
     return (target: any, key: string, descriptor: any) => {
-        
+
         var originalMethod = descriptor.value;
         var types = Reflect.getMetadata("design:paramtypes", target, key);
 
