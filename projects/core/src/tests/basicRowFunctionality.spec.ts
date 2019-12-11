@@ -1,7 +1,7 @@
 
 
 import { createData } from './RowProvider.spec';
-import { DataApi, DataApiError, DataApiResponse } from '../server/DataApi';
+import { DataApi, DataApiError, DataApiResponse } from '../DataApi';
 import { InMemoryDataProvider, ActualInMemoryDataProvider } from '../data-providers/inMemoryDatabase';
 import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 

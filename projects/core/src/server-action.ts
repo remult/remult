@@ -4,10 +4,10 @@ import 'reflect-metadata';
 
 import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './Context';
 
-import { BusyService } from './angular-components/wait/busy-service';
+import { BusyService } from './angular/wait/busy-service';
 
 import { SqlDatabase } from './SqlCommand';
-import { DataApiRequest, DataApiResponse } from './server/DataApi';
+import { DataApiRequest, DataApiResponse } from './DataApi';
 import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/restDataProvider';
 
 

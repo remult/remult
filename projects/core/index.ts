@@ -2,25 +2,25 @@
  * Public API Surface of @remult/core
  */
 
-export * from './src/remult-core.module';//V
+export * from './src/angular/remult-core.module';//V
 export * from './src/data-interfaces';//V
 export * from './src/SqlCommand';//noam todo
 export * from './src/column-interfaces'; 
-export * from './src/data-providers/restDataProvider';
+export * from './src/data-providers/restDataProvider'; //V
 export * from './src/utils';
 export * from './src/common';
 export * from './src/data-providers/inMemoryDatabase';
 export * from './src/data-providers/WebSqlDataProvider';
 export * from './src/data-providers/SQLDatabaseShared';
 export * from './src/data-providers/JsonStorageDataProvider';
-export * from './src/server/DataApi';
+export * from './src/DataApi';
 export * from './src/data-providers/localStorageDataProvider';
 export * from './src/Context';
 export * from './src/jwt-session-manager';
 export * from './src/navigate-to-component-route-service';
 export * from './src/server-action';
 export * from './src/id-entity';
-export { BusyService } from './src/angular-components/wait/busy-service';
+export { BusyService } from './src/angular/wait/busy-service';
 export * from './src/entity';
 export * from './src/column';
 export * from './src/dataList';

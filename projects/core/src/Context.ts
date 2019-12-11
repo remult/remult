@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
 import { DataProvider,  FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider } from "./data-interfaces";
 import { RestDataProvider } from "./data-providers/restDataProvider";
-import { AngularHttpProvider } from "./angular-components/AngularHttpProvider";
+import { AngularHttpProvider } from "./angular/AngularHttpProvider";
 import {    extractSortFromSettings } from "./utils";
 import { InMemoryDataProvider } from "./data-providers/inMemoryDatabase";
-import {  DataApiRequest } from "./server/DataApi";
+import {  DataApiRequest } from "./DataApi";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 

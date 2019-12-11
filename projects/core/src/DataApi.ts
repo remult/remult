@@ -1,15 +1,15 @@
 import { DataApiError } from './DataApi';
 
 
-import { FindOptions, EntityProvider } from '../data-interfaces';
-import { Column } from '../column';
-import { Entity } from '../entity';
-import { Sort } from '../sort';
-import { ColumnHashSet } from '../column-hash-set';
-import { AndFilter } from '../filter/and-filter';
-import { StringColumn } from '../columns/string-column';
-import { UserInfo } from '../Context';
-import { FilterBase } from '../filter/filter-interfaces';
+import { FindOptions, EntityProvider } from './data-interfaces';
+import { Column } from './column';
+import { Entity } from './entity';
+import { Sort } from './sort';
+import { ColumnHashSet } from './column-hash-set';
+import { AndFilter } from './filter/and-filter';
+import { StringColumn } from './columns/string-column';
+import { UserInfo } from './Context';
+import { FilterBase } from './filter/filter-interfaces';
 
 export class DataApi<T extends Entity<any>> {
   getRoute() {

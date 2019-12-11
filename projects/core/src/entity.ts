@@ -1,5 +1,5 @@
 import { Context, Allowed } from "./Context";
-import { DataApiSettings } from "./server/DataApi";
+import { DataApiSettings } from "./DataApi";
 import { functionOrString, makeTitle } from "./common";
 import { Column } from "./column";
 
