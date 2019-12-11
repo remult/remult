@@ -1,4 +1,4 @@
-import { ColumnOptions, ColumnInAreaDisplaySettings } from '../column-interfaces';
+import { ColumnOptions, DataControlSettings } from '../column-interfaces';
 import {  extractSortFromSettings } from '../utils';
 
 
@@ -277,7 +277,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { dropDown: { source:  c.dropDownSource() } } as ColumnInAreaDisplaySettings<Categories>
+    let cs = { dropDown: { source:  c.dropDownSource() } } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
@@ -290,7 +290,7 @@ describe("test row provider", () => {
     let c = new Categories();
 
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } } as ColumnInAreaDisplaySettings<Categories>
+    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     expect(cs.dropDown.items.length).toBe(2);
     expect(cs.dropDown.items[0].id).toBe(1);
@@ -306,7 +306,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, dropDown: { source: c.dropDownSource() } } as ColumnInAreaDisplaySettings<Categories>
+    let cs = { column: c1.id, dropDown: { source: c.dropDownSource() } } as DataControlSettings<Categories>
     await cc.add(cs);
 
     expect(cs.dropDown.items.length).toBe(2);

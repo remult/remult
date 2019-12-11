@@ -17,10 +17,10 @@ export class Categories extends Entity<number> {
   categoryName = new StringColumn();
   description = new StringColumn();
   categoryNameLength = new NumberColumn({
-    virtualData: () => this.categoryName.value.length
+    serverExpression: () => this.categoryName.value.length
   });
   categoryNameLengthAsync = new NumberColumn({
-    virtualData: () => Promise.resolve(this.categoryName.value.length)
+    serverExpression: () => Promise.resolve(this.categoryName.value.length)
   });
   status = new StatusColumn();
   constructor(settings?: EntityOptions | string) {

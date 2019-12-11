@@ -4,52 +4,48 @@ import { DropDownSource } from './drop-down-source';
 
 
 
-export interface ColumnStorage<dataType> {
-    toDb(val: dataType): any;
-    fromDb(val: any): dataType;
-}
-export interface ColumnValueProvider {
-    getValue(key: string): any;
-    getOriginalValue(key: string): any;
-    setValue(key: string, value: any): void;
+export interface ColumnStorage<valueType> {
+    toDb(val: valueType): any;
+    fromDb(val: any): valueType;
 }
 
 
 
-export interface DataColumnSettings<type> {
+export interface ColumnSettings<valueType> {
     jsonName?: string;
     includeInApi?: Allowed;
     caption?: string;
     allowApiUpdate?: Allowed;
     inputType?: string;
+    value?: valueType;
+    storage?: ColumnStorage<valueType>;
+    validate?: () => void | Promise<void>;
+    valueChange?: () => void;
+    
     dbName?: string | (() => string);
-    value?: type;
-    storage?: ColumnStorage<type>;
-    onValidate?: () => void | Promise<void>;
-    getValue?: (val: type) => any;
-    valueChange?: (val: type) => void;
-    virtualData?: () => type | Promise<type>;
+    serverExpression?: () => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
-    display?: () => ColumnInEntityDisplaySettings;
+
+    dataControlSettings?: () => ColumnInEntityDisplaySettings;
 }
-export declare type ColumnOptions<type> = DataColumnSettings<type> | string;
+export declare type ColumnOptions<valueType> = ColumnSettings<valueType> | string;
 
 
 
 
-export interface ColumnInAreaDisplaySettings<rowType> {
+export interface DataControlSettings<entityType> {
 
     caption?: string;
     readonly?: boolean;
     inputType?: string;
     designMode?: boolean;
-    getValue?: (row: rowType) => any;
+    getValue?: (row: entityType) => any;
     hideDataOnInput?: boolean;
-    cssClass?: (string | ((row: rowType) => string));
-    defaultValue?: (row: rowType) => any;
-    onUserChangedValue?: (row: rowType) => void;
-    click?: (row: rowType) => void;
-    allowClick?: (row: rowType) => boolean;
+    cssClass?: (string | ((row: entityType) => string));
+    defaultValue?: (row: entityType) => any;
+    onUserChangedValue?: (row: entityType) => void;
+    click?: (row: entityType) => void;
+    allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
     dropDown?: DropDownOptions;
     column?: Column<any>;
@@ -77,7 +73,7 @@ export interface DropDownItem {
     id?: any;
     caption?: any;
 }
-export interface FilteredColumnSetting<rowType> extends ColumnInAreaDisplaySettings<rowType> {
+export interface FilteredColumnSetting<rowType> extends DataControlSettings<rowType> {
     _showFilter?: boolean;
 }
 

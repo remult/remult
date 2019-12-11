@@ -1,5 +1,5 @@
 import { Entity } from "./entity";
-import { ColumnInAreaDisplaySettings } from "./column-interfaces";
+import { DataControlSettings } from "./column-interfaces";
 import { ColumnCollection } from "./column-collection";
 import { isArray } from "util";
 
@@ -11,7 +11,7 @@ export interface IDataAreaSettings<rowType> {
   
   export class DataAreaSettings<rowType extends Entity<any>>
   {
-    lines: ColumnInAreaDisplaySettings<any>[][] = [];
+    lines: DataControlSettings<any>[][] = [];
     constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
       if (columns == undefined) {
         columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true);
@@ -32,7 +32,7 @@ export interface IDataAreaSettings<rowType> {
             }
             this.lines.push(line);
           } else {
-            columns.add(<ColumnInAreaDisplaySettings<rowType>>colSettings);
+            columns.add(<DataControlSettings<rowType>>colSettings);
             this.lines.push([columns.items[columns.items.length - 1]]);
   
           }
@@ -45,10 +45,10 @@ export interface IDataAreaSettings<rowType> {
   }
   
   
-  export type DataArealColumnSetting<rowType> = ColumnInAreaDisplaySettings<rowType> | ColumnInAreaDisplaySettings<rowType>[];
+  export type DataArealColumnSetting<rowType> = DataControlSettings<rowType> | DataControlSettings<rowType>[];
   
 
 export interface dataAreaSettings {
     columns: ColumnCollection<any>;
-    lines: ColumnInAreaDisplaySettings<any>[][];
+    lines: DataControlSettings<any>[][];
   }

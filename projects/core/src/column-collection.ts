@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
-import { ColumnInAreaDisplaySettings, DropDownItem, FilteredColumnSetting } from "./column-interfaces";
+import { DataControlSettings, DropDownItem, FilteredColumnSetting } from "./column-interfaces";
 import { Column } from "./column";
 import { Context } from "./Context";
 import { isFunction } from "util";
@@ -18,7 +18,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       return this.showArea();
   
     }
-    __getColumn(map: ColumnInAreaDisplaySettings<any>, record: Entity<any>) {
+    __getColumn(map: DataControlSettings<any>, record: Entity<any>) {
       let result: Column<any>;
       if (record)
         result = record.__getColumn(map.column);
@@ -26,7 +26,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
         result = map.column;
       return result;
     }
-    __dataControlStyle(map: ColumnInAreaDisplaySettings<any>): string {
+    __dataControlStyle(map: DataControlSettings<any>): string {
   
       if (map.width && map.width.trim().length > 0) {
         if ((+map.width).toString() == map.width)
@@ -39,15 +39,15 @@ export class ColumnCollection<rowType extends Entity<any>> {
     private settingsByKey: any = {};
   
     allowDesignMode: boolean;
-    async add(...columns: ColumnInAreaDisplaySettings<rowType>[]): Promise<void>;
+    async add(...columns: DataControlSettings<rowType>[]): Promise<void>;
     async add(...columns: string[]): Promise<void>;
     async add(...columns: any[]) {
       var promises: Promise<void>[] = [];
       for (let c of columns) {
         if (!c)
           continue;
-        let s: ColumnInAreaDisplaySettings<rowType>;
-        let x = c as ColumnInAreaDisplaySettings<rowType>;
+        let s: DataControlSettings<rowType>;
+        let x = c as DataControlSettings<rowType>;
         if (!x.column && c instanceof Column) {
           x = {
             column: c,
@@ -72,7 +72,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       await Promise.all(promises);
       return Promise.resolve();
     }
-    async buildDropDown(s: ColumnInAreaDisplaySettings<any>) {
+    async buildDropDown(s: DataControlSettings<any>) {
       if (s.dropDown) {
         let orig = s.dropDown.items;
         let result: DropDownItem[] = [];
@@ -107,7 +107,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     onColListChange(action: (() => void)) {
       this._colListChangeListeners.push(action);
     }
-    moveCol(col: ColumnInAreaDisplaySettings<any>, move: number) {
+    moveCol(col: DataControlSettings<any>, move: number) {
       let currentIndex = this.items.indexOf(col);
       let newIndex = currentIndex + move;
       if (newIndex < 0 || newIndex >= this.items.length)
@@ -133,30 +133,30 @@ export class ColumnCollection<rowType extends Entity<any>> {
     showFilterDialog(col: FilteredColumnSetting<any>) {
       col._showFilter = !col._showFilter;
     }
-    deleteCol(col: ColumnInAreaDisplaySettings<any>) {
+    deleteCol(col: DataControlSettings<any>) {
       this.items.splice(this.items.indexOf(col), 1);
       this.colListChanged();
     }
-    addCol(col: ColumnInAreaDisplaySettings<any>) {
+    addCol(col: DataControlSettings<any>) {
       this.items.splice(this.items.indexOf(col) + 1, 0, { designMode: true });
       this.colListChanged();
     }
-    designColumn(col: ColumnInAreaDisplaySettings<any>) {
+    designColumn(col: DataControlSettings<any>) {
       col.designMode = !col.designMode;
     }
   
-    _getEditable(col: ColumnInAreaDisplaySettings<any>) {
+    _getEditable(col: DataControlSettings<any>) {
       if (!this.allowUpdate())
         return false;
       if (!col.column)
         return false
       return !col.readonly;
     }
-    _click(col: ColumnInAreaDisplaySettings<any>, row: any) {
+    _click(col: DataControlSettings<any>, row: any) {
       col.click(row);
     }
   
-    _getColDisplayValue(col: ColumnInAreaDisplaySettings<any>, row: rowType) {
+    _getColDisplayValue(col: DataControlSettings<any>, row: rowType) {
       let r;
       if (col.getValue) {
   
@@ -180,12 +180,12 @@ export class ColumnCollection<rowType extends Entity<any>> {
   
       return r;
     }
-    _getColDataType(col: ColumnInAreaDisplaySettings<any>) {
+    _getColDataType(col: DataControlSettings<any>) {
       if (col.inputType)
         return col.inputType;
       return "text";
     }
-    _getColumnClass(col: ColumnInAreaDisplaySettings<any>, row: any) {
+    _getColumnClass(col: DataControlSettings<any>, row: any) {
   
       if (col.cssClass)
         if (isFunction(col.cssClass)) {
@@ -197,7 +197,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   
     }
   
-    _getError(col: ColumnInAreaDisplaySettings<any>, r: Entity<any>) {
+    _getError(col: DataControlSettings<any>, r: Entity<any>) {
       if (!col.column)
         return undefined;
       return this.__getColumn(col, r).error;
@@ -231,7 +231,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       result = `columnSettings: ${memberName} => [\n` + result + "\n]";
       return result;
     }
-    __columnTypeScriptDescription(c: ColumnInAreaDisplaySettings<any>, memberName: string) {
+    __columnTypeScriptDescription(c: DataControlSettings<any>, memberName: string) {
       let properties = "";
       function addToProperties(name: string, value: any) {
         if (properties.length > 0)
@@ -268,22 +268,22 @@ export class ColumnCollection<rowType extends Entity<any>> {
         whatToAdd = columnMember;
       return whatToAdd;
     }
-    __changeWidth(col: ColumnInAreaDisplaySettings<any>, what: number) {
+    __changeWidth(col: DataControlSettings<any>, what: number) {
       let width = col.width;
       if (!width)
         width = '50';
       width = ((+width) + what).toString();
       col.width = width;
     }
-    _colValueChanged(col: ColumnInAreaDisplaySettings<any>, r: any) {
+    _colValueChanged(col: DataControlSettings<any>, r: any) {
   
       if (col.onUserChangedValue)
         col.onUserChangedValue(r);
   
     }
-    items: ColumnInAreaDisplaySettings<any>[] = [];
-    private gridColumns: ColumnInAreaDisplaySettings<any>[];
-    private nonGridColumns: ColumnInAreaDisplaySettings<any>[];
+    items: DataControlSettings<any>[] = [];
+    private gridColumns: DataControlSettings<any>[];
+    private nonGridColumns: DataControlSettings<any>[];
     numOfColumnsInGrid = 5;
   
     private _lastColumnCount: number;

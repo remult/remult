@@ -5,7 +5,7 @@ import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { Column } from '../../column';
 import { Entity } from '../../entity';
-import { ColumnInAreaDisplaySettings } from '../../column-interfaces';
+import { DataControlSettings } from '../../column-interfaces';
 import { ColumnCollection } from '../../column-collection';
 import { StringColumn } from '../../columns/string-column';
 @Component({
@@ -14,7 +14,7 @@ import { StringColumn } from '../../columns/string-column';
   styleUrls: ['./data-control2.component.scss']
 })
 export class DataControl2Component {
-  @Input() map: ColumnInAreaDisplaySettings<any>;
+  @Input() map: DataControlSettings<any>;
   @Input() set column(value: Column<any>) {
     this.map = {
       column: value

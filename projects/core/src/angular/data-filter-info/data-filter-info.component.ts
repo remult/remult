@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 import { Column } from '../../column';
 import { GridSettings } from '../../gridSettings';
-import { ColumnInAreaDisplaySettings } from '../../column-interfaces';
+import { DataControlSettings } from '../../column-interfaces';
 @Component({
     selector: 'Data-Filter',
     templateUrl:'./data-filter-info.component.html'
@@ -10,7 +10,7 @@ import { ColumnInAreaDisplaySettings } from '../../column-interfaces';
 export class DataFilterInfoComponent {
 
     @Input() settings: GridSettings<any>;
-    filterColumnToAdd: ColumnInAreaDisplaySettings<any>;
+    filterColumnToAdd: DataControlSettings<any>;
     getCurrentFilterValue(col: Column<any>) {
         let m = this.settings.origList.find(x => x.column == col);
         return this.settings.columns._getColDisplayValue(m, this.settings.filterHelper.filterRow);

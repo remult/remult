@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 
 
 
-import { ColumnOptions, DataColumnSettings } from './column-interfaces';
+import { ColumnOptions, ColumnSettings } from './column-interfaces';
 import { Column } from './column';
 import { Entity, EntityOptions } from './entity';
 import { StringColumn } from './columns/string-column';
@@ -37,8 +37,8 @@ export class IdColumn extends StringColumn {
   }
 }
 
-export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, addValues: (x: DataColumnSettings<type>) => void) {
-  let result: DataColumnSettings<type> = {};
+export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, addValues: (x: ColumnSettings<type>) => void) {
+  let result: ColumnSettings<type> = {};
   if (typeof (original) == "string")
     result.caption = original;
   else if (original)

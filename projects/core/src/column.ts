@@ -1,17 +1,18 @@
 import { Allowed, Context } from './Context';
-import { DataColumnSettings,ColumnOptions, ColumnInEntityDisplaySettings, ColumnValueProvider, ColumnInAreaDisplaySettings } from './column-interfaces';
+import { ColumnSettings,ColumnOptions, ColumnInEntityDisplaySettings,  DataControlSettings } from './column-interfaces';
 
 import { isBoolean } from 'util';
 
 import { functionOrString } from './common';
 import { DefaultStorage } from './columns/storage/default-storage';
 import { Filter } from './filter/filter';
+import { ColumnValueProvider } from './__EntityValueProvider';
 
 export class Column<dataType>  {
 
     async __calcVirtuals() {
-      if (this.__settings && this.__settings.virtualData) {
-        let x = this.__settings.virtualData();
+      if (this.__settings && this.__settings.serverExpression) {
+        let x = this.__settings.serverExpression();
         if (x instanceof Promise)
           x = await x;
         this.value = x;
@@ -20,7 +21,7 @@ export class Column<dataType>  {
     }
   
     __isVirtual() {
-      if (this.__settings && this.__settings.virtualData)
+      if (this.__settings && this.__settings.serverExpression)
         return true;
       return false;
   
@@ -45,10 +46,10 @@ export class Column<dataType>  {
     caption: string;
     includeInApi: Allowed = true;
     dbName: string | (() => string);
-    private __settings: DataColumnSettings<dataType>;
+    private __settings: ColumnSettings<dataType>;
     __getMemberName() { return this.jsonName; }
-    static consolidateOptions(options: ColumnOptions<any>, options1?: ColumnOptions<any>): DataColumnSettings<any> {
-      let result: DataColumnSettings<any>;
+    static consolidateOptions(options: ColumnOptions<any>, options1?: ColumnOptions<any>): ColumnSettings<any> {
+      let result: ColumnSettings<any>;
       if (typeof (options) === "string") {
         result = { caption: options };
       }
@@ -86,9 +87,9 @@ export class Column<dataType>  {
       if (this.__settings.value != undefined)
         this.value = this.__settings.value;
       if (this.__settings.valueChange)
-        this.onValueChange = () => this.__settings.valueChange(this.value);
-      if (this.__settings.onValidate)
-        this.onValidate = () => this.__settings.onValidate();
+        this.onValueChange = () => this.__settings.valueChange();
+      if (this.__settings.validate)
+        this.onValidate = () => this.__settings.validate();
   
   
   
@@ -98,7 +99,7 @@ export class Column<dataType>  {
   
     }
     //reconsider approach - this prevents the user from overriding in a specific component
-    __decorateDataSettings(x: ColumnInAreaDisplaySettings<any>, context?: Context) {
+    __decorateDataSettings(x: DataControlSettings<any>, context?: Context) {
       if (!x.caption && this.caption)
         x.caption = this.caption;
       if (x.readonly == undefined) {
@@ -112,17 +113,8 @@ export class Column<dataType>  {
   
       if (x.inputType == undefined)
         x.inputType = this.inputType;
-      if (x.getValue == undefined) {
-        if (this.__settings && this.__settings.getValue)
-          x.getValue = e => {
-            let c: Column<dataType> = this;
-            if (e)
-              c = e.__getColumn(c) as Column<dataType>;
-            return c.__settings.getValue(c.value);
-          };
-      }
-      if (this.__settings && this.__settings.display) {
-        this.__displayResult = this.__settings.display();
+      if (this.__settings && this.__settings.dataControlSettings) {
+        this.__displayResult = this.__settings.dataControlSettings();
         if (!x.dropDown)
           x.dropDown = this.__displayResult.dropDown;
         if (x.hideDataOnInput === undefined)
@@ -137,7 +129,7 @@ export class Column<dataType>  {
             if (e)
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
-              this.__displayResult = this.__settings.display();
+              this.__displayResult = this.__settings.dataControlSettings();
             return c.__displayResult.getValue();
           };
         }
@@ -147,7 +139,7 @@ export class Column<dataType>  {
             if (e)
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
-              this.__displayResult = this.__settings.display();
+              this.__displayResult = this.__settings.dataControlSettings();
             c.__displayResult.click();
           };
         }
@@ -157,7 +149,7 @@ export class Column<dataType>  {
             if (e)
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
-              this.__displayResult = this.__settings.display();
+              this.__displayResult = this.__settings.dataControlSettings();
             return c.__displayResult.allowClick();
           };
         }

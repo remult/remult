@@ -1,5 +1,5 @@
 import { Column } from "../column";
-import { DataColumnSettings, ColumnOptions } from "../column-interfaces";
+import { ColumnSettings, ColumnOptions } from "../column-interfaces";
 import { BoolStorage } from "./storage/bool-storage";
 
 export class NumberColumn extends Column<number>{
@@ -21,7 +21,7 @@ export class NumberColumn extends Column<number>{
   
     }
   }
-  export interface NumberColumnSettings extends DataColumnSettings<number> {
+  export interface NumberColumnSettings extends ColumnSettings<number> {
     decimalDigits?: number;
   }
   export declare type NumberColumnOptions = NumberColumnSettings | string;

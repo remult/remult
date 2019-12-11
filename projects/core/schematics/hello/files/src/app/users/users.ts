@@ -1,5 +1,5 @@
 
-import { ColumnInAreaDisplaySettings, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
+import { DataControlSettings, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
 import { changeDate } from '../shared/types';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
@@ -43,7 +43,7 @@ export class Users extends IdEntity  {
     public static emptyPassword = 'password';
     name = new StringColumn({
         caption: "name",
-        onValidate: () => {
+        validate: () => {
 
             if (!this.name.value || this.name.value.length < 2)
                 this.name.error = 'Name is too short';
@@ -54,7 +54,7 @@ export class Users extends IdEntity  {
         dbName: 'password',
         includeInApi: false
     });
-    password = new StringColumn({ caption: 'password', inputType: 'password', virtualData: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
+    password = new StringColumn({ caption: 'password', inputType: 'password', serverExpression: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
 
     createDate = new changeDate('Create Date');
 
@@ -78,7 +78,7 @@ export class UserId extends IdColumn {
     constructor(private context: Context, settingsOrCaption?: ColumnOptions<string>) {
         super(settingsOrCaption);
     }
-    getColumn(): ColumnInAreaDisplaySettings<Entity<any>> {
+    getColumn(): DataControlSettings<Entity<any>> {
         return {
             column: this,
             getValue: f => (f ? ((f).__getColumn(this)) : this).displayValue,

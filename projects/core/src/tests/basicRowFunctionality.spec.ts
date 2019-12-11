@@ -1312,7 +1312,7 @@ export class entityWithValidations extends Entity<number>{
 export class entityWithValidationsOnColumn extends Entity<number>{
   myId = new NumberColumn();
   name = new StringColumn({
-    onValidate: () => {
+    validate: () => {
       if (!this.name.value || this.name.value.length < 3)
         this.name.error = 'invalid on column';
     }
