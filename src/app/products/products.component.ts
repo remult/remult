@@ -10,15 +10,25 @@ import { Products } from './products';
 export class ProductsComponent implements OnInit {
 
   constructor(private context: Context) { }
-  products = this.context.for(Products).gridSettings({});
-
+  products = this.context.for(Products).gridSettings({
+    allowUpdate: true,
+    columnSettings:p=>[
+      p.name,
+      p.phone
+    ]
+  });
+  area = this.products.addArea({
+    columnSettings:p=>[
+      p.phone
+    ]
+  });
   ngOnInit() {
   }
-  async test(){
+  async test() {
     await ProductsComponent.testIt();
   }
   @ServerFunction({ allowed: true })
-  static async testIt(sql?:SqlDatabase) {
+  static async testIt(sql?: SqlDatabase) {
     console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
   }
 

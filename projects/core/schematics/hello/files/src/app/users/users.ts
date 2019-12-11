@@ -54,7 +54,7 @@ export class Users extends IdEntity  {
         dbName: 'password',
         includeInApi: false
     });
-    password = new StringColumn({ caption: 'password', inputType: 'password', serverExpression: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
+    password = new StringColumn({ caption: 'password', dataControlSettings: () => ({inputType: 'password'}), serverExpression: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
 
     createDate = new changeDate('Create Date');
 

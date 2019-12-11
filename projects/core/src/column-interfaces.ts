@@ -16,7 +16,6 @@ export interface ColumnSettings<valueType> {
     includeInApi?: Allowed;
     caption?: string;
     allowApiUpdate?: Allowed;
-    inputType?: string;
     value?: valueType;
     storage?: ColumnStorage<valueType>;
     validate?: () => void | Promise<void>;
@@ -37,10 +36,10 @@ export interface DataControlSettings<entityType> {
 
     caption?: string;
     readonly?: boolean;
-    inputType?: string;
+    inputType?: string; //used: password,date,phone,text,checkbox,number
     designMode?: boolean;
     getValue?: (row: entityType) => any;
-    hideDataOnInput?: boolean;
+    hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     cssClass?: (string | ((row: entityType) => string));
     defaultValue?: (row: entityType) => any;
     onUserChangedValue?: (row: entityType) => void;

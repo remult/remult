@@ -20,6 +20,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CategoriesComponent } from './categories/categories.component';
+import { TestComponent } from './test/test.component';
 
 
 
@@ -27,7 +28,8 @@ import { CategoriesComponent } from './categories/categories.component';
   declarations: [
     AppComponent,
     ProductsComponent,
-    CategoriesComponent
+    CategoriesComponent,
+    TestComponent
   ],
   providers:[
     DialogService

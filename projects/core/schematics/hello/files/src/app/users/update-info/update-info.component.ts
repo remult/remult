@@ -22,7 +22,7 @@ export class UpdateInfoComponent implements OnInit {
   }
   
 
-  confirmPassword = new StringColumn({ caption: 'Confirm Password', inputType: 'password', value: Users.emptyPassword });
+  confirmPassword = new StringColumn({ caption: 'Confirm Password', dataControlSettings: () => ({inputType: 'password'}), value: Users.emptyPassword });
   helpers = this.context.for(Users).gridSettings({
     numOfColumnsInGrid: 0,
     allowUpdate: true,
