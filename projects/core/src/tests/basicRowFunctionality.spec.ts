@@ -9,7 +9,7 @@ import { Categories,  Status } from './testModel/models';
 
 import { Context, Role, Allowed, EntityClass, ServerContext } from '../context/Context';
 import { WebSqlDataProvider } from '../core/data-providers/WebSqlDataProvider';
-import { DataProvider, RowsOfDataForTesting } from '../core/data-interfaces';
+import { DataProvider, __RowsOfDataForTesting } from '../core/data-interfaces';
 import { ColumnHashSet } from '../core/column-hash-set';
 import { Entity } from '../core/entity';
 import { NumberColumn, BoolColumn } from '../core/columns/number-column';
@@ -21,7 +21,7 @@ import { DataList } from '../core/dataList';
 import { UrlBuilder } from '../core/url-builder';
 import { FilterConsumnerBridgeToUrlBuilder } from '../core/filter/filter-consumer-bridge-to-url-builder';
 
-function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: RowsOfDataForTesting) => Promise<any>) {
+function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
   itAsyncForEach<any>(name, [new InMemoryDataProvider(), webSql],
     (dp) => new Promise((res, rej) => {
@@ -457,7 +457,7 @@ describe("data api", () => {
         let r = new ActualInMemoryDataProvider(x, [{ id: 1 }]);
         r.delete = () => { throw "ERROR"; };
         return r;
-      }
+      },transaction:undefined
     });
 
     var api = new DataApi(ctx.for(Categories), { allowDelete: true });
@@ -1157,7 +1157,7 @@ describe("test data list", () => {
         let r = new ActualInMemoryDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
         r.delete = id => { return Promise.resolve().then(() => { throw Promise.resolve("error"); }) };
         return r;
-      }
+      },transaction:undefined
     });
     let rl = new DataList(cont.for(Categories));
     await rl.get();

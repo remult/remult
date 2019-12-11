@@ -1,6 +1,6 @@
 
 import {
-    FindOptionsPerEntity
+    FindOptions
 } from './data-interfaces';
 
 import { Column } from './column';
@@ -14,7 +14,7 @@ import { Sort } from './sort';
 
 
 
-export function extractSortFromSettings<T extends Entity<any>>(entity: T, opt: FindOptionsPerEntity<T>): Sort {
+export function extractSortFromSettings<T extends Entity<any>>(entity: T, opt: FindOptions<T>): Sort {
   if (!opt)
     return undefined;
   if (!opt.orderBy)

@@ -3,6 +3,7 @@
  */
 
 export * from './src/remult-core.module';
+export * from './src/core/data-interfaces';
 export * from './src/core/column-interfaces'; 
 export * from './src/core/SQLCommand';
 export * from './src/core/data-providers/restDataProvider';
@@ -18,7 +19,7 @@ export * from './src/context/Context';
 export * from './src/jwt-session-manager';
 export * from './src/navigate-to-component-route-service';
 export * from './src/context/server-action';
-export * from './src/id-entity/id-entity';
+export * from './src/core/id-entity';
 export { BusyService } from './src/angular-components/wait/busy-service';
 export * from './src/core/entity';
 export * from './src/core/column';
@@ -47,5 +48,5 @@ export * from './src/core/column-hash-set';
 export * from './src/core/data-area-settings';
 export * from './src/core/drop-down-source';
 export * from './src/core/url-builder';
-export * from './src/core/data-interfaces';
+
 export * from './src/core/filter/filter-interfaces';

@@ -22,7 +22,7 @@ import { DateTimeDateStorage } from '../core/columns/storage/datetime-date-stora
 import { CharDateStorage } from '../core/columns/storage/char-date-storage';
 import { StringColumn } from '../core/columns/string-column';
 import { Entity } from '../core/entity';
-import { FindOptionsPerEntity } from '../core/data-interfaces';
+import { FindOptions } from '../core/data-interfaces';
 
 
 //import { DataAreaCompnent } from '../utils/angular/dataArea';
@@ -247,7 +247,7 @@ describe("test row provider", () => {
   });
   itAsync("update should fail nicely", async () => {
     let cont = new ServerContext();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x) });
+    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x) ,transaction:undefined});
     let c = cont.for(Categories).create();
     c.id.value = 1;
     c.categoryName.value = 'noam';
@@ -472,7 +472,7 @@ describe("grid settings ",
 describe("order by api", () => {
   it("works with sort", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => new Sort({ column: c.id }) };
+    let opt: FindOptions<Categories> = { orderBy: c => new Sort({ column: c.id }) };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column).toBe(c.id);
@@ -481,7 +481,7 @@ describe("order by api", () => {
   });
   it("works with columns", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => c.id };
+    let opt: FindOptions<Categories> = { orderBy: c => c.id };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column).toBe(c.id);
@@ -489,7 +489,7 @@ describe("order by api", () => {
 
   it("works with columns array", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [c.id, c.categoryName] };
+    let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
@@ -497,7 +497,7 @@ describe("order by api", () => {
   });
   it("works with segment array", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
+    let opt: FindOptions<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
@@ -505,7 +505,7 @@ describe("order by api", () => {
   });
   it("works with mixed column segment array", () => {
     let c = new Categories();
-    let opt: FindOptionsPerEntity<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
+    let opt: FindOptions<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
     let s = extractSortFromSettings(c, opt);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);

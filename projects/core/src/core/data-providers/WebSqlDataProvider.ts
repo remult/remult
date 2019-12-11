@@ -1,4 +1,4 @@
-import { DataProvider, EntityDataProvider, RowsOfDataForTesting } from "../data-interfaces";
+import { DataProvider, EntityDataProvider, __RowsOfDataForTesting } from "../data-interfaces";
 import { SQLCommand , SQLConnectionProvider, SQLQueryResult } from "../SQLCommand";
 
 import { ActualSQLServerDataProvider } from "./SQLDatabaseShared";
@@ -9,7 +9,7 @@ import { DateColumn } from "../columns/date-column";
 import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { ClosedListColumn } from "../columns/closed-list-column";
 
-export class WebSqlDataProvider implements DataProvider, RowsOfDataForTesting {
+export class WebSqlDataProvider implements DataProvider, __RowsOfDataForTesting {
     rows: {
         [tableName: string]: any;
     };
@@ -39,6 +39,9 @@ export class WebSqlDataProvider implements DataProvider, RowsOfDataForTesting {
         }
         return new ActualSQLServerDataProvider(entity, new WebSqlBridgeToSQLConnection(this.db));
     }
+    async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+        throw new Error("Method not implemented.");
+      }
 
     private addColumnSqlSyntax(x: Column<any>) {
         let result = x.__getDbName();

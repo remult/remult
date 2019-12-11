@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DataProvider,  FindOptionsPerEntity, EntityDataProvider, FindOptions, EntityProvider } from "../core/data-interfaces";
+import { DataProvider,  FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider } from "../core/data-interfaces";
 import { RestDataProvider, Action, AngularHttpProvider, wrapFetch } from "../core/data-providers/restDataProvider";
 import {    extractSortFromSettings } from "../core/utils";
 import { InMemoryDataProvider } from "../core/data-providers/inMemoryDatabase";
@@ -231,10 +231,10 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             await what(item);
         }
     }
-    private translateOptions(options: FindOptionsPerEntity<T>) {
+    private translateOptions(options: FindOptions<T>) {
         if (!options)
             return undefined;
-        let getOptions: FindOptions = {};
+        let getOptions: EntityDataProviderFindOptions = {};
         if (options.where)
             getOptions.where = options.where(this.entity);
         if (options.orderBy)
@@ -243,12 +243,12 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             getOptions.limit = options.limit;
         if (options.page)
             getOptions.page = options.page;
-        if (options.additionalUrlParameters)
-            getOptions.additionalUrlParameters = options.additionalUrlParameters;
+        if (options.__customFindData)
+            getOptions.__customFindData = options.__customFindData;
         return getOptions;
     }
 
-    async find(options?: FindOptionsPerEntity<T>) {
+    async find(options?: FindOptions<T>) {
         let r = await this._edp.find(this.translateOptions(options));
         return r.map(i => {
             let r = this.create();

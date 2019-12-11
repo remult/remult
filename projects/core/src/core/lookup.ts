@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { DataList } from "./dataList";
-import { EntityProvider,  FindOptionsPerEntity } from "./data-interfaces";
+import { EntityProvider,  FindOptions } from "./data-interfaces";
 import { Column } from "./column";
 
 import { isFunction } from "util";
@@ -26,7 +26,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
     }
   
     private getInternal(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): lookupRowInfo<entityType> {
-      let find: FindOptionsPerEntity<entityType> = {};
+      let find: FindOptions<entityType> = {};
       if (filter instanceof Column)
         find.where = (e) => e.__idColumn.isEqualTo(filter);
       else if (isFunction(filter)) {
@@ -37,7 +37,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
       return this._internalGetByOptions(find);
     }
   
-    _internalGetByOptions(find: FindOptionsPerEntity<entityType>): lookupRowInfo<entityType> {
+    _internalGetByOptions(find: FindOptions<entityType>): lookupRowInfo<entityType> {
   
       let key = "";
       let url = new UrlBuilder("");

@@ -12,6 +12,9 @@ export class LocalStorageDataProvider implements DataProvider {
   public getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
     return new JsonStorageDataProvider(new LocalJsonStorage( entity.__getName(), entity));
   }
+  async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 class LocalJsonStorage implements JsonStorage {

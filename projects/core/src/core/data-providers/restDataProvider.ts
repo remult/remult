@@ -1,6 +1,6 @@
 
 
-import { EntityDataProvider, DataProvider, FindOptions } from '../data-interfaces';
+import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { DataApiResponse, DataApiRequest } from '../../server/DataApi';
 import { HttpClient } from '@angular/common/http';
 import { Context } from '../../context/Context';
@@ -15,6 +15,9 @@ export class RestDataProvider implements DataProvider {
   }
   public getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
     return new ActualRestDataProvider(this.url + '/' + entity.__getName(), this.http);
+  }
+  async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }
 class ActualRestDataProvider implements EntityDataProvider {
@@ -31,7 +34,7 @@ class ActualRestDataProvider implements EntityDataProvider {
     }
     return this.http.get(url.url).then(r => +(r.count));
   }
-  public find(options: FindOptions): Promise<Array<any>> {
+  public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);
     if (options) {
       if (options.where) {
@@ -56,8 +59,8 @@ class ActualRestDataProvider implements EntityDataProvider {
         url.add('_limit', options.limit);
       if (options.page)
         url.add('_page', options.page);
-      if (options.additionalUrlParameters)
-        url.addObject(options.additionalUrlParameters);
+      if (options.__customFindData)
+        url.addObject(options.__customFindData);
     }
 
     return this.http.get(url.url);

@@ -1,5 +1,5 @@
 import { Entity } from "./entity";
-import { EntityProvider,  FindOptionsPerEntity } from "./data-interfaces";
+import { EntityProvider,  FindOptions } from "./data-interfaces";
 import { FilterBase } from './filter/filter-interfaces';
 
 export class DataList<T extends Entity<any>> implements Iterable<T>{
@@ -31,7 +31,7 @@ export class DataList<T extends Entity<any>> implements Iterable<T>{
     count(where?: (rowType: T) => FilterBase) {
       return this.entityProvider.count(where);
     }
-    get(options?: FindOptionsPerEntity<T>) {
+    get(options?: FindOptions<T>) {
   
       let getId = ++this.lastGetId;
   

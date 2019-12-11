@@ -1,6 +1,6 @@
 import { Entity } from "../entity";
 import { Column } from "../column";
-import { FindOptionsPerEntity } from "../data-interfaces";
+import { FindOptions } from "../data-interfaces";
 import { DateTimeColumn } from "../columns/datetime-column";
 import { StringColumn } from "../columns/string-column";
 import { AndFilter } from "./and-filter";
@@ -30,7 +30,7 @@ export class FilterHelper<rowType extends Entity<any>> {
       }
       this.reloadData();
     }
-    addToFindOptions(opt: FindOptionsPerEntity<rowType>) {
+    addToFindOptions(opt: FindOptions<rowType>) {
       this.filterColumns.forEach(c => {
   
         let val = this.filterRow.__getColumn(c).value;

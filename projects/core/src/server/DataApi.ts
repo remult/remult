@@ -1,7 +1,7 @@
 import { DataApiError } from './DataApi';
 
 
-import { FindOptionsPerEntity, EntityProvider } from '../core/data-interfaces';
+import { FindOptions, EntityProvider } from '../core/data-interfaces';
 import { Column } from '../core/column';
 import { Entity } from '../core/entity';
 import { Sort } from '../core/sort';
@@ -55,7 +55,7 @@ export class DataApi<T extends Entity<any>> {
       return;
     }
     try {
-      let findOptions: FindOptionsPerEntity<any> = {};
+      let findOptions: FindOptions<any> = {};
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
@@ -224,7 +224,7 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   excludeColumns?: (r: rowType) => Column<any>[],
   readonlyColumns?: (r: rowType) => Column<any>[],
   name?: string,
-  get?: FindOptionsPerEntity<rowType>,
+  get?: FindOptions<rowType>,
   validate?: (r: rowType) => void;
   onSavingRow?: (r: rowType) => Promise<any> | any;
 }

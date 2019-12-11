@@ -1,6 +1,6 @@
 
 import { Column } from '../column';
-import {  DataProvider, EntityDataProvider, FindOptions,  RowsOfDataForTesting } from '../data-interfaces';
+import {  DataProvider, EntityDataProvider, EntityDataProviderFindOptions,  __RowsOfDataForTesting } from '../data-interfaces';
 
 import { Entity } from '../entity';
 import { StringColumn } from '../columns/string-column';
@@ -8,7 +8,10 @@ import { FilterBase, FilterConsumer } from '../filter/filter-interfaces';
 
 
 
-export class InMemoryDataProvider implements DataProvider, RowsOfDataForTesting {
+export class InMemoryDataProvider implements DataProvider, __RowsOfDataForTesting {
+  async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
   rows: any = {};
   public getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
     let name = entity.__getName();
@@ -17,6 +20,7 @@ export class InMemoryDataProvider implements DataProvider, RowsOfDataForTesting 
     return new ActualInMemoryDataProvider(entity, this.rows[name]);
   }
   toString() { return "InMemoryDataProvider" }
+
 }
 
 
@@ -48,7 +52,7 @@ export class ActualInMemoryDataProvider implements EntityDataProvider {
     }
     return j;
   }
-  async find(options?: FindOptions): Promise<any[]> {
+  async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
 
     let rows = this.rows;
     if (options) {
@@ -138,7 +142,7 @@ export class ActualInMemoryDataProvider implements EntityDataProvider {
     return Promise.resolve(JSON.parse(JSON.stringify(data)));
   }
 }
-export function pageArray(rows: any[], options?: FindOptions) {
+export function pageArray(rows: any[], options?: EntityDataProviderFindOptions) {
   if (!options)
     return rows;
   if (!options.limit)

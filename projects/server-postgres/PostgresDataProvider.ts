@@ -25,12 +25,12 @@ export class PostgresDataProvider implements DataProvider,SupportsDirectSql {
         return new ActualDirectSQL(new PostgresBridgeToSQLConnection(this.pool));
     }
 
-    async doInTransaction(what: (dp: DataProvider) => Promise<void>) {
+    async transaction(action: (dataProvider: DataProvider) => Promise<void>) {
         let client = await this.pool.connect();
         let dp = new PostgresDataTransaction(client);
         try {
             await client.query('BEGIN');
-            await what(dp);
+            await action(dp);
             await client.query('COMMIT');
         }
         catch (err) {
@@ -48,6 +48,9 @@ export class PostgresDataProvider implements DataProvider,SupportsDirectSql {
 }
 
 class PostgresDataTransaction implements DataProvider, SupportsDirectSql {
+    transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+        throw new Error("nested transactions not allowed");
+    }
     getDirectSql(): DirectSQL {
         return new ActualDirectSQL(new PostgresBridgeToSQLConnection(this.source));
     }
@@ -62,6 +65,7 @@ class PostgresDataTransaction implements DataProvider, SupportsDirectSql {
     createDirectSQLCommand(): SQLCommand {
         return new PostgrestBridgeToSQLCommand(this.source);
     }
+    
 
 
 }

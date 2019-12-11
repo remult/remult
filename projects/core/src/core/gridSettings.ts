@@ -10,7 +10,7 @@ import { Sort } from "./sort";
 import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
-import { EntityProvider, FindOptionsPerEntity } from './data-interfaces';
+import { EntityProvider, FindOptions } from './data-interfaces';
 
 export class GridSettings<rowType extends Entity<any>>  {
     constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {
@@ -112,7 +112,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       this.columns.numOfColumnsInGrid = this.columns.items.length;
     }
   
-    private setGetOptions(get: FindOptionsPerEntity<rowType>) {
+    private setGetOptions(get: FindOptions<rowType>) {
       this.getOptions = get;
       if (get && get.limit)
         this.rowsPerPage = get.limit;
@@ -272,7 +272,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     }
     rowsPerPage: number;
     rowsPerPageOptions = [10, 25, 50, 100, 500, 1000];
-    get(options: FindOptionsPerEntity<rowType>) {
+    get(options: FindOptions<rowType>) {
   
       this.setGetOptions(options);
       this.page = 1;
@@ -314,13 +314,13 @@ export class GridSettings<rowType extends Entity<any>>  {
   
   
   
-    private getOptions: FindOptionsPerEntity<rowType>;
+    private getOptions: FindOptions<rowType>;
   
     totalRows: number;
   
     getRecords() {
   
-      let opt: FindOptionsPerEntity<rowType> = {};
+      let opt: FindOptions<rowType> = {};
       if (this.getOptions) {
         opt = Object.assign(opt, this.getOptions);
       }
@@ -381,7 +381,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   
     rowCssClass?: (row: rowType) => string;
     rowButtons?: RowButton<rowType>[],
-    get?: FindOptionsPerEntity<rowType>,
+    get?: FindOptions<rowType>,
     knowTotalRows?: boolean,
     onSavingRow?: (r: rowType) => void;
     onValidate?: (r: rowType) => void;

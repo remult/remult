@@ -1,5 +1,5 @@
 import { Entity } from '../entity';
-import { EntityDataProvider, FindOptions } from '../data-interfaces';
+import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { FilterBase } from '../filter/filter-interfaces';
 export interface JsonStorage {
   doWork<T>(what: (dp: EntityDataProvider, save: () => void) => T): T;
@@ -11,7 +11,7 @@ export class JsonStorageDataProvider implements EntityDataProvider {
   constructor(private helper: JsonStorage) {
 
   }
-  find(options?: FindOptions): Promise<any[]> {
+  find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     return this.helper.doWork((dp, save) => dp.find(options));
   }
   count(where?: FilterBase): Promise<number> {

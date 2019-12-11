@@ -1,5 +1,5 @@
 
-import { EntityDataProvider,  FindOptions } from "../data-interfaces";
+import { EntityDataProvider,  EntityDataProviderFindOptions } from "../data-interfaces";
 import { SQLCommand, SQLConnectionProvider, SQLQueryResult } from "../SQLCommand";
 import { Column } from "../column";
 import { Entity } from "../entity";
@@ -68,7 +68,7 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
     });
 
   }
-  find(options?: FindOptions): Promise<any[]> {
+  find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     let select = 'select ';
     let colKeys: Column<any>[] = [];
     this.entity.__iterateColumns().forEach(x => {
