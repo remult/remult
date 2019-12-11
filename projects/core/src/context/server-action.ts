@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { SupportsTransaction } from "../core/data-interfaces";
+
 import { Action } from '../core/data-providers/restDataProvider';
 import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './Context';
 
@@ -40,7 +40,7 @@ export class myServerAction extends Action<inArgs, result>
         let context = new ServerContext();
         context.setReq(req);
         let ds = this.dataProvider(context);
-        await (<SupportsTransaction>ds).transaction(async ds => {
+        await ds.transaction(async ds => {
             context.setDataProvider(ds);
             if (!context.isAllowed(this.options.allowed))
                 throw 'not allowed';
