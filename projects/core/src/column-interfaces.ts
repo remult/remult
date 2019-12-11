@@ -26,7 +26,7 @@ export interface ColumnSettings<valueType> {
     serverExpression?: () => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
 
-    dataControlSettings?: () => ColumnInEntityDisplaySettings;
+    dataControlSettings?: () => DataControlSettings<any>;
 }
 export declare type ColumnOptions<valueType> = ColumnSettings<valueType> | string;
 
@@ -53,15 +53,6 @@ export interface DataControlSettings<entityType> {
 }
 
 
-export interface ColumnInEntityDisplaySettings {
-    dropDown?: DropDownOptions;
-    width?: string;
-    getValue?: () => any;
-    hideDataOnInput?: boolean;
-    click?: () => void;
-    allowClick?: () => boolean;
-    clickIcon?: string;
-}
 export interface DropDownOptions {
 
     items?: DropDownItem[] | string[] | any[];

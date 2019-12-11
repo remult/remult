@@ -1,5 +1,5 @@
 import { Allowed, Context } from './Context';
-import { ColumnSettings,ColumnOptions, ColumnInEntityDisplaySettings,  DataControlSettings } from './column-interfaces';
+import { ColumnSettings,ColumnOptions,   DataControlSettings } from './column-interfaces';
 
 import { isBoolean } from 'util';
 
@@ -130,7 +130,7 @@ export class Column<dataType>  {
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
               this.__displayResult = this.__settings.dataControlSettings();
-            return c.__displayResult.getValue();
+            return c.__displayResult.getValue(e);
           };
         }
         if (!x.click && this.__displayResult.click) {
@@ -140,7 +140,7 @@ export class Column<dataType>  {
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
               this.__displayResult = this.__settings.dataControlSettings();
-            c.__displayResult.click();
+            c.__displayResult.click(e);
           };
         }
         if (!x.allowClick && this.__displayResult.allowClick) {
@@ -150,13 +150,13 @@ export class Column<dataType>  {
               c = e.__getColumn(c) as Column<dataType>;
             if (!c.__displayResult)
               this.__displayResult = this.__settings.dataControlSettings();
-            return c.__displayResult.allowClick();
+            return c.__displayResult.allowClick(e);
           };
         }
   
       }
     }
-    private __displayResult: ColumnInEntityDisplaySettings;
+    private __displayResult: DataControlSettings<any>;
   
   
     __getStorage() {
