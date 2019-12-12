@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DateColumn, BoolColumn } from 'dist/core';
+import { DateColumn, BoolColumn } from '@remult/core';
 import { StringColumn, ColumnOptions } from '@remult/core';
 
 @Component({

@@ -24,8 +24,6 @@
     "publish-radweb-local": " npm run radweb-build && cd dist/radweb && npm publish --registry http://localhost:4873",
     "publish-radweb-server-local": "cd dist/radweb-server && npm publish --registry http://localhost:4873 --access public",
     "publish-radweb-server-postgres-local": "cd dist/radweb-server-postgres && npm publish --registry http://localhost:4873 --access public",
-    
-    
     "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run",
     "build-server-watch": "tsc -p tsconfig.server.json --watch",
     "server:dev-run": "node --inspect dist-server/src/app/server/server.js"
