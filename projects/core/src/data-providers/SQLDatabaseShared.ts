@@ -1,19 +1,38 @@
 
-import { EntityDataProvider,  EntityDataProviderFindOptions } from "../data-interfaces";
-import { SqlCommand, SqlDatabase, SqlResult } from "../SqlCommand";
+import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from "../data-interfaces";
+import { SqlCommand, SqlImplementation, SqlResult } from "../SqlCommand";
 import { Column } from "../column";
 import { Entity } from "../entity";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { CompoundIdColumn } from "../columns/compound-id-column";
 import { FilterBase } from '../filter/filter-interfaces';
 
-
-class LogSQLConnectionProvider implements SqlDatabase {
-  constructor(private origin: SqlDatabase, private allQueries: boolean) { }
+// @dynamic
+export class SqlDatabase implements DataProvider {
   createCommand(): SqlCommand {
-    return new LogSQLCommand(this.origin.createCommand(), this.allQueries);
+    return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole);
   }
+  getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+
+    return new ActualSQLServerDataProvider(entity, this, async () => {
+      if (this.createdEntities.indexOf(entity.__getDbName()) < 0) {
+        this.createdEntities.push(entity.__getDbName());
+        await this.sql.entityIsUsedForTheFirstTime(entity);
+      }
+    });
+  }
+  transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+    return this.sql.transaction(x => action(new SqlDatabase(x)));
+  }
+  public static LogToConsole = false;
+  constructor(private sql: SqlImplementation) {
+
+  }
+  private createdEntities: string[] = [];
 }
+
+
+
 class LogSQLCommand implements SqlCommand {
   constructor(private origin: SqlCommand, private allQueries: boolean) {
 
@@ -40,21 +59,18 @@ class LogSQLCommand implements SqlCommand {
     }
   }
 }
-// @dynamic
-export class ActualSQLServerDataProvider implements EntityDataProvider {
-  public static LogToConsole = false;
-  constructor(private entity:Entity<any>,  private sql: SqlDatabase) {
 
-    this.sql = ActualSQLServerDataProvider.decorateSqlConnectionProvider(sql);
+class ActualSQLServerDataProvider implements EntityDataProvider {
+  public static LogToConsole = false;
+  constructor(private entity: Entity<any>, private sql: SqlDatabase, private iAmUsed: () => Promise<void>) {
+
+
   }
-  static decorateSqlConnectionProvider(sql: SqlDatabase):SqlDatabase {
-    return new LogSQLConnectionProvider(sql, ActualSQLServerDataProvider.LogToConsole);
-  }
-  createDirectSQLCommand() {
-    return this.sql.createCommand();
-  }
-  
-  public count(where: FilterBase): Promise<number> {
+
+
+
+   async  count(where: FilterBase): Promise<number> {
+    await this.iAmUsed();
     let select = 'select count(*) count from ' + this.entity.__getDbName();
     let r = this.sql.createCommand();
     if (where) {
@@ -68,7 +84,8 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
     });
 
   }
-  find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+  async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+    await this.iAmUsed();
     let select = 'select ';
     let colKeys: Column<any>[] = [];
     this.entity.__iterateColumns().forEach(x => {
@@ -128,8 +145,8 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
       });
     });
   }
-  update(id: any, data: any): Promise<any> {
-
+  async update(id: any, data: any): Promise<any> {
+    await this.iAmUsed();
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
@@ -164,8 +181,8 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
   }
-  delete(id: any): Promise<void> {
-
+  async delete(id: any): Promise<void> {
+    await this.iAmUsed();
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
@@ -180,8 +197,8 @@ export class ActualSQLServerDataProvider implements EntityDataProvider {
     });
 
   }
-  insert(data: any): Promise<any> {
-
+  async insert(data: any): Promise<any> {
+    await this.iAmUsed();
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);

@@ -1,8 +1,12 @@
 import { Column } from './column';
+import { Entity } from '..';
 
-export abstract class SqlDatabase {
-    abstract createCommand(): SqlCommand;
+export interface SqlImplementation {
+    createCommand(): SqlCommand;
+    transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;
+    entityIsUsedForTheFirstTime(entity:Entity<any>):Promise<void>;
 }
+
 
 export interface SqlCommand {
     addParameterAndReturnSqlToken(col: Column<any>, val: any): string;
@@ -14,3 +18,6 @@ export interface SqlResult {
     getColumnIndex(name: string): number;
     getcolumnNameAtIndex(index: number): string;
 }
+
+
+

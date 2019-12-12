@@ -1,4 +1,4 @@
-import { ActualSQLServerDataProvider, ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ClosedListColumn, allEntities } from '@remult/core';
+import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ClosedListColumn, allEntities, SqlImplementation } from '@remult/core';
 
 import { Pool, QueryResult } from 'pg';
 
@@ -12,25 +12,25 @@ export interface PostgresClient extends PostgresCommandSource {
     release(): void;
 }
 
-export class PostgresDataProvider extends SqlDatabase implements DataProvider {
+export class PostgresDataProvider implements SqlImplementation {
+    async entityIsUsedForTheFirstTime(entity: Entity<any>): Promise<void> {
+
+    }
     createCommand(): SqlCommand {
         return new PostgrestBridgeToSQLCommand(this.pool);
     }
-
-
     constructor(private pool: PostgresPool) {
-        super();
     }
-    getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
-        return new ActualSQLServerDataProvider(entity, this);
-    }
-
-    async transaction(action: (dataProvider: DataProvider) => Promise<void>) {
+    async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
         let client = await this.pool.connect();
-        let dp = new PostgresDataTransaction(client);
+
         try {
             await client.query('BEGIN');
-            await action(dp);
+            await action({
+                createCommand: () => new PostgrestBridgeToSQLCommand(client),
+                entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
+                transaction: () => { throw "nested transactions not allowed" }
+            });
             await client.query('COMMIT');
         }
         catch (err) {
@@ -40,35 +40,10 @@ export class PostgresDataProvider extends SqlDatabase implements DataProvider {
         finally {
             await client.release();
         }
-
     }
-
-
-
 }
 
-class PostgresDataTransaction  implements DataProvider,SqlDatabase {
-    transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
-        throw new Error("nested transactions not allowed");
-    }
-    createCommand(): SqlCommand {
-        return new PostgrestBridgeToSQLCommand(this.source);
-    }
 
-
-    constructor(private source: PostgresCommandSource) {
-        
-    }
-    getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
-        return new ActualSQLServerDataProvider(entity, this);
-    }
-    createDirectSQLCommand(): SqlCommand {
-        return new PostgrestBridgeToSQLCommand(this.source);
-    }
-
-
-
-}
 export interface PostgresCommandSource {
     query(queryText: string, values?: any[]): Promise<QueryResult>;
 }

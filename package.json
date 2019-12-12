@@ -49,16 +49,16 @@
     "@types/pg": "^7.4.11",
     "bootstrap3": "^3.3.5",
     "core-js": "^2.5.4",
+    "dotenv": "^8.1.0",
     "express": "^4.16.4",
     "express-force-https": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
     "mssql": "^4.2.3",
+    "password-hash": "^1.2.2",
     "pg": "^7.6.1",
     "rxjs": "~6.3.3",
     "uuid": "^3.3.2",
-    "zone.js": "~0.8.26",
-    "dotenv": "^8.1.0",
-    "password-hash": "^1.2.2"
+    "zone.js": "~0.8.26"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.10.0",

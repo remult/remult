@@ -344,7 +344,7 @@ describe("test row provider", () => {
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
   });
   it("get value function works", () => {
-    let a = new NumberColumn({ getValue: v => v *= 3 });
+    let a = new NumberColumn({ dataControlSettings:()=>({ getValue: () => a.value * 3}) });
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);
@@ -363,7 +363,7 @@ describe("column collection", () => {
     expect(cc.items[0] === cc.items[0].column).toBe(false);
     expect(cc.items[0].caption == c.categoryName.caption).toBe(true);
     expect(cc.items[0].readonly).toBe(true);
-    expect(cc.items[0].inputType == c.categoryName.inputType).toBe(true);
+    
   })
   itAsync("jsonSaverIsNice", async () => {
     let c = ctx.for(Categories).create();

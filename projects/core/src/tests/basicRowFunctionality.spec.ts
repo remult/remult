@@ -21,10 +21,11 @@ import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { DataList } from '../dataList';
 import { UrlBuilder } from '../url-builder';
 import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
+import { SqlDatabase } from '../data-providers/SQLDatabaseShared';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
-  itAsyncForEach<any>(name, [new InMemoryDataProvider(), webSql],
+  itAsyncForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
     (dp) => new Promise((res, rej) => {
       webSql.db.transaction(t => {
         t.executeSql("select name from sqlite_master where type='table'", null,

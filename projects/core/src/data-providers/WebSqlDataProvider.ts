@@ -1,7 +1,7 @@
 import { DataProvider, EntityDataProvider, __RowsOfDataForTesting } from "../data-interfaces";
-import { SqlCommand , SqlDatabase, SqlResult } from "../SqlCommand";
+import { SqlCommand, SqlResult, SqlImplementation } from "../SqlCommand";
 
-import { ActualSQLServerDataProvider } from "./SQLDatabaseShared";
+
 import { Column } from "../column";
 import { Entity } from "../entity";
 import { DateTimeColumn } from "../columns/datetime-column";
@@ -9,42 +9,40 @@ import { DateColumn } from "../columns/date-column";
 import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { ClosedListColumn } from "../columns/closed-list-column";
 
-export class WebSqlDataProvider  implements SqlDatabase, DataProvider, __RowsOfDataForTesting {
+export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
         [tableName: string]: any;
     };
     /** @internal */
     //@ts-ignore
     db: Database;
-    private createdEntities: string[] = [];
+    
     constructor(private databaseName: string) {
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
+     async entityIsUsedForTheFirstTime(entity: Entity<any>) {
+        let result = '';
+        entity.__iterateColumns().forEach(x => {
+            if (!x.__dbReadOnly()) {
+                if (result.length != 0)
+                    result += ',';
+                result += '\r\n  ';
+                result += this.addColumnSqlSyntax(x);
+                if (x == entity.__idColumn)
+                    result += ' primary key';
+            }
+        });
+        await this.createCommand().execute('create table if not exists ' + entity.__getDbName() + ' (' + result + '\r\n)');
+    }
+
     createCommand(): SqlCommand {
         return new WebSqlBridgeToSQLCommand(this.db);
     }
-    getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
-        if (this.createdEntities.indexOf(entity.__getDbName()) < 0) {
-
-            let result = '';
-            entity.__iterateColumns().forEach(x => {
-                if (!x.__dbReadOnly()) {
-                    if (result.length != 0)
-                        result += ',';
-                    result += '\r\n  ';
-                    result += this.addColumnSqlSyntax(x);
-                    if (x == entity.__idColumn)
-                        result += ' primary key';
-                }
-            });
-            this.db.transaction(t => t.executeSql('create table if not exists ' + entity.__getDbName() + ' (' + result + '\r\n)'));
-        }
-        return new ActualSQLServerDataProvider(entity, this);
-    }
-    async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+    
+    async transaction(action: (dataProvider: SqlImplementation) => Promise<void>): Promise<void> {
         throw new Error("Method not implemented.");
-      }
+    }
 
     private addColumnSqlSyntax(x: Column<any>) {
         let result = x.__getDbName();

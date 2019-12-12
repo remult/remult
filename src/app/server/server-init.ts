@@ -6,8 +6,9 @@ import { PostgresDataProvider, PostgrestSchemaBuilder } from '@remult/server-pos
 import * as passwordHash from 'password-hash';
 
 import '../app.module';
+import { SqlDatabase } from '@remult/core';
 
-import { ActualSQLServerDataProvider } from '@remult/core';
+
 
 
 
@@ -19,7 +20,7 @@ export async function serverInit() {
         ssl = false;
 
     if (process.env.logSqls) {
-        ActualSQLServerDataProvider.LogToConsole = true;
+        SqlDatabase.LogToConsole = true;
     }
 
     if (!process.env.DATABASE_URL) {
@@ -32,6 +33,6 @@ export async function serverInit() {
     });
     
     await new PostgrestSchemaBuilder(pool).verifyStructureOfAllEntities();
-    return new PostgresDataProvider(pool);
+    return new SqlDatabase(new PostgresDataProvider(pool));
 
 }

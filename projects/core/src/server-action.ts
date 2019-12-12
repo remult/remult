@@ -6,9 +6,10 @@ import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './C
 
 import { BusyService } from './angular/wait/busy-service';
 
-import { SqlDatabase } from './SqlCommand';
+
 import { DataApiRequest, DataApiResponse } from './DataApi';
 import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/restDataProvider';
+import { SqlDatabase } from './data-providers/SQLDatabaseShared';
 
 
 interface inArgs {
