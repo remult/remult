@@ -12,7 +12,7 @@ export * from './src/common';
 export * from './src/data-providers/inMemoryDatabase'; //V
 export * from './src/data-providers/ArrayEntityDataProvider';//V
 export * from './src/data-providers/WebSqlDataProvider';
-export * from './src/data-providers/SQLDatabaseShared';
+export * from './src/data-providers/SqlDatabase';
 export * from './src/data-providers/JsonStorageDataProvider';
 export * from './src/DataApi';
 export * from './src/data-providers/localStorageDataProvider';

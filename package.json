@@ -47,7 +47,6 @@
     "@types/jsonwebtoken": "^8.3.2",
     "@types/mssql": "^4.0.10",
     "@types/pg": "^7.4.11",
-    "bootstrap3": "^3.3.5",
     "core-js": "^2.5.4",
     "dotenv": "^8.1.0",
     "express": "^4.16.4",

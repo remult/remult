@@ -9,7 +9,7 @@ import { BusyService } from './angular/wait/busy-service';
 
 import { DataApiRequest, DataApiResponse } from './DataApi';
 import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/restDataProvider';
-import { SqlDatabase } from './data-providers/SQLDatabaseShared';
+import { SqlDatabase } from './data-providers/SqlDatabase';
 
 
 interface inArgs {
