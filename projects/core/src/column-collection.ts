@@ -277,8 +277,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
     }
     _colValueChanged(col: DataControlSettings<any>, r: any) {
   
-      if (col.onUserChangedValue)
-        col.onUserChangedValue(r);
+      if (col.userChangedValue)
+        col.userChangedValue(r);
   
     }
     items: DataControlSettings<any>[] = [];

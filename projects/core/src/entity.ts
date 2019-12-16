@@ -15,10 +15,10 @@ export class Entity<idType> {
           this.__options = { name: options };
         } else {
           this.__options = options;
-          if (options.onSavingRow)
-            this.__onSavingRow = () => options.onSavingRow();
-          if (options.onValidate)
-            this.__onValidate = () => options.onValidate(this);
+          if (options.savingRow)
+            this.__onSavingRow = () => options.savingRow();
+          if (options.validate)
+            this.__onValidate = () => options.validate(this);
         }
       }
       else {
@@ -290,8 +290,8 @@ export class Entity<idType> {
     allowApiInsert?: Allowed;
     allowApiCRUD?: Allowed;
     apiDataFilter?: () => FilterBase;
-    onSavingRow?: () => Promise<any> | any;
+    savingRow?: () => Promise<any> | any;
   
-    onValidate?: (e: Entity<any>) => Promise<any> | any;
+    validate?: (e: Entity<any>) => Promise<any> | any;
   }
   

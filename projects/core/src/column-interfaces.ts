@@ -42,7 +42,7 @@ export interface DataControlSettings<entityType> {
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     cssClass?: (string | ((row: entityType) => string));
     defaultValue?: (row: entityType) => any;
-    onUserChangedValue?: (row: entityType) => void;
+    userChangedValue?: (row: entityType) => void;
     click?: (row: entityType) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
