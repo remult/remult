@@ -1,14 +1,19 @@
 import { Allowed, Context } from './Context';
-import { ColumnSettings, ColumnOptions, DataControlSettings } from './column-interfaces';
+import { ColumnSettings, ColumnOptions, DataControlSettings, ValueOrFunction } from './column-interfaces';
 
 import { isBoolean } from 'util';
 
-import { functionOrString } from './common';
+import { functionOrString, getValueOrFunction } from './common';
 import { DefaultStorage } from './columns/storage/default-storage';
 import { Filter } from './filter/filter';
 import { ColumnValueProvider } from './__EntityValueProvider';
 
 export class Column<dataType>  {
+  __setDefaultForNewRow() {
+    if (this.__settings.defaultValue) {
+      this.value = getValueOrFunction(this.__settings.defaultValue);
+    }
+  }
 
   async __calcVirtuals() {
     if (this.__settings && this.__settings.serverExpression) {
@@ -82,8 +87,6 @@ export class Column<dataType>  {
       this.allowApiUpdate = this.__settings.allowApiUpdate;
     if (this.__settings.dbName)
       this.dbName = this.__settings.dbName;
-    if (this.__settings.value != undefined)
-      this.value = this.__settings.value;
     if (this.__settings.valueChange)
       this.onValueChange = () => this.__settings.valueChange();
     if (this.__settings.validate)
@@ -112,7 +115,7 @@ export class Column<dataType>  {
       this.__displayResult = this.__settings.dataControlSettings();
       if (!x.dropDown)
         x.dropDown = this.__displayResult.dropDown;
-        if (!x.inputType)
+      if (!x.inputType)
         x.inputType = this.__displayResult.inputType;
       if (x.hideDataOnInput === undefined)
         x.hideDataOnInput = this.__displayResult.hideDataOnInput;
@@ -176,7 +179,7 @@ export class Column<dataType>  {
   }
 
   allowApiUpdate: Allowed = true;
-  
+
   isEqualTo(value: Column<dataType> | dataType) {
     return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
   }
@@ -232,7 +235,7 @@ export class Column<dataType>  {
       this.onValueChange();
   }
   get rawValue() {
-    return this.__valueProvider.getValue(this.jsonName);
+    return this.__valueProvider.getValue(this.jsonName, ()=>this.__setDefaultForNewRow());
   }
   get inputValue() {
     return this.rawValue;
@@ -257,7 +260,11 @@ export class Column<dataType>  {
 class dummyColumnStorage implements ColumnValueProvider {
 
   private _val: string;
-  public getValue(key: string): any {
+  private _wasSet = false;
+  public getValue(key: string, calcDefaultValue: () => void): any {
+    if (!this._wasSet) {
+      calcDefaultValue();
+    }
     return this._val;
   }
   public getOriginalValue(key: string): any {
@@ -268,5 +275,6 @@ class dummyColumnStorage implements ColumnValueProvider {
 
   public setValue(key: string, value: string): void {
     this._val = value;
+    this._wasSet = true;
   }
 }

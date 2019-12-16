@@ -1,10 +1,11 @@
 
 import { Component, OnChanges, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { isFunction } from '../../common';
+
 import { Column } from '../../column';
 import { Entity } from '../../entity';
 import { GridSettings, RowButton } from '../../gridSettings';
 import { DataControlSettings } from '../../column-interfaces';
+import { isFunction } from 'util';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
@@ -38,7 +39,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   rightToLeft = false;
   //@ts-ignore
   @ViewChild('dataGridDiv')
-  dataGridDiv: ElementRef;
+  dataGridDiv: ElementRef; 
   getTotalRows() {
     if (this.settings.totalRows)
       return Math.ceil(this.settings.totalRows / this.settings.rowsPerPage);

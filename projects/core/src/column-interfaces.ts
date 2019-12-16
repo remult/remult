@@ -1,4 +1,4 @@
-import {  Allowed } from './Context';
+import { Allowed } from './Context';
 import { Column } from './column';
 import { DropDownSource } from './drop-down-source';
 
@@ -16,18 +16,19 @@ export interface ColumnSettings<valueType> {
     includeInApi?: Allowed;
     caption?: string;
     allowApiUpdate?: Allowed;
-    value?: valueType;
+    defaultValue?: ValueOrFunction<valueType>;//consider if it should always be a lambda to avoid errors
     storage?: ColumnStorage<valueType>;
     validate?: () => void | Promise<void>;
     valueChange?: () => void;
-    
-    dbName?: string | (() => string);
+
+    dbName?: ValueOrFunction<string>;
     serverExpression?: () => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
 
     dataControlSettings?: () => DataControlSettings<any>;
 }
 export declare type ColumnOptions<valueType> = ColumnSettings<valueType> | string;
+export declare type ValueOrFunction<valueType> = valueType | (() => valueType);
 
 
 

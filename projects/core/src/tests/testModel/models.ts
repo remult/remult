@@ -32,8 +32,8 @@ export class CategoriesWithValidation extends Categories {
   constructor() {
     super({
       name: undefined,
-      onSavingRow: () => CategoriesWithValidation.orderOfOperation += "EntityOnSavingRow,",
-      savingRow r => CategoriesWithValidation.orderOfOperation += "EntityValidate,",
+      savingRow: () => CategoriesWithValidation.orderOfOperation += "EntityOnSavingRow,",
+      validate: r => CategoriesWithValidation.orderOfOperation += "EntityValidate,",
     });
   }
 }

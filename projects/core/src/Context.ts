@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
-import { DataProvider,  FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider } from "./data-interfaces";
+import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider } from "./data-interfaces";
 import { RestDataProvider } from "./data-providers/restDataProvider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
-import {    extractSortFromSettings } from "./utils";
+import { extractSortFromSettings } from "./utils";
 import { InMemoryDataProvider } from "./data-providers/inMemoryDatabase";
-import {  DataApiRequest } from "./DataApi";
+import { DataApiRequest } from "./DataApi";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 
@@ -138,9 +138,11 @@ export class Context {
 }
 export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
-    constructor() {
+    constructor(dp?: DataProvider) {
         super(undefined);
         this._onServer = true;
+        if (dp)
+            this.setDataProvider(dp);
 
 
     }
@@ -179,16 +181,23 @@ export class ServerContext extends Context {
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
     private entity: T;
     private _edp: EntityDataProvider;
+    private _factory: (newRow: boolean) => T;
     constructor(public create: () => T, private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
-        this.create = () => {
+        this._factory = newRow => {
             let e = create();
             e.__entityData.dataProvider = this._edp;
+            if (newRow){
+                e.__iterateColumns().forEach(c=>{c.__setDefaultForNewRow()});
+            }
             return e;
         };
-        this.entity = this.create();
+        this.create = () => {
+            return this._factory(true);
+        };
+        this.entity = this._factory(false);
         this._edp = dataSource.getEntityDataProvider(this.entity);
     }
-    
+
 
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
 
@@ -253,13 +262,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     async find(options?: FindOptions<T>) {
         let r = await this._edp.find(this.translateOptions(options));
         return r.map(i => {
-            let r = this.create();
+            let r = this._factory(false);
             r.__entityData.setData(i, r);
             return r;
         });
     }
     fromPojo(r: any): T {
-        let f = <T>this.create();
+        let f = this._factory(false);
         f.__entityData.setData(r, f);
         return f;
     }
@@ -335,9 +344,8 @@ export function DialogConfig(config: MatDialogConfig) {
 
 
 const dialogConfigMember = Symbol("dialogConfigMember");
-  
- interface LookupCache<T extends Entity<any>> {
+
+interface LookupCache<T extends Entity<any>> {
     key: string;
     lookup: Lookup<any, T>;
-  }
-  
+}
