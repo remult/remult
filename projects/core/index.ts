@@ -13,9 +13,8 @@ export * from './src/data-providers/inMemoryDatabase'; //V
 export * from './src/data-providers/ArrayEntityDataProvider';//V
 export * from './src/data-providers/WebSqlDataProvider';
 export * from './src/data-providers/SqlDatabase';
-export * from './src/data-providers/JsonStorageDataProvider';
+export * from './src/data-providers/JsonDataProvider';
 export * from './src/DataApi';
-export * from './src/data-providers/localStorageDataProvider';
 export * from './src/Context';
 export * from './src/jwt-session-manager';
 export * from './src/navigate-to-component-route-service';
