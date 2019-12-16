@@ -229,9 +229,7 @@ export class Entity<idType> {
     }
     async __toPojo(excludeColumns: ColumnHashSet): Promise<any> {
       let r = {};
-      await Promise.all(this.__iterateColumns().map(async c => {
-        await c.__calcVirtuals();
-      }));
+      
       this.__iterateColumns().forEach(c => {
         if (!excludeColumns.contains(c))
           c.__addToPojo(r);

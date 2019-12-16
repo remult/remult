@@ -15,8 +15,8 @@ export class Column<dataType>  {
     }
   }
 
-  async __calcVirtuals() {
-    if (this.__settings && this.__settings.serverExpression) {
+  async __calcServerExpression() {
+    if ( this.__settings.serverExpression) {
       let x = this.__settings.serverExpression();
       if (x instanceof Promise)
         x = await x;

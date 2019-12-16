@@ -8,6 +8,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
     this.listeners.push(listener);
   }
   dataProvider: EntityDataProvider;
+  initServerExpressions:()=>Promise<void> = async ()=>{};
   delete() {
     return this.dataProvider.delete(this.id).then(() => {
       this.listeners.forEach(x => {
@@ -56,7 +57,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
   private newRow = true;
   private data: any = {};
   private originalData: any = {};
-  setData(data: any, r: Entity<any>) {
+  async setData(data: any, r: Entity<any>) {
     if (!data)
       data = {};
     if (r.__idColumn instanceof CompoundIdColumn) {
@@ -68,6 +69,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
       this.newRow = false;
     }
     this.data = data;
+    await this.initServerExpressions();
     this.originalData = JSON.parse(JSON.stringify(this.data));
   }
   getValue(key: string) {

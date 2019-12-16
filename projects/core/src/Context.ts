@@ -186,8 +186,14 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         this._factory = newRow => {
             let e = create();
             e.__entityData.dataProvider = this._edp;
-            if (newRow){
-                e.__iterateColumns().forEach(c=>{c.__setDefaultForNewRow()});
+            if (this.context.onServer)
+                e.__entityData.initServerExpressions = async () => {
+                    await Promise.all(e.__iterateColumns().map(async c => {
+                        await c.__calcServerExpression();
+                    }));
+                }
+            if (newRow) {
+                e.__iterateColumns().forEach(c => { c.__setDefaultForNewRow() });
             }
             return e;
         };
@@ -261,11 +267,11 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
     async find(options?: FindOptions<T>) {
         let r = await this._edp.find(this.translateOptions(options));
-        return r.map(i => {
+        return Promise.all(r.map(async i => {
             let r = this._factory(false);
-            r.__entityData.setData(i, r);
+            await r.__entityData.setData(i, r);
             return r;
-        });
+        }));
     }
     fromPojo(r: any): T {
         let f = this._factory(false);
