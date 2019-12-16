@@ -12,6 +12,9 @@ export class SqlDatabase implements DataProvider {
   createCommand(): SqlCommand {
     return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole);
   }
+  async execute(sql:string){
+    return await this.createCommand().execute(sql);
+  }
   getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async () => {
@@ -137,9 +140,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     return r.execute(select).then(r => {
       return r.rows.map(y => {
         let result: any = {};
-        for (let x in y) {
-          let col = colKeys[r.getColumnIndex(x)];
-          result[col.jsonName] = col.__getStorage().fromDb(y[x]);
+        for (let index = 0; index < colKeys.length; index++) {
+          const col = colKeys[index];
+          result[col.jsonName] = col.__getStorage().fromDb(y[r.getResultJsonNameForIndexInSelect(index)]);
         }
         return result;
       });

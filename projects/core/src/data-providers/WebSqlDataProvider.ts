@@ -100,18 +100,16 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
 }
 
 class WebSqlBridgeToSQLQueryResult implements SqlResult {
-    getcolumnNameAtIndex(index: number): string {
-        return undefined;
-    }
-    getColumnIndex(name: string): number {
-        if (this.rows.length == 0) return -1;
+    getResultJsonNameForIndexInSelect(index: number): string {
+        if (this.rows.length == 0) return undefined;
         let i = 0;
         for (let m in this.rows[0]) {
-            if (m == name) return i;
-            i++;
+            if (i++==index)
+            return m;
         }
-        return -1;
+        return undefined;
     }
+  
     //@ts-ignore
     constructor(private r: SQLResultSet) {
         this.rows = [];

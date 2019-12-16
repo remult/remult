@@ -62,16 +62,10 @@ class PostgrestBridgeToSQLCommand implements SqlCommand {
     }
 }
 class PostgressBridgeToSQLQueryResult implements SqlResult {
-    getcolumnNameAtIndex(index: number): string {
+    getResultJsonNameForIndexInSelect(index: number): string {
         return this.r.fields[index].name;
     }
-    getColumnIndex(name: string): number {
-        for (let i = 0; i < this.r.fields.length; i++) {
-            if (this.r.fields[i].name.toLowerCase() == name.toLowerCase())
-                return i;
-        }
-        return -1;
-    }
+
     constructor(private r: QueryResult) {
         this.rows = r.rows;
     }

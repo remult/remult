@@ -15,8 +15,7 @@ export interface SqlCommand {
 
 export interface SqlResult {
     rows: any[];
-    getColumnIndex(name: string): number;
-    getcolumnNameAtIndex(index: number): string;
+    getResultJsonNameForIndexInSelect(index: number): string;
 }
 
 
