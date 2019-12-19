@@ -144,7 +144,7 @@ describe('Test basic row functionality', () => {
 @EntityClass
 class myTestEntity extends Entity<number>{
   id = new NumberColumn();
-  name1 = new StringColumn({ jsonName: 'name' });
+  name1 = new StringColumn({ key: 'name' });
   constructor() {
     super('myTestEntity');
     this.__initColumns();
@@ -1207,15 +1207,15 @@ describe("Column settings stuff", () => {
     expect(x.caption).toBe("noam");
   });
   it("should translate caption2", () => {
-    let x = Column.consolidateOptions('noam', { jsonName: 'yael' });
+    let x = Column.consolidateOptions('noam', { key: 'yael' });
     expect(x.caption).toBe("noam");
-    expect(x.jsonName).toBe("yael");
+    expect(x.key).toBe("yael");
   });
   it("should translate caption2", () => {
-    let x = Column.consolidateOptions('noam', {jsonName:'yael'});
+    let x = Column.consolidateOptions('noam', {key:'yael'});
 
     expect(x.caption).toBe("noam");
-    expect(x.jsonName).toBe("yael");
+    expect(x.key).toBe("yael");
   });
 
 });

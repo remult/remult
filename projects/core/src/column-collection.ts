@@ -138,19 +138,17 @@ export class ColumnCollection<rowType extends Entity<any>> {
       this.colListChanged();
     }
     addCol(col: DataControlSettings<any>) {
-      this.items.splice(this.items.indexOf(col) + 1, 0, { designMode: true });
+      this.items.splice(this.items.indexOf(col) + 1, 0);
       this.colListChanged();
     }
-    designColumn(col: DataControlSettings<any>) {
-      col.designMode = !col.designMode;
-    }
+    
   
     _getEditable(col: DataControlSettings<any>) {
       if (!this.allowUpdate())
         return false;
       if (!col.column)
         return false
-      return !col.readonly;
+      return !col.readOnly;
     }
     _click(col: DataControlSettings<any>, row: any) {
       col.click(row);
@@ -277,8 +275,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     }
     _colValueChanged(col: DataControlSettings<any>, r: any) {
   
-      if (col.userChangedValue)
-        col.userChangedValue(r);
+      
   
     }
     items: DataControlSettings<any>[] = [];

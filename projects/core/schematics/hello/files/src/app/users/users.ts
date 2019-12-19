@@ -83,7 +83,7 @@ export class UserId extends IdColumn {
             column: this,
             getValue: f => (f ? ((f).__getColumn(this)) : this).displayValue,
             hideDataOnInput: true,
-            readonly: this.context.isAllowed(this.allowApiUpdate),
+            readOnly: this.context.isAllowed(this.allowApiUpdate),
             width: '200'
 
         }

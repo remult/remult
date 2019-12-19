@@ -108,7 +108,6 @@ export class GridSettings<rowType extends Entity<any>>  {
       this.adjustColumns();
     }
     adjustColumns() {
-      this.columns.items.forEach(c => c.designMode = false);
       this.columns.numOfColumnsInGrid = this.columns.items.length;
     }
   
@@ -135,15 +134,6 @@ export class GridSettings<rowType extends Entity<any>>  {
   
     addNewRow() {
       let r: any = this.restList.add();
-      this.columns.items.forEach(item => {
-        if (item.defaultValue) {
-          let result = item.defaultValue(r);
-          if (result != undefined) {
-            //r[item.key] = result;
-          }
-  
-        }
-      });
       if (this.onNewRow)
         this.onNewRow(r);
       this.setCurrentRow(r);

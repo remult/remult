@@ -362,7 +362,7 @@ describe("column collection", () => {
     expect(cc.items[0] === c.categoryName).toBe(false);
     expect(cc.items[0] === cc.items[0].column).toBe(false);
     expect(cc.items[0].caption == c.categoryName.caption).toBe(true);
-    expect(cc.items[0].readonly).toBe(true);
+    expect(cc.items[0].readOnly).toBe(true);
     
   })
   itAsync("jsonSaverIsNice", async () => {

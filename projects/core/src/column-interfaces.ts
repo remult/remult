@@ -12,44 +12,62 @@ export interface ColumnStorage<valueType> {
 
 
 export interface ColumnSettings<valueType> {
-    jsonName?: string;
+    key?: string;
     includeInApi?: Allowed;
-    caption?: string;
     allowApiUpdate?: Allowed;
-    defaultValue?: ValueOrFunction<valueType>;//consider if it should always be a lambda to avoid errors
-    storage?: ColumnStorage<valueType>;
+  
+    caption?: string;
+    defaultValue?: ValueOrExpression<valueType>;
     validate?: () => void | Promise<void>;
     valueChange?: () => void;
-
-    dbName?: ValueOrFunction<string>;
+  
+    dbName?: ValueOrExpression<string>;
     serverExpression?: () => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
-
     dataControlSettings?: () => DataControlSettings<any>;
+
 }
 export declare type ColumnOptions<valueType> = ColumnSettings<valueType> | string;
-export declare type ValueOrFunction<valueType> = valueType | (() => valueType);
+export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 
 
 
 
 export interface DataControlSettings<entityType> {
 
-    caption?: string;
-    readonly?: boolean;
-    inputType?: string; //used: password,date,phone,text,checkbox,number
-    designMode?: boolean;
+    column?: Column<any>;
     getValue?: (row: entityType) => any;
-    hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
+    readOnly?: boolean;
     cssClass?: (string | ((row: entityType) => string));
-    defaultValue?: (row: entityType) => any;
-    userChangedValue?: (row: entityType) => void;
+  
+    caption?: string;
+
+    
     click?: (row: entityType) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
+    
     dropDown?: DropDownOptions;
-    column?: Column<any>;
+    inputType?: string; //used: password,date,phone,text,checkbox,number
+    hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
+    
     width?: string;
+}
+
+export interface displayOptions<entityType> {
+    readOnlyValue(getValue?: (row: entityType) => any);
+    password();
+    date();
+    digits();
+    checkbox();
+    dropDown(options: DropDownOptions);
+    text(click?: clickable<entityType>);
+
+}
+export interface clickable<entityType>{
+    click?: (row: entityType) => void;
+    allowClick?: (row: entityType) => boolean;
+    clickIcon?: string;
 }
 
 

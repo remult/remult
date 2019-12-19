@@ -1,4 +1,4 @@
-import { ValueOrFunction } from './column-interfaces';
+import { ValueOrExpression } from './column-interfaces';
 import { isFunction } from 'util';
 
 export function makeTitle(name: string) {
@@ -19,7 +19,7 @@ export function functionOrString(f: string | (() => string)): string {
   return f.toString();
 }
 
-export function getValueOrFunction<T>(f: ValueOrFunction<T>): T {
+export function getValueOrFunction<T>(f: ValueOrExpression<T>): T {
   if (isFunction(f)) {
     let x = f as any;
     return x();

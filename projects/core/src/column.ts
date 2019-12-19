@@ -1,5 +1,5 @@
 import { Allowed, Context } from './Context';
-import { ColumnSettings, ColumnOptions, DataControlSettings, ValueOrFunction } from './column-interfaces';
+import { ColumnSettings, ColumnOptions, DataControlSettings, ValueOrExpression } from './column-interfaces';
 
 import { isBoolean } from 'util';
 
@@ -77,8 +77,8 @@ export class Column<dataType>  {
     this.__settings = Column.consolidateOptions(settingsOrCaption, settingsOrCaption1);
 
 
-    if (this.__settings.jsonName)
-      this.jsonName = this.__settings.jsonName;
+    if (this.__settings.key)
+      this.jsonName = this.__settings.key;
     if (this.__settings.caption)
       this.caption = this.__settings.caption;
     if (this.__settings.includeInApi != undefined)
@@ -103,13 +103,13 @@ export class Column<dataType>  {
   __decorateDataSettings(x: DataControlSettings<any>, context?: Context) {
     if (!x.caption && this.caption)
       x.caption = this.caption;
-    if (x.readonly == undefined) {
+    if (x.readOnly == undefined) {
       if (!context) {
         if (isBoolean(this.allowApiUpdate))
-          x.readonly = !this.allowApiUpdate;
+          x.readOnly = !this.allowApiUpdate;
       }
       else
-        x.readonly = !context.isAllowed(this.allowApiUpdate);
+        x.readOnly = !context.isAllowed(this.allowApiUpdate);
     }
     if (this.__settings && this.__settings.dataControlSettings) {
       this.__displayResult = this.__settings.dataControlSettings();
@@ -160,11 +160,7 @@ export class Column<dataType>  {
 
 
   __getStorage() {
-    if (!this.__settings)
-      this.__settings = {};
-    if (!this.__settings.storage)
-      this.__settings.storage = this.__defaultStorage();
-    return this.__settings.storage;
+    return this.__defaultStorage();
 
   }
   __defaultStorage() {

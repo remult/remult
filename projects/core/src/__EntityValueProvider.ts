@@ -1,4 +1,4 @@
-import {  RowEvents, ValueOrFunction } from "./column-interfaces";
+import {  RowEvents, ValueOrExpression } from "./column-interfaces";
 import { CompoundIdColumn } from "./columns/compound-id-column";
 import { EntityDataProvider } from './data-interfaces';
 import { Entity } from './entity';
