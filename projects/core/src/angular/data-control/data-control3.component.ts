@@ -75,7 +75,10 @@ export class DataControl3Component {
     return false;
   }
   showTextBox() {
-    return !this.isSelect() && !this.showCheckbox();
+    return !this.isSelect() && !this.showCheckbox()&&this._getEditable();
+  }
+  showReadonlyText(){
+    return !this._getEditable();
   }
   showCheckbox() {
     return this.settings._getColDataType(this.map) == 'checkbox'
