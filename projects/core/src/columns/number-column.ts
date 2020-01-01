@@ -4,7 +4,7 @@ import { BoolStorage } from "./storage/bool-storage";
 
 export class NumberColumn extends Column<number>{
   constructor(settingsOrCaption?: NumberColumnOptions) {
-    super( { dataControlSettings: () => ({ inputType: 'number' }) },settingsOrCaption);
+    super({ dataControlSettings: () => ({ inputType: 'number' }) }, settingsOrCaption);
     let s = settingsOrCaption as NumberColumnSettings;
     if (s && s.decimalDigits) {
       this.__numOfDecimalDigits = s.decimalDigits;
@@ -25,7 +25,7 @@ export interface NumberColumnSettings extends ColumnSettings<number> {
 export declare type NumberColumnOptions = NumberColumnSettings | string;
 export class BoolColumn extends Column<boolean>{
   constructor(settingsOrCaption?: ColumnOptions<boolean>) {
-    super(settingsOrCaption, { dataControlSettings: () => ({ inputType: 'checkbox' }) });
+    super({ dataControlSettings: () => ({ inputType: 'checkbox' }) }, settingsOrCaption);
 
   }
   __defaultStorage() {

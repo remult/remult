@@ -4,7 +4,7 @@ import { DateTimeDateStorage } from "./storage/datetime-date-storage";
 
 export class DateColumn extends Column<Date>{
   constructor(settingsOrCaption?: ColumnOptions<Date>) {
-    super(settingsOrCaption, { dataControlSettings: () => ({ inputType: 'date' }) });
+    super( { dataControlSettings: () => ({ inputType: 'date' }) },settingsOrCaption);
   }
   getDayOfWeek() {
     return new Date(this.value).getDay();
