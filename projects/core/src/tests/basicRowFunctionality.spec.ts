@@ -1134,7 +1134,7 @@ describe("test data list", () => {
   });
   it("dbname calcs Late", () => {
     let i = 0;
-    var co = new StringColumn({ dbName: () => 'test' + (i++) });
+    var co = new StringColumn({ sqlExpression: () => 'test' + (i++) });
     expect(i).toBe(0);
     expect(co.__getDbName()).toBe('test0');
     expect(i).toBe(1);

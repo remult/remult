@@ -21,7 +21,8 @@ export interface ColumnSettings<valueType> {
     validate?: () => void | Promise<void>;
     valueChange?: () => void;
   
-    dbName?: ValueOrExpression<string>;
+    dbName?: string;
+    sqlExpression?: ValueOrExpression<string>;
     serverExpression?: () => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     dataControlSettings?: () => DataControlSettings<any>;

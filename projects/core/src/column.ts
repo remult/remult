@@ -16,7 +16,7 @@ export class Column<dataType>  {
   }
 
   async __calcServerExpression() {
-    if ( this.__settings.serverExpression) {
+    if (this.__settings.serverExpression) {
       let x = this.__settings.serverExpression();
       if (x instanceof Promise)
         x = await x;
@@ -32,7 +32,8 @@ export class Column<dataType>  {
 
   }
   __dbReadOnly() {
-    if (this.__settings && this.__settings.dbReadOnly)
+    if (this.__settings)
+      if ( this.__settings.dbReadOnly||this.__settings.sqlExpression)
       return true;
     return this.__isVirtual();
   }
@@ -50,7 +51,7 @@ export class Column<dataType>  {
   jsonName: string;
   caption: string;
   includeInApi: Allowed = true;
-  dbName: string | (() => string);
+
   private __settings: ColumnSettings<dataType>;
   __getMemberName() { return this.jsonName; }
   static consolidateOptions(options: ColumnOptions<any>, options1?: ColumnOptions<any>): ColumnSettings<any> {
@@ -85,8 +86,6 @@ export class Column<dataType>  {
       this.includeInApi = this.__settings.includeInApi;
     if (this.__settings.allowApiUpdate != undefined)
       this.allowApiUpdate = this.__settings.allowApiUpdate;
-    if (this.__settings.dbName)
-      this.dbName = this.__settings.dbName;
     if (this.__settings.valueChange)
       this.onValueChange = () => this.__settings.valueChange();
     if (this.__settings.validate)
@@ -168,8 +167,11 @@ export class Column<dataType>  {
   }
   error: string;
   __getDbName(): string {
-    if (this.dbName)
-      return functionOrString(this.dbName);
+    if (this.__settings.sqlExpression) {
+      return functionOrString(this.__settings.sqlExpression);
+    }
+    if (this.__settings.dbName)
+      return this.__settings.dbName;
 
     return this.jsonName;
   }
@@ -231,7 +233,7 @@ export class Column<dataType>  {
       this.onValueChange();
   }
   get rawValue() {
-    return this.__valueProvider.getValue(this.jsonName, ()=>this.__setDefaultForNewRow());
+    return this.__valueProvider.getValue(this.jsonName, () => this.__setDefaultForNewRow());
   }
   get inputValue() {
     return this.rawValue;
