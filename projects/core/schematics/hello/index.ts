@@ -73,7 +73,7 @@ export function hello(_options: Schema): Rule {
         if (j.projects.hasOwnProperty(p)) {
           const element = j.projects[p];
           element.architect.serve.options.proxyConfig = "proxy.conf.json";
-          element.architect.build.options.styles.push("./node_modules/@remult/input-styles.scss");
+          element.architect.build.options.styles.push("./node_modules/@remult/core/input-styles.scss");
           return;
         }
       }
