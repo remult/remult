@@ -167,6 +167,11 @@
                 "$tsc"
             ],
             "group": "build"
+        },
+        {
+            "type": "npm",
+            "script": "release",
+            "problemMatcher": []
         }
     ]
 }
