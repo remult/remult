@@ -1,6 +1,6 @@
 {
   "name": "radweb-app",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "scripts": {
     "ng": "ng",
     "ng-serve": "ng serve --port 4201",
