@@ -1,7 +1,4 @@
 import { ColumnOptions, DataControlSettings } from '../column-interfaces';
-import { extractSortFromSettings } from '../utils';
-
-
 
 import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase'
 import { ArrayEntityDataProvider } from "../data-providers/ArrayEntityDataProvider";
@@ -23,7 +20,7 @@ import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { CharDateStorage } from '../columns/storage/char-date-storage';
 import { StringColumn } from '../columns/string-column';
 import { Entity } from '../entity';
-import { FindOptions } from '../data-interfaces';
+import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 import { DropDownItem } from 'dist/core';
 
 
@@ -505,7 +502,7 @@ describe("order by api", () => {
   it("works with sort", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => new Sort({ column: c.id }) };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column).toBe(c.id);
 
@@ -514,7 +511,7 @@ describe("order by api", () => {
   it("works with columns", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column).toBe(c.id);
   });
@@ -522,7 +519,7 @@ describe("order by api", () => {
   it("works with columns array", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);
@@ -530,7 +527,7 @@ describe("order by api", () => {
   it("works with segment array", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);
@@ -538,7 +535,7 @@ describe("order by api", () => {
   it("works with mixed column segment array", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);

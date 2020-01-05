@@ -1,4 +1,4 @@
-import {  RowEvents, ValueOrExpression } from "./column-interfaces";
+
 import { CompoundIdColumn } from "./columns/compound-id-column";
 import { EntityDataProvider } from './data-interfaces';
 import { Entity } from './entity';
@@ -86,4 +86,13 @@ export interface ColumnValueProvider {
     getValue(key: string,calcDefaultValue: () => void): any;
     getOriginalValue(key: string): any;
     setValue(key: string, value: any): void;
+}
+
+
+
+
+export interface RowEvents {
+  rowDeleted?: () => void;
+  rowSaved?: (newRow: boolean) => void;
+  rowReset?: (newRow: boolean) => void;
 }

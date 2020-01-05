@@ -78,11 +78,3 @@ export interface ValueListItem {
     caption?: any;
 }
 
-
-
-
-export interface RowEvents {
-    rowDeleted?: () => void;
-    rowSaved?: (newRow: boolean) => void;
-    rowReset?: (newRow: boolean) => void;
-}

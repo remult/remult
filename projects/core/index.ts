@@ -4,10 +4,9 @@
 
 export * from './src/angular/remult-core.module';//V
 export * from './src/data-interfaces';//V
-export * from './src/SqlCommand';//noam todo
-export * from './src/column-interfaces'; 
+export * from './src/SqlCommand';//V
+export * from './src/column-interfaces'; // revisit input type
 export * from './src/data-providers/restDataProvider'; //V
-export * from './src/utils';
 export * from './src/common';
 export * from './src/data-providers/inMemoryDatabase'; //V
 export * from './src/data-providers/ArrayEntityDataProvider';//V

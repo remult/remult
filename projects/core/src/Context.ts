@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere } from "./data-interfaces";
+import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort } from "./data-interfaces";
 import { RestDataProvider } from "./data-providers/restDataProvider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
-import { extractSortFromSettings } from "./utils";
+
 import { InMemoryDataProvider } from "./data-providers/inMemoryDatabase";
 import { DataApiRequest } from "./DataApi";
 import { HttpClient } from "@angular/common/http";
@@ -255,7 +255,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         if (options.where)
             getOptions.where = options.where(this.entity);
         if (options.orderBy)
-            getOptions.orderBy = extractSortFromSettings(this.entity, options);
+            getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
         if (options.limit)
             getOptions.limit = options.limit;
         if (options.page)
