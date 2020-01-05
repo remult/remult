@@ -278,9 +278,9 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { dropDownItems: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.dropDownItems as DropDownItem[];
+    let xx = cs.valueList as DropDownItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);
@@ -295,9 +295,9 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { dropDownItems: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.dropDownItems as DropDownItem[];
+    let xx = cs.valueList as DropDownItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);
@@ -312,9 +312,9 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { dropDownItems: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.dropDownItems as DropDownItem[];
+    let xx = cs.valueList as DropDownItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);
@@ -326,9 +326,9 @@ describe("test row provider", () => {
     let c = new Categories();
 
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { dropDownItems: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }]  } as DataControlSettings<Categories>
+    let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }]  } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.dropDownItems as DropDownItem[];
+    let xx = cs.valueList as DropDownItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(0);
@@ -343,10 +343,10 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, dropDownItems: c.getDropDownItems()  } as DataControlSettings<Categories>
+    let cs = { column: c1.id, valueList: c.getDropDownItems()  } as DataControlSettings<Categories>
     await cc.add(cs);
 
-    let xx = cs.dropDownItems as DropDownItem[];
+    let xx = cs.valueList as DropDownItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);

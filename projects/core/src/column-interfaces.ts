@@ -48,7 +48,7 @@ export interface DataControlSettings<entityType> {
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
 
-    dropDownItems?:  DropDownItem[] | string[] | any[] | Promise<DropDownItem[]> |(()=>Promise<DropDownItem[]>) ;
+    valueList?:  ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> |(()=>Promise<ValueListItem[]>) ;
     inputType?: string; //used: password,date,phone,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
 
@@ -73,7 +73,7 @@ export interface clickable<entityType> {
 
 
 
-export interface DropDownItem {
+export interface ValueListItem {
     id?: any;
     caption?: any;
 }

@@ -1,5 +1,5 @@
 import { Column } from "../column";
-import { ColumnOptions, DropDownItem } from "../column-interfaces";
+import { ColumnOptions, ValueListItem } from "../column-interfaces";
 
 export interface ClosedListItem {
     id: number;
@@ -9,7 +9,7 @@ export interface ClosedListItem {
     constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<closedListType>,settingsOrCaption1?: ColumnOptions<closedListType>) {
       super(settingsOrCaption,settingsOrCaption1);
     }
-    getOptions(): DropDownItem[] {
+    getOptions(): ValueListItem[] {
       let result = [];
       for (let member in this.closedListType) {
         let s = this.closedListType[member] as closedListType;

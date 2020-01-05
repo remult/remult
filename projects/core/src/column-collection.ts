@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
-import { DataControlSettings, DropDownItem, FilteredColumnSetting } from "./column-interfaces";
+import { DataControlSettings, ValueListItem, FilteredColumnSetting } from "./column-interfaces";
 import { Column } from "./column";
 import { Context } from "./Context";
 import { isFunction } from "util";
@@ -73,10 +73,10 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return Promise.resolve();
   }
   async buildDropDown(s: DataControlSettings<any>) {
-    if (s.dropDownItems) {
-      let orig = s.dropDownItems;
-      let result: DropDownItem[] = [];
-      s.dropDownItems = result;
+    if (s.valueList) {
+      let orig = s.valueList;
+      let result: ValueListItem[] = [];
+      s.valueList = result;
 
       if (orig instanceof Array) {
         for (let item of orig) {
@@ -84,7 +84,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
           if (type == "string" || type == "number")
             result.push({ id: item, caption: item });
           else {
-            let x = item as DropDownItem;
+            let x = item as ValueListItem;
             if (x && x.id != undefined) {
               result.push(x);
             }
@@ -92,7 +92,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
         }
       }
       else if (isFunction(orig)) {
-        result.push(...(await (orig as (() => Promise<DropDownItem[]>))()));
+        result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
       }
       else if (orig instanceof Promise)
         result.push(...(await orig));
@@ -124,7 +124,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
   filterRows(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column, false, (col.dropDownItems != undefined || col.click != undefined));
+    this.filterHelper.filterColumn(col.column, false, (col.valueList != undefined || col.click != undefined));
   }
   clearFilter(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
@@ -169,8 +169,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
     }
     else if (col.column) {
-      if (col.dropDownItems ) {
-        for (let x of col.dropDownItems) {
+      if (col.valueList ) {
+        for (let x of col.valueList) {
           if (x.id == this.__getColumn(col, row).value)
             return x.caption;
         }

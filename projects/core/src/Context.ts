@@ -16,7 +16,7 @@ import { IDataSettings, GridSettings } from "./gridSettings";
 import { ColumnHashSet } from "./column-hash-set";
 import { FilterBase } from './filter/filter-interfaces';
 import { Action } from './server-action';
-import { DropDownItem } from './column-interfaces';
+import { ValueListItem } from './column-interfaces';
 
 
 
@@ -301,7 +301,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         captionColumn?: (e: T) => Column<any>,
         orderBy?: EntityOrderBy<T>,
         where?: EntityWhere<T>
-    }): Promise<DropDownItem[]> {
+    }): Promise<ValueListItem[]> {
         if (!args) {
             args = {};
         }

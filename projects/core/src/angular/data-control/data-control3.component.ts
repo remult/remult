@@ -70,7 +70,7 @@ export class DataControl3Component {
 
   }
   isSelect(): boolean {
-    if (this.map.dropDownItems&&this._getEditable())
+    if (this.map.valueList&&this._getEditable())
       return true;
     return false;
   }
