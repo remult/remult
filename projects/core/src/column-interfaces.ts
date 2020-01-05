@@ -77,9 +77,7 @@ export interface ValueListItem {
     id?: any;
     caption?: any;
 }
-export interface FilteredColumnSetting<rowType> extends DataControlSettings<rowType> {
-    _showFilter?: boolean;
-}
+
 
 
 

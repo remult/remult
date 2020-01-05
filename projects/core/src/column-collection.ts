@@ -1,10 +1,13 @@
 import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
-import { DataControlSettings, ValueListItem, FilteredColumnSetting } from "./column-interfaces";
+import { DataControlSettings, ValueListItem } from "./column-interfaces";
 import { Column } from "./column";
 import { Context } from "./Context";
 import { isFunction } from "util";
 
+ interface FilteredColumnSetting<rowType> extends DataControlSettings<rowType> {
+  _showFilter?: boolean;
+}
 export class ColumnCollection<rowType extends Entity<any>> {
   constructor(public currentRow: () => Entity<any>, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private context?: Context) {
 
