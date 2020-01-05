@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider } from "./data-interfaces";
+import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere } from "./data-interfaces";
 import { RestDataProvider } from "./data-providers/restDataProvider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
 import { extractSortFromSettings } from "./utils";
@@ -14,9 +14,9 @@ import { Entity } from "./entity";
 import { Lookup } from "./lookup";
 import { IDataSettings, GridSettings } from "./gridSettings";
 import { ColumnHashSet } from "./column-hash-set";
-import { DropDownSourceArgs, DropDownSource } from "./drop-down-source";
 import { FilterBase } from './filter/filter-interfaces';
 import { Action } from './server-action';
+import { DropDownItem } from './column-interfaces';
 
 
 
@@ -295,8 +295,38 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     gridSettings(settings?: IDataSettings<T>) {
         return new GridSettings(this, this.context, settings);
     }
-    dropDownSource(args?: DropDownSourceArgs<T>) {
-        return new DropDownSource(this, args);
+
+    async getDropDownItems(args?: {
+        idColumn?: (e: T) => Column<any>,
+        captionColumn?: (e: T) => Column<any>,
+        orderBy?: EntityOrderBy<T>,
+        where?: EntityWhere<T>
+    }): Promise<DropDownItem[]> {
+        if (!args) {
+            args = {};
+        }
+        if (!args.idColumn) {
+            args.idColumn = x => x.__idColumn;
+        }
+        if (!args.captionColumn) {
+            let idCol = args.idColumn(this.entity);
+            for (const keyInItem of this.entity.__iterateColumns()) {
+                if (keyInItem != idCol) {
+                    args.captionColumn = x => x.__getColumn(keyInItem);
+                    break;
+                }
+            }
+        }
+        return (await this.find({
+            where: args.where,
+            orderBy: args.orderBy,
+            limit:1000
+          })).map(x => {
+            return {
+              id: args.idColumn(x).value,
+              caption: args.captionColumn(x).value
+            }
+          });
     }
 }
 export interface EntityType {

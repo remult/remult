@@ -67,7 +67,7 @@ export class DataControl2Component {
 
   }
   isSelect(): boolean {
-    if (this.map.dropDown&&this._getEditable())
+    if (this.map.dropDownItems&&this._getEditable())
       return true;
     return false;
   }

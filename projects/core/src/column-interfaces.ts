@@ -1,6 +1,6 @@
 import { Allowed } from './Context';
 import { Column } from './column';
-import { DropDownSource } from './drop-down-source';
+
 
 
 
@@ -15,12 +15,12 @@ export interface ColumnSettings<valueType> {
     key?: string;
     includeInApi?: Allowed;
     allowApiUpdate?: Allowed;
-  
+
     caption?: string;
     defaultValue?: ValueOrExpression<valueType>;
     validate?: () => void | Promise<void>;
     valueChange?: () => void;
-  
+
     dbName?: string;
     sqlExpression?: ValueOrExpression<string>;
     serverExpression?: () => valueType | Promise<valueType>;
@@ -40,18 +40,18 @@ export interface DataControlSettings<entityType> {
     getValue?: (row: entityType) => any;
     readOnly?: boolean;
     cssClass?: (string | ((row: entityType) => string));
-  
+
     caption?: string;
 
-    
+
     click?: (row: entityType) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
-    
-    dropDown?: DropDownOptions;
+
+    dropDownItems?:  DropDownItem[] | string[] | any[] | Promise<DropDownItem[]> |(()=>Promise<DropDownItem[]>) ;
     inputType?: string; //used: password,date,phone,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
-    
+
     width?: string;
 }
 
@@ -61,22 +61,16 @@ export interface displayOptions<entityType> {
     date();
     digits();
     checkbox();
-    dropDown(options: DropDownOptions);
+    //dropDown(options: DropDownOptions);
     text(click?: clickable<entityType>);
 
 }
-export interface clickable<entityType>{
+export interface clickable<entityType> {
     click?: (row: entityType) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
 }
 
-
-export interface DropDownOptions {
-
-    items?: DropDownItem[] | string[] | any[];
-    source?: DropDownSource<any>;
-}
 
 
 export interface DropDownItem {

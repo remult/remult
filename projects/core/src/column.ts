@@ -112,8 +112,8 @@ export class Column<dataType>  {
     }
     if (this.__settings && this.__settings.dataControlSettings) {
       this.__displayResult = this.__settings.dataControlSettings();
-      if (!x.dropDown)
-        x.dropDown = this.__displayResult.dropDown;
+      if (!x.dropDownItems)
+        x.dropDownItems = this.__displayResult.dropDownItems;
       if (!x.inputType)
         x.inputType = this.__displayResult.inputType;
       if (x.hideDataOnInput === undefined)

@@ -46,7 +46,6 @@ export * from './src/filter/filter-helper';
 export * from './src/column-collection';
 export * from './src/column-hash-set';
 export * from './src/data-area-settings';
-export * from './src/drop-down-source';
 export * from './src/url-builder';
 
 export * from './src/filter/filter-interfaces';
