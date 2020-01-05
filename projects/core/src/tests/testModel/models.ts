@@ -1,7 +1,7 @@
 
 import { DataProvider } from "../../data-interfaces";
 
-import { EntityClass } from "../../Context";
+import { EntityClass } from "../../context";
 import { Entity, EntityOptions } from "../../entity";
 import { NumberColumn } from "../../columns/number-column";
 import { StringColumn } from "../../columns/string-column";

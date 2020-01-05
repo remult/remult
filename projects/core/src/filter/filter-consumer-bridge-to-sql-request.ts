@@ -1,5 +1,5 @@
 
-import { SqlCommand } from "../SqlCommand";
+import { SqlCommand } from "../sql-command";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
 import { FilterConsumer } from './filter-interfaces';

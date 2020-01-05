@@ -4,17 +4,17 @@
 
 export * from './src/angular/remult-core.module';//V
 export * from './src/data-interfaces';//V
-export * from './src/SqlCommand';//V
+export * from './src/sql-command';//V
 export * from './src/column-interfaces'; // revisit input type
-export * from './src/data-providers/restDataProvider'; //V
+export * from './src/data-providers/rest-data-provider'; //V
 export * from './src/common';
-export * from './src/data-providers/inMemoryDatabase'; //V
-export * from './src/data-providers/ArrayEntityDataProvider';//V
-export * from './src/data-providers/WebSqlDataProvider';
-export * from './src/data-providers/SqlDatabase';
-export * from './src/data-providers/JsonDataProvider';
-export * from './src/DataApi';
-export * from './src/Context';
+export * from './src/data-providers/in-memory-database'; //V
+export * from './src/data-providers/array-entity-data-provider';//V
+export * from './src/data-providers/web-sql-data-provider';
+export * from './src/data-providers/sql-database';
+export * from './src/data-providers/json-data-provider';
+export * from './src/data-api';
+export * from './src/context';
 export * from './src/jwt-session-manager';
 export * from './src/navigate-to-component-route-service';
 export * from './src/server-action';
@@ -23,7 +23,7 @@ export { BusyService } from './src/angular/wait/busy-service';
 export * from './src/entity';
 export * from './src/column';
 export * from './src/dataList';
-export * from './src/gridSettings';
+export * from './src/grid-settings';
 export * from './src/lookup';
 export * from './src/sort';
 export * from './src/columns/storage/bool-storage';

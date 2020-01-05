@@ -1,7 +1,7 @@
 import { itAsync } from './testHelper.spec';
-import { ServerContext, EntityClass } from '../Context';
+import { ServerContext, EntityClass } from '../context';
 import { Entity } from '../entity';
-import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { NumberColumn } from '../columns/number-column';
 
 

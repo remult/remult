@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
 import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort } from "./data-interfaces";
-import { RestDataProvider } from "./data-providers/restDataProvider";
+import { RestDataProvider } from "./data-providers/rest-data-provider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
 
-import { InMemoryDataProvider } from "./data-providers/inMemoryDatabase";
-import { DataApiRequest } from "./DataApi";
+import { InMemoryDataProvider } from "./data-providers/in-memory-database";
+import { DataApiRequest } from "./data-api";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 
@@ -12,7 +12,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Column } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
-import { IDataSettings, GridSettings } from "./gridSettings";
+import { IDataSettings, GridSettings } from "./grid-settings";
 import { ColumnHashSet } from "./column-hash-set";
 import { FilterBase } from './filter/filter-interfaces';
 import { Action } from './server-action';

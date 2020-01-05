@@ -3,7 +3,7 @@ import { Component, OnChanges, Input, ViewChild, ElementRef, AfterViewInit } fro
 
 import { Column } from '../../column';
 import { Entity } from '../../entity';
-import { GridSettings, RowButton } from '../../gridSettings';
+import { GridSettings, RowButton } from '../../grid-settings';
 import { DataControlSettings } from '../../column-interfaces';
 import { isFunction } from 'util';
 @Component({

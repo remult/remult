@@ -1,6 +1,6 @@
 import { itAsync, Done } from './testHelper.spec';
-import { WebSqlDataProvider } from '../data-providers/WebSqlDataProvider';
-import { ServerContext } from '../Context';
+import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
+import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/SqlDatabase';
 import { Categories } from './testModel/models';
 

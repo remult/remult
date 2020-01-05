@@ -1,4 +1,4 @@
-import { Allowed, Context } from './Context';
+import { Allowed, Context } from './context';
 import { ColumnSettings, ColumnOptions, DataControlSettings, ValueOrExpression } from './column-interfaces';
 
 import { isBoolean } from 'util';

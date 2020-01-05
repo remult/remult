@@ -2,14 +2,14 @@ import 'reflect-metadata';
 
 
 
-import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './Context';
+import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './context';
 
 import { BusyService } from './angular/wait/busy-service';
 
 
-import { DataApiRequest, DataApiResponse } from './DataApi';
-import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/restDataProvider';
-import { SqlDatabase } from './data-providers/SqlDatabase';
+import { DataApiRequest, DataApiResponse } from './data-api';
+import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+import { SqlDatabase } from './data-providers/sql-database';
 
 
 interface inArgs {

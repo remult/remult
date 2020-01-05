@@ -1,7 +1,7 @@
 import { Entity } from '../entity';
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from '../data-interfaces';
 import { FilterBase } from '../filter/filter-interfaces';
-import { ArrayEntityDataProvider } from './ArrayEntityDataProvider';
+import { ArrayEntityDataProvider } from './array-entity-data-provider';
 
 export interface JsonEntityStorage {
   getItem(entityDbName: string): string;

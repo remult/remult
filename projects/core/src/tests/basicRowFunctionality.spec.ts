@@ -1,15 +1,15 @@
 
 
 import { createData } from './RowProvider.spec';
-import { DataApi, DataApiError, DataApiResponse } from '../DataApi';
-import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase';
-import { ArrayEntityDataProvider } from "../data-providers/ArrayEntityDataProvider";
+import { DataApi, DataApiError, DataApiResponse } from '../data-api';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
 import { Categories,  Status } from './testModel/models';
 
-import { Context, Role, Allowed, EntityClass, ServerContext } from '../Context';
-import { WebSqlDataProvider } from '../data-providers/WebSqlDataProvider';
+import { Context, Role, Allowed, EntityClass, ServerContext } from '../context';
+import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
 import { ColumnHashSet } from '../column-hash-set';
 import { Entity } from '../entity';

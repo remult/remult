@@ -1,12 +1,12 @@
 import { ColumnOptions, DataControlSettings } from '../column-interfaces';
 
-import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase'
-import { ArrayEntityDataProvider } from "../data-providers/ArrayEntityDataProvider";
+import { InMemoryDataProvider } from '../data-providers/in-memory-database'
+import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done } from './testHelper.spec';
 
 import { Categories, Status, CategoriesWithValidation } from './testModel/models';
 
-import { Context, ServerContext } from '../Context';
+import { Context, ServerContext } from '../context';
 import { ValueListColumn } from '../columns/value-list-column';
 import { Sort } from '../sort';
 import { ColumnCollection } from '../column-collection';

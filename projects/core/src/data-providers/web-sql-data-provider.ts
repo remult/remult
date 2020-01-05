@@ -1,5 +1,5 @@
 import { DataProvider, EntityDataProvider, __RowsOfDataForTesting } from "../data-interfaces";
-import { SqlCommand, SqlResult, SqlImplementation } from "../SqlCommand";
+import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 
 import { Column } from "../column";

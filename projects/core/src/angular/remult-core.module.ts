@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { Context } from '../Context';
+import { Context } from '../context';
 import { JwtSessionManager } from '../jwt-session-manager';
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from '../navigate-to-component-route-service';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';

@@ -2,7 +2,7 @@ import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
 import { DataControlSettings, ValueListItem } from "./column-interfaces";
 import { Column } from "./column";
-import { Context } from "./Context";
+import { Context } from "./context";
 import { isFunction } from "util";
 
  interface FilteredColumnSetting<rowType> extends DataControlSettings<rowType> {

@@ -1,4 +1,4 @@
-import { Allowed } from './Context';
+import { Allowed } from './context';
 import { Column } from './column';
 
 

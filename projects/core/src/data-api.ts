@@ -1,4 +1,4 @@
-import { DataApiError } from './DataApi';
+import { DataApiError } from './data-api';
 
 
 import { FindOptions, EntityProvider } from './data-interfaces';
@@ -8,7 +8,7 @@ import { Sort } from './sort';
 import { ColumnHashSet } from './column-hash-set';
 import { AndFilter } from './filter/and-filter';
 import { StringColumn } from './columns/string-column';
-import { UserInfo } from './Context';
+import { UserInfo } from './context';
 import { FilterBase } from './filter/filter-interfaces';
 
 export class DataApi<T extends Entity<any>> {
