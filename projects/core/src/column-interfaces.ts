@@ -1,5 +1,6 @@
 import { Allowed } from './context';
 import { Column } from './column';
+import { isFunction } from 'util';
 
 
 
@@ -30,7 +31,13 @@ export interface ColumnSettings<valueType> {
 }
 export declare type ColumnOptions<valueType> = ColumnSettings<valueType> | string;
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
-
+export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
+    if (isFunction(f)) {
+      let x = f as any;
+      return x();
+    }
+    return <T>f;
+  }
 
 
 

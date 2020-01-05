@@ -21,7 +21,7 @@ import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { DataList } from '../dataList';
 import { UrlBuilder } from '../url-builder';
 import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
-import { SqlDatabase } from '../data-providers/SqlDatabase';
+import { SqlDatabase } from '../data-providers/sql-database';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');

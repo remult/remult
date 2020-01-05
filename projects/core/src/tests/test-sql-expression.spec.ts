@@ -3,7 +3,7 @@ import { ServerContext, EntityClass } from '../context';
 import { Entity } from '../entity';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { NumberColumn } from '../columns/number-column';
-import { SqlDatabase } from '../data-providers/SqlDatabase';
+import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 
 describe("test sql database", async () => {

@@ -7,7 +7,6 @@ export * from './src/data-interfaces';//V
 export * from './src/sql-command';//V
 export * from './src/column-interfaces'; // revisit input type
 export * from './src/data-providers/rest-data-provider'; //V
-export * from './src/common';
 export * from './src/data-providers/in-memory-database'; //V
 export * from './src/data-providers/array-entity-data-provider';//V
 export * from './src/data-providers/web-sql-data-provider';

@@ -1,7 +1,5 @@
 import { itAsync, Done } from './testHelper.spec';
-import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { ServerContext } from '../context';
-import { SqlDatabase } from '../data-providers/SqlDatabase';
 import { Categories } from './testModel/models';
 import { JsonDataProvider } from '../data-providers/json-data-provider';
 

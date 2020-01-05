@@ -1,11 +1,11 @@
 import { Context, Allowed } from "./context";
 import { DataApiSettings } from "./data-api";
-import { functionOrString, makeTitle } from "./common";
 import { Column } from "./column";
 
 import { ColumnHashSet } from "./column-hash-set";
 import { FilterBase } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
+import { valueOrExpressionToValue } from './column-interfaces';
 
 //@dynamic
 export class Entity<idType> {
@@ -72,7 +72,7 @@ export class Entity<idType> {
     __getDbName() {
       if (!this.__options.dbName)
         this.__options.dbName = this.__getName();
-      return functionOrString(this.__options.dbName);
+      return valueOrExpressionToValue(this.__options.dbName);
     }
     __getCaption() {
       if (!this.__options.caption) {
@@ -293,3 +293,11 @@ export class Entity<idType> {
     validate?: (e: Entity<any>) => Promise<any> | any;
   }
   
+   function makeTitle(name: string) {
+
+    // insert a space before all caps
+    return name.replace(/([A-Z])/g, ' $1')
+      // uppercase the first character
+      .replace(/^./, (str) => str.toUpperCase()).replace('Email', 'eMail').replace(" I D", " ID");
+  
+  }
