@@ -9,7 +9,7 @@ import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
 import { Context } from '../context';
 import { JwtSessionManager } from '../jwt-session-manager';
-import { NotSignedInGuard, SignedInGuard, RouteHelperService } from '../navigate-to-component-route-service';
+import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BusyService, LoaderInterceptor } from './wait/busy-service';

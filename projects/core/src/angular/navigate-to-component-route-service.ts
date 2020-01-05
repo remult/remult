@@ -1,6 +1,6 @@
 import { Router, Route, CanActivate, ActivatedRouteSnapshot } from '@angular/router';
 import { Injectable, Injector } from '@angular/core';
-import { Context, Allowed, AngularComponent } from './context';
+import { Context, Allowed, AngularComponent } from '../context';
 @Injectable()
 export class RouteHelperService {
     constructor(private router: Router, private injector: Injector) {
