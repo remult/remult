@@ -10,7 +10,7 @@ import { itAsync, Done } from './testHelper.spec';
 import { Categories, Status, CategoriesWithValidation } from './testModel/models';
 
 import { Context, ServerContext } from '../Context';
-import { ClosedListColumn } from '../columns/closed-list-column';
+import { ValueListColumn } from '../columns/value-list-column';
 import { Sort } from '../sort';
 import { ColumnCollection } from '../column-collection';
 import { NumberColumn } from '../columns/number-column';
@@ -27,16 +27,11 @@ import { FindOptions } from '../data-interfaces';
 import { DropDownItem } from 'dist/core';
 
 
-//import { DataAreaCompnent } from '../utils/angular/dataArea';
 
-
-export class LanguageColumn extends ClosedListColumn<Language> {
+export class LanguageColumn extends ValueListColumn<Language> {
   constructor() {
     super(Language, 'שפה');
   }
-
-
-
 }
 
 export class Language {
@@ -44,11 +39,8 @@ export class Language {
   static Russian = new Language(10, 'רוסית');
   static Amharit = new Language(20, 'אמהרית');
   constructor(public id: number,
-    private caption: string) {
+    public caption: string) {
 
-  }
-  toString() {
-    return this.caption;
   }
 
 }
@@ -108,6 +100,7 @@ describe("Closed List  column", () => {
 
   });
 });
+
 
 describe("test row provider", () => {
   it("auto name", () => {
@@ -326,7 +319,7 @@ describe("test row provider", () => {
     let c = new Categories();
 
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }]  } as DataControlSettings<Categories>
+    let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as DropDownItem[];
     expect(xx.length).toBe(2);
@@ -343,7 +336,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, valueList: c.getDropDownItems()  } as DataControlSettings<Categories>
+    let cs = { column: c1.id, valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.add(cs);
 
     let xx = cs.valueList as DropDownItem[];

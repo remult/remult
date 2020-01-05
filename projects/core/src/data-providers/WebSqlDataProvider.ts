@@ -7,7 +7,7 @@ import { Entity } from "../entity";
 import { DateTimeColumn } from "../columns/datetime-column";
 import { DateColumn } from "../columns/date-column";
 import { BoolColumn, NumberColumn } from "../columns/number-column";
-import { ClosedListColumn } from "../columns/closed-list-column";
+import { ValueListColumn } from "../columns/value-list-column";
 
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
@@ -57,7 +57,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 result += " integer default 0 not null";
             else
                 result += ' real default 0 not null';
-        } else if (x instanceof ClosedListColumn) {
+        } else if (x instanceof ValueListColumn) {
             result += ' integer default 0 not null';
         }
         else

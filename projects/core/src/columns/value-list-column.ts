@@ -1,28 +1,22 @@
 import { Column } from "../column";
 import { ColumnOptions, ValueListItem } from "../column-interfaces";
 
-export interface ClosedListItem {
-    id: number;
-    toString(): string;
-  }
-  export class ClosedListColumn<closedListType extends ClosedListItem> extends Column<closedListType> {
-    constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<closedListType>,settingsOrCaption1?: ColumnOptions<closedListType>) {
+
+  export class ValueListColumn<T extends ValueListItem> extends Column<T> {
+    constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<T>,settingsOrCaption1?: ColumnOptions<T>) {
       super(settingsOrCaption,settingsOrCaption1);
     }
     getOptions(): ValueListItem[] {
       let result = [];
       for (let member in this.closedListType) {
-        let s = this.closedListType[member] as closedListType;
+        let s = this.closedListType[member] as T;
         if (s && s.id != undefined) {
-          result.push({
-            id: s.id,
-            caption: s.toString()
-          })
+          result.push(s)
         }
       }
       return result;
     }
-    toRawValue(value: closedListType) {
+    toRawValue(value: T) {
       return value.id;
     }
     fromRawValue(value: any) {
@@ -34,9 +28,9 @@ export interface ClosedListItem {
         return this.value.toString();
       return '';
     }
-    byId(id: number): closedListType {
+    byId(id: number): T {
       for (let member in this.closedListType) {
-        let s = this.closedListType[member] as closedListType;
+        let s = this.closedListType[member] as T;
         if (s && s.id == id)
           return s;
       }

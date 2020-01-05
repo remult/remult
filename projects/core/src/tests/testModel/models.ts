@@ -5,7 +5,7 @@ import { EntityClass } from "../../Context";
 import { Entity, EntityOptions } from "../../entity";
 import { NumberColumn } from "../../columns/number-column";
 import { StringColumn } from "../../columns/string-column";
-import { ClosedListColumn } from "../../columns/closed-list-column";
+import { ValueListColumn } from "../../columns/value-list-column";
 
 export const environment = {
   production: false
@@ -50,7 +50,7 @@ export class Status {
     return this.name;
   }
 }
-export class StatusColumn extends ClosedListColumn<Status> {
+export class StatusColumn extends ValueListColumn<Status> {
   constructor() {
     super(Status);
   }

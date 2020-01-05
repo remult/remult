@@ -1,4 +1,4 @@
-import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ClosedListColumn, allEntities, SqlImplementation } from '@remult/core';
+import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ValueListColumn, allEntities, SqlImplementation } from '@remult/core';
 
 import { Pool, QueryResult } from 'pg';
 
@@ -127,7 +127,7 @@ export class PostgrestSchemaBuilder {
                 result += " int default 0 not null";
             else
                 result += ' numeric default 0 not null';
-        } else if (x instanceof ClosedListColumn) {
+        } else if (x instanceof ValueListColumn) {
             result += ' int default 0 not null';
         }
         else

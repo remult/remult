@@ -32,7 +32,7 @@ export * from './src/columns/storage/char-date-storage';
 export * from './src/columns/storage/datetime-date-storage';
 export * from './src/columns/storage/datetime-storage';
 export * from './src/columns/storage/default-storage';
-export * from './src/columns/closed-list-column';
+export * from './src/columns/value-list-column';
 export * from './src/columns/compound-id-column';
 export * from './src/columns/date-column';
 export * from './src/columns/datetime-column';
