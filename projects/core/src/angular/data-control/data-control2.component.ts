@@ -5,7 +5,7 @@ import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { Column } from '../../column';
 import { Entity } from '../../entity';
-import { DataControlSettings } from '../../column-interfaces';
+import { DataControlSettings, ValueListItem } from '../../column-interfaces';
 import { ColumnCollection } from '../../column-collection';
 import { StringColumn } from '../../columns/string-column';
 @Component({
@@ -28,6 +28,9 @@ export class DataControl2Component {
   showDescription() {
 
     return (this.map.column) && this.map.getValue || !this._getEditable();
+  }
+  getDropDown():ValueListItem[]{
+    return this.map.valueList as ValueListItem[];
   }
   showClick() {
     if (!this.map.click)

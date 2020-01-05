@@ -173,7 +173,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     }
     else if (col.column) {
       if (col.valueList ) {
-        for (let x of col.valueList) {
+        for (let x of (col.valueList as ValueListItem[] )) {
           if (x.id == this.__getColumn(col, row).value)
             return x.caption;
         }
