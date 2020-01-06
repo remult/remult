@@ -53,7 +53,7 @@ class PostgrestBridgeToSQLCommand implements SqlCommand {
 
     }
     values: any[] = [];
-    addParameterAndReturnSqlToken(col: Column<any>, val: any): string {
+    addParameterAndReturnSqlToken(val: any): string {
         this.values.push(val);
         return '$' + this.values.length;
     }
@@ -75,7 +75,7 @@ class PostgressBridgeToSQLQueryResult implements SqlResult {
 
 
 
-export class PostgrestSchemaBuilder {
+export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities() {
         console.log("start verify structure");
         let context = new ServerContext();
@@ -84,7 +84,7 @@ export class PostgrestSchemaBuilder {
             try {
 
                 if (x.__getDbName().toLowerCase().indexOf('from ') < 0) {
-                    await this.CreateIfNotExist(x);
+                    await this.createIfNotExist(x);
                     await this.verifyAllColumns(x);
                 }
             }
@@ -93,10 +93,11 @@ export class PostgrestSchemaBuilder {
             }
         }
     }
-    async CreateIfNotExist(e: Entity<any>): Promise<void> {
-        await this.pool.query("select 1 from information_Schema.tables where table_name=$1" + this.additionalWhere, [e.__getDbName().toLowerCase()]).then(async r => {
+    async createIfNotExist(e: Entity<any>): Promise<void> {
+        var c = this.pool.createCommand();
+        await c.execute("select 1 from information_Schema.tables where table_name="+c.addParameterAndReturnSqlToken(e.__getDbName().toLowerCase())  + this.additionalWhere).then(async r => {
 
-            if (r.rowCount == 0) {
+            if (r.rows.length == 0) {
                 let result = '';
                 e.__iterateColumns().forEach(x => {
                     if (!x.__dbReadOnly()) {
@@ -110,7 +111,7 @@ export class PostgrestSchemaBuilder {
                 });
                 let sql = 'create table ' + e.__getDbName() + ' (' + result + '\r\n)';
                 console.log(sql);
-                await this.pool.query(sql);
+                await this.pool.execute(sql);
             }
         });
     }
@@ -139,15 +140,16 @@ export class PostgrestSchemaBuilder {
         if (c(e).__dbReadOnly())
             return;
         try {
+            let cmd = this.pool.createCommand();
+
             if (
-                (await this.pool.query(`select 1   
+                (await cmd.execute(`select 1   
         FROM information_schema.columns 
-        WHERE table_name=$1 and column_name=$2`+ this.additionalWhere,
-                    [e.__getDbName().toLocaleLowerCase(),
-                    c(e).__getDbName().toLocaleLowerCase()])).rowCount == 0) {
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.__getDbName().toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken(c(e).__getDbName().toLocaleLowerCase())}` + this.additionalWhere
+                )).rows.length == 0) {
                 let sql = `alter table ${e.__getDbName()} add column ${this.addColumnSqlSyntax(c(e))}`;
                 console.log(sql);
-                await this.pool.query(sql);
+                await this.pool.execute(sql);
             }
         }
         catch (err) {
@@ -160,7 +162,7 @@ export class PostgrestSchemaBuilder {
         }));
     }
     additionalWhere = '';
-    constructor(private pool: PostgresPool, schema?: string) {
+    constructor(private pool: SqlDatabase, schema?: string) {
         if (schema) {
             this.additionalWhere = ' and table_schema=\'' + schema + '\'';
         }

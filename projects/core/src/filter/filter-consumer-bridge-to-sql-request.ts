@@ -36,7 +36,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   
         this.where += ' where ';
       } else this.where += ' and ';
-      this.where += col.__getDbName() + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col, val);
+      this.where += col.__getDbName() + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken( val);
   
     }
   

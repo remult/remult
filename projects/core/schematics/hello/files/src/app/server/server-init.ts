@@ -2,7 +2,7 @@ import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, PostgrestSchemaBuilder } from '@remult/server-postgres';
+import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
 import * as passwordHash from 'password-hash';
 
 import '../app.module';
@@ -35,7 +35,7 @@ export async function serverInit() {
         generateHash: p => passwordHash.generate(p),
         verify: (p, h) => passwordHash.verify(p, h)
     }
-    await new PostgrestSchemaBuilder(pool).verifyStructureOfAllEntities();
+    await new PostgresSchemaBuilder(pool).verifyStructureOfAllEntities();
     return new SqlDatabase( new PostgresDataProvider(pool));
 
 }
