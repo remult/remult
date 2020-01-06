@@ -1,4 +1,4 @@
-import { DataApiError } from './data-api';
+
 
 
 import { FindOptions, EntityProvider } from './data-interfaces';
@@ -14,7 +14,7 @@ import { FilterBase } from './filter/filter-interfaces';
 export class DataApi<T extends Entity<any>> {
   getRoute() {
     if (!this.options.name)
-      return this.entityProvider.create().__getName();
+      return this.entityProvider.create().defs.name;
     return this.options.name;
   }
   constructor(private entityProvider: EntityProvider<T>, private options?: DataApiSettings<T>, t?: T) {
@@ -55,7 +55,7 @@ export class DataApi<T extends Entity<any>> {
       return;
     }
     try {
-      let findOptions: FindOptions<any> = {};
+      let findOptions: FindOptions<T> = {};
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
@@ -71,7 +71,7 @@ export class DataApi<T extends Entity<any>> {
           findOptions.orderBy = x => {
             let r = new Sort();
             sort.split(',').forEach((name, i) => {
-              let col = x.__getColumnByJsonName(name.trim());
+              let col = x.columns.find(name.trim());
               if (col) {
                 r.Segments.push({
                   column: col,
@@ -104,7 +104,7 @@ export class DataApi<T extends Entity<any>> {
     if (this.options && this.options.get && this.options.get.where)
       where = this.options.get.where(rowType);
     if (request) {
-      rowType.__iterateColumns().forEach(col => {
+      rowType.columns.toArray().forEach(col => {
         function addFilter(key: string, theFilter: (val: any) => FilterBase) {
           let val = request.get(col.jsonName + key);
           if (val != undefined) {

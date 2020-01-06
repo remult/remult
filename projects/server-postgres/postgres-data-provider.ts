@@ -83,23 +83,23 @@ export class PostgresSchemaBuilder {
             let x = context.for(entity).create();
             try {
 
-                if (x.__getDbName().toLowerCase().indexOf('from ') < 0) {
+                if (x.defs.name.toLowerCase().indexOf('from ') < 0) {
                     await this.createIfNotExist(x);
                     await this.verifyAllColumns(x);
                 }
             }
             catch (err) {
-                console.log("failed verify structore of " + x.__getDbName() + " ", err);
+                console.log("failed verify structore of " + x.defs.dbName + " ", err);
             }
         }
     }
     async createIfNotExist(e: Entity<any>): Promise<void> {
         var c = this.pool.createCommand();
-        await c.execute("select 1 from information_Schema.tables where table_name="+c.addParameterAndReturnSqlToken(e.__getDbName().toLowerCase())  + this.additionalWhere).then(async r => {
+        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken(e.defs.dbName.toLowerCase()) + this.additionalWhere).then(async r => {
 
             if (r.rows.length == 0) {
                 let result = '';
-                e.__iterateColumns().forEach(x => {
+                for (const x of e.columns) {
                     if (!x.__dbReadOnly()) {
                         if (result.length != 0)
                             result += ',';
@@ -108,15 +108,16 @@ export class PostgresSchemaBuilder {
                         if (x == e.__idColumn)
                             result += ' primary key';
                     }
-                });
-                let sql = 'create table ' + e.__getDbName() + ' (' + result + '\r\n)';
+                }
+
+                let sql = 'create table ' + e.defs.dbName + ' (' + result + '\r\n)';
                 console.log(sql);
                 await this.pool.execute(sql);
             }
         });
     }
     private addColumnSqlSyntax(x: Column<any>) {
-        let result = x.__getDbName();
+        let result = x.defs.dbName;
         if (x instanceof DateTimeColumn)
             result += " timestamp";
         else if (x instanceof DateColumn)
@@ -145,9 +146,9 @@ export class PostgresSchemaBuilder {
             if (
                 (await cmd.execute(`select 1   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.__getDbName().toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken(c(e).__getDbName().toLocaleLowerCase())}` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.defs.dbName.toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken(c(e).defs.dbName.toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
-                let sql = `alter table ${e.__getDbName()} add column ${this.addColumnSqlSyntax(c(e))}`;
+                let sql = `alter table ${e.defs.dbName} add column ${this.addColumnSqlSyntax(c(e))}`;
                 console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -157,7 +158,7 @@ export class PostgresSchemaBuilder {
         }
     }
     async verifyAllColumns<T extends Entity<any>>(e: T) {
-        await Promise.all(e.__iterateColumns().map(async column => {
+        await Promise.all(e.columns.toArray().map(async column => {
             await this.addColumnIfNotExist(e, () => column);
         }));
     }

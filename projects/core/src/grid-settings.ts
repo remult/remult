@@ -60,7 +60,7 @@ export class GridSettings<rowType extends Entity<any>>  {
         if (settings.caption)
           this.caption = settings.caption;
         if (!this.caption && entityProvider) {
-          this.caption = entityProvider.create().__getCaption();
+          this.caption = entityProvider.create().defs.caption;
         }
         this.setGetOptions(settings.get);
   

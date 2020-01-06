@@ -24,7 +24,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   __getColumn(map: DataControlSettings<any>, record: Entity<any>) {
     let result: Column<any>;
     if (record)
-      result = record.__getColumn(map.column);
+      result = record.columns.find(map.column);
     if (!result)
       result = map.column;
     return result;
@@ -210,7 +210,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     if (this.items.length == 0) {
 
       if (r) {
-        this.add(...r.__iterateColumns());
+        this.add(...r.columns);
 
       }
     }
@@ -221,7 +221,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   __columnSettingsTypeScript() {
     let memberName = 'x';
     if (this.currentRow())
-      memberName = this.currentRow().__getName();
+      memberName = this.currentRow().defs.name;
     memberName = memberName[0].toLocaleLowerCase() + memberName.substring(1);
     let result = ''
 

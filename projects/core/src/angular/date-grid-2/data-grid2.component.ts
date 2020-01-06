@@ -136,7 +136,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     if (!message)
       message = "";
     let foundStateErrors = false;
-    row.__iterateColumns().forEach(c => {
+    for (const c of row.columns) {
       if (c.error) {
         if (!foundStateErrors) {
           foundStateErrors = true;
@@ -146,7 +146,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
         m += c.error;
         message += m + "\n";
       }
-    });
+    }
     alert(message);
   }
 

@@ -33,7 +33,7 @@ export class FilterHelper<rowType extends Entity<any>> {
     addToFindOptions(opt: FindOptions<rowType>) {
       this.filterColumns.forEach(c => {
   
-        let val = this.filterRow.__getColumn(c).value;
+        let val = this.filterRow.columns.find(c).value;
         let f: FilterBase = c.isEqualTo(val);
         if (c instanceof StringColumn) {
           let fe = this.forceEqual;

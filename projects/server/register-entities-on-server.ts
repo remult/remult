@@ -16,7 +16,7 @@ export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProvi
             let t = ep.create();
             let y = t._getEntityApiSettings(c);
             if (y.allowRead === undefined)
-                errors += '\r\n' + x.__getName()
+                errors += '\r\n' + x.defs.name;
             return new DataApi(ep, y, t);
         });
 

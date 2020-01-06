@@ -33,8 +33,8 @@ export class Column<dataType>  {
   }
   __dbReadOnly() {
     if (this.__settings)
-      if ( this.__settings.dbReadOnly||this.__settings.sqlExpression)
-      return true;
+      if (this.__settings.dbReadOnly || this.__settings.sqlExpression)
+        return true;
     return this.__isVirtual();
   }
   __clearErrors(): any {
@@ -53,6 +53,12 @@ export class Column<dataType>  {
   includeInApi: Allowed = true;
 
   private __settings: ColumnSettings<dataType>;
+  private __defs: ColumnDefs;
+  get defs() {
+    if (!this.__defs)
+      this.__defs = new ColumnDefs(this.__settings, this.jsonName);
+    return this.__defs;
+  }
   __getMemberName() { return this.jsonName; }
   static consolidateOptions(options: ColumnOptions<any>, options1?: ColumnOptions<any>): ColumnSettings<any> {
     let result: ColumnSettings<any>;
@@ -166,15 +172,7 @@ export class Column<dataType>  {
     return new DefaultStorage<any>();
   }
   error: string;
-  __getDbName(): string {
-    if (this.__settings.sqlExpression) {
-      return valueOrExpressionToValue(this.__settings.sqlExpression);
-    }
-    if (this.__settings.dbName)
-      return this.__settings.dbName;
 
-    return this.jsonName;
-  }
 
   allowApiUpdate: Allowed = true;
 
@@ -274,5 +272,18 @@ class dummyColumnStorage implements ColumnValueProvider {
   public setValue(key: string, value: string): void {
     this._val = value;
     this._wasSet = true;
+  }
+}
+export class ColumnDefs {
+  constructor(private settings: ColumnSettings<any>, private jsonName: string) {
+
+  }
+  get dbName(): string {
+    if (this.settings.sqlExpression) {
+      return valueOrExpressionToValue(this.settings.sqlExpression);
+    }
+    if (this.settings.dbName)
+      return this.settings.dbName;
+    return this.jsonName;
   }
 }

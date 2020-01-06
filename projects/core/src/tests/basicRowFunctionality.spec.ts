@@ -98,7 +98,7 @@ describe('Test basic row functionality', () => {
     let y = new Context().for( Categories).create();
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
-    expect(y.__getColumn(x.categoryName).value).toBe('yael');
+    expect(y.columns.find(x.categoryName).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
     let x = new Context().for( Categories).create();
@@ -135,7 +135,7 @@ describe('Test basic row functionality', () => {
     x.id.value = 1;
     x.name1.value = 'a';
     var y = new myTestEntity();
-    expect(x.__getColumn(y.name1).value).toBe('a');
+    expect(x.columns.find(y.name1).value).toBe('a');
 
 
   });
@@ -988,7 +988,7 @@ describe("data api", () => {
 
   it("columnsAreOk", () => {
     let c = new Context().for( Categories).create();
-    expect(c.__iterateColumns().length).toBe(6);
+    expect(c.columns.toArray().length).toBe(6);
 
   });
 
@@ -1036,7 +1036,7 @@ describe("compund id", () => {
     let mem = new InMemoryDataProvider();
     let s = ctx.for(CompoundIdEntity, mem);
 
-    mem.rows[s.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[s.create().defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     var r = await s.find();
@@ -1057,7 +1057,7 @@ describe("compund id", () => {
   itAsync("update", async () => {
     let mem = new InMemoryDataProvider();
     let c = ctx.for(CompoundIdEntity, mem);
-    mem.rows[c.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.create().defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     var r = await c.find();
@@ -1069,14 +1069,14 @@ describe("compund id", () => {
     expect(r[0].c.value).toBe(55);
 
 
-    expect(mem.rows[c.create().__getName()][0].c).toBe(55);
-    expect(mem.rows[c.create().__getName()][0].id).toBe(undefined);
+    expect(mem.rows[c.create().defs.name][0].c).toBe(55);
+    expect(mem.rows[c.create().defs.name][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,11');
   });
   itAsync("update2", async () => {
     let mem = new InMemoryDataProvider();
     let c = ctx.for(CompoundIdEntity, mem);
-    mem.rows[c.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.create().defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     var r = await c.find();
@@ -1084,33 +1084,33 @@ describe("compund id", () => {
     let saved = await r[0].save();
 
 
-    expect(mem.rows[c.create().__getName()][0].b).toBe(55);
-    expect(mem.rows[c.create().__getName()][0].id).toBe(undefined);
+    expect(mem.rows[c.create().defs.name][0].b).toBe(55);
+    expect(mem.rows[c.create().defs.name][0].id).toBe(undefined);
     expect(r[0].id.value).toBe('1,55');
   });
   itAsync("insert", async () => {
     let mem = new InMemoryDataProvider();
     let c = ctx.for(CompoundIdEntity, mem).create();
-    mem.rows[c.__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     c.a.value = 3;
     c.b.value = 33;
     c.c.value = 3333;
     await c.save();
-    expect(mem.rows[c.__getName()][2].b).toBe(33);
-    expect(mem.rows[c.__getName()][2].id).toBe(undefined);
+    expect(mem.rows[c.defs.name][2].b).toBe(33);
+    expect(mem.rows[c.defs.name][2].id).toBe(undefined);
     expect(c.id.value).toBe('3,33');
   });
   itAsync("delete", async () => {
     let mem = new InMemoryDataProvider();
     let c = ctx.for(CompoundIdEntity, mem);
-    mem.rows[c.create().__getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.create().defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
     let r = await c.find();
     await r[1].delete();
-    expect(mem.rows[c.create().__getName()].length).toBe(1);
-    expect(mem.rows[c.create().__getName()][0].a).toBe(1);
+    expect(mem.rows[c.create().defs.name].length).toBe(1);
+    expect(mem.rows[c.create().defs.name][0].a).toBe(1);
   });
 
 });
@@ -1130,13 +1130,13 @@ describe("test data list", () => {
   it("dbname string works", () => {
     let i = 0;
     var co = new StringColumn({ dbName: 'test' });
-    expect(co.__getDbName()).toBe('test');
+    expect(co.defs.dbName).toBe('test');
   });
   it("dbname calcs Late", () => {
     let i = 0;
     var co = new StringColumn({ sqlExpression: () => 'test' + (i++) });
     expect(i).toBe(0);
-    expect(co.__getDbName()).toBe('test0');
+    expect(co.defs.dbName).toBe('test0');
     expect(i).toBe(1);
   });
   it("dbname of entity string works", () => {
@@ -1144,11 +1144,11 @@ describe("test data list", () => {
       name: 'testName',
       dbName: 'test'
     });
-    expect(e.__getDbName()).toBe('test');
+    expect(e.defs.dbName).toBe('test');
   });
   it("dbname of entity can use column names", () => {
     var e = new EntityWithLateBoundDbName();
-    expect(e.__getDbName()).toBe('(select CategoryID)');
+    expect(e.defs.dbName).toBe('(select CategoryID)');
   });
 
   itAsync("delete fails nicely", async () => {
@@ -1343,9 +1343,9 @@ export class EntityWithLateBoundDbName extends Entity<number> {
     super(
       {
         name: 'stam',
-        dbName: () => '(select ' + this.id.__getDbName() + ')'
+        dbName: () => '(select ' + this.id.defs.dbName + ')'
 
       });
     this.__initColumns();
   }
-}
+} 

@@ -27,6 +27,7 @@ export interface EntityProvider<T extends Entity<any>> {
     find(options?: FindOptions<T>): Promise<T[]>
     count(where?: EntityWhere<T>): Promise<number>;
     create(): T;
+    
 }
 
 export declare type EntityWhere<entityType extends Entity<any>> = (entityType: entityType) => FilterBase;

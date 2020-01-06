@@ -11,7 +11,7 @@ export class RestDataProvider implements DataProvider {
 
   }
   public getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
-    return new RestEntityDataProvider(this.url + '/' + entity.__getName(), this.http);
+    return new RestEntityDataProvider(this.url + '/' + entity.defs.name, this.http);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");

@@ -117,9 +117,7 @@ export class Context {
             r = new SpecificEntityHelper<lookupIdType, T>(() => {
                 let e = new c(this);
                 e.__initColumns((<any>e).id);
-                if (!e.__options.name) {
-                    e.__options.name = c.name;
-                }
+
                 return e;
             }, this._lookupCache, this, dataSource);
             dsCache.set(classKey, r);
@@ -183,6 +181,16 @@ export class ServerContext extends Context {
 
 
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
+    _configureApi(readonlyColumns: ColumnHashSet, excludedColumns: ColumnHashSet): import("./data-api").DataApiSettings<T> {
+        let op = this.entity._getEntityApiSettings(this.context);
+        if (op.readonlyColumns)
+            readonlyColumns.add(...op.readonlyColumns(this.entity));
+        if (op.excludeColumns) {
+            excludedColumns.add(...op.excludeColumns(this.entity));
+            readonlyColumns.add(...op.excludeColumns(this.entity));
+        }
+        return op;
+    }
     private entity: T;
     private _edp: EntityDataProvider;
     private _factory: (newRow: boolean) => T;
@@ -192,12 +200,12 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             e.__entityData.dataProvider = this._edp;
             if (this.context.onServer)
                 e.__entityData.initServerExpressions = async () => {
-                    await Promise.all(e.__iterateColumns().map(async c => {
+                    await Promise.all(e.columns.toArray().map(async c => {
                         await c.__calcServerExpression();
                     }));
                 }
             if (newRow) {
-                e.__iterateColumns().forEach(c => { c.__setDefaultForNewRow() });
+                e.columns.toArray().forEach(c => { c.__setDefaultForNewRow() });
             }
             return e;
         };
@@ -211,7 +219,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
     lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
 
-        let key = this.entity.__getName();
+        let key = this.entity.defs.name;
         let lookup: Lookup<lookupIdType, T>;
         this._lookupCache.forEach(l => {
             if (l.key == key)
@@ -226,7 +234,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
     lookupAsync(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): Promise<T> {
 
-        let key = this.entity.__getName();
+        let key = this.entity.defs.name;
         let lookup: Lookup<lookupIdType, T>;
         this._lookupCache.forEach(l => {
             if (l.key == key)
@@ -290,9 +298,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
     toPojoArray(items: T[]) {
         let exc = new ColumnHashSet();
-
-        exc.add(...this.entity._getExcludedColumns(this.entity, this.context));
-
+        exc.add(...this.entity.columns.toArray().filter(c => !this.context.isAllowed(c.includeInApi)));
         return Promise.all(items.map(f => f.__toPojo(exc)));
     }
 
@@ -314,9 +320,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         }
         if (!args.captionColumn) {
             let idCol = args.idColumn(this.entity);
-            for (const keyInItem of this.entity.__iterateColumns()) {
+            for (const keyInItem of this.entity.columns) {
                 if (keyInItem != idCol) {
-                    args.captionColumn = x => x.__getColumn(keyInItem);
+                    args.captionColumn = x => x.columns.find(keyInItem);
                     break;
                 }
             }
@@ -324,13 +330,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return (await this.find({
             where: args.where,
             orderBy: args.orderBy,
-            limit:1000
-          })).map(x => {
+            limit: 1000
+        })).map(x => {
             return {
-              id: args.idColumn(x).value,
-              caption: args.captionColumn(x).value
+                id: args.idColumn(x).value,
+                caption: args.captionColumn(x).value
             }
-          });
+        });
     }
 }
 export interface EntityType {

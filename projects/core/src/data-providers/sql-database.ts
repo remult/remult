@@ -18,8 +18,8 @@ export class SqlDatabase implements DataProvider {
   getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async () => {
-      if (this.createdEntities.indexOf(entity.__getDbName()) < 0) {
-        this.createdEntities.push(entity.__getDbName());
+      if (this.createdEntities.indexOf(entity.defs.dbName) < 0) {
+        this.createdEntities.push(entity.defs.dbName);
         await this.sql.entityIsUsedForTheFirstTime(entity);
       }
     });
@@ -74,7 +74,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
   async  count(where: FilterBase): Promise<number> {
     await this.iAmUsed();
-    let select = 'select count(*) count from ' + this.entity.__getDbName();
+    let select = 'select count(*) count from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
     if (where) {
       let wc = new FilterConsumerBridgeToSqlRequest(r);
@@ -91,18 +91,19 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     await this.iAmUsed();
     let select = 'select ';
     let colKeys: Column<any>[] = [];
-    this.entity.__iterateColumns().forEach(x => {
+    for (const x of this.entity.columns) {
       if (x.__isVirtual()) {
 
       }
       else {
         if (colKeys.length > 0)
           select += ', ';
-        select += x.__getDbName();
+        select += x.defs.dbName;
         colKeys.push(x);
       }
-    });
-    select += ' from ' + this.entity.__getDbName();
+    }
+
+    select += ' from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
     if (options) {
       if (options.where) {
@@ -119,7 +120,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           }
           else
             select += ', ';
-          select += c.column.__getDbName();
+          select += c.column.defs.dbName;
           if (c.descending)
             select += ' desc';
         });
@@ -154,13 +155,12 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
     this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
-    let statement = 'update ' + this.entity.__getDbName() + ' set ';
+    let statement = 'update ' + this.entity.defs.dbName + ' set ';
     let added = false;
     let resultFilter = this.entity.__idColumn.isEqualTo(id);
     if (data.id != undefined)
       resultFilter = this.entity.__idColumn.isEqualTo(data.id);
-
-    this.entity.__iterateColumns().forEach(x => {
+    for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
       } if (x.__dbReadOnly()) { }
@@ -172,10 +172,11 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             statement += ', ';
 
-          statement += x.__getDbName() + ' = ' + r.addParameterAndReturnSqlToken(v);
+          statement += x.defs.dbName + ' = ' + r.addParameterAndReturnSqlToken(v);
         }
       }
-    });
+    }
+
     statement += f.where;
 
     return r.execute(statement).then(() => {
@@ -190,7 +191,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
     this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
-    let statement = 'delete from ' + this.entity.__getDbName();
+    let statement = 'delete from ' + this.entity.defs.dbName;
     let added = false;
 
     statement += f.where;
@@ -211,8 +212,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let vals = '';
     let added = false;
     let resultFilter = this.entity.__idColumn.isEqualTo(data[this.entity.__idColumn.jsonName]);
-
-    this.entity.__iterateColumns().forEach((x: any) => {
+    for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }
@@ -228,13 +228,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
             vals += ', ';
           }
 
-          cols += x.__getDbName();
+          cols += x.defs.dbName;
           vals += r.addParameterAndReturnSqlToken(v);
         }
       }
-    });
+    }
 
-    let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
+
+    let statement = `insert into ${this.entity.defs.dbName} (${cols}) values (${vals})`;
 
     return r.execute(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => {

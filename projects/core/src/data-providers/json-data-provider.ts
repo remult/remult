@@ -28,11 +28,11 @@ class JsonEntityDataProvider implements EntityDataProvider {
   }
   async loadEntityData(what: (dp: EntityDataProvider, save: () => void) => any): Promise<any> {
     let data = [];
-    let s = this.helper.getItem(this.entity.__getDbName());
+    let s = this.helper.getItem(this.entity.defs.dbName);
     if (s)
       data = JSON.parse(s);
     let dp = new ArrayEntityDataProvider(this.entity, data);
-    return what(dp, () => this.helper.setItem(this.entity.__getDbName(), JSON.stringify(data, undefined, 2)));
+    return what(dp, () => this.helper.setItem(this.entity.defs.dbName, JSON.stringify(data, undefined, 2)));
   }
   p: Promise<any> = Promise.resolve();
   find(options?: EntityDataProviderFindOptions): Promise<any[]> {

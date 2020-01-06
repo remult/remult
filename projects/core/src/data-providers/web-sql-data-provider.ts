@@ -16,14 +16,14 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     /** @internal */
     //@ts-ignore
     db: Database;
-    
+
     constructor(private databaseName: string) {
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-     async entityIsUsedForTheFirstTime(entity: Entity<any>) {
+    async entityIsUsedForTheFirstTime(entity: Entity<any>) {
         let result = '';
-        entity.__iterateColumns().forEach(x => {
+        for (const x of entity.columns) {
             if (!x.__dbReadOnly()) {
                 if (result.length != 0)
                     result += ',';
@@ -32,20 +32,20 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 if (x == entity.__idColumn)
                     result += ' primary key';
             }
-        });
-        await this.createCommand().execute('create table if not exists ' + entity.__getDbName() + ' (' + result + '\r\n)');
+        }
+        await this.createCommand().execute('create table if not exists ' + entity.defs.dbName + ' (' + result + '\r\n)');
     }
 
     createCommand(): SqlCommand {
         return new WebSqlBridgeToSQLCommand(this.db);
     }
-    
+
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>): Promise<void> {
         throw new Error("Method not implemented.");
     }
 
     private addColumnSqlSyntax(x: Column<any>) {
-        let result = x.__getDbName();
+        let result = x.defs.dbName;
         if (x instanceof DateTimeColumn)
             result += " integer";
         else if (x instanceof DateColumn)
@@ -104,12 +104,12 @@ class WebSqlBridgeToSQLQueryResult implements SqlResult {
         if (this.rows.length == 0) return undefined;
         let i = 0;
         for (let m in this.rows[0]) {
-            if (i++==index)
-            return m;
+            if (i++ == index)
+                return m;
         }
         return undefined;
     }
-  
+
     //@ts-ignore
     constructor(private r: SQLResultSet) {
         this.rows = [];
