@@ -1,4 +1,4 @@
-import { ColumnOptions, DataControlSettings } from '../column-interfaces';
+import { ColumnOptions, DataControlSettings, ValueListItem } from '../column-interfaces';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
@@ -21,7 +21,7 @@ import { CharDateStorage } from '../columns/storage/char-date-storage';
 import { StringColumn } from '../columns/string-column';
 import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
-import { DropDownItem } from 'dist/core';
+
 
 
 
@@ -101,7 +101,7 @@ describe("Closed List  column", () => {
 
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Categories();
+    var cat = new Context().for( Categories).create();
     expect(cat.__getName()).toBe('Categories');
   });
   itAsync("Insert", async () => {
@@ -270,7 +270,7 @@ describe("test row provider", () => {
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
     let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.valueList as DropDownItem[];
+    let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);
@@ -287,7 +287,7 @@ describe("test row provider", () => {
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
     let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.valueList as DropDownItem[];
+    let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);
@@ -304,7 +304,7 @@ describe("test row provider", () => {
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
     let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.valueList as DropDownItem[];
+    let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);
@@ -318,7 +318,7 @@ describe("test row provider", () => {
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
     let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    let xx = cs.valueList as DropDownItem[];
+    let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(0);
@@ -336,7 +336,7 @@ describe("test row provider", () => {
     let cs = { column: c1.id, valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.add(cs);
 
-    let xx = cs.valueList as DropDownItem[];
+    let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
     expect(xx[0].id).toBe(1);
     expect(xx[1].id).toBe(2);

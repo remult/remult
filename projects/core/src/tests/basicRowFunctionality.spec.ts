@@ -72,7 +72,7 @@ class TestDataApiResponse implements DataApiResponse {
 
 describe('Test basic row functionality', () => {
   it("finds its id column", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.__idColumn.jsonName).toBe("id");
 
   });
@@ -86,22 +86,22 @@ describe('Test basic row functionality', () => {
   });
 
   it("object is autonemous", () => {
-    let x = new Categories();
-    let y = new Categories();
+    let x =  new Context().for( Categories).create();
+    let y =  new Context().for( Categories).create();
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
     expect(x.categoryName.value).toBe('noam');
     expect(y.categoryName.value).toBe('yael');
   })
   it("find the col value", () => {
-    let x = new Categories();
-    let y = new Categories();
+    let x = new Context().for( Categories).create();
+    let y = new Context().for( Categories).create();
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
     expect(y.__getColumn(x.categoryName).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
-    let x = new Categories();
+    let x = new Context().for( Categories).create();
     x.id.value = 1;
     x.categoryName.value = 'noam';
     let y = await x.__toPojo(new ColumnHashSet());
@@ -109,7 +109,7 @@ describe('Test basic row functionality', () => {
     expect(y.categoryName).toBe('noam');
   });
   itAsync("json name is important", async () => {
-    let x = new Categories();
+    let x = new Context().for( Categories).create();
     x.id.value = 1;
     x.categoryName.jsonName = 'xx';
     x.categoryName.value = 'noam';
@@ -987,7 +987,7 @@ describe("data api", () => {
   });
 
   it("columnsAreOk", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.__iterateColumns().length).toBe(6);
 
   });
@@ -1009,7 +1009,7 @@ describe("data api", () => {
 
 describe("column validation", () => {
   it("validation clears on reset", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.isValid()).toBe(true);
     c.id.error = "x";
     expect(c.id.error).toBe("x");
@@ -1019,7 +1019,7 @@ describe("column validation", () => {
     expect(c.isValid()).toBe(true);
   });
   it("validation clears on change", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.isValid()).toBe(true);
     c.id.error = "x";
     expect(c.isValid()).toBe(false);

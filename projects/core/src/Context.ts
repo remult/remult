@@ -116,6 +116,10 @@ export class Context {
         if (!r) {
             r = new SpecificEntityHelper<lookupIdType, T>(() => {
                 let e = new c(this);
+                e.__initColumns((<any>e).id);
+                if (!e.__options.name) {
+                    e.__options.name = c.name;
+                }
                 return e;
             }, this._lookupCache, this, dataSource);
             dsCache.set(classKey, r);
@@ -338,7 +342,8 @@ export const allEntities: EntityType[] = [];
 
 export function EntityClass<T extends EntityType>(theEntityClass: T) {
     let original = theEntityClass;
-    let f = class extends theEntityClass {
+    let f = original;
+    /*f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);
             this.__initColumns((<any>this).id);
@@ -346,7 +351,7 @@ export function EntityClass<T extends EntityType>(theEntityClass: T) {
                 this.__options.name = original.name;
             }
         }
-    }
+    }*/
     allEntities.push(f);
     f.__key = theEntityClass.name + allEntities.indexOf(f);
     return f;

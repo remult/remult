@@ -10,15 +10,9 @@ import { Context, UserInfo } from './context';
 const authToken = 'authorization';
 @Injectable()
 export class JwtSessionManager {
-
-
-
     constructor(
         private context: Context
     ) {
-
-
-
     }
     loadSessionFromCookie() {
         let c = document.cookie;

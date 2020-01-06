@@ -183,7 +183,8 @@ export class Entity<idType> {
       }
       return performEntitySave();
     }
-    catchSaveErrors(err: any): any {
+    
+    private catchSaveErrors(err: any): any {
       let e = err;
       if (e instanceof Promise) {
         return e.then(x => this.catchSaveErrors(x));

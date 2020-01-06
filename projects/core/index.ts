@@ -13,19 +13,21 @@ export * from './src/column-interfaces'; // revisit input type
 export * from './src/data-providers/rest-data-provider'; //V
 export * from './src/data-providers/in-memory-database'; //V
 export * from './src/data-providers/array-entity-data-provider';//V
-export * from './src/data-providers/web-sql-data-provider';
-export * from './src/data-providers/sql-database';
-export * from './src/data-providers/json-data-provider';
+export * from './src/data-providers/web-sql-data-provider';//V
+export * from './src/data-providers/sql-database';//V
+export * from './src/data-providers/json-data-provider';//V
+
 export * from './src/data-api';
+export * from './src/dataList';
+export * from './src/lookup';
+export * from './src/server-action';
+
 export * from './src/context';
 export * from './src/jwt-session-manager';
-export * from './src/server-action';
 export * from './src/id-entity';
-export * from './src/dataList';
 export * from './src/grid-settings';
 export * from './src/data-area-settings';
-export * from './src/lookup';
-export * from './src/sort';
+export * from './src/sort';//V
 export * from './src/column-collection';
 export * from './src/column-hash-set';
 
