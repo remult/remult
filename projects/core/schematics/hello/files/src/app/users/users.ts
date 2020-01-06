@@ -1,5 +1,5 @@
 
-import { DataControlSettings, Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
+import { Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
 import { changeDate } from '../shared/types';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
@@ -9,7 +9,7 @@ import { Roles } from './roles';
 
 
 @EntityClass
-export class Users extends IdEntity  {
+export class Users extends IdEntity {
 
     constructor(private context: Context) {
 
@@ -27,7 +27,7 @@ export class Users extends IdEntity  {
                     if ((await context.for(Users).count()) == 0)
                         this.admin.value = true;
 
-                    await checkForDuplicateValue(this, this.name,context.for(Users));
+                    await checkForDuplicateValue(this, this.name, this.context.for(Users));
                     if (this.isNew())
                         this.createDate.value = new Date();
                 }
@@ -54,7 +54,7 @@ export class Users extends IdEntity  {
         dbName: 'password',
         includeInApi: false
     });
-    password = new StringColumn({ caption: 'password', dataControlSettings: () => ({inputType: 'password'}), serverExpression: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
+    password = new StringColumn({ caption: 'password', dataControlSettings: () => ({ inputType: 'password' }), serverExpression: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
 
     createDate = new changeDate('Create Date');
 
@@ -76,17 +76,13 @@ export interface PasswordHelper {
 export class UserId extends IdColumn {
 
     constructor(private context: Context, settingsOrCaption?: ColumnOptions<string>) {
-        super(settingsOrCaption);
-    }
-    getColumn(): DataControlSettings<Entity<any>> {
-        return {
-            column: this,
-            getValue: f => (f ? ((f).__getColumn(this)) : this).displayValue,
-            hideDataOnInput: true,
-            readOnly: this.context.isAllowed(this.allowApiUpdate),
-            width: '200'
-
-        }
+        super({
+            dataControlSettings: () => ({
+                getValue: () => this.displayValue,
+                hideDataOnInput: true,
+                width: '200'
+            })
+        }, settingsOrCaption);
     }
     get displayValue() {
         return this.context.for(Users).lookup(this).name.value;

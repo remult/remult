@@ -22,7 +22,7 @@ export class RegisterComponent implements OnInit {
   }
   
 
-  confirmPassword = new StringColumn({ caption: 'Confirm Password',dataControlSettings: () => ({ inputType: 'password' })});
+  confirmPassword = new StringColumn({ caption: 'Confirm Password',dataControlSettings:()=>({ inputType: 'password' })});
   helpers = this.context.for(Users).gridSettings({
     numOfColumnsInGrid: 0,
     allowUpdate: true,

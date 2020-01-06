@@ -7,8 +7,9 @@ import * as passwordHash from 'password-hash';
 
 import '../app.module';
 
-import { ActualSQLServerDataProvider } from '@remult/core';
+
 import { Users } from '../users/users';
+import { SqlDatabase } from '@remult/core';
 
 
 export async function serverInit() {
@@ -19,7 +20,7 @@ export async function serverInit() {
         ssl = false;
 
     if (process.env.logSqls) {
-        ActualSQLServerDataProvider.LogToConsole = true;
+        SqlDatabase.LogToConsole = true;
     }
 
     if (!process.env.DATABASE_URL) {
@@ -35,6 +36,6 @@ export async function serverInit() {
         verify: (p, h) => passwordHash.verify(p, h)
     }
     await new PostgrestSchemaBuilder(pool).verifyStructureOfAllEntities();
-    return new PostgresDataProvider(pool);
+    return new SqlDatabase( new PostgresDataProvider(pool));
 
 }
