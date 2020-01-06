@@ -1,15 +1,15 @@
 
 
 import { createData } from './RowProvider.spec';
-import { DataApi, DataApiError, DataApiResponse } from '../DataApi';
-import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase';
-import { ArrayEntityDataProvider } from "../data-providers/ArrayEntityDataProvider";
+import { DataApi, DataApiError, DataApiResponse } from '../data-api';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, itAsyncForEach, Done } from './testHelper.spec';
 
 import { Categories,  Status } from './testModel/models';
 
-import { Context, Role, Allowed, EntityClass, ServerContext } from '../Context';
-import { WebSqlDataProvider } from '../data-providers/WebSqlDataProvider';
+import { Context, Role, Allowed, EntityClass, ServerContext } from '../context';
+import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
 import { ColumnHashSet } from '../column-hash-set';
 import { Entity } from '../entity';
@@ -21,7 +21,7 @@ import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { DataList } from '../dataList';
 import { UrlBuilder } from '../url-builder';
 import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
-import { SqlDatabase } from '../data-providers/SqlDatabase';
+import { SqlDatabase } from '../data-providers/sql-database';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
@@ -72,7 +72,7 @@ class TestDataApiResponse implements DataApiResponse {
 
 describe('Test basic row functionality', () => {
   it("finds its id column", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.__idColumn.jsonName).toBe("id");
 
   });
@@ -86,22 +86,22 @@ describe('Test basic row functionality', () => {
   });
 
   it("object is autonemous", () => {
-    let x = new Categories();
-    let y = new Categories();
+    let x =  new Context().for( Categories).create();
+    let y =  new Context().for( Categories).create();
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
     expect(x.categoryName.value).toBe('noam');
     expect(y.categoryName.value).toBe('yael');
   })
   it("find the col value", () => {
-    let x = new Categories();
-    let y = new Categories();
+    let x = new Context().for( Categories).create();
+    let y = new Context().for( Categories).create();
     x.categoryName.value = 'noam';
     y.categoryName.value = 'yael';
     expect(y.__getColumn(x.categoryName).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
-    let x = new Categories();
+    let x = new Context().for( Categories).create();
     x.id.value = 1;
     x.categoryName.value = 'noam';
     let y = await x.__toPojo(new ColumnHashSet());
@@ -109,7 +109,7 @@ describe('Test basic row functionality', () => {
     expect(y.categoryName).toBe('noam');
   });
   itAsync("json name is important", async () => {
-    let x = new Categories();
+    let x = new Context().for( Categories).create();
     x.id.value = 1;
     x.categoryName.jsonName = 'xx';
     x.categoryName.value = 'noam';
@@ -987,7 +987,7 @@ describe("data api", () => {
   });
 
   it("columnsAreOk", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.__iterateColumns().length).toBe(6);
 
   });
@@ -1009,7 +1009,7 @@ describe("data api", () => {
 
 describe("column validation", () => {
   it("validation clears on reset", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.isValid()).toBe(true);
     c.id.error = "x";
     expect(c.id.error).toBe("x");
@@ -1019,7 +1019,7 @@ describe("column validation", () => {
     expect(c.isValid()).toBe(true);
   });
   it("validation clears on change", () => {
-    let c = new Categories();
+    let c = new Context().for( Categories).create();
     expect(c.isValid()).toBe(true);
     c.id.error = "x";
     expect(c.isValid()).toBe(false);

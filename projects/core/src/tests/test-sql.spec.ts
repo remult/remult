@@ -1,7 +1,7 @@
 import { itAsync, Done } from './testHelper.spec';
-import { WebSqlDataProvider } from '../data-providers/WebSqlDataProvider';
-import { ServerContext } from '../Context';
-import { SqlDatabase } from '../data-providers/SqlDatabase';
+import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
+import { ServerContext } from '../context';
+import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories } from './testModel/models';
 
 describe("test sql database", async () => {

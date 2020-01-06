@@ -1,10 +1,10 @@
 import { itAsync } from './testHelper.spec';
-import { ServerContext, EntityClass } from '../Context';
+import { ServerContext, EntityClass } from '../context';
 import { Entity } from '../entity';
-import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { NumberColumn } from '../columns/number-column';
-import { SqlDatabase } from '../data-providers/SqlDatabase';
-import { WebSqlDataProvider } from '../data-providers/WebSqlDataProvider';
+import { SqlDatabase } from '../data-providers/sql-database';
+import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 
 describe("test sql database", async () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));

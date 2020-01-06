@@ -1,6 +1,7 @@
-import { Allowed } from './Context';
+import { Allowed } from './context';
 import { Column } from './column';
-import { DropDownSource } from './drop-down-source';
+import { isFunction } from 'util';
+
 
 
 
@@ -15,12 +16,12 @@ export interface ColumnSettings<valueType> {
     key?: string;
     includeInApi?: Allowed;
     allowApiUpdate?: Allowed;
-  
+
     caption?: string;
     defaultValue?: ValueOrExpression<valueType>;
     validate?: () => void | Promise<void>;
     valueChange?: () => void;
-  
+
     dbName?: string;
     sqlExpression?: ValueOrExpression<string>;
     serverExpression?: () => valueType | Promise<valueType>;
@@ -30,7 +31,13 @@ export interface ColumnSettings<valueType> {
 }
 export declare type ColumnOptions<valueType> = ColumnSettings<valueType> | string;
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
-
+export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
+    if (isFunction(f)) {
+      let x = f as any;
+      return x();
+    }
+    return <T>f;
+  }
 
 
 
@@ -40,18 +47,18 @@ export interface DataControlSettings<entityType> {
     getValue?: (row: entityType) => any;
     readOnly?: boolean;
     cssClass?: (string | ((row: entityType) => string));
-  
+
     caption?: string;
 
-    
+
     click?: (row: entityType) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
-    
-    dropDown?: DropDownOptions;
+
+    valueList?:  ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> |(()=>Promise<ValueListItem[]>) ;
     inputType?: string; //used: password,date,phone,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
-    
+
     width?: string;
 }
 
@@ -61,36 +68,20 @@ export interface displayOptions<entityType> {
     date();
     digits();
     checkbox();
-    dropDown(options: DropDownOptions);
+    //dropDown(options: DropDownOptions);
     text(click?: clickable<entityType>);
 
 }
-export interface clickable<entityType>{
+export interface clickable<entityType> {
     click?: (row: entityType) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
 }
 
 
-export interface DropDownOptions {
 
-    items?: DropDownItem[] | string[] | any[];
-    source?: DropDownSource<any>;
-}
-
-
-export interface DropDownItem {
+export interface ValueListItem {
     id?: any;
     caption?: any;
 }
-export interface FilteredColumnSetting<rowType> extends DataControlSettings<rowType> {
-    _showFilter?: boolean;
-}
 
-
-
-export interface RowEvents {
-    rowDeleted?: () => void;
-    rowSaved?: (newRow: boolean) => void;
-    rowReset?: (newRow: boolean) => void;
-}

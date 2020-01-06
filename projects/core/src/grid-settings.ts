@@ -3,14 +3,15 @@ import { Entity } from "./entity";
 
 import { Column } from "./column";
 import {  DataControlSettings } from "./column-interfaces";
-import { Context } from "./Context";
-import {  extractSortFromSettings } from "./utils";
+import { Context } from "./context";
+
 import { DataList } from "./dataList";
 import { Sort } from "./sort";
 import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
-import { EntityProvider, FindOptions } from './data-interfaces';
+import { EntityProvider, FindOptions, entityOrderByToSort } from './data-interfaces';
+
 
 export class GridSettings<rowType extends Entity<any>>  {
     constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {
@@ -123,7 +124,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       }
       this._currentOrderBy = undefined;
       if (this.getOptions && this.getOptions.orderBy)
-        this._currentOrderBy = extractSortFromSettings(this.entityProvider.create(), this.getOptions);
+        this._currentOrderBy = entityOrderByToSort(this.entityProvider.create(),this.getOptions.orderBy);
   
     }
   

@@ -3,22 +3,16 @@ import { Router, CanActivate, ActivatedRouteSnapshot, Route } from "@angular/rou
 import { JwtHelperService } from '@auth0/angular-jwt';
 
 
-import { Context, UserInfo } from './Context';
+import { Context, UserInfo } from './context';
 
 
 
 const authToken = 'authorization';
 @Injectable()
 export class JwtSessionManager {
-
-
-
     constructor(
         private context: Context
     ) {
-
-
-
     }
     loadSessionFromCookie() {
         let c = document.cookie;

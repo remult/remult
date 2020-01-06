@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { RestDataProviderHttpProvider } from '../data-providers/restDataProvider';
+import { RestDataProviderHttpProvider } from '../data-providers/rest-data-provider';
 export class AngularHttpProvider implements RestDataProviderHttpProvider {
   constructor(private http: HttpClient) {
   }

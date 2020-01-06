@@ -1,9 +1,9 @@
-import { Allowed, Context } from './Context';
-import { ColumnSettings, ColumnOptions, DataControlSettings, ValueOrExpression } from './column-interfaces';
+import { Allowed, Context } from './context';
+import { ColumnSettings, ColumnOptions, DataControlSettings, valueOrExpressionToValue } from './column-interfaces';
 
 import { isBoolean } from 'util';
 
-import { functionOrString, getValueOrFunction } from './common';
+
 import { DefaultStorage } from './columns/storage/default-storage';
 import { Filter } from './filter/filter';
 import { ColumnValueProvider } from './__EntityValueProvider';
@@ -11,7 +11,7 @@ import { ColumnValueProvider } from './__EntityValueProvider';
 export class Column<dataType>  {
   __setDefaultForNewRow() {
     if (this.__settings.defaultValue) {
-      this.value = getValueOrFunction(this.__settings.defaultValue);
+      this.value = valueOrExpressionToValue(this.__settings.defaultValue);
     }
   }
 
@@ -112,8 +112,8 @@ export class Column<dataType>  {
     }
     if (this.__settings && this.__settings.dataControlSettings) {
       this.__displayResult = this.__settings.dataControlSettings();
-      if (!x.dropDown)
-        x.dropDown = this.__displayResult.dropDown;
+      if (!x.valueList)
+        x.valueList = this.__displayResult.valueList;
       if (!x.inputType)
         x.inputType = this.__displayResult.inputType;
       if (x.hideDataOnInput === undefined)
@@ -168,7 +168,7 @@ export class Column<dataType>  {
   error: string;
   __getDbName(): string {
     if (this.__settings.sqlExpression) {
-      return functionOrString(this.__settings.sqlExpression);
+      return valueOrExpressionToValue(this.__settings.sqlExpression);
     }
     if (this.__settings.dbName)
       return this.__settings.dbName;

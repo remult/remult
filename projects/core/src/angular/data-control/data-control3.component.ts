@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { Column } from '../../column';
 import { Entity } from '../../entity';
-import { DataControlSettings } from '../../column-interfaces';
+import { DataControlSettings, ValueListItem } from '../../column-interfaces';
 import { ColumnCollection } from '../../column-collection';
 import { StringColumn } from '../../columns/string-column';
 @Component({
@@ -69,8 +69,11 @@ export class DataControl3Component {
   ngOnChanges(): void {
 
   }
+  getDropDown():ValueListItem[]{
+    return this.map.valueList as ValueListItem[];
+  }
   isSelect(): boolean {
-    if (this.map.dropDown&&this._getEditable())
+    if (this.map.valueList&&this._getEditable())
       return true;
     return false;
   }

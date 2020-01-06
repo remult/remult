@@ -1,16 +1,13 @@
-import { ColumnOptions, DataControlSettings } from '../column-interfaces';
-import {  extractSortFromSettings } from '../utils';
+import { ColumnOptions, DataControlSettings, ValueListItem } from '../column-interfaces';
 
-
-
-import { InMemoryDataProvider } from '../data-providers/inMemoryDatabase'
-import { ArrayEntityDataProvider } from "../data-providers/ArrayEntityDataProvider";
+import { InMemoryDataProvider } from '../data-providers/in-memory-database'
+import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done } from './testHelper.spec';
 
 import { Categories, Status, CategoriesWithValidation } from './testModel/models';
 
-import { Context, ServerContext } from '../Context';
-import { ClosedListColumn } from '../columns/closed-list-column';
+import { Context, ServerContext } from '../context';
+import { ValueListColumn } from '../columns/value-list-column';
 import { Sort } from '../sort';
 import { ColumnCollection } from '../column-collection';
 import { NumberColumn } from '../columns/number-column';
@@ -23,19 +20,15 @@ import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { CharDateStorage } from '../columns/storage/char-date-storage';
 import { StringColumn } from '../columns/string-column';
 import { Entity } from '../entity';
-import { FindOptions } from '../data-interfaces';
+import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 
 
-//import { DataAreaCompnent } from '../utils/angular/dataArea';
 
 
-export class LanguageColumn extends ClosedListColumn<Language> {
+export class LanguageColumn extends ValueListColumn<Language> {
   constructor() {
     super(Language, 'שפה');
   }
-
-
-
 }
 
 export class Language {
@@ -43,11 +36,8 @@ export class Language {
   static Russian = new Language(10, 'רוסית');
   static Amharit = new Language(20, 'אמהרית');
   constructor(public id: number,
-    private caption: string) {
+    public caption: string) {
 
-  }
-  toString() {
-    return this.caption;
   }
 
 }
@@ -108,9 +98,10 @@ describe("Closed List  column", () => {
   });
 });
 
+
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Categories();
+    var cat = new Context().for( Categories).create();
     expect(cat.__getName()).toBe('Categories');
   });
   itAsync("Insert", async () => {
@@ -248,7 +239,7 @@ describe("test row provider", () => {
   });
   itAsync("update should fail nicely", async () => {
     let cont = new ServerContext();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x) ,transaction:undefined});
+    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.for(Categories).create();
     c.id.value = 1;
     c.categoryName.value = 'noam';
@@ -277,26 +268,62 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { dropDown: { source:  c.dropDownSource() } } as DataControlSettings<Categories>
+    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    expect(cs.dropDown.items.length).toBe(2);
-    expect(cs.dropDown.items[0].id).toBe(1);
-    expect(cs.dropDown.items[1].id).toBe(2);
-    expect(cs.dropDown.items[0].caption).toBe('noam');
-    expect(cs.dropDown.items[1].caption).toBe('yael');
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
+
+  });
+  itAsync("column drop down with promise", async () => {
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
+    });
+
+    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    await cc.buildDropDown(cs);
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
+
+  });
+  itAsync("column drop down with promise", async () => {
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
+    });
+
+    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    await cc.buildDropDown(cs);
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
 
   });
   itAsync("column drop down with items", async () => {
     let c = new Categories();
 
     let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    let cs = { dropDown: { items: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } } as DataControlSettings<Categories>
+    let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
-    expect(cs.dropDown.items.length).toBe(2);
-    expect(cs.dropDown.items[0].id).toBe(1);
-    expect(cs.dropDown.items[1].id).toBe(0);
-    expect(cs.dropDown.items[0].caption).toBe('a');
-    expect(cs.dropDown.items[1].caption).toBe('b');
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(0);
+    expect(xx[0].caption).toBe('a');
+    expect(xx[1].caption).toBe('b');
 
   });
   itAsync("column drop down 1", async () => {
@@ -306,14 +333,15 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, dropDown: { source: c.dropDownSource() } } as DataControlSettings<Categories>
+    let cs = { column: c1.id, valueList: c.getDropDownItems() } as DataControlSettings<Categories>
     await cc.add(cs);
 
-    expect(cs.dropDown.items.length).toBe(2);
-    expect(cs.dropDown.items[0].id).toBe(1);
-    expect(cs.dropDown.items[1].id).toBe(2);
-    expect(cs.dropDown.items[0].caption).toBe('noam');
-    expect(cs.dropDown.items[1].caption).toBe('yael');
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
     var c2 = c.create();
     c2.id.value = 1;
     expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
@@ -344,7 +372,7 @@ describe("test row provider", () => {
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
   });
   it("get value function works", () => {
-    let a = new NumberColumn({ dataControlSettings:()=>({ getValue: () => a.value * 3}) });
+    let a = new NumberColumn({ dataControlSettings: () => ({ getValue: () => a.value * 3 }) });
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);
@@ -363,7 +391,7 @@ describe("column collection", () => {
     expect(cc.items[0] === cc.items[0].column).toBe(false);
     expect(cc.items[0].caption == c.categoryName.caption).toBe(true);
     expect(cc.items[0].readOnly).toBe(true);
-    
+
   })
   itAsync("jsonSaverIsNice", async () => {
     let c = ctx.for(Categories).create();
@@ -389,9 +417,9 @@ describe("grid settings ",
   () => {
     let ctx = new Context(undefined);
     it("sort is displayed right", () => {
-      let s = ctx.for(Categories,new InMemoryDataProvider());
+      let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();
-      
+
       let gs = s.gridSettings();
       expect(gs.sortedAscending(c.id)).toBe(false);
       expect(gs.sortedDescending(c.id)).toBe(false);
@@ -403,10 +431,10 @@ describe("grid settings ",
       expect(gs.sortedDescending(c.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let s = ctx.for(Categories,new InMemoryDataProvider());
+      let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();
-      let y :Column<any>;
-      let gs = s.gridSettings({ get: { orderBy: c => new Sort({ column: y=c.categoryName }) } });
+      let y: Column<any>;
+      let gs = s.gridSettings({ get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
       expect(gs.sortedAscending(y)).toBe(true);
       expect(gs.sortedDescending(y)).toBe(false);
       expect(gs.sortedAscending(c.id)).toBe(false);
@@ -474,7 +502,7 @@ describe("order by api", () => {
   it("works with sort", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => new Sort({ column: c.id }) };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column).toBe(c.id);
 
@@ -483,7 +511,7 @@ describe("order by api", () => {
   it("works with columns", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column).toBe(c.id);
   });
@@ -491,7 +519,7 @@ describe("order by api", () => {
   it("works with columns array", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);
@@ -499,7 +527,7 @@ describe("order by api", () => {
   it("works with segment array", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);
@@ -507,7 +535,7 @@ describe("order by api", () => {
   it("works with mixed column segment array", () => {
     let c = new Categories();
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
-    let s = extractSortFromSettings(c, opt);
+    let s = entityOrderByToSort(c, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.id);
     expect(s.Segments[1].column).toBe(c.categoryName);

@@ -1,7 +1,7 @@
 
 import { Component, Input } from '@angular/core';
 import { Column } from '../../column';
-import { GridSettings } from '../../gridSettings';
+import { GridSettings } from '../../grid-settings';
 import { DataControlSettings } from '../../column-interfaces';
 @Component({
     selector: 'Data-Filter',

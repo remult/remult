@@ -1,6 +1,6 @@
 
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from "../data-interfaces";
-import { SqlCommand, SqlImplementation, SqlResult } from "../SqlCommand";
+import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
 import { Column } from "../column";
 import { Entity } from "../entity";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";

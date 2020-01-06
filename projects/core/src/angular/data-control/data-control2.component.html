@@ -15,7 +15,7 @@
         <div *ngIf="isSelect()">
             <select matNativeControl [(ngModel)]="_getColumn().inputValue"
                 (ngModelChange)="settings._colValueChanged(map,record)">
-                <option *ngFor="let v of map.dropDown.items" value="{{v.id}}">{{v.caption}}</option>
+                <option *ngFor="let v of getDropDown()" value="{{v.id}}">{{v.caption}}</option>
 
             </select>
         </div>

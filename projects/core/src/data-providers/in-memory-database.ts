@@ -5,7 +5,7 @@ import {  DataProvider, EntityDataProvider, EntityDataProviderFindOptions,  __Ro
 import { Entity } from '../entity';
 import { StringColumn } from '../columns/string-column';
 import { FilterConsumer } from '../filter/filter-interfaces';
-import { ArrayEntityDataProvider } from './ArrayEntityDataProvider';
+import { ArrayEntityDataProvider } from './array-entity-data-provider';
 
 
 

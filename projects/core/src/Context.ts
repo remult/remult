@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider } from "./data-interfaces";
-import { RestDataProvider } from "./data-providers/restDataProvider";
+import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort } from "./data-interfaces";
+import { RestDataProvider } from "./data-providers/rest-data-provider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
-import { extractSortFromSettings } from "./utils";
-import { InMemoryDataProvider } from "./data-providers/inMemoryDatabase";
-import { DataApiRequest } from "./DataApi";
+
+import { InMemoryDataProvider } from "./data-providers/in-memory-database";
+import { DataApiRequest } from "./data-api";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 
@@ -12,11 +12,11 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Column } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
-import { IDataSettings, GridSettings } from "./gridSettings";
+import { IDataSettings, GridSettings } from "./grid-settings";
 import { ColumnHashSet } from "./column-hash-set";
-import { DropDownSourceArgs, DropDownSource } from "./drop-down-source";
 import { FilterBase } from './filter/filter-interfaces';
 import { Action } from './server-action';
+import { ValueListItem } from './column-interfaces';
 
 
 
@@ -116,6 +116,10 @@ export class Context {
         if (!r) {
             r = new SpecificEntityHelper<lookupIdType, T>(() => {
                 let e = new c(this);
+                e.__initColumns((<any>e).id);
+                if (!e.__options.name) {
+                    e.__options.name = c.name;
+                }
                 return e;
             }, this._lookupCache, this, dataSource);
             dsCache.set(classKey, r);
@@ -255,7 +259,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         if (options.where)
             getOptions.where = options.where(this.entity);
         if (options.orderBy)
-            getOptions.orderBy = extractSortFromSettings(this.entity, options);
+            getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
         if (options.limit)
             getOptions.limit = options.limit;
         if (options.page)
@@ -295,8 +299,38 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     gridSettings(settings?: IDataSettings<T>) {
         return new GridSettings(this, this.context, settings);
     }
-    dropDownSource(args?: DropDownSourceArgs<T>) {
-        return new DropDownSource(this, args);
+
+    async getDropDownItems(args?: {
+        idColumn?: (e: T) => Column<any>,
+        captionColumn?: (e: T) => Column<any>,
+        orderBy?: EntityOrderBy<T>,
+        where?: EntityWhere<T>
+    }): Promise<ValueListItem[]> {
+        if (!args) {
+            args = {};
+        }
+        if (!args.idColumn) {
+            args.idColumn = x => x.__idColumn;
+        }
+        if (!args.captionColumn) {
+            let idCol = args.idColumn(this.entity);
+            for (const keyInItem of this.entity.__iterateColumns()) {
+                if (keyInItem != idCol) {
+                    args.captionColumn = x => x.__getColumn(keyInItem);
+                    break;
+                }
+            }
+        }
+        return (await this.find({
+            where: args.where,
+            orderBy: args.orderBy,
+            limit:1000
+          })).map(x => {
+            return {
+              id: args.idColumn(x).value,
+              caption: args.captionColumn(x).value
+            }
+          });
     }
 }
 export interface EntityType {
@@ -308,7 +342,8 @@ export const allEntities: EntityType[] = [];
 
 export function EntityClass<T extends EntityType>(theEntityClass: T) {
     let original = theEntityClass;
-    let f = class extends theEntityClass {
+    let f = original;
+    /*f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);
             this.__initColumns((<any>this).id);
@@ -316,7 +351,7 @@ export function EntityClass<T extends EntityType>(theEntityClass: T) {
                 this.__options.name = original.name;
             }
         }
-    }
+    }*/
     allEntities.push(f);
     f.__key = theEntityClass.name + allEntities.indexOf(f);
     return f;

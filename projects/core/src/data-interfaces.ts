@@ -31,6 +31,24 @@ export interface EntityProvider<T extends Entity<any>> {
 
 export declare type EntityWhere<entityType extends Entity<any>> = (entityType: entityType) => FilterBase;
 export declare type EntityOrderBy<entityType extends Entity<any>> = ((entityType: entityType) => Sort) | ((entityType: entityType) => (Column<any>)) | ((entityType: entityType) => (Column<any> | SortSegment)[]);
+
+export function entityOrderByToSort<T2,T extends Entity<T2>>(entity: T,orderBy: EntityOrderBy<T>): Sort {
+    var sort = orderBy(entity)
+    if (sort instanceof Sort)
+      return sort;
+    if (sort instanceof Column)
+      return new Sort({ column: sort });
+    if (sort instanceof Array) {
+      let r = new Sort();
+      sort.forEach(i => {
+        if (i instanceof Column)
+          r.Segments.push({ column: i });
+        else r.Segments.push(i);
+      });
+      return r;
+    }
+  }
+  
 export interface FindOptions<entityType extends Entity<any>> {
     where?: EntityWhere<entityType>;
     orderBy?: EntityOrderBy<entityType>;
