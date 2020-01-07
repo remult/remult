@@ -13,7 +13,7 @@ import { Column } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
 import { IDataSettings, GridSettings } from "./grid-settings";
-import { ColumnHashSet } from "./column-hash-set";
+
 import { FilterBase } from './filter/filter-interfaces';
 import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
@@ -181,26 +181,10 @@ export class ServerContext extends Context {
 
 
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
-    _getApiSettings(excludedColumns: ColumnHashSet, readonlyColumns: ColumnHashSet): DataApiSettings<T> {
-        let r = this.entity._getEntityApiSettings(this.context);
-        if (r.readonlyColumns)
-            readonlyColumns.add(...r.readonlyColumns(this.entity));
-        if (r.excludeColumns) {
-            excludedColumns.add(...r.excludeColumns(this.entity));
-            readonlyColumns.add(...r.excludeColumns(this.entity));
-        }
-        return r;
+    _getApiSettings(): DataApiSettings<T> {
+        return this.entity._getEntityApiSettings(this.context);
     }
-    _configureApi(readonlyColumns: ColumnHashSet, excludedColumns: ColumnHashSet): import("./data-api").DataApiSettings<T> {
-        let op = this.entity._getEntityApiSettings(this.context);
-        if (op.readonlyColumns)
-            readonlyColumns.add(...op.readonlyColumns(this.entity));
-        if (op.excludeColumns) {
-            excludedColumns.add(...op.excludeColumns(this.entity));
-            readonlyColumns.add(...op.excludeColumns(this.entity));
-        }
-        return op;
-    }
+    
     private entity: T;
     private _edp: EntityDataProvider;
     private _factory: (newRow: boolean) => T;

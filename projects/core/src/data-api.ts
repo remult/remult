@@ -5,7 +5,7 @@ import { FindOptions, EntityProvider } from './data-interfaces';
 import { Column } from './column';
 import { Entity } from './entity';
 import { Sort } from './sort';
-import { ColumnHashSet } from './column-hash-set';
+
 import { AndFilter } from './filter/and-filter';
 import { StringColumn } from './columns/string-column';
 import { UserInfo, SpecificEntityHelper } from './context';
@@ -19,10 +19,8 @@ export class DataApi<T extends Entity<any>> {
   }
   options: DataApiSettings<T>;
   constructor(private entityProvider: SpecificEntityHelper<any, T>) {
-    this.options = entityProvider._getApiSettings(this.excludedColumns, this.readonlyColumns);
+    this.options = entityProvider._getApiSettings();
   }
-  private excludedColumns = new ColumnHashSet();
-  private readonlyColumns = new ColumnHashSet();
 
   async get(response: DataApiResponse, id: any) {
     if (this.options.allowRead == false) {
@@ -214,8 +212,6 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowInsert?: boolean,
   allowDelete?: boolean,
   allowRead?: boolean,
-  excludeColumns?: (r: rowType) => Column<any>[],
-  readonlyColumns?: (r: rowType) => Column<any>[],
   name?: string,
   get?: FindOptions<rowType>,
   validate?: (r: rowType) => void;

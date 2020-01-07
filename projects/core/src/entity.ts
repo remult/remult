@@ -1,12 +1,9 @@
 import { Context, Allowed } from "./context";
 import { DataApiSettings } from "./data-api";
 import { Column } from "./column";
-
-import { ColumnHashSet } from "./column-hash-set";
 import { FilterBase } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
 import { valueOrExpressionToValue } from './column-interfaces';
-import { isString } from 'util';
 
 //@dynamic
 export class Entity<idType> {
@@ -46,12 +43,6 @@ export class Entity<idType> {
       allowUpdate: r.isAllowed(options.allowApiUpdate),
       allowDelete: r.isAllowed(options.allowApiDelete),
       allowInsert: r.isAllowed(options.allowApiInsert),
-      excludeColumns: x =>
-        x.__columns.filter(c => !r.isAllowed(c.includeInApi))
-      ,
-      readonlyColumns: x => {
-        return x.__columns.filter(c => !r.isAllowed(c.allowApiUpdate));
-      },
       get: {
         where: x => options.apiDataFilter ? options.apiDataFilter() : undefined
       }

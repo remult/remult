@@ -11,7 +11,7 @@ import { Categories, Status } from './testModel/models';
 import { Context, Role, Allowed, EntityClass, ServerContext } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
-import { ColumnHashSet } from '../column-hash-set';
+
 import { Entity } from '../entity';
 import { NumberColumn, BoolColumn } from '../columns/number-column';
 import { StringColumn } from '../columns/string-column';
