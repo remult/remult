@@ -16,7 +16,7 @@ describe("data api", () => {
 
         let c = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
 
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.error = async (data: any) => {
@@ -37,7 +37,7 @@ describe("data api", () => {
 
         let c = await createData(async () => { },CategoriesForThisTest);
 
-        var api = new DataApi(c,c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.error = async (data: any) => {

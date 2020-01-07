@@ -226,7 +226,7 @@ describe("data api", () => {
       c.myId.value = 1;
       c.name.value = 'noam';
       await c.save();
-      let api = new DataApi(s, c._getEntityApiSettings(ctx));
+      let api = new DataApi(s);
       let t = new TestDataApiResponse();
       let d = new Done();
       t.error = async (data: any) => {
@@ -248,7 +248,7 @@ describe("data api", () => {
     c.myId.value = 1;
     c.name.value = 'noam';
     await c.save();
-    let api = new DataApi(s, c._getEntityApiSettings(ctx));
+    let api = new DataApi(s);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -269,7 +269,7 @@ describe("data api", () => {
 
     c.myId.value = 1; c.name.value = 'noam';
     await c.save();
-    let api = new DataApi(s, c._getEntityApiSettings(ctx));
+    let api = new DataApi(s);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -316,7 +316,7 @@ describe("data api", () => {
   itAsync("delete fails when not found", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, c.create()._getEntityApiSettings(ctx));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
@@ -326,7 +326,7 @@ describe("data api", () => {
   itAsync("delete works ", async () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
-    var api = new DataApi(c, c.create()._getEntityApiSettings(ctx));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.deleted = () => d.ok();
@@ -345,7 +345,7 @@ describe("data api", () => {
       }, transaction: undefined
     });
 
-    var api = new DataApi(ctx.for(Categories), ctx.for(Categories).create()._getEntityApiSettings(ctx));
+    var api = new DataApi(ctx.for(Categories));
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = () => d.ok();
@@ -359,7 +359,7 @@ describe("data api", () => {
 
     let c = await createData(async () => { });
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(ctx));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.created = async (data: any) => {
@@ -375,7 +375,7 @@ describe("data api", () => {
 
     let c = ctx.for(entityWithValidations);
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(ctx));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.created = async (data: any) => {
@@ -395,7 +395,7 @@ describe("data api", () => {
 
     let c = await createData(async (i) => { i(1, 'noam'); });
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(ctx));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = err => {
@@ -508,7 +508,7 @@ describe("data api", () => {
         }
       });
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -532,7 +532,7 @@ describe("data api", () => {
         categoryName = new StringColumn({ includeInApi: false });
       });
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -550,7 +550,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'), Categories);
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -580,7 +580,7 @@ describe("data api", () => {
         }
       });
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -601,7 +601,7 @@ describe("data api", () => {
 
     let c = await createData(async insert => insert(1, 'noam'));
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => d.ok();
@@ -623,7 +623,7 @@ describe("data api", () => {
         }
       });
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = async (data: any) => {
@@ -652,7 +652,7 @@ describe("data api", () => {
       }
     });
 
-    var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -738,33 +738,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  itAsync("getArray works with predefined filter", async () => {
-    let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
-    });
-    var api = new DataApi(c, {
-      get: { where: c => c.description.isEqualTo('b') }
-
-    });
-    let t = new TestDataApiResponse();
-    let d = new Done();
-    t.success = data => {
-      expect(data.length).toBe(0);
-
-      d.ok();
-    };
-    await api.getArray(t, {
-      get: x => {
-        if (x == c.create().description.jsonName)
-          return "a";
-        return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
-    });
-    d.test();
-  });
+  
 
 
 
@@ -781,7 +755,7 @@ describe("data api", () => {
         })
       }
     });
-    var api = new DataApi(c, c.create()._getEntityApiSettings(ctx));
+    var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.methodNotAllowed = () => {

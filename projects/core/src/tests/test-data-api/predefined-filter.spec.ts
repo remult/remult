@@ -20,7 +20,7 @@ describe("data api", () => {
             i(3, 'yoni', 'a');
         }, CategoriesForThisTest);
 
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = data => {
@@ -39,7 +39,7 @@ describe("data api", () => {
             i(2, 'yael', 'b');
             i(3, 'yoni', 'a');
         });
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = data => {
@@ -57,7 +57,7 @@ describe("data api", () => {
             i(2, 'yael', 'b');
             i(3, 'yoni', 'a');
         }, CategoriesForThisTest);
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.notFound = () => {
@@ -72,7 +72,7 @@ describe("data api", () => {
             i(2, 'yael', 'b');
             i(3, 'yoni', 'a');
         }, CategoriesForThisTest);
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.notFound = () => {
@@ -87,7 +87,7 @@ describe("data api", () => {
             i(2, 'yael', 'b');
             i(3, 'yoni', 'a');
         }, CategoriesForThisTest);
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.deleted = () => {
@@ -102,7 +102,7 @@ describe("data api", () => {
           i(2, 'yael', 'b');
           i(3, 'yoni', 'a');
         },CategoriesForThisTest);
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = () => {
@@ -117,13 +117,37 @@ describe("data api", () => {
           i(2, 'yael', 'b');
           i(3, 'yoni', 'a');
         },CategoriesForThisTest);
-        var api = new DataApi(c, c.create()._getEntityApiSettings(context));
+        var api = new DataApi(c);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.notFound = () => {
           d.ok();
         };
         await api.put(t, 1, { name: 'YAEL' });
+        d.test();
+      });
+      itAsync("getArray works with predefined filter", async () => {
+        let c = await createData(async (i) => {
+          i(1, 'noam', 'a');
+          i(2, 'yael', 'b');
+          i(3, 'yoni', 'a');
+        },CategoriesForThisTest);
+        var api = new DataApi(c);
+        let t = new TestDataApiResponse();
+        let d = new Done();
+        t.success = data => {
+          expect(data.length).toBe(0);
+    
+          d.ok();
+        };
+        await api.getArray(t, {
+          get: x => {
+            if (x == c.create().description.jsonName)
+              return "a";
+            return undefined;
+          }, clientIp: '', user: undefined, getHeader: x => ""
+          , getBaseUrl: () => ''
+        });
         d.test();
       });
 });

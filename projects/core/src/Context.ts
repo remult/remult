@@ -4,7 +4,7 @@ import { RestDataProvider } from "./data-providers/rest-data-provider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
 
 import { InMemoryDataProvider } from "./data-providers/in-memory-database";
-import { DataApiRequest } from "./data-api";
+import { DataApiRequest, DataApiSettings } from "./data-api";
 import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 
@@ -181,6 +181,16 @@ export class ServerContext extends Context {
 
 
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
+    _getApiSettings(excludedColumns: ColumnHashSet, readonlyColumns: ColumnHashSet): DataApiSettings<T> {
+        let r = this.entity._getEntityApiSettings(this.context);
+        if (r.readonlyColumns)
+            readonlyColumns.add(...r.readonlyColumns(this.entity));
+        if (r.excludeColumns) {
+            excludedColumns.add(...r.excludeColumns(this.entity));
+            readonlyColumns.add(...r.excludeColumns(this.entity));
+        }
+        return r;
+    }
     _configureApi(readonlyColumns: ColumnHashSet, excludedColumns: ColumnHashSet): import("./data-api").DataApiSettings<T> {
         let op = this.entity._getEntityApiSettings(this.context);
         if (op.readonlyColumns)

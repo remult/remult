@@ -8,7 +8,7 @@ import { Sort } from './sort';
 import { ColumnHashSet } from './column-hash-set';
 import { AndFilter } from './filter/and-filter';
 import { StringColumn } from './columns/string-column';
-import { UserInfo } from './context';
+import { UserInfo, SpecificEntityHelper } from './context';
 import { FilterBase } from './filter/filter-interfaces';
 
 export class DataApi<T extends Entity<any>> {
@@ -17,18 +17,9 @@ export class DataApi<T extends Entity<any>> {
       return this.entityProvider.create().defs.name;
     return this.options.name;
   }
-  constructor(private entityProvider: EntityProvider<T>, private options?: DataApiSettings<T>, t?: T) {
-    if (!options)
-      this.options = {};
-    if (!t)
-      t = entityProvider.create();
-    if (this.options.readonlyColumns)
-      this.readonlyColumns.add(...this.options.readonlyColumns(t));
-    if (this.options.excludeColumns) {
-      this.excludedColumns.add(...this.options.excludeColumns(t));
-      this.readonlyColumns.add(...this.options.excludeColumns(t));
-    }
-
+  options:DataApiSettings<T>;
+  constructor(private entityProvider: SpecificEntityHelper<any, T>) {
+    this.options = entityProvider._getApiSettings(this.excludedColumns,this.readonlyColumns);
   }
   private excludedColumns = new ColumnHashSet();
   private readonlyColumns = new ColumnHashSet();
