@@ -4,7 +4,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done } from './testHelper.spec';
 
-import { Categories, Status, CategoriesWithValidation } from './testModel/models';
+import { Categories, Status, CategoriesWithValidation, StatusColumn } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
 import { ValueListColumn } from '../columns/value-list-column';
@@ -42,15 +42,24 @@ export class Language {
 
 }
 
+export interface CategoriesForTesting extends Entity<number> {
+  id: NumberColumn;
+  categoryName: StringColumn;
+  description: StringColumn;
+  status: StatusColumn;
+}
 
 
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>) {
+export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
+  new(): CategoriesForTesting
+}) {
   let context = new ServerContext();
   context.setDataProvider(new InMemoryDataProvider());
-
+  if (!entity)
+    entity = Categories;
   await doInsert(async (id, name, description, status) => {
 
-    let c = context.for(Categories).create();
+    let c: CategoriesForTesting = context.for(entity).create();
     c.id.value = id;
     c.categoryName.value = name;
     c.description.value = description;
@@ -59,7 +68,7 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
     await c.save();
 
   });
-  return context.for(Categories);
+  return context.for(entity);
 }
 
 async function insertFourRows() {
@@ -101,7 +110,7 @@ describe("Closed List  column", () => {
 
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Context().for( Categories).create();
+    var cat = new Context().for(Categories).create();
     expect(cat.defs.name).toBe('Categories');
   });
   itAsync("Insert", async () => {

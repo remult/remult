@@ -339,14 +339,14 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         });
     }
 }
-export interface EntityType {
-    new(...args: any[]): Entity<any>;
+export interface EntityType<T> {
+    new(...args: any[]): Entity<T>;
     __key: string;
 }
-export const allEntities: EntityType[] = [];
+export const allEntities: EntityType<any>[] = [];
 
 
-export function EntityClass<T extends EntityType>(theEntityClass: T) {
+export function EntityClass<T extends EntityType<any>>(theEntityClass: T) {
     let original = theEntityClass;
     let f = original;
     /*f = class extends theEntityClass {

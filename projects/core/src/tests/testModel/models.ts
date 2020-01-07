@@ -1,7 +1,7 @@
 
 import { DataProvider } from "../../data-interfaces";
 
-import { EntityClass } from "../../context";
+import { EntityClass, Context } from "../../context";
 import { Entity, EntityOptions } from "../../entity";
 import { NumberColumn } from "../../columns/number-column";
 import { StringColumn } from "../../columns/string-column";
@@ -16,15 +16,19 @@ export class Categories extends Entity<number> {
   categoryName = new StringColumn();
   description = new StringColumn();
   categoryNameLength = new NumberColumn({
-    serverExpression: () => this.categoryName.value? this.categoryName.value.length:undefined
+    serverExpression: () => this.categoryName.value ? this.categoryName.value.length : undefined
   });
   categoryNameLengthAsync = new NumberColumn({
-    serverExpression: () => Promise.resolve(this.categoryName.value? this.categoryName.value.length:undefined)
+    serverExpression: () => Promise.resolve(this.categoryName.value ? this.categoryName.value.length : undefined)
   });
   status = new StatusColumn();
   constructor(settings?: EntityOptions | string) {
-    super(settings);
-    
+    super(settings&&!(settings instanceof Context) ? settings : {
+      name:undefined,
+      
+      allowApiCRUD:true
+    });
+
   }
 }
 export class CategoriesWithValidation extends Categories {
