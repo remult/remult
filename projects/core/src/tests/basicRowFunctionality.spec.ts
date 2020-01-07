@@ -101,32 +101,36 @@ describe('Test basic row functionality', () => {
     expect(y.columns.find(x.categoryName).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
-    let x = new Context().for(Categories).create();
+    let ctx = new Context().for(Categories);
+    let x = ctx.create();
     x.id.value = 1;
     x.categoryName.value = 'noam';
-    let y = await x.__toPojo(new ColumnHashSet());
+    let y = ctx.toApiPojo(x);
     expect(y.id).toBe(1);
     expect(y.categoryName).toBe('noam');
   });
   itAsync("json name is important", async () => {
-    let x = new Context().for(Categories).create();
+    let ctx = new Context().for(Categories);
+    let x = ctx.create();
     x.id.value = 1;
     x.categoryName.jsonName = 'xx';
     x.categoryName.value = 'noam';
-    let y = await x.__toPojo(new ColumnHashSet());
+    let y = ctx.toApiPojo(x);;
     expect(y.id).toBe(1);
     expect(y.xx).toBe('noam');
   });
   itAsync("json name is important 1", async () => {
-    let x = new myTestEntity();
+    let ctx = new Context().for(myTestEntity);
+    let x = ctx.create();
     x.id.value = 1;
     expect(x.name1.jsonName).toBe('name');
     x.name1.value = 'noam';
-    let y = await x.__toPojo(new ColumnHashSet());
+    let y = ctx.toApiPojo(x);
     expect(y.id).toBe(1);
     expect(y.name).toBe('noam', JSON.stringify(y));
     y.name = 'yael';
-    x.__fromPojo(y, new ColumnHashSet());
+    new Context().for(myTestEntity)._updateEntityBasedOnApi(x, y);
+    
     expect(x.name1.value).toBe('yael');
 
   });
@@ -738,7 +742,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  
+
 
 
 

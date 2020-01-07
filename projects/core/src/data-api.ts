@@ -17,9 +17,9 @@ export class DataApi<T extends Entity<any>> {
       return this.entityProvider.create().defs.name;
     return this.options.name;
   }
-  options:DataApiSettings<T>;
+  options: DataApiSettings<T>;
   constructor(private entityProvider: SpecificEntityHelper<any, T>) {
-    this.options = entityProvider._getApiSettings(this.excludedColumns,this.readonlyColumns);
+    this.options = entityProvider._getApiSettings(this.excludedColumns, this.readonlyColumns);
   }
   private excludedColumns = new ColumnHashSet();
   private readonlyColumns = new ColumnHashSet();
@@ -29,7 +29,7 @@ export class DataApi<T extends Entity<any>> {
       response.methodNotAllowed();
       return;
     }
-    await this.doOnId(response, id, async row => response.success(await row.__toPojo(this.excludedColumns)));
+    await this.doOnId(response, id, async row => response.success(this.entityProvider.toApiPojo(row)));
   }
   async count(response: DataApiResponse, request: DataApiRequest) {
     try {
@@ -83,7 +83,7 @@ export class DataApi<T extends Entity<any>> {
       }
       await this.entityProvider.find(findOptions)
         .then(async r => {
-          response.success(await Promise.all(r.map(async y => await y.__toPojo(this.excludedColumns))));
+          response.success(await Promise.all(r.map(async y => this.entityProvider.toApiPojo(y))));
         });
     }
     catch (err) {
@@ -175,9 +175,9 @@ export class DataApi<T extends Entity<any>> {
       return;
     }
     await this.doOnId(response, id, async row => {
-      row.__fromPojo(body, this.readonlyColumns);
+      this.entityProvider._updateEntityBasedOnApi(row, body);
       await row.save(this.options.validate, this.options.onSavingRow);
-      response.success(await row.__toPojo(this.excludedColumns));
+      response.success(this.entityProvider.toApiPojo(row));
     });
   }
   async delete(response: DataApiResponse, id: any) {
@@ -190,6 +190,8 @@ export class DataApi<T extends Entity<any>> {
       response.deleted();
     });
   }
+
+
   async post(response: DataApiResponse, body: any) {
     if (!this.options.allowInsert) {
       response.methodNotAllowed();
@@ -197,10 +199,10 @@ export class DataApi<T extends Entity<any>> {
     }
     try {
 
-      let r = this.entityProvider.create();
-      r.__fromPojo(body, this.readonlyColumns);
+      let r = this.entityProvider._updateEntityBasedOnApi(this.entityProvider.create(), body);
+
       await r.save(this.options.validate, this.options.onSavingRow);
-      response.created(await r.__toPojo(this.excludedColumns));
+      response.created(this.entityProvider.toApiPojo(r));
     } catch (err) {
       response.error(err);
     }

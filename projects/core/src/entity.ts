@@ -220,26 +220,9 @@ export class Entity<idType> {
   wasChanged() {
     return this.__entityData.wasChanged();
   }
-  async __toPojo(excludeColumns: ColumnHashSet): Promise<any> {
-    let r = {};
+  
 
-    this.__columns.forEach(c => {
-      if (!excludeColumns.contains(c))
-        c.__addToPojo(r);
-    });
-    return r;
-
-  }
-
-  __fromPojo(r: any, excludeColumns: ColumnHashSet): any {
-
-    this.__columns.forEach(c => {
-      if (!excludeColumns.contains(c))
-        c.__loadFromToPojo(r);
-    });
-
-
-  }
+  
 
 
   //@internal

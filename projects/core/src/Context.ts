@@ -300,6 +300,22 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         f.__entityData.setData(r, f);
         return f;
     }
+    toApiPojo(entity: T): any {//consider if should do serverExpressions Here or not.
+        let r = {};
+        for (const c of entity.columns) {
+            if (this.context.isAllowed(c.includeInApi))
+                c.__addToPojo(r)
+        }
+        return r;
+
+    }
+    _updateEntityBasedOnApi(entity: T, body: any) {
+        for (const c of entity.columns) {
+            if (this.context.isAllowed(c.includeInApi) && this.context.isAllowed(c.allowApiUpdate))
+                c.__loadFromToPojo(body);
+        }
+        return entity;
+    }
     async findFirst(where?: (entity: T) => FilterBase) {
         let r = await this.find({ where });
         if (r.length == 0)
@@ -307,9 +323,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return r[0];
     }
     toPojoArray(items: T[]) {
-        let exc = new ColumnHashSet();
-        exc.add(...this.entity.columns.toArray().filter(c => !this.context.isAllowed(c.includeInApi)));
-        return Promise.all(items.map(f => f.__toPojo(exc)));
+        return items.map(f => this.toApiPojo(f));
     }
 
     gridSettings(settings?: IDataSettings<T>) {
