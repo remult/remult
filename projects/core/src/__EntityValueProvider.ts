@@ -32,7 +32,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
   save(e: Entity<any>): Promise<void> {
     let d = JSON.parse(JSON.stringify(this.data));
-    if (e.__idColumn instanceof CompoundIdColumn)
+    if (e.columns.idColumn instanceof CompoundIdColumn)
       d.id = undefined;
     if (this.newRow) {
       return this.dataProvider.insert(d).then((newData: any) => {
@@ -60,10 +60,10 @@ export class __EntityValueProvider implements ColumnValueProvider {
   async setData(data: any, r: Entity<any>) {
     if (!data)
       data = {};
-    if (r.__idColumn instanceof CompoundIdColumn) {
-      r.__idColumn.__addIdToPojo(data);
+    if (r.columns.idColumn instanceof CompoundIdColumn) {
+      r.columns.idColumn.__addIdToPojo(data);
     }
-    let id = data[r.__idColumn.jsonName];
+    let id = data[r.columns.idColumn.jsonName];
     if (id != undefined) {
       this.id = id;
       this.newRow = false;

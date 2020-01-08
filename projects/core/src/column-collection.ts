@@ -97,7 +97,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
       else if (isFunction(orig)) {
         result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
       }
-      else if (orig instanceof Promise)
+      else 
         result.push(...(await orig));
       
     }

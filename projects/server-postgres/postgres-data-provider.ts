@@ -105,7 +105,7 @@ export class PostgresSchemaBuilder {
                             result += ',';
                         result += '\r\n  ';
                         result += this.addColumnSqlSyntax(x);
-                        if (x == e.__idColumn)
+                        if (x == e.columns.idColumn)
                             result += ' primary key';
                     }
                 }

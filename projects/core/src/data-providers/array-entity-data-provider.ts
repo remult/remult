@@ -67,7 +67,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         return r;
     }
     private idMatches(id: any): (item: any) => boolean {
-        let f = this.entity.__idColumn.isEqualTo(id);
+        let f = this.entity.columns.idColumn.isEqualTo(id);
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
             f.__applyToConsumer(x);

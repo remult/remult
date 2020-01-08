@@ -18,8 +18,7 @@ export class Column<dataType>  {
   async __calcServerExpression() {
     if (this.__settings.serverExpression) {
       let x = this.__settings.serverExpression();
-      if (x instanceof Promise)
-        x = await x;
+      x = await x;
       this.value = x;
 
     }

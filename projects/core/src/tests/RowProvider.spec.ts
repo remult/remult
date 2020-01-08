@@ -238,7 +238,7 @@ describe("test row provider", () => {
     c.id.value = 1;
     c.categoryName.value = 'bla bla';
     try {
-      c.save();
+      await c.save();
       fail("Shouldnt have reached this");
     }
     catch (err) {

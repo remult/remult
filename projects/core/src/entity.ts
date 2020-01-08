@@ -5,6 +5,7 @@ import { FilterBase } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
 import { valueOrExpressionToValue } from './column-interfaces';
 
+
 //@dynamic
 export class Entity<idType> {
   constructor(options?: EntityOptions | string) {
@@ -25,11 +26,11 @@ export class Entity<idType> {
       };
     }
   }
-
+  //@internal
   static __key: string;
 
 
-  
+  //@internal 
   _getEntityApiSettings(r: Context): DataApiSettings<Entity<any>> {
 
     let options = this.__options;
@@ -49,8 +50,9 @@ export class Entity<idType> {
     }
 
   }
-
+  //@internal
   private __options: EntityOptions;
+  //@internal
   private _defs: EntityDefs;
   get defs() {
     if (!this._defs)
@@ -60,7 +62,7 @@ export class Entity<idType> {
 
 
 
-
+  //@internal
   __entityData = new __EntityValueProvider();
 
   //@internal
@@ -68,9 +70,10 @@ export class Entity<idType> {
   //@internal
   __onValidate: () => void | Promise<void> = () => { };
 
-  error: string;
-  __idColumn: Column<idType>;
-
+  validationError: string;
+  //@internal
+  private __idColumn: Column<idType>;
+  //@internal
   __initColumns(idColumn?: Column<idType>) {
     if (!this.__options.name) {
       this.__options.name = this.constructor.name;
@@ -105,8 +108,8 @@ export class Entity<idType> {
   isNew() {
     return this.__entityData.isNewRow();
   }
-
-  __getValidationError() {
+  //@internal
+  private __getValidationError() {
     let result: any = {};
     result.modelState = {};
     this.__columns.forEach(c => {
@@ -115,15 +118,14 @@ export class Entity<idType> {
     });
     return result;
   }
-
-
-  __assertValidity() {
+  //@internal
+  private __assertValidity() {
     if (!this.isValid()) {
 
       throw this.__getValidationError();
     }
   }
-  save(validate?: (row: this) => Promise<any> | any, onSavingRow?: (row: this) => Promise<any> | any) {
+  async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
     this.__clearErrors();
 
     this.__columns.forEach(c => {
@@ -132,43 +134,18 @@ export class Entity<idType> {
 
     if (this.__onValidate)
       this.__onValidate();
-    if (validate)
-      validate(this);
+    if (afterValidationBeforeSaving)
+      await afterValidationBeforeSaving(this);
     this.__assertValidity();
 
-
-    let performEntitySave = () => {
-      let x = this.__onSavingRow();
-
-      let doSave = () => {
-        this.__assertValidity();
-
-
-        return this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
-      };
-      if (x instanceof Promise) {
-
-        return x.then(() => {
-          return doSave();
-        });
-      }
-      else {
-
-        return doSave();
-      }
-    }
-
-    if (!onSavingRow)
-      return performEntitySave();
-    let y = onSavingRow(this);
-    if (y instanceof Promise) {
-      return y.then(() => { return performEntitySave(); });
-    }
-    return performEntitySave();
+    await  this.__onSavingRow();
+    this.__assertValidity();
+    return await  this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
   }
-
+  //@internal
   private catchSaveErrors(err: any): any {
     let e = err;
+    
     if (e instanceof Promise) {
       return e.then(x => this.catchSaveErrors(x));
     }
@@ -177,10 +154,10 @@ export class Entity<idType> {
     }
 
     if (e.message)
-      this.error = e.message;
+      this.validationError = e.message;
     else if (e.Message)
-      this.error = e.Message;
-    else this.error = e;
+      this.validationError = e.Message;
+    else this.validationError = e;
     let s = e.modelState;
     if (!s)
       s = e.ModelState;
@@ -199,21 +176,24 @@ export class Entity<idType> {
     return this.__entityData.delete().catch(e => this.catchSaveErrors(e));
 
   }
-  reset() {
+  undoChanges() {
     this.__entityData.reset();
     this.__clearErrors();
+  }
+  async reload() {
+    throw 'not implemented';
   }
   //@internal
   __clearErrors() {
     this.__columns.forEach(c => c.__clearErrors());
-    this.error = undefined;
+    this.validationError = undefined;
   }
   wasChanged() {
     return this.__entityData.wasChanged();
   }
-  
 
-  
+
+
 
 
   //@internal
@@ -224,10 +204,11 @@ export class Entity<idType> {
     if (this.__columns.indexOf(y) < 0)
       this.__columns.push(y);
   }
-  
+
+  //@internal
   private __columns: Column<any>[] = [];
   get columns() {
-    return new EntityColumns(this.__columns);
+    return new EntityColumns(this.__columns, this.__idColumn);
   }
 
 
@@ -257,34 +238,35 @@ function makeTitle(name: string) {
 }
 export class EntityDefs {
 
-  constructor(private options: EntityOptions) {
+  constructor(private __options: EntityOptions) {
 
   }
   get name() {
-    return this.options.name;
+    return this.__options.name;
   }
   get dbName() {
-    if (!this.options.dbName)
-      this.options.dbName = this.name;
-    return valueOrExpressionToValue(this.options.dbName);
+    if (!this.__options.dbName)
+      this.__options.dbName = this.name;
+    return valueOrExpressionToValue(this.__options.dbName);
   }
   get caption() {
-    if (!this.options.caption) {
-      this.options.caption = makeTitle(this.name);
+    if (!this.__options.caption) {
+      this.__options.caption = makeTitle(this.name);
     }
-    return this.options.caption;
+    return this.__options.caption;
   }
 }
-export class EntityColumns {
-  constructor(private __columns: Column<any>[]) {
+export class EntityColumns<T>{
+  constructor(private __columns: Column<any>[], public readonly idColumn: Column<T>) {
 
   }
   [Symbol.iterator]() {
     return this.__columns[Symbol.iterator]();
   }
-  toArray(){
+  toArray() {
     return [...this.__columns];
   }
+
 
 
   find(key: string | Column<any>) {

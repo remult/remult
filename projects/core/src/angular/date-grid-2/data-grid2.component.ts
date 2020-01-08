@@ -132,7 +132,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
 
   }
   private showError(row: Entity<any>) {
-    let message = row.error;
+    let message = row.validationError;
     if (!message)
       message = "";
     let foundStateErrors = false;

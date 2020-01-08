@@ -154,12 +154,12 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
+    this.entity.columns.idColumn.isEqualTo(id).__applyToConsumer(f);
     let statement = 'update ' + this.entity.defs.dbName + ' set ';
     let added = false;
-    let resultFilter = this.entity.__idColumn.isEqualTo(id);
+    let resultFilter = this.entity.columns.idColumn.isEqualTo(id);
     if (data.id != undefined)
-      resultFilter = this.entity.__idColumn.isEqualTo(data.id);
+      resultFilter = this.entity.columns.idColumn.isEqualTo(data.id);
     for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
@@ -190,14 +190,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
+    this.entity.columns.idColumn.isEqualTo(id).__applyToConsumer(f);
     let statement = 'delete from ' + this.entity.defs.dbName;
     let added = false;
 
     statement += f.where;
 
     return r.execute(statement).then(() => {
-      return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
+      return this.find({ where: this.entity.columns.idColumn.isEqualTo(id) }).then(y => y[0]);
     });
 
   }
@@ -211,7 +211,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let cols = '';
     let vals = '';
     let added = false;
-    let resultFilter = this.entity.__idColumn.isEqualTo(data[this.entity.__idColumn.jsonName]);
+    let resultFilter = this.entity.columns.idColumn.isEqualTo(data[this.entity.columns.idColumn.jsonName]);
     for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);

@@ -28,7 +28,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
     private getInternal(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): lookupRowInfo<entityType> {
       let find: FindOptions<entityType> = {};
       if (filter instanceof Column)
-        find.where = (e) => e.__idColumn.isEqualTo(filter);
+        find.where = (e) => e.columns.idColumn.isEqualTo(filter);
       else if (isFunction(filter)) {
         find.where = e => filter(e);
       }

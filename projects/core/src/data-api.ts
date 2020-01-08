@@ -149,7 +149,7 @@ export class DataApi<T extends Entity<any>> {
 
       await this.entityProvider.find({
         where: x => {
-          let where: FilterBase = x.__idColumn.isEqualTo(id);
+          let where: FilterBase = x.columns.idColumn.isEqualTo(id);
           if (this.options && this.options.get && this.options.get.where)
             where = new AndFilter(where, this.options.get.where(x));
           return where;
@@ -174,7 +174,7 @@ export class DataApi<T extends Entity<any>> {
     }
     await this.doOnId(response, id, async row => {
       this.entityProvider._updateEntityBasedOnApi(row, body);
-      await row.save(this.options.validate, this.options.onSavingRow);
+      await row.save();
       response.success(this.entityProvider.toApiPojo(row));
     });
   }
@@ -199,7 +199,7 @@ export class DataApi<T extends Entity<any>> {
 
       let r = this.entityProvider._updateEntityBasedOnApi(this.entityProvider.create(), body);
 
-      await r.save(this.options.validate, this.options.onSavingRow);
+      await r.save();
       response.created(this.entityProvider.toApiPojo(r));
     } catch (err) {
       response.error(err);
@@ -213,9 +213,8 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowDelete?: boolean,
   allowRead?: boolean,
   name?: string,
-  get?: FindOptions<rowType>,
-  validate?: (r: rowType) => void;
-  onSavingRow?: (r: rowType) => Promise<any> | any;
+  get?: FindOptions<rowType>
+  
 }
 
 export interface DataApiResponse {

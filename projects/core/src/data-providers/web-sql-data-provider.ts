@@ -29,7 +29,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                     result += ',';
                 result += '\r\n  ';
                 result += this.addColumnSqlSyntax(x);
-                if (x == entity.__idColumn)
+                if (x == entity.columns.idColumn)
                     result += ' primary key';
             }
         }

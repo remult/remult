@@ -73,7 +73,7 @@ export class TestDataApiResponse implements DataApiResponse {
 describe('Test basic row functionality', () => {
   it("finds its id column", () => {
     let c = new Context().for(Categories).create();
-    expect(c.__idColumn.jsonName).toBe("id");
+    expect(c.columns.idColumn.jsonName).toBe("id");
 
   });
   it("object assign works", () => {
@@ -828,7 +828,7 @@ describe("column validation", () => {
     c.id.error = "x";
     expect(c.id.error).toBe("x");
     expect(c.isValid()).toBe(false);
-    c.reset();
+    c.undoChanges();
     expect(c.id.error).toBe(undefined);
     expect(c.isValid()).toBe(true);
   });
@@ -984,7 +984,7 @@ describe("test data list", () => {
     }
     catch (err) {
       expect(rl.items.length).toBe(3);
-      expect(rl.items[1].error).toBe("error");
+      expect(rl.items[1].validationError).toBe("error");
     }
   });
 

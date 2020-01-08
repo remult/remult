@@ -284,7 +284,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         f.__entityData.setData(r, f);
         return f;
     }
-    toApiPojo(entity: T): any {//consider if should do serverExpressions Here or not.
+    toApiPojo(entity: T): any {
         let r = {};
         for (const c of entity.columns) {
             if (this.context.isAllowed(c.includeInApi))
@@ -324,7 +324,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             args = {};
         }
         if (!args.idColumn) {
-            args.idColumn = x => x.__idColumn;
+            args.idColumn = x => x.columns.idColumn;
         }
         if (!args.captionColumn) {
             let idCol = args.idColumn(this.entity);
