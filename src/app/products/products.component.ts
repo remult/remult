@@ -12,6 +12,7 @@ export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
   products = this.context.for(Products).gridSettings({
     allowUpdate: true,
+    allowInsert:true,
     columnSettings:p=>[
       p.name,
       p.phone
