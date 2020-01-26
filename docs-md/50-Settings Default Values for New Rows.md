@@ -1,30 +1,43 @@
 We can use the `GridSettings` `onEnterRow` property to define a function that will be run when ever a row is entered, and set the defaults for a new row there.
-In the `products.component.ts`
+In the `products.ts`
 ```csdiff
-products = this.context.for(Products).gridSettings({
-    allowInsert: true,
-    allowUpdate: true,
-    allowDelete: true,
-    columnSettings: p => [
-        p.name,
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
+
+@EntityClass
+export class Products extends IdEntity {
+    name = new StringColumn();
+    price = new NumberColumn(
         {
-        column: p.price,
-        width: '75'
-        },
-        p.availableFrom,
-        p.availableTo
-    ]
-    , numOfColumnsInGrid: 2
-    , hideDataArea: true
-+   ,onEnterRow:p=>{
-+       if (p.isNew())
-+       {
-+       p.availableFrom.value = new Date();
-+       p.availableTo.value = new Date(9999,11,31);
-+       p.price.value = 5;
-+       }
-+   }
-});
+            validate: () => {
+                if (!this.price.value) {
+                    this.price.error = 'Price is required';
+                }
+            }
+        }
+    );
+    availableFrom = new DateColumn({
+        validate: () => {
+            if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
+                this.availableFrom.error = 'Invalid Date';
+        }
++       , defaultValue: () => new Date()
+    });
+    availableTo = new DateColumn({
+        validate: () => {
+            if (!this.availableTo.value || this.availableTo.value <= this.availableFrom.value) {
+                this.availableTo.error = 'Should be greater than ' + this.availableFrom.caption;
+            }
+        }
++       , defaultValue: () => new Date(9999, 11, 31)
+    });
+    constructor() {
+        super({
+            name: "Products",
+            allowApiCRUD: true,
+            allowApiRead: true
+        });
+    }
+} 
 ```
 > note that in javascript dates, the months are from 0 to 12, that is why `new Date(9999,11,31)` is the end of the year 9999
 

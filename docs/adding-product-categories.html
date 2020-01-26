@@ -136,7 +136,7 @@ export class Products extends IdEntity {
 } </code></pre>
 <h2 id="allowing-the-user-to-easily-select-a-category-for-a-product">Allowing the user to Easily select a category for a product</h2>
 <p>in the <code>products.component.ts</code></p>
-<pre data-line="11,12,13,14,15,16,21" class="language-csdiff line-numbers"><code>products = this.context.for(Products).gridSettings({
+<pre data-line="11,12,13,14,19" class="language-csdiff line-numbers"><code>products = this.context.for(Products).gridSettings({
   allowInsert: true,
   allowUpdate: true,
   allowDelete: true,
@@ -148,9 +148,7 @@ export class Products extends IdEntity {
     },
     {
       column: p.category,
-      dropDown: {
-        source: this.context.for(Categories).create()
-      }
+      valueList: this.context.for(Categories).getDropDownItems()
     },
     p.availableFrom,
     p.availableTo
@@ -158,13 +156,6 @@ export class Products extends IdEntity {
 - , numOfColumnsInGrid: 2
   , numOfColumnsInGrid: 3
   , hideDataArea: true
-  , onEnterRow: p =&gt; {
-    if (p.isNew()) {
-      p.availableFrom.value = new Date();
-      p.availableTo.value = new Date(9999, 11, 31);
-      p.price.value = 5;
-    }
-  }
 }); </code></pre>
 <p>Great - now the user can select the category of each product.</p>
 <h2 id="display-the-category-for-each-product-in-the-websites-home">Display the Category for each Product in the website's Home</h2>

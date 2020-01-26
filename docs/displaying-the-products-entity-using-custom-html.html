@@ -71,6 +71,13 @@ In the <code>home.component.ts</code> file, the first step would be to get the <
   ngOnInit() {
   }
 } </code></pre>
+<blockquote>
+<p>note that when you'll add the <code>context</code> parameter to the constructor, you'll also require the <code>import</code> statement for the <code>Context</code> class.
+If you don't have that import statement, Visual Studio Code will highlight it in red and display a &quot;light bulb&quot; you can click to automatically add it:
+<img src="2020-01-26_11h45_50.png" alt="" />
+It'll then automatically add the <code>import { Context } from '@remult/core';</code> statement to the top of the document.
+The same can be done for any missing <code>import</code> statement</p>
+</blockquote>
 <p>Next let's define a list of products:</p>
 <pre data-line="4" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
 
@@ -79,12 +86,16 @@ In the <code>home.component.ts</code> file, the first step would be to get the <
   ngOnInit() {
   }
 } </code></pre>
+<blockquote>
+<p>If the <code>Products</code> class is highlighted, add it to the <code>import</code> statement using the method describe in the previous note.</p>
+</blockquote>
 <p>We've defined a member called <code>products</code> of type <code>Products[]</code> (an Array of products) and have set it's initial value to an empty array (<code>= []</code>)</p>
 <p>Now let's populate the array with products from our db:</p>
-<pre data-line="5,6,7" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
+<pre data-line="6,7,8" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
 
   constructor(private context: Context) { }
   products: Products[] = [];
+- ngOnInit() {
   async ngOnInit() {
     this.products = await this.context.for(Products).find();
   }

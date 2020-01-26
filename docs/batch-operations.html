@@ -82,7 +82,7 @@ in the <code>update-price.component.html</code></p>
  }
 } </code></pre>
 <p>Next let's do the actual work.</p>
-<pre data-line="3,8,13,14,15,16,17,18,19,20" class="language-csdiff line-numbers"><code>export class UpdatePriceComponent implements OnInit {
+<pre data-line="3,8,13,14,15,16,17,18,19,20,21,22,23,24,25" class="language-csdiff line-numbers"><code>export class UpdatePriceComponent implements OnInit {
 - constructor() { }
   constructor(private context: Context) { }
   ngOnInit() {
@@ -94,14 +94,19 @@ in the <code>update-price.component.html</code></p>
       alert("Please enter a valid amount");
       return;
     }
-    let products = await this.context.for(Products).find();
-    let count = 0;
-    for (const p of products) {
-      p.price.value += this.amountToAdd;
-      await p.save();
-      count++;
+    try {
+      let products = await this.context.for(Products).find();
+      let count = 0;
+      for (const p of products) {
+        p.price.value += this.amountToAdd;
+        await p.save();
+        count++;
+      }
+      alert("updated " + count + " products");
     }
-    alert("updated "+count+" products");
+    catch (err) {
+      alert("Error: " + JSON.stringify(err));
+    }  
   }
 } </code></pre>
 <p>Let's review:</p>
@@ -111,6 +116,10 @@ in the <code>update-price.component.html</code></p>
 <li>On line 13 we've requested the products from the db using the <code>await</code> keyword to wait for the result.</li>
 <li>On line 17 we've saved the changes we've made to the server, again using the <code>await</code> keyword to wait for it's completion.</li>
 </ol>
+<blockquote>
+<p>Note that if you get an error, chances are that you have rows in the products table that don't match your validation rules. This can happen since we first added a few test rows, and then we've added some validation, that not all existing rows match.
+Just go to the Products page and fix it.</p>
+</blockquote>
 
 
                 <br />
