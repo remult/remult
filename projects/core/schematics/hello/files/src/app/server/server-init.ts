@@ -35,7 +35,8 @@ export async function serverInit() {
         generateHash: p => passwordHash.generate(p),
         verify: (p, h) => passwordHash.verify(p, h)
     }
-    await new PostgresSchemaBuilder(pool).verifyStructureOfAllEntities();
-    return new SqlDatabase( new PostgresDataProvider(pool));
+    let result = new SqlDatabase(new PostgresDataProvider(pool));
+    await new PostgresSchemaBuilder(result).verifyStructureOfAllEntities();
+    return result;
 
 }
