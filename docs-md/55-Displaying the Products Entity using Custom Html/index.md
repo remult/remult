@@ -53,6 +53,11 @@ export class HomeComponent implements OnInit {
   }
 }
 ```
+> note that when you'll add the `context` parameter to the constructor, you'll also require the `import` statement for the `Context` class.
+> If you don't have that import statement, Visual Studio Code will highlight it in red and display a "light bulb" you can click to automatically add it:
+![](2020-01-26_11h45_50.png)
+> It'll then automatically add the `import { Context } from '@remult/core';` statement to the top of the document.
+> The same can be done for any missing `import` statement 
 
 Next let's define a list of products:
 ```csdiff
@@ -64,6 +69,7 @@ export class HomeComponent implements OnInit {
   }
 }
 ```
+> If the `Products` class is highlighted, add it to the `import` statement using the method describe in the previous note.
 
 We've defined a member called `products` of type `Products[]` (an Array of products) and have set it's initial value to an empty array (` = []`)
 
@@ -73,6 +79,7 @@ export class HomeComponent implements OnInit {
 
   constructor(private context: Context) { }
   products: Products[] = [];
+- ngOnInit() {
 + async ngOnInit() {
 +   this.products = await this.context.for(Products).find();
 + }

@@ -7,7 +7,7 @@ export class Products extends IdEntity {
     name = new StringColumn();
 -   price = new NumberColumn();
 +   price = new NumberColumn({
-+       onValidate:()=>{
++       validate:()=>{
 +           if (!this.price.value){
 +               this.price.error = 'Price is required';
 +           }
@@ -50,7 +50,7 @@ import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@
 export class Products extends IdEntity {
     name = new StringColumn();
     price = new NumberColumn({
-        onValidate: () => {
+        validate: () => {
             if (!this.price.value) {
                 this.price.error = 'Price is required';
             }
@@ -58,14 +58,14 @@ export class Products extends IdEntity {
     });
 -   availableFrom = new DateColumn();
 +   availableFrom = new DateColumn({
-+       onValidate: () => {
++       validate: () => {
 +           if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
 +               this.availableFrom.error = 'Invalid Date';
 +       }
 +   });
 -   availableTo = new DateColumn();
 +   availableTo = new DateColumn({
-+       onValidate:() =>{
++       validate:() =>{
 +           if (!this.availableTo.value||this.availableTo.value<=this.availableFrom.value){
 +               this.availableTo.error='Should be greater than '+this.availableFrom.caption;
 +           }
@@ -96,3 +96,5 @@ And in the JSON response:
 ```
 
 > the fact that these validations are defined on the Entity level, means that this validation will happen anywhere values are set to this entity, through out the application code.
+
+**Make sure to adjust your values to match the validation, otherwise, later in this tutorial steps may fail**

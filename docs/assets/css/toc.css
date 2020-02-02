@@ -5,10 +5,9 @@
 // Stylesheet for the table of content
 */
 
-*
-{
-	margin: 0px 0px 0px 0px;
-	padding: 0px 0px 0px 0px;
+* {
+  /* margin: 0px 0px 0px 0px; */
+  padding: 0px 0px 0px 0px;
 }
 
 /*body
@@ -77,95 +76,85 @@ a.UnselectedNode:hover, a.SelectedNode:hover
     display: none;
 }
 */
-.Tree
-{
-	background-color: #f0f0f0;
-	color: Black;
-    width: 300px;
-	overflow: auto;
+.Tree {
+  background-color: #f0f0f0;
+  color: Black;
+  width: 300px;
+  overflow: auto;
 }
 
-.TreeNode, .TreeItem
-{
-    
-    margin: 2px 2px 2px 10px;
-    color: #b3b3b3;
+.TreeNode,
+.TreeItem {
+  margin: 2px 2px 2px 10px;
+  color: #b3b3b3;
 }
-    .TreeNode, .treeItem a {
-         color:#b3b3b3 
-    }
-.TOCDiv
-{
-	position: relative;
-	float: left;
-	width: 300px;
-    height: 100%;
+.TreeNode,
+.treeItem a {
+  color: #b3b3b3;
 }
-
-.TOCSizer
-{
-	clear: none;
-	float: left;
-	width: 10px;
-    height: 100%;
-    background-color: #6699CC;
-    background-image: url("Splitter.gif");
-    background-position:center center;
-	background-repeat:no-repeat;
-	position: relative;
-	cursor: w-resize;
+.TOCDiv {
+  position: relative;
+  float: left;
+  width: 300px;
+  height: 100%;
 }
 
-.TopicContent
-{
-	position: relative;
-	float: right;
-    background-color: white;
-    height: 100%;
+.TOCSizer {
+  clear: none;
+  float: left;
+  width: 10px;
+  height: 100%;
+  background-color: #6699cc;
+  background-image: url("Splitter.gif");
+  background-position: center center;
+  background-repeat: no-repeat;
+  position: relative;
+  cursor: w-resize;
 }
 
-.SearchOpts
-{
-    padding: 5px 5px 0px 5px;
-    background-color: lightgrey;
-    color: black;
-    width: 300px;
+.TopicContent {
+  position: relative;
+  float: right;
+  background-color: white;
+  height: 100%;
 }
 
-.NavOpts
-{
-    padding: 5px 5px 0px 5px;
-    background-color: lightgrey;
-    color: black;
-    width: 300px;
+.SearchOpts {
+  padding: 5px 5px 0px 5px;
+  background-color: lightgrey;
+  color: black;
+  width: 300px;
 }
 
-.IndexOpts
-{
-    padding: 5px 5px 0px 5px;
-    background-color: lightgrey;
-    color: black;
-    width: 300px;
+.NavOpts {
+  padding: 5px 5px 0px 5px;
+  background-color: lightgrey;
+  color: black;
+  width: 300px;
 }
 
-.IndexItem
-{
-    white-space: nowrap;
-    margin: 2px 2px 2px 2px;
+.IndexOpts {
+  padding: 5px 5px 0px 5px;
+  background-color: lightgrey;
+  color: black;
+  width: 300px;
 }
 
-.IndexSubItem
-{
-    white-space: nowrap;
-    margin: 2px 2px 2px 12px;
+.IndexItem {
+  white-space: nowrap;
+  margin: 2px 2px 2px 2px;
 }
 
-.PaddedText
-{
-    margin: 10px 10px 10px 10px;
+.IndexSubItem {
+  white-space: nowrap;
+  margin: 2px 2px 2px 12px;
+}
+
+.PaddedText {
+  margin: 10px 10px 10px 10px;
 }
 
 div.TreeItem a {
-    color: white;
-    text-decoration: none;
+  color: #333;
+  text-decoration: none;
 }

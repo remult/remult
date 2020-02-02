@@ -1,4 +1,4 @@
-﻿/* From https://github.com/sindresorhus/github-markdown-css */
+/* From https://github.com/sindresorhus/github-markdown-css */
 
 @font-face {
     font-family: octicons-link;
@@ -14,6 +14,7 @@
     line-height: 1.6;
     word-wrap: break-word;
     margin: 10px;
+    /* margin-left: 0px; */
 }
 
     .markdown-body a {

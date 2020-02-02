@@ -25,11 +25,12 @@ export class ProductsComponent implements OnInit {
   ngOnInit() {
   }
   async test() {
-    await ProductsComponent.testIt();
+    await ProductsComponent.testIt(2);
   }
   @ServerFunction({ allowed: true })
-  static async testIt(sql?: SqlDatabase) {
-    console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
+  static async testIt(amount:Number,context?:Context) {
+    console.log(context);
+    //console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
   }
 
 }
