@@ -394,13 +394,29 @@ describe("test row provider", () => {
   });
 
 });
+describe("api test", () => {
+  it("can build", () => {
+    let ctx = new Context(undefined);
+    let gs = ctx.for(Categories).gridSettings();
+    gs.addArea({
+      columnSettings: x => [
+        x.categoryName,
+        [x.categoryName, x.categoryName]]
+    });
+
+
+
+  });
+
+
+});
 describe("column collection", () => {
   let ctx = new Context(undefined);
   itAsync("uses a saparate column", async () => {
     let c = ctx.for(class extends Categories {
       categoryName = new StringColumn({ allowApiUpdate: false });
     }).create();
-    
+
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.items[0] === c.categoryName).toBe(false);
@@ -703,7 +719,7 @@ describe("test parameter priority", () => {
     expect(t.allowApiUpdate).toBe(false);
     t = new testMyColumn({ allowApiUpdate: true });
     expect(t.allowApiUpdate).toBe(false);
-    
+
   });
   it("b", () => {
     let s = new AnotherTest();

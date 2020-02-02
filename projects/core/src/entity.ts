@@ -26,8 +26,7 @@ export class Entity<idType> {
       };
     }
   }
-  //@internal
-  static __key: string;
+  
 
 
   //@internal 

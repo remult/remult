@@ -100,7 +100,7 @@ export class Context {
         return false;
     }
 
-    cache = new Map<DataProvider, Map<string, SpecificEntityHelper<any, Entity<any>>>>();
+    cache = new Map<DataProvider, Map<any, SpecificEntityHelper<any, Entity<any>>>>();
     public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProvider) {
         if (!dataSource)
             dataSource = this._dataSource;
@@ -110,9 +110,9 @@ export class Context {
             dsCache = new Map<string, SpecificEntityHelper<any, Entity<any>>>();
             this.cache.set(dataSource, dsCache);
         }
-        let classType = c as any;
-        let classKey = classType.__key;
-        let r = dsCache.get(classKey) as SpecificEntityHelper<lookupIdType, T>;
+        
+        
+        let r = dsCache.get(c) as SpecificEntityHelper<lookupIdType, T>;
         if (!r) {
             r = new SpecificEntityHelper<lookupIdType, T>(() => {
                 let e = new c(this);
@@ -120,7 +120,7 @@ export class Context {
 
                 return e;
             }, this._lookupCache, this, dataSource);
-            dsCache.set(classKey, r);
+            dsCache.set(c, r);
         }
 
 
@@ -349,7 +349,6 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 }
 export interface EntityType<T> {
     new(...args: any[]): Entity<T>;
-    __key: string;
 }
 export const allEntities: EntityType<any>[] = [];
 
@@ -367,7 +366,6 @@ export function EntityClass<T extends EntityType<any>>(theEntityClass: T) {
         }
     }*/
     allEntities.push(f);
-    f.__key = theEntityClass.name + allEntities.indexOf(f);
     return f;
 }
 export interface UserInfo {
