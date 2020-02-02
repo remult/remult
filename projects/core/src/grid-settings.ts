@@ -372,8 +372,8 @@ export interface IDataSettings<rowType extends Entity<any>> {
   hideDataArea?: boolean,
   confirmDelete?: (r: rowType, yes: () => void) => void;
 
-  columnSettings?: (row: rowType) => DataControlSettings<rowType>[],
-  areas?: { [areaKey: string]: DataControlSettings<any>[] },
+  columnSettings?: (row: rowType) => (DataControlSettings<rowType>|Column<any>)[],
+  areas?: { [areaKey: string]: (DataControlSettings<rowType>|Column<any>)[] },
 
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[],

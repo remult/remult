@@ -287,16 +287,16 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     toApiPojo(entity: T): any {
         let r = {};
         for (const c of entity.columns) {
-            if (this.context.isAllowed(c.includeInApi))
-                c.__addToPojo(r)
+            
+                c.__addToPojo(r,this.context)
         }
         return r;
 
     }
     _updateEntityBasedOnApi(entity: T, body: any) {
         for (const c of entity.columns) {
-            if (this.context.isAllowed(c.includeInApi) && this.context.isAllowed(c.allowApiUpdate))
-                c.__loadFromToPojo(body);
+            
+                c.__loadFromToPojo(body,this.context);
         }
         return entity;
     }
@@ -403,4 +403,8 @@ const dialogConfigMember = Symbol("dialogConfigMember");
 interface LookupCache<T extends Entity<any>> {
     key: string;
     lookup: Lookup<any, T>;
+}
+export interface RoleChecker
+{
+    isAllowed(roles: Allowed):boolean;
 }

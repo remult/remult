@@ -73,7 +73,7 @@ export class TestDataApiResponse implements DataApiResponse {
 describe('Test basic row functionality', () => {
   it("finds its id column", () => {
     let c = new Context().for(Categories).create();
-    expect(c.columns.idColumn.jsonName).toBe("id");
+    expect(c.columns.idColumn.defs.key).toBe("id");
 
   });
   it("object assign works", () => {
@@ -113,7 +113,7 @@ describe('Test basic row functionality', () => {
     let ctx = new Context().for(Categories);
     let x = ctx.create();
     x.id.value = 1;
-    x.categoryName.jsonName = 'xx';
+    x.categoryName.defs.key = 'xx';
     x.categoryName.value = 'noam';
     let y = ctx.toApiPojo(x);;
     expect(y.id).toBe(1);
@@ -123,7 +123,7 @@ describe('Test basic row functionality', () => {
     let ctx = new Context().for(myTestEntity);
     let x = ctx.create();
     x.id.value = 1;
-    expect(x.name1.jsonName).toBe('name');
+    expect(x.name1.defs.key).toBe('name');
     x.name1.value = 'noam';
     let y = ctx.toApiPojo(x);
     expect(y.id).toBe(1);
@@ -685,7 +685,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create().categoryName.jsonName + '_contains')
+        if (x == c.create().categoryName.defs.key + '_contains')
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -710,7 +710,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create().categoryName.jsonName + '_st')
+        if (x == c.create().categoryName.defs.key + '_st')
           return "y";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -734,7 +734,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create().description.jsonName)
+        if (x == c.create().description.defs.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -825,22 +825,22 @@ describe("column validation", () => {
   it("validation clears on reset", () => {
     let c = new Context().for(Categories).create();
     expect(c.isValid()).toBe(true);
-    c.id.error = "x";
-    expect(c.id.error).toBe("x");
+    c.id.validationError = "x";
+    expect(c.id.validationError).toBe("x");
     expect(c.isValid()).toBe(false);
     c.undoChanges();
-    expect(c.id.error).toBe(undefined);
+    expect(c.id.validationError).toBe(undefined);
     expect(c.isValid()).toBe(true);
   });
   it("validation clears on change", () => {
     let c = new Context().for(Categories).create();
     expect(c.isValid()).toBe(true);
-    c.id.error = "x";
+    c.id.validationError = "x";
     expect(c.isValid()).toBe(false);
-    expect(c.id.error).toBe("x");
+    expect(c.id.validationError).toBe("x");
     c.id.value = 1;
     expect(c.isValid()).toBe(true);
-    expect(c.id.error).toBe(undefined);
+    expect(c.id.validationError).toBe(undefined);
   });
 
 });
@@ -1003,7 +1003,7 @@ describe("test date storage", () => {
 describe("test bool value", () => {
   it("should work", () => {
     let bc = new BoolColumn();
-    bc.jsonName = 'x';
+    bc.defs.key = 'x';
     bc.__loadFromToPojo({ 'x': true });
     expect(bc.value).toBe(true);
     bc.__loadFromToPojo({ 'x': false });
@@ -1110,7 +1110,7 @@ export class entityWithValidations extends Entity<number>{
     this.__initColumns();
     this.__onSavingRow = async () => {
       if (!this.name.value || this.name.value.length < 3)
-        this.name.error = 'invalid';
+        this.name.validationError = 'invalid';
 
       if (this.isNew() && (!this.myId.value || this.myId.value == 0)) {
         let e = await context.for(entityWithValidations).find({
@@ -1132,7 +1132,7 @@ export class entityWithValidationsOnColumn extends Entity<number>{
   name = new StringColumn({
     validate: () => {
       if (!this.name.value || this.name.value.length < 3)
-        this.name.error = 'invalid on column';
+        this.name.validationError = 'invalid on column';
     }
   });
   constructor() {
@@ -1149,7 +1149,7 @@ export class entityWithValidationsOnEntityEvent extends Entity<number>{
     this.__initColumns();
     this.__onValidate = () => {
       if (!this.name.value || this.name.value.length < 3)
-        this.name.error = 'invalid';
+        this.name.validationError = 'invalid';
     };
   }
 }

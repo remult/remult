@@ -2,9 +2,10 @@ import { Entity } from "./entity";
 import { DataControlSettings } from "./column-interfaces";
 import { ColumnCollection } from "./column-collection";
 import { isArray } from "util";
+import { Column } from './column';
 
 export interface IDataAreaSettings<rowType> {
-    columnSettings?: (rowType: rowType) => DataArealColumnSetting<rowType>[];
+    columnSettings?: (rowType: rowType) => (DataControlSettings<rowType>|Column<any>)[];
     numberOfColumnAreas?: number;
     labelWidth?: number;
   }

@@ -47,15 +47,15 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
       return 'רבים';
     return 'many';
   }
-  tempDragColumn: Column<any>;
-  dragStart(x: Column<any>) {
+  tempDragColumn: (DataControlSettings<any>);
+  dragStart(x: DataControlSettings<any>) {
     this.tempDragColumn = x;
 
   }
   dragOver(x: Column<any>, event: any) {
     event.preventDefault();
   }
-  onDrop(x: Column<any>) {
+  onDrop(x: DataControlSettings<any>) {
     let oldPosition = this.settings.columns.items.indexOf(this.tempDragColumn);
     this.settings.columns.items.splice(oldPosition, 1);
     let newPosition = this.settings.columns.items.indexOf(x);
@@ -137,13 +137,13 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
       message = "";
     let foundStateErrors = false;
     for (const c of row.columns) {
-      if (c.error) {
+      if (c.validationError) {
         if (!foundStateErrors) {
           foundStateErrors = true;
           message = "";
         }
-        let m = c.caption + ": ";
-        m += c.error;
+        let m = c.defs.caption + ": ";
+        m += c.validationError;
         message += m + "\n";
       }
     }

@@ -85,9 +85,9 @@ export class Entity<idType> {
       let y = x[c];
 
       if (y instanceof Column) {
-        if (!y.jsonName)
-          y.jsonName = c;
-        if (!this.__idColumn && y.jsonName == 'id')
+        if (!y.defs.key)
+          y.defs.key = c;
+        if (!this.__idColumn && y.defs.key == 'id')
           this.__idColumn = y;
 
 
@@ -100,7 +100,7 @@ export class Entity<idType> {
   isValid() {
     let ok = true;
     this.__columns.forEach(c => {
-      if (c.error)
+      if (c.validationError)
         ok = false;
     });
     return ok;
@@ -113,8 +113,8 @@ export class Entity<idType> {
     let result: any = {};
     result.modelState = {};
     this.__columns.forEach(c => {
-      if (c.error)
-        result.modelState[c.jsonName] = c.error;
+      if (c.validationError)
+        result.modelState[c.defs.key] = c.validationError;
     });
     return result;
   }
@@ -165,7 +165,7 @@ export class Entity<idType> {
       Object.keys(s).forEach(k => {
         let c = this.columns.find(k);
         if (c)
-          c.error = s[k];
+          c.validationError = s[k];
       });
     }
     throw err;
@@ -198,8 +198,8 @@ export class Entity<idType> {
 
   //@internal
   __applyColumn(y: Column<any>) {
-    if (!y.caption)
-      y.caption = makeTitle(y.jsonName);
+    if (!y.defs.caption)
+      y.defs.caption = makeTitle(y.defs.key);
     y.__valueProvider = this.__entityData;
     if (this.__columns.indexOf(y) < 0)
       this.__columns.push(y);
@@ -272,11 +272,11 @@ export class EntityColumns<T>{
   find(key: string | Column<any>) {
     let theKey: string;
     if (key instanceof Column)
-      theKey = key.jsonName;
+      theKey = key.defs.key;
     else
       theKey = key;
     for (const c of this.__columns) {
-      if (c.jsonName == theKey)
+      if (c.defs.key == theKey)
         return c;
     }
     return undefined;

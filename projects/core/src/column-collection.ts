@@ -42,7 +42,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   private settingsByKey: any = {};
 
   allowDesignMode: boolean;
-  async add(...columns: DataControlSettings<rowType>[]): Promise<void>;
+  async add(...columns: (DataControlSettings<rowType>|Column<any>)[]): Promise<void>;
   async add(...columns: string[]): Promise<void>;
   async add(...columns: any[]) {
     var promises: Promise<void>[] = [];
@@ -97,8 +97,9 @@ export class ColumnCollection<rowType extends Entity<any>> {
       else if (isFunction(orig)) {
         result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
       }
-      else 
-        result.push(...(await orig));
+      else {
+        result.push(...(await (orig as ( Promise<ValueListItem[]>))));
+      }
       
     }
     return Promise.resolve();
@@ -204,7 +205,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   _getError(col: DataControlSettings<any>, r: Entity<any>) {
     if (!col.column)
       return undefined;
-    return this.__getColumn(col, r).error;
+    return this.__getColumn(col, r).validationError;
   }
   autoGenerateColumnsBasedOnData(r: Entity<any>) {
     if (this.items.length == 0) {
@@ -248,10 +249,10 @@ export class ColumnCollection<rowType extends Entity<any>> {
     }
     let columnMember = '';
     if (c.column) {
-      columnMember += memberName + "." + c.column.__getMemberName();
+      columnMember += memberName + "." + c.column.defs.key;
       if (c == c.column)
         columnMember += '/*equal*/';
-      if (c.caption != c.column.caption) {
+      if (c.caption != c.column.defs.caption) {
         addString('caption', c.caption)
       }
 

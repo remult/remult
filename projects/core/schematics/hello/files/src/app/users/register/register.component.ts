@@ -35,7 +35,7 @@ export class RegisterComponent implements OnInit {
     onValidate: h => {
       if (h)
         if (h.password.value != this.confirmPassword.value) {
-          h.password.error = "passwords do not match";
+          h.password.validationError = "passwords do not match";
         }
     } 
   });

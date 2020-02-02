@@ -92,7 +92,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let select = 'select ';
     let colKeys: Column<any>[] = [];
     for (const x of this.entity.columns) {
-      if (x.__isVirtual()) {
+      if (x.defs.__isVirtual()) {
 
       }
       else {
@@ -143,7 +143,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         let result: any = {};
         for (let index = 0; index < colKeys.length; index++) {
           const col = colKeys[index];
-          result[col.jsonName] = col.__getStorage().fromDb(y[r.getResultJsonNameForIndexInSelect(index)]);
+          result[col.defs.key] = col.__getStorage().fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
         }
         return result;
       });
@@ -163,9 +163,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
-      } if (x.__dbReadOnly()) { }
+      } if (x.defs.dbReadOnly) { }
       else {
-        let v = x.__getStorage().toDb(data[x.jsonName]);
+        let v = x.__getStorage().toDb(data[x.defs.key]);
         if (v != undefined) {
           if (!added)
             added = true;
@@ -211,15 +211,15 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let cols = '';
     let vals = '';
     let added = false;
-    let resultFilter = this.entity.columns.idColumn.isEqualTo(data[this.entity.columns.idColumn.jsonName]);
+    let resultFilter = this.entity.columns.idColumn.isEqualTo(data[this.entity.columns.idColumn.defs.key]);
     for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }
-      if (x.__dbReadOnly()) { }
+      if (x.defs.dbReadOnly) { }
 
       else {
-        let v = x.__getStorage().toDb(data[x.jsonName]);
+        let v = x.__getStorage().toDb(data[x.defs.key]);
         if (v != undefined) {
           if (!added)
             added = true;

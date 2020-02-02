@@ -46,7 +46,7 @@ export class Users extends IdEntity {
         validate: () => {
 
             if (!this.name.value || this.name.value.length < 2)
-                this.name.error = 'Name is too short';
+                this.name.validationError = 'Name is too short';
         }
     });
 

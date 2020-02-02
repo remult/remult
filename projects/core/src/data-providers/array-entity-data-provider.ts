@@ -40,8 +40,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                     let r = 0;
                     for (let i = 0; i < options.orderBy.Segments.length; i++) {
                         let seg = options.orderBy.Segments[i];
-                        let left = a[seg.column.jsonName];
-                        let right = b[seg.column.jsonName];
+                        let left = a[seg.column.defs.key];
+                        let right = b[seg.column.defs.key];
                         if (left > right)
                             r = 1;
                         else if (left < right)
@@ -128,37 +128,37 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     constructor(private row: any) { }
     public isEqualTo(col: Column<any>, val: any): void {
 
-        if (this.row[col.jsonName] != val)
+        if (this.row[col.defs.key] != val)
             this.ok = false;
     }
 
     public isDifferentFrom(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] == val)
+        if (this.row[col.defs.key] == val)
             this.ok = false;
     }
 
     public isGreaterOrEqualTo(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] < val)
+        if (this.row[col.defs.key] < val)
             this.ok = false;
     }
 
     public isGreaterThan(col: Column<any>, val: any): void {
 
-        if (this.row[col.jsonName] <= val)
+        if (this.row[col.defs.key] <= val)
             this.ok = false;
     }
 
     public isLessOrEqualTo(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] > val)
+        if (this.row[col.defs.key] > val)
             this.ok = false;
     }
 
     public isLessThan(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] >= val)
+        if (this.row[col.defs.key] >= val)
             this.ok = false;
     }
     public isContains(col: StringColumn, val: any): void {
-        let v = this.row[col.jsonName];
+        let v = this.row[col.defs.key];
         if (!v) {
             this.ok = false;
             return;
@@ -169,7 +169,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
             this.ok = false;
     }
     public isStartsWith(col: StringColumn, val: any): void {
-        let v = this.row[col.jsonName];
+        let v = this.row[col.defs.key];
         if (!v) {
             this.ok = false;
             return;

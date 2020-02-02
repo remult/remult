@@ -24,7 +24,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     async entityIsUsedForTheFirstTime(entity: Entity<any>) {
         let result = '';
         for (const x of entity.columns) {
-            if (!x.__dbReadOnly()) {
+            if (!x.defs.dbReadOnly) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
@@ -100,7 +100,7 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
 }
 
 class WebSqlBridgeToSQLQueryResult implements SqlResult {
-    getResultJsonNameForIndexInSelect(index: number): string {
+    getColumnKeyInResultForIndexInSelect(index: number): string {
         if (this.rows.length == 0) return undefined;
         let i = 0;
         for (let m in this.rows[0]) {

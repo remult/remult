@@ -45,7 +45,7 @@ class RestEntityDataProvider implements EntityDataProvider {
             sort += ", ";
             order += ", ";
           }
-          sort += c.column.jsonName;
+          sort += c.column.defs.key;
           order += c.descending ? "desc" : "asc";
 
         });
