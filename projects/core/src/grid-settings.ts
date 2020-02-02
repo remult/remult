@@ -2,7 +2,7 @@ import { Entity } from "./entity";
 
 
 import { Column } from "./column";
-import { DataControlSettings } from "./column-interfaces";
+import { DataControlSettings, DataControlInfo } from "./column-interfaces";
 import { Context } from "./context";
 
 import { DataList } from "./dataList";
@@ -372,8 +372,8 @@ export interface IDataSettings<rowType extends Entity<any>> {
   hideDataArea?: boolean,
   confirmDelete?: (r: rowType, yes: () => void) => void;
 
-  columnSettings?: (row: rowType) => (DataControlSettings<rowType>|Column<any>)[],
-  areas?: { [areaKey: string]: (DataControlSettings<rowType>|Column<any>)[] },
+  columnSettings?: (row: rowType) => DataControlInfo<rowType>[],
+  areas?: { [areaKey: string]: DataControlInfo<rowType>[] },
 
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[],

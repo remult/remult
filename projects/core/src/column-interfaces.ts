@@ -40,7 +40,7 @@ export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
   }
 
 
-
+  export type DataControlInfo<rowType> = DataControlSettings<rowType> | Column<any>;
 export interface DataControlSettings<entityType> {
 
     column?: Column<any>;

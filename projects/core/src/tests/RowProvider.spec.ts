@@ -282,7 +282,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -299,7 +299,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -316,7 +316,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -347,7 +347,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { column: c1.id, valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.add(cs);
 
     let xx = cs.valueList as ValueListItem[];

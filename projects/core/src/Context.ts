@@ -314,7 +314,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return new GridSettings(this, this.context, settings);
     }
 
-    async getDropDownItems(args?: {
+    async getValueList(args?: {
         idColumn?: (e: T) => Column<any>,
         captionColumn?: (e: T) => Column<any>,
         orderBy?: EntityOrderBy<T>,

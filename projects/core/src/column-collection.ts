@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
-import { DataControlSettings, ValueListItem } from "./column-interfaces";
+import { DataControlSettings, ValueListItem, DataControlInfo } from "./column-interfaces";
 import { Column } from "./column";
 import { Context } from "./context";
 import { isFunction } from "util";
@@ -42,7 +42,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   private settingsByKey: any = {};
 
   allowDesignMode: boolean;
-  async add(...columns: (DataControlSettings<rowType>|Column<any>)[]): Promise<void>;
+  async add(...columns: DataControlInfo<rowType>[]): Promise<void>;
   async add(...columns: string[]): Promise<void>;
   async add(...columns: any[]) {
     var promises: Promise<void>[] = [];
