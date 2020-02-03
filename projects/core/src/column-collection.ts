@@ -5,7 +5,7 @@ import { Column } from "./column";
 import { Context } from "./context";
 import { isFunction } from "util";
 
- interface FilteredColumnSetting<rowType> extends DataControlSettings<rowType> {
+ interface FilteredColumnSetting<rowType extends Entity<any>> extends DataControlSettings<rowType> {
   _showFilter?: boolean;
 }
 export class ColumnCollection<rowType extends Entity<any>> {

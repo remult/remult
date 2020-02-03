@@ -1004,9 +1004,9 @@ describe("test bool value", () => {
   it("should work", () => {
     let bc = new BoolColumn();
     bc.defs.key = 'x';
-    bc.__loadFromToPojo({ 'x': true });
+    bc.__loadFromPojo({ 'x': true });
     expect(bc.value).toBe(true);
-    bc.__loadFromToPojo({ 'x': false });
+    bc.__loadFromPojo({ 'x': false });
     expect(bc.value).toBe(false);
   });
 });

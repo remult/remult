@@ -4,7 +4,7 @@ import { ColumnCollection } from "./column-collection";
 import { isArray } from "util";
 import { Column } from './column';
 
-export interface IDataAreaSettings<rowType> {
+export interface IDataAreaSettings<rowType  extends Entity<any>> {
   columnSettings?: (rowType: rowType) => DataArealColumnSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
@@ -46,7 +46,7 @@ export class DataAreaSettings<rowType extends Entity<any>>
 }
 
 
-export type DataArealColumnSetting<rowType> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
+export type DataArealColumnSetting<rowType extends Entity<any>> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
 
 
 export interface dataAreaSettings {

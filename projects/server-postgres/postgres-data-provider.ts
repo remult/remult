@@ -83,7 +83,7 @@ export class PostgresSchemaBuilder {
             let x = context.for(entity).create();
             try {
 
-                if (x.defs.name.toLowerCase().indexOf('from ') < 0) {
+                if (x.defs.dbName.toLowerCase().indexOf('from ') < 0) {
                     await this.createIfNotExist(x);
                     await this.verifyAllColumns(x);
                 }

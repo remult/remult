@@ -101,7 +101,7 @@ describe("Closed List  column", () => {
     expect(y[x.defs.key]).toBe(10);
     x.value = Language.Hebrew;
     expect(x.value).toBe(Language.Hebrew);
-    x.__loadFromToPojo({ 'abc': 10 });
+    x.__loadFromPojo({ 'abc': 10 });
     expect(x.value).toBe(Language.Russian);
 
   });

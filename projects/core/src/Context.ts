@@ -296,7 +296,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     _updateEntityBasedOnApi(entity: T, body: any) {
         for (const c of entity.columns) {
             
-                c.__loadFromToPojo(body,this.context);
+                c.__loadFromPojo(body,this.context);
         }
         return entity;
     }

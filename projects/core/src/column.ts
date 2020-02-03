@@ -99,7 +99,7 @@ export class Column<dataType>  {
         x.getValue = e => {
           let c: Column<dataType> = this;
           if (e)
-            c = e.__getColumn(c) as Column<dataType>;
+            c = e.columns.find(c) as Column<dataType>;
           if (!c.__displayResult)
             c.__displayResult = c.__settings.dataControlSettings();
           return c.__displayResult.getValue(e);
@@ -109,7 +109,7 @@ export class Column<dataType>  {
         x.click = e => {
           let c: Column<dataType> = this;
           if (e)
-            c = e.__getColumn(c) as Column<dataType>;
+            c = e.columns.find(c) as Column<dataType>;
           if (!c.__displayResult)
             c.__displayResult = c.__settings.dataControlSettings();
           c.__displayResult.click(e);
@@ -119,7 +119,7 @@ export class Column<dataType>  {
         x.allowClick = e => {
           let c: Column<dataType> = this;
           if (e)
-            c = e.__getColumn(c) as Column<dataType>;
+            c = e.columns.find(c) as Column<dataType>;
           if (!c.__displayResult)
             c.__displayResult = c.__settings.dataControlSettings();
           return c.__displayResult.allowClick(e);
@@ -222,7 +222,7 @@ export class Column<dataType>  {
     }
   }
   //@internal
-  __loadFromToPojo(pojo: any, context?: RoleChecker) {
+  __loadFromPojo(pojo: any, context?: RoleChecker) {
     if (!context ||
       ((this.__settings.includeInApi === undefined || context.isAllowed(this.__settings.includeInApi))
         && (this.__settings.allowApiUpdate === undefined || context.isAllowed(this.__settings.allowApiUpdate)))
@@ -285,6 +285,12 @@ export class ColumnDefs {
       return true;
     return false;
 
+  }
+  get allowApiUpdate(): Allowed{
+    return this.settings.allowApiUpdate;
+  }
+  set allowApiUpdate(value:Allowed){
+    this.settings.allowApiUpdate = value;
   }
   get dbReadOnly() {
     if (this.settings.dbReadOnly || this.settings.sqlExpression)

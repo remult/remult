@@ -1,6 +1,7 @@
 import { Allowed } from './context';
 import { Column } from './column';
 import { isFunction } from 'util';
+import { Entity } from './entity';
 
 
 
@@ -40,8 +41,8 @@ export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
   }
 
 
-  export type DataControlInfo<rowType> = DataControlSettings<rowType> | Column<any>;
-export interface DataControlSettings<entityType> {
+  export type DataControlInfo<rowType  extends Entity<any>> = DataControlSettings<rowType> | Column<any>;
+export interface DataControlSettings<entityType extends Entity<any>> {
 
     column?: Column<any>;
     getValue?: (row: entityType) => any;
