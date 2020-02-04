@@ -279,9 +279,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             return r;
         }));
     }
-    fromPojo(r: any): T {
+    async fromPojo(r: any) {
         let f = this._factory(false);
-        f.__entityData.setData(r, f);
+        await f.__entityData.setData(r, f);
         return f;
     }
     toApiPojo(entity: T): any {

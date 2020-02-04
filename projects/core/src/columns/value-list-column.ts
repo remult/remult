@@ -25,7 +25,7 @@ import { ColumnOptions, ValueListItem } from "../column-interfaces";
   
     get displayValue() {
       if (this.value)
-        return this.value.toString();
+        return this.value.caption;
       return '';
     }
     byId(id: number): T {

@@ -22,6 +22,7 @@ import { DataList } from '../dataList';
 import { UrlBuilder } from '../url-builder';
 import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
 import { SqlDatabase } from '../data-providers/sql-database';
+import { async } from '@angular/core/testing';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
@@ -83,6 +84,18 @@ describe('Test basic row functionality', () => {
     Object.assign(b, a);
     expect(b.info).toBe(3);
 
+  });
+  itAsync("Original values update correctly",async()=>{
+    let c = await (await createData(async insert => insert(1, 'noam'), Categories)).findFirst();
+    expect (c.categoryName.value).toBe('noam');
+    expect (c.categoryName.originalValue).toBe('noam');
+    c.categoryName.value = 'yael';
+    expect (c.categoryName.value).toBe('yael');
+    expect (c.categoryName.originalValue).toBe('noam');
+    await c.save();
+    expect (c.categoryName.value).toBe('yael');
+    expect (c.categoryName.originalValue).toBe('yael');
+    
   });
 
   it("object is autonemous", () => {
@@ -549,6 +562,7 @@ describe("data api", () => {
     d.test();
 
   });
+  
   itAsync("put updates", async () => {
     let context = new Context();
 
