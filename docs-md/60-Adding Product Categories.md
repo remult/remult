@@ -130,9 +130,7 @@ products = this.context.for(Products).gridSettings({
     },
 +   {
 +     column: p.category,
-+     dropDown: {
-+       source: this.context.for(Categories).create()
-+     }
++     valueList: this.context.for(Categories).getDropDownItems()
 +   },
     p.availableFrom,
     p.availableTo
@@ -140,13 +138,6 @@ products = this.context.for(Products).gridSettings({
 - , numOfColumnsInGrid: 2
 + , numOfColumnsInGrid: 3
   , hideDataArea: true
-  , onEnterRow: p => {
-    if (p.isNew()) {
-      p.availableFrom.value = new Date();
-      p.availableTo.value = new Date(9999, 11, 31);
-      p.price.value = 5;
-    }
-  }
 });
 ```
 

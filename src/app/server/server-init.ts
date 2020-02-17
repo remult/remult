@@ -2,7 +2,7 @@ import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, PostgrestSchemaBuilder } from '@remult/server-postgres';
+import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
 import * as passwordHash from 'password-hash';
 
 import '../app.module';
@@ -31,8 +31,8 @@ export async function serverInit() {
         connectionString: dbUrl,
         ssl: ssl
     });
-    
-    await new PostgrestSchemaBuilder(pool).verifyStructureOfAllEntities();
-    return new SqlDatabase(new PostgresDataProvider(pool));
+    var r = new SqlDatabase(new PostgresDataProvider(pool));
+    await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
+    return r;
 
 }

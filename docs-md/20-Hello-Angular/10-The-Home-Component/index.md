@@ -17,7 +17,7 @@ The files are:
 3. home.component.ts - holds the TypeScript business logic for the component.
 
 ## Changing the html
-Let's open the `homd.component.html` file and make the following change:
+Let's open the `home.component.html` file and make the following change:
 ```csdiff
     <p>
 -   home works!

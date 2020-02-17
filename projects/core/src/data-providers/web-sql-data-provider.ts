@@ -75,7 +75,7 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
     constructor(private source: Database) {
     }
     values: any[] = [];
-    addParameterAndReturnSqlToken(col: Column<any>, val: any): string {
+    addParameterAndReturnSqlToken(val: any): string {
         this.values.push(val);
         return '~' + this.values.length + '~';
     }

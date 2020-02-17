@@ -1,8 +1,10 @@
 ﻿<!DOCTYPE html>
-<html lang="en" class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+<html lang="en"
+    class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
 
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
@@ -14,21 +16,29 @@
     <link rel="stylesheet" href="assets/css/prism-csdiff.css" />
 
 
-    <link rel="stylesheet" href="assets/css/theme_firefly.css" />
+    <link rel="stylesheet" href="assets/css/theme_remult.css" />
     <link rel="stylesheet" href="assets/css/mermaid.css" />
 </head>
 
 <body class="markdown-body" role="document">
-    <div class="wrapper">
-
+    <div class="wrapper" id="root">
+        <div class="backdrop"></div>
+        <div class="top-bar" role="navigation" aria-label="footer navigation">
+            <div style="display:flex;">
+                <div>
+                    <a id="menu" class="btn btn-neutral">&#9776; </a>
+                </div>
+                <h3>remult ts</h3>
+            </div>
+            <div>
+                <a id="previousButton" class="btn btn-neutral" style="visibility:hidden">Previous</a>
+                <a id="nextButton" class="btn btn-neutral" style="visibility:hidden">Next</a>
+            </div>
+        </div>
         <div class="middle">
 
             <div class="container">
 
-                <div class="content" role="navigation" aria-label="footer navigation">
-                    <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
-                    <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
-                </div>
                 <div class="content"><h1 id="batch-operations">Batch Operations</h1>
 <p>The next requirement from our users is to be able to update the price of all products by a fixed amount in a simple operation.</p>
 <p>For that we'll start by adding a new component called <code>updatePrice</code></p>
@@ -82,7 +92,7 @@ in the <code>update-price.component.html</code></p>
  }
 } </code></pre>
 <p>Next let's do the actual work.</p>
-<pre data-line="3,8,13,14,15,16,17,18,19,20" class="language-csdiff line-numbers"><code>export class UpdatePriceComponent implements OnInit {
+<pre data-line="3,8,13,14,15,16,17,18,19,20,21,22,23,24,25" class="language-csdiff line-numbers"><code>export class UpdatePriceComponent implements OnInit {
 - constructor() { }
   constructor(private context: Context) { }
   ngOnInit() {
@@ -94,14 +104,19 @@ in the <code>update-price.component.html</code></p>
       alert("Please enter a valid amount");
       return;
     }
-    let products = await this.context.for(Products).find();
-    let count = 0;
-    for (const p of products) {
-      p.price.value += this.amountToAdd;
-      await p.save();
-      count++;
+    try {
+      let products = await this.context.for(Products).find();
+      let count = 0;
+      for (const p of products) {
+        p.price.value += this.amountToAdd;
+        await p.save();
+        count++;
+      }
+      alert("updated " + count + " products");
     }
-    alert("updated "+count+" products");
+    catch (err) {
+      alert("Error: " + JSON.stringify(err));
+    }  
   }
 } </code></pre>
 <p>Let's review:</p>
@@ -111,42 +126,41 @@ in the <code>update-price.component.html</code></p>
 <li>On line 13 we've requested the products from the db using the <code>await</code> keyword to wait for the result.</li>
 <li>On line 17 we've saved the changes we've made to the server, again using the <code>await</code> keyword to wait for it's completion.</li>
 </ol>
+<blockquote>
+<p>Note that if you get an error, chances are that you have rows in the products table that don't match your validation rules. This can happen since we first added a few test rows, and then we've added some validation, that not all existing rows match.
+Just go to the Products page and fix it.</p>
+</blockquote>
 
 
-                <br />
-                        <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
 
-                        <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
-                        <hr />Help us improve,
-                        <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//70-Batch Operations.md" target="_blank" id="link">Edit this page on GitHub</a>        
+                    <hr />Help us improve,
+                    <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//70-Batch Operations.md" target="_blank" id="link">Edit this page on GitHub</a>
                 </div>
-                
+
                 <!-- .content -->
 
-                
+
 
 
             </div>
-            
+
             <!-- .container-->
-            
+
             <aside class="left-sidebar">
                 <div class="wy-side-nav-search-ff">
                     <a href="" class="test">
-                        <h3>remult ts</h3>
+
                     </a>
                 </div>
-                <div id="menuTree" </div>
-            </aside>
-            <!-- .left-sidebar -->
+                <div id="menuTree" </div> </aside> <!-- .left-sidebar -->
 
-            <aside class="right-sidebar"></aside>
-            <!-- .right-sidebar -->
+                    <aside class="right-sidebar"></aside>
+                    <!-- .right-sidebar -->
 
-            </div>
-            <!-- .middle-->
+                </div>
+                <!-- .middle-->
 
-            
+
 
         </div>
 
@@ -165,7 +179,7 @@ in the <code>update-price.component.html</code></p>
         <script src="assets/js/jquery-3.1.1.js"></script>
 
 
-      
+
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
             buildTree('menuTree', 'batch-operations.html', 'previousButton', 'nextButton');

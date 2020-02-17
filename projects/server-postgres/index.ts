@@ -1,1 +1,1 @@
-export * from './PostgresDataProvider';
+export * from './postgres-data-provider';

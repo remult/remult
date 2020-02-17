@@ -9,7 +9,7 @@ export interface SqlImplementation {
 
 
 export interface SqlCommand {
-    addParameterAndReturnSqlToken(col: Column<any>, val: any): string;
+    addParameterAndReturnSqlToken(val: any): string;
     execute(sql: string): Promise<SqlResult>;
 }
 

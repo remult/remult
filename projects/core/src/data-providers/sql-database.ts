@@ -12,7 +12,7 @@ export class SqlDatabase implements DataProvider {
   createCommand(): SqlCommand {
     return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole);
   }
-  async execute(sql:string){
+  async execute(sql: string) {
     return await this.createCommand().execute(sql);
   }
   getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
@@ -41,8 +41,8 @@ class LogSQLCommand implements SqlCommand {
 
   }
   args: any = {};
-  addParameterAndReturnSqlToken(col: Column<any>, val: any): string {
-    let r = this.origin.addParameterAndReturnSqlToken(col, val);
+  addParameterAndReturnSqlToken(val: any): string {
+    let r = this.origin.addParameterAndReturnSqlToken(val);
     this.args[r] = val;
     return r;
   }
@@ -72,7 +72,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
 
-   async  count(where: FilterBase): Promise<number> {
+  async  count(where: FilterBase): Promise<number> {
     await this.iAmUsed();
     let select = 'select count(*) count from ' + this.entity.__getDbName();
     let r = this.sql.createCommand();
@@ -172,7 +172,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             statement += ', ';
 
-          statement += x.__getDbName() + ' = ' + r.addParameterAndReturnSqlToken(x, v);
+          statement += x.__getDbName() + ' = ' + r.addParameterAndReturnSqlToken(v);
         }
       }
     });
@@ -229,7 +229,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           }
 
           cols += x.__getDbName();
-          vals += r.addParameterAndReturnSqlToken(x, v);
+          vals += r.addParameterAndReturnSqlToken(v);
         }
       }
     });
