@@ -5,12 +5,18 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
     var root = document.getElementById(id);
     var backBtn = document.querySelectorAll("#" + backButtonId);
     var nextBtn = document.querySelectorAll("#" + nextButtonId);
+    var menuBtn = document.querySelectorAll("#menu");
+
+
+    menuBtn[0].onclick = function () {
+        document.querySelectorAll("#root")[0].classList.toggle('state2');
+    };
     var link = document.querySelectorAll("#link");
     if (link && link.length > 0) {
         let href = link[0].href.substring('https://github.com/FireflyMigration/firefly-doc/blob/master//'.length);
-        href = 'https://github.com/noam-honig/radweb/blob/master/docs-md/'+href;
+        href = 'https://github.com/noam-honig/radweb/blob/master/docs-md/' + href;
         link[0].href = href;
-        
+
     }
 
     function foreach(array, action) {
@@ -102,7 +108,7 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
                 var plusMinusButton = document.createElement('div');
                 plusMinusButton.style.width = '1em';
                 plusMinusButton.style.display = 'table-cell';
-                plusMinusButton.innerText = '▪';
+                plusMinusButton.innerText = ' ';
                 plusMinusButton.style.cursor = 'pointer';
                 treeItem.appendChild(plusMinusButton);
 
@@ -214,11 +220,11 @@ function buildTree(id, currentPageUrl, backButtonId, nextButtonId) {
                     parent.appendChild(childNodesContainer);
 
                     item.collapse = function () {
-                        plusMinusButton.innerText = '+';
+                        plusMinusButton.innerText = '\u02C4';
                         nodeHide(childNodesContainer);
                     };
                     item.expand = function () {
-                        plusMinusButton.innerText = '-';
+                        plusMinusButton.innerText = '\u02C5';
                         nodeShow(childNodesContainer);
                     };
                     item.toggle = function () {

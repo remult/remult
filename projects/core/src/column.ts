@@ -1,4 +1,4 @@
-import { Allowed, Context } from './context';
+import { Allowed, Context, RoleChecker } from './context';
 import { ColumnSettings, ColumnOptions, DataControlSettings, valueOrExpressionToValue } from './column-interfaces';
 
 import { isBoolean } from 'util';
@@ -9,12 +9,13 @@ import { Filter } from './filter/filter';
 import { ColumnValueProvider } from './__EntityValueProvider';
 
 export class Column<dataType>  {
+  //@internal
   __setDefaultForNewRow() {
     if (this.__settings.defaultValue) {
       this.value = valueOrExpressionToValue(this.__settings.defaultValue);
     }
   }
-
+  //@internal
   async __calcServerExpression() {
     if (this.__settings.serverExpression) {
       let x = this.__settings.serverExpression();
@@ -24,41 +25,28 @@ export class Column<dataType>  {
     }
   }
 
-  __isVirtual() {
-    if (this.__settings && this.__settings.serverExpression)
-      return true;
-    return false;
-
-  }
-  __dbReadOnly() {
-    if (this.__settings)
-      if (this.__settings.dbReadOnly || this.__settings.sqlExpression)
-        return true;
-    return this.__isVirtual();
-  }
+  //@internal
   __clearErrors(): any {
-    this.error = undefined;
+    this.validationError = undefined;
   }
+  //@internal
   __performValidation() {
-    if (this.onValidate) {
-      this.onValidate();
+    if (this.__settings.validate) {
+      this.__settings.validate();
     }
 
   }
-  onValidate: () => void;
-  onValueChange: () => void;
-  jsonName: string;
-  caption: string;
-  includeInApi: Allowed = true;
+
 
   private __settings: ColumnSettings<dataType>;
   private __defs: ColumnDefs;
+  private __displayResult: DataControlSettings<any>;
   get defs() {
     if (!this.__defs)
-      this.__defs = new ColumnDefs(this.__settings, this.jsonName);
+      this.__defs = new ColumnDefs(this.__settings);
     return this.__defs;
   }
-  __getMemberName() { return this.jsonName; }
+
   static consolidateOptions(options: ColumnOptions<any>, options1?: ColumnOptions<any>): ColumnSettings<any> {
     let result: ColumnSettings<any>;
     if (typeof (options) === "string") {
@@ -81,39 +69,19 @@ export class Column<dataType>  {
 
   constructor(settingsOrCaption?: ColumnOptions<dataType>, settingsOrCaption1?: ColumnOptions<dataType>) {
     this.__settings = Column.consolidateOptions(settingsOrCaption, settingsOrCaption1);
-
-
-    if (this.__settings.key)
-      this.jsonName = this.__settings.key;
-    if (this.__settings.caption)
-      this.caption = this.__settings.caption;
-    if (this.__settings.includeInApi != undefined)
-      this.includeInApi = this.__settings.includeInApi;
-    if (this.__settings.allowApiUpdate != undefined)
-      this.allowApiUpdate = this.__settings.allowApiUpdate;
-    if (this.__settings.valueChange)
-      this.onValueChange = () => this.__settings.valueChange();
-    if (this.__settings.validate)
-      this.onValidate = () => this.__settings.validate();
-
-
-
-
-
-
-
   }
   //reconsider approach - this prevents the user from overriding in a specific component
+  //@internal
   __decorateDataSettings(x: DataControlSettings<any>, context?: Context) {
-    if (!x.caption && this.caption)
-      x.caption = this.caption;
+    if (!x.caption && this.defs.caption)
+      x.caption = this.defs.caption;
     if (x.readOnly == undefined) {
       if (!context) {
-        if (isBoolean(this.allowApiUpdate))
-          x.readOnly = !this.allowApiUpdate;
+        if (isBoolean(this.__settings.allowApiUpdate))
+          x.readOnly = !this.__settings.allowApiUpdate;
       }
       else
-        x.readOnly = !context.isAllowed(this.allowApiUpdate);
+        x.readOnly = !context.isAllowed(this.__settings.allowApiUpdate);
     }
     if (this.__settings && this.__settings.dataControlSettings) {
       this.__displayResult = this.__settings.dataControlSettings();
@@ -131,7 +99,7 @@ export class Column<dataType>  {
         x.getValue = e => {
           let c: Column<dataType> = this;
           if (e)
-            c = e.__getColumn(c) as Column<dataType>;
+            c = e.columns.find(c) as Column<dataType>;
           if (!c.__displayResult)
             c.__displayResult = c.__settings.dataControlSettings();
           return c.__displayResult.getValue(e);
@@ -141,7 +109,7 @@ export class Column<dataType>  {
         x.click = e => {
           let c: Column<dataType> = this;
           if (e)
-            c = e.__getColumn(c) as Column<dataType>;
+            c = e.columns.find(c) as Column<dataType>;
           if (!c.__displayResult)
             c.__displayResult = c.__settings.dataControlSettings();
           c.__displayResult.click(e);
@@ -151,7 +119,7 @@ export class Column<dataType>  {
         x.allowClick = e => {
           let c: Column<dataType> = this;
           if (e)
-            c = e.__getColumn(c) as Column<dataType>;
+            c = e.columns.find(c) as Column<dataType>;
           if (!c.__displayResult)
             c.__displayResult = c.__settings.dataControlSettings();
           return c.__displayResult.allowClick(e);
@@ -160,20 +128,21 @@ export class Column<dataType>  {
 
     }
   }
-  private __displayResult: DataControlSettings<any>;
+  
 
-
+  //@internal
   __getStorage() {
     return this.__defaultStorage();
 
   }
+  //@internal
   __defaultStorage() {
     return new DefaultStorage<any>();
   }
-  error: string;
+  validationError: string;
 
 
-  allowApiUpdate: Allowed = true;
+
 
   isEqualTo(value: Column<dataType> | dataType) {
     return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
@@ -193,6 +162,7 @@ export class Column<dataType>  {
   isLessThan(value: Column<dataType> | dataType) {
     return new Filter(add => add.isLessThan(this, this.__getVal(value)));
   }
+  //@internal
   __getVal(value: Column<dataType> | dataType): dataType {
 
 
@@ -201,36 +171,22 @@ export class Column<dataType>  {
     else
       return this.toRawValue(value);
   }
+  //@internal
   __valueProvider: ColumnValueProvider = new dummyColumnStorage();
   get value() {
     return this.fromRawValue(this.rawValue);
   }
-  get originalValue() {
-    return this.fromRawValue(this.__valueProvider.getOriginalValue(this.jsonName));
-  }
-  get displayValue() {
-    if (this.value)
-      return this.value.toString();
-    return '';
-  }
-  protected __processValue(value: dataType) {
-    return value;
-
-  }
-  fromRawValue(value: any): dataType {
-    return value;
-  }
-  toRawValue(value: dataType): any {
-    return value;
+  set value(value: dataType) {
+    this.rawValue = this.toRawValue(value);
   }
   set rawValue(value: any) {
-    this.__valueProvider.setValue(this.jsonName, this.__processValue(value));
-    this.error = undefined;
-    if (this.onValueChange)
-      this.onValueChange();
+    this.__valueProvider.setValue(this.defs.key, this.__processValue(value));
+    this.validationError = undefined;
+    if (this.__settings.valueChange)
+      this.__settings.valueChange();
   }
   get rawValue() {
-    return this.__valueProvider.getValue(this.jsonName, () => this.__setDefaultForNewRow());
+    return this.__valueProvider.getValue(this.defs.key, () => this.__setDefaultForNewRow());
   }
   get inputValue() {
     return this.rawValue;
@@ -238,17 +194,43 @@ export class Column<dataType>  {
   set inputValue(value: string) {
     this.rawValue = value;
   }
-  set value(value: dataType) {
+  get displayValue() {
+    if (this.value)
+      return this.value.toString();
+    return '';
+  }
+  get originalValue() {
+    return this.fromRawValue(this.__valueProvider.getOriginalValue(this.defs.key));
+  }
+  
+  protected __processValue(value: dataType) {
+    return value;
 
-    this.rawValue = this.toRawValue(value);
   }
-  __addToPojo(pojo: any) {
-    pojo[this.jsonName] = this.rawValue;
+  
+  
+  fromRawValue(value: any): dataType {
+    return value;
   }
-  __loadFromToPojo(pojo: any) {
-    let x = pojo[this.jsonName];
-    if (x != undefined)
-      this.rawValue = x;
+  toRawValue(value: dataType): any {
+    return value;
+  }
+  //@internal
+  __addToPojo(pojo: any, context?: RoleChecker) {
+    if (!context || this.__settings.includeInApi === undefined || context.isAllowed(this.__settings.includeInApi)) {
+      pojo[this.defs.key] = this.rawValue;
+    }
+  }
+  //@internal
+  __loadFromPojo(pojo: any, context?: RoleChecker) {
+    if (!context ||
+      ((this.__settings.includeInApi === undefined || context.isAllowed(this.__settings.includeInApi))
+        && (this.__settings.allowApiUpdate === undefined || context.isAllowed(this.__settings.allowApiUpdate)))
+    ) {
+      let x = pojo[this.defs.key];
+      if (x != undefined)
+        this.rawValue = x;
+    }
   }
 }
 
@@ -274,8 +256,21 @@ class dummyColumnStorage implements ColumnValueProvider {
   }
 }
 export class ColumnDefs {
-  constructor(private settings: ColumnSettings<any>, private jsonName: string) {
+  constructor(private settings: ColumnSettings<any>) {
 
+  }
+  get caption(): string {
+    return this.settings.caption;
+  }
+  set caption(v: string) {
+    this.settings.caption = v;
+  }
+  get key(): string {
+
+    return this.settings.key;
+  }
+  set key(v: string) {
+    this.settings.key = v;
   }
   get dbName(): string {
     if (this.settings.sqlExpression) {
@@ -283,6 +278,23 @@ export class ColumnDefs {
     }
     if (this.settings.dbName)
       return this.settings.dbName;
-    return this.jsonName;
+    return this.key;
+  }
+  __isVirtual() {
+    if (this.settings.serverExpression)
+      return true;
+    return false;
+
+  }
+  get allowApiUpdate(): Allowed{
+    return this.settings.allowApiUpdate;
+  }
+  set allowApiUpdate(value:Allowed){
+    this.settings.allowApiUpdate = value;
+  }
+  get dbReadOnly() {
+    if (this.settings.dbReadOnly || this.settings.sqlExpression)
+      return true;
+    return this.__isVirtual();
   }
 }

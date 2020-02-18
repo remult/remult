@@ -10,32 +10,32 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
     }
   
     public isEqualTo(col: Column<any>, val: any): void {
-      this.url.add(col.jsonName, val);
+      this.url.add(col.defs.key, val);
     }
   
     public isDifferentFrom(col: Column<any>, val: any): void {
-      this.url.add(col.jsonName + '_ne', val);
+      this.url.add(col.defs.key + '_ne', val);
     }
   
     public isGreaterOrEqualTo(col: Column<any>, val: any): void {
-      this.url.add(col.jsonName + '_gte', val);
+      this.url.add(col.defs.key + '_gte', val);
     }
   
     public isGreaterThan(col: Column<any>, val: any): void {
-      this.url.add(col.jsonName + '_gt', val);
+      this.url.add(col.defs.key + '_gt', val);
     }
   
     public isLessOrEqualTo(col: Column<any>, val: any): void {
-      this.url.add(col.jsonName + '_lte', val);
+      this.url.add(col.defs.key + '_lte', val);
     }
   
     public isLessThan(col: Column<any>, val: any): void {
-      this.url.add(col.jsonName + '_lt', val);
+      this.url.add(col.defs.key + '_lt', val);
     }
     public isContains(col: StringColumn, val: any): void {
-      this.url.add(col.jsonName + "_contains", val);
+      this.url.add(col.defs.key + "_contains", val);
     }
     public isStartsWith(col: StringColumn, val: any): void {
-      this.url.add(col.jsonName + "_st", val);
+      this.url.add(col.defs.key + "_st", val);
     }
   }

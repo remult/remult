@@ -100,7 +100,7 @@ export class Context {
         return false;
     }
 
-    cache = new Map<DataProvider, Map<string, SpecificEntityHelper<any, Entity<any>>>>();
+    cache = new Map<DataProvider, Map<any, SpecificEntityHelper<any, Entity<any>>>>();
     public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProvider) {
         if (!dataSource)
             dataSource = this._dataSource;
@@ -110,9 +110,9 @@ export class Context {
             dsCache = new Map<string, SpecificEntityHelper<any, Entity<any>>>();
             this.cache.set(dataSource, dsCache);
         }
-        let classType = c as any;
-        let classKey = classType.__key;
-        let r = dsCache.get(classKey) as SpecificEntityHelper<lookupIdType, T>;
+        
+        
+        let r = dsCache.get(c) as SpecificEntityHelper<lookupIdType, T>;
         if (!r) {
             r = new SpecificEntityHelper<lookupIdType, T>(() => {
                 let e = new c(this);
@@ -120,7 +120,7 @@ export class Context {
 
                 return e;
             }, this._lookupCache, this, dataSource);
-            dsCache.set(classKey, r);
+            dsCache.set(c, r);
         }
 
 
@@ -279,24 +279,24 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             return r;
         }));
     }
-    fromPojo(r: any): T {
+    async fromPojo(r: any) {
         let f = this._factory(false);
-        f.__entityData.setData(r, f);
+        await f.__entityData.setData(r, f);
         return f;
     }
     toApiPojo(entity: T): any {
         let r = {};
         for (const c of entity.columns) {
-            if (this.context.isAllowed(c.includeInApi))
-                c.__addToPojo(r)
+            
+                c.__addToPojo(r,this.context)
         }
         return r;
 
     }
     _updateEntityBasedOnApi(entity: T, body: any) {
         for (const c of entity.columns) {
-            if (this.context.isAllowed(c.includeInApi) && this.context.isAllowed(c.allowApiUpdate))
-                c.__loadFromToPojo(body);
+            
+                c.__loadFromPojo(body,this.context);
         }
         return entity;
     }
@@ -314,7 +314,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return new GridSettings(this, this.context, settings);
     }
 
-    async getDropDownItems(args?: {
+    async getValueList(args?: {
         idColumn?: (e: T) => Column<any>,
         captionColumn?: (e: T) => Column<any>,
         orderBy?: EntityOrderBy<T>,
@@ -349,7 +349,6 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 }
 export interface EntityType<T> {
     new(...args: any[]): Entity<T>;
-    __key: string;
 }
 export const allEntities: EntityType<any>[] = [];
 
@@ -367,7 +366,6 @@ export function EntityClass<T extends EntityType<any>>(theEntityClass: T) {
         }
     }*/
     allEntities.push(f);
-    f.__key = theEntityClass.name + allEntities.indexOf(f);
     return f;
 }
 export interface UserInfo {
@@ -403,4 +401,8 @@ const dialogConfigMember = Symbol("dialogConfigMember");
 interface LookupCache<T extends Entity<any>> {
     key: string;
     lookup: Lookup<any, T>;
+}
+export interface RoleChecker
+{
+    isAllowed(roles: Allowed):boolean;
 }

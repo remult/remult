@@ -62,7 +62,7 @@ class PostgrestBridgeToSQLCommand implements SqlCommand {
     }
 }
 class PostgressBridgeToSQLQueryResult implements SqlResult {
-    getResultJsonNameForIndexInSelect(index: number): string {
+    getColumnKeyInResultForIndexInSelect(index: number): string {
         return this.r.fields[index].name;
     }
 
@@ -83,7 +83,7 @@ export class PostgresSchemaBuilder {
             let x = context.for(entity).create();
             try {
 
-                if (x.defs.name.toLowerCase().indexOf('from ') < 0) {
+                if (x.defs.dbName.toLowerCase().indexOf('from ') < 0) {
                     await this.createIfNotExist(x);
                     await this.verifyAllColumns(x);
                 }
@@ -100,7 +100,7 @@ export class PostgresSchemaBuilder {
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of e.columns) {
-                    if (!x.__dbReadOnly()) {
+                    if (!x.defs.dbReadOnly) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
@@ -138,7 +138,7 @@ export class PostgresSchemaBuilder {
     }
 
     async addColumnIfNotExist<T extends Entity<any>>(e: T, c: ((e: T) => Column<any>)) {
-        if (c(e).__dbReadOnly())
+        if (c(e).defs.dbReadOnly)
             return;
         try {
             let cmd = this.pool.createCommand();

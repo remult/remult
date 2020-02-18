@@ -1,8 +1,10 @@
 ﻿<!DOCTYPE html>
-<html lang="en" class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+<html lang="en"
+    class="js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
 
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <meta name="keywords" content="">
 
@@ -14,21 +16,29 @@
     <link rel="stylesheet" href="assets/css/prism-csdiff.css" />
 
 
-    <link rel="stylesheet" href="assets/css/theme_firefly.css" />
+    <link rel="stylesheet" href="assets/css/theme_remult.css" />
     <link rel="stylesheet" href="assets/css/mermaid.css" />
 </head>
 
 <body class="markdown-body" role="document">
-    <div class="wrapper">
-
+    <div class="wrapper" id="root">
+        <div class="backdrop"></div>
+        <div class="top-bar" role="navigation" aria-label="footer navigation">
+            <div style="display:flex;">
+                <div>
+                    <a id="menu" class="btn btn-neutral">&#9776; </a>
+                </div>
+                <h3>remult ts</h3>
+            </div>
+            <div>
+                <a id="previousButton" class="btn btn-neutral" style="visibility:hidden">Previous</a>
+                <a id="nextButton" class="btn btn-neutral" style="visibility:hidden">Next</a>
+            </div>
+        </div>
         <div class="middle">
 
             <div class="container">
 
-                <div class="content" role="navigation" aria-label="footer navigation">
-                    <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
-                    <a id="nextButton" class="btn btn-neutral float-right" style="visibility:hidden">Next</a>
-                </div>
                 <div class="content"><h1 id="displaying-the-products-entity-using-custom-html">Displaying the Products Entity using Custom Html</h1>
 <p>Next we would like to create a list of products that our site visitors can see on our home page.</p>
 <p>First, let's clear everything we've played with in our <code>home.component.html</code> and our <code>home.component.ts</code>
@@ -71,6 +81,13 @@ In the <code>home.component.ts</code> file, the first step would be to get the <
   ngOnInit() {
   }
 } </code></pre>
+<blockquote>
+<p>note that when you'll add the <code>context</code> parameter to the constructor, you'll also require the <code>import</code> statement for the <code>Context</code> class.
+If you don't have that import statement, Visual Studio Code will highlight it in red and display a &quot;light bulb&quot; you can click to automatically add it:
+<img src="2020-01-26_11h45_50.png" alt="" />
+It'll then automatically add the <code>import { Context } from '@remult/core';</code> statement to the top of the document.
+The same can be done for any missing <code>import</code> statement</p>
+</blockquote>
 <p>Next let's define a list of products:</p>
 <pre data-line="4" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
 
@@ -79,12 +96,16 @@ In the <code>home.component.ts</code> file, the first step would be to get the <
   ngOnInit() {
   }
 } </code></pre>
+<blockquote>
+<p>If the <code>Products</code> class is highlighted, add it to the <code>import</code> statement using the method describe in the previous note.</p>
+</blockquote>
 <p>We've defined a member called <code>products</code> of type <code>Products[]</code> (an Array of products) and have set it's initial value to an empty array (<code>= []</code>)</p>
 <p>Now let's populate the array with products from our db:</p>
-<pre data-line="5,6,7" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
+<pre data-line="6,7,8" class="language-csdiff line-numbers"><code>export class HomeComponent implements OnInit {
 
   constructor(private context: Context) { }
   products: Products[] = [];
+- ngOnInit() {
   async ngOnInit() {
     this.products = await this.context.for(Products).find();
   }
@@ -159,40 +180,35 @@ In the <code>home.component.ts</code> file, the first step would be to get the <
 <p><img src="2019-10-07_09h32_19.png" alt="" /></p>
 
 
-                <br />
-                        <a id="previousButton" class="btn btn-neutral float-left" style="visibility:hidden">Previous</a>
 
-                        <a id="nextButton" class="btn btn-neutral" style="visibility:hidden;float:right">Next</a>
-                        <hr />Help us improve,
-                        <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//55-Displaying the Products Entity using Custom Html/index.md" target="_blank" id="link">Edit this page on GitHub</a>        
+                    <hr />Help us improve,
+                    <a href="https://github.com/FireflyMigration/firefly-doc/blob/master//55-Displaying the Products Entity using Custom Html/index.md" target="_blank" id="link">Edit this page on GitHub</a>
                 </div>
-                
+
                 <!-- .content -->
 
-                
+
 
 
             </div>
-            
+
             <!-- .container-->
-            
+
             <aside class="left-sidebar">
                 <div class="wy-side-nav-search-ff">
                     <a href="" class="test">
-                        <h3>remult ts</h3>
+
                     </a>
                 </div>
-                <div id="menuTree" </div>
-            </aside>
-            <!-- .left-sidebar -->
+                <div id="menuTree" </div> </aside> <!-- .left-sidebar -->
 
-            <aside class="right-sidebar"></aside>
-            <!-- .right-sidebar -->
+                    <aside class="right-sidebar"></aside>
+                    <!-- .right-sidebar -->
 
-            </div>
-            <!-- .middle-->
+                </div>
+                <!-- .middle-->
 
-            
+
 
         </div>
 
@@ -211,7 +227,7 @@ In the <code>home.component.ts</code> file, the first step would be to get the <
         <script src="assets/js/jquery-3.1.1.js"></script>
 
 
-      
+
         <script src="assets/js/tree.js"></script>
         <script language="javascript">
             buildTree('menuTree', 'displaying-the-products-entity-using-custom-html.html', 'previousButton', 'nextButton');

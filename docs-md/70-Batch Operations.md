@@ -78,14 +78,19 @@ export class UpdatePriceComponent implements OnInit {
       alert("Please enter a valid amount");
       return;
     }
-+   let products = await this.context.for(Products).find();
-+   let count = 0;
-+   for (const p of products) {
-+     p.price.value += this.amountToAdd;
-+     await p.save();
-+     count++;
++   try {
++     let products = await this.context.for(Products).find();
++     let count = 0;
++     for (const p of products) {
++       p.price.value += this.amountToAdd;
++       await p.save();
++       count++;
++     }
++     alert("updated " + count + " products");
 +   }
-+   alert("updated "+count+" products");
++   catch (err) {
++     alert("Error: " + JSON.stringify(err));
++   }  
   }
 }
 ```
@@ -95,3 +100,6 @@ Let's review:
 2. On line 8 we've marked our method with the `async` keyword.
 3. On line 13 we've requested the products from the db using the `await` keyword to wait for the result.
 4. On line 17 we've saved the changes we've made to the server, again using the `await` keyword to wait for it's completion.
+
+> Note that if you get an error, chances are that you have rows in the products table that don't match your validation rules. This can happen since we first added a few test rows, and then we've added some validation, that not all existing rows match.
+> Just go to the Products page and fix it.

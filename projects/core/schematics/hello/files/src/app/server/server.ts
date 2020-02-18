@@ -1,5 +1,5 @@
-//import { CustomModuleLoader } from '../../../../radweb/src/app/server/CustomModuleLoader';
-//let moduleLoader = new CustomModuleLoader('/dist-server/radweb');
+//import { CustomModuleLoader } from '../../../../../../repos/radweb/src/app/server/CustomModuleLoader';
+//let moduleLoader = new CustomModuleLoader('/dist-server/repos/radweb/projects/');
 import * as express from 'express';
 import { ExpressBridge } from '@remult/server';
 import * as fs from 'fs';

@@ -1,6 +1,6 @@
 {
   "name": "@remult/server-postgres",
-  "version": "1.0.15",
+  "version": "1.0.26",
   "main": "index.js",
   "Dependencies": {}
 }

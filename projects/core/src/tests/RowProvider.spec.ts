@@ -94,14 +94,14 @@ describe("Closed List  column", () => {
   });
   it("loads and saved from Pojo correctly", () => {
     let x = new LanguageColumn();
-    x.jsonName = 'abc';
+    x.defs.key = 'abc';
     x.value = Language.Russian;
     let y: any = {};
     x.__addToPojo(y);
-    expect(y[x.jsonName]).toBe(10);
+    expect(y[x.defs.key]).toBe(10);
     x.value = Language.Hebrew;
     expect(x.value).toBe(Language.Hebrew);
-    x.__loadFromToPojo({ 'abc': 10 });
+    x.__loadFromPojo({ 'abc': 10 });
     expect(x.value).toBe(Language.Russian);
 
   });
@@ -207,13 +207,17 @@ describe("test row provider", () => {
   itAsync("test grid update and validation cycle", async () => {
     var context = new ServerContext();
     context.setDataProvider(new InMemoryDataProvider());
-    var c = context.for(CategoriesWithValidation);
+    var c = context.for(class extends CategoriesWithValidation {
+      categoryName = new StringColumn({
+        validate: () => { CategoriesWithValidation.orderOfOperation += "ColumnValidate," }
+      });
+    });
     var newC = c.create();
     newC.categoryName.value = 'noam';
     newC.id.value = 1;
     await newC.save();
 
-    CategoriesWithValidation.orderOfOperation = '';
+
     let ds = c.gridSettings({
       onSavingRow: r => CategoriesWithValidation.orderOfOperation += "GridOnSavingRow,",
       onValidate: r => CategoriesWithValidation.orderOfOperation += "GridValidate,",
@@ -225,10 +229,11 @@ describe("test row provider", () => {
     await ds.getRecords();
 
     let r = ds.items[0];
-    r.categoryName.onValidate = () => CategoriesWithValidation.orderOfOperation += "ColumnValidate,";
+
 
     expect(r.categoryName.value).toBe('noam');
     r.categoryName.value = 'noam honig';
+    CategoriesWithValidation.orderOfOperation = '';
     await ds._doSavingRow(r);
     expect(ds.items[0].categoryName.value).toBe('noam honig');
     expect(CategoriesWithValidation.orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
@@ -277,7 +282,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -294,7 +299,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -311,7 +316,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -342,7 +347,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, valueList: c.getDropDownItems() } as DataControlSettings<Categories>
+    let cs = { column: c1.id, valueList: c.getValueList() } as DataControlSettings<Categories>
     await cc.add(cs);
 
     let xx = cs.valueList as ValueListItem[];
@@ -389,16 +394,34 @@ describe("test row provider", () => {
   });
 
 });
+describe("api test", () => {
+  it("can build", () => {
+    let ctx = new Context(undefined);
+    let gs = ctx.for(Categories).gridSettings();
+    gs.addArea({
+      columnSettings: x => [
+        x.categoryName,
+        [x.categoryName, x.categoryName]]
+    });
+
+
+
+  });
+
+
+});
 describe("column collection", () => {
   let ctx = new Context(undefined);
   itAsync("uses a saparate column", async () => {
-    let c = ctx.for(Categories).create();
-    c.categoryName.allowApiUpdate = false;
+    let c = ctx.for(class extends Categories {
+      categoryName = new StringColumn({ allowApiUpdate: false });
+    }).create();
+
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.items[0] === c.categoryName).toBe(false);
     expect(cc.items[0] === cc.items[0].column).toBe(false);
-    expect(cc.items[0].caption == c.categoryName.caption).toBe(true);
+    expect(cc.items[0].caption == c.categoryName.defs.caption).toBe(true);
     expect(cc.items[0].readOnly).toBe(true);
 
   })
@@ -618,8 +641,8 @@ describe("test column value change", () => {
   });
   it("should fire 2", () => {
     let d = new Done();
-    let x = new NumberColumn();
-    x.onValueChange = () => d.ok();
+    let x = new NumberColumn({ valueChange: () => d.ok() });
+
     x.value++;
     d.test();
   });
@@ -696,20 +719,19 @@ describe("test parameter priority", () => {
     expect(t.allowApiUpdate).toBe(false);
     t = new testMyColumn({ allowApiUpdate: true });
     expect(t.allowApiUpdate).toBe(false);
-    let s = new StringColumn();
-    expect(s.allowApiUpdate).toBe(true);
+
   });
   it("b", () => {
     let s = new AnotherTest();
-    expect(s.caption).toBe('default');
+    expect(s.defs.caption).toBe('default');
   });
   it("c", () => {
     let s = new AnotherTest('test');
-    expect(s.caption).toBe('test');
+    expect(s.defs.caption).toBe('test');
   });
   it("d", () => {
     let s = new AnotherTest({ caption: 'test' });
-    expect(s.caption).toBe('test');
+    expect(s.defs.caption).toBe('test');
   });
 });
 
@@ -729,7 +751,7 @@ class testMyColumn extends StringColumn {
 class AnotherTest extends StringColumn {
   constructor(x?: ColumnOptions<string>) {
     super(x);
-    if (!this.caption)
-      this.caption = 'default';
+    if (!this.defs.caption)
+      this.defs.caption = 'default';
   }
 }

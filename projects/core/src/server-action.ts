@@ -108,7 +108,7 @@ export function ServerFunction(options: ServerFunctionOptions) {
 
         var originalMethod = descriptor.value;
         var types = Reflect.getMetadata("design:paramtypes", target, key);
-
+        // if types are undefind - you've forgot to set: "emitDecoratorMetadata":true
 
         let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
 

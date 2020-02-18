@@ -35,8 +35,8 @@ export class __EntityValueProvider implements ColumnValueProvider {
     if (e.columns.idColumn instanceof CompoundIdColumn)
       d.id = undefined;
     if (this.newRow) {
-      return this.dataProvider.insert(d).then((newData: any) => {
-        this.setData(newData, e);
+      return this.dataProvider.insert(d).then(async (newData: any) => {
+        await this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(true);
@@ -44,8 +44,8 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     }
     else {
-      return this.dataProvider.update(this.id, d).then((newData: any) => {
-        this.setData(newData, e);
+      return this.dataProvider.update(this.id, d).then(async (newData: any) => {
+        await this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(false);
@@ -63,7 +63,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
     if (r.columns.idColumn instanceof CompoundIdColumn) {
       r.columns.idColumn.__addIdToPojo(data);
     }
-    let id = data[r.columns.idColumn.jsonName];
+    let id = data[r.columns.idColumn.defs.key];
     if (id != undefined) {
       this.id = id;
       this.newRow = false;
