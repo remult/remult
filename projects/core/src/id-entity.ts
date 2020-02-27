@@ -47,7 +47,7 @@ export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, 
 }
 export async function checkForDuplicateValue(row: Entity<any>, column: Column<any>,provider: EntityProvider<any>, message?: string) {
   if (row.isNew() || column.value != column.originalValue) {
-    let rows = await provider.find({ where:r=>r.__getColumn(column).isEqualTo(column.value) });
+    let rows = await provider.find({ where:r=>r.columns.find(column).isEqualTo(column.value) });
     if (rows.length > 0)
       column.validationError = message || 'Already exists';
   }
