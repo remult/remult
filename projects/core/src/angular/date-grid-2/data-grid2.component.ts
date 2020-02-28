@@ -93,7 +93,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
 
   rowButtons: RowButton<any>[] = [];
   keys: string[] = [];
-  private addButton(b: RowButton<any>) {
+  private addButton(b: RowButton<Entity<any>>) {
     if (!b.click)
       b.click = (r) => { };
     if (!b.visible)
@@ -176,7 +176,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
         cssClass: "btn btn-danger glyphicon glyphicon-ban-circle",
         visible: r => r.wasChanged(),
         click: r => {
-          r.reset();
+          r.undoChanges();
         }
       });
 

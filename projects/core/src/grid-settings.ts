@@ -200,17 +200,17 @@ export class GridSettings<rowType extends Entity<any>>  {
   currentRowAsRestListItemRow() {
     if (!this.currentRow)
       return undefined;
-    return <any>this.currentRow;
+    return this.currentRow;
   }
   cancelCurrentRowChanges() {
-    if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().reset)
-      this.currentRowAsRestListItemRow().reset();
+    if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow())
+      this.currentRowAsRestListItemRow().undoChanges();
   }
   deleteCurrentRowAllowed() {
     return this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().delete && this.allowDelete && !isNewRow(this.currentRow);
   }
   currentRowChanged() {
-    return this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().__wasChanged && this.currentRowAsRestListItemRow().__wasChanged();
+    return this.currentRowAsRestListItemRow() &&  this.currentRowAsRestListItemRow().wasChanged();
   }
   saveCurrentRow() {
     if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().save)
