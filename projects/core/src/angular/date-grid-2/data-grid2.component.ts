@@ -19,8 +19,6 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   ngAfterViewInit(): void {
     if (window && window.getComputedStyle && this.dataGridDiv) {
       this.rightToLeft = window.getComputedStyle(this.dataGridDiv.nativeElement, null).getPropertyValue('direction') == 'rtl';
-
-
     }
   }
   getColFlex(map: DataControlSettings<any>) {

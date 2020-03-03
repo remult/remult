@@ -1,0 +1,14 @@
+<h1 mat-dialog-title *ngIf="!info.rightToLeft">Select Column to Filter</h1>
+<h1 mat-dialog-title *ngIf="info.rightToLeft">בחר עמודה לסינון</h1>
+<div mat-dialog-content>
+    <mat-list role="list" *ngIf="info">
+        <mat-list-item role="listitem" *ngFor="let o of info.settings.origList" (click)="select(o)">{{o.caption}}
+        </mat-list-item>
+    </mat-list>
+</div>
+<div mat-dialog-actions>
+
+    <button mat-icon-button mat-dialog-close>
+        <mat-icon>clear</mat-icon>
+    </button>
+</div>

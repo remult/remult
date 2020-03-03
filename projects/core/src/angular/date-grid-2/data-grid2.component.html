@@ -1,5 +1,6 @@
 <div>
   <div>
+    <Data-Filter [settings]="settings" #dataFilter></Data-Filter>
     <div class="dataGrid" #dataGridDiv *ngIf="settings&&settings.columns" [style.height]="_getHeight()">
       <div class="inner-wrapper">
         <div class="dataGridHeaderArea">
@@ -66,9 +67,7 @@
         <button mat-icon-button (click)="settings.userChooseColumns()">
           <mat-icon>settings</mat-icon>
         </button>
-        <button mat-icon-button (click)="dataFilter.userFilterButton()">
-          <mat-icon>details</mat-icon>
-        </button>
+        
         {{rightToLeft?'שורות בדף': 'lines per page'}}
         <select class="form-control" style="width:80px;display:inline-block" [(ngModel)]="settings.rowsPerPage"
           (change)="settings.getRecords()">
@@ -92,7 +91,7 @@
      
 
 
-      <Data-Filter [settings]="settings" #dataFilter></Data-Filter>
+      
       <div *ngIf="settings.showSelectColumn" class="selectColumnsArea">
         Select Columns
         <ol>
