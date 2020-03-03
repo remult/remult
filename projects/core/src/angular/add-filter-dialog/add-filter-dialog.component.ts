@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
-import { DataControlSettings } from '@remult/core';
+
 import { MatDialogRef } from '@angular/material';
+import { DataControlSettings } from '../../column-interfaces';
 
 
 @Component({
