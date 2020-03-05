@@ -20,6 +20,7 @@ export class DataFilterInfoComponent {
     @Input() settings: GridSettings<any>;
     filterColumnToAdd: DataControlSettings<any>;
     getCurrentFilterValue(col: Column<any>) {
+        this.settings.initOrigList();
         let m = this.settings.origList.find(x => x.column == col);
         return this.settings.columns._getColDisplayValue(m, this.settings.filterHelper.filterRow);
     }
