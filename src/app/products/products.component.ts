@@ -15,6 +15,12 @@ export class ProductsComponent implements OnInit {
     allowInsert:true,
     columnSettings:p=>[
       p.name,
+      p.phone,
+      p.phone,
+      p.phone,
+      p.phone,
+      p.phone,
+      p.phone,
       p.phone
     ]
   });

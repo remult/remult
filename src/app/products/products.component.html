@@ -1,5 +1,10 @@
-
-
-<data-grid [settings]="products"></data-grid>
-<data-area [settings]="area"></data-area>
-<button (click)="test()">test</button>
+<div style="display:flex;flex-direction: column;height:100%">
+    <data-grid [settings]="products" style="flex-grow: 1"></data-grid>
+    <div style="height:150px;flex-shrink: 0px;">
+        <button>bla bla</button>
+        <button>bla bla</button>
+        <button>bla bla</button>
+        <button>bla bla</button>
+        <button>bla bla</button>
+    </div>
+</div>
