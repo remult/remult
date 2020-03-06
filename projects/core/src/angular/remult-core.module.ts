@@ -18,7 +18,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { WaitComponent } from './wait/wait.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-//import { MatIconModule, MatButtonModule, MatCheckboxModule,MatListModule } from '@angular/material';
+
 import { DataArea2Compnent } from './data-area/dataArea2';
 import { AddFilterDialogComponent } from './add-filter-dialog/add-filter-dialog.component';
 import { MatButtonModule } from '@angular/material/button';

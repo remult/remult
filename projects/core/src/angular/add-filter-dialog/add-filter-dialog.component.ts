@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
 
-import { MatDialogRef } from '@angular/material';
+
 import { DataControlSettings } from '../../column-interfaces';
+import { MatDialogRef } from '@angular/material/dialog';
 
 
 @Component({
