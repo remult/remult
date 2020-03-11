@@ -25,15 +25,17 @@
 
     </mat-sidenav>
     <mat-sidenav-content style="width: 100%">
+      <div style="height:100%; display:flex;flex-direction: column;">
+        <mat-toolbar color="accent" style="flex-shrink: 0;"></mat-toolbar>
+        <div class="app-sidenav-content">
 
-    <div class="app-sidenav-content ">
 
+          <div style="height: 100%; margin: 10px">
+            <router-outlet></router-outlet>
+          </div>
 
-      <mat-card style="height: 100%; margin: 10px">
-        <router-outlet></router-outlet>
-        </mat-card>
-
-    </div>
+        </div>
+      </div>
     </mat-sidenav-content>
 
   </mat-sidenav-container>
