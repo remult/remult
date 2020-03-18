@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from "@angular/core";
-import {  MatSnackBar } from "@angular/material";
+import {  MatSnackBar } from "@angular/material/snack-bar";
 import {  Context } from "@remult/core";
 
 import {  YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
