@@ -1,10 +1,10 @@
-import { IdEntity, StringColumn, EntityClass, ColumnOptions } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {
-    name = new StringColumn();
+    name = new GroupsColumn(this.context);
     phone = new PhoneColumn();
-    constructor() {
+    constructor(private context:Context) {
         super({
             name: "Products",
             allowApiCRUD: true,
@@ -39,3 +39,41 @@ export class PhoneColumn extends StringColumn {
         return x;
     }
 }
+
+export class GroupsColumn extends StringColumn {
+    constructor(private context: Context) {
+        super({
+          caption: 'שיוך לקבוצת חלוקה',
+          includeInApi:true,
+          dataControlSettings: () => ({
+            width: '300',
+            click: () => {
+              
+              }
+            
+          })
+        });
+      }
+    removeGroup(group: string) {
+      let groups = this.value.split(",").map(x => x.trim());
+      let index = groups.indexOf(group);
+      if (index >= 0) {
+        groups.splice(index, 1);
+        this.value = groups.join(", ");
+      }
+    }
+    addGroup(group: string) {
+      if (this.value)
+        this.value += ', ';
+      else
+        this.value = '';
+      this.value += group;
+    }
+   
+    selected(group: string) {
+      if (!this.value)
+        return false;
+      return this.value.indexOf(group) >= 0;
+    }
+  
+  }

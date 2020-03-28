@@ -21,6 +21,7 @@ import { CharDateStorage } from '../columns/storage/char-date-storage';
 import { StringColumn } from '../columns/string-column';
 import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
+import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 
 
 
@@ -165,6 +166,26 @@ describe("test row provider", () => {
     rows = await c.find({ where: c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
+  });
+  itAsync("test filter packer", async () => {
+    let c = await insertFourRows();
+    let rows = await c.find();
+    expect(rows.length).toBe(4);
+
+    rows = await c.find({
+      where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
+
+    });
+    expect(rows.length).toBe(2);
+    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isEqualTo(4))) });
+    expect(rows.length).toBe(1);
+    expect(rows[0].categoryName.value).toBe('yael');
+    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) ))});
+    expect(rows.length).toBe(1);
+    expect(rows[0].id.value).toBe(2);
+    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)) ))});
+    expect(rows.length).toBe(2);
+
   });
   itAsync("sort", async () => {
     let c = await insertFourRows();

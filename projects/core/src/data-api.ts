@@ -10,6 +10,7 @@ import { AndFilter } from './filter/and-filter';
 import { StringColumn } from './columns/string-column';
 import { UserInfo, SpecificEntityHelper } from './context';
 import { FilterBase } from './filter/filter-interfaces';
+import { extractWhere } from './filter/filter-consumer-bridge-to-url-builder';
 
 export class DataApi<T extends Entity<any>> {
   getRoute() {
@@ -93,54 +94,19 @@ export class DataApi<T extends Entity<any>> {
     if (this.options && this.options.get && this.options.get.where)
       where = this.options.get.where(rowType);
     if (request) {
-      rowType.columns.toArray().forEach(col => {
-        function addFilter(operation: string, theFilter: (val: any) => FilterBase) {
-          let val = request.get(col.defs.key + operation);
-          if (val != undefined) {
-            let addFilter = (val: any) => {
-              let f = theFilter(col.fromRawValue(val));
-              if (f) {
-                if (where)
-                  where = new AndFilter(where, f);
-                else
-                  where = f;
-              }
-            }
-
-            if (val instanceof Array) {
-
-              val.forEach(v => {
-                addFilter(v);
-              });
-            }
-            else
-              addFilter(val);
-
-
-          }
+      let r = extractWhere(rowType, request);
+      if (r) {
+        if (where) {
+          where = new AndFilter(where, r);
         }
-        addFilter('', val => col.isEqualTo(val));
-        addFilter('_gt', val => col.isGreaterThan(val));
-        addFilter('_gte', val => col.isGreaterOrEqualTo(val));
-        addFilter('_lt', val => col.isLessThan(val));
-        addFilter('_lte', val => col.isLessOrEqualTo(val));
-        addFilter('_ne', val => col.isDifferentFrom(val));
-        addFilter('_contains', val => {
-          let c = col as StringColumn;
-          if (c != null && c.isContains) {
-            return c.isContains(val);
-          }
-        });
-        addFilter('_st', val => {
-          let c = col as StringColumn;
-          if (c != null && c.isContains) {
-            return c.isStartsWith(val);
-          }
-        });
-      });
+        else 
+        where = r;
+      }
     }
     return where;
   }
+
+  
 
   private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
@@ -214,7 +180,7 @@ export interface DataApiSettings<rowType extends Entity<any>> {
   allowRead?: boolean,
   name?: string,
   get?: FindOptions<rowType>
-  
+
 }
 
 export interface DataApiResponse {

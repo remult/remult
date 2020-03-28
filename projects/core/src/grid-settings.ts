@@ -316,17 +316,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   getRecords() {
 
-    let opt: FindOptions<rowType> = {};
-    if (this.getOptions) {
-      opt = Object.assign(opt, this.getOptions);
-    }
-    if (this._currentOrderBy)
-      opt.orderBy = r => this._currentOrderBy;
-
-    opt.limit = this.rowsPerPage;
-    if (this.page > 1)
-      opt.page = this.page;
-    this.filterHelper.addToFindOptions(opt);
+    let opt: FindOptions<rowType> = this.buildFindOptions();
 
     let result = this.restList.get(opt).then(() => {
 
@@ -354,6 +344,20 @@ export class GridSettings<rowType extends Entity<any>>  {
 
 
   private restList: DataList<rowType>;
+  private buildFindOptions() {
+    let opt: FindOptions<rowType> = {};
+    if (this.getOptions) {
+      opt = Object.assign(opt, this.getOptions);
+    }
+    if (this._currentOrderBy)
+      opt.orderBy = r => this._currentOrderBy;
+    opt.limit = this.rowsPerPage;
+    if (this.page > 1)
+      opt.page = this.page;
+    this.filterHelper.addToFindOptions(opt);
+    return opt;
+  }
+
   get items(): rowType[] {
     if (this.restList)
       return this.restList.items;
