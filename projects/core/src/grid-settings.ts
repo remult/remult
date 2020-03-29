@@ -344,7 +344,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
 
   private restList: DataList<rowType>;
-  private buildFindOptions() {
+  buildFindOptions() {
     let opt: FindOptions<rowType> = {};
     if (this.getOptions) {
       opt = Object.assign(opt, this.getOptions);
