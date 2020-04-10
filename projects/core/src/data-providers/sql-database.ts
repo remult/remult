@@ -28,6 +28,7 @@ export class SqlDatabase implements DataProvider {
     return this.sql.transaction(x => action(new SqlDatabase(x)));
   }
   public static LogToConsole = false;
+  public static durationThreshold = 0;
   constructor(private sql: SqlImplementation) {
 
   }
@@ -40,6 +41,7 @@ class LogSQLCommand implements SqlCommand {
   constructor(private origin: SqlCommand, private allQueries: boolean) {
 
   }
+
   args: any = {};
   addParameterAndReturnSqlToken(val: any): string {
     let r = this.origin.addParameterAndReturnSqlToken(val);
@@ -47,12 +49,19 @@ class LogSQLCommand implements SqlCommand {
     return r;
   }
   async execute(sql: string): Promise<SqlResult> {
-    if (this.allQueries) {
-      console.log('Query:', sql);
-      console.log("Arguments:", this.args);
-    }
+
     try {
-      return await this.origin.execute(sql);
+      let start = new Date();
+      let r = await this.origin.execute(sql);
+      if (this.allQueries) {
+        var d = new Date().valueOf() - start.valueOf();
+        if (d > SqlDatabase.durationThreshold) {
+          console.log('Query:', sql);
+          console.log("Arguments:", this.args);
+          console.log("Duration", d / 1000);
+        }
+      }
+      return r;
     }
     catch (err) {
       console.log('Query:', sql);
