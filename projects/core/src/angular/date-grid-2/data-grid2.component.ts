@@ -3,7 +3,7 @@ import { Component, OnChanges, Input, ViewChild, ElementRef, AfterViewInit } fro
 
 import { Column } from '../../column';
 import { Entity } from '../../entity';
-import { GridSettings, RowButton } from '../../grid-settings';
+import { GridSettings, RowButton, GridButton } from '../../grid-settings';
 import { DataControlSettings } from '../../column-interfaces';
 import { isFunction } from 'util';
 @Component({
@@ -37,7 +37,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   rightToLeft = false;
   //@ts-ignore
   @ViewChild('dataGridDiv')
-  dataGridDiv: ElementRef; 
+  dataGridDiv: ElementRef;
   getTotalRows() {
     if (this.settings.totalRows)
       return Math.ceil(this.settings.totalRows / this.settings.rowsPerPage);
@@ -88,8 +88,14 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     return b.cssClass.toString();
 
   }
-
+  hasVisibleButton(record) {
+    return this.rowButtons.find(b => b.visible(record));
+  }
+  hasVisibleGridButtons() {
+    return this.gridButtons.find(b => b.visible());
+  }
   rowButtons: RowButton<any>[] = [];
+  gridButtons: GridButton[] = [];
   keys: string[] = [];
   private addButton(b: RowButton<Entity<any>>) {
     if (!b.click)
@@ -157,12 +163,31 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
 
 
     this.rowButtons = [];
+    this.gridButtons = [];
+    this.gridButtons.push({
+      visible: () => this.settings.items.find(x => x.wasChanged()),
+      textInMenu: () => this.rightToLeft ? ('שמור ' + this.settings.items.filter(x => x.wasChanged()).length + ' שורות') :
+        ('save ' + this.settings.items.filter(x => x.wasChanged()).length + ' rows'),
+      click: async () => {
+        await Promise.all(this.settings.items.filter(x => x.wasChanged()).map(x => x.save()));
+      }
+    });
+    if (this.settings.settings.gridButton) {
+      this.gridButtons.push(...this.settings.settings.gridButton.map(x => {
+        if (!x.visible)
+          x.visible = () => true;
+        return x;
+      }));
+    }
+
     if (this.settings.allowUpdate) {
       this.addButton({
         name: "",
         icon: 'check',
         cssClass: "glyphicon glyphicon-ok btn-success",
         visible: r => r.wasChanged(),
+        showInLine: true,
+        textInMenu: () => this.rightToLeft ? 'שמור' : 'save',
         click: r => {
           this.catchErrors(this.settings._doSavingRow(r), r);
         },
@@ -173,6 +198,9 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
         icon: 'cancel',
         cssClass: "btn btn-danger glyphicon glyphicon-ban-circle",
         visible: r => r.wasChanged(),
+        showInLine: true,
+        textInMenu: () => this.rightToLeft ? 'בטל שינוים' : 'cancel',
+
         click: r => {
           r.undoChanges();
         }
@@ -187,6 +215,8 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
           return r && !r.isNew();
         }
         , icon: 'delete',
+        showInLine: true,
+        textInMenu: () => this.rightToLeft ? 'מחק' : 'delete',
         click: r => {
           if (this.settings.setCurrentRow && this.settings.settings.confirmDelete) {
             this.settings.settings.confirmDelete(r, () => this.catchErrors(r.delete(), r));

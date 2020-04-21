@@ -417,7 +417,7 @@ describe("test row provider", () => {
 });
 describe("api test", () => {
   it("can build", () => {
-    let ctx = new Context(undefined);
+  let ctx = new Context(undefined);
     let gs = ctx.for(Categories).gridSettings();
     gs.addArea({
       columnSettings: x => [

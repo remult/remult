@@ -85,17 +85,17 @@ describe('Test basic row functionality', () => {
     expect(b.info).toBe(3);
 
   });
-  itAsync("Original values update correctly",async()=>{
+  itAsync("Original values update correctly", async () => {
     let c = await (await createData(async insert => insert(1, 'noam'), Categories)).findFirst();
-    expect (c.categoryName.value).toBe('noam');
-    expect (c.categoryName.originalValue).toBe('noam');
+    expect(c.categoryName.value).toBe('noam');
+    expect(c.categoryName.originalValue).toBe('noam');
     c.categoryName.value = 'yael';
-    expect (c.categoryName.value).toBe('yael');
-    expect (c.categoryName.originalValue).toBe('noam');
+    expect(c.categoryName.value).toBe('yael');
+    expect(c.categoryName.originalValue).toBe('noam');
     await c.save();
-    expect (c.categoryName.value).toBe('yael');
-    expect (c.categoryName.originalValue).toBe('yael');
-    
+    expect(c.categoryName.value).toBe('yael');
+    expect(c.categoryName.originalValue).toBe('yael');
+
   });
 
   it("object is autonemous", () => {
@@ -143,7 +143,7 @@ describe('Test basic row functionality', () => {
     expect(y.name).toBe('noam', JSON.stringify(y));
     y.name = 'yael';
     new Context().for(myTestEntity)._updateEntityBasedOnApi(x, y);
-    
+
     expect(x.name1.value).toBe('yael');
 
   });
@@ -541,6 +541,60 @@ describe("data api", () => {
     expect(count).toBe(1);
 
   });
+  itAsync("put with disable save still works", async () => {
+
+
+    let startTest = false;
+    let context = new ServerContext();
+    let mem = new InMemoryDataProvider();
+    context.setDataProvider(mem);
+    let entity = class extends Categories {
+      constructor() {
+        super({
+          name: 'testE',
+          allowApiUpdate: true,
+          savingRow: (cancel) => {
+            if (startTest) {
+              
+              mem.rows["testE"][0].categoryName = 'kuku';
+              expect(mem.rows["testE"][0].categoryName).toBe('kuku');
+              cancel();
+            }
+          }
+        });
+      };
+    }
+    {
+
+      let c = context.for(entity).create();
+      c.id.value = 1;
+      c.categoryName.value = name;
+      c.description.value = "noam";
+      await c.save();
+
+    };
+
+
+    var api = new DataApi(context.for(entity));
+    let t = new TestDataApiResponse();
+    let d = new Done();
+
+
+    t.success = data => {
+      expect(data.categoryName).toBe('kuku');
+      d.ok();
+    };
+    startTest = true;
+    await api.put(t, 1, {
+      categoryName: 'noam 1'
+    });
+
+    d.test();
+    var x = await context.for(entity).find({ where: c => c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('kuku');
+
+
+  });
   itAsync("get based on id with excluded columns", async () => {
     let context = new Context();
 
@@ -562,7 +616,7 @@ describe("data api", () => {
     d.test();
 
   });
-  
+
   itAsync("put updates", async () => {
     let context = new Context();
 

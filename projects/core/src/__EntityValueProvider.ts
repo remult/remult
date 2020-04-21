@@ -30,11 +30,12 @@ export class __EntityValueProvider implements ColumnValueProvider {
         x.rowReset(this.newRow);
     });
   }
-  save(e: Entity<any>): Promise<void> {
+  save(e: Entity<any>,doNotSave:boolean): Promise<void> {
     let d = JSON.parse(JSON.stringify(this.data));
     if (e.columns.idColumn instanceof CompoundIdColumn)
       d.id = undefined;
     if (this.newRow) {
+      
       return this.dataProvider.insert(d).then(async (newData: any) => {
         await this.setData(newData, e);
         this.listeners.forEach(x => {
@@ -44,6 +45,15 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     }
     else {
+      if (doNotSave){
+        return this.dataProvider.find({where:e.columns.idColumn.isEqualTo(this.id)}).then(async newData=>{
+          await this.setData(newData[0], e);
+          this.listeners.forEach(x => {
+            if (x.rowSaved)
+              x.rowSaved(false);
+          });
+        });
+      }
       return this.dataProvider.update(this.id, d).then(async (newData: any) => {
         await this.setData(newData, e);
         this.listeners.forEach(x => {

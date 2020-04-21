@@ -26,6 +26,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
+import { MatMenuModule } from '@angular/material';
 
 
 
@@ -36,7 +37,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
     MatFormFieldModule,
     MatButtonModule,
     MatListModule,
-    MatInputModule, MatIconModule, ReactiveFormsModule, MatCheckboxModule],
+    MatInputModule, MatIconModule, ReactiveFormsModule, MatCheckboxModule,MatMenuModule],
   providers: [Context, JwtSessionManager, NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
 

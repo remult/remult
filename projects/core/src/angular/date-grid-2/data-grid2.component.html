@@ -4,6 +4,21 @@
     <div class="inner-wrapper">
       <div class="dataGridHeaderArea">
         <div class="dataGridRow">
+          <div class="data-grid-row-more-buttons dataGridDataCell">
+            
+            <button mat-icon-button [matMenuTriggerFor]="updatedRowOptions" *ngIf="hasVisibleGridButtons()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+
+          </div>
+          <mat-menu #updatedRowOptions="matMenu">
+
+            <ng-container *ngFor="let b of gridButtons">
+              <button mat-menu-item *ngIf="b.visible()" (click)="b.click()">
+                <mat-icon *ngIf="b.icon">{{b.icon}}</mat-icon>{{b.textInMenu?b.textInMenu(): b.name}}
+              </button>
+            </ng-container>
+          </mat-menu>
           <div class="dataGridHeaderCell headerWithFilter" *ngFor="let map of settings.columns.getGridColumns()"
             [style.flex]="getColFlex(map)" [style.width]="getColWidth(map)" draggable="true"
             (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)">
@@ -39,7 +54,22 @@
       <div class="dataGridBodyArea">
         <div class="dataGridRow" *ngFor="let record of records" [className]="_getRowClass(record)"
           (click)="rowClicked(record)">
+          <div class="data-grid-row-more-buttons dataGridDataCell">
 
+            <button mat-icon-button [matMenuTriggerFor]="updatedRowOptions"
+              *ngIf="hasVisibleButton(record) ">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+
+          </div>
+          <mat-menu #updatedRowOptions="matMenu">
+            <ng-container *ngFor="let b of rowButtons">
+              <button mat-menu-item *ngIf="b.visible(record)" (click)="b.click(record)">
+                <mat-icon *ngIf="b.icon">{{b.icon}}</mat-icon>{{b.textInMenu?b.textInMenu(): b.name}}
+              </button>
+            </ng-container>
+
+          </mat-menu>
           <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns()"
             [className]="_getRowColumnClass(map,record)" [style.flex]="getColFlex(map)"
             [style.width]="getColWidth(map)">
@@ -48,10 +78,12 @@
           </div>
           <div class="dataGridButtonCell" *ngIf="rowButtons.length>0&&displayButtons" style="white-space:nowrap">
             <ng-container *ngFor="let b of rowButtons">
-              <button mat-icon-button *ngIf="b.visible(record)&&b.icon" (click)="b.click(record)" class="row-button">
+              <button mat-icon-button *ngIf="b.visible(record)&&b.icon&&b.showInLine" (click)="b.click(record)"
+                class="row-button">
                 <mat-icon *ngIf="b.icon">{{b.icon}} </mat-icon> {{b.name}}
               </button>
-              <button mat-raised-button *ngIf="b.visible(record)&&!b.icon" (click)="b.click(record)" class="row-button">
+              <button mat-raised-button *ngIf="b.visible(record)&&!b.icon&&b.showInLine" (click)="b.click(record)"
+                class="row-button">
                 {{b.name}}
               </button>
             </ng-container>
@@ -117,6 +149,6 @@
 
 
 
-  
+
   <data-area *ngIf="!settings.hideDataArea" [settings]="settings" [columns]="2"></data-area>
 </div>

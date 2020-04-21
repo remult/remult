@@ -17,10 +17,10 @@ export class IdEntity extends Entity<string>
     super(options);
     
     let x = this.__onSavingRow;
-    this.__onSavingRow = () => {
+    this.__onSavingRow = (cancel) => {
       if (this.isNew() && !this.id.value && !this.disableNewId)
         this.id.setToNewId();
-      return x();
+      return x(cancel);
     }
   }
   private disableNewId = false;

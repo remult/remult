@@ -380,9 +380,10 @@ export interface IDataSettings<rowType extends Entity<any>> {
   areas?: { [areaKey: string]: DataControlInfo<rowType>[] },
 
   rowCssClass?: (row: rowType) => string;
-  rowButtons?: RowButton<rowType>[],
-  get?: FindOptions<rowType>,
-  knowTotalRows?: boolean,
+  rowButtons?: RowButton<rowType>[];
+  gridButton?:GridButton[];
+  get?: FindOptions<rowType>;
+  knowTotalRows?: boolean;
   onSavingRow?: (r: rowType) => void;
   onValidate?: (r: rowType) => void;
   onEnterRow?: (r: rowType) => void;
@@ -395,11 +396,21 @@ export interface RowButton<rowType extends Entity<any>> {
   name?: string;
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
+  showInLine? :boolean;
+  textInMenu?:()=>string;
   icon?: string;
   cssClass?: (string | ((row: rowType) => string));
 
 }
 
+export interface GridButton {
+  name?: string;
+  visible?: () => boolean;
+  click?: () => void;
+  textInMenu?:()=>string;
+  icon?: string;
+  cssClass?: (string | (() => string));
+}
 
 function isNewRow(r: Entity<any>) {
   if (r) {

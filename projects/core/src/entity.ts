@@ -15,7 +15,7 @@ export class Entity<idType> {
       } else {
         this.__options = options;
         if (options.savingRow)
-          this.__onSavingRow = () => options.savingRow();
+          this.__onSavingRow = (proceedWithoutSavingToDb:()=>void) => options.savingRow(proceedWithoutSavingToDb);
         if (options.validate)
           this.__onValidate = () => options.validate(this);
       }
@@ -65,7 +65,7 @@ export class Entity<idType> {
   __entityData = new __EntityValueProvider();
 
   //@internal
-  __onSavingRow: () => void | Promise<void> = () => { };
+  __onSavingRow: (proceedWithoutSavingToDb:()=>void) => void | Promise<void> = () => { };
   //@internal
   __onValidate: () => void | Promise<void> = () => { };
 
@@ -136,10 +136,10 @@ export class Entity<idType> {
     if (afterValidationBeforeSaving)
       await afterValidationBeforeSaving(this);
     this.__assertValidity();
-
-    await  this.__onSavingRow();
+    let doNotSave=false;
+    await  this.__onSavingRow(()=>doNotSave = true);
     this.__assertValidity();
-    return await  this.__entityData.save(this).catch(e => this.catchSaveErrors(e));
+    return await  this.__entityData.save(this,doNotSave).catch(e => this.catchSaveErrors(e));
   }
   //@internal
   private catchSaveErrors(err: any): any {
@@ -222,7 +222,7 @@ export interface EntityOptions {
   allowApiInsert?: Allowed;
   allowApiCRUD?: Allowed;
   apiDataFilter?: () => FilterBase;
-  savingRow?: () => Promise<any> | any;
+  savingRow?: (proceedWithoutSavingToDb:()=>void) => Promise<any> | any;
 
   validate?: (e: Entity<any>) => Promise<any> | any;
 }
