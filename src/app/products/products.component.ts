@@ -1,11 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, DialogConfig } from '@remult/core';
 import { Products } from './products';
 
 @Component({
   selector: 'app-products',
   templateUrl: './products.component.html',
   styleUrls: ['./products.component.scss']
+})
+@DialogConfig({
+  height:'1500px'
+  
 })
 export class ProductsComponent implements OnInit {
 
@@ -33,6 +37,9 @@ export class ProductsComponent implements OnInit {
   }
   async test() {
     await ProductsComponent.testIt(2);
+  }
+  dialog(){
+    this.context.openDialog(ProductsComponent,()=>{});
   }
   @ServerFunction({ allowed: true })
   static async testIt(amount:Number,context?:Context) {
