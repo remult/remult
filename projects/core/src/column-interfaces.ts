@@ -50,7 +50,7 @@ export interface DataControlSettings<entityType extends Entity<any>> {
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-
+    visible?:(row: entityType)=>boolean;
 
     click?: (row: entityType) => void;
     allowClick?: (row: entityType) => boolean;

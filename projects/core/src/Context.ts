@@ -110,8 +110,8 @@ export class Context {
             dsCache = new Map<string, SpecificEntityHelper<any, Entity<any>>>();
             this.cache.set(dataSource, dsCache);
         }
-        
-        
+
+
         let r = dsCache.get(c) as SpecificEntityHelper<lookupIdType, T>;
         if (!r) {
             r = new SpecificEntityHelper<lookupIdType, T>(() => {
@@ -184,7 +184,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     _getApiSettings(): DataApiSettings<T> {
         return this.entity._getEntityApiSettings(this.context);
     }
-    
+
     private entity: T;
     private _edp: EntityDataProvider;
     private _factory: (newRow: boolean) => T;
@@ -244,7 +244,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
 
     async count(where?: (entity: T) => FilterBase) {
-        return await this._edp.count(where ? where(this.entity) : undefined);
+        return await this._edp.count(this.entity.__decorateWhere(where ? where(this.entity) : undefined));
     }
     async foreach(where: (entity: T) => FilterBase, what?: (entity: T) => Promise<void>) {
         let items = await this.find({
@@ -255,19 +255,21 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         }
     }
     private translateOptions(options: FindOptions<T>) {
-        if (!options)
-            return undefined;
+
         let getOptions: EntityDataProviderFindOptions = {};
-        if (options.where)
-            getOptions.where = options.where(this.entity);
-        if (options.orderBy)
-            getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
-        if (options.limit)
-            getOptions.limit = options.limit;
-        if (options.page)
-            getOptions.page = options.page;
-        if (options.__customFindData)
-            getOptions.__customFindData = options.__customFindData;
+        if (options) {
+            if (options.where)
+                getOptions.where = options.where(this.entity);
+            if (options.orderBy)
+                getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
+            if (options.limit)
+                getOptions.limit = options.limit;
+            if (options.page)
+                getOptions.page = options.page;
+            if (options.__customFindData)
+                getOptions.__customFindData = options.__customFindData;
+        }
+        getOptions.where = this.entity.__decorateWhere(getOptions.where);
         return getOptions;
     }
 
@@ -287,20 +289,25 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     toApiPojo(entity: T): any {
         let r = {};
         for (const c of entity.columns) {
-            
-                c.__addToPojo(r,this.context)
+
+            c.__addToPojo(r, this.context)
         }
         return r;
 
     }
     _updateEntityBasedOnApi(entity: T, body: any) {
         for (const c of entity.columns) {
-            
-                c.__loadFromPojo(body,this.context);
+
+            c.__loadFromPojo(body, this.context);
         }
         return entity;
     }
-    async findFirst(where?: (entity: T) => FilterBase) {
+    async findId(id: Column<lookupIdType> | lookupIdType) {
+
+        return this.findFirst(x => x.columns.idColumn.isEqualTo(id));
+    }
+    async findFirst(where?: EntityWhere<T>) {
+
         let r = await this.find({ where });
         if (r.length == 0)
             return undefined;
@@ -402,7 +409,6 @@ interface LookupCache<T extends Entity<any>> {
     key: string;
     lookup: Lookup<any, T>;
 }
-export interface RoleChecker
-{
-    isAllowed(roles: Allowed):boolean;
+export interface RoleChecker {
+    isAllowed(roles: Allowed): boolean;
 }

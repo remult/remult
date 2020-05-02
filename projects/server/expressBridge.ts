@@ -25,9 +25,9 @@ export class ExpressBridge implements DataApiServer {
 
   private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
 
-  constructor(private app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpForDevOnly?: boolean, autoCreateApiArea = true) {
+  constructor(private app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly?: boolean, autoCreateApiArea = true) {
     app.use(compression());
-    if (!disableHttpForDevOnly) {
+    if (!disableHttpsForDevOnly) {
       app.use(secure);
     }
     app.use(bodyParser.json({ limit: '10mb' }));
@@ -44,11 +44,12 @@ export class ExpressBridge implements DataApiServer {
       registerEntitiesOnServer(apiArea, builder);
     }
   }
+  logApiEndPoints = true;
   addArea(
     rootUrl: string,
     processRequest?: (req: DataApiRequest) => Promise<void>
   ) {
-    return new SiteArea(this, this.app, rootUrl, processRequest);
+    return new SiteArea(this, this.app, rootUrl, processRequest, this.logApiEndPoints);
   }
 
 }
@@ -58,12 +59,13 @@ export class SiteArea {
     private bridge: ExpressBridge,
     private app: express.Express,
     private rootUrl: string,
-    private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<void>) {
+    private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<void>,
+    private logApiEndpoints: boolean) {
 
   }
 
 
-  add(entityOrDataApiFactory:  ((req: DataApiRequest) => DataApi<any>)) {
+  add(entityOrDataApiFactory: ((req: DataApiRequest) => DataApi<any>)) {
 
 
     let api: ((req: DataApiRequest) => DataApi<any>);
@@ -71,7 +73,8 @@ export class SiteArea {
 
     let myRoute = api({ clientIp: 'onServer', user: undefined, get: (r: any) => '', getHeader: (x: any) => "", getBaseUrl: () => '' }).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
-    console.log(myRoute);
+    if (this.logApiEndpoints)
+      console.log(myRoute);
 
 
     this.app.route(myRoute)
@@ -109,7 +112,8 @@ export class SiteArea {
   addAction<T extends Action<any, any>>(action: T) {
     action.__register((url: string, what: (data: any, r: DataApiRequest, res: DataApiResponse) => void) => {
       let myUrl = this.rootUrl + '/' + url;
-      console.log(myUrl);
+      if (this.logApiEndpoints)
+        console.log(myUrl);
       this.app.route(myUrl).post(this.process(
         async (req, res, orig) =>
           what(orig.body, req, res)

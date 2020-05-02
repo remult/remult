@@ -95,22 +95,24 @@ export function extractWhere(rowType: Entity<any>, filterInfo: {
 }
 export function packWhere<entityType extends Entity<any>>(entity: entityType, where: EntityWhere<entityType>) {
   let r = {};
-  where(entity).__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder({
-    add: (key: string, val: any) => {
-      if (!r[key]) {
-        r[key] = val;
-        return;
-      }
-      let v = r[key];
-      if (v instanceof Array) {
-        v.push(val);
-      }
-      else
-        v = [v, val];
-      r[key] = v;
+  let w = where(entity);
+  if (w)
+    w.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder({
+      add: (key: string, val: any) => {
+        if (!r[key]) {
+          r[key] = val;
+          return;
+        }
+        let v = r[key];
+        if (v instanceof Array) {
+          v.push(val);
+        }
+        else
+          v = [v, val];
+        r[key] = v;
 
-    }
-  }));
+      }
+    }));
   return r;
 
 }

@@ -4,10 +4,19 @@ import { Column } from "./column";
 import { FilterBase } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
 import { valueOrExpressionToValue } from './column-interfaces';
+import { AndFilter } from './filter/and-filter';
+
 
 
 //@dynamic
 export class Entity<idType> {
+  __decorateWhere(where: FilterBase): FilterBase {
+    if (this.__options.fixedWhereFilter) {
+      return new AndFilter(where, this.__options.fixedWhereFilter());
+    }
+    return where;
+  }
+
   constructor(options?: EntityOptions | string) {
     if (options) {
       if (typeof (options) === "string") {
@@ -15,7 +24,7 @@ export class Entity<idType> {
       } else {
         this.__options = options;
         if (options.savingRow)
-          this.__onSavingRow = (proceedWithoutSavingToDb:()=>void) => options.savingRow(proceedWithoutSavingToDb);
+          this.__onSavingRow = (proceedWithoutSavingToDb: () => void) => options.savingRow(proceedWithoutSavingToDb);
         if (options.validate)
           this.__onValidate = () => options.validate(this);
       }
@@ -26,7 +35,7 @@ export class Entity<idType> {
       };
     }
   }
-  
+
 
 
   //@internal 
@@ -65,7 +74,7 @@ export class Entity<idType> {
   __entityData = new __EntityValueProvider();
 
   //@internal
-  __onSavingRow: (proceedWithoutSavingToDb:()=>void) => void | Promise<void> = () => { };
+  __onSavingRow: (proceedWithoutSavingToDb: () => void) => void | Promise<void> = () => { };
   //@internal
   __onValidate: () => void | Promise<void> = () => { };
 
@@ -136,15 +145,15 @@ export class Entity<idType> {
     if (afterValidationBeforeSaving)
       await afterValidationBeforeSaving(this);
     this.__assertValidity();
-    let doNotSave=false;
-    await  this.__onSavingRow(()=>doNotSave = true);
+    let doNotSave = false;
+    await this.__onSavingRow(() => doNotSave = true);
     this.__assertValidity();
-    return await  this.__entityData.save(this,doNotSave).catch(e => this.catchSaveErrors(e));
+    return await this.__entityData.save(this, doNotSave).catch(e => this.catchSaveErrors(e));
   }
   //@internal
   private catchSaveErrors(err: any): any {
     let e = err;
-    
+
     if (e instanceof Promise) {
       return e.then(x => this.catchSaveErrors(x));
     }
@@ -222,7 +231,8 @@ export interface EntityOptions {
   allowApiInsert?: Allowed;
   allowApiCRUD?: Allowed;
   apiDataFilter?: () => FilterBase;
-  savingRow?: (proceedWithoutSavingToDb:()=>void) => Promise<any> | any;
+  fixedWhereFilter?: () => FilterBase;
+  savingRow?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
 
   validate?: (e: Entity<any>) => Promise<any> | any;
 }

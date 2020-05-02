@@ -5,7 +5,7 @@ import { Column } from "./column";
 import { Context } from "./context";
 import { isFunction } from "util";
 
- interface FilteredColumnSetting<rowType extends Entity<any>> extends DataControlSettings<rowType> {
+interface FilteredColumnSetting<rowType extends Entity<any>> extends DataControlSettings<rowType> {
   _showFilter?: boolean;
 }
 export class ColumnCollection<rowType extends Entity<any>> {
@@ -29,6 +29,15 @@ export class ColumnCollection<rowType extends Entity<any>> {
       result = map.column;
     return result;
   }
+
+
+
+  __visible(col: DataControlSettings<any>, row: any) {
+    if (col.visible === undefined)
+      return true;
+    return col.visible(row);
+  }
+
   __dataControlStyle(map: DataControlSettings<any>): string {
 
     if (map.width && map.width.trim().length > 0) {
@@ -98,9 +107,9 @@ export class ColumnCollection<rowType extends Entity<any>> {
         result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
       }
       else {
-        result.push(...(await (orig as ( Promise<ValueListItem[]>))));
+        result.push(...(await (orig as (Promise<ValueListItem[]>))));
       }
-      
+
     }
     return Promise.resolve();
   }
@@ -145,7 +154,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     this.colListChanged();
   }
   addCol(col: DataControlSettings<any>) {
-    this.items.splice(this.items.indexOf(col) + 1, 0,{});
+    this.items.splice(this.items.indexOf(col) + 1, 0, {});
     this.colListChanged();
   }
 
@@ -173,8 +182,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
     }
     else if (col.column) {
-      if (col.valueList ) {
-        for (let x of (col.valueList as ValueListItem[] )) {
+      if (col.valueList) {
+        for (let x of (col.valueList as ValueListItem[])) {
           if (x.id == this.__getColumn(col, row).value)
             return x.caption;
         }
