@@ -8,17 +8,20 @@ import { Products } from './products';
   styleUrls: ['./products.component.scss']
 })
 @DialogConfig({
-  height:'1500px'
-  
+  height: '1500px'
+
 })
 export class ProductsComponent implements OnInit {
 
   constructor(private context: Context) { }
   products = this.context.for(Products).gridSettings({
     allowUpdate: true,
-    allowInsert:true,
-    allowSelection:true,
-    columnSettings:p=>[
+    allowInsert: true,
+    allowSelection: true,
+    get: {
+      where: x => x.name.isIn("Beer", "Wine")
+    },
+    columnSettings: p => [
       p.name,
       p.phone,
       p.phone,
@@ -30,7 +33,7 @@ export class ProductsComponent implements OnInit {
     ]
   });
   area = this.products.addArea({
-    columnSettings:p=>[
+    columnSettings: p => [
       p.phone
     ]
   });
@@ -39,11 +42,11 @@ export class ProductsComponent implements OnInit {
   async test() {
     await ProductsComponent.testIt(2);
   }
-  dialog(){
-    this.context.openDialog(ProductsComponent,()=>{});
+  dialog() {
+    this.context.openDialog(ProductsComponent, () => { });
   }
   @ServerFunction({ allowed: true })
-  static async testIt(amount:Number,context?:Context) {
+  static async testIt(amount: Number, context?: Context) {
     console.log(context);
     //console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
   }

@@ -187,6 +187,21 @@ describe("test row provider", () => {
     expect(rows.length).toBe(2);
 
   });
+  itAsync("test in filter packer", async () => {
+    let c = await insertFourRows();
+    let rows = await c.find();
+    expect(rows.length).toBe(4);
+
+    rows = await c.find({
+      where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
+
+    });
+    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isIn(1,3) ))});
+    expect(rows.length).toBe(2);
+    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isNotIn(1,2,3) ))});
+    expect(rows.length).toBe(1);
+
+  });
   itAsync("sort", async () => {
     let c = await insertFourRows();
     let rows = await c.find({ orderBy: c => new Sort({ column: c.id }) });

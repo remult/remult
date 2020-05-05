@@ -128,7 +128,7 @@ export class Column<dataType>  {
 
     }
   }
-  
+
 
   //@internal
   __getStorage() {
@@ -146,6 +146,16 @@ export class Column<dataType>  {
 
   isEqualTo(value: Column<dataType> | dataType) {
     return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
+  }
+  isIn(...values: (Column<dataType> | dataType)[]) {
+    return new Filter(add => add.isIn(this, values.map(x => this.__getVal(x))));
+  }
+  isNotIn(...values: (Column<dataType> | dataType)[]) {
+    return new Filter(add => {
+      for (const v of values) {
+        add.isDifferentFrom(this, this.__getVal(v));
+      }
+    });
   }
   isDifferentFrom(value: Column<dataType> | dataType) {
     return new Filter(add => add.isDifferentFrom(this, this.__getVal(value)));
@@ -202,13 +212,13 @@ export class Column<dataType>  {
   get originalValue() {
     return this.fromRawValue(this.__valueProvider.getOriginalValue(this.defs.key));
   }
-  
+
   protected __processValue(value: dataType) {
     return value;
 
   }
-  
-  
+
+
   fromRawValue(value: any): dataType {
     return value;
   }
@@ -286,10 +296,10 @@ export class ColumnDefs {
     return false;
 
   }
-  get allowApiUpdate(): Allowed{
+  get allowApiUpdate(): Allowed {
     return this.settings.allowApiUpdate;
   }
-  set allowApiUpdate(value:Allowed){
+  set allowApiUpdate(value: Allowed) {
     this.settings.allowApiUpdate = value;
   }
   get dbReadOnly() {

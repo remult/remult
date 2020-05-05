@@ -126,6 +126,15 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
     ok = true;
     constructor(private row: any) { }
+    isIn(col: Column<any>, val: any[]): void {
+
+        for (const v of val) {
+            if (this.row[col.defs.key] == v) {
+                return;
+            }
+        }
+        this.ok = false;
+    }
     public isEqualTo(col: Column<any>, val: any): void {
 
         if (this.row[col.defs.key] != val)

@@ -13,4 +13,5 @@ export interface FilterConsumer {
     isLessThan(col: Column<any>, val: any): void;
     isContains(col: StringColumn, val: any): void;
     isStartsWith(col: StringColumn, val: any): void;
+    isIn(col: Column<any>, val: any[]): void;
 }

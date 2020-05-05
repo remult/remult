@@ -181,7 +181,7 @@ describe("data api", () => {
     expect ((await c.findFirst(x=>x.id.isEqualTo(1))).categoryName.value).toBe('noam');
     expect ((await c.findId(1)).categoryName.value).toBe('noam');
     expect ((await c.findId(new NumberColumn({defaultValue:1}))).categoryName.value).toBe('noam');
-    
+  });
       
 });
 
