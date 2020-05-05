@@ -11,6 +11,7 @@ import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
 import { EntityProvider, FindOptions, entityOrderByToSort } from './data-interfaces';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 
 export class GridSettings<rowType extends Entity<any>>  {
@@ -210,7 +211,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     return this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().delete && this.allowDelete && !isNewRow(this.currentRow);
   }
   currentRowChanged() {
-    return this.currentRowAsRestListItemRow() &&  this.currentRowAsRestListItemRow().wasChanged();
+    return this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().wasChanged();
   }
   saveCurrentRow() {
     if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().save)
@@ -266,6 +267,24 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.page = 1;
     return this.getRecords();
   }
+  selectedRows: rowType[] = [];
+  selectedChanged(row: rowType, e: MatCheckboxChange) {
+    if (this.isSelected(row)) {
+      this.selectedRows.splice(this.selectedRows.indexOf(row), 1);
+    }
+    else
+      this.selectedRows.push(row);
+  }
+  isSelected(row: rowType) {
+    return this.selectedRows.indexOf(row) >= 0;
+  }
+  selectAllChanged(e: MatCheckboxChange) {
+    
+    this.selectedRows.splice(0);
+    if (e.checked) {
+      this.selectedRows.push(...this.items);
+    }
+  }
   rowsPerPage: number;
   rowsPerPageOptions = [10, 25, 50, 100, 500, 1000];
   get(options: FindOptions<rowType>) {
@@ -319,7 +338,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     let opt: FindOptions<rowType> = this.buildFindOptions();
 
     let result = this.restList.get(opt).then(() => {
-
+      this.selectedRows.splice(0);
 
       if (this.restList.items.length == 0) {
         this.setCurrentRow(undefined);
@@ -374,6 +393,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
   allowInsert?: boolean,
   allowDelete?: boolean,
   hideDataArea?: boolean,
+  allowSelection?: boolean,
   confirmDelete?: (r: rowType, yes: () => void) => void;
 
   columnSettings?: (row: rowType) => DataControlInfo<rowType>[],
@@ -381,7 +401,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
 
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[];
-  gridButton?:GridButton[];
+  gridButton?: GridButton[];
   get?: FindOptions<rowType>;
   knowTotalRows?: boolean;
   onSavingRow?: (r: rowType) => void;
@@ -396,8 +416,8 @@ export interface RowButton<rowType extends Entity<any>> {
   name?: string;
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
-  showInLine? :boolean;
-  textInMenu?:()=>string;
+  showInLine?: boolean;
+  textInMenu?: () => string;
   icon?: string;
   cssClass?: (string | ((row: rowType) => string));
 
@@ -407,7 +427,7 @@ export interface GridButton {
   name?: string;
   visible?: () => boolean;
   click?: () => void;
-  textInMenu?:()=>string;
+  textInMenu?: () => string;
   icon?: string;
   cssClass?: (string | (() => string));
 }

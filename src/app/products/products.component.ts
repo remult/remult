@@ -17,6 +17,7 @@ export class ProductsComponent implements OnInit {
   products = this.context.for(Products).gridSettings({
     allowUpdate: true,
     allowInsert:true,
+    allowSelection:true,
     columnSettings:p=>[
       p.name,
       p.phone,

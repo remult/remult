@@ -11,6 +11,12 @@
             </button>
 
           </div>
+          <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
+
+            <mat-checkbox [indeterminate]="settings.selectedRows.length>0&&settings.selectedRows.length!=settings.items.length" [checked]="settings.selectedRows.length>0&&settings.selectedRows.length==settings.items.length"
+              (change)="settings.selectAllChanged($event)"></mat-checkbox>
+ 
+           </div>
           <mat-menu #updatedRowOptions="matMenu">
 
             <ng-container *ngFor="let b of gridButtons">
@@ -60,6 +66,11 @@
               *ngIf="hasVisibleButton(record) ">
               <mat-icon>more_vert</mat-icon>
             </button>
+
+          </div>
+          <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
+
+           <mat-checkbox [checked]="settings.isSelected(record)" (change)="settings.selectedChanged(record,$event)"></mat-checkbox>
 
           </div>
           <mat-menu #updatedRowOptions="matMenu">
