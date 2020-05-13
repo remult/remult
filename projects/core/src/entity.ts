@@ -121,8 +121,12 @@ export class Entity<idType> {
     let result: any = {};
     result.modelState = {};
     this.__columns.forEach(c => {
-      if (c.validationError)
+      if (c.validationError) {
         result.modelState[c.defs.key] = c.validationError;
+        if (!result.message) {
+          result.message = c.defs.caption + ":" + c.validationError;
+        }
+      }
     });
     return result;
   }

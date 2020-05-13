@@ -1,5 +1,5 @@
 <div style="height: 100%;display: flex;flex-direction: column;">
-  <Data-Filter [settings]="settings" #dataFilter style="flex-shrink: 0;"></Data-Filter>
+  <Data-Filter [settings]="settings" #dataFilter style="flex-shrink: 0;" *ngIf="!settings.settings.hideFilter"></Data-Filter>
   <div class="dataGrid" #dataGridDiv *ngIf="settings&&settings.columns" [style.height]="_getHeight()">
     <div class="inner-wrapper">
       <div class="dataGridHeaderArea">
@@ -105,7 +105,7 @@
       </div>
     </div>
   </div>
-  <div class="dataGridFooterArea" *ngIf="records">
+  <div class="dataGridFooterArea" *ngIf="records&&!settings.settings.hideVcr">
     <div class="dataGridFooterButtonGroup">
       <button mat-icon-button (click)="settings.userChooseColumns()">
         <mat-icon>settings</mat-icon>

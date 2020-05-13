@@ -393,6 +393,8 @@ export interface IDataSettings<rowType extends Entity<any>> {
   allowInsert?: boolean,
   allowDelete?: boolean,
   hideDataArea?: boolean,
+  hideVcr?:boolean,
+  hideFilter?:boolean,
   allowSelection?: boolean,
   confirmDelete?: (r: rowType, yes: () => void) => void;
 

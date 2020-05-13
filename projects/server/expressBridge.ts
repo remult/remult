@@ -8,7 +8,7 @@ import * as compression from 'compression';
 import * as secure from 'express-force-https';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
-import { isFunction } from 'util';
+import { isFunction, isString } from 'util';
 
 
 
@@ -172,6 +172,8 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     let x = JSON.parse(JSON.stringify(data));
     if (!x.message && !x.modelState)
       data = { message: data.message };
+    if (isString(x))
+      data = { message: x };
     this.r.status(400).json(data);
   }
 }

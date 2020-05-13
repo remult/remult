@@ -18,8 +18,10 @@ export class ProductsComponent implements OnInit {
     allowUpdate: true,
     allowInsert: true,
     allowSelection: true,
+    hideVcr:true,
+    hideFilter:true,
     get: {
-      where: x => x.name.isIn("Beer", "Wine")
+
     },
     columnSettings: p => [
       p.name,
@@ -42,12 +44,20 @@ export class ProductsComponent implements OnInit {
   async test() {
     await ProductsComponent.testIt(2);
   }
-  dialog() {
-    this.context.openDialog(ProductsComponent, () => { });
+  async dialog() {
+    try {
+      await ProductsComponent.testIt(1);
+    }
+    catch (err) {
+      console.log(err);
+      debugger;
+
+    }
   }
   @ServerFunction({ allowed: true })
   static async testIt(amount: Number, context?: Context) {
     console.log(context);
+    throw "it didn't work";
     //console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
   }
 
