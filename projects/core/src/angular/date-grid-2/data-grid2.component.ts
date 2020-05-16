@@ -6,6 +6,7 @@ import { Entity } from '../../entity';
 import { GridSettings, RowButton, GridButton } from '../../grid-settings';
 import { DataControlSettings } from '../../column-interfaces';
 import { isFunction } from 'util';
+import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
@@ -78,6 +79,11 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   @Input() settings: GridSettings<any>;
   isFiltered(c: Column<any>) {
     return this.settings.columns.filterHelper.isFiltered(c);
+  }
+  @ViewChild(DataFilterInfoComponent) dataFilterInfo: DataFilterInfoComponent;
+  showFilterColumnDialog(dataControlSettings: DataControlSettings<any>) {
+    this.settings.initOrigList();
+    this.dataFilterInfo.editFilter(dataControlSettings.column);
   }
 
   getButtonCssClass(b: RowButton<any>, row: any) {

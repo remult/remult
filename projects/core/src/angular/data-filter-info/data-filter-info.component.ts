@@ -58,7 +58,7 @@ export class DataFilterInfoComponent {
         this.showAddFilter = true;
         this.filterColumnToAdd = undefined;
     }
-    async editFilter(col: Column<any>) {
+    public async editFilter(col: Column<any>) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
         await this.context.openDialog(FilterDialogComponent, x => x.info = this);
     }

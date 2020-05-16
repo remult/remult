@@ -33,7 +33,7 @@
 
 
             <span class="filterButton" [class.filteredFilterButton]="isFiltered(map.column)"
-              (click)="settings.columns.showFilterDialog(map)">
+              (click)="showFilterColumnDialog(map)">
               <mat-icon>details</mat-icon>
             </span>
             <div class="filterDialog col-sm-4" *ngIf="settings.columns._shouldShowFilterDialog(map)">
