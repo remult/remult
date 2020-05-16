@@ -12,6 +12,9 @@ import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
 import { EntityProvider, FindOptions, entityOrderByToSort } from './data-interfaces';
 import { MatCheckboxChange } from '@angular/material/checkbox';
+import { AndFilter } from './filter/and-filter';
+import { _MatChipListMixinBase } from '@angular/material';
+
 
 
 export class GridSettings<rowType extends Entity<any>>  {
@@ -96,8 +99,8 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.columns.items = this.currList;
     this.columns.numOfColumnsInGrid = this.origNumOfColumns;
     for (let i = 0; i < this.origList.length; i++) {
-     // if (i < this.columns.numOfColumnsInGrid)
-        this.currList.push(this.origList[i]);
+      // if (i < this.columns.numOfColumnsInGrid)
+      this.currList.push(this.origList[i]);
     }
 
   }
@@ -109,7 +112,7 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.columns.deleteCol(c)
     this.columns.numOfColumnsInGrid--;
   }
-  
+
 
   private setGetOptions(get: FindOptions<rowType>) {
     this.getOptions = get;
@@ -266,22 +269,36 @@ export class GridSettings<rowType extends Entity<any>>  {
     return this.getRecords();
   }
   selectedRows: rowType[] = [];
-  selectedChanged(row: rowType, e: MatCheckboxChange) {
+  selectedChanged(row: rowType) {
     if (this.isSelected(row)) {
       this.selectedRows.splice(this.selectedRows.indexOf(row), 1);
+      this._selectedAll = false;
     }
-    else
+    else {
       this.selectedRows.push(row);
+      if (this.selectedRows.length==this.totalRows)
+        this._selectedAll = true;
+    }
   }
   isSelected(row: rowType) {
     return this.selectedRows.indexOf(row) >= 0;
   }
+  selectAllIntermitent() {
+    return this.selectedRows.length > 0 && (this.selectedRows.length != this.items.length||!this._selectedAll);
+  }
+  selectAllChecked() {
+    return this.selectedRows.length > 0 && this.selectedRows.length == this.items.length&&this._selectedAll;
+  }
+  private _selectedAll = false;
   selectAllChanged(e: MatCheckboxChange) {
-    
+
     this.selectedRows.splice(0);
     if (e.checked) {
       this.selectedRows.push(...this.items);
+      this._selectedAll = true;
     }
+    else
+      this._selectedAll = false;
   }
   rowsPerPage: number;
   rowsPerPageOptions = [10, 25, 50, 100, 500, 1000];
@@ -333,7 +350,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   getRecords() {
 
-    let opt: FindOptions<rowType> = this.buildFindOptions();
+    let opt: FindOptions<rowType> = this._internalBuildFindOptions();
 
     let result = this.restList.get(opt).then(() => {
       this.selectedRows.splice(0);
@@ -361,7 +378,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
 
   private restList: DataList<rowType>;
-  buildFindOptions() {
+  _internalBuildFindOptions() {
     let opt: FindOptions<rowType> = {};
     if (this.getOptions) {
       opt = Object.assign(opt, this.getOptions);
@@ -374,6 +391,20 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.filterHelper.addToFindOptions(opt);
     return opt;
   }
+  getFilterWithSelectedRows() {
+    let r = this._internalBuildFindOptions();
+    if (this.selectedRows.length > 0 && !this._selectedAll) {
+      let ids = this.selectedRows.map(x => x.columns.idColumn.value);
+      if (r.where) {
+        let x = r.where;
+        r.where = e => new AndFilter(x(e), e.columns.idColumn.isIn(ids))
+      }
+      else
+        r.where = e => e.columns.idColumn.isIn(ids);
+    }
+    return r;
+  }
+
 
   get items(): rowType[] {
     if (this.restList)
@@ -391,8 +422,8 @@ export interface IDataSettings<rowType extends Entity<any>> {
   allowInsert?: boolean,
   allowDelete?: boolean,
   hideDataArea?: boolean,
-  hideVcr?:boolean,
-  hideFilter?:boolean,
+  hideVcr?: boolean,
+  hideFilter?: boolean,
   allowSelection?: boolean,
   confirmDelete?: (r: rowType, yes: () => void) => void;
 

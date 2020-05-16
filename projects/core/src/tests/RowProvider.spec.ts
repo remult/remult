@@ -81,6 +81,116 @@ async function insertFourRows() {
     await i(3, 'maayan', 'y');
   });
 };
+describe("grid filter stuff", () => {
+  itAsync("test filter works", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      get: {
+        orderBy: c => new Sort({ column: c.id }),
+        where: c => c.categoryName.isContains('a'),
+        limit: 2
+      }
+    });
+    await ds.getRecords();
+    expect(ds.items.length).toBe(2);
+    expect(await c.count(ds.getFilterWithSelectedRows().where)).toBe(3);
+
+
+  });
+  itAsync("test filter works with user filter", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      get: {
+        orderBy: c => new Sort({ column: c.id }),
+        where: c => c.categoryName.isContains('a'),
+        limit: 2
+      }
+    });
+    await ds.getRecords();
+    ds.filterHelper.filterRow.description.value = 'y';
+    ds.filterHelper.filterColumn(ds.filterHelper.filterRow.description, false, false);
+    let w = ds.getFilterWithSelectedRows().where;
+
+    expect(await c.count(w)).toBe(1);
+
+  });
+  itAsync("test filter works sith selected rows", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      get: {
+        orderBy: c => new Sort({ column: c.id }),
+        limit: 3
+      }
+    });
+    await ds.getRecords();
+    ds.selectedChanged(ds.items[0]);
+    ds.selectedChanged(ds.items[2]);
+    expect(ds.selectedRows[0].id.value).toBe(1);
+    expect(ds.selectedRows[1].id.value).toBe(3);
+    let w = ds.getFilterWithSelectedRows().where;
+    console.log(packWhere(c.create(), w));
+    expect(await c.count(w)).toBe(2);
+    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
+  });
+  itAsync("test all rows selected when some rows are outside the scope", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      get: {
+        orderBy: c => new Sort({ column: c.id }),
+        limit: 3
+      }
+    });
+    await ds.getRecords();
+    ds.selectAllChanged({
+      checked: true,
+      source: undefined
+    });
+    expect(ds.selectAllChecked()).toBe(true);
+    expect(ds.selectedRows.length).toBe(3);
+    let w = ds.getFilterWithSelectedRows().where;
+    expect(await c.count(w)).toBe(4);
+  });
+  itAsync("test select rows in page is not select all", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      get: {
+        orderBy: c => new Sort({ column: c.id }),
+        limit: 3
+      }
+    });
+    await ds.getRecords();
+    expect(ds.selectAllIntermitent()).toBe(false,'intermetent');
+    for (const r of ds.items) {
+      ds.selectedChanged(r);
+    }
+    expect(ds.selectAllIntermitent()).toBe(true,'intermetent');
+    expect(ds.selectAllChecked()).toBe(false,'select all checked');
+    expect(ds.selectedRows.length).toBe(3,'selected rows');
+    let w = ds.getFilterWithSelectedRows().where;
+    console.log( packWhere(c.create(), w));
+    expect(await c.count(w)).toBe(3,'rows in count');
+  });
+  itAsync("select select row by row when all rows are in view", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      knowTotalRows:true,
+      get: {
+        orderBy: c => new Sort({ column: c.id }),
+        limit: 4
+      }
+    });
+    await ds.getRecords();
+    expect(ds.selectAllIntermitent()).toBe(false);
+    for (const r of ds.items) {
+      ds.selectedChanged(r);
+    }
+    expect(ds.selectAllIntermitent()).toBe(false);
+    expect(ds.selectAllChecked()).toBe(true);
+    expect(ds.selectedRows.length).toBe(4);
+    let w = ds.getFilterWithSelectedRows().where;
+    expect(await c.count(w)).toBe(4);
+  });
+});
 
 describe("Closed List  column", () => {
 
@@ -177,13 +287,13 @@ describe("test row provider", () => {
 
     });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isEqualTo(4))) });
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isEqualTo(4))) });
     expect(rows.length).toBe(1);
     expect(rows[0].categoryName.value).toBe('yael');
-    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) ))});
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
-    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)) ))});
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
     expect(rows.length).toBe(2);
 
   });
@@ -196,9 +306,9 @@ describe("test row provider", () => {
       where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
 
     });
-    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isIn(1,3) ))});
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c =>unpackWhere(c, packWhere(c, c =>  c.id.isNotIn(1,2,3) ))});
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });
@@ -240,6 +350,7 @@ describe("test row provider", () => {
     await ds.items[0].save();
     expect(ds.items[0].categoryName.value).toBe('noam honig');
   });
+
   itAsync("test grid update and validation cycle", async () => {
     var context = new ServerContext();
     context.setDataProvider(new InMemoryDataProvider());
@@ -432,7 +543,7 @@ describe("test row provider", () => {
 });
 describe("api test", () => {
   it("can build", () => {
-  let ctx = new Context(undefined);
+    let ctx = new Context(undefined);
     let gs = ctx.for(Categories).gridSettings();
     gs.addArea({
       columnSettings: x => [

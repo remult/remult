@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, DialogConfig } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere } from '@remult/core';
 import { Products } from './products';
 
 @Component({
@@ -12,17 +12,26 @@ import { Products } from './products';
 
 })
 export class ProductsComponent implements OnInit {
-
+  getWhere() {
+    
+    return JSON.stringify(packWhere(this.products.filterHelper.filterRow, this.products.getFilterWithSelectedRows().where));
+  }
   constructor(private context: Context) { }
   products = this.context.for(Products).gridSettings({
     allowUpdate: true,
     allowInsert: true,
     allowSelection: true,
-    
-    
+    knowTotalRows:true,
+
+
     get: {
 
     },
+    gridButton: [
+      {
+        name: 'xxx'
+      }
+    ],
     columnSettings: p => [
       p.name,
       p.phone,

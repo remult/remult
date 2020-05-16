@@ -147,10 +147,10 @@ export class Column<dataType>  {
   isEqualTo(value: Column<dataType> | dataType) {
     return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
   }
-  isIn(...values: (Column<dataType> | dataType)[]) {
+  isIn(values: (Column<dataType> | dataType)[]) {
     return new Filter(add => add.isIn(this, values.map(x => this.__getVal(x))));
   }
-  isNotIn(...values: (Column<dataType> | dataType)[]) {
+  isNotIn(values: (Column<dataType> | dataType)[]) {
     return new Filter(add => {
       for (const v of values) {
         add.isDifferentFrom(this, this.__getVal(v));

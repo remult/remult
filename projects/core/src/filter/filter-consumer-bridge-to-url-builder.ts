@@ -81,7 +81,7 @@ export function extractWhere(rowType: Entity<any>, filterInfo: {
     addFilter('_lt', val => col.isLessThan(val));
     addFilter('_lte', val => col.isLessOrEqualTo(val));
     addFilter('_ne', val => col.isDifferentFrom(val));
-    addFilter('_in', val => col.isIn(...JSON.parse(val)));
+    addFilter('_in', val => col.isIn(JSON.parse(val)));
     addFilter('_contains', val => {
       let c = col as StringColumn;
       if (c != null && c.isContains) {
@@ -99,6 +99,8 @@ export function extractWhere(rowType: Entity<any>, filterInfo: {
 }
 export function packWhere<entityType extends Entity<any>>(entity: entityType, where: EntityWhere<entityType>) {
   let r = {};
+  if (!where)
+    return r;
   let w = where(entity);
   if (w)
     w.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder({

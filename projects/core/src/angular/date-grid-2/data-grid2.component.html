@@ -7,13 +7,13 @@
           <div class="data-grid-row-more-buttons dataGridDataCell">
             
             <button mat-icon-button [matMenuTriggerFor]="updatedRowOptions" *ngIf="hasVisibleGridButtons()">
-              <mat-icon>more_vert</mat-icon>
+              <mat-icon>expand_more</mat-icon>
             </button>
 
           </div>
           <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
 
-            <mat-checkbox [indeterminate]="settings.selectedRows.length>0&&settings.selectedRows.length!=settings.items.length" [checked]="settings.selectedRows.length>0&&settings.selectedRows.length==settings.items.length"
+            <mat-checkbox [indeterminate]="settings.selectAllIntermitent()" [checked]="settings.selectAllChecked()"
               (change)="settings.selectAllChanged($event)"></mat-checkbox>
  
            </div>
