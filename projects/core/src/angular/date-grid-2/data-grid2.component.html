@@ -134,7 +134,8 @@
     <div *ngIf="settings.showSelectColumn" class="selectColumnsArea">
       Select Columns
       <ol>
-        <li *ngFor="let c of settings.currList; let i=index">
+        <ng-container  *ngFor="let c of settings.currList; let i=index">
+        <li *ngIf="i<settings.columns.numOfColumnsInGrid">
           <select [(ngModel)]="settings.currList[i]" class="form-control selectColumnCombo"
             (change)="settings.columns.colListChanged()">
             <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}}</option>
@@ -153,6 +154,7 @@
             <mat-icon>keyboard_arrow_up</mat-icon>
           </button>
         </li>
+      </ng-container>
       </ol>
       <button (click)="settings.resetColumns()" class="btn glyphicon glyphicon-repeat"></button>
     </div>

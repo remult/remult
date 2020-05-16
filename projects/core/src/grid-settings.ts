@@ -96,22 +96,20 @@ export class GridSettings<rowType extends Entity<any>>  {
     this.columns.items = this.currList;
     this.columns.numOfColumnsInGrid = this.origNumOfColumns;
     for (let i = 0; i < this.origList.length; i++) {
-      if (i < this.columns.numOfColumnsInGrid)
+     // if (i < this.columns.numOfColumnsInGrid)
         this.currList.push(this.origList[i]);
     }
 
   }
   addCol(c: DataControlSettings<any>) {
     this.columns.addCol(c);
-    this.adjustColumns();
+    this.columns.numOfColumnsInGrid++;
   }
   deleteCol(c: DataControlSettings<any>) {
     this.columns.deleteCol(c)
-    this.adjustColumns();
+    this.columns.numOfColumnsInGrid--;
   }
-  adjustColumns() {
-    this.columns.numOfColumnsInGrid = this.columns.items.length;
-  }
+  
 
   private setGetOptions(get: FindOptions<rowType>) {
     this.getOptions = get;

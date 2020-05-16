@@ -18,8 +18,8 @@ export class ProductsComponent implements OnInit {
     allowUpdate: true,
     allowInsert: true,
     allowSelection: true,
-    hideVcr:true,
-    hideFilter:true,
+    
+    
     get: {
 
     },
