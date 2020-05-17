@@ -13,7 +13,7 @@ import { Products } from './products';
 })
 export class ProductsComponent implements OnInit {
   getWhere() {
-    
+
     return JSON.stringify(packWhere(this.products.filterHelper.filterRow, this.products.getFilterWithSelectedRows().where));
   }
   constructor(private context: Context) { }
@@ -21,11 +21,11 @@ export class ProductsComponent implements OnInit {
     allowUpdate: true,
     allowInsert: true,
     allowSelection: true,
-    knowTotalRows:true,
+    knowTotalRows: true,
 
 
     get: {
-
+      where: p => p.name.isContains("e")
     },
     gridButton: [
       {

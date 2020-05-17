@@ -98,10 +98,15 @@ export function extractWhere(rowType: Entity<any>, filterInfo: {
   return where;
 }
 export function packWhere<entityType extends Entity<any>>(entity: entityType, where: EntityWhere<entityType>) {
-  let r = {};
   if (!where)
-    return r;
+  return {};
   let w = where(entity);
+  return packToRawWhere(w);
+
+}
+
+export function packToRawWhere(w: FilterBase) {
+  let r = {};
   if (w)
     w.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder({
       add: (key: string, val: any) => {
@@ -116,9 +121,7 @@ export function packWhere<entityType extends Entity<any>>(entity: entityType, wh
         else
           v = [v, val];
         r[key] = v;
-
       }
     }));
   return r;
-
 }
