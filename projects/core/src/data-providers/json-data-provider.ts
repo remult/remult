@@ -13,7 +13,7 @@ export class JsonDataProvider implements DataProvider {
   constructor(private storage: JsonEntityStorage) {
 
   }
-  getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+  getEntityDataProvider(entity: Entity): EntityDataProvider {
     return new JsonEntityDataProvider(entity, this.storage);
   }
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -23,7 +23,7 @@ export class JsonDataProvider implements DataProvider {
 
 class JsonEntityDataProvider implements EntityDataProvider {
 
-  constructor(private entity: Entity<any>, private helper: JsonEntityStorage) {
+  constructor(private entity: Entity, private helper: JsonEntityStorage) {
 
   }
   async loadEntityData(what: (dp: EntityDataProvider, save: () => void) => any): Promise<any> {

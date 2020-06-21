@@ -8,7 +8,7 @@ import { DefaultStorage } from './columns/storage/default-storage';
 import { Filter } from './filter/filter';
 import { ColumnValueProvider } from './__EntityValueProvider';
 
-export class Column<dataType>  {
+export class Column<dataType = any>  {
   //@internal
   __setDefaultForNewRow() {
     if (this.__settings.defaultValue) {
@@ -40,22 +40,22 @@ export class Column<dataType>  {
 
   private __settings: ColumnSettings<dataType>;
   private __defs: ColumnDefs;
-  private __displayResult: DataControlSettings<any>;
+  private __displayResult: DataControlSettings;
   get defs() {
     if (!this.__defs)
       this.__defs = new ColumnDefs(this.__settings);
     return this.__defs;
   }
 
-  static consolidateOptions(options: ColumnOptions<any>, options1?: ColumnOptions<any>): ColumnSettings<any> {
-    let result: ColumnSettings<any>;
+  static consolidateOptions(options: ColumnOptions, options1?: ColumnOptions): ColumnSettings {
+    let result: ColumnSettings;
     if (typeof (options) === "string") {
       result = { caption: options };
     }
     else
       result = options;
     if (!result) {
-      result = {};
+      result = {};  
     }
 
     if (options1) {
@@ -72,7 +72,7 @@ export class Column<dataType>  {
   }
   //reconsider approach - this prevents the user from overriding in a specific component
   //@internal
-  __decorateDataSettings(x: DataControlSettings<any>, context?: Context) {
+  __decorateDataSettings(x: DataControlSettings, context?: Context) {
     if (!x.caption && this.defs.caption)
       x.caption = this.defs.caption;
     if (x.readOnly == undefined) {
@@ -88,7 +88,7 @@ export class Column<dataType>  {
       if (!x.valueList)
         x.valueList = this.__displayResult.valueList;
       if (x.forceEqualFilter === undefined)
-        x.forceEqualFilter =  this.__displayResult.forceEqualFilter;
+        x.forceEqualFilter = this.__displayResult.forceEqualFilter;
       if (!x.inputType)
         x.inputType = this.__displayResult.inputType;
       if (x.hideDataOnInput === undefined)
@@ -268,7 +268,7 @@ class dummyColumnStorage implements ColumnValueProvider {
   }
 }
 export class ColumnDefs {
-  constructor(private settings: ColumnSettings<any>) {
+  constructor(private settings: ColumnSettings) {
 
   }
   get caption(): string {

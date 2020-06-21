@@ -45,7 +45,7 @@ export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, 
   addValues(result);
   return result;
 }
-export async function checkForDuplicateValue(row: Entity<any>, column: Column<any>,provider: EntityProvider<any>, message?: string) {
+export async function checkForDuplicateValue(row: Entity, column: Column,provider: EntityProvider<any>, message?: string) {
   if (row.isNew() || column.value != column.originalValue) {
     let rows = await provider.find({ where:r=>r.columns.find(column).isEqualTo(column.value) });
     if (rows.length > 0)

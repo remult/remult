@@ -22,10 +22,10 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
       this.rightToLeft = window.getComputedStyle(this.dataGridDiv.nativeElement, null).getPropertyValue('direction') == 'rtl';
     }
   }
-  getColFlex(map: DataControlSettings<any>) {
+  getColFlex(map: DataControlSettings) {
     return '0 0 ' + this.getColWidth(map);
   }
-  getColWidth(map: DataControlSettings<any>) {
+  getColWidth(map: DataControlSettings) {
     let x = this.settings.columns.__dataControlStyle(map);
     if (!x)
       x = '200px';
@@ -46,15 +46,15 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
       return 'רבים';
     return 'many';
   }
-  tempDragColumn: (DataControlSettings<any>);
-  dragStart(x: DataControlSettings<any>) {
+  tempDragColumn: (DataControlSettings);
+  dragStart(x: DataControlSettings) {
     this.tempDragColumn = x;
 
   }
-  dragOver(x: Column<any>, event: any) {
+  dragOver(x: Column, event: any) {
     event.preventDefault();
   }
-  onDrop(x: DataControlSettings<any>) {
+  onDrop(x: DataControlSettings) {
     let oldPosition = this.settings.columns.items.indexOf(this.tempDragColumn);
     this.settings.columns.items.splice(oldPosition, 1);
     let newPosition = this.settings.columns.items.indexOf(x);
@@ -77,11 +77,11 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
 
   @Input() records: any;
   @Input() settings: GridSettings<any>;
-  isFiltered(c: Column<any>) {
+  isFiltered(c: Column) {
     return this.settings.columns.filterHelper.isFiltered(c);
   }
   @ViewChild(DataFilterInfoComponent) dataFilterInfo: DataFilterInfoComponent;
-  showFilterColumnDialog(dataControlSettings: DataControlSettings<any>) {
+  showFilterColumnDialog(dataControlSettings: DataControlSettings) {
     this.settings.initOrigList();
     this.dataFilterInfo.editFilter(dataControlSettings.column);
   }
@@ -103,7 +103,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   rowButtons: RowButton<any>[] = [];
   gridButtons: GridButton[] = [];
   keys: string[] = [];
-  private addButton(b: RowButton<Entity<any>>) {
+  private addButton(b: RowButton<Entity>) {
     if (!b.click)
       b.click = (r) => { };
     if (!b.visible)
@@ -133,7 +133,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     this.page--;
   }
 
-  catchErrors(what: any, r: Entity<any>) {
+  catchErrors(what: any, r: Entity) {
     what.catch((e: any) => {
       this.showError(r);
 
@@ -141,7 +141,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
 
 
   }
-  private showError(row: Entity<any>) {
+  private showError(row: Entity) {
     let message = row.validationError;
     if (!message)
       message = "";

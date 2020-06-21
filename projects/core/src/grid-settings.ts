@@ -17,7 +17,7 @@ import { _MatChipListMixinBase } from '@angular/material';
 
 
 
-export class GridSettings<rowType extends Entity<any>>  {
+export class GridSettings<rowType extends Entity>  {
   constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entityProvider);
     if (entityProvider) {
@@ -73,8 +73,8 @@ export class GridSettings<rowType extends Entity<any>>  {
 
   }
 
-  currList: DataControlSettings<any>[];
-  origList: DataControlSettings<any>[];
+  currList: DataControlSettings[];
+  origList: DataControlSettings[];
   origNumOfColumns: number;
   showSelectColumn = false;
 
@@ -104,11 +104,11 @@ export class GridSettings<rowType extends Entity<any>>  {
     }
 
   }
-  addCol(c: DataControlSettings<any>) {
+  addCol(c: DataControlSettings) {
     this.columns.addCol(c);
     this.columns.numOfColumnsInGrid++;
   }
-  deleteCol(c: DataControlSettings<any>) {
+  deleteCol(c: DataControlSettings) {
     this.columns.deleteCol(c)
     this.columns.numOfColumnsInGrid--;
   }
@@ -225,7 +225,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   hideDataArea = false;
 
 
-  _buttons: RowButton<Entity<any>>[] = [];
+  _buttons: RowButton<Entity>[] = [];
 
   rowClass?: (row: any) => string;
   onSavingRow?: (row: any) => Promise<any> | any;
@@ -311,7 +311,7 @@ export class GridSettings<rowType extends Entity<any>>  {
   }
 
   _currentOrderBy: Sort;
-  sort(column: Column<any>) {
+  sort(column: Column) {
 
     let done = false;
     if (this._currentOrderBy && this._currentOrderBy.Segments.length > 0) {
@@ -323,7 +323,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       this._currentOrderBy = new Sort({ column: column });
     this.getRecords();
   }
-  sortedAscending(column: Column<any>) {
+  sortedAscending(column: Column) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
@@ -332,7 +332,7 @@ export class GridSettings<rowType extends Entity<any>>  {
       this._currentOrderBy.Segments[0].column == column &&
       !this._currentOrderBy.Segments[0].descending;
   }
-  sortedDescending(column: Column<any>) {
+  sortedDescending(column: Column) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
@@ -417,7 +417,7 @@ export class GridSettings<rowType extends Entity<any>>  {
 
 
 }
-export interface IDataSettings<rowType extends Entity<any>> {
+export interface IDataSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
@@ -443,7 +443,7 @@ export interface IDataSettings<rowType extends Entity<any>> {
   caption?: string;
 
 }
-export interface RowButton<rowType extends Entity<any>> {
+export interface RowButton<rowType extends Entity> {
   name?: string;
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
@@ -463,7 +463,7 @@ export interface GridButton {
   cssClass?: (string | (() => string));
 }
 
-function isNewRow(r: Entity<any>) {
+function isNewRow(r: Entity) {
   if (r) {
     r.__entityData.isNewRow();
   }

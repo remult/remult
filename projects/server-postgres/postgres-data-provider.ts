@@ -13,7 +13,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
-    async entityIsUsedForTheFirstTime(entity: Entity<any>): Promise<void> {
+    async entityIsUsedForTheFirstTime(entity: Entity): Promise<void> {
 
     }
     createCommand(): SqlCommand {
@@ -93,7 +93,7 @@ export class PostgresSchemaBuilder {
             }
         }
     }
-    async createIfNotExist(e: Entity<any>): Promise<void> {
+    async createIfNotExist(e: Entity): Promise<void> {
         var c = this.pool.createCommand();
         await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken(e.defs.dbName.toLowerCase()) + this.additionalWhere).then(async r => {
 
@@ -116,7 +116,7 @@ export class PostgresSchemaBuilder {
             }
         });
     }
-    private addColumnSqlSyntax(x: Column<any>) {
+    private addColumnSqlSyntax(x: Column) {
         let result = x.defs.dbName;
         if (x instanceof DateTimeColumn)
             result += " timestamp";
@@ -137,7 +137,7 @@ export class PostgresSchemaBuilder {
         return result;
     }
 
-    async addColumnIfNotExist<T extends Entity<any>>(e: T, c: ((e: T) => Column<any>)) {
+    async addColumnIfNotExist<T extends Entity>(e: T, c: ((e: T) => Column)) {
         if (c(e).defs.dbReadOnly)
             return;
         try {
@@ -157,7 +157,7 @@ export class PostgresSchemaBuilder {
             console.log(err);
         }
     }
-    async verifyAllColumns<T extends Entity<any>>(e: T) {
+    async verifyAllColumns<T extends Entity>(e: T) {
         await Promise.all(e.columns.toArray().map(async column => {
             await this.addColumnIfNotExist(e, () => column);
         }));

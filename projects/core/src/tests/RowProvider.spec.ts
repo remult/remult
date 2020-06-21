@@ -612,7 +612,7 @@ describe("grid settings ",
     it("sort is displayed right on start", () => {
       let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();
-      let y: Column<any>;
+      let y: Column;
       let gs = s.gridSettings({ get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
       expect(gs.sortedAscending(y)).toBe(true);
       expect(gs.sortedDescending(y)).toBe(false);
@@ -883,7 +883,7 @@ describe("test parameter priority", () => {
 });
 
 class myDp extends ArrayEntityDataProvider {
-  constructor(entity: Entity<any>) {
+  constructor(entity: Entity) {
     super(entity, []);
   }
   public update(id: any, data: any): Promise<any> {

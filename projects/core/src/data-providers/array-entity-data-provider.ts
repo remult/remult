@@ -5,7 +5,7 @@ import { Column } from '../column';
 import { StringColumn } from '../columns/string-column';
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    constructor(private entity: Entity<any>, private rows?: any[]) {
+    constructor(private entity: Entity, private rows?: any[]) {
         if (!rows)
             rows = [];
     }
@@ -126,7 +126,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
     ok = true;
     constructor(private row: any) { }
-    isIn(col: Column<any>, val: any[]): void {
+    isIn(col: Column, val: any[]): void {
 
         for (const v of val) {
             if (this.row[col.defs.key] == v) {
@@ -135,34 +135,34 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
         this.ok = false;
     }
-    public isEqualTo(col: Column<any>, val: any): void {
+    public isEqualTo(col: Column, val: any): void {
 
         if (this.row[col.defs.key] != val)
             this.ok = false;
     }
 
-    public isDifferentFrom(col: Column<any>, val: any): void {
+    public isDifferentFrom(col: Column, val: any): void {
         if (this.row[col.defs.key] == val)
             this.ok = false;
     }
 
-    public isGreaterOrEqualTo(col: Column<any>, val: any): void {
+    public isGreaterOrEqualTo(col: Column, val: any): void {
         if (this.row[col.defs.key] < val)
             this.ok = false;
     }
 
-    public isGreaterThan(col: Column<any>, val: any): void {
+    public isGreaterThan(col: Column, val: any): void {
 
         if (this.row[col.defs.key] <= val)
             this.ok = false;
     }
 
-    public isLessOrEqualTo(col: Column<any>, val: any): void {
+    public isLessOrEqualTo(col: Column, val: any): void {
         if (this.row[col.defs.key] > val)
             this.ok = false;
     }
 
-    public isLessThan(col: Column<any>, val: any): void {
+    public isLessThan(col: Column, val: any): void {
         if (this.row[col.defs.key] >= val)
             this.ok = false;
     }

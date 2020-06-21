@@ -30,7 +30,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
         x.rowReset(this.newRow);
     });
   }
-  save(e: Entity<any>,doNotSave:boolean): Promise<void> {
+  save(e: Entity,doNotSave:boolean): Promise<void> {
     let d = JSON.parse(JSON.stringify(this.data));
     if (e.columns.idColumn instanceof CompoundIdColumn)
       d.id = undefined;
@@ -67,7 +67,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
   private newRow = true;
   private data: any = {};
   private originalData: any = {};
-  async setData(data: any, r: Entity<any>) {
+  async setData(data: any, r: Entity) {
     if (!data)
       data = {};
     if (r.columns.idColumn instanceof CompoundIdColumn) {

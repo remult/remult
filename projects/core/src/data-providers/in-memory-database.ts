@@ -14,7 +14,7 @@ export class InMemoryDataProvider implements DataProvider, __RowsOfDataForTestin
     throw new Error("Method not implemented.");
   }
   rows: any = {};
-  public getEntityDataProvider(entity:Entity<any>): EntityDataProvider {
+  public getEntityDataProvider(entity:Entity): EntityDataProvider {
     let name = entity.defs.name;
     if (!this.rows[name])
       this.rows[name] = [];

@@ -9,7 +9,7 @@ import { AndFilter } from './filter/and-filter';
 
 
 //@dynamic
-export class Entity<idType> {
+export class Entity<idType = any> {
   __decorateWhere(where: FilterBase): FilterBase {
     if (this.__options.fixedWhereFilter) {
       return new AndFilter(where, this.__options.fixedWhereFilter());
@@ -39,7 +39,7 @@ export class Entity<idType> {
 
 
   //@internal 
-  _getEntityApiSettings(r: Context): DataApiSettings<Entity<any>> {
+  _getEntityApiSettings(r: Context): DataApiSettings<Entity> {
 
     let options = this.__options;
     if (options.allowApiCRUD) {
@@ -209,7 +209,7 @@ export class Entity<idType> {
 
 
   //@internal
-  __applyColumn(y: Column<any>) {
+  __applyColumn(y: Column) {
     if (!y.defs.caption)
       y.defs.caption = makeTitle(y.defs.key);
     y.__valueProvider = this.__entityData;
@@ -218,7 +218,7 @@ export class Entity<idType> {
   }
 
   //@internal
-  private __columns: Column<any>[] = [];
+  private __columns: Column[] = [];
   get columns() {
     return new EntityColumns(this.__columns, this.__idColumn);
   }
@@ -238,7 +238,7 @@ export interface EntityOptions {
   fixedWhereFilter?: () => FilterBase;
   savingRow?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
 
-  validate?: (e: Entity<any>) => Promise<any> | any;
+  validate?: (e: Entity) => Promise<any> | any;
 }
 
 function makeTitle(name: string) {
@@ -270,7 +270,7 @@ export class EntityDefs {
   }
 }
 export class EntityColumns<T>{
-  constructor(private __columns: Column<any>[], public readonly idColumn: Column<T>) {
+  constructor(private __columns: Column[], public readonly idColumn: Column<T>) {
 
   }
   [Symbol.iterator]() {
@@ -282,7 +282,7 @@ export class EntityColumns<T>{
 
 
 
-  find(key: string | Column<any>) {
+  find(key: string | Column) {
     let theKey: string;
     if (key instanceof Column)
       theKey = key.defs.key;

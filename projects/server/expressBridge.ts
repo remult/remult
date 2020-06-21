@@ -65,10 +65,10 @@ export class SiteArea {
   }
 
 
-  add(entityOrDataApiFactory: ((req: DataApiRequest) => DataApi<any>)) {
+  add(entityOrDataApiFactory: ((req: DataApiRequest) => DataApi)) {
 
 
-    let api: ((req: DataApiRequest) => DataApi<any>);
+    let api: ((req: DataApiRequest) => DataApi);
     api = entityOrDataApiFactory;
 
     let myRoute = api({ clientIp: 'onServer', user: undefined, get: (r: any) => '', getHeader: (x: any) => "", getBaseUrl: () => '' }).getRoute();

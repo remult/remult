@@ -11,31 +11,31 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
   constructor(private url: { add: (key: string, val: any) => void }) {
 
   }
-  isIn(col: Column<any>, val: any[]): void {
+  isIn(col: Column, val: any[]): void {
     this.url.add(col.defs.key + "_in", JSON.stringify(val));
   }
 
-  public isEqualTo(col: Column<any>, val: any): void {
+  public isEqualTo(col: Column, val: any): void {
     this.url.add(col.defs.key, val);
   }
 
-  public isDifferentFrom(col: Column<any>, val: any): void {
+  public isDifferentFrom(col: Column, val: any): void {
     this.url.add(col.defs.key + '_ne', val);
   }
 
-  public isGreaterOrEqualTo(col: Column<any>, val: any): void {
+  public isGreaterOrEqualTo(col: Column, val: any): void {
     this.url.add(col.defs.key + '_gte', val);
   }
 
-  public isGreaterThan(col: Column<any>, val: any): void {
+  public isGreaterThan(col: Column, val: any): void {
     this.url.add(col.defs.key + '_gt', val);
   }
 
-  public isLessOrEqualTo(col: Column<any>, val: any): void {
+  public isLessOrEqualTo(col: Column, val: any): void {
     this.url.add(col.defs.key + '_lte', val);
   }
 
-  public isLessThan(col: Column<any>, val: any): void {
+  public isLessThan(col: Column, val: any): void {
     this.url.add(col.defs.key + '_lt', val);
   }
   public isContainsCaseInsensitive(col: StringColumn, val: any): void {
@@ -46,10 +46,10 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
   }
 }
 
-export function unpackWhere(rowType: Entity<any>, packed: any) {
+export function unpackWhere(rowType: Entity, packed: any) {
   return extractWhere(rowType, { get: (key: string) => packed[key] });
 }
-export function extractWhere(rowType: Entity<any>, filterInfo: {
+export function extractWhere(rowType: Entity, filterInfo: {
   get: (key: string) => any;
 }) {
   let where: FilterBase = undefined;
@@ -97,7 +97,7 @@ export function extractWhere(rowType: Entity<any>, filterInfo: {
   });
   return where;
 }
-export function packWhere<entityType extends Entity<any>>(entity: entityType, where: EntityWhere<entityType>) {
+export function packWhere<entityType extends Entity>(entity: entityType, where: EntityWhere<entityType>) {
   if (!where)
   return {};
   let w = where(entity);

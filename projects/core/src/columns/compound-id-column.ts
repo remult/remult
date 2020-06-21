@@ -7,8 +7,8 @@ import { FilterBase } from '../filter/filter-interfaces';
 
 export class CompoundIdColumn extends Column<string>
 {
-  private columns: Column<any>[];
-  constructor(entity: Entity<string>, ...columns: Column<any>[]) {
+  private columns: Column[];
+  constructor(entity: Entity<string>, ...columns: Column[]) {
     super();
     this.columns = columns;
   }

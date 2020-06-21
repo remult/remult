@@ -21,7 +21,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-    async entityIsUsedForTheFirstTime(entity: Entity<any>) {
+    async entityIsUsedForTheFirstTime(entity: Entity) {
         let result = '';
         for (const x of entity.columns) {
             if (!x.defs.dbReadOnly) {
@@ -44,7 +44,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         throw new Error("Method not implemented.");
     }
 
-    private addColumnSqlSyntax(x: Column<any>) {
+    private addColumnSqlSyntax(x: Column) {
         let result = x.defs.dbName;
         if (x instanceof DateTimeColumn)
             result += " integer";

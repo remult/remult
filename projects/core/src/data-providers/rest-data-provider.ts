@@ -10,7 +10,7 @@ export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
   }
-  public getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+  public getEntityDataProvider(entity: Entity): EntityDataProvider {
     return new RestEntityDataProvider(this.url + '/' + entity.defs.name, this.http);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {

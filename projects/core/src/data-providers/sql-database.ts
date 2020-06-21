@@ -15,7 +15,7 @@ export class SqlDatabase implements DataProvider {
   async execute(sql: string) {
     return await this.createCommand().execute(sql);
   }
-  getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+  getEntityDataProvider(entity: Entity): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async () => {
       if (this.createdEntities.indexOf(entity.defs.dbName) < 0) {
@@ -74,7 +74,7 @@ class LogSQLCommand implements SqlCommand {
 
 class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity: Entity<any>, private sql: SqlDatabase, private iAmUsed: () => Promise<void>) {
+  constructor(private entity: Entity, private sql: SqlDatabase, private iAmUsed: () => Promise<void>) {
 
 
   }
@@ -99,7 +99,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     await this.iAmUsed();
     let select = 'select ';
-    let colKeys: Column<any>[] = [];
+    let colKeys: Column[] = [];
     for (const x of this.entity.columns) {
       if (x.defs.__isVirtual()) {
 

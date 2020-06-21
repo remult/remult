@@ -14,7 +14,7 @@ export class AddFilterDialogComponent {
 
     }
     info: DataFilterInfoComponent;
-    select(x: DataControlSettings<any>) {
+    select(x: DataControlSettings) {
         this.info.filterColumnToAdd = x;
         this.dialog.close();
     }

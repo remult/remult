@@ -4,15 +4,15 @@ import { ColumnCollection } from "./column-collection";
 import { isArray } from "util";
 import { Column } from './column';
 
-export interface IDataAreaSettings<rowType  extends Entity<any>> {
+export interface IDataAreaSettings<rowType extends Entity> {
   columnSettings?: (rowType: rowType) => DataArealColumnSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
 }
 
-export class DataAreaSettings<rowType extends Entity<any>>
+export class DataAreaSettings<rowType extends Entity = Entity>
 {
-  lines: DataControlSettings<any>[][] = [];
+  lines: DataControlSettings[][] = [];
   constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
     if (columns == undefined) {
       columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true);
@@ -46,10 +46,10 @@ export class DataAreaSettings<rowType extends Entity<any>>
 }
 
 
-export type DataArealColumnSetting<rowType extends Entity<any>> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
+export type DataArealColumnSetting<rowType extends Entity> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
 
 
 export interface dataAreaSettings {
-  columns: ColumnCollection<any>;
-  lines: DataControlSettings<any>[][];
+  columns: ColumnCollection;
+  lines: DataControlSettings[][];
 }

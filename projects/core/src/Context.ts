@@ -100,14 +100,14 @@ export class Context {
         return false;
     }
 
-    cache = new Map<DataProvider, Map<any, SpecificEntityHelper<any, Entity<any>>>>();
+    cache = new Map<DataProvider, Map<any, SpecificEntityHelper<any, Entity>>>();
     public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProvider) {
         if (!dataSource)
             dataSource = this._dataSource;
 
         let dsCache = this.cache.get(dataSource);
         if (!dsCache) {
-            dsCache = new Map<string, SpecificEntityHelper<any, Entity<any>>>();
+            dsCache = new Map<string, SpecificEntityHelper<any, Entity>>();
             this.cache.set(dataSource, dsCache);
         }
 
@@ -322,8 +322,8 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
 
     async getValueList(args?: {
-        idColumn?: (e: T) => Column<any>,
-        captionColumn?: (e: T) => Column<any>,
+        idColumn?: (e: T) => Column,
+        captionColumn?: (e: T) => Column,
         orderBy?: EntityOrderBy<T>,
         where?: EntityWhere<T>
     }): Promise<ValueListItem[]> {
@@ -405,7 +405,7 @@ export function DialogConfig(config: MatDialogConfig) {
 
 const dialogConfigMember = Symbol("dialogConfigMember");
 
-interface LookupCache<T extends Entity<any>> {
+interface LookupCache<T extends Entity> {
     key: string;
     lookup: Lookup<any, T>;
 }

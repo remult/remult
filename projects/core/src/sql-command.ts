@@ -4,7 +4,7 @@ import { Entity } from '..';
 export interface SqlImplementation {
     createCommand(): SqlCommand;
     transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;
-    entityIsUsedForTheFirstTime(entity:Entity<any>):Promise<void>;
+    entityIsUsedForTheFirstTime(entity:Entity):Promise<void>;
 }
 
 

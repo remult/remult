@@ -6,17 +6,17 @@ import { StringColumn } from "../columns/string-column";
 import { AndFilter } from "./and-filter";
 import { FilterBase } from './filter-interfaces';
 
-export class FilterHelper<rowType extends Entity<any>> {
+export class FilterHelper<rowType extends Entity> {
     filterRow: rowType;
-    filterColumns: Column<any>[] = [];
-    forceEqual: Column<any>[] = [];
+    filterColumns: Column[] = [];
+    forceEqual: Column[] = [];
     constructor(private reloadData: () => void) {
   
     }
-    isFiltered(column: Column<any>) {
+    isFiltered(column: Column) {
       return this.filterColumns.indexOf(column) >= 0;
     }
-    filterColumn(column: Column<any>, clearFilter: boolean, forceEqual: boolean) {
+    filterColumn(column: Column, clearFilter: boolean, forceEqual: boolean) {
       if (!column)
         return;
       if (clearFilter) {

@@ -7,25 +7,25 @@ import { FilterConsumer } from './filter-interfaces';
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
   constructor(private r: SqlCommand) { }
-  isIn(col: Column<any>, val: any[]): void {
+  isIn(col: Column, val: any[]): void {
     this.addToWhere(col.defs.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(x)).join(",") + ")");
   }
-  isEqualTo(col: Column<any>, val: any): void {
+  isEqualTo(col: Column, val: any): void {
     this.add(col, val, "=");
   }
-  isDifferentFrom(col: Column<any>, val: any): void {
+  isDifferentFrom(col: Column, val: any): void {
     this.add(col, val, "<>");
   }
-  isGreaterOrEqualTo(col: Column<any>, val: any): void {
+  isGreaterOrEqualTo(col: Column, val: any): void {
     this.add(col, val, ">=");
   }
-  isGreaterThan(col: Column<any>, val: any): void {
+  isGreaterThan(col: Column, val: any): void {
     this.add(col, val, ">");
   }
-  isLessOrEqualTo(col: Column<any>, val: any): void {
+  isLessOrEqualTo(col: Column, val: any): void {
     this.add(col, val, "<=");
   }
-  isLessThan(col: Column<any>, val: any): void {
+  isLessThan(col: Column, val: any): void {
     this.add(col, val, "<");
   }
   public isContainsCaseInsensitive(col: StringColumn, val: any): void {
@@ -34,7 +34,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   public isStartsWith(col: StringColumn, val: any): void {
     this.add(col, val + '%', 'like');
   }
-  private add(col: Column<any>, val: any, operator: string) {
+  private add(col: Column, val: any, operator: string) {
     let x = col.defs.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(val);
     this.addToWhere(x);
 

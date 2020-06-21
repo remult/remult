@@ -8,7 +8,7 @@ export class Sort {
     Segments: SortSegment[];
   }
   export interface SortSegment {
-    column: Column<any>,
+    column: Column,
     descending?: boolean
   }
   

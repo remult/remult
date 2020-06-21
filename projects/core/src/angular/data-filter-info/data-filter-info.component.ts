@@ -18,8 +18,8 @@ import { FilterDialogComponent } from '../filter-dialog/filter-dialog.component'
 export class DataFilterInfoComponent {
 
     @Input() settings: GridSettings<any>;
-    filterColumnToAdd: DataControlSettings<any>;
-    getCurrentFilterValue(col: Column<any>) {
+    filterColumnToAdd: DataControlSettings;
+    getCurrentFilterValue(col: Column) {
         this.settings.initOrigList();
         let m = this.settings.origList.find(x => x.column == col);
         return this.settings.columns._getColDisplayValue(m, this.settings.filterHelper.filterRow);
@@ -36,7 +36,7 @@ export class DataFilterInfoComponent {
     showFilterButton = false;
     showAddFilter = false;
     editFilterVisible = false;
-    showEditFilter(col: Column<any>) {
+    showEditFilter(col: Column) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
         this.editFilterVisible = true;
         this.showAddFilter = false;
@@ -58,7 +58,7 @@ export class DataFilterInfoComponent {
         this.showAddFilter = true;
         this.filterColumnToAdd = undefined;
     }
-    public async editFilter(col: Column<any>) {
+    public async editFilter(col: Column) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
         await this.context.openDialog(FilterDialogComponent, x => x.info = this);
     }

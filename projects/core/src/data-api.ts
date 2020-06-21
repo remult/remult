@@ -12,7 +12,7 @@ import { UserInfo, SpecificEntityHelper } from './context';
 import { FilterBase } from './filter/filter-interfaces';
 import { extractWhere } from './filter/filter-consumer-bridge-to-url-builder';
 
-export class DataApi<T extends Entity<any>> {
+export class DataApi<T extends Entity = Entity> {
   getRoute() {
     if (!this.options.name)
       return this.entityProvider.create().defs.name;
@@ -173,7 +173,7 @@ export class DataApi<T extends Entity<any>> {
   }
 
 }
-export interface DataApiSettings<rowType extends Entity<any>> {
+export interface DataApiSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
