@@ -17,7 +17,7 @@ import { _MatChipListMixinBase } from '@angular/material';
 
 
 
-export class GridSettings<rowType extends Entity>  {
+export class GridSettings<rowType extends Entity = Entity>  {
   constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entityProvider);
     if (entityProvider) {
