@@ -23,10 +23,10 @@ export class Entity<idType = any> {
         this.__options = { name: options };
       } else {
         this.__options = options;
-        if (options.savingRow)
-          this.__onSavingRow = (proceedWithoutSavingToDb: () => void) => options.savingRow(proceedWithoutSavingToDb);
-        if (options.validate)
-          this.__onValidate = () => options.validate(this);
+        if (options.saving)
+          this.__onSavingRow = (proceedWithoutSavingToDb: () => void) => options.saving(proceedWithoutSavingToDb);
+        if (options.validation)
+          this.__onValidate = () => options.validation(this);
       }
     }
     else {
@@ -236,9 +236,9 @@ export interface EntityOptions {
   allowApiCRUD?: Allowed;
   apiDataFilter?: () => FilterBase;
   fixedWhereFilter?: () => FilterBase;
-  savingRow?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
+  saving?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
 
-  validate?: (e: Entity) => Promise<any> | any;
+  validation?: (e: Entity) => Promise<any> | any;
 }
 
 function makeTitle(name: string) {

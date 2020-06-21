@@ -178,8 +178,8 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
         await Promise.all(this.settings.items.filter(x => x.wasChanged()).map(x => x.save()));
       }
     });
-    if (this.settings.settings.gridButton) {
-      this.gridButtons.push(...this.settings.settings.gridButton.map(x => {
+    if (this.settings.settings.gridButtons) {
+      this.gridButtons.push(...this.settings.settings.gridButtons.map(x => {
         if (!x.visible)
           x.visible = () => true;
         return x;

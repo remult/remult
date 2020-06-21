@@ -27,7 +27,7 @@ export class ProductsComponent implements OnInit {
     get: {
       where: p => p.name.isContains("e")
     },
-    gridButton: [
+    gridButtons: [
       {
         name: 'xxx'
       }

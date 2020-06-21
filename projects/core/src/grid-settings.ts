@@ -432,7 +432,7 @@ export interface IDataSettings<rowType extends Entity> {
 
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[];
-  gridButton?: GridButton[];
+  gridButtons?: GridButton[];
   get?: FindOptions<rowType>;
   knowTotalRows?: boolean;
   onSavingRow?: (r: rowType) => void;

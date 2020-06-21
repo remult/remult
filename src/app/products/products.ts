@@ -10,7 +10,7 @@ export class Products extends IdEntity {
       name: "Products",
       allowApiCRUD: true,
       allowApiRead: true,
-      savingRow: () => {
+      saving: () => {
         if (context.onServer)
           if (this.name.value.length < 2)
             this.name.validationError = 'the error';

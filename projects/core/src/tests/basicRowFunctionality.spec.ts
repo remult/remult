@@ -520,7 +520,7 @@ describe("data api", () => {
           super({
             name: undefined,
             allowApiUpdate: true,
-            savingRow: () => count++
+            saving: () => count++
           });
         }
       });
@@ -553,7 +553,7 @@ describe("data api", () => {
         super({
           name: 'testE',
           allowApiUpdate: true,
-          savingRow: (cancel) => {
+          saving: (cancel) => {
             if (startTest) {
               
               mem.rows["testE"][0].categoryName = 'kuku';
@@ -719,7 +719,7 @@ describe("data api", () => {
         super({
           name: undefined,
           allowApiInsert: true,
-          savingRow: () => this.description.value.length + 1
+          saving: () => this.description.value.length + 1
         });
       }
     });

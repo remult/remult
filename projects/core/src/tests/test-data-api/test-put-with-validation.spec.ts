@@ -60,7 +60,7 @@ class CategoriesForThisTest extends Entity<number> implements CategoriesForTesti
             name: undefined,
             allowApiUpdate: true,
             allowApiInsert:true,
-            savingRow: () => {
+            saving: () => {
                 if (this.categoryName.value.indexOf('1') >= 0)
                     this.categoryName.validationError = 'invalid'
             }
