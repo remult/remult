@@ -38,7 +38,7 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
   public isLessThan(col: Column<any>, val: any): void {
     this.url.add(col.defs.key + '_lt', val);
   }
-  public isContains(col: StringColumn, val: any): void {
+  public isContainsCaseInsensitive(col: StringColumn, val: any): void {
     this.url.add(col.defs.key + "_contains", val);
   }
   public isStartsWith(col: StringColumn, val: any): void {

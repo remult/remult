@@ -1,4 +1,5 @@
 import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context } from '@remult/core';
+import { MAT_CHECKBOX_CLICK_ACTION } from '@angular/material';
 
 @EntityClass
 export class Products extends IdEntity {
@@ -52,9 +53,9 @@ export class GroupsColumn extends StringColumn {
       includeInApi: true,
       dataControlSettings: () => ({
         width: '300',
-        click: () => {
-
-        }
+        forceEqualFilter:false,
+        click:()=>{}
+        
 
       })
     });

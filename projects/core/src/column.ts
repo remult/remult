@@ -87,6 +87,8 @@ export class Column<dataType>  {
       this.__displayResult = this.__settings.dataControlSettings();
       if (!x.valueList)
         x.valueList = this.__displayResult.valueList;
+      if (x.forceEqualFilter === undefined)
+        x.forceEqualFilter =  this.__displayResult.forceEqualFilter;
       if (!x.inputType)
         x.inputType = this.__displayResult.inputType;
       if (x.hideDataOnInput === undefined)

@@ -137,7 +137,10 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
   filterRows(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
-    this.filterHelper.filterColumn(col.column, false, (col.valueList != undefined || col.click != undefined));
+    let forceEqual = col.forceEqualFilter;
+    if (forceEqual === undefined)
+      forceEqual = (col.valueList != undefined || col.click != undefined)
+    this.filterHelper.filterColumn(col.column, false, forceEqual);
   }
   clearFilter(col: FilteredColumnSetting<any>) {
     col._showFilter = false;
