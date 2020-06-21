@@ -8,7 +8,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
     this.listeners.push(listener);
   }
   dataProvider: EntityDataProvider;
-  initServerExpressions:()=>Promise<void> = async ()=>{};
+  initServerExpressions: () => Promise<void> = async () => { };
   delete() {
     return this.dataProvider.delete(this.id).then(() => {
       this.listeners.forEach(x => {
@@ -30,13 +30,15 @@ export class __EntityValueProvider implements ColumnValueProvider {
         x.rowReset(this.newRow);
     });
   }
-  save(e: Entity,doNotSave:boolean): Promise<void> {
+  save(e: Entity, doNotSave: boolean, saved: () => Promise<any> | any): Promise<void> {
     let d = JSON.parse(JSON.stringify(this.data));
     if (e.columns.idColumn instanceof CompoundIdColumn)
       d.id = undefined;
     if (this.newRow) {
-      
+
       return this.dataProvider.insert(d).then(async (newData: any) => {
+        if (saved)
+          await saved();
         await this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
@@ -45,8 +47,8 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     }
     else {
-      if (doNotSave){
-        return this.dataProvider.find({where:e.columns.idColumn.isEqualTo(this.id)}).then(async newData=>{
+      if (doNotSave) {
+        return this.dataProvider.find({ where: e.columns.idColumn.isEqualTo(this.id) }).then(async newData => {
           await this.setData(newData[0], e);
           this.listeners.forEach(x => {
             if (x.rowSaved)
@@ -55,6 +57,8 @@ export class __EntityValueProvider implements ColumnValueProvider {
         });
       }
       return this.dataProvider.update(this.id, d).then(async (newData: any) => {
+        if (saved)
+          await saved();
         await this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
@@ -93,9 +97,9 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export interface ColumnValueProvider {
-    getValue(key: string,calcDefaultValue: () => void): any;
-    getOriginalValue(key: string): any;
-    setValue(key: string, value: any): void;
+  getValue(key: string, calcDefaultValue: () => void): any;
+  getOriginalValue(key: string): any;
+  setValue(key: string, value: any): void;
 }
 
 

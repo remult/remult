@@ -511,6 +511,40 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("put with validation fails", async () => {
+    let context = new Context();
+    let count = 0;
+    let c = await createData(async insert => insert(1, 'noam'),
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            allowApiUpdate: true,
+            saving: () => {
+              count++;
+              if (this.categoryName.value.includes('1'))
+                this.categoryName.validationError = 'err';
+            }
+          });
+        }
+      });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      d.ok();
+    };
+    count = 0;
+    await api.put(t, 1, {
+      categoryName: 'noam 1'
+    });
+    d.test();
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam');
+    expect(count).toBe(1);
+
+  });
   itAsync("put with validation works", async () => {
     let context = new Context();
     let count = 0;
@@ -541,6 +575,91 @@ describe("data api", () => {
     expect(count).toBe(1);
 
   });
+  itAsync("afterSave works", async () => {
+    let context = new Context();
+    let count = 0;
+    let startTest = false;
+    let savedWorked = new Done();
+    let c = await createData(async insert => insert(1, 'noam'),
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            allowApiUpdate: true,
+            saving: () => count++,
+            saved: () => {
+              if (!startTest)
+                return;
+              savedWorked.ok();
+              expect(this.categoryName.originalValue).toBe('noam');
+              expect(this.categoryName.value).toBe('noam 1');
+            }
+          });
+        }
+      });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+      d.ok();
+    };
+    count = 0;
+    startTest = true;
+    await api.put(t, 1, {
+      categoryName: 'noam 1'
+    });
+    
+    d.test();
+    savedWorked.test();
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam 1');
+    expect(count).toBe(1);
+
+  });
+  itAsync("afterSave works on insert", async () => {
+    let context = new Context();
+    
+    
+    let savedWorked = new Done();
+    let c = await createData(async insert => {},
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            allowApiUpdate: true,
+            allowApiInsert:true,
+            
+            saved: () => {
+              savedWorked.ok();
+              expect(this.isNew()).toBe(true);
+              expect(this.categoryName.originalValue).toBe(undefined);
+              expect(this.categoryName.value).toBe('noam 1');
+            }
+          });
+        }
+      });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.created = async (data: any) => {
+      d.ok();
+    };
+    
+    
+    await api.post(t,  {
+      id:1,
+      categoryName: 'noam 1'
+    });
+    
+    d.test();
+    savedWorked.test();
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam 1');
+    
+
+  });
   itAsync("put with disable save still works", async () => {
 
 
@@ -555,7 +674,7 @@ describe("data api", () => {
           allowApiUpdate: true,
           saving: (cancel) => {
             if (startTest) {
-              
+
               mem.rows["testE"][0].categoryName = 'kuku';
               expect(mem.rows["testE"][0].categoryName).toBe('kuku');
               cancel();

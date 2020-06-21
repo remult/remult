@@ -152,7 +152,7 @@ export class Entity<idType = any> {
     let doNotSave = false;
     await this.__onSavingRow(() => doNotSave = true);
     this.__assertValidity();
-    return await this.__entityData.save(this, doNotSave).catch(e => this.catchSaveErrors(e));
+    return await this.__entityData.save(this, doNotSave,this.__options.saved).catch(e => this.catchSaveErrors(e));
   }
   //@internal
   private catchSaveErrors(err: any): any {
@@ -237,6 +237,7 @@ export interface EntityOptions {
   apiDataFilter?: () => FilterBase;
   fixedWhereFilter?: () => FilterBase;
   saving?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
+  saved?:()=>Promise<any>|any
 
   validation?: (e: Entity) => Promise<any> | any;
 }
