@@ -34,7 +34,11 @@ export declare type EntityWhere<entityType extends Entity> = (entityType: entity
 export declare type EntityOrderBy<entityType extends Entity> = ((entityType: entityType) => Sort) | ((entityType: entityType) => (Column)) | ((entityType: entityType) => (Column | SortSegment)[]);
 
 export function entityOrderByToSort<T2,T extends Entity<T2>>(entity: T,orderBy: EntityOrderBy<T>): Sort {
-    var sort = orderBy(entity)
+    return extractSort(  orderBy(entity));
+    
+  }
+  export function extractSort(sort: any): Sort {
+    
     if (sort instanceof Sort)
       return sort;
     if (sort instanceof Column)

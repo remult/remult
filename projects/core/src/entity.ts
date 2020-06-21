@@ -5,6 +5,7 @@ import { FilterBase } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
 import { valueOrExpressionToValue } from './column-interfaces';
 import { AndFilter } from './filter/and-filter';
+import { SortSegment, Sort } from './sort';
 
 
 
@@ -59,7 +60,7 @@ export class Entity<idType = any> {
 
   }
   //@internal
-  private __options: EntityOptions;
+   __options: EntityOptions;
   //@internal
   private _defs: EntityDefs;
   get defs() {
@@ -152,7 +153,7 @@ export class Entity<idType = any> {
     let doNotSave = false;
     await this.__onSavingRow(() => doNotSave = true);
     this.__assertValidity();
-    return await this.__entityData.save(this, doNotSave,this.__options.saved).catch(e => this.catchSaveErrors(e));
+    return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
   }
   //@internal
   private catchSaveErrors(err: any): any {
@@ -240,10 +241,11 @@ export interface EntityOptions {
   allowApiCRUD?: Allowed;
   apiDataFilter?: () => FilterBase;
   fixedWhereFilter?: () => FilterBase;
+  defaultOrderBy?: (() => Sort) | (() => (Column)) | (() => (Column | SortSegment)[])
   saving?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
-  saved?:()=>Promise<any>|any
-  deleting?:()=>Promise<any>|any
-  deleted?:()=>Promise<any>|any
+  saved?: () => Promise<any> | any
+  deleting?: () => Promise<any> | any
+  deleted?: () => Promise<any> | any
 
   validation?: (e: Entity) => Promise<any> | any;
 }

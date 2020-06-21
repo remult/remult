@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort } from "./data-interfaces";
+import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort } from "./data-interfaces";
 import { RestDataProvider } from "./data-providers/rest-data-provider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
 
@@ -257,18 +257,21 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     private translateOptions(options: FindOptions<T>) {
 
         let getOptions: EntityDataProviderFindOptions = {};
-        if (options) {
-            if (options.where)
-                getOptions.where = options.where(this.entity);
-            if (options.orderBy)
-                getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
-            if (options.limit)
-                getOptions.limit = options.limit;
-            if (options.page)
-                getOptions.page = options.page;
-            if (options.__customFindData)
-                getOptions.__customFindData = options.__customFindData;
+        if (!options) {
+            options = {};
         }
+        if (options.where)
+            getOptions.where = options.where(this.entity);
+        if (options.orderBy)
+            getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
+        else if (this.entity.__options.defaultOrderBy)
+            getOptions.orderBy = extractSort(this.entity.__options.defaultOrderBy());
+        if (options.limit)
+            getOptions.limit = options.limit;
+        if (options.page)
+            getOptions.page = options.page;
+        if (options.__customFindData)
+            getOptions.__customFindData = options.__customFindData;
         getOptions.where = this.entity.__decorateWhere(getOptions.where);
         return getOptions;
     }

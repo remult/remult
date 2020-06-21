@@ -511,6 +511,29 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("entity order by works", async () => {
+    let context = new Context();
+    let c = await createData(async insert => {
+      insert(1, 'noam');
+      insert(2, "yoni");
+      insert(3, "yael");
+    },
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            defaultOrderBy: () => [this.categoryName]
+          });
+        }
+      });
+
+
+    var x = await c.find();
+    expect(x[0].id.value).toBe(1);
+    expect(x[1].id.value).toBe(3);
+    expect(x[2].id.value).toBe(2);
+
+  });
   itAsync("delete with validation fails", async () => {
     let context = new Context();
     var deleting = new Done();
