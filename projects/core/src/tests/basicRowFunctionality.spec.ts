@@ -511,6 +511,104 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("delete with validation fails", async () => {
+    let context = new Context();
+    var deleting = new Done();
+    let happend = false;
+    let c = await createData(async insert => insert(1, 'noam'),
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            allowApiDelete: true,
+            deleted: () => happend = true,
+            deleting: () => {
+              deleting.ok();
+              this.categoryName.validationError = 'err';
+            }
+          });
+        }
+      });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      d.ok();
+    };
+    await api.delete(t, 1);
+    d.test();
+    deleting.test();
+    expect(happend).toBe(false);
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam');
+  });
+  itAsync("delete with validation exception fails", async () => {
+    let context = new Context();
+    var deleting = new Done();
+    let happend = false;
+    let c = await createData(async insert => insert(1, 'noam'),
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            allowApiDelete: true,
+            deleted: () => happend = true,
+            deleting: () => {
+              deleting.ok();
+              throw 'err';
+            }
+          });
+        }
+      });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+      d.ok();
+    };
+    await api.delete(t, 1);
+    d.test();
+    deleting.test();
+    expect(happend).toBe(false);
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    expect(x[0].categoryName.value).toBe('noam');
+  });
+  itAsync("delete works", async () => {
+    let context = new Context();
+    var deleting = new Done();
+    let happend = false;
+    let c = await createData(async insert => insert(1, 'noam'),
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            allowApiDelete: true,
+            deleted: () => {
+              happend = true;
+              expect(this.id.value).toBe(1)
+            },
+            deleting: () => {
+              deleting.ok();
+            }
+          });
+        }
+      });
+
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.deleted = async () => {
+      d.ok();
+    };
+    await api.delete(t, 1);
+    d.test();
+    deleting.test();
+    expect(happend).toBe(true);
+    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    expect(x.length).toBe(0);
+  });
   itAsync("put with validation fails", async () => {
     let context = new Context();
     let count = 0;
@@ -609,7 +707,7 @@ describe("data api", () => {
     await api.put(t, 1, {
       categoryName: 'noam 1'
     });
-    
+
     d.test();
     savedWorked.test();
     var x = await c.find({ where: c => c.id.isEqualTo(1) });
@@ -619,17 +717,17 @@ describe("data api", () => {
   });
   itAsync("afterSave works on insert", async () => {
     let context = new Context();
-    
-    
+
+
     let savedWorked = new Done();
-    let c = await createData(async insert => {},
+    let c = await createData(async insert => { },
       class extends Categories {
         constructor() {
           super({
             name: undefined,
             allowApiUpdate: true,
-            allowApiInsert:true,
-            
+            allowApiInsert: true,
+
             saved: () => {
               savedWorked.ok();
               expect(this.isNew()).toBe(true);
@@ -646,18 +744,18 @@ describe("data api", () => {
     t.created = async (data: any) => {
       d.ok();
     };
-    
-    
-    await api.post(t,  {
-      id:1,
+
+
+    await api.post(t, {
+      id: 1,
       categoryName: 'noam 1'
     });
-    
+
     d.test();
     savedWorked.test();
     var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam 1');
-    
+
 
   });
   itAsync("put with disable save still works", async () => {

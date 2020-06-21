@@ -184,8 +184,12 @@ export class Entity<idType = any> {
 
   }
 
-  delete() {
-    return this.__entityData.delete().catch(e => this.catchSaveErrors(e));
+  async delete() {
+    this.__clearErrors();
+    if (this.__options.deleting)
+      await this.__options.deleting();
+    this.__assertValidity();
+    return this.__entityData.delete(this.__options.deleted).catch(e => this.catchSaveErrors(e));
 
   }
   undoChanges() {
@@ -238,6 +242,8 @@ export interface EntityOptions {
   fixedWhereFilter?: () => FilterBase;
   saving?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
   saved?:()=>Promise<any>|any
+  deleting?:()=>Promise<any>|any
+  deleted?:()=>Promise<any>|any
 
   validation?: (e: Entity) => Promise<any> | any;
 }

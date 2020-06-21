@@ -9,8 +9,11 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
   dataProvider: EntityDataProvider;
   initServerExpressions: () => Promise<void> = async () => { };
-  delete() {
-    return this.dataProvider.delete(this.id).then(() => {
+  delete(deleted: () => Promise<any> | any) {
+    return this.dataProvider.delete(this.id).then(async() => {
+      if(deleted)
+        await deleted();
+      
       this.listeners.forEach(x => {
         if (x.rowDeleted)
           x.rowDeleted();
