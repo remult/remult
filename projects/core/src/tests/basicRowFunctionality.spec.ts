@@ -575,6 +575,36 @@ describe("data api", () => {
     var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName.value).toBe('noam');
   });
+  itAsync("delete with validation exception fails - no data api", async () => {
+    var deleting = new Done();
+    let happend = false;
+
+    let c = await createData(async insert => insert(1, 'noam'),
+      class extends Categories {
+        constructor() {
+          super({
+            name: undefined,
+            allowApiDelete: true,
+            deleted: () => happend = true,
+            deleting: () => {
+              deleting.ok();
+              throw 'err';
+            }
+          });
+        }
+      });
+    let h2 = false;
+    let h3 = false;
+    try {
+      await (await c.findId(1)).delete();
+      h2 = true;
+    } catch{
+      h3 = true;
+    }
+    expect(h2).toBe(false);
+    expect(h3).toBe(true);
+
+  });
   itAsync("delete works", async () => {
     let context = new Context();
     var deleting = new Done();
@@ -609,6 +639,7 @@ describe("data api", () => {
     var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x.length).toBe(0);
   });
+
   itAsync("put with validation fails", async () => {
     let context = new Context();
     let count = 0;
