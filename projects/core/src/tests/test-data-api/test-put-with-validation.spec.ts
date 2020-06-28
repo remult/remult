@@ -35,7 +35,7 @@ describe("data api", () => {
     itAsync("post with validation fails", async () => {
 
 
-        let c = await createData(async () => { },CategoriesForThisTest);
+        let c = await createData(async () => { }, CategoriesForThisTest);
 
         var api = new DataApi(c);
         let t = new TestDataApiResponse();
@@ -59,7 +59,7 @@ class CategoriesForThisTest extends Entity<number> implements CategoriesForTesti
         super({
             name: undefined,
             allowApiUpdate: true,
-            allowApiInsert:true,
+            allowApiInsert: true,
             saving: () => {
                 if (this.categoryName.value.indexOf('1') >= 0)
                     this.categoryName.validationError = 'invalid'

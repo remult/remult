@@ -4,7 +4,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done } from './testHelper.spec';
 
-import { Categories, Status, CategoriesWithValidation, StatusColumn } from './testModel/models';
+import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
 import { ValueListColumn } from '../columns/value-list-column';
@@ -954,6 +954,21 @@ describe("test parameter priority", () => {
     expect(s.defs.caption).toBe('test');
   });
 });
+describe("value list column without id and caption", () => {
+  it("works with automatic id", () => {
+    let col = new TestStatusColumn();
+    col.value = TestStatus.open;
+    expect(col.value).toBe(TestStatus.open);
+    expect(col.rawValue).toBe('open');
+    col.value = TestStatus.closed;
+    expect(col.rawValue).toBe('cc');
+    let options = col.getOptions();
+    expect(options.length).toBe(3);
+    expect(options[2].caption).toBe('hh');
+    expect(options[2].id).toBe('hold');
+
+  })
+})
 
 class myDp extends ArrayEntityDataProvider {
   constructor(entity: Entity) {

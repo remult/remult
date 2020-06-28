@@ -11,37 +11,51 @@ export class ValueListColumn<T extends ValueListItem> extends Column<T> {
         return {
           valueList: opts
         }
-  }
-}, settingsOrCaption);
-  }
-getOptions(): ValueListItem[] {
-  let result = [];
-  for (let member in this.closedListType) {
-    let s = this.closedListType[member] as T;
-    if (s && s.id != undefined) {
-      result.push(s)
+      }
+    }, settingsOrCaption);
+    for (let member in this.closedListType) {
+      let s = this.closedListType[member] as T;
+      if (s instanceof this.closedListType) {
+        if (s.id === undefined)
+          s.id = member;
+        if (s.caption === undefined)
+          s.caption = member;
+
+      }
+
     }
   }
-  return result;
-}
-toRawValue(value: T) {
-  return value.id;
-}
-fromRawValue(value: any) {
-  return this.byId(+value);
-}
+  getOptions(): ValueListItem[] {
+    let result = [];
+    for (let member in this.closedListType) {
+      let s = this.closedListType[member] as T;
+      if (s instanceof this.closedListType) {
 
-get displayValue() {
-  if (this.value)
-    return this.value.caption;
-  return '';
-}
-byId(id: number): T {
-  for (let member in this.closedListType) {
-    let s = this.closedListType[member] as T;
-    if (s && s.id == id)
-      return s;
+        result.push(s)
+      }
+    }
+    return result;
   }
-  return undefined;
-}
+  toRawValue(value: T) {
+    return value.id;
+  }
+  fromRawValue(value: any) {
+    return this.byId(value);
+  }
+
+  get displayValue() {
+    if (this.value)
+      return this.value.caption;
+    return '';
+  }
+  byId(id: number): T {
+    for (let member in this.closedListType) {
+      let s = this.closedListType[member] as T;
+      if (s instanceof this.closedListType) {
+        if (s.id == id)
+          return s;
+      }
+    }
+    return undefined;
+  }
 }
