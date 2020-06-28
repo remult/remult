@@ -42,8 +42,12 @@ export class GridSettings<rowType extends Entity = Entity>  {
         this.allowDelete = true;
       if (settings.allowInsert)
         this.allowInsert = true;
-      if (settings.hideDataArea)
-        this.hideDataArea = settings.hideDataArea;
+      if (settings.showDataArea)
+        this.showDataArea = settings.showDataArea;
+      if (settings.showPagination === undefined)
+        settings.showPagination = true;
+      if (settings.showFilter === undefined)
+        settings.showFilter = true;
       if (settings.numOfColumnsInGrid != undefined)
         this.columns.numOfColumnsInGrid = settings.numOfColumnsInGrid;
 
@@ -222,7 +226,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
   allowUpdate = false;
   allowInsert = false;
   allowDelete = false;
-  hideDataArea = false;
+  showDataArea = false;
 
 
   _buttons: RowButton<Entity>[] = [];
@@ -276,7 +280,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
     else {
       this.selectedRows.push(row);
-      if (this.selectedRows.length==this.totalRows)
+      if (this.selectedRows.length == this.totalRows)
         this._selectedAll = true;
     }
   }
@@ -284,10 +288,10 @@ export class GridSettings<rowType extends Entity = Entity>  {
     return this.selectedRows.indexOf(row) >= 0;
   }
   selectAllIntermitent() {
-    return this.selectedRows.length > 0 && (this.selectedRows.length != this.items.length||!this._selectedAll);
+    return this.selectedRows.length > 0 && (this.selectedRows.length != this.items.length || !this._selectedAll);
   }
   selectAllChecked() {
-    return this.selectedRows.length > 0 && this.selectedRows.length == this.items.length&&this._selectedAll;
+    return this.selectedRows.length > 0 && this.selectedRows.length == this.items.length && this._selectedAll;
   }
   private _selectedAll = false;
   selectAllChanged(e: MatCheckboxChange) {
@@ -421,9 +425,9 @@ export interface IDataSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
-  hideDataArea?: boolean,
-  hideVcr?: boolean,
-  hideFilter?: boolean,
+  showDataArea?: boolean,
+  showPagination?: boolean,
+  showFilter?: boolean,
   allowSelection?: boolean,
   confirmDelete?: (r: rowType, yes: () => void) => void;
 
