@@ -22,6 +22,7 @@ import { StringColumn } from '../columns/string-column';
 import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
+import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 
 
 
@@ -114,6 +115,34 @@ describe("grid filter stuff", () => {
     expect(await c.count(w)).toBe(1);
 
   });
+  it("filter with contains", () => {
+    let x = new FilterConsumerBridgeToSqlRequest({
+      addParameterAndReturnSqlToken: () => "",
+      execute: () => { throw "rr" }
+    });
+    var col = new StringColumn({ dbName: 'col' });
+    x.isContainsCaseInsensitive(col, "no'am");
+    expect(x.where).toBe(" where lower (col) like lower ('%no''am%')");
+  });
+  it("filter with contains", () => {
+    let x = new FilterConsumerBridgeToSqlRequest({
+      addParameterAndReturnSqlToken: () => "",
+      execute: () => { throw "rr" }
+    });
+    var col = new StringColumn({ dbName: 'col' });
+    x.isContainsCaseInsensitive(col, "no'a'm");
+    expect(x.where).toBe(" where lower (col) like lower ('%no''a''m%')");
+  });
+  it("filter with start with", () => {
+    let x = new FilterConsumerBridgeToSqlRequest({
+      addParameterAndReturnSqlToken: () => "?",
+      execute: () => { throw "rr" }
+    });
+    var col = new StringColumn({ dbName: 'col' });
+    x.isStartsWith(col, "no'am");
+    expect(x.where).toBe(" where col like ?");
+  });
+
   itAsync("test filter works with selected rows", async () => {
     let c = await insertFourRows();
     let ds = c.gridSettings({
@@ -552,25 +581,25 @@ describe("test row provider", () => {
     let a = 0;
     let b = 0;
     let r = Column.consolidateOptions({
-      caption:'1st',
+      caption: '1st',
       dataControlSettings: () => {
         a++;
         return {
-          inputType:'text'
+          inputType: 'text'
         };
       }
-    },{
-      caption:'2nd',
-      dataControlSettings:()=>{
+    }, {
+      caption: '2nd',
+      dataControlSettings: () => {
         b++;
-        return {readOnly:true};
+        return { readOnly: true };
       }
     });
-    let s= r.dataControlSettings();
+    let s = r.dataControlSettings();
     expect(s.inputType).toBe('text');
     expect(s.readOnly).toBe(true);
-    expect(a).toBe(1,'a');
-    expect(b).toBe(1,'b');
+    expect(a).toBe(1, 'a');
+    expect(b).toBe(1, 'b');
 
 
   });
