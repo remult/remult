@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn } from '@remult/core';
 import { Products } from './products';
 
 @Component({
@@ -12,21 +12,34 @@ import { Products } from './products';
 
 })
 export class ProductsComponent implements OnInit {
-  col = new BoolColumn('asdfasfdsa');
+
+  col = new DateColumn({
+    caption: 'name',
+    dataControlSettings: () => ({
+      readOnly:true
+    })
+  })
+
   getWhere() {
 
     return JSON.stringify(packWhere(this.products.filterHelper.filterRow, this.products.getFilterWithSelectedRows().where));
   }
-  constructor(private context: Context) { 
-    this.col.validationError = 'test';
+  constructor(private context: Context) {
+    
+
   }
+  area = new DataAreaSettings();
+
   products = this.context.for(Products).gridSettings({
     allowUpdate: true,
     allowInsert: true,
     allowSelection: true,
     knowTotalRows: true,
+    columnSettings: () => [this.col],
 
-
+    onEnterRow: (r) => {
+      this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });
+    },
     get: {
       where: p => p.name.isContains("e")
     },
@@ -35,14 +48,11 @@ export class ProductsComponent implements OnInit {
         name: 'xxx'
       }
     ]
-   
+
   });
-  area = this.products.addArea({
-    columnSettings: p => [
-      p.phone
-    ]
-  });
+
   ngOnInit() {
+
   }
   async test() {
     await ProductsComponent.testIt(2);

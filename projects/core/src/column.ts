@@ -55,7 +55,7 @@ export class Column<dataType = any>  {
     else
       result = options;
     if (!result) {
-      result = {};  
+      result = {};
     }
 
     if (options1) {
@@ -76,12 +76,15 @@ export class Column<dataType = any>  {
     if (!x.caption && this.defs.caption)
       x.caption = this.defs.caption;
     if (x.readOnly == undefined) {
-      if (!context) {
-        if (isBoolean(this.__settings.allowApiUpdate))
-          x.readOnly = !this.__settings.allowApiUpdate;
-      }
+      if (this.__settings.sqlExpression)
+        x.readOnly = true;
       else
-        x.readOnly = !context.isAllowed(this.__settings.allowApiUpdate);
+        if (!context) {
+          if (isBoolean(this.__settings.allowApiUpdate))
+            x.readOnly = !this.__settings.allowApiUpdate;
+        }
+        else
+          x.readOnly = !context.isAllowed(this.__settings.allowApiUpdate);
     }
     if (this.__settings && this.__settings.dataControlSettings) {
       this.__displayResult = this.__settings.dataControlSettings();

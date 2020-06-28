@@ -4,7 +4,11 @@ import { MAT_CHECKBOX_CLICK_ACTION } from '@angular/material';
 @EntityClass
 export class Products extends IdEntity {
   name = new GroupsColumn(this.context);
-  phone = new PhoneColumn();
+  phone = new PhoneColumn({allowApiUpdate:false});
+  test = new StringColumn({
+    caption:'test',
+    sqlExpression:"'noam'"
+  })
   constructor(private context: Context) {
     super({
       name: "Products",
