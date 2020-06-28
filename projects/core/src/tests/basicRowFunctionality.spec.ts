@@ -1364,12 +1364,7 @@ describe("Column settings stuff", () => {
     expect(x.caption).toBe("noam");
     expect(x.key).toBe("yael");
   });
-  it("should translate caption2", () => {
-    let x = Column.consolidateOptions('noam', { key: 'yael' });
-
-    expect(x.caption).toBe("noam");
-    expect(x.key).toBe("yael");
-  });
+  
 
 });
 describe("check allowedDataType", () => {

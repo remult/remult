@@ -159,21 +159,21 @@ describe("grid filter stuff", () => {
       }
     });
     await ds.getRecords();
-    expect(ds.selectAllIntermitent()).toBe(false,'intermetent');
+    expect(ds.selectAllIntermitent()).toBe(false, 'intermetent');
     for (const r of ds.items) {
       ds.selectedChanged(r);
     }
-    expect(ds.selectAllIntermitent()).toBe(true,'intermetent');
-    expect(ds.selectAllChecked()).toBe(false,'select all checked');
-    expect(ds.selectedRows.length).toBe(3,'selected rows');
+    expect(ds.selectAllIntermitent()).toBe(true, 'intermetent');
+    expect(ds.selectAllChecked()).toBe(false, 'select all checked');
+    expect(ds.selectedRows.length).toBe(3, 'selected rows');
     let w = ds.getFilterWithSelectedRows().where;
-    console.log( packWhere(c.create(), w));
-    expect(await c.count(w)).toBe(3,'rows in count');
+    console.log(packWhere(c.create(), w));
+    expect(await c.count(w)).toBe(3, 'rows in count');
   });
   itAsync("select select row by row when all rows are in view", async () => {
     let c = await insertFourRows();
     let ds = c.gridSettings({
-      knowTotalRows:true,
+      knowTotalRows: true,
       get: {
         orderBy: c => new Sort({ column: c.id }),
         limit: 4
@@ -538,6 +538,50 @@ describe("test row provider", () => {
     var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(15);
+  });
+  it("readonly should work well", () => {
+    let a = new DateColumn({ dataControlSettings: () => ({ readOnly: true }) });
+
+    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
+    cc.add(a);
+    expect(cc.items[0].readOnly).toBe(true);
+    expect(cc.items[0].inputType).toBe('date');
+
+  });
+  it("test consolidate", () => {
+    let a = 0;
+    let b = 0;
+    let r = Column.consolidateOptions({
+      caption:'1st',
+      dataControlSettings: () => {
+        a++;
+        return {
+          inputType:'text'
+        };
+      }
+    },{
+      caption:'2nd',
+      dataControlSettings:()=>{
+        b++;
+        return {readOnly:true};
+      }
+    });
+    let s= r.dataControlSettings();
+    expect(s.inputType).toBe('text');
+    expect(s.readOnly).toBe(true);
+    expect(a).toBe(1,'a');
+    expect(b).toBe(1,'b');
+
+
+  });
+  it("readonly should work well for string column", () => {
+    let a = new StringColumn({ dataControlSettings: () => ({ readOnly: true }) });
+
+    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
+    cc.add(a);
+    expect(cc.items[0].readOnly).toBe(true);
+    expect(cc.items[0].inputType).toBe(undefined);
+
   });
 
 });

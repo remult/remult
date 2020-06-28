@@ -57,12 +57,25 @@ export class Column<dataType = any>  {
     if (!result) {
       result = {};
     }
-
     if (options1) {
+
       if (typeof (options1) === "string")
         result.caption = options1;
-      else
-        result = Object.assign(result, options1);
+      else {
+        result = Object.assign(Object.assign({}, result), options1);
+
+        let op1 = options as ColumnSettings;
+        let op2 = options1 as ColumnSettings;
+        if (op1 && op2 && op1.dataControlSettings && op2.dataControlSettings) {
+          let d1 = op1.dataControlSettings;
+          let d2 = op2.dataControlSettings;
+          result.dataControlSettings = () => {
+            let t = d1();
+            let r = Object.assign(t, d2());
+            return r;
+          };
+        }
+      }
     }
     return result;
   }
@@ -88,18 +101,6 @@ export class Column<dataType = any>  {
     }
     if (this.__settings && this.__settings.dataControlSettings) {
       this.__displayResult = this.__settings.dataControlSettings();
-      if (!x.valueList)
-        x.valueList = this.__displayResult.valueList;
-      if (x.forceEqualFilter === undefined)
-        x.forceEqualFilter = this.__displayResult.forceEqualFilter;
-      if (!x.inputType)
-        x.inputType = this.__displayResult.inputType;
-      if (x.hideDataOnInput === undefined)
-        x.hideDataOnInput = this.__displayResult.hideDataOnInput;
-      if (!x.width)
-        x.width = this.__displayResult.width;
-      if (!x.clickIcon)
-        x.clickIcon = this.__displayResult.clickIcon;
       if (!x.getValue && this.__displayResult.getValue) {
         x.getValue = e => {
           let c: Column<dataType> = this;
@@ -130,6 +131,16 @@ export class Column<dataType = any>  {
           return c.__displayResult.allowClick(e);
         };
       }
+      for (const key in this.__displayResult) {
+        if (this.__displayResult.hasOwnProperty(key)) {
+          const val = this.__displayResult[key];
+          if (val !== undefined && x[key] === undefined) {
+            x[key] = val;
+          }
+        }
+      }
+
+
 
     }
   }
