@@ -35,7 +35,7 @@ export class ProductsComponent implements OnInit {
     allowInsert: true,
     allowSelection: true,
     knowTotalRows: true,
-    columnSettings: () => [this.col],
+    
 
     onEnterRow: (r) => {
       this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });

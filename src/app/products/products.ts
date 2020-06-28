@@ -1,14 +1,17 @@
-import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn } from '@remult/core';
 import { MAT_CHECKBOX_CLICK_ACTION } from '@angular/material';
+import { stat } from 'fs';
+
 
 @EntityClass
 export class Products extends IdEntity {
   name = new GroupsColumn(this.context);
-  phone = new PhoneColumn({allowApiUpdate:false});
+  phone = new PhoneColumn({ allowApiUpdate: false });
   test = new StringColumn({
-    caption:'test',
-    sqlExpression:"'noam'"
+    caption: 'test',
+    sqlExpression: "'noam'"
   })
+  status = new statusColumn();
   constructor(private context: Context) {
     super({
       name: "Products",
@@ -22,6 +25,22 @@ export class Products extends IdEntity {
     });
   }
 }
+
+
+class status {
+  static active = new status(0, 'active');
+  static disabled = new status(10, 'disabled');
+  constructor(public id: number, public caption: string) {
+
+  }
+}
+class statusColumn extends ValueListColumn<status>{
+  constructor() {
+    super(status);
+  }
+}
+
+
 export class PhoneColumn extends StringColumn {
   constructor(settingsOrCaption?: ColumnOptions<string>) {
     super(settingsOrCaption, {
@@ -57,9 +76,9 @@ export class GroupsColumn extends StringColumn {
       includeInApi: true,
       dataControlSettings: () => ({
         width: '300',
-        forceEqualFilter:false,
-        click:()=>{}
-        
+        forceEqualFilter: false,
+        click: () => { }
+
 
       })
     });
