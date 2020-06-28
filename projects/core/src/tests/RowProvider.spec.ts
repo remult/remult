@@ -114,7 +114,7 @@ describe("grid filter stuff", () => {
     expect(await c.count(w)).toBe(1);
 
   });
-  itAsync("test filter works sith selected rows", async () => {
+  itAsync("test filter works with selected rows", async () => {
     let c = await insertFourRows();
     let ds = c.gridSettings({
       get: {

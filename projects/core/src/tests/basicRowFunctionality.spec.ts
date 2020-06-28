@@ -511,6 +511,31 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("getArray works with filter and in with closed list columns", async () => {
+    let c = await createData(async (i) => {
+      i(1, 'noam', undefined, Status.open);
+      i(2, 'yael', undefined, Status.closed);
+      i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "status_in")
+          return '[1, 2]';
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    });
+    d.test();
+  });
   itAsync("entity order by works", async () => {
     let context = new Context();
     let c = await createData(async insert => {

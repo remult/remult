@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn } from '@remult/core';
-import { Products } from './products';
+import { Products,productStatus } from './products';
+ 
 
 @Component({
   selector: 'app-products',
@@ -41,7 +42,7 @@ export class ProductsComponent implements OnInit {
       this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });
     },
     get: {
-      where: p => p.name.isContains("e")
+      where: p => p.status.isIn([productStatus.active])
     },
     gridButtons: [
       {

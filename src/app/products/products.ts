@@ -27,16 +27,16 @@ export class Products extends IdEntity {
 }
 
 
-class status {
-  static active = new status(0, 'active');
-  static disabled = new status(10, 'disabled');
+export class productStatus {
+  static active = new productStatus(0, 'active');
+  static disabled = new productStatus(10, 'disabled');
   constructor(public id: number, public caption: string) {
 
   }
 }
-class statusColumn extends ValueListColumn<status>{
+class statusColumn extends ValueListColumn<productStatus>{
   constructor() {
-    super(status);
+    super(productStatus);
   }
 }
 

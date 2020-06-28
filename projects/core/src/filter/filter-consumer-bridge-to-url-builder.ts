@@ -54,11 +54,18 @@ export function extractWhere(rowType: Entity, filterInfo: {
 }) {
   let where: FilterBase = undefined;
   rowType.columns.toArray().forEach(col => {
-    function addFilter(operation: string, theFilter: (val: any) => FilterBase) {
+    function addFilter(operation: string, theFilter: (val: any) => FilterBase, jsonArray = false) {
       let val = filterInfo.get(col.defs.key + operation);
       if (val != undefined) {
         let addFilter = (val: any) => {
-          let f = theFilter(col.fromRawValue(val));
+          let theVal = val;
+          if (jsonArray) {
+            let arr: [] = JSON.parse(val);
+            theVal = arr.map(x => col.fromRawValue(x));
+          } else {
+            theVal = col.fromRawValue(theVal);
+          }
+          let f = theFilter(theVal);
           if (f) {
             if (where)
               where = new AndFilter(where, f);
@@ -81,7 +88,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
     addFilter('_lt', val => col.isLessThan(val));
     addFilter('_lte', val => col.isLessOrEqualTo(val));
     addFilter('_ne', val => col.isDifferentFrom(val));
-    addFilter('_in', val => col.isIn(JSON.parse(val)));
+    addFilter('_in', val => col.isIn(val),true);
     addFilter('_contains', val => {
       let c = col as StringColumn;
       if (c != null && c.isContains) {
@@ -99,7 +106,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
 }
 export function packWhere<entityType extends Entity>(entity: entityType, where: EntityWhere<entityType>) {
   if (!where)
-  return {};
+    return {};
   let w = where(entity);
   return packToRawWhere(w);
 
