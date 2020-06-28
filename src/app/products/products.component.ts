@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn } from '@remult/core';
 import { Products } from './products';
 
 @Component({
@@ -12,11 +12,14 @@ import { Products } from './products';
 
 })
 export class ProductsComponent implements OnInit {
+  col = new BoolColumn('asdfasfdsa');
   getWhere() {
 
     return JSON.stringify(packWhere(this.products.filterHelper.filterRow, this.products.getFilterWithSelectedRows().where));
   }
-  constructor(private context: Context) { }
+  constructor(private context: Context) { 
+    this.col.validationError = 'test';
+  }
   products = this.context.for(Products).gridSettings({
     allowUpdate: true,
     allowInsert: true,
@@ -33,14 +36,16 @@ export class ProductsComponent implements OnInit {
       }
     ],
     columnSettings: p => [
+
       p.name,
+      this.col,
       p.phone,
-      p.phone,
-      p.phone,
-      p.phone,
-      p.phone,
-      p.phone,
-      p.phone
+      {
+        column: p.phone,
+        inputType: 'checkbox',
+        click:undefined
+      }
+
     ]
   });
   area = this.products.addArea({
