@@ -355,19 +355,19 @@ export class GridSettings<rowType extends Entity = Entity>  {
   getRecords() {
 
     let opt: FindOptions<rowType> = this._internalBuildFindOptions();
-
+    this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
     let result = this.restList.get(opt).then(() => {
       this.selectedRows.splice(0);
-
+      
       if (this.restList.items.length == 0) {
         this.setCurrentRow(undefined);
-        this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
+        
       }
       else {
 
 
         this.setCurrentRow(this.restList.items[0]);
-        this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
+        
       }
       return this.restList;
     });

@@ -4,6 +4,7 @@ import { DataControlSettings, ValueListItem, DataControlInfo } from "./column-in
 import { Column } from "./column";
 import { Context } from "./context";
 import { isFunction } from "util";
+import { IdEntity } from './id-entity';
 
 
 export class ColumnCollection<rowType extends Entity = Entity> {
@@ -219,7 +220,14 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     if (this.items.length == 0) {
 
       if (r) {
-        this.add(...r.columns);
+        let ignoreCol: Column = undefined;
+        if (r instanceof IdEntity)
+          ignoreCol = r.id;
+        for (const c of r.columns) {
+          if (c != ignoreCol)
+            this.add(c);
+        }
+
 
       }
     }

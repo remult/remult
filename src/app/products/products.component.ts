@@ -34,19 +34,8 @@ export class ProductsComponent implements OnInit {
       {
         name: 'xxx'
       }
-    ],
-    columnSettings: p => [
-
-      p.name,
-      this.col,
-      p.phone,
-      {
-        column: p.phone,
-        inputType: 'checkbox',
-        click:undefined
-      }
-
     ]
+   
   });
   area = this.products.addArea({
     columnSettings: p => [
