@@ -20,23 +20,26 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 import { DataArea2Compnent } from './data-area/dataArea2';
-import { AddFilterDialogComponent } from './add-filter-dialog/add-filter-dialog.component';
+import { SelectValueDialogComponent } from './add-filter-dialog/add-filter-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
-import { MatMenuModule } from '@angular/material';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
+
 
 
 
 
 @NgModule({
-  declarations: [ DataControl2Component, DataArea2Compnent,   DataFilterInfoComponent,  DataGrid2Component, WaitComponent,DataControl3Component,AddFilterDialogComponent,FilterDialogComponent],
+  declarations: [ DataControl2Component, DataArea2Compnent,   DataFilterInfoComponent,  DataGrid2Component, WaitComponent,DataControl3Component,SelectValueDialogComponent,FilterDialogComponent],
   imports: [FormsModule, CommonModule, HttpClientModule, MatProgressSpinnerModule, MatDialogModule, BrowserAnimationsModule,
     MatFormFieldModule,
     MatButtonModule,
     MatListModule,
+    MatTooltipModule,
     MatInputModule, MatIconModule, ReactiveFormsModule, MatCheckboxModule,MatMenuModule],
   providers: [Context, JwtSessionManager, NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
@@ -44,6 +47,6 @@ import { MatMenuModule } from '@angular/material';
     { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
   ,
   exports: [ DataControl2Component,   DataFilterInfoComponent,  DataGrid2Component, DataArea2Compnent],
-  entryComponents: [WaitComponent,AddFilterDialogComponent,FilterDialogComponent]
+  entryComponents: [WaitComponent,SelectValueDialogComponent,FilterDialogComponent]
 })
 export class RemultModule { }

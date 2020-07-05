@@ -1,11 +1,12 @@
 <div style="height: 100%;display: flex;flex-direction: column;">
-  <Data-Filter [settings]="settings" #dataFilter style="flex-shrink: 0;" *ngIf="settings.settings.showFilter"></Data-Filter>
+  <Data-Filter [settings]="settings" #dataFilter style="flex-shrink: 0;" *ngIf="settings.settings.showFilter">
+  </Data-Filter>
   <div class="dataGrid" #dataGridDiv *ngIf="settings&&settings.columns" [style.height]="_getHeight()">
     <div class="inner-wrapper">
       <div class="dataGridHeaderArea">
         <div class="dataGridRow">
           <div class="data-grid-row-more-buttons dataGridDataCell">
-            
+
             <button mat-icon-button [matMenuTriggerFor]="updatedRowOptions" *ngIf="hasVisibleGridButtons()">
               <mat-icon>expand_more</mat-icon>
             </button>
@@ -15,8 +16,8 @@
 
             <mat-checkbox [indeterminate]="settings.selectAllIntermitent()" [checked]="settings.selectAllChecked()"
               (change)="settings.selectAllChanged($event)"></mat-checkbox>
- 
-           </div>
+
+          </div>
           <mat-menu #updatedRowOptions="matMenu">
 
             <ng-container *ngFor="let b of gridButtons">
@@ -62,20 +63,20 @@
           (click)="rowClicked(record)">
           <div class="data-grid-row-more-buttons dataGridDataCell">
 
-            <button mat-icon-button [matMenuTriggerFor]="updatedRowOptions"
-              *ngIf="hasVisibleButton(record) ">
+            <button mat-icon-button [matMenuTriggerFor]="updatedRowOptions" *ngIf="hasVisibleButton(record) ">
               <mat-icon>more_vert</mat-icon>
             </button>
 
           </div>
           <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
 
-           <mat-checkbox [checked]="settings.isSelected(record)" (change)="settings.selectedChanged(record)"></mat-checkbox>
+            <mat-checkbox [checked]="settings.isSelected(record)" (change)="settings.selectedChanged(record)">
+            </mat-checkbox>
 
           </div>
           <mat-menu #updatedRowOptions="matMenu">
             <ng-container *ngFor="let b of rowButtons">
-              <button mat-menu-item *ngIf="b.visible(record)" (click)="b.click(record)">
+              <button mat-menu-item *ngIf="b.visible(record)" (click)="b.click(record)" matTooltip="{{b.textInMenu()}}">
                 <mat-icon *ngIf="b.icon">{{b.icon}}</mat-icon>{{b.textInMenu?b.textInMenu(): b.name}}
               </button>
             </ng-container>
@@ -134,27 +135,27 @@
     <div *ngIf="settings.showSelectColumn" class="selectColumnsArea">
       Select Columns
       <ol>
-        <ng-container  *ngFor="let c of settings.currList; let i=index">
-        <li *ngIf="i<settings.columns.numOfColumnsInGrid">
-          <select [(ngModel)]="settings.currList[i]" class="form-control selectColumnCombo"
-            (change)="settings.columns.colListChanged()">
-            <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}}</option>
-          </select>
-          <input [(ngModel)]="c.width" style="width:50px;display:inline;">
-          <button mat-icon-button *ngIf="settings.currList.length>1" (click)="settings.deleteCol(c)">
-            <mat-icon>cancel</mat-icon>
-          </button>
-          <button mat-icon-button (click)="settings.addCol(c)">
-            <mat-icon>add</mat-icon>
-          </button>
-          <button mat-icon-button *ngIf="i<settings.currList.length-1" (click)="settings.columns.moveCol(c,1)">
-            <mat-icon>keyboard_arrow_down</mat-icon>
-          </button>
-          <button mat-icon-button *ngIf="i>0" (click)="settings.columns.moveCol(c,-1)">
-            <mat-icon>keyboard_arrow_up</mat-icon>
-          </button>
-        </li>
-      </ng-container>
+        <ng-container *ngFor="let c of settings.currList; let i=index">
+          <li *ngIf="i<settings.columns.numOfColumnsInGrid">
+            <select [(ngModel)]="settings.currList[i]" class="form-control selectColumnCombo"
+              (change)="settings.columns.colListChanged()">
+              <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}}</option>
+            </select>
+            <input [(ngModel)]="c.width" style="width:50px;display:inline;">
+            <button mat-icon-button *ngIf="settings.currList.length>1" (click)="settings.deleteCol(c)">
+              <mat-icon>cancel</mat-icon>
+            </button>
+            <button mat-icon-button (click)="settings.addCol(c)">
+              <mat-icon>add</mat-icon>
+            </button>
+            <button mat-icon-button *ngIf="i<settings.currList.length-1" (click)="settings.columns.moveCol(c,1)">
+              <mat-icon>keyboard_arrow_down</mat-icon>
+            </button>
+            <button mat-icon-button *ngIf="i>0" (click)="settings.columns.moveCol(c,-1)">
+              <mat-icon>keyboard_arrow_up</mat-icon>
+            </button>
+          </li>
+        </ng-container>
       </ol>
       <button (click)="settings.resetColumns()" class="btn glyphicon glyphicon-repeat"></button>
     </div>

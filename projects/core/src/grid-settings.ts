@@ -14,11 +14,12 @@ import { EntityProvider, FindOptions, entityOrderByToSort } from './data-interfa
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { AndFilter } from './filter/and-filter';
 import { _MatChipListMixinBase } from '@angular/material';
+import { SelectValueDialogComponent } from './angular/add-filter-dialog/add-filter-dialog.component';
 
 
 
 export class GridSettings<rowType extends Entity = Entity>  {
-  constructor(private entityProvider: EntityProvider<rowType>, context: Context, public settings?: IDataSettings<rowType>) {
+  constructor(private entityProvider: EntityProvider<rowType>, private context: Context, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entityProvider);
     if (entityProvider) {
       this.filterHelper.filterRow = <rowType>entityProvider.create();
@@ -108,9 +109,15 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
 
   }
-  addCol(c: DataControlSettings) {
-    this.columns.addCol(c);
-    this.columns.numOfColumnsInGrid++;
+  async addCol(c: DataControlSettings) {
+    await this.context.openDialog(SelectValueDialogComponent, x => x.args({
+      values: this.origList,
+      onSelect: col => {
+        this.columns.addCol(c, col);
+        this.columns.numOfColumnsInGrid++;
+      }
+    }));
+
   }
   deleteCol(c: DataControlSettings) {
     this.columns.deleteCol(c)
@@ -358,16 +365,16 @@ export class GridSettings<rowType extends Entity = Entity>  {
     this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
     let result = this.restList.get(opt).then(() => {
       this.selectedRows.splice(0);
-      
+
       if (this.restList.items.length == 0) {
         this.setCurrentRow(undefined);
-        
+
       }
       else {
 
 
         this.setCurrentRow(this.restList.items[0]);
-        
+
       }
       return this.restList;
     });

@@ -153,8 +153,8 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     this.items.splice(this.items.indexOf(col), 1);
     this.colListChanged();
   }
-  addCol(col: DataControlSettings) {
-    this.items.splice(this.items.indexOf(col) + 1, 0, {});
+  addCol(col: DataControlSettings,newCol:DataControlSettings) {
+    this.items.splice(this.items.indexOf(col) + 1, 0, newCol);
     this.colListChanged();
   }
 

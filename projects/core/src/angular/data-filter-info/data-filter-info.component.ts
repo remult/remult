@@ -4,7 +4,7 @@ import { Column } from '../../column';
 import { GridSettings } from '../../grid-settings';
 import { DataControlSettings } from '../../column-interfaces';
 import { Context } from '../../context';
-import { AddFilterDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
+import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { FilterDialogComponent } from '../filter-dialog/filter-dialog.component';
 @Component({
     selector: 'Data-Filter',
@@ -50,7 +50,13 @@ export class DataFilterInfoComponent {
     async showAddAnotherFilterDialog() {
         this.settings.initOrigList();
         this.filterColumnToAdd = undefined;
-        await this.context.openDialog(AddFilterDialogComponent, x => x.info = this);
+        await this.context.openDialog(SelectValueDialogComponent, x => x.args({
+            title: this.rightToLeft ? "בחר עמודה לסינון" : "Select Column to Filter",
+            values: this.settings.origList,
+            onSelect: x => this.filterColumnToAdd = x
+        }));
+
+
         if (this.filterColumnToAdd) {
             await this.context.openDialog(FilterDialogComponent, x => x.info = this);
         }

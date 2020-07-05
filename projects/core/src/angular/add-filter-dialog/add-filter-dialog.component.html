@@ -1,9 +1,18 @@
-<h1 mat-dialog-title *ngIf="!info.rightToLeft">Select Column to Filter</h1>
-<h1 mat-dialog-title *ngIf="info.rightToLeft">בחר עמודה לסינון</h1>
+<h1 mat-dialog-title>{{title}}</h1>
+
 <div mat-dialog-content>
-    <mat-list role="list" *ngIf="info">
-        <mat-list-item role="listitem" *ngFor="let o of info.settings.origList" (click)="select(o)">{{o.caption}}
-        </mat-list-item>
+    <form (submit)="selectFirst()">
+        <mat-form-field>
+            <input matInput [(ngModel)]="searchString" [ngModelOptions]="{standalone: true}"> 
+        </mat-form-field>
+    </form>
+    <mat-list role="list" *ngIf="values">
+        <ng-container *ngFor="let o of values">
+            <mat-list-item role="listitem"
+                *ngIf="matchesFilter(o)" (click)="select(o)">
+                {{o.caption}}
+            </mat-list-item>
+        </ng-container>
     </mat-list>
 </div>
 <div mat-dialog-actions>
