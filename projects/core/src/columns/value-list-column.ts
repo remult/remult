@@ -1,46 +1,33 @@
 import { Column } from "../column";
 import { ColumnOptions, ValueListItem } from "../column-interfaces";
+import { isNumber } from 'util';
 
 
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
-  constructor(private closedListType: any, settingsOrCaption?: ColumnOptions<T>) {
+
+  constructor(private valueListType: any, settingsOrCaption?: ColumnOptions<T>) {
     super({
       dataControlSettings: () => {
         let opts = this.getOptions();
-        console.log(opts);
         return {
           valueList: opts
         }
       }
+
     }, settingsOrCaption);
-    for (let member in this.closedListType) {
-      let s = this.closedListType[member] as T;
-      if (s instanceof this.closedListType) {
-        if (s.id === undefined)
-          s.id = member;
-        if (s.caption === undefined)
-          s.caption = member;
 
-      }
 
-    }
   }
-  getOptions(): ValueListItem[] {
-    let result = [];
-    for (let member in this.closedListType) {
-      let s = this.closedListType[member] as T;
-      if (s instanceof this.closedListType) {
+  readonly info = ValueListTypeInfo.get(this.valueListType);
 
-        result.push(s)
-      }
-    }
-    return result;
+  getOptions(): ValueListItem[] {
+    return this.info.getOptions();
   }
   toRawValue(value: T) {
     return value.id;
   }
   fromRawValue(value: any) {
-    return this.byId(value);
+    return this.info.byId(value);
   }
 
   get displayValue() {
@@ -48,14 +35,42 @@ export class ValueListColumn<T extends ValueListItem> extends Column<T> {
       return this.value.caption;
     return '';
   }
-  byId(id: number): T {
-    for (let member in this.closedListType) {
-      let s = this.closedListType[member] as T;
-      if (s instanceof this.closedListType) {
-        if (s.id == id)
-          return s;
+
+}
+
+export class ValueListTypeInfo<T extends ValueListItem>{
+  static get<T extends ValueListItem>(type: T) {
+    let r = typeCache.get(type);
+    if (!r)
+      r = new ValueListTypeInfo(type);
+    typeCache.set(type, r);
+    return r;
+  }
+  private byIdMap = new Map<any, T>();
+  private values: T[] = [];
+  isNumeric = false;
+  private constructor(private valueListType: any) {
+    for (let member in this.valueListType) {
+      let s = this.valueListType[member] as T;
+      if (s instanceof this.valueListType) {
+        if (s.id === undefined)
+          s.id = member;
+        if (s.caption === undefined)
+          s.caption = member;
+        if (isNumber(s.id))
+          this.isNumeric = true;
+        this.byIdMap.set(s.id, s);
+        this.values.push(s);
       }
     }
-    return undefined;
+  }
+  getOptions() {
+    return this.values;
+  }
+  byId(key: any) {
+    if (this.isNumeric)
+      key = +key;
+    return this.byIdMap.get(key);
   }
 }
+const typeCache = new Map<any, ValueListTypeInfo<any>>();

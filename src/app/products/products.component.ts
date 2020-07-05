@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn } from '@remult/core';
-import { Products,productStatus } from './products';
- 
+import { Products, productStatus } from './products';
+
 
 @Component({
   selector: 'app-products',
@@ -17,16 +17,19 @@ export class ProductsComponent implements OnInit {
   col = new DateColumn({
     caption: 'name',
     dataControlSettings: () => ({
-      readOnly:true
+      readOnly: true
     })
-  })
+  });
+  
+  
+  
 
   getWhere() {
 
     return JSON.stringify(packWhere(this.products.filterHelper.filterRow, this.products.getFilterWithSelectedRows().where));
   }
   constructor(private context: Context) {
-    
+
 
   }
   area = new DataAreaSettings();
@@ -36,7 +39,7 @@ export class ProductsComponent implements OnInit {
     allowInsert: true,
     allowSelection: true,
     knowTotalRows: true,
-    
+
 
     onEnterRow: (r) => {
       this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });
@@ -53,14 +56,16 @@ export class ProductsComponent implements OnInit {
   });
 
   ngOnInit() {
-
+    
   }
   async test() {
     await ProductsComponent.testIt(2);
   }
   async dialog() {
     try {
-      await ProductsComponent.testIt(1);
+      for await (const x of this.context.for(Products).iterate()) {
+        alert(x.name.value);
+      }
     }
     catch (err) {
       console.log(err);

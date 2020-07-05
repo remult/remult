@@ -17,7 +17,8 @@
     ],
     "lib": [
       "dom",
-      "es2018"
+      "es2018",
+      "esnext.asynciterable"
     ]
   },
   "angularCompilerOptions": {

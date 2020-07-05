@@ -169,7 +169,7 @@ describe("data api", () => {
     expect(r.length).toBe(1,'array length');
     expect(r[0].id.value).toBe(2,'value of first row');
     expect(await c.count()).toBe(1,'count');
-    expect(await c.findFirst(x => x.id.isEqualTo(1))).toBe(undefined,'find first');
+    expect(await c.iterate(x => x.id.isEqualTo(1)).first()).toBe(undefined,'find first');
     expect((await c.lookupAsync(x => x.id.isEqualTo(1))).isNew()).toBe(true,'lookup ');
   });
   itAsync("works with predefined Entity Filter", async () => {
@@ -178,7 +178,7 @@ describe("data api", () => {
       i(2, 'yael', 'b');
       i(3, 'yoni', 'a');
     });
-    expect ((await c.findFirst(x=>x.id.isEqualTo(1))).categoryName.value).toBe('noam');
+    expect ((await c.iterate(x=>x.id.isEqualTo(1)).first()).categoryName.value).toBe('noam');
     expect ((await c.findId(1)).categoryName.value).toBe('noam');
     expect ((await c.findId(new NumberColumn({defaultValue:1}))).categoryName.value).toBe('noam');
   });

@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DataProvider, FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort } from "./data-interfaces";
+import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort } from "./data-interfaces";
 import { RestDataProvider } from "./data-providers/rest-data-provider";
 import { AngularHttpProvider } from "./angular/AngularHttpProvider";
 
@@ -17,6 +17,8 @@ import { IDataSettings, GridSettings } from "./grid-settings";
 import { FilterBase } from './filter/filter-interfaces';
 import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
+import { Sort } from './sort';
+import { nextContext } from '@angular/core/src/render3';
 
 
 
@@ -246,14 +248,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     async count(where?: (entity: T) => FilterBase) {
         return await this._edp.count(this.entity.__decorateWhere(where ? where(this.entity) : undefined));
     }
-    async foreach(where: (entity: T) => FilterBase, what?: (entity: T) => Promise<void>) {
-        let items = await this.find({
-            where: where
-        });
-        for (const item of items) {
-            await what(item);
-        }
-    }
+
+
+
     private translateOptions(options: FindOptions<T>) {
 
         let getOptions: EntityDataProviderFindOptions = {};
@@ -284,6 +281,133 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             return r;
         }));
     }
+    async findFirst(options?: ((entity: T) => FilterBase) | IterateOptions<T>) {
+        return this.iterate(options).first();
+    }
+
+    iterate(options?: ((entity: T) => FilterBase) | IterateOptions<T>) {
+
+        let opts: IterateOptions<T> = {};
+        if (options) {
+            if (isFunction(options))
+                opts.where = <any>options;
+            else
+                opts = <any>options;
+        }
+
+        let cont = this;
+        let _count: number;
+        let r = new class {
+
+            async toArray(options?: IterateToArrayOptions) {
+                if (!options) {
+                    options = {};
+                }
+
+
+                return cont.find({
+                    where: opts.where,
+                    orderBy: opts.orderBy,
+                    limit: options.limit,
+                    page: options.page
+                });
+            }
+            async first() {
+                let r = await cont.find({
+                    where: opts.where,
+                    orderBy: opts.orderBy,
+                    limit: 1
+                });
+                if (r.length == 0)
+                    return undefined;
+                return r[0];
+            }
+
+            async count() {
+                if (_count === undefined)
+                    _count = await cont.count(opts.where);
+                return _count;
+
+            }
+            async forEach(what: (item: T) => Promise<any>) {
+                let i = 0;
+                for await (const x of this) {
+                    await what(x);
+                    i++;
+                }
+                return i;
+            }
+
+            //@ts-ignore
+            [Symbol.asyncIterator]() {
+                let findOptions: FindOptions<T> = {};
+                if (opts.where) {
+                    findOptions.where = opts.where;
+                }
+
+
+
+                let pageIndex: number;
+                let pageSize = iterateConfig.pageSize;
+                findOptions.limit = pageSize;
+
+                let itemIndex = -1;
+                let items: T[];
+
+                let itStrategy: (() => Promise<IteratorResult<T>>);
+
+                itStrategy = async () => {
+                    items = await cont.find({
+                        where: opts.where,
+                        orderBy: opts.orderBy,
+                        limit: pageSize
+                    });
+                    if (items.length < pageSize) {
+                        _count = items.length;
+                        itemIndex = 0;
+                        itStrategy = async () => {
+
+                            if (itemIndex >= items.length)
+                                return { value: <T>undefined, done: true };
+                            return { value: items[itemIndex++], done: false };
+                        };
+                    }
+                    else {
+                        if (!opts.orderBy)
+                            if (cont.entity.__options.defaultOrderBy)
+                                opts.orderBy = cont.entity.__options.defaultOrderBy;
+                            else
+                                opts.orderBy = x => x.columns.idColumn;
+
+                        let sort = extractSort(opts.orderBy(cont.entity)).reverse();
+
+                        findOptions.orderBy = x => sort;
+                        pageIndex = Math.ceil(await this.count() / pageSize);
+                        itStrategy = async () => {
+                            while (itemIndex < 0) {
+                                if (pageIndex < 1) {
+                                    return { value: undefined, done: true };
+                                }
+                                findOptions.page = pageIndex--;
+                                items = await cont.find(findOptions);
+                                itemIndex = items.length - 1;
+                            }
+                            return { value: items[itemIndex--], done: false };
+                        }
+                    }
+                    return itStrategy();
+                };
+                return {
+                    next: async () => {
+                        let r = itStrategy();
+                        return r;
+                    }
+                };
+            }
+        }
+        return r;
+    }
+
     async fromPojo(r: any) {
         let f = this._factory(false);
         await f.__entityData.setData(r, f);
@@ -307,15 +431,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
     async findId(id: Column<lookupIdType> | lookupIdType) {
 
-        return this.findFirst(x => x.columns.idColumn.isEqualTo(id));
+        return this.iterate(x => x.columns.idColumn.isEqualTo(id)).first();
     }
-    async findFirst(where?: EntityWhere<T>) {
 
-        let r = await this.find({ where });
-        if (r.length == 0)
-            return undefined;
-        return r[0];
-    }
     toPojoArray(items: T[]) {
         return items.map(f => this.toApiPojo(f));
     }
@@ -415,3 +533,16 @@ interface LookupCache<T extends Entity> {
 export interface RoleChecker {
     isAllowed(roles: Allowed): boolean;
 }
+export interface IterateOptions<entityType extends Entity> {
+    where?: EntityWhere<entityType>;
+    orderBy?: EntityOrderBy<entityType>;
+}
+
+
+export interface IterateToArrayOptions {
+    limit?: number;
+    page?: number;
+}
+export const iterateConfig = {
+    pageSize: 200
+};

@@ -130,7 +130,10 @@ export class PostgresSchemaBuilder {
             else
                 result += ' numeric default 0 not null';
         } else if (x instanceof ValueListColumn) {
-            result += ' int default 0 not null';
+            if (x.info.isNumeric)
+                result += ' int default 0 not null';
+            else
+                result += " varchar default '' not null ";
         }
         else
             result += " varchar default '' not null ";
