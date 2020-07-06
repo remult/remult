@@ -7,6 +7,8 @@ import { NumberColumn } from '../../columns/number-column';
 import { StringColumn } from '../../columns/string-column';
 import { StatusColumn } from '../testModel/models';
 import { Context } from '../../context';
+import { ValueListColumn } from '../../columns/value-list-column';
+import { ColumnOptions } from '../../column-interfaces';
 
 
 
@@ -48,6 +50,11 @@ describe("data api", () => {
         d.test();
         expect((await c.find()).length).toBe(0);
     });
+    it("test value list type",()=>{
+        let x = new StatusColumn();
+        expect(x.info.isNumeric).toBe(true);
+    });
+
 });
 
 class CategoriesForThisTest extends Entity<number> implements CategoriesForTesting {

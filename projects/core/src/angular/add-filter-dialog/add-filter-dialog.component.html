@@ -6,14 +6,15 @@
             <input matInput [(ngModel)]="searchString" [ngModelOptions]="{standalone: true}"> 
         </mat-form-field>
     </form>
-    <mat-list role="list" *ngIf="values">
+    <mat-nav-list role="list" *ngIf="values">
         <ng-container *ngFor="let o of values">
-            <mat-list-item role="listitem"
+            <mat-list-item role="listitem" style="height:36px"
                 *ngIf="matchesFilter(o)" (click)="select(o)">
                 {{o.caption}}
             </mat-list-item>
+            <mat-divider></mat-divider>
         </ng-container>
-    </mat-list>
+    </mat-nav-list>
 </div>
 <div mat-dialog-actions>
 

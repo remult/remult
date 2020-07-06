@@ -1,6 +1,6 @@
 {
   "name": "@remult/server",
-  "version": "1.0.63",
+  "version": "1.0.67",
   "main": "index.js",
   "Dependencies": {
     "body-parser": "^1.18.3"

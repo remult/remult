@@ -46,7 +46,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
     { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
   ,
-  exports: [ DataControl2Component,   DataFilterInfoComponent,  DataGrid2Component, DataArea2Compnent],
+  exports: [ DataControl2Component,   DataFilterInfoComponent,  DataGrid2Component, DataArea2Compnent,SelectValueDialogComponent],
   entryComponents: [WaitComponent,SelectValueDialogComponent,FilterDialogComponent]
 })
 export class RemultModule { }

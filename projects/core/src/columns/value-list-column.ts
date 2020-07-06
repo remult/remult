@@ -5,7 +5,7 @@ import { isNumber } from 'util';
 
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
 
-  constructor(private valueListType: any, settingsOrCaption?: ColumnOptions<T>) {
+  constructor(private valueListType:  classWithNew<T>, settingsOrCaption?: ColumnOptions<T>) {
     super({
       dataControlSettings: () => {
         let opts = this.getOptions();
@@ -37,9 +37,10 @@ export class ValueListColumn<T extends ValueListItem> extends Column<T> {
   }
 
 }
+export declare type classWithNew<T > ={ new(...args: any[]): T; };
 
 export class ValueListTypeInfo<T extends ValueListItem>{
-  static get<T extends ValueListItem>(type: T) {
+  static get<T extends ValueListItem>(type: classWithNew<T>) {
     let r = typeCache.get(type);
     if (!r)
       r = new ValueListTypeInfo(type);

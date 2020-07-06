@@ -45,11 +45,18 @@ export class ProductsComponent implements OnInit {
       this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });
     },
     get: {
-      where: p => p.status.isIn([productStatus.active])
+      
     },
     gridButtons: [
       {
         name: 'xxx'
+      }
+    ],
+    rowButtons:[
+      {
+        icon:'clear',
+        textInMenu:()=>'asdf',
+        showInLine:true
       }
     ]
 
