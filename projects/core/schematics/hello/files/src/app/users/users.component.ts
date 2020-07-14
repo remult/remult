@@ -43,19 +43,19 @@ export class UsersComponent implements OnInit {
 
 
   async resetPassword() {
-    if (await this.dialog.YesNoQuestion("Are you sure you want to delete the password of " + this.users.currentRow.name.value)) {
+    if (await this.dialog.yesNoQuestion("Are you sure you want to delete the password of " + this.users.currentRow.name.value)) {
       await UsersComponent.resetPassword(this.users.currentRow.id.value);
-      this.dialog.Info("Password deleted");
+      this.dialog.info("Password deleted");
     };
 
   }
   @ServerFunction({ allowed: c => c.isAllowed(Roles.admin) })
-  static async resetPassword(helperId: string, context?: Context) {
-
-    await context.for(Users).foreach(h => h.id.isEqualTo(helperId), async h => {
-      h.realStoredPassword.value = '';
-      await h.save();
-    });
+  static async resetPassword(userId: string, context?: Context) {
+    let u = await context.for(Users).findId(userId);
+    if (u){
+      u.realStoredPassword.value = '';
+      await u.save();
+    }
   }
 
 

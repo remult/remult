@@ -8,18 +8,19 @@ export class ServerSignIn {
     @ServerFunction({ allowed: () => true })
     static async signIn(user: string, password: string, context?: Context) {
         let result: UserInfo;
-        await context.for(Users).foreach(h => h.name.isEqualTo(user), async (h) => {
-            if (!h.realStoredPassword.value || Users.passwordHelper.verify(password, h.realStoredPassword.value)) {
+        let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
+        if (u)
+            if (!u.realStoredPassword.value || Users.passwordHelper.verify(password, u.realStoredPassword.value)) {
                 result = {
-                    id: h.id.value,
+                    id: u.id.value,
                     roles: [],
-                    name: h.name.value
+                    name: u.name.value
                 };
-                if (h.admin.value) {
+                if (u.admin.value) {
                     result.roles.push(Roles.admin);
                 }
             }
-        });
+
         if (result) {
             return ServerSignIn.helper.createSecuredTokenBasedOn(<any>result);
         }

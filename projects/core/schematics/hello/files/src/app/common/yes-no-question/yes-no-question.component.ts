@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 
 
-
-
 @Component({
   selector: 'app-yes-no-question',
   templateUrl: './yes-no-question.component.html',
@@ -11,12 +9,10 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class YesNoQuestionComponent implements OnInit {
   okPressed = false;
-  setMessage(question: string, yesNoQuestion = true): void {
-    this.message = question;
-    this.showOk = yesNoQuestion;
+  args: {
+    message: string,
+    isAQuestion?: boolean
   }
-  message: string;
-  showOk: boolean;
 
   constructor(
     private dialogRef: MatDialogRef<any>) {
@@ -24,6 +20,8 @@ export class YesNoQuestionComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.args.isAQuestion === undefined)
+      this.args.isAQuestion = true;
   }
   close() {
     this.dialogRef.close();

@@ -124,10 +124,10 @@ export function hello(_options: Schema): Rule {
       json.scripts["server:debug"] = "node --inspect --debug-brk dist-server/server/server.js";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["@remult/server"] = "^1.0.18";
-      json.dependencies["@remult/server-postgres"] = "^1.0.18";
-      json.dependencies["@angular/material"] = "^7.3.4";
-      json.dependencies["pg"] = "^7.6.1";
+      json.dependencies["@remult/server"] = "^1.0.67";
+      json.dependencies["@remult/server-postgres"] = "^1.0.67";
+      json.dependencies["@angular/material"] = "^8.2.3";
+      json.dependencies["pg"] = "^8.3.0";
       json.dependencies["express-force-https"] = "^1.0.0";
       json.dependencies["jsonwebtoken"] = "^8.5.1";
       json.dependencies["@auth0/angular-jwt"] = "3.0.0";
@@ -135,6 +135,7 @@ export function hello(_options: Schema): Rule {
       json.dependencies["reflect-metadata"] = "^0.1.12";
       json.dependencies["compression"] = "^1.7.3";
       json.devDependencies["tsc-watch"] = "^4.0.0";
+      json.devDependencies["@types/pg"] = "^7.14.4";
 
     });
 
