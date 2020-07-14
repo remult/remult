@@ -47,8 +47,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
         this.showDataArea = settings.showDataArea;
       if (settings.showPagination === undefined)
         settings.showPagination = true;
-      if (settings.showFilter === undefined)
-        settings.showFilter = true;
+      
       if (settings.numOfColumnsInGrid != undefined)
         this.columns.numOfColumnsInGrid = settings.numOfColumnsInGrid;
 
