@@ -138,7 +138,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
 
     let forceEqual = col.forceEqualFilter;
     if (forceEqual === undefined)
-      forceEqual = (col.valueList != undefined || col.click != undefined)
+      forceEqual = (col.valueList != undefined)
     this.filterHelper.filterColumn(col.column, false, forceEqual);
   }
   clearFilter(col: DataControlSettings) {
