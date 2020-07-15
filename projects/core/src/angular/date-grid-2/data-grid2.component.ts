@@ -133,33 +133,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     this.page--;
   }
 
-  catchErrors(what: any, r: Entity) {
-    what.catch((e: any) => {
-      this.showError(r);
-
-    });
-
-
-  }
-  private showError(row: Entity) {
-    let message = row.validationError;
-    if (!message)
-      message = "";
-    let foundStateErrors = false;
-    for (const c of row.columns) {
-      if (c.validationError) {
-        if (!foundStateErrors) {
-          foundStateErrors = true;
-          message = "";
-        }
-        let m = c.defs.caption + ": ";
-        m += c.validationError;
-        message += m + "\n";
-      }
-    }
-    alert(message);
-  }
-
+ 
 
 
   ngOnChanges(): void {
@@ -195,7 +169,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
         showInLine: true,
         textInMenu: () => this.rightToLeft ? 'שמור' : 'save',
         click: r => {
-          this.catchErrors(this.settings._doSavingRow(r), r);
+          this.settings._doSavingRow(r);
         },
 
       });
@@ -225,10 +199,10 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
         textInMenu: () => this.rightToLeft ? 'מחק' : 'delete',
         click: r => {
           if (this.settings.setCurrentRow && this.settings.settings.confirmDelete) {
-            this.settings.settings.confirmDelete(r, () => this.catchErrors(r.delete(), r));
+            this.settings.settings.confirmDelete(r, () => r.delete());
           }
           else
-            this.catchErrors(r.delete(), r);
+            r.delete();
 
         },
 

@@ -15,10 +15,13 @@ export class Products extends IdEntity {
   constructor(private context: Context) {
     super({
       name: "Products",
-      allowApiCRUD: true,
+     // allowApiCRUD: true,
       allowApiRead: true,
       saving: () => {
-        this.name.validationError = 'err';
+        if (context.onServer){
+          console.log('on server');
+          this.name.validationError = 'err';
+        }
         if (context.onServer)
           if (this.name.value.length < 2)
             this.name.validationError = 'the error';

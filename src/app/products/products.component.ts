@@ -21,17 +21,9 @@ export class ProductsComponent implements OnInit {
       readOnly: true
     })
   });
-  click(){
-    throw 'err';
-  }
-  
-  
-  
 
-  getWhere() {
-
-    return JSON.stringify(packWhere(this.products.filterHelper.filterRow, this.products.getFilterWithSelectedRows().where));
-  }
+  
+  
   constructor(private context: Context) {
 
 
@@ -44,11 +36,8 @@ export class ProductsComponent implements OnInit {
     allowSelection: true,
     knowTotalRows: true,
     columnSettings:p=>[
-      p.name,
-      {
-        column:p.name,
-        valueList:['a','b']
-      }
+      p.name
+      
     ],
 
 
@@ -81,11 +70,7 @@ export class ProductsComponent implements OnInit {
   }
 
   async dialog() {
-    throw 'ee';
-    this.context.openDialog(YesNoQuestionComponent,x=>x.args={
-      message:'123'
-      
-    });
+    this.products.currentRow.save();
   }
   @ServerFunction({ allowed: true })
   static async testIt(amount: Number, context?: Context) {
