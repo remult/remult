@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn } from '@remult/core';
 import { Products, productStatus } from './products';
+import { YesNoQuestionComponent } from '../../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 
 
 @Component({
@@ -20,6 +21,9 @@ export class ProductsComponent implements OnInit {
       readOnly: true
     })
   });
+  click(){
+    throw 'err';
+  }
   
   
   
@@ -39,6 +43,13 @@ export class ProductsComponent implements OnInit {
     allowInsert: true,
     allowSelection: true,
     knowTotalRows: true,
+    columnSettings:p=>[
+      p.name,
+      {
+        column:p.name,
+        valueList:['a','b']
+      }
+    ],
 
 
     onEnterRow: (r) => {
@@ -68,17 +79,13 @@ export class ProductsComponent implements OnInit {
   async test() {
     await ProductsComponent.testIt(2);
   }
-  async dialog() {
-    try {
-      for await (const x of this.context.for(Products).iterate()) {
-        alert(x.name.value);
-      }
-    }
-    catch (err) {
-      console.log(err);
-      debugger;
 
-    }
+  async dialog() {
+    throw 'ee';
+    this.context.openDialog(YesNoQuestionComponent,x=>x.args={
+      message:'123'
+      
+    });
   }
   @ServerFunction({ allowed: true })
   static async testIt(amount: Number, context?: Context) {

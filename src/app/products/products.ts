@@ -18,6 +18,7 @@ export class Products extends IdEntity {
       allowApiCRUD: true,
       allowApiRead: true,
       saving: () => {
+        this.name.validationError = 'err';
         if (context.onServer)
           if (this.name.value.length < 2)
             this.name.validationError = 'the error';

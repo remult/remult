@@ -7,6 +7,7 @@ import { RemultModule } from '@remult/core';
 import { FormsModule } from '@angular/forms';
 import { ProductsComponent } from './products/products.component';
 import {DialogService} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
+import {YesNoQuestionComponent} from '../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -29,7 +30,8 @@ import { TestComponent } from './test/test.component';
     AppComponent,
     ProductsComponent,
     CategoriesComponent,
-    TestComponent
+    TestComponent,
+    YesNoQuestionComponent
   ],
   providers:[
     DialogService
@@ -51,6 +53,7 @@ import { TestComponent } from './test/test.component';
     MatIconModule,
     FormsModule,
   ],
+  entryComponents:[YesNoQuestionComponent],
   
   bootstrap: [AppComponent]
 })
