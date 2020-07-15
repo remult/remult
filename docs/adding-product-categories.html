@@ -115,23 +115,23 @@ export class CategoriesComponent implements OnInit {
 export class Products extends IdEntity {
     name = new StringColumn();
     price = new NumberColumn({
-        onValidate: () =&gt; {
+        validate: () =&gt; {
             if (!this.price.value) {
-                this.price.error = 'Price is required';
+                this.price.validationError = 'Price is required';
             }
         }
     });
     availableFrom = new DateColumn({
-        onValidate: () =&gt; {
+        validate: () =&gt; {
             if (!this.availableFrom.value || this.availableFrom.value.getFullYear() &lt; 1990)
-                this.availableFrom.error = 'Invalid Date';
+                this.availableFrom.validationError = 'Invalid Date';
         }
     }
     );
     availableTo = new DateColumn({
-        onValidate:() =&gt;{
+        validate:() =&gt; {
             if (!this.availableTo.value||this.availableTo.value&lt;=this.availableFrom.value){
-                this.availableTo.error='Should be greater than '+this.availableFrom.caption;
+                this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
             }
         }
     });
@@ -158,7 +158,7 @@ export class Products extends IdEntity {
     },
     {
       column: p.category,
-      valueList: this.context.for(Categories).getDropDownItems()
+      valueList: this.context.for(Categories).getValueList()
     },
     p.availableFrom,
     p.availableTo

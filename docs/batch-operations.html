@@ -92,7 +92,7 @@ in the <code>update-price.component.html</code></p>
  }
 } </code></pre>
 <p>Next let's do the actual work.</p>
-<pre data-line="3,8,13,14,15,16,17,18,19,20,21,22,23,24,25" class="language-csdiff line-numbers"><code>export class UpdatePriceComponent implements OnInit {
+<pre data-line="3,8,13,14,15,16,17,18,19,20" class="language-csdiff line-numbers"><code>export class UpdatePriceComponent implements OnInit {
 - constructor() { }
   constructor(private context: Context) { }
   ngOnInit() {
@@ -104,19 +104,14 @@ in the <code>update-price.component.html</code></p>
       alert("Please enter a valid amount");
       return;
     }
-    try {
-      let products = await this.context.for(Products).find();
-      let count = 0;
-      for (const p of products) {
-        p.price.value += this.amountToAdd;
-        await p.save();
-        count++;
-      }
-      alert("updated " + count + " products");
+    let products = await this.context.for(Products).find();
+    let count = 0;
+    for (const p of products) {
+      p.price.value += this.amountToAdd;
+      await p.save();
+      count++;
     }
-    catch (err) {
-      alert("Error: " + JSON.stringify(err));
-    }  
+    alert("updated " + count + " products");
   }
 } </code></pre>
 <p>Let's review:</p>

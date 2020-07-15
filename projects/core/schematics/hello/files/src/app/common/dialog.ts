@@ -43,11 +43,12 @@ export class DialogService {
     }
 }
 @Injectable()
-export class ShowDialogOnErrorErrorHandler implements ErrorHandler {
+export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
     constructor(private dialog: DialogService, private zone: NgZone) {
+        super();
     }
     async handleError(error) {
-
+        super.handleError(error);
         this.zone.run(() => {
             this.dialog.error(error);
         });

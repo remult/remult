@@ -10,7 +10,7 @@ export class Products extends IdEntity {
         {
             validate: () => {
                 if (!this.price.value) {
-                    this.price.error = 'Price is required';
+                    this.price.validationError = 'Price is required';
                 }
             }
         }
@@ -18,14 +18,14 @@ export class Products extends IdEntity {
     availableFrom = new DateColumn({
         validate: () => {
             if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
-                this.availableFrom.error = 'Invalid Date';
+                this.availableFrom.validationError = 'Invalid Date';
         }
 +       , defaultValue: () => new Date()
     });
     availableTo = new DateColumn({
         validate: () => {
             if (!this.availableTo.value || this.availableTo.value <= this.availableFrom.value) {
-                this.availableTo.error = 'Should be greater than ' + this.availableFrom.caption;
+                this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
             }
         }
 +       , defaultValue: () => new Date(9999, 11, 31)
@@ -39,5 +39,5 @@ export class Products extends IdEntity {
     }
 } 
 ```
-> note that in javascript dates, the months are from 0 to 12, that is why `new Date(9999,11,31)` is the end of the year 9999
+> note that in javascript dates, the months are from 0 to 11, that is why `new Date(9999,11,31)` is the end of the year 9999
 

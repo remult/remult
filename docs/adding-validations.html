@@ -50,7 +50,7 @@ export class Products extends IdEntity {
     price = new NumberColumn({
         validate:()=&gt;{
             if (!this.price.value){
-                this.price.error = 'Price is required';
+                this.price.validationError = 'Price is required';
             }
         }
     });
@@ -88,7 +88,7 @@ export class Products extends IdEntity {
     price = new NumberColumn({
         validate: () =&gt; {
             if (!this.price.value) {
-                this.price.error = 'Price is required';
+                this.price.validationError = 'Price is required';
             }
         }
     });
@@ -96,14 +96,14 @@ export class Products extends IdEntity {
     availableFrom = new DateColumn({
         validate: () =&gt; {
             if (!this.availableFrom.value || this.availableFrom.value.getFullYear() &lt; 1990)
-                this.availableFrom.error = 'Invalid Date';
+                this.availableFrom.validationError = 'Invalid Date';
         }
     });
 -   availableTo = new DateColumn();
     availableTo = new DateColumn({
         validate:() =&gt;{
             if (!this.availableTo.value||this.availableTo.value&lt;=this.availableFrom.value){
-                this.availableTo.error='Should be greater than '+this.availableFrom.caption;
+                this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
             }
         }
     });
@@ -129,7 +129,7 @@ export class Products extends IdEntity {
 <blockquote>
 <p>the fact that these validations are defined on the Entity level, means that this validation will happen anywhere values are set to this entity, through out the application code.</p>
 </blockquote>
-<p><strong>Make sure to adjust your values to match the validation, otherwise, later in this tutorial steps may fail</strong></p>
+<p><strong>Make sure to adjust the values of the existing products to match the validation, otherwise, later in this tutorial steps may fail</strong></p>
 
 
 

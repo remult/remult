@@ -439,6 +439,8 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
 
     gridSettings(settings?: IDataSettings<T>) {
+        if (!settings)
+            settings = {};
         return new GridSettings(this, this.context, settings);
     }
 

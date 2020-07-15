@@ -30,20 +30,15 @@ Let's start with separating the update logic from the UI
       alert("Please enter a valid amount");
       return;
     }
-    try {
--     let products = await this.context.for(Products).find();
--     let count = 0;
--     for (const p of products) {
--       p.price.value += this.amountToAdd;
--       await p.save();
--       count++;
--     }
-+     let count = await this.actualUpdatePrices();
-      alert("updated " + count + " products");
-    }
-    catch (err) {
-      alert("Error: " + JSON.stringify(err));
-    }  
+-   let products = await this.context.for(Products).find();
+-   let count = 0;
+-   for (const p of products) {
+-     p.price.value += this.amountToAdd;
+-     await p.save();
+-     count++;
+-   }
++   let count = await this.actualUpdatePrices();
+    alert("updated " + count + " products");
   }
 ```
 
@@ -68,14 +63,10 @@ Next we'll make the `actualUpdatePrices` method static and decorate it with the 
       alert("Please enter a valid amount");
       return;
     }
-    try {
--     let count = await this.actualUpdatePrices();
-+     let count = await UpdatePriceComponent.actualUpdatePrices(this.amountToAdd);
-      alert("updated " + count + " products");
-    }
-    catch (err) {
-      alert("Error: " + JSON.stringify(err));
-    }  
+    
+-   let count = await this.actualUpdatePrices();
++   let count = await UpdatePriceComponent.actualUpdatePrices(this.amountToAdd);
+    alert("updated " + count + " products");
   }
 ```
 

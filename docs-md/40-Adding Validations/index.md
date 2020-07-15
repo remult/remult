@@ -9,7 +9,7 @@ export class Products extends IdEntity {
 +   price = new NumberColumn({
 +       validate:()=>{
 +           if (!this.price.value){
-+               this.price.error = 'Price is required';
++               this.price.validationError = 'Price is required';
 +           }
 +       }
 +   });
@@ -52,7 +52,7 @@ export class Products extends IdEntity {
     price = new NumberColumn({
         validate: () => {
             if (!this.price.value) {
-                this.price.error = 'Price is required';
+                this.price.validationError = 'Price is required';
             }
         }
     });
@@ -60,14 +60,14 @@ export class Products extends IdEntity {
 +   availableFrom = new DateColumn({
 +       validate: () => {
 +           if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
-+               this.availableFrom.error = 'Invalid Date';
++               this.availableFrom.validationError = 'Invalid Date';
 +       }
 +   });
 -   availableTo = new DateColumn();
 +   availableTo = new DateColumn({
 +       validate:() =>{
 +           if (!this.availableTo.value||this.availableTo.value<=this.availableFrom.value){
-+               this.availableTo.error='Should be greater than '+this.availableFrom.caption;
++               this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
 +           }
 +       }
 +   });
@@ -97,4 +97,4 @@ And in the JSON response:
 
 > the fact that these validations are defined on the Entity level, means that this validation will happen anywhere values are set to this entity, through out the application code.
 
-**Make sure to adjust your values to match the validation, otherwise, later in this tutorial steps may fail**
+**Make sure to adjust the values of the existing products to match the validation, otherwise, later in this tutorial steps may fail**
