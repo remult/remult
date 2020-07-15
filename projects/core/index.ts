@@ -29,7 +29,7 @@ export * from './src/grid-settings';
 export * from './src/data-area-settings';
 export * from './src/sort';//V
 export * from './src/column-collection';
-export * from './src/column-hash-set';
+
 
 export * from './src/entity';
 export * from './src/column';

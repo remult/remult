@@ -1,11 +1,11 @@
-
 <div class="column-container">
     <div *ngFor="let col of theColumns()">
         <ng-container *ngFor="let line of col">
             <div class="one-line">
-                <data-control [settings]="settings.columns" [map]="map" [record]="settings.columns.currentRow()"
-                    *ngFor="let map of line">
-                </data-control>
+                <ng-container *ngFor="let map of line">
+                    <data-control [settings]="settings.columns" [map]="map" [record]="settings.columns.currentRow()" *ngIf="settings.columns.__visible(map,settings.columns.currentRow())">
+                    </data-control>
+                </ng-container>
             </div>
         </ng-container>
     </div>

@@ -19,7 +19,7 @@ export class Users extends IdEntity {
             allowApiDelete: context.isSignedIn(),
             allowApiUpdate: context.isSignedIn(),
             allowApiInsert: true,
-            savingRow: async () => {
+            saving: async () => {
                 if (context.onServer) {
                     if (this.password.value && this.password.value != this.password.originalValue && this.password.value != Users.emptyPassword) {
                         this.realStoredPassword.value = Users.passwordHelper.generateHash(this.password.value);
@@ -46,7 +46,7 @@ export class Users extends IdEntity {
         validate: () => {
 
             if (!this.name.value || this.name.value.length < 2)
-                this.name.error = 'Name is too short';
+                this.name.validationError = 'Name is too short';
         }
     });
 

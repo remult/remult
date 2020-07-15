@@ -2,7 +2,7 @@ import { Entity } from "./entity";
 import { EntityProvider,  FindOptions } from "./data-interfaces";
 import { FilterBase } from './filter/filter-interfaces';
 
-export class DataList<T extends Entity<any>> implements Iterable<T>{
+export class DataList<T extends Entity> implements Iterable<T>{
     [Symbol.iterator](): Iterator<T> {
       return this.items[Symbol.iterator]();
     }

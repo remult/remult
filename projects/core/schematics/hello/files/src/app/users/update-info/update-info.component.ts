@@ -49,12 +49,12 @@ export class UpdateInfoComponent implements OnInit {
       let passwordChanged = this.helpers.currentRow.password.value != this.helpers.currentRow.password.originalValue;
       let thePassword = this.helpers.currentRow.password.value;
       if (this.helpers.currentRow.password.value != this.confirmPassword.value) {
-        this.dialog.Error('Password doesn\'t match confirm password');
+        this.dialog.error('Password doesn\'t match confirm password');
       }
       else {
 
         await this.helpers.items[0].save();
-        this.dialog.Info("Update saved - thanks");
+        this.dialog.info("Update saved - thanks");
         this.confirmPassword.value = this.helpers.currentRow.password.value ? Users.emptyPassword : '';
         if (passwordChanged) {
           

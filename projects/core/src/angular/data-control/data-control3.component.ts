@@ -14,8 +14,8 @@ import { StringColumn } from '../../columns/string-column';
   styleUrls: ['./data-control3.component.scss']
 })
 export class DataControl3Component {
-  @Input() map: DataControlSettings<any>;
-  @Input() set column(value: Column<any>) {
+  @Input() map: DataControlSettings;
+  @Input() set column(value: Column) {
     this.map = {
       column: value
     };
@@ -24,10 +24,10 @@ export class DataControl3Component {
   @Input() rightToLeft = false;
 
   theId: any;
-  @Input() record: Entity<any>;
+  @Input() record: Entity;
 
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection<any> = new ColumnCollection<any>(undefined, () => true, undefined, undefined);
+  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined);
   showDescription() {
 
     return (this.map.column) && this.map.getValue || !this._getEditable();

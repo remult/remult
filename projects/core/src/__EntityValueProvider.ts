@@ -7,16 +7,23 @@ export class __EntityValueProvider implements ColumnValueProvider {
   register(listener: RowEvents) {
     this.listeners.push(listener);
   }
+
+
   dataProvider: EntityDataProvider;
-  initServerExpressions:()=>Promise<void> = async ()=>{};
-  delete() {
-    return this.dataProvider.delete(this.id).then(() => {
+
+  initServerExpressions: () => Promise<void> = async () => { };
+  delete(deleted: () => Promise<any> | any) {
+    return this.dataProvider.delete(this.id).then(async () => {
+      if (deleted)
+        await deleted();
+
       this.listeners.forEach(x => {
         if (x.rowDeleted)
           x.rowDeleted();
       });
     });
   }
+  //#end region xx
   isNewRow(): boolean {
     return this.newRow;
   }
@@ -30,13 +37,21 @@ export class __EntityValueProvider implements ColumnValueProvider {
         x.rowReset(this.newRow);
     });
   }
-  save(e: Entity<any>): Promise<void> {
+  reload(e: Entity) {
+    return this.dataProvider.find({ where: e.columns.idColumn.isEqualTo(this.id) }).then(async newData => {
+      await this.setData(newData[0], e);
+    });
+  }
+  save(e: Entity, doNotSave: boolean, saved: () => Promise<any> | any): Promise<void> {
     let d = JSON.parse(JSON.stringify(this.data));
-    if (e.__idColumn instanceof CompoundIdColumn)
+    if (e.columns.idColumn instanceof CompoundIdColumn)
       d.id = undefined;
     if (this.newRow) {
-      return this.dataProvider.insert(d).then((newData: any) => {
-        this.setData(newData, e);
+
+      return this.dataProvider.insert(d).then(async (newData: any) => {
+        if (saved)
+          await saved();
+        await this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(true);
@@ -44,8 +59,19 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     }
     else {
-      return this.dataProvider.update(this.id, d).then((newData: any) => {
-        this.setData(newData, e);
+      if (doNotSave) {
+        return this.dataProvider.find({ where: e.columns.idColumn.isEqualTo(this.id) }).then(async newData => {
+          await this.setData(newData[0], e);
+          this.listeners.forEach(x => {
+            if (x.rowSaved)
+              x.rowSaved(false);
+          });
+        });
+      }
+      return this.dataProvider.update(this.id, d).then(async (newData: any) => {
+        if (saved)
+          await saved();
+        await this.setData(newData, e);
         this.listeners.forEach(x => {
           if (x.rowSaved)
             x.rowSaved(false);
@@ -57,13 +83,13 @@ export class __EntityValueProvider implements ColumnValueProvider {
   private newRow = true;
   private data: any = {};
   private originalData: any = {};
-  async setData(data: any, r: Entity<any>) {
+  async setData(data: any, r: Entity) {
     if (!data)
       data = {};
-    if (r.__idColumn instanceof CompoundIdColumn) {
-      r.__idColumn.__addIdToPojo(data);
+    if (r.columns.idColumn instanceof CompoundIdColumn) {
+      r.columns.idColumn.__addIdToPojo(data);
     }
-    let id = data[r.__idColumn.jsonName];
+    let id = data[r.columns.idColumn.defs.key];
     if (id != undefined) {
       this.id = id;
       this.newRow = false;
@@ -83,9 +109,9 @@ export class __EntityValueProvider implements ColumnValueProvider {
   }
 }
 export interface ColumnValueProvider {
-    getValue(key: string,calcDefaultValue: () => void): any;
-    getOriginalValue(key: string): any;
-    setValue(key: string, value: any): void;
+  getValue(key: string, calcDefaultValue: () => void): any;
+  getOriginalValue(key: string): any;
+  setValue(key: string, value: any): void;
 }
 
 

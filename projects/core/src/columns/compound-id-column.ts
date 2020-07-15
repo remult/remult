@@ -7,8 +7,8 @@ import { FilterBase } from '../filter/filter-interfaces';
 
 export class CompoundIdColumn extends Column<string>
 {
-  private columns: Column<any>[];
-  constructor(entity: Entity<string>, ...columns: Column<any>[]) {
+  private columns: Column[];
+  constructor(entity: Entity<string>, ...columns: Column[]) {
     super();
     this.columns = columns;
   }
@@ -34,7 +34,7 @@ export class CompoundIdColumn extends Column<string>
     this.columns.forEach(c => {
       if (r.length > 0)
         r += ',';
-      r += p[c.jsonName];
+      r += p[c.defs.key];
     });
     p.id = r;
 
@@ -49,8 +49,8 @@ export class CompoundIdColumn extends Column<string>
         let val = undefined;
         if (i < idParts.length)
           val = idParts[i];
-        if (data[c.jsonName] != undefined)
-          val = data[c.jsonName];
+        if (data[c.defs.key] != undefined)
+          val = data[c.defs.key];
         if (!result)
           result = c.isEqualTo(val);
         else

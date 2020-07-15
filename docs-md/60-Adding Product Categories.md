@@ -85,23 +85,23 @@ import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn
 export class Products extends IdEntity {
     name = new StringColumn();
     price = new NumberColumn({
-        onValidate: () => {
+        validate: () => {
             if (!this.price.value) {
-                this.price.error = 'Price is required';
+                this.price.validationError = 'Price is required';
             }
         }
     });
     availableFrom = new DateColumn({
-        onValidate: () => {
+        validate: () => {
             if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
-                this.availableFrom.error = 'Invalid Date';
+                this.availableFrom.validationError = 'Invalid Date';
         }
     }
     );
     availableTo = new DateColumn({
-        onValidate:() =>{
+        validate:() => {
             if (!this.availableTo.value||this.availableTo.value<=this.availableFrom.value){
-                this.availableTo.error='Should be greater than '+this.availableFrom.caption;
+                this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
             }
         }
     });
@@ -130,7 +130,7 @@ products = this.context.for(Products).gridSettings({
     },
 +   {
 +     column: p.category,
-+     valueList: this.context.for(Categories).getDropDownItems()
++     valueList: this.context.for(Categories).getValueList()
 +   },
     p.availableFrom,
     p.availableTo

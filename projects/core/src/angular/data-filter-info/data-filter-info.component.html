@@ -1,29 +1,6 @@
-<div *ngIf="this.showFilterButton">
-    <ul>
-        <li *ngFor="let map of settings.columns.filterHelper.filterColumns" (click)="this.showEditFilter(map)">
-            {{map.caption}}: {{this.getCurrentFilterValue(map)}}
-        </li>
-        <li (click)="this.showAddAnotherFilterDialog()" *ngIf="!showAddFilter&&!editFilterVisible">...</li>
-    </ul>
-    <div *ngIf="this.editFilterVisible">
-        {{this.filterColumnToAdd.caption}}:
-        <data-control *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
-            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
-        <button mat-icon-button (click)="this.confirmEditFilter()">
-            <mat-icon>check</mat-icon>
-        </button>
-        <button mat-icon-button (click)="this.clearEditFilter()">
-            <mat-icon>clear</mat-icon>
-        </button>
-    </div>
-    <div *ngIf="this.showAddFilter">
-        <select [(ngModel)]="this.filterColumnToAdd" class="form-control selectColumnCombo"
-            (change)="settings.columns.colListChanged()">
-            <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}} </option>
-        </select>
-        <data-control *ngIf="this.filterColumnToAdd" [settings]="settings.columns" [map]="this.filterColumnToAdd"
-            [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
-        <button mat-icon-button (click)="this.addFilter()"><mat-icon>check</mat-icon></button>
-        <button mat-icon-button (click)="this.cancelAddNewFilter()"><mat-icon>clear</mat-icon></button>
-    </div>
-</div>
+<span (click)="showAddAnotherFilterDialog()" #theDiv class="link"><span *ngIf="!rightToLeft">Filter</span><span *ngIf="rightToLeft">סינון</span></span>
+<span *ngIf="settings.columns.filterHelper.filterColumns.length>0">: </span>
+<span *ngFor="let map of settings.columns.filterHelper.filterColumns ; let i = index">
+    <span *ngIf="i>0"> <span *ngIf="!rightToLeft">and</span><span *ngIf="rightToLeft">וגם</span> </span>
+    <span (click)="editFilter(map)" class="link"> {{map.defs.caption}} = "{{this.getCurrentFilterValue(map)}}"</span>
+</span>

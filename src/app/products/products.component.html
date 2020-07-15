@@ -1,3 +1,4 @@
-<data-grid [settings]="products"></data-grid>
-<data-area [settings]="area"></data-area>
-<button (click)="test()">test</button>
+<div><button (click)="dialog()">bite me</button> {{products.selectedRows.length}}
+    <data-grid [settings]="products" style="flex-grow: 1"></data-grid>
+</div>
+

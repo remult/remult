@@ -19,7 +19,7 @@ describe("test default value", () => {
         let c = new ServerContext(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
         let r = c.for(testDefaultValue).create();
-        r.save();
+        await r.save();
         let res =await c.for(testDefaultValue).find({});
         expect(res.length).toBe(1);
         expect (testDefaultValue.testVal).toBe(2);

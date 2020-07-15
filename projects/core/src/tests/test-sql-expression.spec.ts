@@ -35,7 +35,7 @@ class testSqlExpression extends Entity<number>{
     code = new NumberColumn();
     testExpression = new NumberColumn({
         sqlExpression: () => {
-            return this.code.__getDbName() + ' * 5';
+            return this.code.defs.dbName + ' * 5';
         }
     });
     constructor() {

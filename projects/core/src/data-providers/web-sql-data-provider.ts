@@ -16,36 +16,36 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     /** @internal */
     //@ts-ignore
     db: Database;
-    
+
     constructor(private databaseName: string) {
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-     async entityIsUsedForTheFirstTime(entity: Entity<any>) {
+    async entityIsUsedForTheFirstTime(entity: Entity) {
         let result = '';
-        entity.__iterateColumns().forEach(x => {
-            if (!x.__dbReadOnly()) {
+        for (const x of entity.columns) {
+            if (!x.defs.dbReadOnly) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
                 result += this.addColumnSqlSyntax(x);
-                if (x == entity.__idColumn)
+                if (x == entity.columns.idColumn)
                     result += ' primary key';
             }
-        });
-        await this.createCommand().execute('create table if not exists ' + entity.__getDbName() + ' (' + result + '\r\n)');
+        }
+        await this.createCommand().execute('create table if not exists ' + entity.defs.dbName + ' (' + result + '\r\n)');
     }
 
     createCommand(): SqlCommand {
         return new WebSqlBridgeToSQLCommand(this.db);
     }
-    
+
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>): Promise<void> {
         throw new Error("Method not implemented.");
     }
 
-    private addColumnSqlSyntax(x: Column<any>) {
-        let result = x.__getDbName();
+    private addColumnSqlSyntax(x: Column) {
+        let result = x.defs.dbName;
         if (x instanceof DateTimeColumn)
             result += " integer";
         else if (x instanceof DateColumn)
@@ -100,16 +100,16 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
 }
 
 class WebSqlBridgeToSQLQueryResult implements SqlResult {
-    getResultJsonNameForIndexInSelect(index: number): string {
+    getColumnKeyInResultForIndexInSelect(index: number): string {
         if (this.rows.length == 0) return undefined;
         let i = 0;
         for (let m in this.rows[0]) {
-            if (i++==index)
-            return m;
+            if (i++ == index)
+                return m;
         }
         return undefined;
     }
-  
+
     //@ts-ignore
     constructor(private r: SQLResultSet) {
         this.rows = [];

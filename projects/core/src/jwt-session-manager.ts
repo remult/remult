@@ -64,9 +64,14 @@ export class JwtSessionManager {
     }
     tokenInfoChanged: () => void;
 
-    signout(): any {
+    signout(pathForCookie?: string): any {
         this._setToken('');
-        document.cookie = authToken + '=; expires = Thu, 01 Jan 1970 00:00:00 GMT';
+        let c = authToken + '=; expires = Thu, 01 Jan 1970 00:00:00 GMT';
+        if (pathForCookie)
+            c += '; path=' + pathForCookie;
+        else
+            c += ';path=/'
+        document.cookie = c;
     }
 }
 
