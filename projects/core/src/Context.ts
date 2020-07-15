@@ -151,20 +151,26 @@ export class ServerContext extends Context {
 
     }
     getHost() {
+        if (!this.req)
+            return undefined;
         return this.req.getHeader('host');
     }
     getPathInUrl() {
+        if (!this.req)
+            return undefined;
         return this.req.getBaseUrl();
     }
     getCookie(name: string) {
-        let cookie = this.req.getHeader('cookie');
-        if (cookie)
-            for (const iterator of cookie.split(';')) {
-                let itemInfo = iterator.split('=');
-                if (itemInfo && itemInfo[0].trim() == name) {
-                    return itemInfo[1];
+        if (this.req) {
+            let cookie = this.req.getHeader('cookie');
+            if (cookie)
+                for (const iterator of cookie.split(';')) {
+                    let itemInfo = iterator.split('=');
+                    if (itemInfo && itemInfo[0].trim() == name) {
+                        return itemInfo[1];
+                    }
                 }
-            }
+        }
         return undefined;
     }
     private req: DataApiRequest;
@@ -177,6 +183,8 @@ export class ServerContext extends Context {
         this._dataSource = dataProvider;
     }
     getOrigin() {
+        if (!this.req)
+            return undefined;
         return this.req.getHeader('origin')
     }
 }
