@@ -33,9 +33,8 @@ export class UsersComponent implements OnInit {
 
 
     ],
-    confirmDelete: async (h, yes) => {
-      if (await this.dialog.confirmDelete(h.name.value))
-        yes();
+    confirmDelete: async (h) => {
+      return await this.dialog.confirmDelete(h.name.value)
     },
 
 
