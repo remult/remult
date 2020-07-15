@@ -129,13 +129,15 @@ export class Context {
 
         return r;
     }
-    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters: (it: C) => void, returnAValue?: (it: C) => T) {
+    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T) {
 
         let ref = this._dialog.open(component, component[dialogConfigMember]);
-        setParameters(ref.componentInstance);
-        await ref.beforeClose().toPromise();
+        if (setParameters)
+            setParameters(ref.componentInstance);
+        var r = await ref.beforeClose().toPromise();
         if (returnAValue)
             return returnAValue(ref.componentInstance);
+        return r;
     }
 
     _lookupCache: LookupCache<any>[] = [];

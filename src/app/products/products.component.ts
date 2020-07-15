@@ -3,6 +3,7 @@ import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColu
 import { Products, productStatus } from './products';
 import { YesNoQuestionComponent } from '../../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 import { DialogService } from '../../../projects/core/schematics/hello/files/src/app/common/dialog';
+import { TestDialogComponent } from '../test-dialog/test-dialog.component';
 
 
 @Component({
@@ -25,7 +26,7 @@ export class ProductsComponent implements OnInit {
 
 
 
-  constructor(private context: Context,private dialogs:DialogService) {
+  constructor(private context: Context, private dialogs: DialogService) {
 
 
   }
@@ -42,7 +43,7 @@ export class ProductsComponent implements OnInit {
     ],
     allowDelete: true,
     confirmDelete: async p => {
-      return this.dialogs.yesNoQuestion("bla bla "+p.name.value);
+      return this.dialogs.yesNoQuestion("bla bla " + p.name.value);
     },
 
 
@@ -75,7 +76,8 @@ export class ProductsComponent implements OnInit {
   }
 
   async dialog() {
-    this.products.currentRow.save();
+    let r = await this.context.openDialog(TestDialogComponent);
+    console.log(r);
   }
   @ServerFunction({ allowed: true })
   static async testIt(amount: Number, context?: Context) {

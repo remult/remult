@@ -22,6 +22,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
+import { TestDialogComponent } from './test-dialog/test-dialog.component';
 
 
 
@@ -31,7 +32,8 @@ import { TestComponent } from './test/test.component';
     ProductsComponent,
     CategoriesComponent,
     TestComponent,
-    YesNoQuestionComponent
+    YesNoQuestionComponent,
+    TestDialogComponent
   ],
   providers:[
     DialogService
@@ -53,7 +55,7 @@ import { TestComponent } from './test/test.component';
     MatIconModule,
     FormsModule,
   ],
-  entryComponents:[YesNoQuestionComponent],
+  entryComponents:[YesNoQuestionComponent,TestDialogComponent],
   
   bootstrap: [AppComponent]
 })
