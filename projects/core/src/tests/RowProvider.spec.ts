@@ -395,8 +395,8 @@ describe("test row provider", () => {
 
 
     let ds = c.gridSettings({
-      onSavingRow: r => CategoriesWithValidation.orderOfOperation += "GridOnSavingRow,",
-      onValidate: r => CategoriesWithValidation.orderOfOperation += "GridValidate,",
+      saving: r => CategoriesWithValidation.orderOfOperation += "GridOnSavingRow,",
+      validation: r => CategoriesWithValidation.orderOfOperation += "GridValidate,",
       get: {
         orderBy: c => new Sort({ column: c.id })
       }

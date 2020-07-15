@@ -46,7 +46,7 @@ export class ProductsComponent implements OnInit {
     },
 
 
-    onEnterRow: (r) => {
+    enterRow: (r) => {
       this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });
     },
     get: {

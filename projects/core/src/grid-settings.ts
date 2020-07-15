@@ -57,14 +57,14 @@ export class GridSettings<rowType extends Entity = Entity>  {
 
       if (settings.rowCssClass)
         this.rowClass = settings.rowCssClass;
-      if (settings.onSavingRow)
-        this.onSavingRow = settings.onSavingRow;
-      if (settings.onEnterRow)
-        this.onEnterRow = settings.onEnterRow;
-      if (settings.onNewRow)
-        this.onNewRow = settings.onNewRow;
-      if (settings.onValidate)
-        this.onValidate = settings.onValidate;
+      if (settings.saving)
+        this.onSavingRow = settings.saving;
+      if (settings.enterRow)
+        this.onEnterRow = settings.enterRow;
+      if (settings.newRow)
+        this.onNewRow = settings.newRow;
+      if (settings.validation)
+        this.onValidate = settings.validation;
       if (settings.caption)
         this.caption = settings.caption;
       if (!this.caption && entityProvider) {
@@ -445,10 +445,10 @@ export interface IDataSettings<rowType extends Entity> {
   gridButtons?: GridButton[];
   get?: FindOptions<rowType>;
   knowTotalRows?: boolean;
-  onSavingRow?: (r: rowType) => void;
-  onValidate?: (r: rowType) => void;
-  onEnterRow?: (r: rowType) => void;
-  onNewRow?: (r: rowType) => void;
+  saving?: (r: rowType) => void;
+  validation?: (r: rowType) => void;
+  enterRow?: (r: rowType) => void;
+  newRow?: (r: rowType) => void;
   numOfColumnsInGrid?: number;
   caption?: string;
 
