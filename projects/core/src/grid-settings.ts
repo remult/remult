@@ -435,7 +435,7 @@ export interface IDataSettings<rowType extends Entity> {
   showPagination?: boolean,
   showFilter?: boolean,
   allowSelection?: boolean,
-  confirmDelete?: (r: rowType, yes: () => void) => void;
+  confirmDelete?: (r: rowType) => Promise<boolean>;
 
   columnSettings?: (row: rowType) => DataControlInfo<rowType>[],
   areas?: { [areaKey: string]: DataControlInfo<rowType>[] },

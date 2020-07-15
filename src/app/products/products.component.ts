@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn } from '@remult/core';
 import { Products, productStatus } from './products';
 import { YesNoQuestionComponent } from '../../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
+import { DialogService } from '../../../projects/core/schematics/hello/files/src/app/common/dialog';
 
 
 @Component({
@@ -22,9 +23,9 @@ export class ProductsComponent implements OnInit {
     })
   });
 
-  
-  
-  constructor(private context: Context) {
+
+
+  constructor(private context: Context,private dialogs:DialogService) {
 
 
   }
@@ -35,35 +36,39 @@ export class ProductsComponent implements OnInit {
     allowInsert: true,
     allowSelection: true,
     knowTotalRows: true,
-    columnSettings:p=>[
+    columnSettings: p => [
       p.name
-      
+
     ],
+    allowDelete: true,
+    confirmDelete: async p => {
+      return this.dialogs.yesNoQuestion("bla bla "+p.name.value);
+    },
 
 
     onEnterRow: (r) => {
       this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });
     },
     get: {
-      
+
     },
     gridButtons: [
       {
         name: 'xxx'
       }
     ],
-    rowButtons:[
+    rowButtons: [
       {
-        icon:'clear',
-        textInMenu:()=>'asdf',
-        showInLine:true
+        icon: 'clear',
+        textInMenu: () => 'asdf',
+        showInLine: true
       }
     ]
 
   });
 
   ngOnInit() {
-    
+
   }
   async test() {
     await ProductsComponent.testIt(2);

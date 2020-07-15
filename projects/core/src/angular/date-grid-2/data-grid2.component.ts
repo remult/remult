@@ -133,7 +133,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     this.page--;
   }
 
- 
+
 
 
   ngOnChanges(): void {
@@ -197,12 +197,13 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
         , icon: 'delete',
         showInLine: true,
         textInMenu: () => this.rightToLeft ? 'מחק' : 'delete',
-        click: r => {
-          if (this.settings.setCurrentRow && this.settings.settings.confirmDelete) {
-            this.settings.settings.confirmDelete(r, () => r.delete());
+        click: async r => {
+          if (this.settings.settings.confirmDelete) {
+
+            if (!await this.settings.settings.confirmDelete(r))
+              return;
           }
-          else
-            r.delete();
+          r.delete();
 
         },
 
