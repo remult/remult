@@ -7,19 +7,23 @@ export class __EntityValueProvider implements ColumnValueProvider {
   register(listener: RowEvents) {
     this.listeners.push(listener);
   }
+
+
   dataProvider: EntityDataProvider;
+
   initServerExpressions: () => Promise<void> = async () => { };
   delete(deleted: () => Promise<any> | any) {
-    return this.dataProvider.delete(this.id).then(async() => {
-      if(deleted)
+    return this.dataProvider.delete(this.id).then(async () => {
+      if (deleted)
         await deleted();
-      
+
       this.listeners.forEach(x => {
         if (x.rowDeleted)
           x.rowDeleted();
       });
     });
   }
+  //#end region xx
   isNewRow(): boolean {
     return this.newRow;
   }
@@ -31,6 +35,11 @@ export class __EntityValueProvider implements ColumnValueProvider {
     this.listeners.forEach(x => {
       if (x.rowReset)
         x.rowReset(this.newRow);
+    });
+  }
+  reload(e: Entity) {
+    return this.dataProvider.find({ where: e.columns.idColumn.isEqualTo(this.id) }).then(async newData => {
+      await this.setData(newData[0], e);
     });
   }
   save(e: Entity, doNotSave: boolean, saved: () => Promise<any> | any): Promise<void> {

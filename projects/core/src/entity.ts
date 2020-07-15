@@ -198,7 +198,7 @@ export class Entity<idType = any> {
     this.__clearErrors();
   }
   async reload() {
-    throw 'not implemented';
+    await this.__entityData.reload(this);
   }
   //@internal
   __clearErrors() {

@@ -912,6 +912,18 @@ describe("data api", () => {
     d.test();
 
   });
+  itAsync("row reload", async () => {
+    let context = new Context();
+
+    let c = await createData(async insert => insert(1, 'noam'),Categories);
+    let a =await c.findId(1);
+    let b =await c.findId(1);
+    a.categoryName.value = "yael";
+    await a.save();
+    expect(b.categoryName.value ).toBe('noam');
+    await b.reload();
+    expect(b.categoryName.value ).toBe('yael');
+  });
 
   itAsync("put updates", async () => {
     let context = new Context();
