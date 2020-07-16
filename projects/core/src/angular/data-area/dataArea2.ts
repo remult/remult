@@ -20,7 +20,7 @@ export class DataArea2Compnent implements OnChanges {
   ngOnChanges(): void {
     if (this.settings && this.settings.columns) {
       this.settings.columns.onColListChange(() => this.lastCols = undefined);
-      let areaSettings = this.settings as DataAreaSettings<any>;
+      let areaSettings = this.settings as DataAreaSettings;
       if (areaSettings.settings) {
         if (areaSettings.settings.numberOfColumnAreas)
           this.columns = areaSettings.settings.numberOfColumnAreas;
@@ -30,10 +30,10 @@ export class DataArea2Compnent implements OnChanges {
 
   }
 
-  lastCols: DataControlSettings<any>[][][];
-  lastAllCols: DataControlSettings<any>[];
+  lastCols: DataControlSettings[][][];
+  lastAllCols: DataControlSettings[];
 
-  theColumns(): DataControlSettings<any>[][][] {
+  theColumns(): DataControlSettings[][][] {
 
 
 
@@ -42,12 +42,12 @@ export class DataArea2Compnent implements OnChanges {
       return this.lastCols;
     this.lastAllCols = cols;
 
-    let r: DataControlSettings<any>[][][] = [];
+    let r: DataControlSettings[][][] = [];
     this.lastCols = r;
     for (var i = 0; i < this.columns; i++) {
       r.push([]);
     }
-    let linesToPlaceInColumns: DataControlSettings<any>[][];
+    let linesToPlaceInColumns: DataControlSettings[][];
     if (this.settings.lines)
       linesToPlaceInColumns = this.settings.lines;
     else {

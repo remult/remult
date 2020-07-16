@@ -15,11 +15,11 @@ export class SqlDatabase implements DataProvider {
   async execute(sql: string) {
     return await this.createCommand().execute(sql);
   }
-  getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+  getEntityDataProvider(entity: Entity): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async () => {
-      if (this.createdEntities.indexOf(entity.__getDbName()) < 0) {
-        this.createdEntities.push(entity.__getDbName());
+      if (this.createdEntities.indexOf(entity.defs.dbName) < 0) {
+        this.createdEntities.push(entity.defs.dbName);
         await this.sql.entityIsUsedForTheFirstTime(entity);
       }
     });
@@ -28,6 +28,7 @@ export class SqlDatabase implements DataProvider {
     return this.sql.transaction(x => action(new SqlDatabase(x)));
   }
   public static LogToConsole = false;
+  public static durationThreshold = 0;
   constructor(private sql: SqlImplementation) {
 
   }
@@ -40,6 +41,7 @@ class LogSQLCommand implements SqlCommand {
   constructor(private origin: SqlCommand, private allQueries: boolean) {
 
   }
+
   args: any = {};
   addParameterAndReturnSqlToken(val: any): string {
     let r = this.origin.addParameterAndReturnSqlToken(val);
@@ -47,12 +49,19 @@ class LogSQLCommand implements SqlCommand {
     return r;
   }
   async execute(sql: string): Promise<SqlResult> {
-    if (this.allQueries) {
-      console.log('Query:', sql);
-      console.log("Arguments:", this.args);
-    }
+
     try {
-      return await this.origin.execute(sql);
+      let start = new Date();
+      let r = await this.origin.execute(sql);
+      if (this.allQueries) {
+        var d = new Date().valueOf() - start.valueOf();
+        if (d > SqlDatabase.durationThreshold) {
+          console.log('Query:', sql);
+          console.log("Arguments:", this.args);
+          console.log("Duration", d / 1000);
+        }
+      }
+      return r;
     }
     catch (err) {
       console.log('Query:', sql);
@@ -65,7 +74,7 @@ class LogSQLCommand implements SqlCommand {
 
 class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity: Entity<any>, private sql: SqlDatabase, private iAmUsed: () => Promise<void>) {
+  constructor(private entity: Entity, private sql: SqlDatabase, private iAmUsed: () => Promise<void>) {
 
 
   }
@@ -74,7 +83,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
   async  count(where: FilterBase): Promise<number> {
     await this.iAmUsed();
-    let select = 'select count(*) count from ' + this.entity.__getDbName();
+    let select = 'select count(*) count from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
     if (where) {
       let wc = new FilterConsumerBridgeToSqlRequest(r);
@@ -90,19 +99,20 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     await this.iAmUsed();
     let select = 'select ';
-    let colKeys: Column<any>[] = [];
-    this.entity.__iterateColumns().forEach(x => {
-      if (x.__isVirtual()) {
+    let colKeys: Column[] = [];
+    for (const x of this.entity.columns) {
+      if (x.defs.__isVirtual()) {
 
       }
       else {
         if (colKeys.length > 0)
           select += ', ';
-        select += x.__getDbName();
+        select += x.defs.dbName;
         colKeys.push(x);
       }
-    });
-    select += ' from ' + this.entity.__getDbName();
+    }
+
+    select += ' from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
     if (options) {
       if (options.where) {
@@ -119,7 +129,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           }
           else
             select += ', ';
-          select += c.column.__getDbName();
+          select += c.column.defs.dbName;
           if (c.descending)
             select += ' desc';
         });
@@ -142,7 +152,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         let result: any = {};
         for (let index = 0; index < colKeys.length; index++) {
           const col = colKeys[index];
-          result[col.jsonName] = col.__getStorage().fromDb(y[r.getResultJsonNameForIndexInSelect(index)]);
+          result[col.defs.key] = col.__getStorage().fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
         }
         return result;
       });
@@ -153,29 +163,29 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
-    let statement = 'update ' + this.entity.__getDbName() + ' set ';
+    this.entity.columns.idColumn.isEqualTo(id).__applyToConsumer(f);
+    let statement = 'update ' + this.entity.defs.dbName + ' set ';
     let added = false;
-    let resultFilter = this.entity.__idColumn.isEqualTo(id);
+    let resultFilter = this.entity.columns.idColumn.isEqualTo(id);
     if (data.id != undefined)
-      resultFilter = this.entity.__idColumn.isEqualTo(data.id);
-
-    this.entity.__iterateColumns().forEach(x => {
+      resultFilter = this.entity.columns.idColumn.isEqualTo(data.id);
+    for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
-      } if (x.__dbReadOnly()) { }
+      } if (x.defs.dbReadOnly) { }
       else {
-        let v = x.__getStorage().toDb(data[x.jsonName]);
+        let v = x.__getStorage().toDb(data[x.defs.key]);
         if (v != undefined) {
           if (!added)
             added = true;
           else
             statement += ', ';
 
-          statement += x.__getDbName() + ' = ' + r.addParameterAndReturnSqlToken(v);
+          statement += x.defs.dbName + ' = ' + r.addParameterAndReturnSqlToken(v);
         }
       }
-    });
+    }
+
     statement += f.where;
 
     return r.execute(statement).then(() => {
@@ -189,14 +199,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.__idColumn.isEqualTo(id).__applyToConsumer(f);
-    let statement = 'delete from ' + this.entity.__getDbName();
+    this.entity.columns.idColumn.isEqualTo(id).__applyToConsumer(f);
+    let statement = 'delete from ' + this.entity.defs.dbName;
     let added = false;
 
     statement += f.where;
 
     return r.execute(statement).then(() => {
-      return this.find({ where: this.entity.__idColumn.isEqualTo(id) }).then(y => y[0]);
+      return this.find({ where: this.entity.columns.idColumn.isEqualTo(id) }).then(y => y[0]);
     });
 
   }
@@ -210,16 +220,15 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let cols = '';
     let vals = '';
     let added = false;
-    let resultFilter = this.entity.__idColumn.isEqualTo(data[this.entity.__idColumn.jsonName]);
-
-    this.entity.__iterateColumns().forEach((x: any) => {
+    let resultFilter = this.entity.columns.idColumn.isEqualTo(data[this.entity.columns.idColumn.defs.key]);
+    for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }
-      if (x.__dbReadOnly()) { }
+      if (x.defs.dbReadOnly) { }
 
       else {
-        let v = x.__getStorage().toDb(data[x.jsonName]);
+        let v = x.__getStorage().toDb(data[x.defs.key]);
         if (v != undefined) {
           if (!added)
             added = true;
@@ -228,13 +237,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
             vals += ', ';
           }
 
-          cols += x.__getDbName();
+          cols += x.defs.dbName;
           vals += r.addParameterAndReturnSqlToken(v);
         }
       }
-    });
+    }
 
-    let statement = `insert into ${this.entity.__getDbName()} (${cols}) values (${vals})`;
+
+    let statement = `insert into ${this.entity.defs.dbName} (${cols}) values (${vals})`;
 
     return r.execute(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => {

@@ -4,7 +4,7 @@ import { Sort, SortSegment } from './sort';
 import { FilterBase } from './filter/filter-interfaces';
 
 export interface DataProvider {
-    getEntityDataProvider(entity: Entity<any>): EntityDataProvider;
+    getEntityDataProvider(entity: Entity): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
 }
 
@@ -23,17 +23,22 @@ export interface EntityDataProviderFindOptions {
     __customFindData?: any;
 }
 
-export interface EntityProvider<T extends Entity<any>> {
+export interface EntityProvider<T extends Entity> {
     find(options?: FindOptions<T>): Promise<T[]>
     count(where?: EntityWhere<T>): Promise<number>;
     create(): T;
+    
 }
 
-export declare type EntityWhere<entityType extends Entity<any>> = (entityType: entityType) => FilterBase;
-export declare type EntityOrderBy<entityType extends Entity<any>> = ((entityType: entityType) => Sort) | ((entityType: entityType) => (Column<any>)) | ((entityType: entityType) => (Column<any> | SortSegment)[]);
+export declare type EntityWhere<entityType extends Entity> = (entityType: entityType) => FilterBase;
+export declare type EntityOrderBy<entityType extends Entity> = ((entityType: entityType) => Sort) | ((entityType: entityType) => (Column)) | ((entityType: entityType) => (Column | SortSegment)[]);
 
 export function entityOrderByToSort<T2,T extends Entity<T2>>(entity: T,orderBy: EntityOrderBy<T>): Sort {
-    var sort = orderBy(entity)
+    return extractSort(  orderBy(entity));
+    
+  }
+  export function extractSort(sort: any): Sort {
+    
     if (sort instanceof Sort)
       return sort;
     if (sort instanceof Column)
@@ -49,7 +54,7 @@ export function entityOrderByToSort<T2,T extends Entity<T2>>(entity: T,orderBy: 
     }
   }
   
-export interface FindOptions<entityType extends Entity<any>> {
+export interface FindOptions<entityType extends Entity> {
     where?: EntityWhere<entityType>;
     orderBy?: EntityOrderBy<entityType>;
     limit?: number;

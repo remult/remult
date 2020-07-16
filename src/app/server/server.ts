@@ -5,14 +5,17 @@ import { ExpressBridge } from '@remult/server';
 import * as fs from 'fs';
 
 import '../app.module';
-import {serverInit} from './server-init';
+import { serverInit } from './server-init';
+import { ServerContext } from '@remult/core';
+import { Products } from '../products/products';
+
 
 
 serverInit().then(async (dataSource) => {
 
     let app = express();
     let eb = new ExpressBridge(app, dataSource, process.env.DISABLE_HTTPS == "true");
-    
+
 
     app.use(express.static('dist/my-project'));
 
@@ -30,4 +33,13 @@ serverInit().then(async (dataSource) => {
 
     let port = process.env.PORT || 3001;
     app.listen(port);
-});
+    var c = new ServerContext(dataSource);
+
+    let x = [];
+    
+    
+
+    for  await (const p of  c.for(Products).iterate()) {
+        console.log(p.name.value);
+    }
+});  

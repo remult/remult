@@ -53,7 +53,7 @@ Although this is valid when you have 10-20 products, if you have a 1000 products
 </ol>
 <p>Here's the result:</p>
 <p>Let's start with separating the update logic from the UI</p>
-<pre data-line="1,2,3,4,5,6,7,8,9,10,24" class="language-csdiff line-numbers"><code>  async actualUpdatePrices() {
+<pre data-line="1,2,3,4,5,6,7,8,9,10,23" class="language-csdiff line-numbers"><code>  async actualUpdatePrices() {
     let products = await this.context.for(Products).find();
     let count = 0;
     for (const p of products) {
@@ -68,20 +68,15 @@ Although this is valid when you have 10-20 products, if you have a 1000 products
       alert("Please enter a valid amount");
       return;
     }
-    try {
--     let products = await this.context.for(Products).find();
--     let count = 0;
--     for (const p of products) {
--       p.price.value += this.amountToAdd;
--       await p.save();
--       count++;
--     }
-      let count = await this.actualUpdatePrices();
-      alert("updated " + count + " products");
-    }
-    catch (err) {
-      alert("Error: " + JSON.stringify(err));
-    }  
+-   let products = await this.context.for(Products).find();
+-   let count = 0;
+-   for (const p of products) {
+-     p.price.value += this.amountToAdd;
+-     await p.save();
+-     count++;
+-   }
+    let count = await this.actualUpdatePrices();
+    alert("updated " + count + " products");
   } </code></pre>
 <p>Next we'll make the <code>actualUpdatePrices</code> method static and decorate it with the <code>ServerFunction</code> decorator</p>
 <pre data-line="2,3,5,9,22" class="language-csdiff line-numbers"><code>- async actualUpdatePrices() {
@@ -103,14 +98,10 @@ Although this is valid when you have 10-20 products, if you have a 1000 products
       alert("Please enter a valid amount");
       return;
     }
-    try {
--     let count = await this.actualUpdatePrices();
-      let count = await UpdatePriceComponent.actualUpdatePrices(this.amountToAdd);
-      alert("updated " + count + " products");
-    }
-    catch (err) {
-      alert("Error: " + JSON.stringify(err));
-    }  
+    
+-   let count = await this.actualUpdatePrices();
+    let count = await UpdatePriceComponent.actualUpdatePrices(this.amountToAdd);
+    alert("updated " + count + " products");
   } </code></pre>
 <p>Let's review:</p>
 <ol>

@@ -1,5 +1,5 @@
 import { RemultModule as RemultModule, NotSignedInGuard, SignedInGuard } from '@remult/core';
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
 import { Routes, RouterModule, Route, ActivatedRouteSnapshot } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 
@@ -8,6 +8,7 @@ import { UpdateInfoComponent } from './users/update-info/update-info.component';
 
 import { UsersComponent } from './users/users.component';
 import { Roles, AdminGuard } from './users/roles';
+import { ShowDialogOnErrorErrorHandler } from './common/dialog';
 
 
 const routes: Routes = [
@@ -23,7 +24,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(routes), RemultModule],
-  providers: [AdminGuard],
+  providers: [AdminGuard, { provide: ErrorHandler, useClass: ShowDialogOnErrorErrorHandler }],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

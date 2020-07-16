@@ -12,16 +12,15 @@ import { EntityProvider } from './data-interfaces';
 
 export class IdEntity extends Entity<string>
 {
-  id= new IdColumn();
+  id= new IdColumn({allowApiUpdate:false});
   constructor(options?: EntityOptions | string) {
     super(options);
     
-    this.id.allowApiUpdate = false;
     let x = this.__onSavingRow;
-    this.__onSavingRow = () => {
+    this.__onSavingRow = (cancel) => {
       if (this.isNew() && !this.id.value && !this.disableNewId)
         this.id.setToNewId();
-      return x();
+      return x(cancel);
     }
   }
   private disableNewId = false;
@@ -46,11 +45,11 @@ export function DecorateDataColumnSettings<type>(original: ColumnOptions<type>, 
   addValues(result);
   return result;
 }
-export async function checkForDuplicateValue(row: Entity<any>, column: Column<any>,provider: EntityProvider<any>, message?: string) {
+export async function checkForDuplicateValue(row: Entity, column: Column,provider: EntityProvider<any>, message?: string) {
   if (row.isNew() || column.value != column.originalValue) {
-    let rows = await provider.find({ where:r=>r.__getColumn(column).isEqualTo(column.value) });
+    let rows = await provider.find({ where:r=>r.columns.find(column).isEqualTo(column.value) });
     if (rows.length > 0)
-      column.error = message || 'Already exists';
+      column.validationError = message || 'Already exists';
   }
 
 }

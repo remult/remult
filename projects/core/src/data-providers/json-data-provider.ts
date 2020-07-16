@@ -13,7 +13,7 @@ export class JsonDataProvider implements DataProvider {
   constructor(private storage: JsonEntityStorage) {
 
   }
-  getEntityDataProvider(entity: Entity<any>): EntityDataProvider {
+  getEntityDataProvider(entity: Entity): EntityDataProvider {
     return new JsonEntityDataProvider(entity, this.storage);
   }
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -23,16 +23,16 @@ export class JsonDataProvider implements DataProvider {
 
 class JsonEntityDataProvider implements EntityDataProvider {
 
-  constructor(private entity: Entity<any>, private helper: JsonEntityStorage) {
+  constructor(private entity: Entity, private helper: JsonEntityStorage) {
 
   }
   async loadEntityData(what: (dp: EntityDataProvider, save: () => void) => any): Promise<any> {
     let data = [];
-    let s = this.helper.getItem(this.entity.__getDbName());
+    let s = this.helper.getItem(this.entity.defs.dbName);
     if (s)
       data = JSON.parse(s);
     let dp = new ArrayEntityDataProvider(this.entity, data);
-    return what(dp, () => this.helper.setItem(this.entity.__getDbName(), JSON.stringify(data, undefined, 2)));
+    return what(dp, () => this.helper.setItem(this.entity.defs.dbName, JSON.stringify(data, undefined, 2)));
   }
   p: Promise<any> = Promise.resolve();
   find(options?: EntityDataProviderFindOptions): Promise<any[]> {

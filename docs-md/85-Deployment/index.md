@@ -28,12 +28,9 @@ Here's the command with the specific name `my-project` in the `eu` region
 ```
 heroku apps:create --region eu  my-project
 ```
+> If you want to allow heroku to determine a random name, simply do not include a name and heroku will determine a random name for you.
 
-And here's the command that tells heroku to choose the name themselves:
-```
-heroku apps:create --region eu
-```
-Here's the result we got :)
+Here's the result we got, when we allowed heroku to determine the name :)
 ```
 Creating app... done, ⬢ desolate-fjord-53965, region is eu
 https://desolate-fjord-53965.herokuapp.com/ | https://git.heroku.com/desolate-fjord-53965.git

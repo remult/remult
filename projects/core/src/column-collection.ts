@@ -1,15 +1,14 @@
 import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
-import { DataControlSettings, ValueListItem } from "./column-interfaces";
+import { DataControlSettings, ValueListItem, DataControlInfo } from "./column-interfaces";
 import { Column } from "./column";
 import { Context } from "./context";
 import { isFunction } from "util";
+import { IdEntity } from './id-entity';
 
- interface FilteredColumnSetting<rowType> extends DataControlSettings<rowType> {
-  _showFilter?: boolean;
-}
-export class ColumnCollection<rowType extends Entity<any>> {
-  constructor(public currentRow: () => Entity<any>, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private context?: Context) {
+
+export class ColumnCollection<rowType extends Entity = Entity> {
+  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private context?: Context) {
 
     if (this.allowDesignMode == undefined) {
       if (location.search)
@@ -21,15 +20,24 @@ export class ColumnCollection<rowType extends Entity<any>> {
     return this.showArea();
 
   }
-  __getColumn(map: DataControlSettings<any>, record: Entity<any>) {
-    let result: Column<any>;
+  __getColumn(map: DataControlSettings, record: Entity) {
+    let result: Column;
     if (record)
-      result = record.__getColumn(map.column);
+      result = record.columns.find(map.column);
     if (!result)
       result = map.column;
     return result;
   }
-  __dataControlStyle(map: DataControlSettings<any>): string {
+
+
+
+  __visible(col: DataControlSettings, row: any) {
+    if (col.visible === undefined)
+      return true;
+    return col.visible(row);
+  }
+
+  __dataControlStyle(map: DataControlSettings): string {
 
     if (map.width && map.width.trim().length > 0) {
       if ((+map.width).toString() == map.width)
@@ -42,7 +50,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   private settingsByKey: any = {};
 
   allowDesignMode: boolean;
-  async add(...columns: DataControlSettings<rowType>[]): Promise<void>;
+  async add(...columns: DataControlInfo<rowType>[]): Promise<void>;
   async add(...columns: string[]): Promise<void>;
   async add(...columns: any[]) {
     var promises: Promise<void>[] = [];
@@ -75,7 +83,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     await Promise.all(promises);
     return Promise.resolve();
   }
-  async buildDropDown(s: DataControlSettings<any>) {
+  async buildDropDown(s: DataControlSettings) {
     if (s.valueList) {
       let orig = s.valueList;
       let result: ValueListItem[] = [];
@@ -97,9 +105,10 @@ export class ColumnCollection<rowType extends Entity<any>> {
       else if (isFunction(orig)) {
         result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
       }
-      else if (orig instanceof Promise)
-        result.push(...(await orig));
-      
+      else {
+        result.push(...(await (orig as (Promise<ValueListItem[]>))));
+      }
+
     }
     return Promise.resolve();
   }
@@ -113,7 +122,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   onColListChange(action: (() => void)) {
     this._colListChangeListeners.push(action);
   }
-  moveCol(col: DataControlSettings<any>, move: number) {
+  moveCol(col: DataControlSettings, move: number) {
     let currentIndex = this.items.indexOf(col);
     let newIndex = currentIndex + move;
     if (newIndex < 0 || newIndex >= this.items.length)
@@ -125,42 +134,43 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
   }
 
-  filterRows(col: FilteredColumnSetting<any>) {
-    col._showFilter = false;
-    this.filterHelper.filterColumn(col.column, false, (col.valueList != undefined || col.click != undefined));
+  filterRows(col: DataControlSettings) {
+
+    let forceEqual = col.forceEqualFilter;
+    if (forceEqual === undefined)
+      forceEqual = (col.valueList != undefined)
+    this.filterHelper.filterColumn(col.column, false, forceEqual);
   }
-  clearFilter(col: FilteredColumnSetting<any>) {
-    col._showFilter = false;
+  clearFilter(col: DataControlSettings) {
+
     this.filterHelper.filterColumn(col.column, true, false);
   }
-  _shouldShowFilterDialog(col: FilteredColumnSetting<any>) {
-    return col && col._showFilter;
+  _shouldShowFilterDialog(col: DataControlSettings) {
+    return false;
   }
-  showFilterDialog(col: FilteredColumnSetting<any>) {
-    col._showFilter = !col._showFilter;
-  }
-  deleteCol(col: DataControlSettings<any>) {
+
+  deleteCol(col: DataControlSettings) {
     this.items.splice(this.items.indexOf(col), 1);
     this.colListChanged();
   }
-  addCol(col: DataControlSettings<any>) {
-    this.items.splice(this.items.indexOf(col) + 1, 0,{});
+  addCol(col: DataControlSettings,newCol:DataControlSettings) {
+    this.items.splice(this.items.indexOf(col) + 1, 0, newCol);
     this.colListChanged();
   }
 
 
-  _getEditable(col: DataControlSettings<any>) {
+  _getEditable(col: DataControlSettings) {
     if (!this.allowUpdate())
       return false;
     if (!col.column)
       return false
     return !col.readOnly;
   }
-  _click(col: DataControlSettings<any>, row: any) {
+  _click(col: DataControlSettings, row: any) {
     col.click(row);
   }
 
-  _getColDisplayValue(col: DataControlSettings<any>, row: rowType) {
+  _getColDisplayValue(col: DataControlSettings, row: rowType) {
     let r;
     if (col.getValue) {
 
@@ -172,8 +182,8 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
     }
     else if (col.column) {
-      if (col.valueList ) {
-        for (let x of (col.valueList as ValueListItem[] )) {
+      if (col.valueList) {
+        for (let x of (col.valueList as ValueListItem[])) {
           if (x.id == this.__getColumn(col, row).value)
             return x.caption;
         }
@@ -184,12 +194,12 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
     return r;
   }
-  _getColDataType(col: DataControlSettings<any>) {
+  _getColDataType(col: DataControlSettings) {
     if (col.inputType)
       return col.inputType;
     return "text";
   }
-  _getColumnClass(col: DataControlSettings<any>, row: any) {
+  _getColumnClass(col: DataControlSettings, row: any) {
 
     if (col.cssClass)
       if (isFunction(col.cssClass)) {
@@ -201,16 +211,23 @@ export class ColumnCollection<rowType extends Entity<any>> {
 
   }
 
-  _getError(col: DataControlSettings<any>, r: Entity<any>) {
+  _getError(col: DataControlSettings, r: Entity) {
     if (!col.column)
       return undefined;
-    return this.__getColumn(col, r).error;
+    return this.__getColumn(col, r).validationError;
   }
-  autoGenerateColumnsBasedOnData(r: Entity<any>) {
+  autoGenerateColumnsBasedOnData(r: Entity) {
     if (this.items.length == 0) {
 
       if (r) {
-        this.add(...r.__iterateColumns());
+        let ignoreCol: Column = undefined;
+        if (r instanceof IdEntity)
+          ignoreCol = r.id;
+        for (const c of r.columns) {
+          if (c != ignoreCol)
+            this.add(c);
+        }
+
 
       }
     }
@@ -221,7 +238,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
   __columnSettingsTypeScript() {
     let memberName = 'x';
     if (this.currentRow())
-      memberName = this.currentRow().__getName();
+      memberName = this.currentRow().defs.name;
     memberName = memberName[0].toLocaleLowerCase() + memberName.substring(1);
     let result = ''
 
@@ -235,7 +252,7 @@ export class ColumnCollection<rowType extends Entity<any>> {
     result = `columnSettings: ${memberName} => [\n` + result + "\n]";
     return result;
   }
-  __columnTypeScriptDescription(c: DataControlSettings<any>, memberName: string) {
+  __columnTypeScriptDescription(c: DataControlSettings, memberName: string) {
     let properties = "";
     function addToProperties(name: string, value: any) {
       if (properties.length > 0)
@@ -248,10 +265,10 @@ export class ColumnCollection<rowType extends Entity<any>> {
     }
     let columnMember = '';
     if (c.column) {
-      columnMember += memberName + "." + c.column.__getMemberName();
+      columnMember += memberName + "." + c.column.defs.key;
       if (c == c.column)
         columnMember += '/*equal*/';
-      if (c.caption != c.column.caption) {
+      if (c.caption != c.column.defs.caption) {
         addString('caption', c.caption)
       }
 
@@ -272,21 +289,21 @@ export class ColumnCollection<rowType extends Entity<any>> {
       whatToAdd = columnMember;
     return whatToAdd;
   }
-  __changeWidth(col: DataControlSettings<any>, what: number) {
+  __changeWidth(col: DataControlSettings, what: number) {
     let width = col.width;
     if (!width)
       width = '50';
     width = ((+width) + what).toString();
     col.width = width;
   }
-  _colValueChanged(col: DataControlSettings<any>, r: any) {
+  _colValueChanged(col: DataControlSettings, r: any) {
 
 
 
   }
-  items: DataControlSettings<any>[] = [];
-  private gridColumns: DataControlSettings<any>[];
-  private nonGridColumns: DataControlSettings<any>[];
+  items: DataControlSettings[] = [];
+  private gridColumns: DataControlSettings[];
+  private nonGridColumns: DataControlSettings[];
   numOfColumnsInGrid = 5;
 
   private _lastColumnCount: number;

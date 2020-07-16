@@ -78,19 +78,14 @@ export class UpdatePriceComponent implements OnInit {
       alert("Please enter a valid amount");
       return;
     }
-+   try {
-+     let products = await this.context.for(Products).find();
-+     let count = 0;
-+     for (const p of products) {
-+       p.price.value += this.amountToAdd;
-+       await p.save();
-+       count++;
-+     }
-+     alert("updated " + count + " products");
++   let products = await this.context.for(Products).find();
++   let count = 0;
++   for (const p of products) {
++     p.price.value += this.amountToAdd;
++     await p.save();
++     count++;
 +   }
-+   catch (err) {
-+     alert("Error: " + JSON.stringify(err));
-+   }  
++   alert("updated " + count + " products");
   }
 }
 ```

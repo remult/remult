@@ -1,6 +1,6 @@
 import { Component, Injector, ViewChild } from '@angular/core';
 import { Router, Route, CanActivate, ActivatedRoute } from '@angular/router';
-import { MatSidenav } from '@angular/material';
+import { MatSidenav } from '@angular/material/sidenav';
 import { MatDialog } from '@angular/material/dialog';
 
 
@@ -41,7 +41,7 @@ export class AppComponent {
     if (!this.context.user) {
       this.dialog.open(SignInComponent);
     } else {
-      if (await this.dialogService.YesNoQuestion("Would you like to sign out?"))
+      if (await this.dialogService.yesNoQuestion("Would you like to sign out?"))
         this.sessionManager.signout();
     }
   }

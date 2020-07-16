@@ -66,7 +66,7 @@ and in the `products.component.html`
 -   <p>
 -       products works!
 -   </p>
-+ <data-grid [settings]="products" [height]="300"></data-grid>
++ <data-grid [settings]="products"></data-grid>
 ```
 
 let's review:

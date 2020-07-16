@@ -1,4 +1,5 @@
-<mat-toolbar color="primary">
+<div style="height:100%;display:flex;flex-direction: column;">
+  <mat-toolbar color="primary" style="flex-shrink: 0;">
   <button mat-button class="sidenav-toggle" (click)="sidenav.toggle()">
     <mat-icon>menu</mat-icon>
   </button>
@@ -25,12 +26,11 @@
   <div class="app-sidenav-content ">
 
 
-    <div class="wrapper">
-      <mat-card>
-        <router-outlet></router-outlet>
-      </mat-card>
-    </div>
+      <div class="wrapper"  style="height:100%">
+          <router-outlet></router-outlet>
+      </div>
 
   </div>
 
-</mat-sidenav-container>
+  </mat-sidenav-container>
+</div>

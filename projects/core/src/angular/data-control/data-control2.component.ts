@@ -14,17 +14,17 @@ import { StringColumn } from '../../columns/string-column';
   styleUrls: ['./data-control2.component.scss']
 })
 export class DataControl2Component {
-  @Input() map: DataControlSettings<any>;
-  @Input() set column(value: Column<any>) {
+  @Input() map: DataControlSettings;
+  @Input() set column(value: Column) {
     this.map = {
       column: value
     };
     this.map.column.__decorateDataSettings(this.map);
   }
   theId: any;
-  @Input() record: Entity<any>;
+  @Input() record: Entity;
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection<any> = new ColumnCollection<any>(undefined, () => true, undefined, undefined);
+  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined);
   showDescription() {
 
     return (this.map.column) && this.map.getValue || !this._getEditable();

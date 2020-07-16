@@ -5,7 +5,7 @@ import { Column } from '../column';
 import { StringColumn } from '../columns/string-column';
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    constructor(private entity: Entity<any>, private rows?: any[]) {
+    constructor(private entity: Entity, private rows?: any[]) {
         if (!rows)
             rows = [];
     }
@@ -40,8 +40,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                     let r = 0;
                     for (let i = 0; i < options.orderBy.Segments.length; i++) {
                         let seg = options.orderBy.Segments[i];
-                        let left = a[seg.column.jsonName];
-                        let right = b[seg.column.jsonName];
+                        let left = a[seg.column.defs.key];
+                        let right = b[seg.column.defs.key];
                         if (left > right)
                             r = 1;
                         else if (left < right)
@@ -67,7 +67,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         return r;
     }
     private idMatches(id: any): (item: any) => boolean {
-        let f = this.entity.__idColumn.isEqualTo(id);
+        let f = this.entity.columns.idColumn.isEqualTo(id);
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
             f.__applyToConsumer(x);
@@ -126,50 +126,61 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
     ok = true;
     constructor(private row: any) { }
-    public isEqualTo(col: Column<any>, val: any): void {
+    isIn(col: Column, val: any[]): void {
 
-        if (this.row[col.jsonName] != val)
+        for (const v of val) {
+            if (this.row[col.defs.key] == v) {
+                return;
+            }
+        }
+        this.ok = false;
+    }
+    public isEqualTo(col: Column, val: any): void {
+
+        if (this.row[col.defs.key] != val)
             this.ok = false;
     }
 
-    public isDifferentFrom(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] == val)
+    public isDifferentFrom(col: Column, val: any): void {
+        if (this.row[col.defs.key] == val)
             this.ok = false;
     }
 
-    public isGreaterOrEqualTo(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] < val)
+    public isGreaterOrEqualTo(col: Column, val: any): void {
+        if (this.row[col.defs.key] < val)
             this.ok = false;
     }
 
-    public isGreaterThan(col: Column<any>, val: any): void {
+    public isGreaterThan(col: Column, val: any): void {
 
-        if (this.row[col.jsonName] <= val)
+        if (this.row[col.defs.key] <= val)
             this.ok = false;
     }
 
-    public isLessOrEqualTo(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] > val)
+    public isLessOrEqualTo(col: Column, val: any): void {
+        if (this.row[col.defs.key] > val)
             this.ok = false;
     }
 
-    public isLessThan(col: Column<any>, val: any): void {
-        if (this.row[col.jsonName] >= val)
+    public isLessThan(col: Column, val: any): void {
+        if (this.row[col.defs.key] >= val)
             this.ok = false;
     }
-    public isContains(col: StringColumn, val: any): void {
-        let v = this.row[col.jsonName];
+    public isContainsCaseInsensitive(col: StringColumn, val: any): void {
+        let v = this.row[col.defs.key];
         if (!v) {
             this.ok = false;
             return;
         }
 
         let s = '' + v;
-        if (s.indexOf(val) < 0)
+        if (val)
+            val = val.toString().toLowerCase();
+        if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
     public isStartsWith(col: StringColumn, val: any): void {
-        let v = this.row[col.jsonName];
+        let v = this.row[col.defs.key];
         if (!v) {
             this.ok = false;
             return;

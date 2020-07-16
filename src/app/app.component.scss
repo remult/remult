@@ -6,11 +6,12 @@
 .app-sidenav-container{
   flex:1;
   width:100%;
-  position:fixed;
+  //position:fixed;
   height:100%;
-  min-width:100%;
-  min-height:100%;
+  //min-width:100%;
+  //min-height:100%;
   border:1px solid rgba(0,0,0,0.5);
+  display: flex;
 }
 .mat-toolbar{
   display:flex;
