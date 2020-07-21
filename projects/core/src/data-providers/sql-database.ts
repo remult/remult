@@ -25,7 +25,29 @@ export class SqlDatabase implements DataProvider {
     });
   }
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
-    return this.sql.transaction(x => action(new SqlDatabase(x)));
+    return this.sql.transaction(async x => {
+      let completed = false;
+      try {
+        await action(new SqlDatabase({
+          createCommand: () => {
+            let c = x.createCommand();
+            return {
+              addParameterAndReturnSqlToken:x=> c.addParameterAndReturnSqlToken(x),
+              execute: async (sql) => {
+                if (completed)
+                  throw "can't run a command after the transaction was completed";
+                return c.execute(sql)
+              }
+            };
+          },
+          entityIsUsedForTheFirstTime:y=> x.entityIsUsedForTheFirstTime(y),
+          transaction: z=>x.transaction(z)
+        }))
+      }
+      finally {
+        completed = true;
+      }
+    });
   }
   public static LogToConsole = false;
   public static durationThreshold = 0;
@@ -64,9 +86,9 @@ class LogSQLCommand implements SqlCommand {
       return r;
     }
     catch (err) {
-      console.log('Query:', sql);
-      console.log("Arguments", this.args);
-      console.log('Error:', err);
+      console.error('Error:', err);
+      console.error('Query:', sql);
+      console.error("Arguments", this.args);
       throw err;
     }
   }
@@ -81,7 +103,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
 
-  async  count(where: FilterBase): Promise<number> {
+  async count(where: FilterBase): Promise<number> {
     await this.iAmUsed();
     let select = 'select count(*) count from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
