@@ -28,7 +28,8 @@
     "build-server-watch": "tsc -p tsconfig.server.json --watch",
     "server:dev-run": "node --inspect dist-server/src/app/server/server.js",
     "docs": "vuepress dev docs",
-    "build-docs": "vuepress build docs"
+    "build-docs": "vuepress build docs",
+    "release-docs":"deploy.sh"
   },
   "private": true,
   "dependencies": {

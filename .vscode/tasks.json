@@ -172,6 +172,13 @@
             "type": "npm",
             "script": "release",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "release-docs",
+            "problemMatcher": [],
+            "label": "npm: release-docs",
+            "detail": "deploy.sh"
         }
     ]
 }
