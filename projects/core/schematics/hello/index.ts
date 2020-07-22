@@ -124,8 +124,8 @@ export function hello(_options: Schema): Rule {
       json.scripts["server:debug"] = "node --inspect --debug-brk dist-server/server/server.js";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["@remult/server"] = "^1.0.67";
-      json.dependencies["@remult/server-postgres"] = "^1.0.67";
+      json.dependencies["@remult/server"] = "^1.0.75";
+      json.dependencies["@remult/server-postgres"] = "^1.0.75";
       json.dependencies["@angular/material"] = "^8.2.3";
       json.dependencies["pg"] = "^8.3.0";
       json.dependencies["express-force-https"] = "^1.0.0";
