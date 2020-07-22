@@ -21,13 +21,14 @@
     "publish": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd server && npm publish  --access public --tag pre-release && cd.. && cd server-postgres &&  npm publish  --access public --tag pre-release",
     "release": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public && cd.. && cd server && npm publish  --access public  && cd.. && cd server-postgres &&  npm publish  --access public",
     "patch-versions": "cd projects/core && npm version patch && cd.. && cd server && npm version patch && cd.. && cd server-postgres && npm version patch && cd.. && cd.. ",
-    "docs": "c:/repos/radweb/docs-builder/buildsite.exe ./docs-md ./docs",
     "publish-radweb-local": " npm run radweb-build && cd dist/radweb && npm publish --registry http://localhost:4873",
     "publish-radweb-server-local": "cd dist/radweb-server && npm publish --registry http://localhost:4873 --access public",
     "publish-radweb-server-postgres-local": "cd dist/radweb-server-postgres && npm publish --registry http://localhost:4873 --access public",
     "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run",
     "build-server-watch": "tsc -p tsconfig.server.json --watch",
-    "server:dev-run": "node --inspect dist-server/src/app/server/server.js"
+    "server:dev-run": "node --inspect dist-server/src/app/server/server.js",
+    "docs": "vuepress dev docs",
+    "build-docs": "vuepress build docs"
   },
   "private": true,
   "dependencies": {
@@ -88,6 +89,9 @@
     "tsickle": ">=0.29.0",
     "tslib": "^1.9.0",
     "tslint": "~5.11.0",
-    "typescript": "~3.1.6"
+    "typescript": "~3.1.6",
+    "vuepress": "^1.3.1",
+    "@vuepress/plugin-back-to-top": "^1.3.1",
+    "@vuepress/plugin-medium-zoom": "^1.3.1"
   }
 }
