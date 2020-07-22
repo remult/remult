@@ -10,12 +10,15 @@ import '../app.module';
 
 import { Users } from '../users/users';
 import { SqlDatabase } from '@remult/core';
+import { ConnectionOptions } from 'tls';
 
 
 export async function serverInit() {
 
     config();
-    let ssl = true;
+    let ssl: boolean | ConnectionOptions = {
+        rejectUnauthorized: false
+    };
     if (process.env.DISABLE_POSTGRES_SSL)
         ssl = false;
 
