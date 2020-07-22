@@ -28,13 +28,14 @@ Let's review:
 
 >The `allowApiRead` and `allowApiCRUD` properties are set by default to false, to secure the data of your application, you may want to restrict access to this data and we want to make sure that data will not be exposed by default. Later we'll review how to control access to data.
 
+## Using the Entity in a Component
 Now let's add a grid on the `ProductsComponent` that displays the `Products` Entity
 
 in `products.component.ts`
-```ts
+```ts{2-3,11-17}
 import { Component, OnInit } from '@angular/core';
-+import { Context } from '@remult/core';
-+import { Products } from './products';
+import { Context } from '@remult/core';
+import { Products } from './products';
 
 @Component({
   selector: 'app-products',
@@ -42,40 +43,36 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./products.component.sass']
 })
 export class ProductsComponent implements OnInit {
-- constructor() { }
-+ constructor(private context: Context) { }
+ constructor(private context: Context) { }
 
-+ products = this.context.for(Products).gridSettings({
-+   allowInsert:true,
-+   allowUpdate:true,
-+   allowDelete:true
-+});
-
+  products = this.context.for(Products).gridSettings({
+    allowInsert:true,
+    allowUpdate:true,
+    allowDelete:true
+  });
   ngOnInit() {
   }
 
-}
 ```
 
 let's review:
 1. In line 2 and 3 we've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them)
-2. In line 12, we've added a parameter to the constructor called `context` of type `Context` from `@remilt/core`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
+2. In line 12, we've added a parameter to the constructor called `context` of type `Context` from `@remult/core`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
 3. On line 14 we've added the definition of `products` in this component. We've asked the context to provide us with `gridSettings` for the `Entity` Products - and we've configured it to allow update insert and delete.
 
+## Placing the data-grid in the html
 and in the `products.component.html`
-```ts
--   <p>
--       products works!
--   </p>
-+ <data-grid [settings]="products"></data-grid>
+```html{1}
+<data-grid [settings]="products"></data-grid>
 ```
 
 let's review:
 1. We've replaced the `html` with a `data-grid` tag that will display the grid settings provided in the `products` member of the `products.component.ts` file.
 2. We've determined a fixed height of 300 pixels.
 
+## The result on the server
 Now if we'll look at the bottom of our screen, at the Terminal output for the task `node-serve`, we'll see that the server restarted and a new api is now available:
-```ts
+```{9-12,16}
 12:08:26 PM - Found 0 errors. Watching for file changes.
 
 > my-project@0.0.0 server:dev-run c:\try\test1\my-project
@@ -84,14 +81,14 @@ Now if we'll look at the bottom of our screen, at the Terminal output for the ta
 Debugger listening on ws://127.0.0.1:9229/9c63d9ea-2a61-4848-8e8f-b2802cb42777
 For help, see: https://nodejs.org/en/docs/inspector
 start verify structure
-+create table Products (
-+  id varchar default '' not null  primary key,
-+  name varchar default '' not null
-+)
+create table Products (
+  id varchar default '' not null  primary key,
+  name varchar default '' not null
+)
 /api/signIn
 /api/resetPassword
 /api/Users
-+/api/Products
+/api/Products
 ```
 Let's review:
 1. When the server restarted, it checked if a `Products` table exists in the database, and since it didn't exist it created it in lines 9-12.
@@ -105,9 +102,10 @@ Let's add a few products:
 2. Wine
 3. Bread
 
+## Viewing the Rest Api
 We can also navigate through the browser directly to the api address `http://localhost:4200/api/products` and see the Json result we'll get when calling the api.
 
-```JSON
+```json
 [
   {
     id: "63cc3c14-aa3d-4597-9acd-47a4cb62ec73",

@@ -1,14 +1,16 @@
+# Creating a new Project
+
 The first thing we'll do is let angular create the project using it's CLI.
 
 ## Create the Angular Project
 Open a command prompt in a folder that'll be the parent of your new project (in my case I use `c:\repos\`) and run the following command, replacing `my-project` with the name of the project you want to use:
-```
+```sh
 ng new --style=scss --routing=true  my-project
 ```
 
 ## Install remult
 Next go into the folder of your new project
-```
+```sh
 cd my-project
 ```
 
@@ -19,7 +21,7 @@ ng add @remult/core
 
 ## Commit to Git
 In the command prompt run:
-```
+```sh
 git add .
 git commit -m "install remult"
 ```

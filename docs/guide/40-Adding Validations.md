@@ -1,18 +1,18 @@
+# Adding validations
 To validate that there is a price for the product, we'll define the `onValidate` event for the price column
-```ts
+```ts{6-12}
 import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
 export class Products extends IdEntity {
     name = new StringColumn();
--   price = new NumberColumn();
-+   price = new NumberColumn({
-+       validate:()=>{
-+           if (!this.price.value){
-+               this.price.validationError = 'Price is required';
-+           }
-+       }
-+   });
+    price = new NumberColumn({
+        validate:()=>{
+            if (!this.price.value){
+                this.price.validationError = 'Price is required';
+            }
+        }
+    });
     availableFrom = new DateColumn();
     availableTo = new DateColumn();
     constructor() {
@@ -34,7 +34,7 @@ Let's review:
 
 Note that the same validation logic will run both on the client (the browser) and on the server.
 If you'll try to do the same update via an external tool you'll get an http status code of `400 Bad Request` and you'll see the following json result:
-```
+```json
 {
     "modelState": {
         "price": "Price is required"
@@ -43,7 +43,7 @@ If you'll try to do the same update via an external tool you'll get an http stat
 ```
 
 Let's add some more validations:
-```ts
+```ts{13-25}
 import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
@@ -56,21 +56,19 @@ export class Products extends IdEntity {
             }
         }
     });
--   availableFrom = new DateColumn();
-+   availableFrom = new DateColumn({
-+       validate: () => {
-+           if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
-+               this.availableFrom.validationError = 'Invalid Date';
-+       }
-+   });
--   availableTo = new DateColumn();
-+   availableTo = new DateColumn({
-+       validate:() =>{
-+           if (!this.availableTo.value||this.availableTo.value<=this.availableFrom.value){
-+               this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
-+           }
-+       }
-+   });
+    availableFrom = new DateColumn({
+        validate: () => {
+            if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
+                this.availableFrom.validationError = 'Invalid Date';
+        }
+    });
+    availableTo = new DateColumn({
+        validate:() =>{
+            if (!this.availableTo.value||this.availableTo.value<=this.availableFrom.value){
+                this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
+            }
+        }
+    });
     constructor() {
         super({
             name: "Products",
@@ -85,7 +83,7 @@ The error would look like this:
 ![](2019-10-06_14h42_16.png)
 
 And in the JSON response:
-```
+```json
 {
     "modelState": {
         "price": "Price is required",
@@ -95,6 +93,8 @@ And in the JSON response:
 }
 ```
 
-> the fact that these validations are defined on the Entity level, means that this validation will happen anywhere values are set to this entity, through out the application code.
+the fact that these validations are defined on the Entity level, means that this validation will happen anywhere values are set to this entity, throughout the application code.
 
-**Make sure to adjust the values of the existing products to match the validation, otherwise, later in this tutorial steps may fail**
+::: warning
+Make sure to adjust the values of the existing products to match the validation, otherwise, later in this tutorial steps may fail
+:::

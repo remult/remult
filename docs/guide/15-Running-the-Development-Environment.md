@@ -1,14 +1,15 @@
+# Running the development Environment
 Now that we have our new project configured, we want to run it.
 
 Open Visual Studio code in the folder of your project (`my-project` in our case).
 
 
-# The different servers
+## Understanding the different servers
 When developing an angular application in a dev environment we'll need two servers,
 1. Angular dev server - used by Angular for the front end development (the ui that'll run in the browser),
 2. Node JS web server - is the Actual server, where all the data access will be and all the heavy lifting will be done.
 
-## Visual Studio Tasks
+## Running the servers
 We'll use visual studio tasks to run our common tasks. 
 
 To run a visual studio task, we'll go to the menu `Terminal\Run Task...` and select the task we want to run.
@@ -27,7 +28,7 @@ And then the task you want to run.
 1. Go to menu `Terminal\Run Task..."
 2. Select `npm:ng-serve`
 
-## Great, now we can start
+**Great, now we can start**
 Once both tasks settle down you should see at the bottom of your screen the output of both tasks:
 ![](2019-10-06_12h04_03.png)
 

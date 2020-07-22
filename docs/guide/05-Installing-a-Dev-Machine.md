@@ -22,7 +22,9 @@ https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 In this demo we've used Windows x86-64 version, 11.5
 
 When Installing you will be prompted for a password, give it a password, and remember it (we'll need it later)
-> (when creating this demo we used the password: MASTERKEY)
+::: tip
+ when creating this demo we used the password: MASTERKEY
+:::
 
 [For a step by step walk-through for the postgres setup, click here](install-postgres-step-by-step.html)
 
@@ -33,7 +35,7 @@ Install it from: https://code.visualstudio.com/
 
 #### Visual Studio Extensions
 To install the following recommended extensions, open a command prompt and run the following commands:
-```
+```sh
 code --install-extension Angular.ng-template
 code --install-extension infinity1207.angular2-switcher
 code --install-extension CoenraadS.bracket-pair-colorizer
@@ -43,6 +45,6 @@ code --install-extension sibiraj-s.vscode-scss-formatter
 
 ## Angular Cli
 From the command prompt, run the following command to install angular cli with the specific version we used for this demo
-```
+```sh
 npm install -g @angular/cli@8.3.19
 ```
