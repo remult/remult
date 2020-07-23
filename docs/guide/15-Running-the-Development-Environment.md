@@ -16,7 +16,7 @@ To run a visual studio task, we'll go to the menu `Terminal\Run Task...` and sel
 
 Alternatively you can click <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open visual studio's code `command pallet`
 and select `Tasks:Run Task`
-![](2019-09-23_14h40_29.png)
+![](/2019-09-23_14h40_29.png)
 
 And then the task you want to run.
 
@@ -30,11 +30,11 @@ And then the task you want to run.
 
 **Great, now we can start**
 Once both tasks settle down you should see at the bottom of your screen the output of both tasks:
-![](2019-10-06_12h04_03.png)
+![](/2019-10-06_12h04_03.png)
 
 Simply open a browser with the url `http://localhost:4200` and you'll see your application running
 
-![](the-first-application-stage.png)
+![](/the-first-application-stage.png)
 
 
 ## A little more information

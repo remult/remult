@@ -1,5 +1,6 @@
+# Configuring the DataGrid and DataArea
 We can configure the `DataGrid` to only show the columns that we want with the width we want. In the `products.component.ts` file
-```ts
+```ts{18-26}
 import { Component, OnInit } from '@angular/core';
 import { Context } from '@remult/core';
 import { Products } from './products';
@@ -17,15 +18,15 @@ export class ProductsComponent implements OnInit {
     allowInsert: true,
     allowUpdate: true,
     allowDelete: true,
-+   columnSettings: p => [
-+     p.name,
-+     {
-+       column: p.price,
-+       width: '75'
-+     },
-+     p.availableFrom,
-+     p.availableTo
-+   ]
+    columnSettings: p => [
+      p.name,
+      {
+        column: p.price,
+        width: '75'
+      },
+      p.availableFrom,
+      p.availableTo
+    ]
   });
   ngOnInit() {
   }
@@ -41,7 +42,7 @@ Let's review:
 ## Data Area
 
 We can also limit the number of columns that are displayed on a grid, by setting the `numOfColumnsInGrid`.
-```ts
+```ts{14}
 products = this.context.for(Products).gridSettings({
     allowInsert: true,
     allowUpdate: true,
@@ -55,22 +56,20 @@ products = this.context.for(Products).gridSettings({
       p.availableFrom,
       p.availableTo
     ]
-+   ,numOfColumnsInGrid:2
+    ,numOfColumnsInGrid:2
   });
 ```
 
 
 We can add the `DataArea` with all the columns that are not included in the grid, by adding the `data-area` tag to the `products.component.html`
 
-```ts
+```ts{2}
   <data-grid [settings]="products"></data-grid>
-+ <br>
-+ <br>
-+ <data-area [settings]="products"></data-area>
+  <data-area [settings]="products"></data-area>
 ```
 
 We can even have more control over the `DataArea` and add multiple `DataArea`s by defining them in the `products.component.ts`
-```ts
+```ts{16-21}
 products = this.context.for(Products).gridSettings({
   allowInsert: true,
   allowUpdate: true,
@@ -85,26 +84,21 @@ products = this.context.for(Products).gridSettings({
     p.availableTo
   ]
   , numOfColumnsInGrid: 2
-  , hideDataArea: true
-
 });
-+productsArea = this.products.addArea({
-+  columnSettings: p => [
-+    p.availableFrom,
-+    p.availableTo
-+  ]
-+});
+productsArea = this.products.addArea({
+   columnSettings: p => [
+     p.availableFrom,
+     p.availableTo
+   ]
+});
 
 ngOnInit() {
 }
 ```
 and in the `products.component.html` we'll use that `productsArea` settings:
-```ts
+```ts{2}
   <data-grid [settings]="products"></data-grid>
-  <br>
-  <br>
-- <data-area [settings]="products"></data-area>
-+ <data-area [settings]="productsArea"></data-area>
+  <data-area [settings]="productsArea"></data-area>
 ```
 
 Data Areas are extremely powerful, as they allow us to define a set of columns and their fields, without worrying too much about designing them and their functionality.

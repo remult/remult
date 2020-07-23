@@ -1,3 +1,5 @@
+# Deployment
+
 This application is a standard node js application, that uses postgres as a database and can be deployed to any web server or cloud service that has node js and postgres.
 
 In this tutorial we'll use heroku as they provide a great free plan that and very easy deployment.
@@ -11,7 +13,7 @@ The heroku free plan provides for 550 free web server hours (they call it dyno) 
 Next, download and install the [heroku command line tool](https://devcenter.heroku.com/articles/heroku-cli#download-and-install)
 
 After that, goto the command line and run 
-```
+```sh
 heroku login
 ```
 
@@ -25,13 +27,13 @@ In the Command line, in the project folder, we can use the `apps:create` command
 The name you want may be taken - so keep trying names until you reach a name that is free, or run the command without a name, and `heroku` will generate a name for you.
 
 Here's the command with the specific name `my-project` in the `eu` region
-```
+```sh
 heroku apps:create --region eu  my-project
 ```
 > If you want to allow heroku to determine a random name, simply do not include a name and heroku will determine a random name for you.
 
 Here's the result we got, when we allowed heroku to determine the name :)
-```
+```sh
 Creating app... done, ⬢ desolate-fjord-53965, region is eu
 https://desolate-fjord-53965.herokuapp.com/ | https://git.heroku.com/desolate-fjord-53965.git
 ```
@@ -40,7 +42,7 @@ https://desolate-fjord-53965.herokuapp.com/ | https://git.heroku.com/desolate-fj
 
 ## Step 3 Provision the database on Heroku
 run:
-```
+```sh
 heroku addons:create heroku-postgresql:hobby-dev
 ```
 ## Step 4 Set the Authentication token sign key
@@ -51,12 +53,12 @@ It's important to set this value to some random crazy value that no one will hav
 To read more about it, see [jwt](https://jwt.io/)
 
 This key is required, so set it using:
-```
+```sh
 heroku config:set TOKEN_SIGN_KEY=woEczJuvjuOWmIakjdvH
 ```
 
 ## Step 5 Deploy the application using git
-```
+```sh
 git push heroku master -f
 ```
 
@@ -67,7 +69,7 @@ git push heroku master -f
 
 ## And We're done
 Just run:
-```
+```sh
 heroku apps:open
 ```
  It'll open browser with your application. You'll see the url provided to you in step 2 of this page  (`https://desolate-fjord-53965.herokuapp.com/` in our case).

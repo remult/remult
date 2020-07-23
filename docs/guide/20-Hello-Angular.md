@@ -10,13 +10,13 @@ If you are already familiar with angular principles, please proceed to the next 
 
 The first thing we see in the application, is the `HomeComponent` 
 
-![](home-component.png)
+![](/home-component.png)
 
 let's review it's code.
 
 In the file explorer (in the left of your editor), under the `src\app` directory you will find the `home` directory that has all the files that are related to the `HomeComponent`
 
-![](home-component-file-structure.png)
+![](/home-component-file-structure.png)
 
 The files are:
 

@@ -26,7 +26,7 @@ When Installing you will be prompted for a password, give it a password, and rem
  when creating this demo we used the password: MASTERKEY
 :::
 
-[For a step by step walk-through for the postgres setup, click here](install-postgres-step-by-step.html)
+[For a step by step walk-through for the postgres setup, click here](Additional-info/Install%20Postgres%20Step%20by%20Step/)
 
 ## Visual Studio Code 
 A source code editor which we use to develop application.

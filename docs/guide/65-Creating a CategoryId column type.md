@@ -1,3 +1,4 @@
+# Creating a category id column type
 Currently the code that relates to the category is spread across many files - let's create a `CategoryId` type and consolidate everything to it.
 
 Under the `categories` folder, let's add a `categoryId.ts` file
@@ -9,9 +10,9 @@ export class CategoryId extends IdColumn{
 ```
 
 Now let's use it in the `Products` Entity
-```ts
+```ts{2,28}
 import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from '@remult/core';
-+import { CategoryId } from '../categories/categoryId';
+import { CategoryId } from '../categories/categoryId';
 
 @EntityClass
 export class Products extends IdEntity {
@@ -37,8 +38,7 @@ export class Products extends IdEntity {
             }
         }
     });
--   category = new IdColumn();
-+   category = new CategoryId();
+    category = new CategoryId();
     constructor() {
         super({
             name: "Products",
@@ -56,12 +56,12 @@ My first priority is to configure the `displayValue` property of the `CategoryId
 In the `CategoryId.ts` file:
 ```ts
 export class CategoryId extends IdColumn {
-+   constructor(private context: Context) {
-+       super();
-+    }
-+   get displayValue() {
-+       return this.context.for(Categories).lookup(this).name.value;
-+   }
+    constructor(private context: Context) {
+        super();
+     }
+    get displayValue() {
+        return this.context.for(Categories).lookup(this).name.value;
+    }
 }
 ```
 Let's review:
@@ -71,7 +71,7 @@ Let's review:
 
 Since we've added a parameter to the constructor of `CategoryId` well need to provide it. 
 In `products.ts`
-```ts
+```ts{25-32}
 @EntityClass
 export class Products extends IdEntity {
     name = new StringColumn();
@@ -96,10 +96,8 @@ export class Products extends IdEntity {
             }
         }
     });
--   category = new CategoryId();
-+   category = new CategoryId(this.context);
--   constructor() {}
-+   constructor(private context:Context) {
+    category = new CategoryId(this.context);
+    constructor(private context:Context) {
         super({
             name: "Products",
             allowApiCRUD: true,
@@ -109,10 +107,10 @@ export class Products extends IdEntity {
 } 
 ```
 
-Now let's simply the code of our `home.component` to use the `displayValue` property instead of the `getProductCategory` method.
+Now let's simplify the code of our `home.component` to use the `displayValue` property instead of the `getProductCategory` method.
 
 in `home.component.ts`
-```ts
+```ts{13-15}
 export class HomeComponent implements OnInit {
 
   constructor(private context: Context) { }
@@ -124,22 +122,22 @@ export class HomeComponent implements OnInit {
         p.availableTo.isGreaterOrEqualTo(new Date()))
     });
   }
-- getProductCategory(p: Products) {
--   return this.context.for(Categories).lookup(p.category).name.value;
-- }
+  
+  //getProductCategory(p: Products) {
+  //  return this.context.for(Categories).lookup(p.category).name.value;
+  //}
 }
 ```
 
 In `home.component.html`
-```ts
+```html {7}
     <mat-card *ngFor="let p of products" class="product-card">
         <mat-card-title>
-        {{p.name.value}}
+            {{p.name.value}}
         </mat-card-title>
         <mat-card-subtitle>
         {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}<br/>
--       Category: {{getProductCategory(p)}}
-+       Category: {{p.category.displayValue}}
+            Category: {{p.category.displayValue}}
         </mat-card-subtitle>
     </mat-card> 
 ```

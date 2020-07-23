@@ -1,6 +1,8 @@
+# Settings default values for New Rows
+
 We can use the `GridSettings` `onEnterRow` property to define a function that will be run when ever a row is entered, and set the defaults for a new row there.
 In the `products.ts`
-```ts
+```ts{20,28}
 import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
 @EntityClass
@@ -20,7 +22,7 @@ export class Products extends IdEntity {
             if (!this.availableFrom.value || this.availableFrom.value.getFullYear() < 1990)
                 this.availableFrom.validationError = 'Invalid Date';
         }
-+       , defaultValue: () => new Date()
+        , defaultValue: () => new Date()
     });
     availableTo = new DateColumn({
         validate: () => {
@@ -28,7 +30,7 @@ export class Products extends IdEntity {
                 this.availableTo.validationError = 'Should be greater than ' + this.availableFrom.defs.caption;
             }
         }
-+       , defaultValue: () => new Date(9999, 11, 31)
+        , defaultValue: () => new Date(9999, 11, 31)
     });
     constructor() {
         super({

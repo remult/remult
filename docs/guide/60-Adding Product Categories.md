@@ -1,3 +1,4 @@
+# Adding the Categories component
 Next we would like to implement the following improvement to our app:
 1. We would like to organize the products by categories.
 2. We'll need a screen to manage the categories.
@@ -12,12 +13,12 @@ ng generate component --skipTests=true categories
 
 ## Step 2, add the Categories Route
 in the `app-routing.module.ts` file:
-```ts
+```ts{5}
 const routes: Routes = [
   { path: 'Home', component: HomeComponent },
   { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard] },
   { path: 'Products', component: ProductsComponent },
-+ { path: 'Categories', component: CategoriesComponent },
+  { path: 'Categories', component: CategoriesComponent },
   { path: 'Register', component: RegisterComponent, canActivate: [NotSignedInGuard] },
   { path: 'Account Info', component: UpdateInfoComponent, canActivate: [SignedInGuard] },
   { path: '', redirectTo: '/Home', pathMatch: 'full' },
@@ -44,10 +45,10 @@ export class Categories extends IdEntity {
 ```
 ## Step 4, add the Categories entity to the Categories Component
 in `categories.component.ts` 
-```ts
+```ts{2-3,11-16}
 import { Component, OnInit } from '@angular/core';
-+import { Context } from '@remult/core';
-+import { Categories } from './categories';
+import { Context } from '@remult/core';
+import { Categories } from './categories';
 
 @Component({
   selector: 'app-categories',
@@ -55,13 +56,12 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./categories.component.scss']
 })
 export class CategoriesComponent implements OnInit {
--constructor() { }
-+ constructor(private context: Context) { }
-+ categories = this.context.for(Categories).gridSettings({
-+   allowUpdate: true,
-+   allowInsert: true,
-+   allowDelete: true
-+ });
+  constructor(private context: Context) { }
+  categories = this.context.for(Categories).gridSettings({
+    allowUpdate: true,
+    allowInsert: true,
+    allowDelete: true
+  });
   ngOnInit() {
   }
 }
@@ -69,7 +69,7 @@ export class CategoriesComponent implements OnInit {
 
 In the `categories.component.html`
 ```ts
- <data-grid [settings]="categories" height="300"></data-grid>
+ <data-grid [settings]="categories"></data-grid>
 ```
 
 ## Add a few categories
@@ -78,7 +78,7 @@ In the `categories.component.html`
 
 ## Adding the Category to the Products Entity
 In the `products.ts` let's add the `category` field to our Entity
-```ts
+```ts{27}
 import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from '@remult/core';
 
 @EntityClass
@@ -105,7 +105,7 @@ export class Products extends IdEntity {
             }
         }
     });
-+   category = new IdColumn();
+    category = new IdColumn();
     constructor() {
         super({
             name: "Products",
@@ -117,7 +117,7 @@ export class Products extends IdEntity {
 ```
 ## Allowing the user to Easily select a category for a product
 in the `products.component.ts`
-```ts
+```ts{11-14,18}
 products = this.context.for(Products).gridSettings({
   allowInsert: true,
   allowUpdate: true,
@@ -135,8 +135,7 @@ products = this.context.for(Products).gridSettings({
     p.availableFrom,
     p.availableTo
   ]
-- , numOfColumnsInGrid: 2
-+ , numOfColumnsInGrid: 3
+  , numOfColumnsInGrid: 3
   , hideDataArea: true
 });
 ```
@@ -146,7 +145,7 @@ Great - now the user can select the category of each product.
 ## Display the Category for each Product in the website's Home
 
 In the `home.component.ts` let's add the following method:
-```ts
+```ts{12-14}
 export class HomeComponent implements OnInit {
 
   constructor(private context: Context) { }
@@ -158,9 +157,9 @@ export class HomeComponent implements OnInit {
         p.availableTo.isGreaterOrEqualTo(new Date()))
     });
   }
-+ getProductCategory(p: Products) {
-+   return this.context.for(Categories).lookup(p.category).name.value;
-+ }
+  getProductCategory(p: Products) {
+    return this.context.for(Categories).lookup(p.category).name.value;
+  }
 }
 ```
 
@@ -173,15 +172,15 @@ Let's review:
 4. Once we get the category from the `lookup`, we ask for it's `name` column's `value`
 
 In the `home.component.html` let's use this method:
-```ts
+```html{7-8}
   <mat-card *ngFor="let p of products" class="product-card">
       <mat-card-title>
         {{p.name.value}}
       </mat-card-title>
       <mat-card-subtitle>
         {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}
-+       <br/>
-+       Category: {{getProductCategory(p)}}
+        <br/>
+        Category: {{getProductCategory(p)}}
       </mat-card-subtitle>
   </mat-card>
 ```
