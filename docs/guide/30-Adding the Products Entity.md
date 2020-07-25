@@ -2,21 +2,8 @@
 At this stage we would like to define the product Entity, where we will store our product information.
 Let's add a new file under the `Products` folder, called `products.ts`
 
-```ts
-import { IdEntity, StringColumn, EntityClass } from '@remult/core';
 
-@EntityClass
-export class Products extends IdEntity {
-    name = new StringColumn();
-    constructor() {
-        super({
-            name: "Products",
-            allowApiCRUD:true,
-            allowApiRead:true
-        });
-    }
-}
-```
+<<< @/docs-code/products/products.ts
 
 Let's review:
 1. We've added a `Products` class that extends the `IdEntity` class from `@remult/core`. This will create an `Entity` that will have an `id` column that is unique, and anything else we would like to add to it.
@@ -32,28 +19,10 @@ Let's review:
 Now let's add a grid on the `ProductsComponent` that displays the `Products` Entity
 
 in `products.component.ts`
-```ts{2-3,11-17}
-import { Component, OnInit } from '@angular/core';
-import { Context } from '@remult/core';
-import { Products } from './products';
 
-@Component({
-  selector: 'app-products',
-  templateUrl: './products.component.html',
-  styleUrls: ['./products.component.sass']
-})
-export class ProductsComponent implements OnInit {
- constructor(private context: Context) { }
+<<< @/docs-code/products/products.component.ts{11-17} 
 
-  products = this.context.for(Products).gridSettings({
-    allowInsert:true,
-    allowUpdate:true,
-    allowDelete:true
-  });
-  ngOnInit() {
-  }
 
-```
 
 let's review:
 1. In line 2 and 3 we've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them)

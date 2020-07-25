@@ -16,6 +16,8 @@ export class Products extends IdEntity {
     }
 }
 ```
+123
+
 
 Let's review:
 1. We've added a `Products` class that extends the `IdEntity` class from `@remult/core`. This will create an `Entity` that will have an `id` column that is unique, and anything else we would like to add to it.

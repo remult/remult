@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Context } from '@remult/core';
+import { Products } from './products';
 
 @Component({
   selector: 'app-products',
@@ -6,10 +8,13 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./products.component.scss']
 })
 export class ProductsComponent implements OnInit {
+ constructor(private context: Context) { }
 
-  constructor() { }
-
+  products = this.context.for(Products).gridSettings({
+    allowInsert:true,
+    allowUpdate:true,
+    allowDelete:true
+  });
   ngOnInit() {
   }
-
 }
