@@ -6,8 +6,8 @@ Open Visual Studio code in the folder of your project (`my-project` in our case)
 
 ## Understanding the different servers
 When developing an angular application in a dev environment we'll need two servers,
-1. Angular dev server - used by Angular for the front end development (the ui that'll run in the browser),
-2. Node JS web server - is the Actual server, where all the data access will be and all the heavy lifting will be done.
+1. Angular dev server - used by Angular for the front end development (the ui that'll run in the browser). This server will use port 4200
+2. Node JS web server - is the Actual server, where all the data access will be and all the heavy lifting will be done. this server will use port 3000.
 
 ## Running the servers
 We'll use visual studio tasks to run our common tasks. 

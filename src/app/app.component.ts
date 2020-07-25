@@ -5,13 +5,13 @@ import { MatDialog } from '@angular/material/dialog';
 
 
 import { Context, RouteHelperService } from '@remult/core';
-import {DialogService} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
 
 
 
 
-
+import { DialogService } from '../../projects/core/schematics/hello/files/src/app/common/dialog';
 import { JwtSessionManager } from '@remult/core';
+import { SignInComponent } from '../../projects/core/schematics/hello/files/src/app/common/sign-in/sign-in.component';
 
 @Component({
   selector: 'app-root',
@@ -38,7 +38,14 @@ export class AppComponent {
       return this.context.user.name;
     return 'Sign in';
   }
-
+  async signIn() {
+    if (!this.context.user) {
+      this.dialog.open(SignInComponent);
+    } else {
+      if (await this.dialogService.yesNoQuestion("Would you like to sign out?"))
+        this.sessionManager.signout();
+    }
+  }
 
   routeName(route: Route) {
     let name = route.path;
@@ -56,7 +63,7 @@ export class AppComponent {
         if (this.activeRoute.firstChild.routeConfig)
           return this.activeRoute.firstChild.routeConfig.path;
       }
-    return 'my-project';
+    return '<%= project %>';
   }
 
 
