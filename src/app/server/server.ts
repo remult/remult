@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import '../app.module';
 import { serverInit } from './server-init';
 import { ServerContext } from '@remult/core';
-import { Products } from '../products/products';
+
 
 
 
@@ -35,11 +35,4 @@ serverInit().then(async (dataSource) => {
     app.listen(port);
     var c = new ServerContext(dataSource);
 
-    let x = [];
-    
-    
-
-    for  await (const p of  c.for(Products).iterate()) {
-        console.log(p.name.value);
-    }
 });  

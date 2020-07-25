@@ -1,11 +1,13 @@
 import { NgModule, ErrorHandler } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { ProductsComponent } from './products/products.component';
+
 
 import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
 import { RemultModule } from '@remult/core';
 import {DialogService,ShowDialogOnErrorErrorHandler} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
+import { ProductsComponent } from './products-test/products.component';
+
 
 const routes: Routes = [
   { path: 'products', component: ProductsComponent },

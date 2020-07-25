@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { RemultModule } from '@remult/core';
 import { FormsModule } from '@angular/forms';
-import { ProductsComponent } from './products/products.component';
+
 import {DialogService} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
 import {YesNoQuestionComponent} from '../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 
@@ -23,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
 import { TestDialogComponent } from './test-dialog/test-dialog.component';
+import { ProductsComponent } from './products-test/products.component';
 
 
 
