@@ -36,7 +36,15 @@ export class GridSettings<rowType extends Entity = Entity>  {
 
       if (settings.columnSettings)
         this.columns.add(...settings.columnSettings(entityProvider.create()));
+      if (settings.allowCRUD) {
 
+        if (settings.allowUpdate === undefined)
+          settings.allowUpdate = true;
+          if (settings.allowDelete === undefined)
+          settings.allowDelete = true;
+          if (settings.allowInsert === undefined)
+          settings.allowInsert = true;
+      }
       if (settings.allowUpdate)
         this.allowUpdate = true;
       if (settings.allowDelete)
@@ -47,7 +55,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
         this.showDataArea = settings.showDataArea;
       if (settings.showPagination === undefined)
         settings.showPagination = true;
-      
+
       if (settings.numOfColumnsInGrid != undefined)
         this.columns.numOfColumnsInGrid = settings.numOfColumnsInGrid;
 
@@ -431,6 +439,7 @@ export interface IDataSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
+  allowCRUD?: boolean,
   showDataArea?: boolean,
   showPagination?: boolean,
   showFilter?: boolean,

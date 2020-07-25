@@ -1,4 +1,4 @@
-# Adding the Products Entity
+# Adding an Entity
 At this stage we would like to define the product Entity, where we will store our product information.
 Let's add a new file under the `Products` folder, called `products.ts`
 
@@ -20,7 +20,7 @@ Now let's add a grid on the `ProductsComponent` that displays the `Products` Ent
 
 in `products.component.ts`
 
-<<< @/docs-code/products/products.component.ts{11-17} 
+<<< @/docs-code/products/products.component.ts{11-14} 
 
 
 
@@ -31,9 +31,8 @@ let's review:
 
 ## Placing the data-grid in the html
 and in the `products.component.html`
-```html{1}
-<data-grid [settings]="products"></data-grid>
-```
+
+<<< @/docs-code/products/products.component.html
 
 let's review:
 1. We've replaced the `html` with a `data-grid` tag that will display the grid settings provided in the `products` member of the `products.component.ts` file.
@@ -77,16 +76,16 @@ We can also navigate through the browser directly to the api address `http://loc
 ```json
 [
   {
-    id: "63cc3c14-aa3d-4597-9acd-47a4cb62ec73",
-    name: "Bread"
+    "id": "b2069675-586a-4a9d-b85b-c519c7e09162",
+    "name": "Wine"
   },
   {
-    id: "2b829c04-c5b1-45f8-b271-9c32d13b18ae",
-    name: "Beer"
+    "id": "f2962832-e533-4ef9-93cf-1af446673d60",
+    "name": "Beer"
   },
   {
-    id: "862ef7c3-d92a-4eeb-a4cb-505ced2179eb",
-    name: "Wine"
+    "id": "7668da48-e773-459d-90a5-44cfb0844b4e",
+    "name": "Bread"
   }
 ]
 ```

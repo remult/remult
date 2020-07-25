@@ -8,12 +8,9 @@ import { Products } from './products';
   styleUrls: ['./products.component.scss']
 })
 export class ProductsComponent implements OnInit {
- constructor(private context: Context) { }
-
+  constructor(private context: Context) { }
   products = this.context.for(Products).gridSettings({
-    allowInsert:true,
-    allowUpdate:true,
-    allowDelete:true
+    allowCRUD: true
   });
   ngOnInit() {
   }
