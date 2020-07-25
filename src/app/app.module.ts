@@ -23,7 +23,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
 import { TestDialogComponent } from './test-dialog/test-dialog.component';
-import { ProductsComponent } from './products-test/products.component';
+import { ProductsComponent } from '../../docs-code/products/products.component';
+
 
 
 
