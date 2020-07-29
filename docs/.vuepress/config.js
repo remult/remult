@@ -64,12 +64,12 @@ module.exports = {
             //'45-Configuring the DataGrid and DataArea',
             //'50-Settings Default Values for New Rows',
             '55-Displaying the Products Entity using Custom Html',
-            '60-Adding Product Categories',
-            '65-Creating a CategoryId column type',
+            //'60-Adding Product Categories',
+            //'65-Creating a CategoryId column type',
             '70-Batch Operations',
             '75-Moving Logic to the Server',
             '80-Users and Security',
-            '81-Adding a new Role',
+            //'81-Adding a new Role',
             '85-Deployment'
             
             
