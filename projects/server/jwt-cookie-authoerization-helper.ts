@@ -31,8 +31,10 @@ export class JWTCookieAuthorizationHelper {
         }
     }
 
-    createSecuredTokenBasedOn(what: any) {
-        return jwt.sign(what, this.tokenSignKey);
+    createSecuredTokenBasedOn(what: any,options?:{
+        expiresIn:number
+    }) {
+        return jwt.sign(what, this.tokenSignKey,options);
     }
 
 
