@@ -10,7 +10,8 @@ import { Products } from './products';
 export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
   products = this.context.for(Products).gridSettings({
-    allowCRUD: true
+    allowCRUD: true,
+    showFilter:true
   });
   ngOnInit() {
   }

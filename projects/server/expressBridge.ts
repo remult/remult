@@ -122,7 +122,7 @@ export class SiteArea {
   }
 }
 export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
-  get(key: string): string {
+  get(key: string): any {
     return this.r.query[key];
   }
   getBaseUrl() {
