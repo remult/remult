@@ -70,9 +70,14 @@ module.exports = {
             '75-Moving Logic to the Server',
             '80-Users and Security',
             //'81-Adding a new Role',
-            '85-Deployment'
-            
-            
+            '85-Deployment',
+            {
+              title:'Further Reading',
+              collapsable:true,
+              children:[
+                'architecture'
+              ]
+            }
           ]
         }
       ],

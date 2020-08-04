@@ -45,3 +45,5 @@ Simply open a browser with the url `http://localhost:4200` and you'll see your a
 * The task `npm:ng-serve` runs the angular dev server, after it completes, you can open a browser using the `http://localhost:4200` url.
 
   Whenever a code file changes, it'll automatically refresh the browser to reflect that change.
+
+  To read more about this see the [Architecture page](architecture)

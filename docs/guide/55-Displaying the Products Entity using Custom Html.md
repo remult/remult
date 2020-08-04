@@ -13,16 +13,13 @@ Replace the `home.component.html` content with the default:
 Replace the `hompe.component.ts` content with the default:
 ```ts
 import { Component, OnInit } from '@angular/core';
-
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-
   constructor() { }
-
   ngOnInit() {
   }
 }
@@ -47,16 +44,22 @@ Next we would like to use the actual data from the `products` entity.
 In the `home.component.ts` file, the first step would be to get the `context` object in. As used before, the `context` object helps us with comunicating with the server and figuring out our context
 ```ts{2}
 export class HomeComponent implements OnInit {
-+ constructor(private context:Context) { }
+  constructor(private context:Context) { }
   ngOnInit() {
   }
 }
 ```
-> note that when you'll add the `context` parameter to the constructor, you'll also require the `import` statement for the `Context` class.
-> If you don't have that import statement, Visual Studio Code will highlight it in red and display a "light bulb" you can click to automatically add it:
+:::tip NOTE
+ When you'll add the `context` parameter to the constructor, you'll also require the `import` statement for the `Context` class.
+
+ If you don't already have that import statement, Visual Studio Code will highlight the parameter type in red and display a "light bulb" you can click to automatically add it:
+
 ![](/2020-01-26_11h45_50.png)
-> It'll then automatically add the `import { Context } from '@remult/core';` statement to the top of the document.
-> The same can be done for any missing `import` statement 
+
+ It'll then automatically add the `import { Context } from '@remult/core';` statement to the top of the document.
+
+ The same can be done for any missing `import` statement 
+:::
 
 Next let's define a list of products:
 ```ts{3}
@@ -67,12 +70,15 @@ export class HomeComponent implements OnInit {
   }
 }
 ```
-> If the `Products` class is highlighted, add it to the `import` statement using the method describe in the previous note.
+
+:::tip NOTE
+ If the `Products` class is highlighted, add it to the `import` statement using the method describe in the previous note.
+:::
 
 We've defined a member called `products` of type `Products[]` (an Array of products) and have set it's initial value to an empty array (` = []`)
 
 Now let's populate the array with products from our db:
-```ts{4-7}
+```ts{4-6}
 export class HomeComponent implements OnInit {
   constructor(private context: Context) { }
   products: Products[] = [];
