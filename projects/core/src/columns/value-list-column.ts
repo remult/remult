@@ -40,7 +40,7 @@ export class ValueListColumn<T extends ValueListItem> extends Column<T> {
 export declare type classWithNew<T > ={ new(...args: any[]): T; };
 
 export class ValueListTypeInfo<T extends ValueListItem>{
-  static get<T extends ValueListItem>(type: classWithNew<T>) {
+  static get<T extends ValueListItem>(type: classWithNew<T>):ValueListTypeInfo<T> {
     let r = typeCache.get(type);
     if (!r)
       r = new ValueListTypeInfo(type);

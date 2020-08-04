@@ -319,7 +319,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       this._selectedAll = false;
   }
   rowsPerPage: number;
-  rowsPerPageOptions = [10, 25, 50, 100, 500, 1000];
+  rowsPerPageOptions = [10, 25, 50, 100];
   get(options: FindOptions<rowType>) {
 
     this.setGetOptions(options);
