@@ -74,8 +74,10 @@ module.exports = {
             {
               title:'Further Reading',
               collapsable:true,
+              path:'/other/',
               children:[
-                'architecture'
+                'architecture',
+                'test'
               ]
             }
           ]
