@@ -1,3 +1,5 @@
+# Useful Guides
+
 Here are some great external learning resources that we've gathered
 
 1. [HTML & CSS Crash Course on scrimba](https://scrimba.com/g/ghtmlcss) - great video tutorial

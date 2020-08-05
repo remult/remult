@@ -69,13 +69,15 @@ module.exports = {
             '70-Batch Operations',
             '75-Moving Logic to the Server',
             '80-Users and Security',
-            //'81-Adding a new Role',
             '85-Deployment',
             {
               title:'Further Reading',
               collapsable:true,
               children:[
-                'architecture'
+                'architecture',
+                '81-Adding a new Role',
+                'further-learning',
+                'VSCode-keyboard-shortcuts'
               ]
             }
           ]

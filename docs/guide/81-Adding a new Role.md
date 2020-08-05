@@ -22,41 +22,6 @@ export class AdminGuard extends SignedInGuard {
 } 
 ```
 
-We've added the `productManager` role to the `Roles` const.
-Now let's use it throughout our application:
-in the `products.ts`
-```ts{8}
-@EntityClass
-export class Products extends IdEntity {
-    ...
-    category = new CategoryId(this.context);
-    constructor(private context:Context) {
-        super({
-            name: "Products",
-            allowApiCRUD: Roles.productManager,
-            allowApiRead: true
-        });
-    }
-} 
-```
-
-We'll also need to secure the `ServerFunction` that updates the prices, in the `update-price.component.ts`
-```ts{3}
-export class UpdatePriceComponent implements OnInit {
-  ...
-  @ServerFunction({ allowed: Roles.productManager })
-  static async actualUpdatePrices(amountToAdd:number,context?:Context) {
-    let products = await context.for(Products).find({});
-    let count = 0;
-    for (const p of products) {
-      p.price.value += amountToAdd;
-      await p.save();
-      count++;
-    }
-    return count;
-  }
-}
-```
 ## Adding a new Guard
 Now that we've secured the API we would like to restrict access to the components themselves.
 
@@ -87,14 +52,13 @@ export class ProductManagerGuard extends SignedInGuard {
 ```
 
 We'll also need to register that guard in the `app.module.ts` file:
-```ts
+```ts{20}
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 ...
 import { InputAreaComponent } from './common/input-area/input-area.component';
 import { DialogService } from './common/dialog';
--import { AdminGuard } from './users/roles';
-+import { AdminGuard, ProductManagerGuard } from './users/roles';
+import { AdminGuard, ProductManagerGuard } from './users/roles';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 ...
 
@@ -108,7 +72,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   providers: [
     DialogService,
     AdminGuard
-+   , ProductManagerGuard
+   , ProductManagerGuard
   ],
   bootstrap: [AppComponent],
   entryComponents: [YesNoQuestionComponent, SignInComponent, SelectPopupComponent, InputAreaComponent]
@@ -118,17 +82,11 @@ export class AppModule { }
 ```
 
 Now we can use this `Guard` in the `app-routing.module.ts`
-```ts{4-5}
+```ts{3}
 const routes: Routes = [
-  { path: 'Home', component: HomeComponent },
-  { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard] },
-  { path: 'Products', component: ProductsComponent, canActivate: [ProductManagerGuard] },
-  { path: 'Update-Price', component: UpdatePriceComponent, canActivate: [ProductManagerGuard] },
-  { path: 'Categories', component: CategoriesComponent, canActivate: [AdminGuard] },
-  { path: 'Register', component: RegisterComponent, canActivate: [NotSignedInGuard] },
-  { path: 'Account Info', component: UpdateInfoComponent, canActivate: [SignedInGuard] },
-  { path: '', redirectTo: '/Home', pathMatch: 'full' },
-  { path: '**', redirectTo: '/Home', pathMatch: 'full' }
+//other routes
+{ path: 'Products', component: ProductsComponent, canActivate: [ProductManagerGuard] },
+//other routes
 ];
 ```
 
