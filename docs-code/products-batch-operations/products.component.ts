@@ -15,8 +15,8 @@ export class ProductsComponent implements OnInit {
   ngOnInit() {
   }
   priceToUpdate = new NumberColumn('Price to Update');
-  @ServerFunction({allowed:true})
-  static async updatePriceOnServer(priceToUpdate:number,context?:Context){
+  @ServerFunction({ allowed: true })
+  static async updatePriceOnServer(priceToUpdate: number, context?: Context) {
     let products = await context.for(Products).find();
     for (const p of products) {
       p.price.value += priceToUpdate;

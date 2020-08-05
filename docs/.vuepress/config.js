@@ -59,7 +59,7 @@ module.exports = {
             '20-Hello-Angular',
             '25-Adding-the-Products-Component',
             '30-Adding the Products Entity',
-            '35-Adding Columns to the Products Entity',
+            
             //'40-Adding Validations',
             //'45-Configuring the DataGrid and DataArea',
             //'50-Settings Default Values for New Rows',

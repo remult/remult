@@ -20,9 +20,19 @@ Now let's add a grid on the `ProductsComponent` that displays the `Products` Ent
 
 in `products.component.ts`
 
-<<< @/docs-code/products/products.component.ts{11-14} 
+<<< @/docs-code/products/products.component.ts{11-15} 
 
+:::tip adding the import statements
+ When you'll add the `context` parameter to the constructor, you'll also require the `import` statement for the `Context` class.
 
+ If you don't already have that import statement, Visual Studio Code will highlight the parameter type in red and display a "light bulb" you can click to automatically add it:
+
+![](/2020-01-26_11h45_50.png)
+
+ It'll then automatically add the `import { Context } from '@remult/core';` statement to the top of the document.
+
+ The same can be done for any missing `import` statement 
+:::
 
 let's review:
 1. In line 2 and 3 we've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them)

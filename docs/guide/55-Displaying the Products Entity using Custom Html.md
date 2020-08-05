@@ -10,7 +10,7 @@ Replace the `home.component.html` content with the default:
  </p>
 ```
 
-Replace the `hompe.component.ts` content with the default:
+Replace the `home.component.ts` content with the default:
 ```ts
 import { Component, OnInit } from '@angular/core';
 @Component({
@@ -30,14 +30,15 @@ Let's start with designing our `home.component.html` - we'll use Angular Materia
 
 Let's start with the basic card:
 ```html
-    <mat-card>
-      <mat-card-title>
-        My Product
-      </mat-card-title>
-      <mat-card-subtitle>
-        this is my subtitle
-      </mat-card-subtitle>
-    </mat-card>
+<h1>Available Products</h1>
+<mat-card>
+  <mat-card-title>
+    My Product
+  </mat-card-title>
+  <mat-card-subtitle>
+    this is my subtitle
+  </mat-card-subtitle>
+</mat-card>
 ```
 
 Next we would like to use the actual data from the `products` entity.
@@ -50,17 +51,8 @@ export class HomeComponent implements OnInit {
 }
 ```
 :::tip NOTE
- When you'll add the `context` parameter to the constructor, you'll also require the `import` statement for the `Context` class.
-
- If you don't already have that import statement, Visual Studio Code will highlight the parameter type in red and display a "light bulb" you can click to automatically add it:
-
-![](/2020-01-26_11h45_50.png)
-
- It'll then automatically add the `import { Context } from '@remult/core';` statement to the top of the document.
-
- The same can be done for any missing `import` statement 
+ If the `Context` class is highlighted in red, add it to the `import` statement using the "light bulb" icon in visual studio
 :::
-
 Next let's define a list of products:
 ```ts{3}
 export class HomeComponent implements OnInit {
@@ -72,7 +64,7 @@ export class HomeComponent implements OnInit {
 ```
 
 :::tip NOTE
- If the `Products` class is highlighted, add it to the `import` statement using the method describe in the previous note.
+ If the `Products` class is highlighted in red, add it to the `import` statement using the "light bulb" icon in visual studio
 :::
 
 We've defined a member called `products` of type `Products[]` (an Array of products) and have set it's initial value to an empty array (` = []`)
@@ -97,7 +89,8 @@ The fact that the call to the `find` method is asynchronous can be  inferred fro
 We want to wait for the result of this `Promise`. To do that we'll have to decorate the method we are running with the `async` keyword (as we've done on line 5) and use the `await` keyword when we call the method.
 
 Now let's adjust the `home.component.html` to use these products, using the `*ngFor` directive
-```html{1,3,6}
+```html{2,4,7}
+<h1>Available Products</h1>
 <mat-card *ngFor="let p of products">
     <mat-card-title>
         {{p.name.value}}
@@ -110,7 +103,8 @@ Now let's adjust the `home.component.html` to use these products, using the `*ng
 * We're using the `displayValue` property of the `DateColumn` to show the date in a friendly way.
 
 Now let's format the cards to display multiple cards in a row. We'll add a `css` class to the `mat-card` tag
-```html{1}
+```html{2}
+<h1>Available Products</h1>
 <mat-card *ngFor="let p of products" class="product-card">
     <mat-card-title>
         {{p.name.value}}
