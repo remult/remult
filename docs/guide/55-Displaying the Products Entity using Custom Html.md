@@ -111,14 +111,14 @@ Now let's adjust the `home.component.html` to use these products, using the `*ng
 
 Now let's format the cards to display multiple cards in a row. We'll add a `css` class to the `mat-card` tag
 ```html{1}
-+   <mat-card *ngFor="let p of products" class="product-card">
-        <mat-card-title>
-            {{p.name.value}}
-        </mat-card-title>
-        <mat-card-subtitle>
-            {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}
-        </mat-card-subtitle>
-    </mat-card>
+<mat-card *ngFor="let p of products" class="product-card">
+    <mat-card-title>
+        {{p.name.value}}
+    </mat-card-title>
+    <mat-card-subtitle>
+        {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}
+    </mat-card-subtitle>
+</mat-card>
 ```
 
 and in the `home.component.scss` file we'll define that class:
@@ -130,7 +130,7 @@ and in the `home.component.scss` file we'll define that class:
 }
 ```
 
-# Sorting
+## Sorting
 Now let's sort the cards by name. In the `home.component.ts` file, let's start by sending an object to the `find` method:
 ```ts{2-3}
   async ngOnInit() {
@@ -155,7 +155,7 @@ The `orderBy` property is set to a method that receives the `Products` entity an
 
 In our case we'll stick to simply sorting by the Product Name.
 
-# Filtering the Data
+## Filtering the Data
 Since we only want to show products that are available, let's filter the products to indicate that:
 ```ts{4-5}
   async ngOnInit() {
