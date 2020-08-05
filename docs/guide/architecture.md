@@ -126,3 +126,6 @@ Arguments: { '$1': '2020-08-05', '$2': '2020-08-05' }
 
 #### Authorized and secured
 All of this is done in a secured manner that makes sure that the correct options are available to the correct user
+
+### UI
+remult also provides a ready set of angular controls that can be used for the admin console in the application you write including a `data-grid`, `data-area` and `data-control` that are used to display data.
