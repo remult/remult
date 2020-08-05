@@ -56,3 +56,73 @@ npm run start
 :::tip note
 While in production the `Node JS` server, takes on the role of serving the javascript and html files that were built in the `build` process from the `./dist` folder
 :::
+
+## Where does remult fit into all of this
+remult is a library that is used both in the browser and in the server. It allows you to write your classes once and use them both on the server and on the client, preventing duplicate code and mismatch errors.
+It handles the communication between the server and the client, and also generates the sql statements required to access the data from the db.
+It handles security concerns and server/client concerns so that you the developer can focus on the business problem you are trying to solve.
+
+### Let's use an example to demonstrate that
+
+When you write the following code which runs in the browser:
+```ts
+this.products = await this.context.for(Products).find({
+    orderBy: p => p.name
+    , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
+    p.availableTo.isGreaterOrEqualTo(new Date()))
+});
+```
+remult will issue an http call to the server using rest, which will look like this:
+```url
+http://localhost:4200/api/Products?availableFrom_lte=2020-08-05&availableTo_gte=2020-08-05&_sort=name&_order=asc
+```
+
+the remult library on the server will process this url, and run the following sql statement to the database:
+```sql
+  select id, name, price, availableFrom, availableTo 
+    from Products 
+   where availableFrom <= $1 and availableTo >= $2 
+Order By name
+Arguments: { '$1': '2020-08-05', '$2': '2020-08-05' }
+```
+
+The server will then return the data in JSON format to be consumed in the browser:
+```JSON
+[
+    {
+        "id":"7668da48-e773-459d-90a5-44cfb0844b4e",
+        "name":"Bread",
+        "price":75,
+        "availableFrom":"2001-01-01",
+        "availableTo":"9999-12-31"
+    },
+    {
+        "id":"b2069675-586a-4a9d-b85b-c519c7e09162",
+        "name":"Wine",
+        "price":124,
+        "availableFrom":"2019-11-07",
+        "availableTo":"9999-12-31"
+    }
+]
+```
+#### On the Server
+If we'll run the same code - on the server:
+```ts
+this.products = await this.context.for(Products).find({
+    orderBy: p => p.name
+    , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
+    p.availableTo.isGreaterOrEqualTo(new Date()))
+});
+```
+
+it'll generate the following sql statement and use it:
+```sql
+  select id, name, price, availableFrom, availableTo 
+    from Products 
+   where availableFrom <= $1 and availableTo >= $2 
+Order By name
+Arguments: { '$1': '2020-08-05', '$2': '2020-08-05' }
+```
+
+#### Authorized and secured
+All of this is done in a secured manner that makes sure that the correct options are available to the correct user
