@@ -2,7 +2,15 @@
 
 This application is a standard node js application, that uses postgres as a database and can be deployed to any web server or cloud service that has node js and postgres.
 
-In this tutorial we'll use heroku as they provide a great free plan that and very easy deployment.
+In this tutorial we'll use heroku as they provide a great free plan and a very easy deployment experience.
+
+:::tip NOTE
+Before we start working on deployment, make sure that all the changes are committed to git, you can do that from visual studio code or by running the following command:
+```sh
+git add .
+git commit -m "before deployment"
+```
+:::
 
 ## Step 1 Create an Heroku User and install their tools
 
@@ -18,6 +26,9 @@ heroku login
 ```
 
 And enter your credentials.
+::: tip
+If the command line can't find the `heroku` command, please close and reopen the command line window.
+:::
 
 ## Step 2 Create the Heroku Application
 
@@ -30,7 +41,6 @@ Here's the command with the specific name `my-project` in the `eu` region
 ```sh
 heroku apps:create --region eu  my-project
 ```
-> If you want to allow heroku to determine a random name, simply do not include a name and heroku will determine a random name for you.
 
 Here's the result we got, when we allowed heroku to determine the name :)
 ```sh

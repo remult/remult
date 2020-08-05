@@ -6,79 +6,22 @@ Although this is valid when you have 10-20 products, if you have a 1000 products
 
 An easy way to improve the performance, is to make a single call to the server and do all the business logic there.
 
-Let's refactor the code in `update-price.component.ts` to do that:
+Let's refactor the code to do that:
 
-We'll perform several steps:
-1. Separate the update logic from the UI (the alert messages)
-2. Make our method static
-3. Decorate the method with the `@ServerFunction` decorator
+<<< @/docs-code/products-batch-operations/products.component.ts{18-27} 
 
-Here's the result:
-
-Let's start with separating the update logic from the UI
-```ts{1-10,15-21,23}
-  async actualUpdatePrices() {
-    let products = await this.context.for(Products).find();
-    let count = 0;
-    for (const p of products) {
-      p.price.value += this.amountToAdd;
-      await p.save();
-      count++;
-    }
-    return count;
-  }
-  async updatePrices() {
-    if (!this.amountToAdd || this.amountToAdd < 1) {
-      alert("Please enter a valid amount");
-      return;
-    }
-//   let products = await this.context.for(Products).find();
-//   let count = 0;
-//   for (const p of products) {
-//     p.price.value += this.amountToAdd;
-//     await p.save();
-//     count++;
-//   }
-    let count = await this.actualUpdatePrices();
-    alert("updated " + count + " products");
-  }
-```
-
-Next we'll make the `actualUpdatePrices` method static and decorate it with the `ServerFunction` decorator
-```ts{1-3,6,18}
- @ServerFunction({ allowed: true })
- static async actualUpdatePrices(amountToAdd:number,context?:Context) {
-   let products = await context.for(Products).find({});
-    let count = 0;
-    for (const p of products) {
-      p.price.value += amountToAdd;
-      await p.save();
-      count++;
-    }
-    return count;
-  }
-  async updatePrices() {
-    if (!this.amountToAdd || this.amountToAdd < 1) {
-      alert("Please enter a valid amount");
-      return;
-    }
-    
-    let count = await UpdatePriceComponent.actualUpdatePrices(this.amountToAdd);
-    alert("updated " + count + " products");
-  }
-```
-
-Let's review:
-1. First we've changed the method to be a `static` method - line 3
-   1. Now that the method is `static` it can no longer access the `this` keyword to get the `amountToAdd` value, so it'll receive it as a parameter. (lines 3 and 9)
-   2. Also the `context` is not available for the `static` method - so we'll add it as a parameter, but this parameter is optional (as indicated by the ?). When calling this method to the server, it'll automatically receive a `context` object on the server with everything it needs to run. (lines 3 and 5)
-   3. On line 21 we can no longer use `this` to call the static method, instead we use the name of the component `UpdatePriceComponent` and we send it the `this.amountToAdd` variable.
+* We've created a new static method called `updatePriceOnServer` and moved the code to it
+* * note that the `context` parameter is marked as optional - that parameter will automatically be populated with the server context once this method will run on the server.
+* * note that since this is a `static` method, we can't use the `this` keyword so instead of writing `this.context.for(Products)` we write `context.for(Products) ` and we receive the context as a parameter.
+* * note that we also that the parameter `priceToUpdate` is typed, which means that we achieved type check across backend calls.
+* We've tagged it with the `@ServerFunction` decorator to indicate that it runs on the server and we've moved the code to it.
+* * In the parameter sent to the `@ServerFunction` decorator, we've set the `allowed` property to `true` indicating that anyone can run this function. Later we'll restrict it to users with specific roles.
 
 If we'll review the output of the `node-serve` window, we'll see that a new API entry was added to the list:
 ```sh{3}
 /api/signIn
 /api/resetPassword
-/api/actualUpdatePrices
+/api/updatePriceOnServer
 /api/Categories
 /api/Products
 /api/Users

@@ -1,0 +1,11 @@
+.full-page { // used to describe a div that uses the full height of it's container
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+}
+.grow-item { // used for a div that should grow and use as much room as it can
+    height: 250px;
+    flex-grow: 1;
+    flex-shrink: 0;
+    overflow-y: auto;
+}

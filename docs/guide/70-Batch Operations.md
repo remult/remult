@@ -2,99 +2,28 @@
 
 The next requirement from our users is to be able to update the price of all products by a fixed amount in a simple operation.
 
-For that we'll start by adding a new component called `updatePrice`
-```sh
-ng generate component --skipTests=true update-price
-```
+First we'll add a number column that'll be used to store the price we want to update:
 
-Let's add a route for it:
-`app-routing.module.ts`
-```ts{5}
-const routes: Routes = [
-  { path: 'Home', component: HomeComponent },
-  { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard] },
-  { path: 'Products', component: ProductsComponent },
-  { path: 'Update-Price', component: UpdatePriceComponent },
-  { path: 'Categories', component: CategoriesComponent },
-  { path: 'Register', component: RegisterComponent, canActivate: [NotSignedInGuard] },
-  { path: 'Account Info', component: UpdateInfoComponent, canActivate: [SignedInGuard] },
-  { path: '', redirectTo: '/Home', pathMatch: 'full' },
-  { path: '**', redirectTo: '/Home', pathMatch: 'full' }
-];
-```
-
-Next we'll define the `amountToAdd` member in the `update-price.component.ts` and add a method stub for updating all prices.
-```ts{6-8}
-export class UpdatePriceComponent implements OnInit {
-
-  constructor() { }
-  ngOnInit() {
-  }
-  amountToAdd:number;
-  updatePrices(){
-  }
-}
-```
+<<< @/docs-code/products-batch-operations/products.component.step1.ts{17-19}
 
 We'll use Material design to format our [input](https://material.angular.io/components/input/overview) and [button](https://material.angular.io/components/button/overview)
-in the `update-price.component.html`
-```html
-    Please choose the amount to add to all the products:
 
-    <mat-form-field class="example-full-width">
-        <input matInput placeholder="Amount to add" [(ngModel)]="amountToAdd" type="number">
-    </mat-form-field>
-    <br>
-    <button (click)="updatePrices()" mat-raised-button color="primary" >Update all Prices</button>
-```
+Add the following styles to the `products.component.scss` - they'll help us with alignment of objects in our page.
 
-Next let's add some validations:
-```ts{7-10}
-export class UpdatePriceComponent implements OnInit {
-  constructor() { }
-  ngOnInit() {
-  }
-  amountToAdd: number;
-  updatePrices() {
-    if (!this.amountToAdd || this.amountToAdd < 1) {
-      alert("Please enter a valid amount");
-      return;
-    }
- }
-}
-```
+<<< @/docs-code/products-batch-operations/products.component.scss
 
-Next let's do the actual work.
-```ts{2,6,11-19}
-export class UpdatePriceComponent implements OnInit {
-  constructor(private context: Context) { }
-  ngOnInit() {
-  }
-  amountToAdd: number;
-  async updatePrices() {
-    if (!this.amountToAdd || this.amountToAdd < 1) {
-      alert("Please enter a valid amount");
-      return;
-    }
-    let products = await this.context.for(Products).find();
-    let count = 0;
-    for (const p of products) {
-      p.price.value += this.amountToAdd;
-      await p.save();
-      count++;
-    }
-    alert("updated " + count + " products");
-  }
-}
-```
+Next we'll adjust the html to display above the grid an input for our column and a button
 
-Let's review:
-1. On line 3 we've added the `context` object to the constructor.
-2. On line 8 we've marked our method with the `async` keyword.
-3. On line 13 we've requested the products from the db using the `await` keyword to wait for the result.
-4. On line 17 we've saved the changes we've made to the server, again using the `await` keyword to wait for it's completion.
+<<< @/docs-code/products-batch-operations/products.component.html
 
-::: tip Note
- If you get an error, chances are that you have rows in the products table that don't match your validation rules. This can happen since we first added a few test rows, and then we've added some validation, that not all existing rows match.
- Just go to the Products page and fix it.
-:::
+* we've used the `data-control` element to display the column as an input.
+* In the click event of the button, we've called the `updatePrice` method which we'll implement next.
+ 
+## Updating the data
+In the `products.component.ts`:
+
+<<< @/docs-code/products-batch-operations/products.component.step2.ts{19-24}
+
+* We use `await p.save()` to save the products one by one. (to do this, we have to add the word `async` before the `updatePrice` method as we've done in the previous step)
+* we use `this.products.getRecords()` to refresh the data displayed on the grid.
+

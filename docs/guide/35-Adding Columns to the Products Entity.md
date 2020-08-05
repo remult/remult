@@ -2,24 +2,9 @@
 let's add a price, and availability dates to the `Products` entity
 
 In the `products.ts` file
-```ts{1,6-8}
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
 
-@EntityClass
-export class Products extends IdEntity {
-    name = new StringColumn();
-    price = new NumberColumn();
-    availableFrom = new DateColumn();
-    availableTo = new DateColumn();
-    constructor() {
-        super({
-            name: "Products",
-            allowApiCRUD:true,
-            allowApiRead:true
-        });
-    }
-} 
-```
+<<< @/docs-code/products-batch-operations/products.ts{6-8}
+
 
 
 Once we've added these columns we'll be able to see in the `node-serve` terminal window that these columns were added to our database:
