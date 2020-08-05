@@ -75,6 +75,9 @@ module.exports = {
               collapsable:true,
               children:[
                 'architecture',
+                'entity',
+                'allowed',
+                'dialog',
                 '81-Adding a new Role',
                 'further-learning',
                 'VSCode-keyboard-shortcuts'
