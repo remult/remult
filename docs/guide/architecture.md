@@ -66,7 +66,7 @@ It handles security concerns and server/client concerns so that you the develope
 
 When you write the following code which runs in the browser:
 ```ts
-this.products = await this.context.for(Products).find({
+await this.context.for(Products).find({
     orderBy: p => p.name
     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
     p.availableTo.isGreaterOrEqualTo(new Date()))
@@ -108,7 +108,7 @@ The server will then return the data in JSON format to be consumed in the browse
 #### On the Server
 If we'll run the same code - on the server:
 ```ts
-this.products = await this.context.for(Products).find({
+await this.context.for(Products).find({
     orderBy: p => p.name
     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
     p.availableTo.isGreaterOrEqualTo(new Date()))
