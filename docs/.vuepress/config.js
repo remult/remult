@@ -75,9 +75,10 @@ module.exports = {
               collapsable:true,
               children:[
                 'architecture',
+                'dialog',
+                'running-sql-on-the-server',
                 'entity',
                 'allowed',
-                'dialog',
                 '81-Adding a new Role',
                 'further-learning',
                 'VSCode-keyboard-shortcuts'
