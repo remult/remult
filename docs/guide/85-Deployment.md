@@ -33,7 +33,7 @@ If the command line can't find the `heroku` command, please close and reopen the
 ## Step 2 Create the Heroku Application
 
 In the Command line, in the project folder, we can use the `apps:create` command to create our project.
-1. We can send it the region we want to use (by default it's us, for europe and middleeast we recommend europe: `--region eu`)
+1. We can send it the region we want to use (by default it's USA, for europe and middleeast we recommend europe: `--region eu`)
 2. Specify the name of the project, (`my-project` in our case) - that name will be used as the prefix for your application's url (`https://my-project.herokuapp.com` on our case). 
 The name you want may be taken - so keep trying names until you reach a name that is free, or run the command without a name, and `heroku` will generate a name for you.
 
