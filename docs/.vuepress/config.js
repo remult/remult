@@ -1,5 +1,5 @@
 const { description } = require('../../package')
-
+//const apiSideBar = require('./api-sidebar.json');
 module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
@@ -59,7 +59,7 @@ module.exports = {
             '20-Hello-Angular',
             '25-Adding-the-Products-Component',
             '30-Adding the Products Entity',
-            
+
             //'40-Adding Validations',
             //'45-Configuring the DataGrid and DataArea',
             //'50-Settings Default Values for New Rows',
@@ -71,9 +71,9 @@ module.exports = {
             '80-Users and Security',
             '85-Deployment',
             {
-              title:'Further Reading',
-              collapsable:true,
-              children:[
+              title: 'Further Reading',
+              collapsable: true,
+              children: [
                 'architecture',
                 'dialog',
                 'running-sql-on-the-server',
@@ -87,7 +87,14 @@ module.exports = {
             }
           ]
         }
-      ],
+      ]
+      // ,
+      // '/reference/': [{
+      //   title: 'Reference',
+      //   collapsable: true,
+      //   children: [...apiSideBar]
+      // }
+      // ]
     }
   },
 
