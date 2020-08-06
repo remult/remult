@@ -80,6 +80,7 @@ module.exports = {
                 'entity',
                 'allowed',
                 '81-Adding a new Role',
+                'rest-api',
                 'further-learning',
                 'VSCode-keyboard-shortcuts'
               ]

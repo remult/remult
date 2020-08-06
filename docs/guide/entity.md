@@ -16,7 +16,7 @@ And `Entity` will always be created by the `context` object.
 The Entity configuration can be determined by the `options` object that is being sent to the `super` method (the constructor of it's base class)
 
 
-See the object itself for more info about the different properties and their usage.
+See the `EntityOptions` object itself for more info about the different properties and their usage.
 
 ##  The Context class
 Most of the work with entity will be done using the `Context` object.

@@ -62,7 +62,14 @@ remult is a library that is used both in the browser and in the server. It allow
 It handles the communication between the server and the client, and also generates the sql statements required to access the data from the db.
 It handles security concerns and server/client concerns so that you the developer can focus on the business problem you are trying to solve.
 
+
+
 ### Let's use an example to demonstrate that
+
+An Entity object is defined once and is used on the server and in the browser. For example:
+
+<<< @/docs-code/products-batch-operations/products.ts
+
 
 When you write the following code which runs in the browser:
 ```ts

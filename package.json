@@ -29,7 +29,9 @@
     "server:dev-run": "node --inspect dist-server/src/app/server/server.js",
     "docs": "vuepress dev docs",
     "build-docs": "vuepress build docs",
-    "release-docs": "deploy.sh"
+    "release-docs": "deploy.sh",
+    "setup-type-doc": " typedoc typedoc-plugin-markdown",
+    "try-generate-typedoc-docs": "npx typedoc --plugin typedoc-plugin-markdown --theme vuepress --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./docs/reference ./projects/core/src/entity.ts  --excludeExternals --json ./docs/reference/the.json"
   },
   "private": true,
   "dependencies": {
