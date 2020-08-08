@@ -76,10 +76,11 @@ module.exports = {
               children: [
                 'architecture',
                 'dialog',
-                'running-sql-on-the-server',
                 'entity',
                 'allowed',
                 '81-Adding a new Role',
+                'using-server-only-packages',
+                'running-sql-on-the-server',
                 'rest-api',
                 'further-learning',
                 'VSCode-keyboard-shortcuts'

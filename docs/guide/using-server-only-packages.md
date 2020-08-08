@@ -56,6 +56,7 @@ static writeToLog:(textToWrite:string)=>void;
 ```
 
 The method `writeToLog` that we've defined serves as a place holder which we'll assign to in the context of the server.
+It receives one parameter of type `string` and returns `void`
 
 ## Step 2, implement the method
 In the `/src/app/server` folder, we'll add a file called `log-writer.ts` with the following code:
@@ -72,7 +73,7 @@ This file is intended to only run in the server, so it'll not present us with an
 In the `/src/app/server/server-init.ts` file, load the `log-writer.ts` file using an `import` statement
 ```ts{2}
 import '../app.module';
-import './log-writer';
+import './log-writer'; //load the log-writer.ts file
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
