@@ -179,6 +179,13 @@
             "problemMatcher": [],
             "label": "npm: release-docs",
             "detail": "deploy.sh"
+        },
+        {
+            "type": "npm",
+            "script": "try-generate-typedoc-docs",
+            "problemMatcher": [],
+            "label": "npm: try-generate-typedoc-docs",
+            "detail": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work"
         }
     ]
 }

@@ -7,8 +7,8 @@
     ],
     "theme": "vuepress",
     "out": [
-        "./docs/reference"
+        "./tmp/reference"
     ],
     "excludeExternals": true,
-    "json": "./docs/reference/the.json"
+    "json": "./tmp/the.json"
 }

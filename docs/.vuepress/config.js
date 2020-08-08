@@ -84,17 +84,17 @@ module.exports = {
                 'further-learning',
                 'VSCode-keyboard-shortcuts'
               ]
+            },
+            {
+              title: 'Reference',
+              collapsable: true,
+              children: ['ref_entityoptions']
             }
+
           ]
         }
       ]
-      // ,
-      // '/reference/': [{
-      //   title: 'Reference',
-      //   collapsable: true,
-      //   children: [...apiSideBar]
-      // }
-      // ]
+      ,
     }
   },
 

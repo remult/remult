@@ -248,7 +248,9 @@ export interface EntityOptions {
   dbName?: string | (() => string);
   /**A human readable name for the entity */
   caption?: string;
-  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+  /**
+   * Determines if this Entity is available for get requests using Rest Api 
+   * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiRead?: Allowed;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiUpdate?: Allowed;
@@ -260,11 +262,10 @@ export interface EntityOptions {
   allowApiCRUD?: Allowed;
   /** A filter that determines which rows can be queries using the api.
    * @example
-   * 
    * apiDataFilter: () => {
-       if (!context.isSignedIn())
-          return this.availableTo.isGreaterOrEqualTo(new Date());
-       }
+   *   if (!context.isSignedIn())
+   *      return this.availableTo.isGreaterOrEqualTo(new Date());
+   *   }
   */
   apiDataFilter?: () => FilterBase;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
@@ -288,12 +289,12 @@ export interface EntityOptions {
   * this is the place to run logic that we want to run in any case before an entity is saved. 
   * @example
   * saving: async () => {
-      if (context.onServer) {
-        if (this.isNew()) {
-            this.createDate.value = new Date();
-        }
-      }
-    }
+  *   if (context.onServer) {
+  *     if (this.isNew()) {
+  *         this.createDate.value = new Date();
+  *     }
+  *   }
+  * }
   */
   saving?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
   /** will be called after the Entity was saved to the data source. */

@@ -1,5 +1,5 @@
 {
-  "name": "radweb-app",
+  "name": "remult",
   "version": "1.0.15",
   "scripts": {
     "ng": "ng",
@@ -31,7 +31,7 @@
     "build-docs": "vuepress build docs",
     "release-docs": "deploy.sh",
     "setup-type-doc": " typedoc typedoc-plugin-markdown",
-    "try-generate-typedoc-docs": "typedoc --plugin typedoc-plugin-markdown --theme vuepress --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./docs/reference   --excludeExternals --json ./docs/reference/the.json"
+    "try-generate-typedoc-docs": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work"
   },
   "private": true,
   "dependencies": {
@@ -87,7 +87,7 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "ng-packagr": "^4.2.0",
     "protractor": "~5.4.0",
-    "ts-node": "~7.0.0",
+    "ts-node": "^8.10.2",
     "ts-node-dev": "^1.0.0-pre.30",
     "tsc-watch": "^4.0.0",
     "tsickle": "^0.37.0",
