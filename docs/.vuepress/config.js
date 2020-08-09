@@ -89,7 +89,15 @@ module.exports = {
             {
               title: 'Reference',
               collapsable: true,
-              children: ['ref_entityoptions']
+              children: [
+                'ref_entity',
+                'ref_entityoptions',
+                'ref_findoptions',
+                'ref_specificentityhelper',
+                'ref_entitywhere',
+                'ref_entityorderby'
+
+              ]
             }
 
           ]

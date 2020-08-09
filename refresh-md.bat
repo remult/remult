@@ -1,2 +1,2 @@
-call typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts
+call typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/context.ts ./projects/core/src/entity.ts ./projects/core/src/data-interfaces.ts
 node docs-work

@@ -16,7 +16,7 @@ And `Entity` will always be created by the `context` object.
 The Entity configuration can be determined by the `options` object that is being sent to the `super` method (the constructor of it's base class)
 
 
-See the [EntityOptions](ref_entityoptions) object itself for more info about the different properties and their usage.
+See the [EntityOptions](ref_entityoptions) docs for all the different options.
 
 ##  The Context class
 Most of the work with entity will be done using the `Context` object.
@@ -41,40 +41,16 @@ this.products = await this.context.for(Products).find({
 });
 ```
 
-## findFirst
-Gets only the first row that matches the rule
-```ts
-let p = await context.for(Products).findFirst({
-    orderBy: p => p.name
-    , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
-    p.availableTo.isGreaterOrEqualTo(new Date()))
-})
-```
+For more methods see the docs for [SpecificEntityHelper](ref_specificentityhelper)
 
-## findId
-Used to find a single row by it's it
-```ts
-let p = await context.for(Products).findId(productId);
-```
-
-## lookup
-Used to get non critical values from the Entity.
-The first time this method is called, it'll return a new instance of the Entity.
-It'll them call the server to get the actual value and cache it.
-Once the value is back from the server, any following call to this method will return the cached row.
-
-It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
+## Working with the result set
+When we get a result set of entities, we can perform actions on them, update them, save them etc...
 
 ```ts
-return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
+for await (let p of this.context.for(Products).iterate()){
+    p.price.value += 5;
+    await p.save();
+}
 ```
-Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
 
-
-## create
-Used to create a new instance (row) of the Entity
-```ts
-let p = context.for(Products).create();
-p.name.value = "Wine";
-await p.save();
-```
+For Entity methods see [Entity](ref_entity)

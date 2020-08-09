@@ -1,6 +1,7 @@
 {
     "inputFiles": [
-        "./projects/core/src/entity.ts"
+    "./projects/core/src/context.ts"       ,
+    "./projects/core/src/entity.ts"
     ],
     "plugin": [
         "typedoc-plugin-markdown"

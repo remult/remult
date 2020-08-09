@@ -106,38 +106,16 @@ export class Entity<idType = any> {
     if (!this.__idColumn)
       this.__idColumn = this.__columns[0];
   }
-  isValid() {
-    let ok = true;
-    this.__columns.forEach(c => {
-      if (c.validationError)
-        ok = false;
-    });
-    return ok;
-  }
-  isNew() {
-    return this.__entityData.isNewRow();
-  }
-  //@internal
-  private __getValidationError() {
-    let result: any = {};
-    result.modelState = {};
-    this.__columns.forEach(c => {
-      if (c.validationError) {
-        result.modelState[c.defs.key] = c.validationError;
-        if (!result.message) {
-          result.message = c.defs.caption + ":" + c.validationError;
-        }
-      }
-    });
-    return result;
-  }
-  //@internal
-  private __assertValidity() {
-    if (!this.isValid()) {
-
-      throw this.__getValidationError();
-    }
-  }
+  /** saves the changes made to this instance to the data source
+   * @example
+   * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
+   * p.price.value = 10;
+   * await p.save();
+   * @example
+   * let p = this.context.for(Products).create();
+   * p.name.value = 'Wine';
+   * await p.save();
+   */
   async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
     this.__clearErrors();
 
@@ -155,6 +133,59 @@ export class Entity<idType = any> {
     this.__assertValidity();
     return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
   }
+  /** Delete a specific entity instance
+ * @example
+ * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
+ * await p.delete();
+ */
+  async delete() {
+    this.__clearErrors();
+    if (this.__options.deleting)
+      await this.__options.deleting();
+    this.__assertValidity();
+    return this.__entityData.delete(this.__options.deleted).catch(e => this.catchSaveErrors(e));
+
+  }
+  /** returns true if there are no validation errors for the entity or any of it's columns */
+  isValid() {
+    let ok = !this.validationError;
+    this.__columns.forEach(c => {
+      if (c.validationError)
+        ok = false;
+    });
+    return ok;
+
+  }
+  /** returns true if this entity is new and not yet exists in the db */
+  isNew() {
+    return this.__entityData.isNewRow();
+  }
+  //@internal
+  private __getValidationError() {
+    let result: any = {};
+    result.modelState = {};
+    this.__columns.forEach(c => {
+      if (c.validationError) {
+        result.modelState[c.defs.key] = c.validationError;
+        if (!result.message) {
+          result.message = c.defs.caption + ":" + c.validationError;
+        }
+      }
+    });
+    return result;
+  }
+  /** returns true if a change was made to the instance */
+  wasChanged() {
+    return this.__entityData.wasChanged();
+  }
+  //@internal
+  private __assertValidity() {
+    if (!this.isValid()) {
+
+      throw this.__getValidationError();
+    }
+  }
+
   //@internal
   private catchSaveErrors(err: any): any {
     let e = err;
@@ -185,18 +216,15 @@ export class Entity<idType = any> {
 
   }
 
-  async delete() {
-    this.__clearErrors();
-    if (this.__options.deleting)
-      await this.__options.deleting();
-    this.__assertValidity();
-    return this.__entityData.delete(this.__options.deleted).catch(e => this.catchSaveErrors(e));
-
-  }
+  /** returns all the values to their original value, prior to any change */
   undoChanges() {
     this.__entityData.reset();
     this.__clearErrors();
   }
+  /** reloads the data for the specific entity instance from data source
+   * @example
+   * await p.reload();
+  */
   async reload() {
     await this.__entityData.reload(this);
   }
@@ -205,9 +233,7 @@ export class Entity<idType = any> {
     this.__columns.forEach(c => c.__clearErrors());
     this.validationError = undefined;
   }
-  wasChanged() {
-    return this.__entityData.wasChanged();
-  }
+
 
 
 
@@ -232,9 +258,7 @@ export class Entity<idType = any> {
 }
 export interface EntityOptions {
   /**
- * @description
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
- * @publicApi
  */
   name: string;
   /**

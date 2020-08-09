@@ -1,0 +1,60 @@
+[
+  {
+    "title": "Modules",
+    "children": [
+      "modules/_projects_core_src_context_",
+      "classes/_projects_core_src_context_.context",
+      "classes/_projects_core_src_context_.role",
+      "classes/_projects_core_src_context_.servercontext",
+      "classes/_projects_core_src_context_.specificentityhelper",
+      "interfaces/_projects_core_src_context_.entitytype",
+      "interfaces/_projects_core_src_context_.iterateoptions",
+      "interfaces/_projects_core_src_context_.iteratetoarrayoptions",
+      "interfaces/_projects_core_src_context_.lookupcache",
+      "interfaces/_projects_core_src_context_.rolechecker",
+      "interfaces/_projects_core_src_context_.userinfo",
+      "modules/_projects_core_src_data_interfaces_",
+      "interfaces/_projects_core_src_data_interfaces_.dataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataproviderfindoptions",
+      "interfaces/_projects_core_src_data_interfaces_.entityprovider",
+      "interfaces/_projects_core_src_data_interfaces_.findoptions",
+      "interfaces/_projects_core_src_data_interfaces_.__rowsofdatafortesting",
+      "modules/_projects_core_src_entity_",
+      "classes/_projects_core_src_entity_.entity",
+      "classes/_projects_core_src_entity_.entitycolumns",
+      "classes/_projects_core_src_entity_.entitydefs",
+      "interfaces/_projects_core_src_entity_.entityoptions"
+    ]
+  },
+  {
+    "title": "Classes",
+    "children": [
+      "classes/_projects_core_src_context_.context",
+      "classes/_projects_core_src_context_.role",
+      "classes/_projects_core_src_context_.servercontext",
+      "classes/_projects_core_src_context_.specificentityhelper",
+      "classes/_projects_core_src_entity_.entity",
+      "classes/_projects_core_src_entity_.entitycolumns",
+      "classes/_projects_core_src_entity_.entitydefs"
+    ]
+  },
+  {
+    "title": "Interfaces",
+    "children": [
+      "interfaces/_projects_core_src_context_.entitytype",
+      "interfaces/_projects_core_src_context_.iterateoptions",
+      "interfaces/_projects_core_src_context_.iteratetoarrayoptions",
+      "interfaces/_projects_core_src_context_.lookupcache",
+      "interfaces/_projects_core_src_context_.rolechecker",
+      "interfaces/_projects_core_src_context_.userinfo",
+      "interfaces/_projects_core_src_data_interfaces_.dataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataproviderfindoptions",
+      "interfaces/_projects_core_src_data_interfaces_.entityprovider",
+      "interfaces/_projects_core_src_data_interfaces_.findoptions",
+      "interfaces/_projects_core_src_data_interfaces_.__rowsofdatafortesting",
+      "interfaces/_projects_core_src_entity_.entityoptions"
+    ]
+  }
+]
