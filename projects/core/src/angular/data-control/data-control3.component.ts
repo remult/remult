@@ -64,7 +64,7 @@ export class DataControl3Component {
   _getEditable() {
     if (this.notReadonly)
       return true;
-    return this.settings._getEditable(this.map);
+    return this.settings._getEditable(this.map,this.record);
   }
   ngOnChanges(): void {
 

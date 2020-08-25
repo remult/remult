@@ -38,7 +38,8 @@ export class ProductsComponent implements OnInit {
     allowSelection: true,
     knowTotalRows: true,
     columnSettings: p => [
-      p.name
+      p.name,
+      { column: p.phone, readOnly:x=> x.name.value.length>4 }
 
     ],
     allowDelete: true,

@@ -32,10 +32,18 @@ export interface ColumnSettings<valueType = any> {
 }
 export declare type ColumnOptions<valueType = any> = ColumnSettings<valueType> | string;
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
+export declare type ValueOrEntityExpression<valueType, entityType extends Entity> = valueType | ((e: entityType) => valueType);
 export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
     if (isFunction(f)) {
         let x = f as any;
         return x();
+    }
+    return <T>f;
+}
+export function valueOrEntityExpressionToValue<T, entityType extends Entity>(f: ValueOrEntityExpression<T, entityType>,e:entityType): T {
+    if (isFunction(f)) {
+        let x = f as any;
+        return x(e);
     }
     return <T>f;
 }
@@ -46,7 +54,7 @@ export interface DataControlSettings<entityType extends Entity = Entity> {
 
     column?: Column;
     getValue?: (row: entityType) => any;
-    readOnly?: boolean;
+    readOnly?: ValueOrEntityExpression<boolean,entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;

@@ -77,6 +77,7 @@ module.exports = {
                 'architecture',
                 'dialog',
                 'entity',
+                'grid-settings-and-data-grid',
                 'allowed',
                 '81-Adding a new Role',
                 'using-server-only-packages',
@@ -95,7 +96,12 @@ module.exports = {
                 'ref_findoptions',
                 'ref_specificentityhelper',
                 'ref_entitywhere',
-                'ref_entityorderby'
+                'ref_entityorderby',
+                'ref_idatasettings',
+                'ref_datacontrolsettings',
+                'ref_rowbutton',
+                'ref_gridbutton'
+
 
               ]
             }

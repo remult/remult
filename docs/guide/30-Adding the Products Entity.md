@@ -16,11 +16,20 @@ Let's review:
 >The `allowApiRead` and `allowApiCRUD` properties are set by default to false, to secure the data of your application, you may want to restrict access to this data and we want to make sure that data will not be exposed by default. Later we'll review how to control access to data.
 
 ## Using the Entity in a Component
-Now let's add a grid on the `ProductsComponent` that displays the `Products` Entity
+Now let's add a grid on the `ProductsComponent` that displays the `Products` Entity.
+
+We are using the `data-grid` and `GridSettings` objects from `remult`. The `data-grid` is a quick and easy to use data grid that is intended to help you create admin screens with ease. For more info on it see [Data Grid](datagrid)
 
 in `products.component.ts`
 
 <<< @/docs-code/products/products.component.ts{11-15} 
+
+let's review:
+1. We've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them. See "adding the import statements" note below)
+2. We've added a parameter to the constructor called `context` of type `Context` from `@remult/core`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
+3. We've added the definition of `products` in this component. We've asked the context to provide us with `gridSettings` for the `Entity` Products - and we've configured it to allow update insert and delete.
+
+
 
 :::tip adding the import statements
  When you'll add the `context` parameter to the constructor, you'll also require the `import` statement for the `Context` class.
@@ -33,11 +42,6 @@ in `products.component.ts`
 
  The same can be done for any missing `import` statement 
 :::
-
-let's review:
-1. In line 2 and 3 we've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them)
-2. In line 12, we've added a parameter to the constructor called `context` of type `Context` from `@remult/core`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
-3. On line 14 we've added the definition of `products` in this component. We've asked the context to provide us with `gridSettings` for the `Entity` Products - and we've configured it to allow update insert and delete.
 
 ## Placing the data-grid in the html
 and in the `products.component.html`

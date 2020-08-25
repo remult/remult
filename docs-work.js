@@ -15,6 +15,10 @@ for (const file of api.children) {
             case "EntityWhere":
             case "EntityOrderBy":
             case "Entity":
+            case "DataControlSettings":
+            case "IDataSettings":
+            case "RowButton":
+            case "GridButton":
 
                 let s = '# ' + type.name + '\n';
                 {

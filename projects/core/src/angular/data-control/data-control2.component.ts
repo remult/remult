@@ -29,7 +29,7 @@ export class DataControl2Component {
 
     return (this.map.column) && this.map.getValue || !this._getEditable();
   }
-  getDropDown():ValueListItem[]{
+  getDropDown(): ValueListItem[] {
     return this.map.valueList as ValueListItem[];
   }
   showClick() {
@@ -64,13 +64,13 @@ export class DataControl2Component {
   _getEditable() {
     if (this.notReadonly)
       return true;
-    return this.settings._getEditable(this.map);
+    return this.settings._getEditable(this.map, this.record);
   }
   ngOnChanges(): void {
 
   }
   isSelect(): boolean {
-    if (this.map.valueList&&this._getEditable())
+    if (this.map.valueList && this._getEditable())
       return true;
     return false;
   }
