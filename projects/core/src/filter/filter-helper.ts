@@ -44,7 +44,7 @@ export class FilterHelper<rowType extends Entity> {
       }
       if (c instanceof DateTimeColumn) {
         if (val) {
-          let v = DateTimeColumn.stringToDate(val);
+          let v = <Date>val;
           v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
 
           f = c.isGreaterOrEqualTo(v).and(c.isLessThan((new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
