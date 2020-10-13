@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn } from '@remult/core';
-import { Products, productStatus } from './products';
+import { Products } from './products';
 import { YesNoQuestionComponent } from '../../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 import { DialogService } from '../../../projects/core/schematics/hello/files/src/app/common/dialog';
 import { TestDialogComponent } from '../test-dialog/test-dialog.component';
@@ -37,11 +37,7 @@ export class ProductsComponent implements OnInit {
     allowInsert: true,
     allowSelection: true,
     knowTotalRows: true,
-    columnSettings: p => [
-      p.name,
-      { column: p.phone, readOnly:x=> x.name.value.length>4 }
 
-    ],
     allowDelete: true,
     confirmDelete: async p => {
       return this.dialogs.yesNoQuestion("bla bla " + p.name.value);
@@ -49,7 +45,7 @@ export class ProductsComponent implements OnInit {
 
 
     enterRow: (r) => {
-      this.area = new DataAreaSettings({ columnSettings: () => [this.col, r.phone] });
+      this.area = new DataAreaSettings({ columnSettings: () => [this.col] });
     },
     get: {
 

@@ -104,7 +104,7 @@ We can also navigate through the browser directly to the api address `http://loc
 ]
 ```
 
-# Adding More Columns
+## Adding More Columns
 let's add a price, and availability dates to the `Products` entity
 
 In the `products.ts` file

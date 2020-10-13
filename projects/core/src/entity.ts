@@ -162,7 +162,7 @@ export class Entity<idType = any> {
   }
   //@internal
   private __getValidationError() {
-    let result: any = {};
+    let result: any = { message: this.validationError };
     result.modelState = {};
     this.__columns.forEach(c => {
       if (c.validationError) {
