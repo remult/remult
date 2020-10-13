@@ -467,7 +467,7 @@ export interface RowButton<rowType extends Entity> {
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
   showInLine?: boolean;
-  textInMenu?: () => string;
+  textInMenu?: (string | ((row: rowType) => string));
   icon?: string;
   cssClass?: (string | ((row: rowType) => string));
 

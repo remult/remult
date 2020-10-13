@@ -94,6 +94,19 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     return b.cssClass.toString();
 
   }
+  getButtonText(b: RowButton<any>, row: any) {
+    if (!b.textInMenu)
+      return b.name;
+    if (isFunction(b.textInMenu)) {
+      if (!row)
+        return '';
+      //@ts-ignore
+      return b.textInMenu(row);
+    }
+    return <string>b.textInMenu;
+
+
+  }
   hasVisibleButton(record) {
     return this.rowButtons.find(b => b.visible(record));
   }

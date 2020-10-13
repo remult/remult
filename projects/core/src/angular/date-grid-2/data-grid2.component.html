@@ -1,5 +1,5 @@
 <div style="height: 100%;display: flex;flex-direction: column;">
-  <Data-Filter [settings]="settings" #dataFilter style="flex-shrink: 0;" >
+  <Data-Filter [settings]="settings" #dataFilter style="flex-shrink: 0;">
   </Data-Filter>
   <div class="dataGrid" #dataGridDiv *ngIf="settings&&settings.columns" [style.height]="_getHeight()">
     <div class="inner-wrapper">
@@ -76,9 +76,8 @@
           </div>
           <mat-menu #updatedRowOptions="matMenu">
             <ng-container *ngFor="let b of rowButtons">
-              <button mat-menu-item *ngIf="b.visible(record)" (click)="b.click(record)"
-                >
-                <mat-icon *ngIf="b.icon">{{b.icon}}</mat-icon>{{b.textInMenu?b.textInMenu(): b.name}}
+              <button mat-menu-item *ngIf="b.visible(record)" (click)="b.click(record)">
+                <mat-icon *ngIf="b.icon">{{b.icon}}</mat-icon>{{getButtonText(b,record)}}
               </button>
             </ng-container>
 
@@ -91,8 +90,8 @@
           </div>
           <div class="dataGridButtonCell" *ngIf="rowButtons.length>0&&displayButtons" style="white-space:nowrap">
             <ng-container *ngFor="let b of rowButtons">
-              <button mat-icon-button *ngIf="b.visible(record)&&b.icon&&b.showInLine" (click)="b.click(record)" matTooltip="{{b.textInMenu? b.textInMenu():b.name}}"
-                class="row-button">
+              <button mat-icon-button *ngIf="b.visible(record)&&b.icon&&b.showInLine" (click)="b.click(record)"
+                matTooltip="{{getButtonText(b,record)}}" class="row-button">
                 <mat-icon *ngIf="b.icon">{{b.icon}} </mat-icon> {{b.name}}
               </button>
               <button mat-raised-button *ngIf="b.visible(record)&&!b.icon&&b.showInLine" (click)="b.click(record)"

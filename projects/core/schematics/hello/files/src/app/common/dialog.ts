@@ -47,8 +47,14 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
     constructor(private dialog: DialogService, private zone: NgZone) {
         super();
     }
+    lastErrorString: '';
+    lastErrorTime: number;
     async handleError(error) {
         super.handleError(error);
+        if (this.lastErrorString == error.toString() && new Date().valueOf() - this.lastErrorTime < 100)
+            return;
+        this.lastErrorString = error.toString();
+        this.lastErrorTime = new Date().valueOf();
         this.zone.run(() => {
             this.dialog.error(error);
         });

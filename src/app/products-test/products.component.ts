@@ -58,7 +58,10 @@ export class ProductsComponent implements OnInit {
     rowButtons: [
       {
         icon: 'clear',
-        textInMenu: () => 'asdf',
+        textInMenu: (x) => {
+        
+          return 'asdf' + x.name.value
+        },
         showInLine: true
       }
     ]
