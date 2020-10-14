@@ -12,7 +12,7 @@
                 *ngIf="matchesFilter(o)" (click)="select(o)">
                 {{o.caption}}
             </mat-list-item>
-            <mat-divider></mat-divider>
+            <mat-divider *ngIf="matchesFilter(o)"></mat-divider>
         </ng-container>
     </mat-nav-list>
 </div>
