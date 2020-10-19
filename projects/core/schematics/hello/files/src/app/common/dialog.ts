@@ -1,5 +1,5 @@
 import { Injectable, NgZone, ErrorHandler } from "@angular/core";
-import {  MatSnackBar } from "@angular/material/snack-bar";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { Context } from "@remult/core";
 
 import { YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
@@ -62,24 +62,28 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
     }
 }
 
+
 export function extractError(err: any) {
     if (isString(err))
         return err;
-    if (err.error)
-        return extractError(err.error);
-    if (err.rejection)
-        return extractError(err.rejection);
-    if (err.message)
-        return extractError(err.message);
-    if (err.modelState){
+    if (err.modelState) {
+        if (err.message)
+            return err.message;
         for (const key in err.modelState) {
             if (err.modelState.hasOwnProperty(key)) {
                 const element = err.modelState[key];
-                return key+": "+element;
-                
+                return key + ": " + element;
+
             }
         }
     }
+    if (err.rejection)
+        return extractError(err.rejection);//for promise failed errors and http errors
+    if (err.message)
+        return extractError(err.message);
+    if (err.error)
+        return extractError(err.error);
+
 
     return JSON.stringify(err);
 }
