@@ -1,5 +1,5 @@
-<h1 mat-dialog-title *ngIf="!info.rightToLeft">Filter {{this.info.filterColumnToAdd.caption}}</h1>
-<h1 mat-dialog-title *ngIf="info.rightToLeft">סינון {{this.info.filterColumnToAdd.caption}}</h1>
+<h1 mat-dialog-title *ngIf="!info.rightToLeft">Filter {{this.info.filterColumnToAdd?.caption}}</h1>
+<h1 mat-dialog-title *ngIf="info.rightToLeft">סינון {{this.info.filterColumnToAdd?.caption}}</h1>
 <div mat-dialog-content>
 
     <data-control *ngIf="this.info.filterColumnToAdd" [settings]="info.settings.columns" [map]="info.filterColumnToAdd"

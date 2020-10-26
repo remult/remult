@@ -79,8 +79,12 @@ export function extractError(err: any) {
     }
     if (err.rejection)
         return extractError(err.rejection);//for promise failed errors and http errors
-    if (err.message)
-        return extractError(err.message);
+    if (err.message) {
+        let r = err.message;
+        if (err.error.message)
+            r =  err.error.message+" - "+r;
+        return r;
+    }
     if (err.error)
         return extractError(err.error);
 
