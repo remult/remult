@@ -294,8 +294,8 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
     else {
       this.selectedRows.push(row);
-      if (this.selectedRows.length == this.totalRows)
-        this._selectedAll = true;
+      
+        this._selectedAll = this.selectedRows.length == this.totalRows;
     }
   }
   isSelected(row: rowType) {
@@ -372,6 +372,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
     let result = this.restList.get(opt).then(() => {
       this.selectedRows.splice(0);
+      this._selectedAll = false;
 
       if (this.restList.items.length == 0) {
         this.setCurrentRow(undefined);
