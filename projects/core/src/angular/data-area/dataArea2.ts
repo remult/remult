@@ -5,6 +5,8 @@ import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 import { dataAreaSettings, DataAreaSettings } from '../../data-area-settings';
 import { ColumnCollection } from '../../column-collection';
 import { DataControlSettings } from '../../column-interfaces';
+import { getColumnsFromObject } from '../../column';
+
 @Component({
   selector: 'data-area',
 
@@ -16,9 +18,17 @@ import { DataControlSettings } from '../../column-interfaces';
 export class DataArea2Compnent implements OnChanges {
 
   @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true), lines: undefined };
+  @Input() object: any;
 
   ngOnChanges(): void {
     if (this.settings && this.settings.columns) {
+      if (this.object) {
+        //@ts-ignore
+        this.settings = new DataAreaSettings({
+          columnSettings:()=>getColumnsFromObject(this.object)
+        });
+      }
+      
       this.settings.columns.onColListChange(() => this.lastCols = undefined);
       let areaSettings = this.settings as DataAreaSettings;
       if (areaSettings.settings) {

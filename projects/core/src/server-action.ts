@@ -10,7 +10,7 @@ import { BusyService } from './angular/wait/busy-service';
 import { DataApiRequest, DataApiResponse } from './data-api';
 import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { SqlDatabase } from './data-providers/sql-database';
-import { Column } from './column';
+import { Column, getColumnsFromObject } from './column';
 
 
 interface inArgs {
@@ -156,7 +156,7 @@ export interface ControllerOptions {
 function packColumns(self: any) {
     let columns = self.columns;
     if (!columns)
-        columns = controllerColumns(self);
+        columns = getColumnsFromObject(self);
     let packedColumns = {};
     for (const c of columns) {
         packedColumns[c.defs.key] = c.rawValue;
@@ -166,7 +166,7 @@ function packColumns(self: any) {
 function unpackColumns(self: any, data: any) {
     let columns = self.columns;
     if (!columns)
-        columns = controllerColumns(self);
+        columns = getColumnsFromObject(self);
     for (const c of columns) {
         c.rawValue = data[c.defs.key];
     }
@@ -284,26 +284,7 @@ class ClassHelper {
 class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
-export function controllerColumns(controller: any) {
-    let __columns: Column[] = controller.__columns;;
-    if (!__columns) {
 
-        __columns = [];
-        controller.__columns = __columns;
-        for (const key in controller) {
-            if (Object.prototype.hasOwnProperty.call(controller, key)) {
-                const element = controller[key];
-                if (element instanceof Column) {
-                    if (!element.defs.key)
-                        element.defs.key = key;
-                    __columns.push(element);
-                }
-
-            }
-        }
-    }
-    return __columns;
-}
 export function controllerAllowed(controller: any, context: Context) {
     let x = classOptions.get(controller.constructor);
     if (x)

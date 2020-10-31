@@ -97,10 +97,11 @@ export class ProductsComponent implements OnInit {
 })
 class myOperation {
   addAmmount = new NumberColumn();
+  name = new StringColumn("מה אתה רוצה");
   constructor(private context: Context) { }
   @ServerMethod()
   async getThingsDone() {
-    console.log('getting it done');
+    
     for (const p of await this.context.for(Products).find()) {
       p.price.value += this.addAmmount.value;
       await p.save();

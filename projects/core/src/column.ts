@@ -324,3 +324,23 @@ export class ColumnDefs {
     return this.__isVirtual();
   }
 }
+export function getColumnsFromObject(controller: any) {
+  let __columns: Column[] = controller.__columns;;
+  if (!__columns) {
+
+      __columns = [];
+      controller.__columns = __columns;
+      for (const key in controller) {
+          if (Object.prototype.hasOwnProperty.call(controller, key)) {
+              const element = controller[key];
+              if (element instanceof Column) {
+                  if (!element.defs.key)
+                      element.defs.key = key;
+                  __columns.push(element);
+              }
+
+          }
+      }
+  }
+  return __columns;
+}
