@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 
 import {DialogService} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
 import {YesNoQuestionComponent} from '../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
+import { InputAreaComponent } from '../../projects/core/schematics/hello/files/src/app/common/input-area/input-area.component';
 
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -36,6 +37,7 @@ import { ProductsComponent } from './products-test/products.component';
     CategoriesComponent,
     TestComponent,
     YesNoQuestionComponent,
+    InputAreaComponent,
     TestDialogComponent
   ],
   providers:[
@@ -58,7 +60,7 @@ import { ProductsComponent } from './products-test/products.component';
     MatIconModule,
     FormsModule,
   ],
-  entryComponents:[YesNoQuestionComponent,TestDialogComponent],
+  entryComponents:[YesNoQuestionComponent,InputAreaComponent,TestDialogComponent],
   
   bootstrap: [AppComponent]
 })

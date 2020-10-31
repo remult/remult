@@ -137,7 +137,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     if (get && get.limit)
       this.rowsPerPage = get.limit;
     else
-      this.rowsPerPage = 7;
+      this.rowsPerPage = 25;
     if (this.rowsPerPageOptions.indexOf(this.rowsPerPage) < 0) {
       this.rowsPerPageOptions.push(this.rowsPerPage);
       this.rowsPerPageOptions.sort((a, b) => +a - +b);
