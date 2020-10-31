@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn,ServerController, NumberColumn, ServerMethod } from '@remult/core';
 import { Products } from './products';
 import { YesNoQuestionComponent } from '../../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 import { DialogService } from '../../../projects/core/schematics/hello/files/src/app/common/dialog';
 import { TestDialogComponent } from '../test-dialog/test-dialog.component';
+
+
 
 
 @Component({
@@ -23,6 +25,7 @@ export class ProductsComponent implements OnInit {
       readOnly: true
     })
   });
+  operation = new myOperation(this.context);
 
 
 
@@ -59,7 +62,7 @@ export class ProductsComponent implements OnInit {
       {
         icon: 'clear',
         textInMenu: (x) => {
-        
+
           return 'asdf' + x.name.value
         },
         showInLine: true
@@ -72,7 +75,8 @@ export class ProductsComponent implements OnInit {
 
   }
   async test() {
-    await ProductsComponent.testIt(2);
+    await this.operation.getThingsDone();
+    this.products.getRecords();
   }
 
   async dialog() {
@@ -87,3 +91,19 @@ export class ProductsComponent implements OnInit {
   }
 
 }
+@ServerController({
+  key: 'doit',
+  allowed: true
+})
+class myOperation {
+  addAmmount = new NumberColumn();
+  constructor(private context: Context) { }
+  @ServerMethod()
+  async getThingsDone() {
+    console.log('getting it done');
+    for (const p of await this.context.for(Products).find()) {
+      p.price.value += this.addAmmount.value;
+      await p.save();
+    }
+  }
+} 
