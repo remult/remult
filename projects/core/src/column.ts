@@ -328,19 +328,29 @@ export function getColumnsFromObject(controller: any) {
   let __columns: Column[] = controller.__columns;;
   if (!__columns) {
 
-      __columns = [];
-      controller.__columns = __columns;
-      for (const key in controller) {
-          if (Object.prototype.hasOwnProperty.call(controller, key)) {
-              const element = controller[key];
-              if (element instanceof Column) {
-                  if (!element.defs.key)
-                      element.defs.key = key;
-                  __columns.push(element);
-              }
+    __columns = [];
+    controller.__columns = __columns;
+    for (const key in controller) {
+      if (Object.prototype.hasOwnProperty.call(controller, key)) {
+        const element = controller[key];
+        if (element instanceof Column) {
+          if (!element.defs.key)
+            element.defs.key = key;
+          if (!element.defs.caption)
+            element.defs.caption = makeTitle(element.defs.key);
+          __columns.push(element);
+        }
 
-          }
       }
+    }
   }
   return __columns;
+}
+export function makeTitle(name: string) {
+
+  // insert a space before all caps
+  return name.replace(/([A-Z])/g, ' $1')
+    // uppercase the first character
+    .replace(/^./, (str) => str.toUpperCase()).replace('Email', 'eMail').replace(" I D", " ID");
+
 }
