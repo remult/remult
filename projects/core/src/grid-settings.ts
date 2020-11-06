@@ -11,10 +11,7 @@ import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
 import { EntityProvider, FindOptions, entityOrderByToSort } from './data-interfaces';
-import { MatCheckboxChange } from '@angular/material/checkbox';
 import { AndFilter } from './filter/and-filter';
-import { _MatChipListMixinBase } from '@angular/material';
-import { SelectValueDialogComponent } from './angular/add-filter-dialog/add-filter-dialog.component';
 
 
 
@@ -116,16 +113,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
 
   }
-  async addCol(c: DataControlSettings) {
-    await this.context.openDialog(SelectValueDialogComponent, x => x.args({
-      values: this.origList,
-      onSelect: col => {
-        this.columns.addCol(c, col);
-        this.columns.numOfColumnsInGrid++;
-      }
-    }));
-
-  }
+  
   deleteCol(c: DataControlSettings) {
     this.columns.deleteCol(c)
     this.columns.numOfColumnsInGrid--;
@@ -308,7 +296,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     return this.selectedRows.length > 0 && this.selectedRows.length == this.items.length && this._selectedAll;
   }
   private _selectedAll = false;
-  selectAllChanged(e: MatCheckboxChange) {
+  selectAllChanged(e: {checked:boolean}) {
 
     this.selectedRows.splice(0);
     if (e.checked) {

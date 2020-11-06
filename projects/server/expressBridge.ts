@@ -12,7 +12,25 @@ import { isFunction, isString } from 'util';
 
 
 
+export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly?: boolean) {
+  app.use(compression());
+  if (!disableHttpsForDevOnly) {
+    app.use(secure);
+  }
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
+  let builder: DataProviderFactoryBuilder;
+  if (isFunction(dataProvider))
+    builder = <DataProviderFactoryBuilder>dataProvider;
+  else
+    builder = () => <DataProvider>dataProvider;
+  let result = new ExpressBridge(app);
+  let apiArea = result.addArea('/' + Context.apiBaseUrl);
+  registerActionsOnServer(apiArea, builder);
+  registerEntitiesOnServer(apiArea, builder);
+  return result;
+}
 
 export class ExpressBridge implements DataApiServer {
   addAllowedHeader(name: string): void {
@@ -25,24 +43,8 @@ export class ExpressBridge implements DataApiServer {
 
   private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
 
-  constructor(private app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly?: boolean, autoCreateApiArea = true) {
-    app.use(compression());
-    if (!disableHttpsForDevOnly) {
-      app.use(secure);
-    }
-    app.use(bodyParser.json({ limit: '10mb' }));
-    app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
-
-    let builder: DataProviderFactoryBuilder;
-    if (isFunction(dataProvider))
-      builder = <DataProviderFactoryBuilder>dataProvider;
-    else
-      builder = () => <DataProvider>dataProvider;
-    if (autoCreateApiArea) {
-      let apiArea = this.addArea('/' + Context.apiBaseUrl);
-      registerActionsOnServer(apiArea, builder);
-      registerEntitiesOnServer(apiArea, builder);
-    }
+  constructor(private app: express.Express) {
+   
   }
   logApiEndPoints = true;
   addArea(

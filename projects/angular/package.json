@@ -1,8 +1,8 @@
 {
-  "name": "@remult/core",
+  "name": "@remult/angular",
   "schematics": "./schematics/collection.json",
   "version": "2.0.4",
-  "description": "remult core lib",
+  "description": "an angular module for remult",
   "license": "MIT",
   "author": {
     "name": "Noam Honig"

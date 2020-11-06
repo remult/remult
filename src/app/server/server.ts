@@ -1,7 +1,7 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
-import { ExpressBridge } from '@remult/server';
+import { initExpress } from '@remult/server';
 import * as fs from 'fs';
 
 import '../app.module';
@@ -11,10 +11,11 @@ import { ServerContext } from '@remult/core';
 
 
 
+
 serverInit().then(async (dataSource) => {
 
     let app = express();
-    let eb = new ExpressBridge(app, dataSource, process.env.DISABLE_HTTPS == "true");
+    initExpress(app, dataSource, process.env.DISABLE_HTTPS == "true");
 
 
     app.use(express.static('dist/my-project'));

@@ -1,14 +1,12 @@
-import { Injectable } from "@angular/core";
+
 import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort } from "./data-interfaces";
-import { RestDataProvider } from "./data-providers/rest-data-provider";
-import { AngularHttpProvider } from "./angular/AngularHttpProvider";
+
+
 
 import { InMemoryDataProvider } from "./data-providers/in-memory-database";
 import { DataApiRequest, DataApiSettings } from "./data-api";
-import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Column } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
@@ -18,12 +16,13 @@ import { FilterBase } from './filter/filter-interfaces';
 import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
 import { Sort } from './sort';
-import { nextContext } from '@angular/core/src/render3';
+import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 
 
 
 
-@Injectable()
+
+
 export class Context {
     clearAllCache(): any {
         this.cache.clear();
@@ -33,18 +32,8 @@ export class Context {
     isSignedIn() {
         return !!this.user;
     }
-    constructor(http?: HttpClient, private _dialog?: MatDialog) {
-        if (http instanceof HttpClient) {
-            var prov = new AngularHttpProvider(http);
-            this._dataSource = new RestDataProvider(Context.apiBaseUrl
-                , prov
-                //,new restDataProviderHttpProviderUsingFetch()
-            );
-            Action.provider = prov;
-        }
-        else {
-            this._dataSource = new InMemoryDataProvider();
-        }
+    constructor() {
+        this._dataSource = new RestDataProvider(Context.apiBaseUrl, new RestDataProviderHttpProviderUsingFetch());
     }
 
     getCookie(name: string) {
@@ -58,7 +47,10 @@ export class Context {
     }
 
 
-    protected _dataSource: DataProvider;
+    _dataSource: DataProvider;
+    setDataProvider(dataProvider: DataProvider) {
+        this._dataSource = dataProvider;
+    }
     protected _onServer = false;
     get onServer(): boolean {
         return this._onServer;
@@ -129,15 +121,10 @@ export class Context {
 
         return r;
     }
-    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T) {
+    _dialog: any;//MatDialog
+    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T): Promise<T> {
 
-        let ref = this._dialog.open(component, component[dialogConfigMember]);
-        if (setParameters)
-            setParameters(ref.componentInstance);
-        var r = await ref.beforeClose().toPromise();
-        if (returnAValue)
-            return returnAValue(ref.componentInstance);
-        return r;
+        throw "requires specific implementation for this environment";
     }
 
     _lookupCache: LookupCache<any>[] = [];
@@ -145,7 +132,7 @@ export class Context {
 export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
     constructor(dp?: DataProvider) {
-        super(undefined);
+        super();
         this._onServer = true;
         if (dp)
             this.setDataProvider(dp);
@@ -181,9 +168,7 @@ export class ServerContext extends Context {
         this.req = req;
         this._user = req.user ? req.user : undefined;
     }
-    setDataProvider(dataProvider: DataProvider) {
-        this._dataSource = dataProvider;
-    }
+
     getOrigin() {
         if (!this.req)
             return undefined;
@@ -599,15 +584,10 @@ declare type AllowedRule = string | Role | ((c: Context) => boolean) | boolean;;
 export declare type Allowed = AllowedRule | AllowedRule[];
 export declare type AngularComponent = { new(...args: any[]): any };
 
-export function DialogConfig(config: MatDialogConfig) {
-    return function (target) {
-        target[dialogConfigMember] = config;
-        return target;
-    };
-}
 
 
-const dialogConfigMember = Symbol("dialogConfigMember");
+
+
 
 interface LookupCache<T extends Entity> {
     key: string;

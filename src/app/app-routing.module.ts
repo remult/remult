@@ -4,9 +4,10 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
-import { RemultModule } from '@remult/core';
-import {DialogService,ShowDialogOnErrorErrorHandler} from '../../projects/core/schematics/hello/files/src/app/common/dialog';
+
+import {DialogService,ShowDialogOnErrorErrorHandler} from '../../projects/angular/schematics/hello/files/src/app/common/dialog';
 import { ProductsComponent } from './products-test/products.component';
+import { RemultModule } from '@remult/angular';
 
 
 

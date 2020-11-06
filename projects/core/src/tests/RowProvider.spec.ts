@@ -171,8 +171,7 @@ describe("grid filter stuff", () => {
     });
     await ds.getRecords();
     ds.selectAllChanged({
-      checked: true,
-      source: undefined
+      checked: true
     });
     expect(ds.selectAllChecked()).toBe(true);
     expect(ds.selectedRows.length).toBe(3);
@@ -616,7 +615,9 @@ describe("test row provider", () => {
 });
 describe("api test", () => {
   it("can build", () => {
-    let ctx = new Context(undefined);
+    let ctx = new Context();
+    ctx.setDataProvider(new InMemoryDataProvider());
+    
     let gs = ctx.for(Categories).gridSettings();
     gs.addArea({
       columnSettings: x => [
@@ -631,7 +632,8 @@ describe("api test", () => {
 
 });
 describe("column collection", () => {
-  let ctx = new Context(undefined);
+  let ctx = new Context();
+  ctx.setDataProvider(new InMemoryDataProvider());
   itAsync("uses a saparate column", async () => {
     let c = ctx.for(class extends Categories {
       categoryName = new StringColumn({ allowApiUpdate: false });
@@ -667,7 +669,8 @@ describe("column collection", () => {
 });
 describe("grid settings ",
   () => {
-    let ctx = new Context(undefined);
+    let ctx = new Context();
+    ctx.setDataProvider(new InMemoryDataProvider());
     it("sort is displayed right", () => {
       let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();

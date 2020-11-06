@@ -1,0 +1,24 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "../../dist/core",
+        "baseUrl": ".",
+        "declaration": true,
+        "stripInternal": true,
+        "experimentalDecorators": true,
+        
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "target": "es5",
+        "skipLibCheck": true,
+        "lib": [
+            "es2018",
+            "dom"
+        ]
+        
+    },
+    "exclude": [
+        "src/test.ts",
+        "**/*.spec.ts"
+      ]
+}

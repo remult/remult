@@ -16,7 +16,7 @@ cd my-project
 
 And run the following command to install the `remult` framework starter kit. 
 ```sh
-ng add @remult/core
+ng add @remult/angular
 ```
 
 ## Commit to Git

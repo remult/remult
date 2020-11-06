@@ -134,7 +134,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       }
     }
 
-    select += ' from ' + this.entity.defs.dbName;
+    select += '\n from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
     if (options) {
       if (options.where) {

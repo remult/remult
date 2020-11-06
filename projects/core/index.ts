@@ -3,10 +3,6 @@
  */
 
 
-export * from './src/angular/remult-core.module';//V
-export { BusyService } from './src/angular/wait/busy-service';
-export * from './src/angular/navigate-to-component-route-service';
-export { SelectValueDialogComponent } from './src/angular/add-filter-dialog/add-filter-dialog.component';
 
 export * from './src/data-interfaces';//V
 export * from './src/sql-command';//V
@@ -24,7 +20,6 @@ export * from './src/lookup';
 export * from './src/server-action';
 
 export * from './src/context';
-export * from './src/jwt-session-manager';
 export * from './src/id-entity';
 export * from './src/grid-settings';
 export * from './src/data-area-settings';

@@ -9,21 +9,14 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "app-server-watch": "tsc -p tsconfig.server.json --watch",
-    "build": "ng build core && npm run schemas:build && npm run copy:styles && npm run server-build && npm run server-postgres-build",
-    "copy:styles": "copyfiles -V -u 2  projects/core/input-styles.scss dist/core/",
-    "schemas:build": "tsc -p projects/core/tsconfig.schematics.json",
-    "schemas:copy:schemas": "copyfiles -V -u 2  projects/core/schematics/*/schema.json dist/core/",
-    "schemas:copy:files": "copyfiles -a -p -V -u 2 projects/core/schematics/*/files/** dist/core/",
-    "schemas:copy:collection": "copyfiles -V -u 3 projects/core/schematics/collection.json dist/core/schematics/",
-    "postschemas:build": "npm run schemas:copy:schemas && npm run schemas:copy:files && npm run schemas:copy:collection",
+    "build": "npm run core-build && npm run remult-angular-build && npm run server-build && npm run server-postgres-build",
+    
+    "core-build": "tsc -p projects/core/tsconfig.json && copyfiles -u 2 projects/core/package.json dist/core",
     "server-build": "tsc -p projects/server/tsconfig.json && copyfiles -u 2 projects/server/package.json dist/server",
     "server-postgres-build": "tsc -p projects/server-postgres/tsconfig.json && copyfiles -u 2 projects/server-postgres/package.json dist/server-postgres",
-    "publish": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd server && npm publish  --access public --tag pre-release && cd.. && cd server-postgres &&  npm publish  --access public --tag pre-release",
-    "release": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public && cd.. && cd server && npm publish  --access public  && cd.. && cd server-postgres &&  npm publish  --access public",
-    "patch-versions": "cd projects/core && npm version patch && cd.. && cd server && npm version patch && cd.. && cd server-postgres && npm version patch && cd.. && cd.. ",
-    "publish-radweb-local": " npm run radweb-build && cd dist/radweb && npm publish --registry http://localhost:4873",
-    "publish-radweb-server-local": "cd dist/radweb-server && npm publish --registry http://localhost:4873 --access public",
-    "publish-radweb-server-postgres-local": "cd dist/radweb-server-postgres && npm publish --registry http://localhost:4873 --access public",
+    "publish": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd angular && npm publish  --access public --tag pre-release && cd.. && cd server && npm publish  --access public --tag pre-release && cd.. && cd server-postgres &&  npm publish  --access public --tag pre-release",
+    "release": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd.. && cd server && npm publish  --access public  && cd.. && cd server-postgres &&  npm publish  --access public",
+    "patch-versions": "cd projects/core && npm version patch && cd.. && cd server && npm version patch && cd.. && cd server-postgres && npm version patch && cd.. && cd..  && cd projects/angular && npm version patch && cd..",
     "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run",
     "build-server-watch": "tsc -p tsconfig.server.json --watch",
     "server:dev-run": "node --inspect dist-server/src/app/server/server.js",
@@ -31,7 +24,20 @@
     "build-docs": "vuepress build docs",
     "release-docs": "deploy.sh",
     "setup-type-doc": " typedoc typedoc-plugin-markdown",
-    "try-generate-typedoc-docs": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work"
+    "try-generate-typedoc-docs": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work",
+    
+
+
+
+    "t":"copyfiles -V -u 1 dist/core/** dist/build-angular/@remult",
+
+    "remult-angular-build":"copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V angular.json dist/build-angular && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/core/** dist/build-angular/node_modules/@remult && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles ",
+    "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
+    "schemas:build": "tsc -p projects/angular/tsconfig.schematics.json",
+    "schemas:copy:schemas": "copyfiles -V -u 2  projects/angular/schematics/*/schema.json dist/angular/",
+    "schemas:copy:files": "copyfiles -a -p -V -u 2 projects/angular/schematics/*/files/** dist/angular/",
+    "schemas:copy:collection": "copyfiles -V -u 3 projects/angular/schematics/collection.json dist/angular/schematics/",
+    "postschemas:build": "npm run schemas:copy:schemas && npm run schemas:copy:files && npm run schemas:copy:collection"
   },
   "private": true,
   "dependencies": {

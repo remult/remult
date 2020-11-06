@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, DialogConfig, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase,  packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject } from '@remult/core';
 import { Products } from './products';
-import { YesNoQuestionComponent } from '../../../projects/core/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
-import { DialogService } from '../../../projects/core/schematics/hello/files/src/app/common/dialog';
+import { DialogService } from '../../../projects/angular/schematics/hello/files/src/app/common/dialog';
 import { TestDialogComponent } from '../test-dialog/test-dialog.component';
-import { InputAreaComponent } from '../../../projects/core/schematics/hello/files/src/app/common/input-area/input-area.component';
+import { InputAreaComponent } from '../../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
+import { DialogConfig } from '@remult/angular';
 
 
 
@@ -79,7 +79,9 @@ export class ProductsComponent implements OnInit {
   async test() {
     this.context.openDialog(InputAreaComponent, x => x.args = {
       title: 'עשה משהו',
-      ok: () => { },
+      ok: () => { 
+        this.operation.getThingsDone();
+      },
       object: this.operation
     
     });
@@ -109,7 +111,7 @@ class myOperation {
   constructor(private context: Context) { }
   @ServerMethod()
   async getThingsDone() {
-
+    console.log('Im here');
     for (const p of await this.context.for(Products).find()) {
       p.price.value += this.addAmmount.value;
       await p.save();

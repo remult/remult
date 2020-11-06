@@ -10,11 +10,7 @@ import { IdEntity } from './id-entity';
 export class ColumnCollection<rowType extends Entity = Entity> {
   constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private context?: Context) {
 
-    if (this.allowDesignMode == undefined) {
-      if (location.search)
-        if (location.search.toLowerCase().indexOf('design=y') >= 0)
-          this.allowDesignMode = true;
-    }
+    
   }
   __showArea() {
     return this.showArea();

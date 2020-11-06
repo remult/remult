@@ -7,11 +7,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { Context } from '@remult/core';
 
 
+import { SignInComponent } from './common/sign-in/sign-in.component';
 
-
-import { DialogService } from '../../projects/angular/schematics/hello/files/src/app/common/dialog';
+import { DialogService } from './common/dialog';
 import { JwtSessionManager, RouteHelperService } from '@remult/angular';
-import { SignInComponent } from '../../projects/angular/schematics/hello/files/src/app/common/sign-in/sign-in.component';
 
 @Component({
   selector: 'app-root',
@@ -42,8 +41,10 @@ export class AppComponent {
     if (!this.context.user) {
       this.dialog.open(SignInComponent);
     } else {
-      if (await this.dialogService.yesNoQuestion("Would you like to sign out?"))
+      if (await this.dialogService.yesNoQuestion("Would you like to sign out?")) {
         this.sessionManager.signout();
+        this.router.navigate(['/']);
+      }
     }
   }
 

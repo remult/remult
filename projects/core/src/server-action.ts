@@ -4,7 +4,7 @@ import 'reflect-metadata';
 
 import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './context';
 
-import { BusyService } from './angular/wait/busy-service';
+
 
 
 import { DataApiRequest, DataApiResponse } from './data-api';
@@ -21,38 +21,38 @@ interface result {
 }
 export abstract class Action<inParam, outParam>{
     constructor(private serverUrl: string, private actionUrl?: string, addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
-      if (!addRequestHeader)
-        addRequestHeader = () => { };
-      if (!actionUrl) {
-        this.actionUrl = this.constructor.name;
-        if (this.actionUrl.endsWith('Action'))
-          this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
-      }
+        if (!addRequestHeader)
+            addRequestHeader = () => { };
+        if (!actionUrl) {
+            this.actionUrl = this.constructor.name;
+            if (this.actionUrl.endsWith('Action'))
+                this.actionUrl = this.actionUrl.substring(0, this.actionUrl.length - 6);
+        }
     }
     static provider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
     run(pIn: inParam): Promise<outParam> {
-  
-      return Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);
-  
-  
+
+        return Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);
+
+
     }
     protected abstract execute(info: inParam, req: DataApiRequest): Promise<outParam>;
-  
+
     __register(reg: (url: string, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
-      reg(this.actionUrl, async (d, req, res) => {
-  
-        try {
-          var r = await this.execute(d, req);
-          res.success(r);
-        }
-        catch (err) {
-          res.error(err);
-        }
-  
-      });
+        reg(this.actionUrl, async (d, req, res) => {
+
+            try {
+                var r = await this.execute(d, req);
+                res.success(r);
+            }
+            catch (err) {
+                res.error(err);
+            }
+
+        });
     }
-  }
-  
+}
+
 
 export class myServerAction extends Action<inArgs, result>
 {
@@ -101,7 +101,8 @@ export interface ServerFunctionOptions {
 }
 export const actionInfo = {
     allActions: [] as any[],
-    runningOnServer: false
+    runningOnServer: false,
+    runActionWithoutBlockingUI: (what: () => Promise<any>): Promise<any> => { return what() }
 }
 
 export function ServerFunction(options: ServerFunctionOptions) {
@@ -118,7 +119,7 @@ export function ServerFunction(options: ServerFunctionOptions) {
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
                 if (options.blockUser === false) {
-                    return await BusyService.singleInstance.donotWait(async () => (await serverAction.run({ args })).data);
+                    return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
                 }
                 else
                     return (await serverAction.run({ args })).data;
@@ -174,11 +175,11 @@ function unpackColumns(self: any, data: any) {
 
 const classHelpers = new Map<any, ClassHelper>();
 const methodHelpers = new Map<any, MethodHelper>();
-const classOptions = new Map<any,ControllerOptions>();
+const classOptions = new Map<any, ControllerOptions>();
 export function ServerController(options: ControllerOptions) {
     return function (target) {
         let r = target;
-        classOptions.set(r,options);
+        classOptions.set(r, options);
 
         while (true) {
             let helper = classHelpers.get(r);

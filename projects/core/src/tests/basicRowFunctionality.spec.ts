@@ -236,6 +236,7 @@ describe("data api", () => {
 
 
   let ctx = new Context();
+  ctx.setDataProvider(new InMemoryDataProvider());
   itWithDataProvider("put with validations on entity fails",
     async (dataProvider) => {
       let s = ctx.for(entityWithValidations, dataProvider);
@@ -1405,7 +1406,8 @@ describe("Column settings stuff", () => {
 
 });
 describe("check allowedDataType", () => {
-  let c = new Context(undefined);
+  let c = new Context();
+  c.setDataProvider(new InMemoryDataProvider());
   let strA = 'roleA',
     strB = 'roleB',
     strC = 'roleC';
@@ -1442,7 +1444,8 @@ describe("check allowedDataType", () => {
   myIt(false, false);
   myIt(undefined, undefined);
   it("no context", () => {
-    let c = new Context(undefined);
+    let c = new Context();
+    c.setDataProvider(new InMemoryDataProvider());
     c._setUser(undefined);
     expect(c.isAllowed(true)).toBe(true);
     expect(c.isAllowed(c => true)).toBe(true);
