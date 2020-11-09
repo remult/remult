@@ -116,7 +116,7 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   }
 
 }
- function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
+function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
   if (!init)
     init = {};
   if (!init.headers)
@@ -124,14 +124,15 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   var h = init.headers as Headers;
   addRequestHeader.forEach(x => x((n, v) => h.append(n, v)));
   init.credentials = 'include';
-  
+
   return fetch(url, init).then(response => {
-    
+
     return onSuccess(response);
 
-  }, error => {
-    console.log(error);
-    throw Promise.resolve(error);
+  }).catch(async error => {
+    let r = await error;
+    console.log(r);
+    throw r;
   });
 }
 function onSuccess(response: Response) {
@@ -140,17 +141,28 @@ function onSuccess(response: Response) {
   if (response.status >= 200 && response.status < 300)
 
     return response.json();
-  else
+  else {
     throw response.json().then(x => {
 
       if (!x.message)
         x.message = response.statusText;
       return x;
-    });
+    }).catch(() => {
+      throw {
+        message: response.statusText,
+        url: response.url,
+        status: response.status
 
+      };
+    })
+  }
 
 
 }
+
+
+
+
 function onError(error: any) {
   throw Promise.resolve(error);
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase,  packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject } from '@remult/core';
 import { Products } from './products';
 import { DialogService } from '../../../projects/angular/schematics/hello/files/src/app/common/dialog';
 import { TestDialogComponent } from '../test-dialog/test-dialog.component';
@@ -37,68 +37,37 @@ export class ProductsComponent implements OnInit {
   }
   area = new DataAreaSettings();
 
-  products = this.context.for(Products).gridSettings({
-    allowUpdate: true,
-    allowInsert: true,
-    allowSelection: true,
-    knowTotalRows: true,
-
-    allowDelete: true,
-    confirmDelete: async p => {
-      return this.dialogs.yesNoQuestion("bla bla " + p.name.value);
-    },
 
 
-    enterRow: (r) => {
-      this.area = new DataAreaSettings({ columnSettings: () => [this.col] });
-    },
-    get: {
-
-    },
-    gridButtons: [
-      {
-        name: 'xxx'
-      }
-    ],
-    rowButtons: [
-      {
-        icon: 'clear',
-        textInMenu: (x) => {
-
-          return 'asdf' + x.name.value
-        },
-        showInLine: true
-      }
-    ]
-
-  });
-
-  ngOnInit() {
+  async ngOnInit() {
+    try {
+      let p = await this.context.for(Products).find();
+     
+    } catch (err) {
+      alert(err.message);
+    }
 
   }
   async test() {
-    this.context.openDialog(InputAreaComponent, x => x.args = {
-      title: 'עשה משהו',
-      ok: () => { 
-        this.operation.getThingsDone();
-      },
-      object: this.operation
-    
-    });
-  //await this.operation.getThingsDone();
-  //this.products.getRecords();
-}
+    try {
+      await this.operation.getThingsDone();
+    }
+    catch (err) {
+      alert(err.message);
+    }
+    //this.products.getRecords();
+  }
 
-async dialog() {
-  let r = await this.context.openDialog(TestDialogComponent);
-  console.log(r);
-}
-@ServerFunction({ allowed: true })
-static async testIt(amount: Number, context ?: Context) {
-  console.log(context);
-  throw "it didn't work";
-  //console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
-}
+  async dialog() {
+    let r = await this.context.openDialog(TestDialogComponent);
+    console.log(r);
+  }
+  @ServerFunction({ allowed: true })
+  static async testIt(amount: Number, context?: Context) {
+    console.log(context);
+    throw "it didn't work";
+    //console.log((await sql.createCommand().execute("select 1 as a,2 as b,3 as c")).rows[0]);
+  }
 
 }
 @ServerController({
@@ -111,6 +80,7 @@ class myOperation {
   constructor(private context: Context) { }
   @ServerMethod()
   async getThingsDone() {
+    throw 'this is an error';
     console.log('Im here');
     for (const p of await this.context.for(Products).find()) {
       p.price.value += this.addAmmount.value;
@@ -118,3 +88,5 @@ class myOperation {
     }
   }
 } 
+
+
