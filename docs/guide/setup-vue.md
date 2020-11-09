@@ -16,10 +16,9 @@ And select the following options in each question:
 3. "Choose a version of Vue.js that you want to start the project with:" select `2.x`
 4. "Use class-style component syntax?" select `Yes`
 5. "Use Babel alongside Typescript?" select `Yes`
-6. "Pick a linter / formatter config:" select `ESLint with error prevention only`
-7. "Pick additional line features" select `Lint on save`
-8. "Where do you prefer placing config for Babel, ESLint, etc.?" select `In package.json`
-9. "Save this as a preset for future projects?" select `No`
+6. "Pick additional line features" select `Lint on save`
+7. "Where do you prefer placing config for Babel, ESLint, etc.?" select `In package.json`
+8. "Save this as a preset for future projects?" select `No`
 
 ::: tip Note
 These settings are not mandatory, they are simply the ones we have used while creating this article.
@@ -29,12 +28,32 @@ The only mandatory setting is  `TypeScript`.
 
 
 ## Install the Server components
+Now we'll add the server functionality to the same project.
+
 ```sh
+cd my-project
 npm i express express-force-https compression pg @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch
 ```
 
+
+## Add .env file for server configuration
+in the root directory of the project, create a file called `.env` this file will hold all the environment information for the server in your development environment.
+
+In the production environment, these variables will be set by environment variables from the server.
+
+Place the following lines in that file:
+```
+DATABASE_URL='postgres://postgres:somepassword@localhost/postgres'
+DISABLE_POSTGRES_SSL=true
+DISABLE_HTTPS=true
+```
+
+* `DATABASE_URL`: the url for connection to the database, using the structure: `postgres://*USERNAME*:*PASSWORD*@*HOST*:*PORT*/*DATABASE_NAME*`
+* `DISABLE_POSTGRES_SSL`: most dev environments are not configured to support ssl, this flag disables ssl for development, in production ssl will be used.
+* `DISABLE_HTTPS`: most dev environments do not require ssl, this flags disables ssl for development, in production ssl will  be used.
+
 ## Add the server code
-create folder called `server` under the `src` folder, and in it add a file called `server.ts`
+create a folder called `server` under the `src` folder, and in it add a file called `server.ts` with the following code
 
 ``` ts
 import express from 'express';
@@ -80,22 +99,6 @@ async function initDatabase() {
     return database;
 }
 ```
-
-## Add .env file for server configuration
-in the root directory of the project, create a file called `.env` this file will hold all the environment information for the server in your development environment.
-
-In the production environment, these variables will be set by environment variables from the server.
-
-```
-DATABASE_URL='postgres://postgres:somepassword@localhost/postgres'
-DISABLE_POSTGRES_SSL=true
-DISABLE_HTTPS=true
-```
-
-* `DATABASE_URL`: the url for connection to the database, using the structure: `postgres://*USERNAME*:*PASSWORD*@*HOST*:*PORT*/*DATABASE_NAME*`
-* `DISABLE_POSTGRES_SSL`: most dev environments are not configured to support ssl, this flag disables ssl for development, in production ssl will be used.
-* `DISABLE_HTTPS`: most dev environments do not require ssl, this flags disables ssl for development, in production ssl will  be used.
-
 
 ## Add tsconfig.server.json
 
