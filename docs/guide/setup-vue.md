@@ -1174,7 +1174,7 @@ const router = new VueRouter({
             path: '/sign-in',
             component: () => import("./components/SignIn.vue")
         },
-          {
+        {
             path: '/update-password',
             component: () => import("./components/UpdatePassword.vue")
         },
@@ -1209,3 +1209,7 @@ const router = new VueRouter({
   </div>
 </template>
 ```
+
+::: tip Testing what we've done so far
+Now you can play around with the change password functionality, test the validation and different user privileges
+:::
