@@ -13,7 +13,7 @@ export * from './src/data-providers/array-entity-data-provider';//V
 export * from './src/data-providers/web-sql-data-provider';//V
 export * from './src/data-providers/sql-database';//V
 export * from './src/data-providers/json-data-provider';//V
-
+export * from './src/cookieBasedJwt';
 export * from './src/data-api';
 export * from './src/dataList';
 export * from './src/lookup';
