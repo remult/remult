@@ -755,8 +755,9 @@ This way the browser and server can share and trust that user info.
 ### Introducing JWT authorization to the project
 #### Step 1 
 In the `common.ts` file adjust the following code:
-```ts {1,3}
-import { Context, CookieBasedJwt } from "@remult/core";
+```ts {2,4}
+import { Context } from "@remult/core";
+import { CookieBasedJwt } from '@remult/core/src/cookieBasedJwt';
 export const context = new Context();
 export const authorization = new CookieBasedJwt(context);
 ```
