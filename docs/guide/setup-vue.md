@@ -111,7 +111,6 @@ At this stage, the vue app is ready for our demo
 Now we'll add the server functionality to the same project.
 
 ```sh
-cd my-project
 npm i express express-force-https compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch
 ```
 
@@ -839,7 +838,7 @@ export class Users extends IdEntity {
 
 #### Step 5, store the token after the user signs in
 In the `sign-in.vue` file:
-```vue {1,11-14}
+```vue {2,11-14}
 <script lang="ts">
 import { authorization, context } from "@/common";
 import router from "@/router";
@@ -1162,7 +1161,7 @@ export default class UpdatePasswordView extends Vue {
 
 #### Add UpdatePassword route
 In the `router.ts` file
-```ts {9-12}
+```ts {13-16}
 const router = new VueRouter({
     mode: "history",
     base: process.env.BASE_URL,

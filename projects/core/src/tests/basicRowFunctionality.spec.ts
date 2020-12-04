@@ -328,6 +328,19 @@ describe("data api", () => {
 
 
   });
+  itAsync("test number is always number", async () => {
+    let amount  =new NumberColumn();
+    let total = new NumberColumn();
+    total.value = 10;
+    amount.__valueProvider = {
+      getValue:(a,b)=>'15',
+      getOriginalValue:()=>'15',
+      setValue:(a,b)=>{}
+    };
+    total.value+=amount.value;
+    expect(total.value).toBe(25);
+
+  });
 
 
 
@@ -647,7 +660,7 @@ describe("data api", () => {
     try {
       await (await c.findId(1)).delete();
       h2 = true;
-    } catch{
+    } catch {
       h3 = true;
     }
     expect(h2).toBe(false);
@@ -916,14 +929,14 @@ describe("data api", () => {
   itAsync("row reload", async () => {
     let context = new Context();
 
-    let c = await createData(async insert => insert(1, 'noam'),Categories);
-    let a =await c.findId(1);
-    let b =await c.findId(1);
+    let c = await createData(async insert => insert(1, 'noam'), Categories);
+    let a = await c.findId(1);
+    let b = await c.findId(1);
     a.categoryName.value = "yael";
     await a.save();
-    expect(b.categoryName.value ).toBe('noam');
+    expect(b.categoryName.value).toBe('noam');
     await b.reload();
-    expect(b.categoryName.value ).toBe('yael');
+    expect(b.categoryName.value).toBe('yael');
   });
 
   itAsync("put updates", async () => {
@@ -1402,7 +1415,7 @@ describe("Column settings stuff", () => {
     expect(x.caption).toBe("noam");
     expect(x.key).toBe("yael");
   });
-  
+
 
 });
 describe("check allowedDataType", () => {

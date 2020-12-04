@@ -18,6 +18,11 @@ export class NumberColumn extends Column<number>{
     return value;
 
   }
+  fromRawValue(value: any) {
+    if (value!==undefined)
+      return +value;
+      return undefined;
+  }
 }
 export interface NumberColumnSettings extends ColumnSettings<number> {
   decimalDigits?: number;
