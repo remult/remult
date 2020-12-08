@@ -7,6 +7,8 @@ export interface FilterBase {
 export interface FilterConsumer {
     isEqualTo(col: Column, val: any): void;
     isDifferentFrom(col: Column, val: any): void;
+    isNull(col: Column): void;
+    isNotNull(col: Column): void;
     isGreaterOrEqualTo(col: Column, val: any): void;
     isGreaterThan(col: Column, val: any): void;
     isLessOrEqualTo(col: Column, val: any): void;

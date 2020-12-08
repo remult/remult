@@ -161,7 +161,13 @@ export class Column<dataType = any>  {
 
 
   isEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isEqualTo(this, this.__getVal(value)));
+    return new Filter(add => {
+      let val = this.__getVal(value);
+      if (val === null)
+        add.isNull(this);
+      else
+        add.isEqualTo(this, val);
+    });
   }
   isIn(values: (Column<dataType> | dataType)[]) {
     return new Filter(add => add.isIn(this, values.map(x => this.__getVal(x))));
@@ -174,7 +180,13 @@ export class Column<dataType = any>  {
     });
   }
   isDifferentFrom(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isDifferentFrom(this, this.__getVal(value)));
+    return new Filter(add => {
+      const val = this.__getVal(value);
+      if (val === null)
+        add.isNotNull(this);
+      else
+        add.isDifferentFrom(this, val)
+    });
   }
   isGreaterOrEqualTo(value: Column<dataType> | dataType) {
     return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
@@ -290,6 +302,9 @@ export class ColumnDefs {
   }
   set caption(v: string) {
     this.settings.caption = v;
+  }
+  get allowNull() {
+    return !!this.settings.allowNull;
   }
   get key(): string {
 

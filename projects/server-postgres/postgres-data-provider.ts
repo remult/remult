@@ -119,24 +119,24 @@ export class PostgresSchemaBuilder {
     private addColumnSqlSyntax(x: Column) {
         let result = x.defs.dbName;
         if (x instanceof DateTimeColumn)
-            result += " timestamp";
+            result += " timestamp"; 
         else if (x instanceof DateColumn)
             result += " date";
         else if (x instanceof BoolColumn)
-            result += " boolean default false not null";
+            result += " boolean" + (x.defs.allowNull ? "" : " default false not null");
         else if (x instanceof NumberColumn) {
             if (x.__numOfDecimalDigits == 0)
-                result += " int default 0 not null";
+                result += " int"+(x.defs.allowNull ? "" :" default 0 not null");
             else
-                result += ' numeric default 0 not null';
+                result += " numeric"+(x.defs.allowNull ? "" :" default 0 not null");
         } else if (x instanceof ValueListColumn) {
             if (x.info.isNumeric)
-                result += ' int default 0 not null';
+                result += " int"+(x.defs.allowNull ? "" :" default 0 not null");
             else
-                result += " varchar default '' not null ";
+                result += " varchar"+(x.defs.allowNull ? "" :" default '' not null ");
         }
         else
-            result += " varchar default '' not null ";
+            result += " varchar"+(x.defs.allowNull ? "" :" default '' not null ");
         return result;
     }
 

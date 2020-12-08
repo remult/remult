@@ -11,6 +11,12 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
   constructor(private url: { add: (key: string, val: any) => void }) {
 
   }
+  isNull(col: Column<any>): void {
+    this.url.add(col.defs.key + "_null", true);
+  }
+  isNotNull(col: Column<any>): void {
+    this.url.add(col.defs.key + "_null", false);
+  }
   isIn(col: Column, val: any[]): void {
     this.url.add(col.defs.key + "_in", JSON.stringify(val));
   }
@@ -88,7 +94,18 @@ export function extractWhere(rowType: Entity, filterInfo: {
     addFilter('_lt', val => col.isLessThan(val));
     addFilter('_lte', val => col.isLessOrEqualTo(val));
     addFilter('_ne', val => col.isDifferentFrom(val));
-    addFilter('_in', val => col.isIn(val),true);
+    addFilter('_in', val => col.isIn(val), true);
+    addFilter('_null', val => {
+      val = val.toString().trim().toLowerCase();
+      switch (val) {
+        case "y":
+        case "true":
+        case "yes":
+          return col.isEqualTo(null);
+        default:
+          return col.isDifferentFrom(null);
+      }
+    });
     addFilter('_contains', val => {
       let c = col as StringColumn;
       if (c != null && c.isContains) {

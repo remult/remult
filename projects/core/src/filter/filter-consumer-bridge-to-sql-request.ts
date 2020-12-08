@@ -7,6 +7,12 @@ import { FilterConsumer } from './filter-interfaces';
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
   constructor(private r: SqlCommand) { }
+  isNull(col: Column<any>): void {
+    this.addToWhere(col.defs.dbName + ' is null');
+  }
+  isNotNull(col: Column<any>): void {
+    this.addToWhere(col.defs.dbName + ' is not null');
+  }
   isIn(col: Column, val: any[]): void {
     this.addToWhere(col.defs.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(x)).join(",") + ")");
   }
