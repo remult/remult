@@ -88,7 +88,7 @@ For example, type in your name in the `input` and you'll be gritted with hello.
 :::
 
 ## using If logic in the Html Template *ngIf
-Now, we want to make sure that we only greet someone with a name, meaning that if you don't type any value in the `input` we don't won't to write the `Hello ` statement.
+Now, we want to make sure that we only greet someone with a name, meaning that if you don't type any value in the `input` we don't want to write the `Hello ` statement.
 We'll do that using Angular's `*ngIf` tag
 
 ```html{3}
