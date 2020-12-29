@@ -33,14 +33,14 @@ export class GridSettings<rowType extends Entity = Entity>  {
 
       if (settings.columnSettings)
         this.columns.add(...settings.columnSettings(entityProvider.create()));
-      if (settings.allowCRUD) {
+      if (settings.allowCRUD!==undefined) {
 
         if (settings.allowUpdate === undefined)
-          settings.allowUpdate = true;
+          settings.allowUpdate = settings.allowCRUD;
           if (settings.allowDelete === undefined)
-          settings.allowDelete = true;
+          settings.allowDelete = settings.allowCRUD;
           if (settings.allowInsert === undefined)
-          settings.allowInsert = true;
+          settings.allowInsert = settings.allowCRUD;
       }
       if (settings.allowUpdate)
         this.allowUpdate = true;
