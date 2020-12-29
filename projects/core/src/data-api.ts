@@ -177,8 +177,8 @@ export interface DataApiSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
-  allowRead?: boolean,
   name?: string,
+  allowRead?: boolean,
   get?: FindOptions<rowType>
 
 }

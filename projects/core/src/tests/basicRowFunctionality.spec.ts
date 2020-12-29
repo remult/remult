@@ -86,7 +86,7 @@ describe('Test basic row functionality', () => {
 
   });
   itAsync("Original values update correctly", async () => {
-    let c = await (await createData(async insert =>await  insert(1, 'noam'), Categories)).findFirst();
+    let c = await (await createData(async insert => await insert(1, 'noam'), Categories)).findFirst();
     expect(c.categoryName.value).toBe('noam');
     expect(c.categoryName.originalValue).toBe('noam');
     c.categoryName.value = 'yael';
@@ -173,7 +173,7 @@ describe("data api", () => {
   itAsync("get based on id", async () => {
 
 
-    let c = await createData(async insert =>await  insert(1, 'noam'));
+    let c = await createData(async insert => await insert(1, 'noam'));
 
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -191,7 +191,7 @@ describe("data api", () => {
   itAsync("get based on id virtual column", async () => {
 
 
-    let c = await createData(async insert =>await insert(1, 'noam'));
+    let c = await createData(async insert => await insert(1, 'noam'));
 
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -208,7 +208,7 @@ describe("data api", () => {
   itAsync("get based on id virtual column async", async () => {
 
 
-    let c = await createData(async insert =>await  insert(1, 'noam'));
+    let c = await createData(async insert => await insert(1, 'noam'));
 
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -224,7 +224,7 @@ describe("data api", () => {
   });
 
   itAsync("get based on id can fail", async () => {
-    let c = await createData(async insert =>await insert(1, 'noam'));
+    let c = await createData(async insert => await insert(1, 'noam'));
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -329,15 +329,15 @@ describe("data api", () => {
 
   });
   itAsync("test number is always number", async () => {
-    let amount  =new NumberColumn();
+    let amount = new NumberColumn();
     let total = new NumberColumn();
     total.value = 10;
     amount.__valueProvider = {
-      getValue:(a,b)=>'15',
-      getOriginalValue:()=>'15',
-      setValue:(a,b)=>{}
+      getValue: (a, b) => '15',
+      getOriginalValue: () => '15',
+      setValue: (a, b) => { }
     };
-    total.value+=amount.value;
+    total.value += amount.value;
     expect(total.value).toBe(25);
 
   });
@@ -346,7 +346,7 @@ describe("data api", () => {
 
   itAsync("delete fails when not found", async () => {
 
-    let c = await createData(async insert =>await insert(1, 'noam'));
+    let c = await createData(async insert => await insert(1, 'noam'));
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -356,7 +356,7 @@ describe("data api", () => {
   });
   itAsync("delete works ", async () => {
 
-    let c = await createData(async insert =>await insert(1, 'noam'));
+    let c = await createData(async insert => await insert(1, 'noam'));
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -424,7 +424,7 @@ describe("data api", () => {
   itAsync("post fails on duplicate index", async () => {
 
 
-    let c = await createData(async (i) => {await i(1, 'noam'); });
+    let c = await createData(async (i) => { await i(1, 'noam'); });
 
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -443,7 +443,7 @@ describe("data api", () => {
       await i(1, 'noam');
       await i(2, 'yael');
     });
-    
+
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -578,7 +578,7 @@ describe("data api", () => {
     let context = new Context();
     var deleting = new Done();
     let happend = false;
-    let c = await createData(async insert =>await  insert(1, 'noam'),
+    let c = await createData(async insert => await insert(1, 'noam'),
       class extends Categories {
         constructor() {
           super({
@@ -610,7 +610,7 @@ describe("data api", () => {
     let context = new Context();
     var deleting = new Done();
     let happend = false;
-    let c = await createData(async insert =>await  insert(1, 'noam'),
+    let c = await createData(async insert => await insert(1, 'noam'),
       class extends Categories {
         constructor() {
           super({
@@ -642,7 +642,7 @@ describe("data api", () => {
     var deleting = new Done();
     let happend = false;
 
-    let c = await createData(async insert =>await  insert(1, 'noam'),
+    let c = await createData(async insert => await insert(1, 'noam'),
       class extends Categories {
         constructor() {
           super({
@@ -672,7 +672,7 @@ describe("data api", () => {
     let context = new Context();
     var deleting = new Done();
     let happend = false;
-    let c = await createData(async insert =>await  insert(1, 'noam'),
+    let c = await createData(async insert => await insert(1, 'noam'),
       class extends Categories {
         constructor() {
           super({
@@ -706,7 +706,7 @@ describe("data api", () => {
   itAsync("put with validation fails", async () => {
     let context = new Context();
     let count = 0;
-    let c = await createData(async insert =>await  insert(1, 'noam'),
+    let c = await createData(async insert => await insert(1, 'noam'),
       class extends Categories {
         constructor() {
           super({
@@ -740,7 +740,7 @@ describe("data api", () => {
   itAsync("put with validation works", async () => {
     let context = new Context();
     let count = 0;
-    let c = await createData(async insert =>await  insert(1, 'noam'),
+    let c = await createData(async insert => await insert(1, 'noam'),
       class extends Categories {
         constructor() {
           super({
@@ -772,7 +772,7 @@ describe("data api", () => {
     let count = 0;
     let startTest = false;
     let savedWorked = new Done();
-    let c = await createData(async insert =>await  insert(1, 'noam'),
+    let c = await createData(async insert => await insert(1, 'noam'),
       class extends Categories {
         constructor() {
           super({
@@ -943,7 +943,7 @@ describe("data api", () => {
   itAsync("put updates", async () => {
     let context = new Context();
 
-    let c = await createData(async insert =>await  insert(1, 'noam'), Categories);
+    let c = await createData(async insert => await insert(1, 'noam'), Categories);
 
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -1132,6 +1132,22 @@ describe("data api", () => {
       , getBaseUrl: () => ''
     });
     d.test();
+  });
+  itAsync("allow api read depends also on api crud", async () => {
+    let sc = new ServerContext();
+    expect(sc.for(class extends Entity {
+      constructor() {
+        super({ name: 'a', allowApiCRUD: false })
+      }
+    })._getApiSettings().allowRead).toBe(false);
+  });
+  itAsync("allow api read depends also on api crud", async () => {
+    let sc = new ServerContext();
+    expect(sc.for(class extends Entity {
+      constructor() {
+        super({ name: 'a', allowApiCRUD: false,allowApiRead:true })
+      }
+    })._getApiSettings().allowRead).toBe(true);
   });
 
 

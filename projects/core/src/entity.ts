@@ -43,10 +43,15 @@ export class Entity<idType = any> {
   _getEntityApiSettings(r: Context): DataApiSettings<Entity> {
 
     let options = this.__options;
-    if (options.allowApiCRUD) {
-      options.allowApiDelete = true;
-      options.allowApiInsert = true;
-      options.allowApiUpdate = true;
+    if (options.allowApiCRUD !== undefined) {
+      if (options.allowApiDelete === undefined)
+        options.allowApiDelete = options.allowApiCRUD;
+      if (options.allowApiInsert === undefined)
+        options.allowApiInsert = options.allowApiCRUD;
+      if (options.allowApiUpdate === undefined)
+        options.allowApiUpdate = options.allowApiCRUD;
+      if (options.allowApiRead === undefined)
+        options.allowApiRead = options.allowApiCRUD;
     }
     return {
       allowRead: r.isAllowed(options.allowApiRead),
@@ -128,9 +133,9 @@ export class Entity<idType = any> {
     this.__clearErrors();
 
     for (const c of this.__columns) {
-        await c.__performValidation();
+      await c.__performValidation();
     }
-    
+
     if (this.__onValidate)
       await this.__onValidate();
     if (afterValidationBeforeSaving)
