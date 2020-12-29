@@ -11,6 +11,17 @@ export function itAsync(name: string, runAsync: () => Promise<any>) {
     });
   });
 }
+export function fitAsync(name: string, runAsync: () => Promise<any>) {
+  fit(name, (done: DoneFn) => {
+    runAsync().catch(e => {
+      fail(e);
+      done();
+    }).then(done, e => {
+      fail(e);
+      done();
+    });
+  });
+}
 
 export function itAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item:T) => Promise<any>) {
   arrayOfT.forEach(i => {

@@ -13,11 +13,11 @@ describe("test paged foreach ", async () => {
 
     itAsync("basic foreach with where", async () => {
         let c = await createData(async insert => {
-            insert(1, 'noam');
-            insert(2, 'yael');
-            insert(3, 'yoni');
-            insert(4, 'shay');
-            insert(5, 'ido');
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
         }, Categories);
         let i = 0;
         for await (const x of c.iterate(x => x.categoryName.isGreaterOrEqualTo("n"))) {
@@ -27,11 +27,11 @@ describe("test paged foreach ", async () => {
     });
     itAsync("basic foreach with where 2", async () => {
         let c = await createData(async insert => {
-            insert(1, 'noam');
-            insert(2, 'yael');
-            insert(3, 'yoni');
-            insert(4, 'shay');
-            insert(5, 'ido');
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
         }, Categories);
         let i = 0;
         for await (const x of c.iterate({ where: x => x.categoryName.isGreaterOrEqualTo("n") })) {
@@ -41,11 +41,11 @@ describe("test paged foreach ", async () => {
     });
     itAsync("basic foreach with order by", async () => {
         let c = await createData(async insert => {
-            insert(1, 'noam');
-            insert(2, 'yael');
-            insert(3, 'yoni');
-            insert(4, 'shay');
-            insert(5, 'ido');
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
         }, Categories);
         let i = 0;
         for await (const x of c.iterate({
@@ -63,11 +63,11 @@ describe("test paged foreach ", async () => {
 
     itAsync("basic foreach with order by desc", async () => {
         let c = await createData(async insert => {
-            insert(1, 'noam');
-            insert(2, 'yael');
-            insert(3, 'yoni');
-            insert(4, 'shay');
-            insert(5, 'ido');
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
         }, Categories);
         let i = 0;
         for await (const x of c.iterate({
@@ -80,11 +80,11 @@ describe("test paged foreach ", async () => {
     });
     itAsync("iterate", async () => {
         let c = await createData(async insert => {
-            insert(1, 'noam');
-            insert(2, 'yael');
-            insert(3, 'yoni');
-            insert(4, 'shay');
-            insert(5, 'ido');
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
         }, Categories);
         var i = 0;
         for await (const x of c.iterate()) {
@@ -95,11 +95,11 @@ describe("test paged foreach ", async () => {
     });
     itAsync("test toArray", async () => {
         let c = await createData(async insert => {
-            insert(1, 'noam');
-            insert(2, 'yael');
-            insert(3, 'yoni');
-            insert(4, 'shay');
-            insert(5, 'ido');
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
         }, Categories);
         var i = 0;
 

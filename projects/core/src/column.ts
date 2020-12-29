@@ -30,9 +30,9 @@ export class Column<dataType = any>  {
     this.validationError = undefined;
   }
   //@internal
-  __performValidation() {
+  async __performValidation() {
     if (this.__settings.validate) {
-      this.__settings.validate();
+      await this.__settings.validate();
     }
 
   }

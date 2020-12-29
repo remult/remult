@@ -123,15 +123,16 @@ export class Entity<idType = any> {
     this.__assertValidity();
     return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
   }
-   async __validateEntity(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
+
+  async __validateEntity(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
     this.__clearErrors();
 
-    await Promise.all( this.__columns.map(c => {
-      c.__performValidation();
-    }));
-
+    for (const c of this.__columns) {
+        await c.__performValidation();
+    }
+    
     if (this.__onValidate)
-      this.__onValidate();
+      await this.__onValidate();
     if (afterValidationBeforeSaving)
       await afterValidationBeforeSaving(this);
     this.__assertValidity();
@@ -177,7 +178,7 @@ export class Entity<idType = any> {
   }
 
   //@internal
-   catchSaveErrors(err: any): any {
+  catchSaveErrors(err: any): any {
     let e = err;
 
     if (e instanceof Promise) {

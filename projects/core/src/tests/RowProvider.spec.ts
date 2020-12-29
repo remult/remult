@@ -702,14 +702,14 @@ describe("grid settings ",
     });
     it("paging works", async () => {
       let c = await createData(async i => {
-        i(1, "a");
-        i(2, "b");
-        i(3, "a");
-        i(4, "b");
-        i(5, "a");
-        i(6, "b");
-        i(7, "a");
-        i(8, "b");
+        await i(1, "a");
+        await i(2, "b");
+        await i(3, "a");
+        await i(4, "b");
+        await i(5, "a");
+        await i(6, "b");
+        await i(7, "a");
+        await i(8, "b");
       });
 
       let ds = c.gridSettings({ get: { limit: 2 } });
@@ -728,14 +728,14 @@ describe("grid settings ",
     });
     it("paging works with filter", async () => {
       let c = await createData(async i => {
-        i(1, "a");
-        i(2, "b");
-        i(3, "a");
-        i(4, "b");
-        i(5, "a");
-        i(6, "b");
-        i(7, "a");
-        i(8, "b");
+        await i(1, "a");
+        await i(2, "b");
+        await i(3, "a");
+        await i(4, "b");
+        await i(5, "a");
+        await i(6, "b");
+        await i(7, "a");
+        await i(8, "b");
       });
 
       let ds = c.gridSettings({ get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
@@ -797,8 +797,8 @@ describe("order by api", () => {
   });
   itAsync("test several sort options", async () => {
     let c = await createData(async i => {
-      i(1, 'z');
-      i(2, 'y');
+      await i(1, 'z');
+      await i(2, 'y');
     });
 
     let r = await c.find({ orderBy: c => c.categoryName });
