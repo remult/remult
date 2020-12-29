@@ -35,21 +35,9 @@
 
             <span class="filterButton" [class.filteredFilterButton]="isFiltered(map.column)"
               (click)="showFilterColumnDialog(map)">
-              <mat-icon>details</mat-icon>
+              <mat-icon>filter_alt</mat-icon>
             </span>
-            <div class="filterDialog col-sm-4" *ngIf="settings.columns._shouldShowFilterDialog(map)">
-              <div class="form-group">
-                <data-control [settings]="settings.columns" [map]="map"
-                  [record]="settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
-              </div>
-              <button mat-icon-button (click)="settings.columns.filterRows(map)">
-                <mat-icon>check</mat-icon>
-              </button>
-              <button mat-icon-button (click)="settings.columns.clearFilter(map)">
-                <mat-icon>clear</mat-icon>
-              </button>
-
-            </div>
+           
             <mat-icon *ngIf="settings.sortedAscending(map.column)">arrow_downward</mat-icon>
             <mat-icon class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedDescending(map.column)">
               arrow_upward</mat-icon>
