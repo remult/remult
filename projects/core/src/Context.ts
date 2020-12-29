@@ -547,11 +547,39 @@ export interface EntityType<T> {
     new(...args: any[]): Entity<T>;
 }
 export const allEntities: EntityType<any>[] = [];
+export interface ControllerOptions {
+    key: string,
+    allowed: Allowed
 
+}
+
+export const classHelpers = new Map<any, ClassHelper>();
+export class ClassHelper {
+    methods: MethodHelper[] = [];
+}
+export class MethodHelper {
+    classes = new Map<any, ControllerOptions>();
+}
+export function setControllerSettings(target:any,options:ControllerOptions){
+    let r = target;
+    while (true) {
+        let helper = classHelpers.get(r);
+        if (helper) {
+            for (const m of helper.methods) {
+                m.classes.set(target, options);
+            }
+        }
+        let p = Object.getPrototypeOf(r.prototype);
+        if (p == null)
+            break;
+        r = p.constructor;
+    }
+}
 
 export function EntityClass<T extends EntityType<any>>(theEntityClass: T) {
     let original = theEntityClass;
     let f = original;
+    setControllerSettings(theEntityClass,{allowed:false,key:undefined})
     /*f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);

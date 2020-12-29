@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities } from './context';
+import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
 
 
 
@@ -156,11 +156,7 @@ interface serverMethodOutArgs {
     rowInfo?: packedRowInfo
 }
 
-export interface ControllerOptions {
-    key: string,
-    allowed: Allowed
 
-}
 
 function packColumns(self: any) {
     let columns = self.columns;
@@ -181,7 +177,7 @@ function unpackColumns(self: any, data: any) {
     }
 }
 
-const classHelpers = new Map<any, ClassHelper>();
+
 
 const methodHelpers = new Map<any, MethodHelper>();
 const classOptions = new Map<any, ControllerOptions>();
@@ -189,19 +185,8 @@ export function ServerController(options: ControllerOptions) {
     return function (target) {
         let r = target;
         classOptions.set(r, options);
+        setControllerSettings(target, options);
 
-        while (true) {
-            let helper = classHelpers.get(r);
-            if (helper) {
-                for (const m of helper.methods) {
-                    m.classes.set(target, options);
-                }
-            }
-            let p = Object.getPrototypeOf(r.prototype);
-            if (p == null)
-                break;
-            r = p.constructor;
-        }
 
 
         return target;
@@ -209,7 +194,7 @@ export function ServerController(options: ControllerOptions) {
 }
 
 
-export function ServerMethod() {
+export function ServerMethod(options?: ServerFunctionOptions) {
     return (target: any, key: string, descriptor: any) => {
 
 
@@ -228,9 +213,18 @@ export function ServerMethod() {
 
                 let c = new ServerContext();
                 for (const constructor of mh.classes.keys()) {
-                    let options = mh.classes.get(constructor);
-                    
-                    reg(options.key + '/' + key, async (d: serverMethodInArgs, req, res) => {
+                    let controllerOptions = mh.classes.get(constructor);
+
+
+                    if (!controllerOptions.key) {
+                        controllerOptions.key = c.for(constructor).create().defs.name + "_methods";
+                    }
+
+
+                    reg(controllerOptions.key + '/' + key, async (d: serverMethodInArgs, req, res) => {
+                        let allowed: Allowed = controllerOptions.allowed;
+                        if (options && options.allowed !== undefined)
+                            allowed = options.allowed;
 
                         try {
                             let context = new ServerContext();
@@ -240,7 +234,7 @@ export function ServerMethod() {
                             await ds.transaction(async ds => {
                                 context.setDataProvider(ds);
                                 if (allEntities.includes(constructor)) {
-                                    
+
                                     let y: Entity;
                                     if (d.rowInfo.isNewRow) {
                                         y = context.for(constructor)._updateEntityBasedOnApi(context.for(constructor).create(), d.rowInfo.data);
@@ -259,7 +253,7 @@ export function ServerMethod() {
                                         y = rows[0];
                                         context.for(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
                                     }
-                                    if (!context.isAllowed(options.allowed))
+                                    if (!context.isAllowed(allowed))
                                         throw 'not allowed';
                                     r = {
                                         result: await originalMethod.apply(y, d.args),
@@ -269,7 +263,7 @@ export function ServerMethod() {
                                 else {
                                     let y = new constructor(context, ds);
                                     unpackColumns(y, d.columns);
-                                    if (!context.isAllowed(options.allowed))
+                                    if (!context.isAllowed(allowed))
                                         throw 'not allowed';
                                     r = {
                                         result: await originalMethod.apply(y, d.args),
@@ -293,11 +287,16 @@ export function ServerMethod() {
                 let self = this;
 
                 if (self instanceof Entity) {
+
+                    let options = mh.classes.get(self.constructor);
+                    if (!options.key) {
+                        options.key = self.defs.name + "_methods";
+                    }
                     let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
                         async execute(a, b): Promise<serverMethodOutArgs> {
                             throw ('should get here');
                         }
-                    }('', mh.classes.get(self.constructor).key + "/" + key).run({
+                    }('', options.key + "/" + key).run({
                         args,
                         rowInfo: self.__entityData.getPackedRowInfo()
 
@@ -330,12 +329,8 @@ export function ServerMethod() {
     }
 }
 
-class ClassHelper {
-    methods: MethodHelper[] = [];
-}
-class MethodHelper {
-    classes = new Map<any, ControllerOptions>();
-}
+
+
 
 export function controllerAllowed(controller: any, context: Context) {
     let x = classOptions.get(controller.constructor);

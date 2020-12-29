@@ -25,14 +25,7 @@ export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
   async ngOnInit() {
     let p = await this.context.for(Products).findFirst();
-    p.name.value = 'newName';
     await p.doSomething('some parameter');
-    console.log(p.name.value);
-    console.log(p.wasChanged());
-    
-    let x =  new testController();
-    x.x.value  = 'noam';
-    await x.testIt('hello');
 
   }
 
