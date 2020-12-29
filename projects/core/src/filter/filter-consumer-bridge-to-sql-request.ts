@@ -14,7 +14,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.addToWhere(col.defs.dbName + ' is not null');
   }
   isIn(col: Column, val: any[]): void {
-    this.addToWhere(col.defs.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(x)).join(",") + ")");
+    if (val && val.length > 0)
+      this.addToWhere(col.defs.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(x)).join(",") + ")");
+    else
+      this.addToWhere('1 = 0 /*isIn with no values*/');
   }
   isEqualTo(col: Column, val: any): void {
     this.add(col, val, "=");
@@ -35,7 +38,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.add(col, val, "<");
   }
   public isContainsCaseInsensitive(col: StringColumn, val: any): void {
-    
+
     this.addToWhere('lower (' + col.defs.dbName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
   }
   public isStartsWith(col: StringColumn, val: any): void {
