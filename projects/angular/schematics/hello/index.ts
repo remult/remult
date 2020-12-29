@@ -138,6 +138,7 @@ export function hello(_options: Schema): Rule {
       json.dependencies["compression"] = "^1.7.3";
       json.devDependencies["tsc-watch"] = "^4.0.0";
       json.devDependencies["@types/pg"] = "^7.14.4";
+      json.devDependencies["@types/express"] = "^4.16.1";
 
     });
 
