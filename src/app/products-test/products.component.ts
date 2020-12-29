@@ -20,11 +20,19 @@ import { DialogConfig } from '@remult/angular';
 
 })
 export class ProductsComponent implements OnInit {
-  data: EntityThatSupportsNull[] = [];
-  grid = this.context.for(EntityThatSupportsNull).gridSettings({ allowCRUD: true });
+
+
   constructor(private context: Context) { }
   async ngOnInit() {
-    this.data = await this.context.for(EntityThatSupportsNull).find({ where: x => x.textWithNull.isDifferentFrom("null") });
+    let p = await this.context.for(Products).findFirst();
+    p.name.value = 'newName';
+    await p.doSomething('some parameter');
+    console.log(p.name.value);
+    console.log(p.wasChanged());
+    
+    let x =  new testController();
+    x.x.value  = 'noam';
+    await x.testIt('hello');
 
   }
 
@@ -42,9 +50,22 @@ export class EntityThatSupportsNull extends Entity<number> {
 
   constructor() {
     super({
-      name:'EntityThatSupportsNull',
-      allowApiCRUD:true
+      name: 'EntityThatSupportsNull',
+      allowApiCRUD: true
 
     });
   }
+}
+@ServerController({ allowed: true, key: 'testController' })
+export class testController {
+  x = new StringColumn();
+  @ServerMethod()
+  async testIt(arg: string) {
+    console.log({
+      x: this.x.value,
+      arg: arg
+    });
+    return '1234';
+  }
+
 }

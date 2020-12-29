@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Context, ServerContext, Allowed, DataProviderFactoryBuilder } from './context';
+import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities } from './context';
 
 
 
@@ -11,6 +11,10 @@ import { DataApiRequest, DataApiResponse } from './data-api';
 import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { SqlDatabase } from './data-providers/sql-database';
 import { Column, getColumnsFromObject } from './column';
+import { Entity } from './entity';
+import { packedRowInfo } from './__EntityValueProvider';
+import { FilterBase } from './filter/filter-interfaces';
+import { AndFilter } from './filter/and-filter';
 
 
 interface inArgs {
@@ -141,11 +145,15 @@ export const serverActionField = Symbol('serverActionField');
 
 
 interface serverMethodInArgs {
-    args: any[], columns: any
+    args: any[],
+    columns?: any,
+    rowInfo?: packedRowInfo
+
 }
 interface serverMethodOutArgs {
     result: any,
-    columns: any
+    columns?: any,
+    rowInfo?: packedRowInfo
 }
 
 export interface ControllerOptions {
@@ -174,6 +182,7 @@ function unpackColumns(self: any, data: any) {
 }
 
 const classHelpers = new Map<any, ClassHelper>();
+
 const methodHelpers = new Map<any, MethodHelper>();
 const classOptions = new Map<any, ControllerOptions>();
 export function ServerController(options: ControllerOptions) {
@@ -213,9 +222,6 @@ export function ServerMethod() {
         methodHelpers.set(descriptor, mh);
         x.methods.push(mh);
         var originalMethod = descriptor.value;
-        var types = Reflect.getMetadata("design:paramtypes", target, key);
-        // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
-
         let serverAction = {
             dataProvider: undefined as DataProviderFactoryBuilder,
             __register(reg: (url: string, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
@@ -223,7 +229,7 @@ export function ServerMethod() {
                 let c = new ServerContext();
                 for (const constructor of mh.classes.keys()) {
                     let options = mh.classes.get(constructor);
-                    let y = new constructor(c);
+                    
                     reg(options.key + '/' + key, async (d: serverMethodInArgs, req, res) => {
 
                         try {
@@ -233,41 +239,85 @@ export function ServerMethod() {
                             let r: serverMethodOutArgs;
                             await ds.transaction(async ds => {
                                 context.setDataProvider(ds);
-                                let y = new constructor(context, ds);
-                                unpackColumns(y, d.columns);
-                                if (!context.isAllowed(options.allowed))
-                                    throw 'not allowed';
-                                r = {
-                                    result: await originalMethod.apply(y, d.args),
-                                    columns: packColumns(y)
-                                };
+                                if (allEntities.includes(constructor)) {
+                                    
+                                    let y: Entity;
+                                    if (d.rowInfo.isNewRow) {
+                                        y = context.for(constructor)._updateEntityBasedOnApi(context.for(constructor).create(), d.rowInfo.data);
+                                    }
+                                    else {
+                                        let rows = await context.for(constructor).find({
+                                            where: x => {
+                                                let where: FilterBase = x.columns.idColumn.isEqualTo(d.rowInfo.id);
+                                                if (this.options && this.options.get && this.options.get.where)
+                                                    where = new AndFilter(where, this.options.get.where(x));
+                                                return where;
+                                            }
+                                        });
+                                        if (rows.length != 1)
+                                            throw new Error("not found or too many matches");
+                                        y = rows[0];
+                                        context.for(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
+                                    }
+                                    if (!context.isAllowed(options.allowed))
+                                        throw 'not allowed';
+                                    r = {
+                                        result: await originalMethod.apply(y, d.args),
+                                        rowInfo: y.__entityData.getPackedRowInfo()
+                                    };
+                                }
+                                else {
+                                    let y = new constructor(context, ds);
+                                    unpackColumns(y, d.columns);
+                                    if (!context.isAllowed(options.allowed))
+                                        throw 'not allowed';
+                                    r = {
+                                        result: await originalMethod.apply(y, d.args),
+                                        columns: packColumns(y)
+                                    };
+                                }
+
                             })
                             res.success(r);
                         }
                         catch (err) {
                             res.error(err);
                         }
-
                     });
                 }
-
-
             }
         };
 
         descriptor.value = async function (...args: any[]) {
-
             if (!actionInfo.runningOnServer) {
                 let self = this;
 
+                if (self instanceof Entity) {
+                    let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
+                        async execute(a, b): Promise<serverMethodOutArgs> {
+                            throw ('should get here');
+                        }
+                    }('', mh.classes.get(self.constructor).key + "/" + key).run({
+                        args,
+                        rowInfo: self.__entityData.getPackedRowInfo()
 
-                let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
-                    async execute(a, b): Promise<serverMethodOutArgs> {
-                        throw ('should get here');
-                    }
-                }('', mh.classes.get(this.constructor).key + "/" + key).run({ args, columns: packColumns(self) }));
-                unpackColumns(self, r.columns);
-                return r.result;
+                    }));
+                    await self.__entityData.updateBasedOnPackedRowInfo(r.rowInfo, this);
+                    return r.result;
+                }
+
+                else {
+                    let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
+                        async execute(a, b): Promise<serverMethodOutArgs> {
+                            throw ('should get here');
+                        }
+                    }('', mh.classes.get(this.constructor).key + "/" + key).run({
+                        args,
+                        columns: packColumns(self)
+                    }));
+                    unpackColumns(self, r.columns);
+                    return r.result;
+                }
             }
             else
                 return (await originalMethod.apply(this, args));
@@ -279,6 +329,7 @@ export function ServerMethod() {
         return descriptor;
     }
 }
+
 class ClassHelper {
     methods: MethodHelper[] = [];
 }
