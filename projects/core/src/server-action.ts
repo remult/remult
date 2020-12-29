@@ -11,7 +11,7 @@ import { DataApiRequest, DataApiResponse } from './data-api';
 import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { SqlDatabase } from './data-providers/sql-database';
 import { Column, getColumnsFromObject } from './column';
-import { Entity } from './entity';
+import { Entity, __getValidationError } from './entity';
 import { packedRowInfo } from './__EntityValueProvider';
 import { FilterBase } from './filter/filter-interfaces';
 import { AndFilter } from './filter/and-filter';
@@ -230,6 +230,8 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                             let context = new ServerContext();
                             context.setReq(req);
                             let ds = serverAction.dataProvider(context);
+                            if (!context.isAllowed(allowed))
+                                throw 'not allowed';
                             let r: serverMethodOutArgs;
                             await ds.transaction(async ds => {
                                 context.setDataProvider(ds);
@@ -253,8 +255,8 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         y = rows[0];
                                         context.for(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
                                     }
-                                    if (!context.isAllowed(allowed))
-                                        throw 'not allowed';
+
+                                    await y.__validateEntity();
                                     r = {
                                         result: await originalMethod.apply(y, d.args),
                                         rowInfo: y.__entityData.getPackedRowInfo()
@@ -263,15 +265,14 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 else {
                                     let y = new constructor(context, ds);
                                     unpackColumns(y, d.columns);
-                                    if (!context.isAllowed(allowed))
-                                        throw 'not allowed';
+                                    await validateObject(y);
                                     r = {
                                         result: await originalMethod.apply(y, d.args),
                                         columns: packColumns(y)
                                     };
                                 }
 
-                            })
+                            });
                             res.success(r);
                         }
                         catch (err) {
@@ -287,35 +288,59 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                 let self = this;
 
                 if (self instanceof Entity) {
-
+                    await self.__validateEntity();
                     let options = mh.classes.get(self.constructor);
                     if (!options.key) {
                         options.key = self.defs.name + "_methods";
                     }
-                    let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
-                        async execute(a, b): Promise<serverMethodOutArgs> {
-                            throw ('should get here');
-                        }
-                    }('', options.key + "/" + key).run({
-                        args,
-                        rowInfo: self.__entityData.getPackedRowInfo()
+                    try {
 
-                    }));
-                    await self.__entityData.updateBasedOnPackedRowInfo(r.rowInfo, this);
-                    return r.result;
+                        let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
+                            async execute(a, b): Promise<serverMethodOutArgs> {
+                                throw ('should get here');
+                            }
+                        }('', options.key + "/" + key).run({
+                            args,
+                            rowInfo: self.__entityData.getPackedRowInfo()
+
+                        }));
+                        await self.__entityData.updateBasedOnPackedRowInfo(r.rowInfo, this);
+                        return r.result;
+                    }
+                    catch (err) {
+                        self.catchSaveErrors(err);
+                        throw err;
+                    }
                 }
 
                 else {
-                    let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
-                        async execute(a, b): Promise<serverMethodOutArgs> {
-                            throw ('should get here');
+                    try {
+                        validateObject(self);
+                        let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
+                            async execute(a, b): Promise<serverMethodOutArgs> {
+                                throw ('should get here');
+                            }
+                        }('', mh.classes.get(this.constructor).key + "/" + key).run({
+                            args,
+                            columns: packColumns(self)
+                        }));
+                        unpackColumns(self, r.columns);
+                        return r.result;
+                    }
+                    catch (e) {
+                        console.log(e);
+                        let s = e.ModelState;
+                        if (!s && e.error)
+                            s = e.error.modelState;
+                        if (s) {
+                            Object.keys(s).forEach(k => {
+                                let c = self[k];
+                                if (c instanceof Column)
+                                    c.validationError = s[k];
+                            });
                         }
-                    }('', mh.classes.get(this.constructor).key + "/" + key).run({
-                        args,
-                        columns: packColumns(self)
-                    }));
-                    unpackColumns(self, r.columns);
-                    return r.result;
+                        throw e;
+                    }
                 }
             }
             else
@@ -331,6 +356,15 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
 
+
+async function validateObject(y: any) {
+    let cols = getColumnsFromObject(y);
+    cols.forEach(x => x.__clearErrors());
+    await Promise.all(cols.map(x => x.__performValidation()));
+    if (cols.find(x => !!x.validationError)) {
+        throw __getValidationError(cols);
+    }
+}
 
 export function controllerAllowed(controller: any, context: Context) {
     let x = classOptions.get(controller.constructor);

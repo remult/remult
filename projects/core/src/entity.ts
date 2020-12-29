@@ -117,22 +117,26 @@ export class Entity<idType = any> {
    * await p.save();
    */
   async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
+    await this.__validateEntity(afterValidationBeforeSaving);
+    let doNotSave = false;
+    await this.__onSavingRow(() => doNotSave = true);
+    this.__assertValidity();
+    return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
+  }
+   async __validateEntity(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
     this.__clearErrors();
 
-    this.__columns.forEach(c => {
+    await Promise.all( this.__columns.map(c => {
       c.__performValidation();
-    });
+    }));
 
     if (this.__onValidate)
       this.__onValidate();
     if (afterValidationBeforeSaving)
       await afterValidationBeforeSaving(this);
     this.__assertValidity();
-    let doNotSave = false;
-    await this.__onSavingRow(() => doNotSave = true);
-    this.__assertValidity();
-    return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
   }
+
   /** Delete a specific entity instance
  * @example
  * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
@@ -160,20 +164,7 @@ export class Entity<idType = any> {
   isNew() {
     return this.__entityData.isNewRow();
   }
-  //@internal
-  private __getValidationError() {
-    let result: any = { message: this.validationError };
-    result.modelState = {};
-    this.__columns.forEach(c => {
-      if (c.validationError) {
-        result.modelState[c.defs.key] = c.validationError;
-        if (!result.message) {
-          result.message = c.defs.caption + ":" + c.validationError;
-        }
-      }
-    });
-    return result;
-  }
+
   /** returns true if a change was made to the instance */
   wasChanged() {
     return this.__entityData.wasChanged();
@@ -181,13 +172,12 @@ export class Entity<idType = any> {
   //@internal
   private __assertValidity() {
     if (!this.isValid()) {
-
-      throw this.__getValidationError();
+      throw __getValidationError(this.__columns, this.validationError);
     }
   }
 
   //@internal
-  private catchSaveErrors(err: any): any {
+   catchSaveErrors(err: any): any {
     let e = err;
 
     if (e instanceof Promise) {
@@ -378,4 +368,19 @@ export class EntityColumns<T>{
     return undefined;
   }
 
+}
+
+
+export function __getValidationError(columns: Column[], message?: string) {
+  let result: any = { message: message };
+  result.modelState = {};
+  columns.forEach(c => {
+    if (c.validationError) {
+      result.modelState[c.defs.key] = c.validationError;
+      if (!result.message) {
+        result.message = c.defs.caption + ":" + c.validationError;
+      }
+    }
+  });
+  return result;
 }
