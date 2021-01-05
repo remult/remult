@@ -1,6 +1,7 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
+import * as cors from 'cors';
 import { initExpress, JWTCookieAuthorizationHelper } from '@remult/server';
 import * as fs from 'fs';
 
@@ -16,6 +17,7 @@ import { ServerSignIn } from '../../../projects/angular/schematics/hello/files/s
 serverInit().then(async (dataSource) => {
 
     let app = express();
+    app.use(cors());
     let s = initExpress(app, dataSource, process.env.DISABLE_HTTPS == "true");
     ServerSignIn.helper = new JWTCookieAuthorizationHelper(s, 'signKey');
 

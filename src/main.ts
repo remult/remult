@@ -10,3 +10,4 @@ if (environment.production) {
 }
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.error(err));
+//Context.apiBaseUrl = 'http://localhost:3001/api';

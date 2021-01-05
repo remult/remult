@@ -10,7 +10,6 @@
     "e2e": "ng e2e",
     "app-server-watch": "tsc -p tsconfig.server.json --watch",
     "build": "npm run core-build && npm run remult-angular-build && npm run server-build && npm run server-postgres-build",
-    
     "core-build": "tsc -p projects/core/tsconfig.json && copyfiles -u 2 projects/core/package.json dist/core",
     "server-build": "tsc -p projects/server/tsconfig.json && copyfiles -u 2 projects/server/package.json dist/server",
     "server-postgres-build": "tsc -p projects/server-postgres/tsconfig.json && copyfiles -u 2 projects/server-postgres/package.json dist/server-postgres",
@@ -25,13 +24,8 @@
     "release-docs": "deploy.sh",
     "setup-type-doc": " typedoc typedoc-plugin-markdown",
     "try-generate-typedoc-docs": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work",
-    
-
-
-
-    "t":"copyfiles -V -u 1 dist/core/** dist/build-angular/@remult",
-
-    "remult-angular-build":"copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V angular.json dist/build-angular && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/core/** dist/build-angular/node_modules/@remult && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles ",
+    "t": "copyfiles -V -u 1 dist/core/** dist/build-angular/@remult",
+    "remult-angular-build": "copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V angular.json dist/build-angular && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/core/** dist/build-angular/node_modules/@remult && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles ",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
     "schemas:build": "tsc -p projects/angular/tsconfig.schematics.json",
     "schemas:copy:schemas": "copyfiles -V -u 2  projects/angular/schematics/*/schema.json dist/angular/",
@@ -58,6 +52,7 @@
     "@types/mssql": "^4.0.10",
     "@types/pg": "^7.4.11",
     "core-js": "^2.5.4",
+    "cors": "^2.8.5",
     "dotenv": "^8.1.0",
     "express": "^4.16.4",
     "express-force-https": "^1.0.0",
