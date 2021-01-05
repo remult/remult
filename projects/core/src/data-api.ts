@@ -207,7 +207,6 @@ export interface DataApiRequest {
   clientIp: string;
 }
 export interface DataApiServer {
-  addAllowedHeader(name: string): void;
   addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void;
 
 }

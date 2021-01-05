@@ -1,6 +1,6 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApiServer, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder } from '@remult/core';
+import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApiServer, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext } from '@remult/core';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
@@ -12,14 +12,14 @@ import { isFunction, isString } from 'util';
 
 
 
-export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly?: boolean) {
-  
+export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly?: boolean, limit = '10mb') {
+
   app.use(compression());
   if (!disableHttpsForDevOnly) {
     app.use(secure);
   }
-  app.use(bodyParser.json({ limit: '10mb' }));
-  app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(bodyParser.json({ limit }));
+  app.use(bodyParser.urlencoded({ extended: true, limit }));
 
   let builder: DataProviderFactoryBuilder;
   if (isFunction(dataProvider))
@@ -27,32 +27,39 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
   else
     builder = () => <DataProvider>dataProvider;
   let result = new ExpressBridge(app);
+
   let apiArea = result.addArea('/' + Context.apiBaseUrl);
+  apiArea.setDataProviderFactory(builder);
   registerActionsOnServer(apiArea, builder);
   registerEntitiesOnServer(apiArea, builder);
   return result;
 }
 
 export class ExpressBridge implements DataApiServer {
-  addAllowedHeader(name: string): void {
-    this.allowedHeaders.push(name);
-  }
-  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => void): void {
-    this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAouthorise);
+
+  addRequestProcessor(processAndReturnTrueToAuthorize: (req: DataApiRequest) => void): void {
+    this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAuthorize);
   }
   preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => void)[] = [];
 
-  private allowedHeaders: string[] = ["Origin", "X-Requested-With", "Content-Type", "Accept"];
+
 
   constructor(private app: express.Express) {
-   
+
   }
   logApiEndPoints = true;
+  private firstArea: SiteArea;
   addArea(
     rootUrl: string,
     processRequest?: (req: DataApiRequest) => Promise<void>
   ) {
-    return new SiteArea(this, this.app, rootUrl, processRequest, this.logApiEndPoints);
+    var r = new SiteArea(this, this.app, rootUrl, processRequest, this.logApiEndPoints);
+    if (!this.firstArea)
+      this.firstArea = r;
+    return r;
+  }
+  async getValidContext(req: express.Request) {
+    return this.firstArea.getValidContext(req);
   }
 
 }
@@ -65,6 +72,11 @@ export class SiteArea {
     private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<void>,
     private logApiEndpoints: boolean) {
 
+  }
+
+  private _dataProviderFactory: DataProviderFactoryBuilder;
+  setDataProviderFactory(dataProvider: DataProviderFactoryBuilder) {
+    this._dataProviderFactory = dataProvider;
   }
 
 
@@ -112,6 +124,14 @@ export class SiteArea {
       what(myReq, myRes, req);
     }
   };
+  async getValidContext(req: express.Request) {
+    let context = new ServerContext();
+    await this.process(async (req) => {
+      context.setReq(req);
+      context.setDataProvider(this._dataProviderFactory(context));
+    })(req, undefined);
+    return context;
+  }
   addAction<T extends Action<any, any>>(action: T) {
     action.__register((url: string, what: (data: any, r: DataApiRequest, res: DataApiResponse) => void) => {
       let myUrl = this.rootUrl + '/' + url;

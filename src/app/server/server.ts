@@ -23,6 +23,10 @@ serverInit().then(async (dataSource) => {
 
 
     app.use(express.static('dist/my-project'));
+    app.get('/api/noam', async (req, res) => {
+        let c = await s.getValidContext(req);
+        res.send('hello ' + JSON.stringify(c.user));
+    });
 
     app.use('/*', async (req, res) => {
 
