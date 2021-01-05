@@ -1,12 +1,13 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
-import { initExpress } from '@remult/server';
+import { initExpress, JWTCookieAuthorizationHelper } from '@remult/server';
 import * as fs from 'fs';
 
 import '../app.module';
 import { serverInit } from './server-init';
 import { ServerContext } from '@remult/core';
+import { ServerSignIn } from '../../../projects/angular/schematics/hello/files/src/app/users/server-sign-in';
 
 
 
@@ -15,7 +16,8 @@ import { ServerContext } from '@remult/core';
 serverInit().then(async (dataSource) => {
 
     let app = express();
-    initExpress(app, dataSource, process.env.DISABLE_HTTPS == "true");
+    let s = initExpress(app, dataSource, process.env.DISABLE_HTTPS == "true");
+    ServerSignIn.helper = new JWTCookieAuthorizationHelper(s, 'signKey');
 
 
     app.use(express.static('dist/my-project'));

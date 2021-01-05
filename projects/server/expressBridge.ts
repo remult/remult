@@ -13,6 +13,7 @@ import { isFunction, isString } from 'util';
 
 
 export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly?: boolean) {
+  
   app.use(compression());
   if (!disableHttpsForDevOnly) {
     app.use(secure);

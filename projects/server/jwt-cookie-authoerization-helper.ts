@@ -7,17 +7,24 @@ export class JWTCookieAuthorizationHelper {
     constructor(server: DataApiServer, private tokenSignKey: string, private authCookieName?: string) {
         if (!authCookieName) {
             this.authCookieName = 'authorization';
+
         }
 
         server.addRequestProcessor(async req => {
-            var h = req.getHeader('cookie');
-            req.user = await this.authenticateCookie(h);
+            let token = req.getHeader(this.authCookieName);
+            if (token && token.startsWith('Bearer '))
+                token = token.substring(7);
+            if (token) {
+                console.log(token);
+                req.user = await <UserInfo><any>this.validateToken(token);
+            } else {
+                var h = req.getHeader('cookie');
+                req.user = await this.authenticateCookie(h);
+            }
             return !!req.user;
         })
     }
-    async authenticateRequest(req: Request) {
-        return await this.authenticateCookie(<string>req.headers['cookie']);
-    }
+
     private async authenticateCookie(cookieHeader: string) {
         if (cookieHeader) {
             for (const iterator of cookieHeader.split(';')) {
@@ -31,10 +38,10 @@ export class JWTCookieAuthorizationHelper {
         }
     }
 
-    createSecuredTokenBasedOn(what: any,options?:{
-        expiresIn:number
+    createSecuredTokenBasedOn(what: any, options?: {
+        expiresIn: number
     }) {
-        return jwt.sign(what, this.tokenSignKey,options);
+        return jwt.sign(what, this.tokenSignKey, options);
     }
 
 

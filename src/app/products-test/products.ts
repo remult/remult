@@ -6,7 +6,7 @@ export class Products extends IdEntity {
   price = new NumberColumn();
   availableFrom1 = new DateTimeColumn();
   availableTo = new DateColumn();
-  @ServerMethod({allowed:true})
+  @ServerMethod({ allowed: true })
   async doSomething(p: string) {
     console.log({
       p,
@@ -19,7 +19,7 @@ export class Products extends IdEntity {
     super({
       name: "Products",
       allowApiCRUD: true,
-      allowApiRead: true,
+      allowApiRead: c => { console.log(c.user); return true; },
       saving: () => {
         //       this.validationError = 'dont save';
       }
@@ -27,4 +27,3 @@ export class Products extends IdEntity {
   }
 }
 
- 

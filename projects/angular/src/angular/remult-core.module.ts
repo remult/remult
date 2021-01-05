@@ -31,7 +31,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
 
 import { AngularHttpProvider } from './AngularHttpProvider';
-import { JwtSessionManager } from '../jwt-session-manager';
+import { AuthorizationInterceptor, JwtSessionManager } from '../jwt-session-manager';
 
 
 
@@ -55,7 +55,8 @@ import { JwtSessionManager } from '../jwt-session-manager';
     }, JwtSessionManager, NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
 
-  { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
+  { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
+  { provide: HTTP_INTERCEPTORS, useClass: AuthorizationInterceptor, multi: true }]
   ,
   exports: [DataControl2Component, DataFilterInfoComponent, DataGrid2Component, DataArea2Compnent, SelectValueDialogComponent],
   entryComponents: [WaitComponent, SelectValueDialogComponent, FilterDialogComponent]
