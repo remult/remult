@@ -115,7 +115,7 @@ export function hello(_options: Schema): Rule {
   function editPackageJson(tree: Tree) {
     editJson(tree, './package.json', json => {
       json.scripts["ng-serve"] = json.scripts.start;
-      json.scripts["node-serve"] = "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run";
+      json.scripts["node-serve"] = "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run\"";
       json.scripts["server:dev-run"] = "node --inspect dist-server/server/server.js";
       json.scripts["ng:build"] = "ng build --prod";
       json.scripts["build"] = "npm run server:build && npm run ng:build";
