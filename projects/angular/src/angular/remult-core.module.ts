@@ -52,7 +52,7 @@ import { AuthorizationInterceptor, JwtSessionManager } from '../jwt-session-mana
     provide: Context,
     useFactory: buildContext,
     deps: [HttpClient, MatDialog]
-    }, JwtSessionManager, NotSignedInGuard, SignedInGuard, RouteHelperService,
+  }, JwtSessionManager, NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
 
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
@@ -76,7 +76,11 @@ export function buildContext(http: HttpClient, _dialog: MatDialog) {
     let ref = _dialog.open(component, component[dialogConfigMember]);
     if (setParameters)
       setParameters(ref.componentInstance);
-    var r = await ref.beforeClose().toPromise();
+    let beforeClose = ref.beforeClosed;
+    if (!beforeClose)
+      beforeClose = ref.beforeClose;
+    var r = await beforeClose().toPromise();
+
     if (returnAValue)
       return returnAValue(ref.componentInstance);
     return r;
