@@ -75,7 +75,7 @@ export function buildContext(http: HttpClient, _dialog: MatDialog) {
     let ref = _dialog.open(component, component[dialogConfigMember]);
     if (setParameters)
       setParameters(ref.componentInstance);
-    var r = await ref.beforeClose().toPromise();
+    var r = await ref.beforeClosed().toPromise();
     if (returnAValue)
       return returnAValue(ref.componentInstance);
     return r;
