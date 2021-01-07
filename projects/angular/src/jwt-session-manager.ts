@@ -28,25 +28,25 @@ export class JwtSessionManager {
             this.tokenName += '/' + path;
         let token = sessionStorage.getItem(this.tokenName);
         if (token) {
-            this._setToken(token);
+            this.setToken(token);
             return;
         }
          token = localStorage.getItem(this.tokenName);
         if (token) {
-            this._setToken(token);
+            this.setToken(token);
             return;
         }
 
         let c = document.cookie;
         let i = c.indexOf(authToken + '=');
         if (i >= 0) {
-            c = c.substring(i + authToken.length + 2).trim();
+            c = c.substring(i + authToken.length + 1).trim();
             i = c.indexOf(';');
             if (i >= 0) {
                 c = c.substring(0, i - 1);
             }
-            this._setToken(c);
-            sessionStorage.setItem(this.tokenName, c);
+            this.setToken(c); 
+            
         }
     }
 
@@ -69,7 +69,7 @@ export class JwtSessionManager {
                 c += '; expires = Thu, 01 Jan 2076 00:00:00 GMT';
                 localStorage.setItem(this.tokenName, jwtToken);
             }
-            sessionStorage.setItem(this.tokenName, jwtToken);
+            sessionStorage.setItem(this.tokenName, jwtToken); 
             document.cookie = c;
             return true;
         }
