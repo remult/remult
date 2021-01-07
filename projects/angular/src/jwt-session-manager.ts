@@ -26,12 +26,12 @@ export class JwtSessionManager {
         this.tokenName = authToken;
         if (this.path)
             this.tokenName += '/' + path;
-        let token = localStorage.getItem(this.tokenName);
+        let token = sessionStorage.getItem(this.tokenName);
         if (token) {
             this._setToken(token);
             return;
         }
-        token = sessionStorage.getItem(this.tokenName);
+         token = localStorage.getItem(this.tokenName);
         if (token) {
             this._setToken(token);
             return;
@@ -69,8 +69,7 @@ export class JwtSessionManager {
                 c += '; expires = Thu, 01 Jan 2076 00:00:00 GMT';
                 localStorage.setItem(this.tokenName, jwtToken);
             }
-            else
-                sessionStorage.setItem(this.tokenName, jwtToken);
+            sessionStorage.setItem(this.tokenName, jwtToken);
             document.cookie = c;
             return true;
         }
