@@ -6,6 +6,7 @@ import { TestDialogComponent } from '../test-dialog/test-dialog.component';
 import { InputAreaComponent } from '../../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
 import { DialogConfig } from '@remult/angular';
 import { isConstructorDeclaration } from 'typescript';
+import { YesNoQuestionComponent } from '../../../projects/angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 
 
 
@@ -26,6 +27,7 @@ export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
   grid = this.context.for(Products).gridSettings({});
   async ngOnInit() {
+    
     let x = this.context.for(testEntity).create();
     x.x.value = '2';
     try {
@@ -35,6 +37,11 @@ export class ProductsComponent implements OnInit {
       console.log('error ' + x.x.validationError);
     }
 
+  }
+  async doIt(){
+    await this.context.openDialog(YesNoQuestionComponent,x=>x.args={
+      message:'asdfdsa'
+    });
   }
 
 
