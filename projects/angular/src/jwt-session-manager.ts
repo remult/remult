@@ -43,9 +43,10 @@ export class JwtSessionManager {
             c = c.substring(i + authToken.length + 1).trim();
             i = c.indexOf(';');
             if (i >= 0) {
-                c = c.substring(0, i - 1);
+                c = c.substring(0, i );
             }
-            this.setToken(c); 
+            this._setToken(c); 
+            localStorage.setItem(this.tokenName, c);
             
         }
     }
@@ -59,7 +60,7 @@ export class JwtSessionManager {
 
 
             if (this.path) {
-                c += '; path=' + this.path;
+                c += '; path=/' + this.path;
 
             }
             else

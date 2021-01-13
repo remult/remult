@@ -8,18 +8,32 @@ import * as compression from 'compression';
 import * as secure from 'express-force-https';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
-import { isFunction, isString } from 'util';
+import { isBoolean, isFunction, isString } from 'util';
 
 
 
-export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly?: boolean, limit = '10mb') {
+export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder, disableHttpsForDevOnly_or_args?: boolean | {
+  disableHttpsForDevOnly?: boolean,
+  limit?: string,
+  disableAutoApi?: boolean
+},) {
+  if (isBoolean(disableHttpsForDevOnly_or_args)) {
+    disableHttpsForDevOnly_or_args = {
+      disableHttpsForDevOnly: disableHttpsForDevOnly_or_args
+    }
+  } else if (disableHttpsForDevOnly_or_args === undefined) {
+    disableHttpsForDevOnly_or_args = {}
+  }
+  if (disableHttpsForDevOnly_or_args.limit === undefined) {
+    disableHttpsForDevOnly_or_args.limit = '10mb';
+  }
 
   app.use(compression());
-  if (!disableHttpsForDevOnly) {
+  if (!disableHttpsForDevOnly_or_args) {
     app.use(secure);
   }
-  app.use(bodyParser.json({ limit }));
-  app.use(bodyParser.urlencoded({ extended: true, limit }));
+  app.use(bodyParser.json({ limit: disableHttpsForDevOnly_or_args.limit }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: disableHttpsForDevOnly_or_args.limit }));
 
   let builder: DataProviderFactoryBuilder;
   if (isFunction(dataProvider))
@@ -27,11 +41,12 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
   else
     builder = () => <DataProvider>dataProvider;
   let result = new ExpressBridge(app);
-
-  let apiArea = result.addArea('/' + Context.apiBaseUrl);
-  apiArea.setDataProviderFactory(builder);
-  registerActionsOnServer(apiArea, builder);
-  registerEntitiesOnServer(apiArea, builder);
+  if (!disableHttpsForDevOnly_or_args.disableAutoApi) {
+    let apiArea = result.addArea('/' + Context.apiBaseUrl);
+    apiArea.setDataProviderFactory(builder);
+    registerActionsOnServer(apiArea, builder);
+    registerEntitiesOnServer(apiArea, builder);
+  }
   return result;
 }
 

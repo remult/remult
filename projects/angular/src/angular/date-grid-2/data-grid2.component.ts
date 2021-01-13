@@ -91,6 +91,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   isFiltered(c: Column) {
     return this.settings.columns.filterHelper.isFiltered(c);
   }
+  //@ts-ignore
   @ViewChild(DataFilterInfoComponent) dataFilterInfo: DataFilterInfoComponent;
   showFilterColumnDialog(dataControlSettings: DataControlSettings) {
     this.settings.initOrigList();

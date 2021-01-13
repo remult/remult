@@ -15,8 +15,8 @@ export class JWTCookieAuthorizationHelper {
             if (token && token.startsWith('Bearer '))
                 token = token.substring(7);
             if (token) {
-                
                 req.user = await <UserInfo><any>this.validateToken(token);
+                
             } else {
                 var h = req.getHeader('cookie');
                 req.user = await this.authenticateCookie(h);
