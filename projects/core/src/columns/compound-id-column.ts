@@ -7,9 +7,11 @@ import { FilterBase } from '../filter/filter-interfaces';
 
 export class CompoundIdColumn extends Column<string>
 {
-  private columns: Column[];
+  columns: Column[];
   constructor(entity: Entity<string>, ...columns: Column[]) {
-    super();
+    super({
+      serverExpression:()=>this.getId()
+    });
     this.columns = columns;
   }
   __isVirtual() { return true; }
@@ -26,6 +28,15 @@ export class CompoundIdColumn extends Column<string>
       });
       return result.__applyToConsumer(add);
     });
+  }
+  private getId(){
+    let r = "";
+    this.columns.forEach(c => {
+      if (r.length > 0)
+        r += ',';
+      r += c.rawValue;
+    });
+    return r;
   }
   __addIdToPojo(p: any) {
     if (p.id)

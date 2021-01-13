@@ -21,6 +21,9 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
+    getLimitSqlSyntax(limit: number, offset: number){
+        return ' limit ' + limit + ' offset ' + offset;
+    }
     async entityIsUsedForTheFirstTime(entity: Entity) {
         let result = '';
         for (const x of entity.columns) {

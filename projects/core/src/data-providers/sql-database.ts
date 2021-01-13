@@ -6,6 +6,7 @@ import { Entity } from "../entity";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { CompoundIdColumn } from "../columns/compound-id-column";
 import { FilterBase } from '../filter/filter-interfaces';
+import { Sort, SortSegment } from '../sort';
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
@@ -22,7 +23,7 @@ export class SqlDatabase implements DataProvider {
         this.createdEntities.push(entity.defs.dbName);
         await this.sql.entityIsUsedForTheFirstTime(entity);
       }
-    });
+    }, this.sql);
   }
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     return this.sql.transaction(async x => {
@@ -32,7 +33,7 @@ export class SqlDatabase implements DataProvider {
           createCommand: () => {
             let c = x.createCommand();
             return {
-              addParameterAndReturnSqlToken:x=> c.addParameterAndReturnSqlToken(x),
+              addParameterAndReturnSqlToken: x => c.addParameterAndReturnSqlToken(x),
               execute: async (sql) => {
                 if (completed)
                   throw "can't run a command after the transaction was completed";
@@ -40,9 +41,10 @@ export class SqlDatabase implements DataProvider {
               }
             };
           },
-          entityIsUsedForTheFirstTime:y=> x.entityIsUsedForTheFirstTime(y),
-          transaction: z=>x.transaction(z)
-        }))
+          getLimitSqlSyntax: this.sql.getLimitSqlSyntax,
+          entityIsUsedForTheFirstTime: y => x.entityIsUsedForTheFirstTime(y),
+          transaction: z => x.transaction(z)
+        }));
       }
       finally {
         completed = true;
@@ -96,7 +98,7 @@ class LogSQLCommand implements SqlCommand {
 
 class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity: Entity, private sql: SqlDatabase, private iAmUsed: () => Promise<void>) {
+  constructor(private entity: Entity, private sql: SqlDatabase, private iAmUsed: () => Promise<void>, private strategy: SqlImplementation) {
 
 
   }
@@ -142,15 +144,26 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         options.where.__applyToConsumer(where);
         select += where.where;
       }
+      if (options.limit && !options.orderBy) {
+        options.orderBy = new Sort({ column: this.entity.columns.idColumn })
+      }
       if (options.orderBy) {
         let first = true;
-        options.orderBy.Segments.forEach(c => {
+        let segs: SortSegment[] = [];
+        for (const s of options.orderBy.Segments) {
+          if (s.column instanceof CompoundIdColumn) {
+            segs.push(...s.column.columns.map(c => ({ column: c, descending: s.descending })))
+          }
+          else segs.push(s);
+        }
+        segs.forEach(c => {
           if (first) {
             select += ' Order By ';
             first = false;
           }
           else
             select += ', ';
+
           select += c.column.defs.dbName;
           if (c.descending)
             select += ' desc';
@@ -165,7 +178,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           page = options.page;
         if (page < 1)
           page = 1;
-        select += ' limit ' + options.limit + ' offset ' + (page - 1) * options.limit;
+        select += ' ' + this.strategy.getLimitSqlSyntax(options.limit, (page - 1) * options.limit);
       }
     }
 

@@ -16,6 +16,10 @@ export class PostgresDataProvider implements SqlImplementation {
     async entityIsUsedForTheFirstTime(entity: Entity): Promise<void> {
 
     }
+    getLimitSqlSyntax(limit: number, offset: number){
+        return ' limit ' + limit + ' offset ' + offset;
+    }
+
     createCommand(): SqlCommand {
         return new PostgrestBridgeToSQLCommand(this.pool);
     }
@@ -29,7 +33,8 @@ export class PostgresDataProvider implements SqlImplementation {
             await action({
                 createCommand: () => new PostgrestBridgeToSQLCommand(client),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
-                transaction: () => { throw "nested transactions not allowed" }
+                transaction: () => { throw "nested transactions not allowed" },
+                getLimitSqlSyntax:this.getLimitSqlSyntax
             });
             await client.query('COMMIT');
         }

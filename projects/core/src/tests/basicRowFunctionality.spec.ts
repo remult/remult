@@ -1145,7 +1145,7 @@ describe("data api", () => {
     let sc = new ServerContext();
     expect(sc.for(class extends Entity {
       constructor() {
-        super({ name: 'a', allowApiCRUD: false,allowApiRead:true })
+        super({ name: 'a', allowApiCRUD: false, allowApiRead: true })
       }
     })._getApiSettings().allowRead).toBe(true);
   });
@@ -1251,7 +1251,27 @@ describe("column validation", () => {
   });
 
 });
-describe("compund id", () => {
+describe("compound id", () => {
+  itAsync("compund sql",
+    async () => {
+      let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
+      let ctx = new Context();
+      ctx.setDataProvider(sql);
+      
+      let cod = ctx.for(CompoundIdEntity);
+      for (const od of await cod.find({ where: od => od.a.isEqualTo(99) })) {
+          await od.delete();
+      }
+      let od = cod.create();
+      od.a.value = 99;
+      od.b.value = 1;
+      await od.save();
+      od = await cod.findFirst({ where: od => od.a.isEqualTo(99) });
+      od.c.value = 5;
+      await od.save();
+      await od.delete();
+
+    });
   const ctx = new Context();
   itAsync("start", async () => {
     let mem = new InMemoryDataProvider();
