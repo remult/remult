@@ -1515,7 +1515,7 @@ class CompoundIdEntity extends Entity<string>
   a = new NumberColumn();
   b = new NumberColumn();
   c = new NumberColumn();
-  id = new CompoundIdColumn(this, this.a, this.b);
+  id = new CompoundIdColumn( this.a, this.b);
   constructor() {
     super("compountIdEntity");
     this.__initColumns();

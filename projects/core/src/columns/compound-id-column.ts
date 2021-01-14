@@ -8,7 +8,7 @@ import { FilterBase } from '../filter/filter-interfaces';
 export class CompoundIdColumn extends Column<string>
 {
   columns: Column[];
-  constructor(entity: Entity<string>, ...columns: Column[]) {
+  constructor( ...columns: Column[]) {
     super({
       serverExpression:()=>this.getId()
     });
