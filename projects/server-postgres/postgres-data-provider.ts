@@ -115,9 +115,14 @@ export class PostgresSchemaBuilder {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
-                        result += this.addColumnSqlSyntax(x);
-                        if (x == e.columns.idColumn)
-                            result += ' primary key';
+                        //@ts-ignore
+                        if (x == e.columns.idColumn && e.__options.dbAutoIncrementId)
+                            result += x.defs.dbName + ' serial';
+                        else {
+                            result += this.addColumnSqlSyntax(x);
+                            if (x == e.columns.idColumn)
+                                result += ' primary key';
+                        }
                     }
                 }
 

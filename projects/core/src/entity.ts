@@ -67,7 +67,7 @@ export class Entity<idType = any> {
     }
 
   }
-  //@internal
+  
   __options: EntityOptions;
   //@internal
   private _defs: EntityDefs;

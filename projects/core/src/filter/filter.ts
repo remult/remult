@@ -6,7 +6,7 @@ export class Filter implements FilterBase {
     constructor(private apply: (add: FilterConsumer) => void) {
   
     }
-    and(filter: FilterBase): AndFilter {
+    and(filter: FilterBase): FilterBase {
       return new AndFilter(this, filter);
     }
   

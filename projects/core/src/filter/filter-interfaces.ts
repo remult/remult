@@ -3,6 +3,7 @@ import { StringColumn } from '../columns/string-column';
 
 export interface FilterBase {
     __applyToConsumer(add: FilterConsumer): void;
+    and(filter: FilterBase): FilterBase;
 }
 export interface FilterConsumer {
     isEqualTo(col: Column, val: any): void;
