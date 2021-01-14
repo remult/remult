@@ -21,7 +21,11 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-    getLimitSqlSyntax(limit: number, offset: number){
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: Entity<any>) {
+        let r = <WebSqlBridgeToSQLQueryResult>await command.execute(insertStatementString);
+        return r.r.insertId;
+    }
+    getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
     async entityIsUsedForTheFirstTime(entity: Entity) {
@@ -32,8 +36,11 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                     result += ',';
                 result += '\r\n  ';
                 result += this.addColumnSqlSyntax(x);
-                if (x == entity.columns.idColumn)
+                if (x == entity.columns.idColumn) {
                     result += ' primary key';
+                    if (entity.__options.dbAutoIncrementId)
+                        result += " autoincrement"
+                }
             }
         }
         await this.createCommand().execute('create table if not exists ' + entity.defs.dbName + ' (' + result + '\r\n)');
@@ -114,7 +121,7 @@ class WebSqlBridgeToSQLQueryResult implements SqlResult {
     }
 
     //@ts-ignore
-    constructor(private r: SQLResultSet) {
+    constructor(public r: SQLResultSet) {
         this.rows = [];
         for (let i = 0; i < r.rows.length; i++) {
             this.rows.push(r.rows.item(i))

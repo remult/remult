@@ -7,6 +7,9 @@ export class __EntityValueProvider implements ColumnValueProvider {
   register(listener: RowEvents) {
     this.listeners.push(listener);
   }
+  debugInfo(){
+    return this.data;
+  }
 
 
   dataProvider: EntityDataProvider;

@@ -36,6 +36,9 @@ export class Entity<idType = any> {
       };
     }
   }
+  __debug(){
+    return this.__entityData.debugInfo();
+  }
 
 
 
@@ -325,6 +328,7 @@ export interface EntityOptions {
   deleted?: () => Promise<any> | any
 
   validation?: (e: Entity) => Promise<any> | any;
+  dbAutoIncrementId?:boolean;
 }
 
 

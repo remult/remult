@@ -1251,16 +1251,42 @@ describe("column validation", () => {
   });
 
 });
+describe("test web sql identity", () => {
+  fitAsync("play", async () => {
+    let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
+    let c = new Context();
+    await sql.execute("drop table if exists t1");
+    c.setDataProvider(sql);
+    let f = c.for(class extends Entity {
+      id = new NumberColumn();
+      name = new StringColumn()
+      constructor() {
+        super({
+          name: 't1',
+          dbAutoIncrementId: true
+        })
+      }
+    });
+    let t = f.create();
+    t.name.value = 'a';
+    await t.save();
+    expect(t.id.value).toBe(1);
+    t = f.create();
+    t.name.value = 'b';
+    await t.save();
+    expect(t.id.value).toBe(2);
+  });
+});
 describe("compound id", () => {
   itAsync("compund sql",
     async () => {
       let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
       let ctx = new Context();
       ctx.setDataProvider(sql);
-      
+
       let cod = ctx.for(CompoundIdEntity);
       for (const od of await cod.find({ where: od => od.a.isEqualTo(99) })) {
-          await od.delete();
+        await od.delete();
       }
       let od = cod.create();
       od.a.value = 99;
@@ -1515,7 +1541,7 @@ class CompoundIdEntity extends Entity<string>
   a = new NumberColumn();
   b = new NumberColumn();
   c = new NumberColumn();
-  id = new CompoundIdColumn( this.a, this.b);
+  id = new CompoundIdColumn(this.a, this.b);
   constructor() {
     super("compountIdEntity");
     this.__initColumns();

@@ -43,7 +43,8 @@ export class SqlDatabase implements DataProvider {
           },
           getLimitSqlSyntax: this.sql.getLimitSqlSyntax,
           entityIsUsedForTheFirstTime: y => x.entityIsUsedForTheFirstTime(y),
-          transaction: z => x.transaction(z)
+          transaction: z => x.transaction(z),
+          insertAndReturnAutoIncrementId: x.insertAndReturnAutoIncrementId
         }));
       }
       finally {
@@ -280,13 +281,15 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
     let statement = `insert into ${this.entity.defs.dbName} (${cols}) values (${vals})`;
-
-    return r.execute(statement).then(() => {
-      return this.find({ where: resultFilter }).then(y => {
-
-        return y[0];
-      });
+    if (this.entity.__options.dbAutoIncrementId) {
+      let newId = await this.strategy.insertAndReturnAutoIncrementId(r, statement, this.entity);
+      resultFilter = this.entity.columns.idColumn.isEqualTo(newId);
+    }
+    else await r.execute(statement);
+    return this.find({ where: resultFilter }).then(y => {
+      return y[0];
     });
+
   }
 
 }

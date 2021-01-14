@@ -2,6 +2,7 @@ import { Column } from './column';
 import { Entity } from '..';
 
 export interface SqlImplementation {
+    insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: Entity<any>):Promise<any>;
     getLimitSqlSyntax(limit: number, offset: number);
     createCommand(): SqlCommand;
     transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;

@@ -16,7 +16,7 @@ export class PostgresDataProvider implements SqlImplementation {
     async entityIsUsedForTheFirstTime(entity: Entity): Promise<void> {
 
     }
-    getLimitSqlSyntax(limit: number, offset: number){
+    getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
 
@@ -24,6 +24,11 @@ export class PostgresDataProvider implements SqlImplementation {
         return new PostgrestBridgeToSQLCommand(this.pool);
     }
     constructor(private pool: PostgresPool) {
+    }
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: Entity<any>) {
+        let r = await command.execute(insertStatementString);
+        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.defs.dbName + "','" + entity.columns.idColumn.defs.dbName + "'));");
+        return +r.rows[0].currval;
     }
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
         let client = await this.pool.connect();
@@ -34,7 +39,8 @@ export class PostgresDataProvider implements SqlImplementation {
                 createCommand: () => new PostgrestBridgeToSQLCommand(client),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
-                getLimitSqlSyntax:this.getLimitSqlSyntax
+                insertAndReturnAutoIncrementId: this.insertAndReturnAutoIncrementId,
+                getLimitSqlSyntax: this.getLimitSqlSyntax
             });
             await client.query('COMMIT');
         }
@@ -71,7 +77,7 @@ class PostgressBridgeToSQLQueryResult implements SqlResult {
         return this.r.fields[index].name;
     }
 
-    constructor(private r: QueryResult) {
+    constructor(public r: QueryResult) {
         this.rows = r.rows;
     }
     rows: any[];
@@ -124,24 +130,24 @@ export class PostgresSchemaBuilder {
     private addColumnSqlSyntax(x: Column) {
         let result = x.defs.dbName;
         if (x instanceof DateTimeColumn)
-            result += " timestamp"; 
+            result += " timestamp";
         else if (x instanceof DateColumn)
             result += " date";
         else if (x instanceof BoolColumn)
             result += " boolean" + (x.defs.allowNull ? "" : " default false not null");
         else if (x instanceof NumberColumn) {
             if (x.__numOfDecimalDigits == 0)
-                result += " int"+(x.defs.allowNull ? "" :" default 0 not null");
+                result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
             else
-                result += " numeric"+(x.defs.allowNull ? "" :" default 0 not null");
+                result += " numeric" + (x.defs.allowNull ? "" : " default 0 not null");
         } else if (x instanceof ValueListColumn) {
             if (x.info.isNumeric)
-                result += " int"+(x.defs.allowNull ? "" :" default 0 not null");
+                result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
             else
-                result += " varchar"+(x.defs.allowNull ? "" :" default '' not null ");
+                result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
         }
         else
-            result += " varchar"+(x.defs.allowNull ? "" :" default '' not null ");
+            result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
         return result;
     }
 
