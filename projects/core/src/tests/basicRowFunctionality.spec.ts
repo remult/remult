@@ -1252,7 +1252,7 @@ describe("column validation", () => {
 
 });
 describe("test web sql identity", () => {
-  fitAsync("play", async () => {
+  itAsync("play", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Context();
     await sql.execute("drop table if exists t1");
