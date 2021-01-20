@@ -20,10 +20,11 @@ import { Column } from '../column';
 import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { DataList } from '../dataList';
 import { UrlBuilder } from '../url-builder';
-import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
+import { FilterSerializer } from '../filter/filter-consumer-bridge-to-url-builder';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccesfull } from '../data-providers/rest-data-provider';
+import { AndFilter, OrFilter } from '../filter/and-filter';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
@@ -258,6 +259,20 @@ describe("data api", () => {
       d.test();
       var x = await s.find({ where: c => c.myId.isEqualTo(1) });
       expect(x[0].name.value).toBe('noam');
+
+    });
+  itWithDataProvider("filter works on all db",
+    async (dataProvider) => {
+
+      let s = await create4RowsInDp(ctx, dataProvider);
+      expect((await s.find({ where: c => c.myId.isIn([1, 3]) })).length).toBe(2);
+
+    });
+  itWithDataProvider("filter works on all db or",
+    async (dataProvider) => {
+
+      let s = await create4RowsInDp(ctx, dataProvider);
+      expect((await s.find({ where: c => new OrFilter(c.myId.isEqualTo(1),c.myId.isEqualTo(3))  })).length).toBe(2);
 
     });
   itWithDataProvider("put with validations on column fails", async (dp) => {
@@ -602,6 +617,34 @@ describe("data api", () => {
     });
     d.test();
   });
+  itAsync("get array works with filter in body and or statement", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', undefined, Status.open);
+      await i(2, 'yael', undefined, Status.closed);
+      await i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    }, {
+      or:[
+        {status:1},
+        {status:2}
+      ]
+    });
+    d.test();
+  });
   itAsync("entity order by works", async () => {
     let context = new Context();
     let c = await createData(async insert => {
@@ -930,7 +973,7 @@ describe("data api", () => {
 
       let c = context.for(entity).create();
       c.id.value = 1;
-      c.categoryName.value = name;
+      c.categoryName.value = 'name';
       c.description.value = "noam";
       await c.save();
 
@@ -1303,6 +1346,10 @@ describe("rest call use url get or fallback to post", () => {
     let url = new UrlBuilder('');
     expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }, url)).toBe(false);
   });
+  it("should post ", () => {
+    let url = new UrlBuilder('');
+    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ or: [{a:1},{a:3}] }, url)).toBe(false);
+  });
 });
 describe("column validation", () => {
   it("validation clears on reset", () => {
@@ -1393,9 +1440,9 @@ describe("compound id", () => {
   });
   it("test id filter", () => {
     let c = ctx.for(CompoundIdEntity).create();
-    let u = new UrlBuilder("");
-    c.id.isEqualTo('1,11').__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(u));
-    expect(u.url).toBe('?a=1&b=11');
+    let f = new FilterSerializer();
+    c.id.isEqualTo('1,11').__applyToConsumer(f);
+    expect(f.result).toEqual({a:'1',b:'11'});
   });
   itAsync("update", async () => {
     let mem = new InMemoryDataProvider();
@@ -1691,4 +1738,25 @@ export class EntityWithLateBoundDbName extends Entity<number> {
       });
     this.__initColumns();
   }
-} 
+}
+
+async function create4RowsInDp(ctx: Context, dataProvider: DataProvider) {
+  let s = ctx.for(entityWithValidations, dataProvider);
+  let c = s.create();
+  c.myId.value = 1;
+  c.name.value = 'noam';
+  await c.save();
+  c = s.create();
+  c.myId.value = 2;
+  c.name.value = 'yael';
+  await c.save();
+  c = s.create();
+  c.myId.value = 3;
+  c.name.value = 'yoni';
+  await c.save();
+  c = s.create();
+  c.myId.value = 4;
+  c.name.value = 'maayan';
+  await c.save();
+  return s;
+}

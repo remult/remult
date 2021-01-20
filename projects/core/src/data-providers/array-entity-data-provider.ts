@@ -126,6 +126,16 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
     ok = true;
     constructor(private row: any) { }
+    or(orElements: FilterBase[]) {
+        for (const element of orElements) {
+            let filter = new FilterConsumerBridgeToObject(this.row);
+            element.__applyToConsumer(filter);
+            if (filter.ok) {
+                return;
+            }
+        }
+        this.ok = false;
+    }
     isNull(col: Column<any>): void {
         if (this.row[col.defs.key] != null)
             this.ok = false;

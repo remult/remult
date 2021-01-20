@@ -6,6 +6,7 @@ export interface FilterBase {
     and(filter: FilterBase): FilterBase;
 }
 export interface FilterConsumer {
+    or(orElements: FilterBase[]);
     isEqualTo(col: Column, val: any): void;
     isDifferentFrom(col: Column, val: any): void;
     isNull(col: Column): void;

@@ -157,7 +157,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectedRows[0].id.value).toBe(1);
     expect(ds.selectedRows[1].id.value).toBe(3);
     let w = ds.getFilterWithSelectedRows().where;
-    console.log(packWhere(c.create(), w));
+    
     expect(await c.count(w)).toBe(2);
     expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
@@ -195,7 +195,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectAllChecked()).toBe(false, 'select all checked');
     expect(ds.selectedRows.length).toBe(3, 'selected rows');
     let w = ds.getFilterWithSelectedRows().where;
-    console.log(packWhere(c.create(), w));
+    
     expect(await c.count(w)).toBe(3, 'rows in count');
   });
   itAsync("select select row by row when all rows are in view", async () => {

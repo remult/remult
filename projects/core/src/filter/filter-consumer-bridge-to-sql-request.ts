@@ -2,11 +2,31 @@
 import { SqlCommand } from "../sql-command";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
-import { FilterConsumer } from './filter-interfaces';
+import { FilterBase, FilterConsumer } from './filter-interfaces';
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
+  private _addWhere = true;
   constructor(private r: SqlCommand) { }
+  or(orElements: FilterBase[]) {
+    let statement = '';
+    for (const element of orElements) {
+      let f = new FilterConsumerBridgeToSqlRequest(this.r);
+      f._addWhere = false;
+      element.__applyToConsumer(f);
+      if (f.where.length > 0) {
+        if (statement.length > 0) {
+          statement += " or ";
+        }
+        if (orElements.length > 1) {
+          statement += "(" + f.where + ")";
+        }
+        else
+          statement += f.where;
+      }
+    }
+    this.addToWhere("(" + statement + ")");
+  }
   isNull(col: Column<any>): void {
     this.addToWhere(col.defs.dbName + ' is null');
   }
@@ -51,8 +71,9 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
 
   private addToWhere(x: string) {
-    if (this.where.length == 0) {
-      this.where += ' where ';
+    if (this.where.length == 0 ) {
+      if (this._addWhere)
+        this.where += ' where ';
     }
     else
       this.where += ' and ';

@@ -2,7 +2,7 @@
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { Entity } from '../entity';
-import { FilterConsumnerBridgeToUrlBuilder, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
+import { FilterSerializer, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { FilterBase } from '../filter/filter-interfaces';
 import { isArray, isObject } from 'util';

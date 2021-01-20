@@ -4,52 +4,75 @@ import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
 import { FilterConsumer, FilterBase } from './filter-interfaces';
 import { Entity } from '../entity';
-import { AndFilter } from './and-filter';
+import { AndFilter, OrFilter } from './and-filter';
 import { EntityWhere } from '../data-interfaces';
 import { isString } from "util";
 
-export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
-  constructor(private url: { add: (key: string, val: any) => void }) {
+export class FilterSerializer implements FilterConsumer {
+  result: any = {};
+  constructor() {
 
   }
+  add(key: string, val: any) {
+    let r = this.result;
+    if (!r[key]) {
+      r[key] = val;
+      return;
+    }
+    let v = r[key];
+    if (v instanceof Array) {
+      v.push(val);
+    }
+    else
+      v = [v, val];
+    r[key] = v;
+  }
+
+  or(orElements: FilterBase[]) {
+    this.add("or", orElements.map(x => {
+      let f = new FilterSerializer();
+      x.__applyToConsumer(f);
+      return f.result;
+    }));
+  }
   isNull(col: Column<any>): void {
-    this.url.add(col.defs.key + "_null", true);
+    this.add(col.defs.key + "_null", true);
   }
   isNotNull(col: Column<any>): void {
-    this.url.add(col.defs.key + "_null", false);
+    this.add(col.defs.key + "_null", false);
   }
   isIn(col: Column, val: any[]): void {
-    this.url.add(col.defs.key + "_in", val);
+    this.add(col.defs.key + "_in", val);
   }
 
   public isEqualTo(col: Column, val: any): void {
-    this.url.add(col.defs.key, val);
+    this.add(col.defs.key, val);
   }
 
   public isDifferentFrom(col: Column, val: any): void {
-    this.url.add(col.defs.key + '_ne', val);
+    this.add(col.defs.key + '_ne', val);
   }
 
   public isGreaterOrEqualTo(col: Column, val: any): void {
-    this.url.add(col.defs.key + '_gte', val);
+    this.add(col.defs.key + '_gte', val);
   }
 
   public isGreaterThan(col: Column, val: any): void {
-    this.url.add(col.defs.key + '_gt', val);
+    this.add(col.defs.key + '_gt', val);
   }
 
   public isLessOrEqualTo(col: Column, val: any): void {
-    this.url.add(col.defs.key + '_lte', val);
+    this.add(col.defs.key + '_lte', val);
   }
 
   public isLessThan(col: Column, val: any): void {
-    this.url.add(col.defs.key + '_lt', val);
+    this.add(col.defs.key + '_lt', val);
   }
   public isContainsCaseInsensitive(col: StringColumn, val: any): void {
-    this.url.add(col.defs.key + "_contains", val);
+    this.add(col.defs.key + "_contains", val);
   }
   public isStartsWith(col: StringColumn, val: any): void {
-    this.url.add(col.defs.key + "_st", val);
+    this.add(col.defs.key + "_st", val);
   }
 }
 
@@ -84,7 +107,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
               where = f;
           }
         };
-        if (!jsonArray&& val instanceof Array) {
+        if (!jsonArray && val instanceof Array) {
           val.forEach(v => {
             addFilter(v);
           });
@@ -124,6 +147,12 @@ export function extractWhere(rowType: Entity, filterInfo: {
       }
     });
   });
+  let val = filterInfo.get('or');
+  if (val)
+    where = new AndFilter(where, new OrFilter(...val.map(x =>
+      unpackWhere(rowType, x)
+
+    )))
   return where;
 }
 export function packWhere<entityType extends Entity>(entity: entityType, where: EntityWhere<entityType>) {
@@ -135,22 +164,8 @@ export function packWhere<entityType extends Entity>(entity: entityType, where: 
 }
 
 export function packToRawWhere(w: FilterBase) {
-  let r = {};
+  let r = new FilterSerializer();
   if (w)
-    w.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder({
-      add: (key: string, val: any) => {
-        if (!r[key]) {
-          r[key] = val;
-          return;
-        }
-        let v = r[key];
-        if (v instanceof Array) {
-          v.push(val);
-        }
-        else
-          v = [v, val];
-        r[key] = v;
-      }
-    }));
-  return r;
+    w.__applyToConsumer(r);
+  return r.result;
 }
