@@ -26,17 +26,21 @@ export class ProductsComponent implements OnInit {
 
   constructor(private context: Context) { }
   grid = this.context.for(Products).gridSettings({
-    allowCRUD:true,
-    where:p=>new OrFilter(p.price.isEqualTo(0),p.price.isEqualTo(5))
-    
+    allowCRUD: true,
+    where: p => new OrFilter(p.price.isEqualTo(0), p.price.isEqualTo(5))
+
   });
   async ngOnInit() {
-    
-  
+      await ProductsComponent.doTest(undefined,null,'c',this.context);
+
   }
-  async doIt(){
-    await this.context.openDialog(YesNoQuestionComponent,x=>x.args={
-      message:'asdfdsa'
+  @ServerFunction({ allowed: true })
+  static doTest(a: string, b: string,c:string,context?:Context) {
+    console.log({ a, b,c,user:context.user });
+  }
+  async doIt() {
+    await this.context.openDialog(YesNoQuestionComponent, x => x.args = {
+      message: 'asdfdsa'
     });
   }
 

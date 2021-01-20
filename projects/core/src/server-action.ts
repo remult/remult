@@ -68,6 +68,7 @@ export class myServerAction extends Action<inArgs, result>
         let result = { data: {} };
         let context = new ServerContext();
         context.setReq(req);
+        info.args = info.args.map(x => isCustomUndefined(x) ? undefined : x)
         let ds = this.dataProvider(context);
         await ds.transaction(async ds => {
             context.setDataProvider(ds);
@@ -113,7 +114,7 @@ export function ServerFunction(options: ServerFunctionOptions) {
     return (target: any, key: string, descriptor: any) => {
 
         var originalMethod = descriptor.value;
-        var types = Reflect.getMetadata("design:paramtypes", target, key);
+        var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
         // if types are undefind - you've forgot to set: "emitDecoratorMetadata":true
 
         let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
@@ -122,6 +123,14 @@ export function ServerFunction(options: ServerFunctionOptions) {
 
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
+                for (const type of [Context, ServerContext, SqlDatabase]) {
+                    let ctxIndex = types.indexOf(type);
+                    if (ctxIndex > -1 && args.length > ctxIndex) {
+                        args[ctxIndex] = undefined;
+                    }
+                }
+
+                args = args.map(x => x !== undefined ? x : customUndefined);
                 if (options.blockUser === false) {
                     return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
                 }
@@ -222,6 +231,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
                     reg(controllerOptions.key + '/' + key, async (d: serverMethodInArgs, req, res) => {
+                        d.args = d.args.map(x => isCustomUndefined(x) ? undefined : x);
                         let allowed: Allowed = controllerOptions.allowed;
                         if (options && options.allowed !== undefined)
                             allowed = options.allowed;
@@ -286,7 +296,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
                 let self = this;
-
+                args = args.map(x => x !== undefined ? x : customUndefined);
                 if (self instanceof Entity) {
                     await self.__validateEntity();
                     let options = mh.classes.get(self.constructor);
@@ -328,7 +338,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                         return r.result;
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
                         let s = e.ModelState;
                         if (!s && e.error)
                             s = e.error.modelState;
@@ -371,4 +381,10 @@ export function controllerAllowed(controller: any, context: Context) {
     if (x)
         return context.isAllowed(x.allowed);
     return undefined;
+}
+const customUndefined = {
+    _isUndefined: true
+}
+function isCustomUndefined(x: any) {
+    return x && x._isUndefined;
 }
