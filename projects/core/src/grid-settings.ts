@@ -11,7 +11,8 @@ import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
 import { EntityProvider, FindOptions, entityOrderByToSort, EntityWhere, EntityOrderBy } from './data-interfaces';
-import { AndFilter } from './filter/and-filter';
+import { AndFilter } from "./filter/filter-interfaces";
+
 
 
 

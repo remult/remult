@@ -13,8 +13,8 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { Column, getColumnsFromObject } from './column';
 import { Entity, __getValidationError } from './entity';
 import { packedRowInfo } from './__EntityValueProvider';
-import { FilterBase } from './filter/filter-interfaces';
-import { AndFilter } from './filter/and-filter';
+import { Filter, AndFilter } from './filter/filter-interfaces';
+
 
 
 interface inArgs {
@@ -244,7 +244,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                     else {
                                         let rows = await context.for(constructor).find({
                                             where: x => {
-                                                let where: FilterBase = x.columns.idColumn.isEqualTo(d.rowInfo.id);
+                                                let where: Filter = x.columns.idColumn.isEqualTo(d.rowInfo.id);
                                                 if (this.options && this.options.get && this.options.get.where)
                                                     where = new AndFilter(where, this.options.get.where(x));
                                                 return where;

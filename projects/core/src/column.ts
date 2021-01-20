@@ -5,7 +5,7 @@ import { isBoolean } from 'util';
 
 
 import { DefaultStorage } from './columns/storage/default-storage';
-import { Filter } from './filter/filter';
+import { Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
 
 export class Column<dataType = any>  {

@@ -6,10 +6,10 @@ import { Column } from './column';
 import { Entity } from './entity';
 import { Sort } from './sort';
 
-import { AndFilter } from './filter/and-filter';
+import { AndFilter } from './filter/filter-interfaces';
 import { StringColumn } from './columns/string-column';
 import { UserInfo, SpecificEntityHelper } from './context';
-import { FilterBase } from './filter/filter-interfaces';
+import { Filter } from './filter/filter-interfaces';
 import { extractWhere, unpackWhere } from './filter/filter-consumer-bridge-to-url-builder';
 
 export class DataApi<T extends Entity = Entity> {
@@ -90,7 +90,7 @@ export class DataApi<T extends Entity = Entity> {
     }
   }
   private buildWhere(rowType: T, request: DataApiRequest, filterBody: any) {
-    var where: FilterBase;
+    var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
       where = this.options.get.where(rowType);
     if (request) {
@@ -110,7 +110,7 @@ export class DataApi<T extends Entity = Entity> {
 
       await this.entityProvider.find({
         where: x => {
-          let where: FilterBase = x.columns.idColumn.isEqualTo(id);
+          let where: Filter = x.columns.idColumn.isEqualTo(id);
           if (this.options && this.options.get && this.options.get.where)
             where = new AndFilter(where, this.options.get.where(x));
           return where;

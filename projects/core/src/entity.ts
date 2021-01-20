@@ -1,17 +1,17 @@
 import { Context, Allowed } from "./context";
 import { DataApiSettings } from "./data-api";
 import { Column, makeTitle } from "./column";
-import { FilterBase } from './filter/filter-interfaces';
+import { Filter } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
 import { valueOrExpressionToValue } from './column-interfaces';
-import { AndFilter } from './filter/and-filter';
+import { AndFilter } from './filter/filter-interfaces';
 import { SortSegment, Sort } from './sort';
 
 
 
 //@dynamic
 export class Entity<idType = any> {
-  __decorateWhere(where: FilterBase): FilterBase {
+  __decorateWhere(where: Filter): Filter {
     if (this.__options.fixedWhereFilter) {
       return new AndFilter(where, this.__options.fixedWhereFilter());
     }
@@ -290,12 +290,12 @@ export interface EntityOptions {
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */
-  apiDataFilter?: () => FilterBase;
+  apiDataFilter?: () => Filter;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  fixedWhereFilter?: () => FilterBase;
+  fixedWhereFilter?: () => Filter;
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: () => this.name

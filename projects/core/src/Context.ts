@@ -12,7 +12,7 @@ import { Entity } from "./entity";
 import { Lookup } from "./lookup";
 import { IDataSettings, GridSettings } from "./grid-settings";
 
-import { FilterBase } from './filter/filter-interfaces';
+import { Filter } from './filter/filter-interfaces';
 import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
 import { Sort } from './sort';

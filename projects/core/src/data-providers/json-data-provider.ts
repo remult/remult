@@ -1,6 +1,6 @@
 import { Entity } from '../entity';
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from '../data-interfaces';
-import { FilterBase } from '../filter/filter-interfaces';
+import { Filter } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from './array-entity-data-provider';
 
 export interface JsonEntityStorage {
@@ -38,7 +38,7 @@ class JsonEntityDataProvider implements EntityDataProvider {
   find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     return this.p = this.p.then(() => this.loadEntityData((dp, save) => dp.find(options)));
   }
-  count(where?: FilterBase): Promise<number> {
+  count(where?: Filter): Promise<number> {
     return this.p = this.p.then(() =>this.loadEntityData((dp, save) => dp.count(where)));
   }
 

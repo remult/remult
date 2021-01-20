@@ -1,5 +1,5 @@
 import { Column } from "../column";
-import { Filter } from "../filter/filter";
+import { Filter } from "../filter/filter-interfaces";
 
 export class StringColumn extends Column<string>{
  
@@ -9,4 +9,4 @@ export class StringColumn extends Column<string>{
     isStartsWith(value: StringColumn | string) {
       return new Filter(add => add.isStartsWith(this, this.__getVal(value)));
     }
-  }
+  } 

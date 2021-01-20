@@ -5,7 +5,7 @@ import { Column } from "../column";
 import { Entity } from "../entity";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { CompoundIdColumn } from "../columns/compound-id-column";
-import { FilterBase } from '../filter/filter-interfaces';
+import { Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
 
 // @dynamic
@@ -106,7 +106,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
 
-  async count(where: FilterBase): Promise<number> {
+  async count(where: Filter): Promise<number> {
     await this.iAmUsed();
     let select = 'select count(*) count from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();

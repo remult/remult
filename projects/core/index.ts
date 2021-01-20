@@ -42,9 +42,9 @@ export * from './src/columns/datetime-column';
 export * from './src/columns/number-column';
 export * from './src/columns/string-column';
 
-export * from './src/filter/filter-interfaces';
-export * from './src/filter/filter';
-export * from './src/filter/and-filter';
+export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
+
+
 export * from './src/filter/filter-consumer-bridge-to-sql-request';
 export * from './src/filter/filter-consumer-bridge-to-url-builder';
 export * from './src/filter/filter-helper';

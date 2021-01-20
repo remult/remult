@@ -1,9 +1,9 @@
 import { Column } from "../column";
 import { Entity } from "../entity";
-import { Filter } from "../filter/filter";
 
-import { AndFilter } from "../filter/and-filter";
-import { FilterBase } from '../filter/filter-interfaces';
+
+
+import { AndFilter, Filter } from '../filter/filter-interfaces';
 
 export class CompoundIdColumn extends Column<string>
 {
@@ -19,7 +19,7 @@ export class CompoundIdColumn extends Column<string>
     return new Filter(add => {
       let val = this.__getVal(value);
       let id = val.split(',');
-      let result: FilterBase;
+      let result: Filter;
       this.columns.forEach((c, i) => {
         if (!result)
           result = c.isEqualTo(id[i]);
@@ -55,7 +55,7 @@ export class CompoundIdColumn extends Column<string>
       let idParts: any[] = [];
       if (id != undefined)
         idParts = id.split(',');
-      let result: FilterBase;
+      let result: Filter;
       this.columns.forEach((c, i) => {
         let val = undefined;
         if (i < idParts.length)

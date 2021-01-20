@@ -3,8 +3,8 @@ import { Column } from "../column";
 import { FindOptions } from "../data-interfaces";
 import { DateTimeColumn } from "../columns/datetime-column";
 import { StringColumn } from "../columns/string-column";
-import { AndFilter } from "./and-filter";
-import { FilterBase } from './filter-interfaces';
+
+import { AndFilter, Filter } from './filter-interfaces';
 
 export class FilterHelper<rowType extends Entity> {
   filterRow: rowType;
@@ -34,7 +34,7 @@ export class FilterHelper<rowType extends Entity> {
     this.filterColumns.forEach(c => {
 
       let val = this.filterRow.columns.find(c).value;
-      let f: FilterBase = c.isEqualTo(val);
+      let f: Filter = c.isEqualTo(val);
       if (c instanceof StringColumn) {
         let fe = this.forceEqual;
         if (fe.indexOf(c) < 0)

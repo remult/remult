@@ -2,9 +2,9 @@
 import { UrlBuilder } from "../url-builder";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
-import { FilterConsumer, FilterBase } from './filter-interfaces';
+import { FilterConsumer, Filter } from './filter-interfaces';
 import { Entity } from '../entity';
-import { AndFilter, OrFilter } from './and-filter';
+import { AndFilter, OrFilter } from './filter-interfaces';
 import { EntityWhere } from '../data-interfaces';
 import { isString } from "util";
 
@@ -28,7 +28,7 @@ export class FilterSerializer implements FilterConsumer {
     r[key] = v;
   }
 
-  or(orElements: FilterBase[]) {
+  or(orElements: Filter[]) {
     this.add("or", orElements.map(x => {
       let f = new FilterSerializer();
       x.__applyToConsumer(f);
@@ -82,9 +82,9 @@ export function unpackWhere(rowType: Entity, packed: any) {
 export function extractWhere(rowType: Entity, filterInfo: {
   get: (key: string) => any;
 }) {
-  let where: FilterBase = undefined;
+  let where: Filter = undefined;
   rowType.columns.toArray().forEach(col => {
-    function addFilter(operation: string, theFilter: (val: any) => FilterBase, jsonArray = false) {
+    function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false) {
       let val = filterInfo.get(col.defs.key + operation);
       if (val != undefined) {
         let addFilter = (val: any) => {
@@ -163,7 +163,7 @@ export function packWhere<entityType extends Entity>(entity: entityType, where: 
 
 }
 
-export function packToRawWhere(w: FilterBase) {
+export function packToRawWhere(w: Filter) {
   let r = new FilterSerializer();
   if (w)
     w.__applyToConsumer(r);

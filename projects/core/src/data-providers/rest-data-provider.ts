@@ -4,7 +4,7 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from 
 import { Entity } from '../entity';
 import { FilterSerializer, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
-import { FilterBase } from '../filter/filter-interfaces';
+import { Filter } from '../filter/filter-interfaces';
 import { isArray, isObject } from 'util';
 
 export class RestDataProvider implements DataProvider {
@@ -24,7 +24,7 @@ class RestEntityDataProvider implements EntityDataProvider {
 
   }
 
-  public async count(where: FilterBase): Promise<number> {
+  public async count(where: Filter): Promise<number> {
     let url = new UrlBuilder(this.url);
     url.add("__action", "count");
     let filterObject: any;

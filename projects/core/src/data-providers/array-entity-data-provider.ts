@@ -1,6 +1,6 @@
 import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { Entity } from '../entity';
-import { FilterBase, FilterConsumer } from '../filter/filter-interfaces';
+import { Filter, FilterConsumer } from '../filter/filter-interfaces';
 import { Column } from '../column';
 import { StringColumn } from '../columns/string-column';
 
@@ -9,7 +9,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         if (!rows)
             rows = [];
     }
-    async count(where?: FilterBase): Promise<number> {
+    async count(where?: Filter): Promise<number> {
         let rows = this.rows;
         let j = 0;
         for (let i = 0; i < rows.length; i++) {
@@ -126,7 +126,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
     ok = true;
     constructor(private row: any) { }
-    or(orElements: FilterBase[]) {
+    or(orElements: Filter[]) {
         for (const element of orElements) {
             let filter = new FilterConsumerBridgeToObject(this.row);
             element.__applyToConsumer(filter);

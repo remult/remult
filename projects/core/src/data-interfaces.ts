@@ -1,7 +1,7 @@
 import { Column } from './column';
 import { Entity } from './entity';
 import { Sort, SortSegment } from './sort';
-import { FilterBase } from './filter/filter-interfaces';
+import { Filter } from './filter/filter-interfaces';
 
 export interface DataProvider {
   getEntityDataProvider(entity: Entity): EntityDataProvider;
@@ -9,14 +9,14 @@ export interface DataProvider {
 }
 
 export interface EntityDataProvider {
-  count(where: FilterBase): Promise<number>;
+  count(where: Filter): Promise<number>;
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>;
   update(id: any, data: any): Promise<any>;
   delete(id: any): Promise<void>;
   insert(data: any): Promise<any>;
 }
 export interface EntityDataProviderFindOptions {
-  where?: FilterBase;
+  where?: Filter;
   limit?: number;
   page?: number;
   orderBy?: Sort;
@@ -34,7 +34,7 @@ export interface EntityProvider<T extends Entity> {
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType extends Entity> = (entityType: entityType) => FilterBase;
+export declare type EntityWhere<entityType extends Entity> = (entityType: entityType) => Filter;
 /** Determines the order of rows returned by the query.
  * @example
  * await this.context.for(Products).find({ orderBy: p => p.name })

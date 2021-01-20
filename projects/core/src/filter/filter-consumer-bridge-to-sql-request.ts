@@ -2,13 +2,13 @@
 import { SqlCommand } from "../sql-command";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
-import { FilterBase, FilterConsumer } from './filter-interfaces';
+import { Filter, FilterConsumer } from './filter-interfaces';
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
   private _addWhere = true;
   constructor(private r: SqlCommand) { }
-  or(orElements: FilterBase[]) {
+  or(orElements: Filter[]) {
     let statement = '';
     for (const element of orElements) {
       let f = new FilterConsumerBridgeToSqlRequest(this.r);

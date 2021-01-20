@@ -24,7 +24,8 @@ import { FilterSerializer } from '../filter/filter-consumer-bridge-to-url-builde
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccesfull } from '../data-providers/rest-data-provider';
-import { AndFilter, OrFilter } from '../filter/and-filter';
+import { OrFilter } from '../filter/filter-interfaces';
+
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
