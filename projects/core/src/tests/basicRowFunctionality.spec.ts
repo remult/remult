@@ -23,6 +23,7 @@ import { UrlBuilder } from '../url-builder';
 import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
+import { addFilterToUrlAndReturnTrueIfSuccesfull } from '../data-providers/rest-data-provider';
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
@@ -548,6 +549,56 @@ describe("data api", () => {
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
       , getBaseUrl: () => ''
+    });
+    d.test();
+  });
+  itAsync("get array works with filter in body", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', undefined, Status.open);
+      await i(2, 'yael', undefined, Status.closed);
+      await i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    }, {
+      status_in: '[1, 2]'
+    });
+    d.test();
+  });
+  itAsync("get array works with filter in body and in array statement", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', undefined, Status.open);
+      await i(2, 'yael', undefined, Status.closed);
+      await i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    }, {
+      status_in: [1, 2]
     });
     d.test();
   });
@@ -1227,7 +1278,32 @@ describe("data api", () => {
   });
 
 });
-
+describe("rest call use url get or fallback to post", () => {
+  it("should get", () => {
+    let url = new UrlBuilder('');
+    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a: 1 }, url)).toBe(true);
+    expect(url.url).toBe("?a=1");
+  });
+  it("should get 1", () => {
+    let url = new UrlBuilder('');
+    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_ne: 1 }, url)).toBe(true);
+    expect(url.url).toBe("?a_ne=1");
+  });
+  it("should get 2", () => {
+    let url = new UrlBuilder('');
+    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_ne: [1, 2] }, url)).toBe(true);
+    expect(url.url).toBe("?a_ne=1&a_ne=2");
+  });
+  it("should get 3", () => {
+    let url = new UrlBuilder('');
+    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_in: [1, 2] }, url)).toBe(true);
+    expect(url.url).toBe("?a_in=%5B1%2C2%5D");
+  });
+  it("should post ", () => {
+    let url = new UrlBuilder('');
+    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }, url)).toBe(false);
+  });
+});
 describe("column validation", () => {
   it("validation clears on reset", () => {
     let c = new Context().for(Categories).create();

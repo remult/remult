@@ -2,9 +2,10 @@
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { Entity } from '../entity';
-import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
+import { FilterConsumnerBridgeToUrlBuilder, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { FilterBase } from '../filter/filter-interfaces';
+import { isArray, isObject } from 'util';
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
@@ -23,19 +24,30 @@ class RestEntityDataProvider implements EntityDataProvider {
 
   }
 
-  public count(where: FilterBase): Promise<number> {
+  public async count(where: FilterBase): Promise<number> {
     let url = new UrlBuilder(this.url);
     url.add("__action", "count");
+    let filterObject: any;
+
     if (where) {
-      where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+      filterObject = packToRawWhere(where);
+      if (addFilterToUrlAndReturnTrueIfSuccesfull(where, url))
+        filterObject = undefined;
     }
-    return this.http.get(url.url).then(r => +(r.count));
+    if (filterObject)
+      return this.http.post(url.url, filterObject).then(r => +(r.count));
+    else
+      return this.http.get(url.url).then(r => +(r.count));
   }
   public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);
+    let filterObject: any;
     if (options) {
       if (options.where) {
-        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+
+        filterObject = packToRawWhere(options.where);//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+        if (addFilterToUrlAndReturnTrueIfSuccesfull(filterObject, url))
+          filterObject = undefined;
       }
       if (options.orderBy && options.orderBy.Segments) {
         let sort = '';
@@ -59,8 +71,12 @@ class RestEntityDataProvider implements EntityDataProvider {
       if (options.__customFindData)
         url.addObject(options.__customFindData);
     }
-
-    return this.http.get(url.url);
+    if (filterObject) {
+      url.add("__action", "get");
+      return this.http.post(url.url, filterObject);
+    }
+    else
+      return this.http.get(url.url);
   }
 
   public update(id: any, data: any): Promise<any> {
@@ -167,4 +183,31 @@ function onError(error: any) {
   throw Promise.resolve(error);
 }
 
+export function addFilterToUrlAndReturnTrueIfSuccesfull(filter: any, url: UrlBuilder) {
+  for (const key in filter) {
+    if (Object.prototype.hasOwnProperty.call(filter, key)) {
+      const element = filter[key];
+      if (isArray(element)) {
+        if (element.length > 0 && isObject(element[0]))
+          return false;
+        if (element.length > 10)
+          return false;
+      }
 
+    }
+  }
+  for (const key in filter) {
+    if (Object.prototype.hasOwnProperty.call(filter, key)) {
+      const element = filter[key];
+      if (isArray(element)) {
+        if (key.endsWith("_in"))
+          url.add(key, JSON.stringify(element));
+        else
+          element.forEach(e => url.add(key, e));
+      }
+      else
+        url.add(key, element);
+    }
+  }
+  return true;
+}

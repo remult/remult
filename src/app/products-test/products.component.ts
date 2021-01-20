@@ -25,18 +25,13 @@ export class ProductsComponent implements OnInit {
 
 
   constructor(private context: Context) { }
-  grid = this.context.for(Products).gridSettings({});
+  grid = this.context.for(Products).gridSettings({
+    allowCRUD:true
+    
+  });
   async ngOnInit() {
     
-    let x = this.context.for(testEntity).create();
-    x.x.value = '2';
-    try {
-      await x.testIt('1');
-    }
-    catch {
-      console.log('error ' + x.x.validationError);
-    }
-
+  
   }
   async doIt(){
     await this.context.openDialog(YesNoQuestionComponent,x=>x.args={
@@ -48,61 +43,3 @@ export class ProductsComponent implements OnInit {
 }
 
 
-@EntityClass
-export class EntityThatSupportsNull extends Entity<number> {
-  id = new NumberColumn();
-  textWithNull = new StringColumn({ allowNull: true });
-  datewithnull = new DateColumn({ allowNull: true });
-  numberWithNull = new NumberColumn({ allowNull: true });
-  boolWithNull = new BoolColumn({ allowNull: true });
-
-  constructor() {
-    super({
-      name: 'EntityThatSupportsNull',
-      allowApiCRUD: true
-
-    });
-  }
-}
-@ServerController({ allowed: true, key: 'testController' })
-export class testController {
-  x = new StringColumn({
-    validate: () => {
-      if (+this.x.value == 2)
-        this.x.validationError = 'the fucking error';
-    }
-  });
-  @ServerMethod()
-  async testIt(arg: string) {
-    console.log({
-      x: this.x.value,
-      arg: arg
-    });
-    return '1234';
-  }
-
-}
-@EntityClass
-export class testEntity extends IdEntity {
-  x = new StringColumn({
-    validate: () => {
-      if (+this.x.value == 2)
-        this.x.validationError = 'the fucking error';
-    }
-    
-  });
-  constructor() {
-    super({
-      name:'testEntity',
-    });
-  }
-  @ServerMethod({allowed:true})
-  async testIt(arg: string) {
-    console.log({
-      x: this.x.value,
-      arg: arg
-    });
-    return '1234';
-  }
-
-}

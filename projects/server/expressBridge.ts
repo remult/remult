@@ -115,7 +115,16 @@ export class SiteArea {
           return api(req).getArray(res, req);
       })).put(this.process(async (req, res, orig) => api(req).put(res, '', orig.body)))
       .delete(this.process(async (req, res, orig) => api(req).delete(res, '')))
-      .post(this.process(async (req, res, orig) => api(req).post(res, orig.body)));
+      .post(this.process(async (req, res, orig) => {
+        switch (req.get("__action")) {
+          case "get":
+            return api(req).getArray(res, req, orig.body);
+          case "count":
+            return api(req).count(res, req, orig.body);
+          default:
+            return api(req).post(res, orig.body);
+        }
+      }));
     this.app.route(myRoute + '/:id')
       //@ts-ignore
       .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))

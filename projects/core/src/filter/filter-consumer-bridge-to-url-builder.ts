@@ -6,6 +6,7 @@ import { FilterConsumer, FilterBase } from './filter-interfaces';
 import { Entity } from '../entity';
 import { AndFilter } from './and-filter';
 import { EntityWhere } from '../data-interfaces';
+import { isString } from "util";
 
 export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
   constructor(private url: { add: (key: string, val: any) => void }) {
@@ -18,7 +19,7 @@ export class FilterConsumnerBridgeToUrlBuilder implements FilterConsumer {
     this.url.add(col.defs.key + "_null", false);
   }
   isIn(col: Column, val: any[]): void {
-    this.url.add(col.defs.key + "_in", JSON.stringify(val));
+    this.url.add(col.defs.key + "_in", val);
   }
 
   public isEqualTo(col: Column, val: any): void {
@@ -66,7 +67,11 @@ export function extractWhere(rowType: Entity, filterInfo: {
         let addFilter = (val: any) => {
           let theVal = val;
           if (jsonArray) {
-            let arr: [] = JSON.parse(val);
+            let arr: [];
+            if (isString(val))
+              arr = JSON.parse(val);
+            else
+              arr = val;
             theVal = arr.map(x => col.fromRawValue(x));
           } else {
             theVal = col.fromRawValue(theVal);
@@ -79,7 +84,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
               where = f;
           }
         };
-        if (val instanceof Array) {
+        if (!jsonArray&& val instanceof Array) {
           val.forEach(v => {
             addFilter(v);
           });
