@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter } from '@remult/core';
 import { Products } from './products';
 import { DialogService } from '../../../projects/angular/schematics/hello/files/src/app/common/dialog';
 import { TestDialogComponent } from '../test-dialog/test-dialog.component';
@@ -26,7 +26,8 @@ export class ProductsComponent implements OnInit {
 
   constructor(private context: Context) { }
   grid = this.context.for(Products).gridSettings({
-    allowCRUD:true
+    allowCRUD:true,
+    where:p=>new OrFilter(p.price.isEqualTo(0),p.price.isEqualTo(5))
     
   });
   async ngOnInit() {

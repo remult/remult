@@ -10,7 +10,7 @@ import { Sort } from "./sort";
 import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
-import { EntityProvider, FindOptions, entityOrderByToSort } from './data-interfaces';
+import { EntityProvider, FindOptions, entityOrderByToSort, EntityWhere, EntityOrderBy } from './data-interfaces';
 import { AndFilter } from './filter/and-filter';
 
 
@@ -33,13 +33,13 @@ export class GridSettings<rowType extends Entity = Entity>  {
 
       if (settings.columnSettings)
         this.columns.add(...settings.columnSettings(entityProvider.create()));
-      if (settings.allowCRUD!==undefined) {
+      if (settings.allowCRUD !== undefined) {
 
         if (settings.allowUpdate === undefined)
           settings.allowUpdate = settings.allowCRUD;
-          if (settings.allowDelete === undefined)
+        if (settings.allowDelete === undefined)
           settings.allowDelete = settings.allowCRUD;
-          if (settings.allowInsert === undefined)
+        if (settings.allowInsert === undefined)
           settings.allowInsert = settings.allowCRUD;
       }
       if (settings.allowUpdate)
@@ -75,7 +75,19 @@ export class GridSettings<rowType extends Entity = Entity>  {
       if (!this.caption && entityProvider) {
         this.caption = entityProvider.create().defs.caption;
       }
-      this.setGetOptions(settings.get);
+      let get = settings.get;
+      if (!get) {
+        get = {};
+      }
+      if (settings.where)
+        get.where = settings.where;
+      if (settings.orderBy)
+        get.orderBy = settings.orderBy;
+      if (settings.rowsInPage !== undefined)
+        get.limit = settings.rowsInPage;
+      if (settings.page !== undefined)
+        get.page = settings.page;
+      this.setGetOptions(get);
 
     }
 
@@ -113,7 +125,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
 
   }
-  
+
   deleteCol(c: DataControlSettings) {
     this.columns.deleteCol(c)
     this.columns.numOfColumnsInGrid--;
@@ -282,8 +294,8 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
     else {
       this.selectedRows.push(row);
-      
-        this._selectedAll = this.selectedRows.length == this.totalRows;
+
+      this._selectedAll = this.selectedRows.length == this.totalRows;
     }
   }
   isSelected(row: rowType) {
@@ -296,7 +308,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     return this.selectedRows.length > 0 && this.selectedRows.length == this.items.length && this._selectedAll;
   }
   private _selectedAll = false;
-  selectAllChanged(e: {checked:boolean}) {
+  selectAllChanged(e: { checked: boolean }) {
 
     this.selectedRows.splice(0);
     if (e.checked) {
@@ -441,7 +453,38 @@ export interface IDataSettings<rowType extends Entity> {
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[];
   gridButtons?: GridButton[];
+  /**
+     * controls the data that is presented on the data grid
+     * @deprecated Use `where`, `orderBy`, `rowsPerPage` and `page`
+     */
   get?: FindOptions<rowType>;
+  /** filters the data
+   * @example
+   * where p => p.price.isGreaterOrEqualTo(5)
+   * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
+   */
+  where?: EntityWhere<rowType>;
+  /** Determines the order in which the result will be sorted in
+   * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
+   */
+  orderBy?: EntityOrderBy<rowType>;
+  /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
+   * @example
+   * this.products = await this.context.for(Products).gridSettings({
+   *  rowsInPage:10,
+   *  page:2
+  * })
+  */
+  rowsInPage?: number;
+  /** Determines the page number that will be used to extract the data 
+   * @example
+   * this.products = await this.context.for(Products).gridSettings({
+   *  rowsInPage:10,
+   *  page:2
+   * })
+  */
+  page?: number;
+  __customFindData?: any;
   knowTotalRows?: boolean;
   saving?: (r: rowType) => void;
   validation?: (r: rowType) => void;

@@ -98,6 +98,21 @@ describe("grid filter stuff", () => {
 
 
   });
+  itAsync("test filter works without the get statement", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      
+        orderBy: c => new Sort({ column: c.id }),
+        where: c => c.categoryName.isContains('a'),
+        rowsInPage: 2
+      
+    });
+    await ds.getRecords();
+    expect(ds.items.length).toBe(2);
+    expect(await c.count(ds.getFilterWithSelectedRows().where)).toBe(3);
+
+
+  });
   itAsync("test filter works with user filter", async () => {
     let c = await insertFourRows();
     let ds = c.gridSettings({
