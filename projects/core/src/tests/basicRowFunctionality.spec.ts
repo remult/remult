@@ -265,7 +265,7 @@ describe("data api", () => {
     async (dataProvider) => {
 
       let s = await create4RowsInDp(ctx, dataProvider);
-      expect((await s.find({ where: c => c.myId.isIn([1, 3]) })).length).toBe(2);
+      expect((await s.find({ where: c => c.myId.isIn(1, 3) })).length).toBe(2);
 
     });
   itWithDataProvider("filter works on all db or",

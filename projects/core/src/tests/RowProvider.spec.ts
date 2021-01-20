@@ -159,7 +159,11 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
     
     expect(await c.count(w)).toBe(2);
-    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
+    expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
+  });
+  itAsync("test in statement", async () => {
+    let c = await insertFourRows();
+    expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
   });
   itAsync("test all rows selected when some rows are outside the scope", async () => {
     let c = await insertFourRows();
@@ -334,9 +338,9 @@ describe("test row provider", () => {
       where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
 
     });
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isIn([1, 3]))) });
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isIn(1, 3))) });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isNotIn(1, 2, 3))) });
     expect(rows.length).toBe(1);
 
   });

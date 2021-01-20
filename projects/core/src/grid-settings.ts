@@ -404,10 +404,10 @@ export class GridSettings<rowType extends Entity = Entity>  {
       let ids = this.selectedRows.map(x => x.columns.idColumn.value);
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(x(e), e.columns.idColumn.isIn(ids))
+        r.where = e => new AndFilter(x(e), e.columns.idColumn.isIn(...ids))
       }
       else
-        r.where = e => e.columns.idColumn.isIn(ids);
+        r.where = e => e.columns.idColumn.isIn(...ids);
     }
     return r;
   }

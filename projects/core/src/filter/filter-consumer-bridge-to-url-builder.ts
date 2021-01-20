@@ -122,7 +122,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
     addFilter('_lt', val => col.isLessThan(val));
     addFilter('_lte', val => col.isLessOrEqualTo(val));
     addFilter('_ne', val => col.isDifferentFrom(val));
-    addFilter('_in', val => col.isIn(val), true);
+    addFilter('_in', val => col.isIn(...val), true);
     addFilter('_null', val => {
       val = val.toString().trim().toLowerCase();
       switch (val) {
