@@ -29,7 +29,7 @@ export class FilterSerializer implements FilterConsumer {
   }
 
   or(orElements: Filter[]) {
-    this.add("or", orElements.map(x => {
+    this.add("OR", orElements.map(x => {
       let f = new FilterSerializer();
       x.__applyToConsumer(f);
       return f.result;
@@ -147,7 +147,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
       }
     });
   });
-  let val = filterInfo.get('or');
+  let val = filterInfo.get('OR');
   if (val)
     where = new AndFilter(where, new OrFilter(...val.map(x =>
       unpackWhere(rowType, x)
