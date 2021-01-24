@@ -26,6 +26,7 @@ export function hello(_options: Schema): Rule {
       appTsConfig = "./src/tsconfig.app.json";
 
     editJson(tree, appTsConfig, j => {
+      j.compilerOptions.emitDecoratorMetadata = true;
       j.exclude.push("./app/server**");
     });
 
@@ -33,7 +34,7 @@ export function hello(_options: Schema): Rule {
     let entryComponents = [{ name: 'YesNoQuestionComponent', path: './common/yes-no-question/yes-no-question.component' },
     { name: 'SignInComponent', path: './common/sign-in/sign-in.component' },
     { name: 'InputAreaComponent', path: './common/input-area/input-area.component' },
-    
+
     ];
 
     addToNgModule(tree, {

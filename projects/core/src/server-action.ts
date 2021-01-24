@@ -124,6 +124,9 @@ export function ServerFunction(options: ServerFunctionOptions) {
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
                 for (const type of [Context, ServerContext, SqlDatabase]) {
+                    if (!types){
+                        console.error("missing types, please add 'emitDecoratorMetadata:true' to the tsconfig file ")
+                    }
                     let ctxIndex = types.indexOf(type);
                     if (ctxIndex > -1 && args.length > ctxIndex) {
                         args[ctxIndex] = undefined;

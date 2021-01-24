@@ -366,9 +366,15 @@ export class GridSettings<rowType extends Entity = Entity>  {
   private getOptions: FindOptions<rowType>;
 
   totalRows: number;
-
+  /**
+     * reloads the data for the grid
+     * @deprecated Use `reloadData` instead
+     */
   getRecords() {
-
+    return this.reloadData();
+  }
+    
+  reloadData() {
     let opt: FindOptions<rowType> = this._internalBuildFindOptions();
     this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
     let result = this.restList.get(opt).then(() => {
