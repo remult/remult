@@ -31,12 +31,13 @@ export class ProductsComponent implements OnInit {
 
   });
   async ngOnInit() {
-      await ProductsComponent.doTest(undefined,null,'c',this.context);
+    let p = this.context.for(Products).create();
+    await p.doSomething("the error");
 
   }
   @ServerFunction({ allowed: true })
-  static doTest(a: string, b: string,c:string,context?:Context) {
-    console.log({ a, b,c,user:context.user });
+  static doTest(a: string, b: string, c: string, context?: Context) {
+    console.log({ a, b, c, user: context.user });
   }
   async doIt() {
     await this.context.openDialog(YesNoQuestionComponent, x => x.args = {

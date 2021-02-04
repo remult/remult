@@ -36,7 +36,7 @@ export class Entity<idType = any> {
       };
     }
   }
-  __debug(){
+  __debug() {
     return this.__entityData.debugInfo();
   }
 
@@ -67,7 +67,7 @@ export class Entity<idType = any> {
     }
 
   }
-  
+
   __options: EntityOptions;
   //@internal
   private _defs: EntityDefs;
@@ -328,7 +328,7 @@ export interface EntityOptions {
   deleted?: () => Promise<any> | any
 
   validation?: (e: Entity) => Promise<any> | any;
-  dbAutoIncrementId?:boolean;
+  dbAutoIncrementId?: boolean;
 }
 
 
@@ -383,7 +383,14 @@ export class EntityColumns<T>{
 
 export function __getValidationError(columns: Column[], message?: string) {
   let result: any = { message: message };
-  result.modelState = {};
+  AddModelStateToError(result, columns);
+  return result;
+
+
+}
+export function AddModelStateToError(result: any, columns: Column[]) {
+  if (!result.modelState)
+    result.modelState = {};
   columns.forEach(c => {
     if (c.validationError) {
       result.modelState[c.defs.key] = c.validationError;
@@ -392,5 +399,4 @@ export function __getValidationError(columns: Column[], message?: string) {
       }
     }
   });
-  return result;
 }

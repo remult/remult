@@ -8,11 +8,8 @@ export class Products extends IdEntity {
   availableTo = new DateColumn();
   @ServerMethod({ allowed: true })
   async doSomething(p: string) {
-    console.log({
-      p,
-      val: this.name.value,
-      original: this.name.originalValue
-    });
+    this.name.validationError = p;
+    throw 'error';
     await this.save();
   }
   constructor() {

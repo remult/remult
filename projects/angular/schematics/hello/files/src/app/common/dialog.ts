@@ -82,7 +82,7 @@ export function extractError(err: any) {
     if (err.message) {
         let r = err.message;
         if (err.error && err.error.message)
-            r =  err.error.message+" - "+r;
+            r =  err.error.message;
         return r;
     }
     if (err.error)

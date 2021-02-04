@@ -11,9 +11,10 @@ import { DataApiRequest, DataApiResponse } from './data-api';
 import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { SqlDatabase } from './data-providers/sql-database';
 import { Column, getColumnsFromObject } from './column';
-import { Entity, __getValidationError } from './entity';
+import { AddModelStateToError, Entity, __getValidationError } from './entity';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
+import { isString } from 'util';
 
 
 
@@ -124,7 +125,7 @@ export function ServerFunction(options: ServerFunctionOptions) {
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
                 for (const type of [Context, ServerContext, SqlDatabase]) {
-                    if (!types){
+                    if (!types) {
                         console.error("missing types, please add 'emitDecoratorMetadata:true' to the tsconfig file ")
                     }
                     let ctxIndex = types.indexOf(type);
@@ -270,19 +271,33 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                     }
 
                                     await y.__validateEntity();
-                                    r = {
-                                        result: await originalMethod.apply(y, d.args),
-                                        rowInfo: y.__entityData.getPackedRowInfo()
-                                    };
+                                    try {
+                                        r = {
+                                            result: await originalMethod.apply(y, d.args),
+                                            rowInfo: y.__entityData.getPackedRowInfo()
+                                        };
+                                    } catch (err) {
+                                        if (isString(err))
+                                            err = { message: err };
+                                        AddModelStateToError(err, [...y.columns]);
+                                        throw err;
+                                    }
                                 }
                                 else {
                                     let y = new constructor(context, ds);
                                     unpackColumns(y, d.columns);
                                     await validateObject(y);
-                                    r = {
-                                        result: await originalMethod.apply(y, d.args),
-                                        columns: packColumns(y)
-                                    };
+                                    try {
+                                        r = {
+                                            result: await originalMethod.apply(y, d.args),
+                                            columns: packColumns(y)
+                                        };
+                                    } catch (err) {
+                                        if (isString(err))
+                                            err = { message: err };
+                                        AddModelStateToError(err, getColumnsFromObject(y));
+                                        throw err;
+                                    }
                                 }
 
                             });
@@ -328,7 +343,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
                 else {
                     try {
-                        validateObject(self);
+                        await validateObject(self);
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
                             async execute(a, b): Promise<serverMethodOutArgs> {
                                 throw ('should get here');
