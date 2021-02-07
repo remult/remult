@@ -11,5 +11,6 @@ export class WaitComponent implements OnInit {
 
   ngOnInit() {
   }
-
+  mode = 'indeterminate';
+  value = 0;
 }

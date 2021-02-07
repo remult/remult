@@ -23,7 +23,7 @@ import { UrlBuilder } from '../url-builder';
 import { FilterSerializer } from '../filter/filter-consumer-bridge-to-url-builder';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
-import { addFilterToUrlAndReturnTrueIfSuccesfull } from '../data-providers/rest-data-provider';
+import { addFilterToUrlAndReturnTrueIfSuccessful } from '../data-providers/rest-data-provider';
 import { OrFilter } from '../filter/filter-interfaces';
 
 
@@ -47,6 +47,9 @@ function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: _
 }
 
 export class TestDataApiResponse implements DataApiResponse {
+  progress(progress: number): void {
+    
+  }
   success(data: any): void {
     fail('didnt expect success: ' + JSON.stringify(data));
   }
@@ -1325,31 +1328,31 @@ describe("data api", () => {
 describe("rest call use url get or fallback to post", () => {
   it("should get", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a: 1 }, url)).toBe(true);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a: 1 }, url)).toBe(true);
     expect(url.url).toBe("?a=1");
   });
   it("should get 1", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_ne: 1 }, url)).toBe(true);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_ne: 1 }, url)).toBe(true);
     expect(url.url).toBe("?a_ne=1");
   });
   it("should get 2", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_ne: [1, 2] }, url)).toBe(true);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_ne: [1, 2] }, url)).toBe(true);
     expect(url.url).toBe("?a_ne=1&a_ne=2");
   });
   it("should get 3", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_in: [1, 2] }, url)).toBe(true);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_in: [1, 2] }, url)).toBe(true);
     expect(url.url).toBe("?a_in=%5B1%2C2%5D");
   });
   it("should post ", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ a_in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }, url)).toBe(false);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }, url)).toBe(false);
   });
   it("should post ", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccesfull({ or: [{a:1},{a:3}] }, url)).toBe(false);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ or: [{a:1},{a:3}] }, url)).toBe(false);
   });
 });
 describe("column validation", () => {

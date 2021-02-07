@@ -186,6 +186,7 @@ export interface DataApiResponse {
   error(data: DataApiError): void;
   methodNotAllowed(): void;
   forbidden(): void;
+  progress(progress: number): void;
 
 }
 

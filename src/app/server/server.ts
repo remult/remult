@@ -2,13 +2,13 @@ import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
 import * as cors from 'cors';
-import { initExpress, JWTCookieAuthorizationHelper } from '@remult/server';
+import { EntityQueueStorage, initExpress, JobsInQueueEntity, JWTCookieAuthorizationHelper } from '@remult/server';
 import * as fs from 'fs';
-
 import '../app.module';
 import { serverInit } from './server-init';
 import { ServerContext } from '@remult/core';
 import { ServerSignIn } from '../../../projects/angular/schematics/hello/files/src/app/users/server-sign-in';
+import { preparePostgressQueueStorage } from '@remult/server-postgres';
 
 
 
@@ -18,10 +18,14 @@ serverInit().then(async (dataSource) => {
 
     let app = express();
     app.use(cors());
-    let s = initExpress(app, dataSource, process.env.DISABLE_HTTPS == "true");
+
+
+
+    let s = initExpress(app, dataSource, {
+        disableHttpsForDevOnly: process.env.DISABLE_HTTPS == "true",
+      //  queueStorage: await preparePostgressQueueStorage(dataSource) 
+    });
     ServerSignIn.helper = new JWTCookieAuthorizationHelper(s, 'signKey');
-
-
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
         let c = await s.getValidContext(req);
@@ -42,6 +46,6 @@ serverInit().then(async (dataSource) => {
 
     let port = process.env.PORT || 3001;
     app.listen(port);
-    var c = new ServerContext(dataSource);
+
 
 });  

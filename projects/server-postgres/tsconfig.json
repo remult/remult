@@ -1,6 +1,14 @@
 {
     "extends": "../server/tsconfig.json",
     "compilerOptions": {
-        "outDir":"../../dist/server-postgres"
+        "outDir":"../../dist/server-postgres",
+        "paths": {
+            "@remult/core": [
+                "../../dist/core"
+            ],
+            "@remult/server": [
+                "../server"
+            ]
+        }
     }
 }

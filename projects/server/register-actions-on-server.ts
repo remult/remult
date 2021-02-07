@@ -1,7 +1,7 @@
 import { SiteArea } from "./expressBridge";
-import {  myServerAction, serverActionField,actionInfo, DataProviderFactoryBuilder } from '@remult/core';
+import { myServerAction, serverActionField, actionInfo, DataProviderFactoryBuilder, DataApiResponse, DataApiRequest, Action, queuedJobInfoResponse, jobWasQueuedResult, DataApi } from '@remult/core';
 
-export function registerActionsOnServer(area: SiteArea, dataProvider:  DataProviderFactoryBuilder) {
+export function registerActionsOnServer(area: SiteArea, dataProvider: DataProviderFactoryBuilder) {
     var addAction = (a: any) => {
         let x = <myServerAction>a[serverActionField];
         if (!x) {
@@ -11,7 +11,7 @@ export function registerActionsOnServer(area: SiteArea, dataProvider:  DataProvi
         area.addAction(x);
     };
     actionInfo.runningOnServer = true;
-    actionInfo.allActions.forEach((a:any) => {
+    actionInfo.allActions.forEach((a: any) => {
         addAction(a);
     });
 

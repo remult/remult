@@ -90,6 +90,7 @@ export function buildContext(http: HttpClient, _dialog: MatDialog) {
   let prov = new AngularHttpProvider(http);
   Action.provider = prov;
   actionInfo.runActionWithoutBlockingUI = async x => await BusyService.singleInstance.donotWait(x);
+  actionInfo.startBusyWithProgress = ()=>BusyService.singleInstance.startBusyWithProgress()
   r.setDataProvider(new RestDataProvider(Context.apiBaseUrl, prov));
   return r;
 }

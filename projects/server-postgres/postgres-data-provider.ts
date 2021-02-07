@@ -1,5 +1,5 @@
 import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ValueListColumn, allEntities, SqlImplementation } from '@remult/core';
-
+import { JobsInQueueEntity, EntityQueueStorage ,ExpressBridge} from '@remult/server';
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
@@ -187,4 +187,16 @@ export class PostgresSchemaBuilder {
             this.additionalWhere = ' and table_schema=\'' + schema + '\'';
         }
     }
+}
+
+export async function preparePostgressQueueStorage(sql: SqlDatabase) {
+    let c = new ServerContext(sql);
+    {
+        let e = c.for(JobsInQueueEntity).create();
+        await new PostgresSchemaBuilder(sql).createIfNotExist(e);
+        await new PostgresSchemaBuilder(sql).verifyAllColumns(e);
+    }
+
+    return new EntityQueueStorage(c.for(JobsInQueueEntity));
+
 }

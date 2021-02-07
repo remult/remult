@@ -22,13 +22,14 @@ export class BusyService {
     donotWaitNonAsync<t>(what: () => t): t {
         this.disableWait = true;
         try {
-            return ( what());
+            return (what());
         }
         finally {
             this.disableWait = false;
         }
 
     }
+
     static singleInstance: BusyService;
     private id = 0;
     private numOfWaits = 0;
@@ -39,7 +40,7 @@ export class BusyService {
     constructor(private dialog: MatDialog) {
         BusyService.singleInstance = this;
 
-        
+
     }
     async doWhileShowingBusy<t>(what: () => Promise<t>): Promise<t> {
         let x = this.showBusy();
@@ -48,6 +49,33 @@ export class BusyService {
         }
         finally {
             x();
+        }
+    }
+    startBusyWithProgress(): busyWithProgress {
+        if (this.disableWait) {
+            return {
+                close: () => { },
+                progress: () => { }
+            };
+        }
+        let suspendWait = false;
+        let waitRef = this.dialog.open(WaitComponent, { disableClose: true });
+        return {
+            close: async () => {
+                if (suspendWait) {
+                    waitRef.componentInstance.value = 100;
+                    await new Promise(r => setTimeout(() => r(0), 250));
+                }
+
+                waitRef.close();
+            },
+            progress: (x) => {
+                if (x > 0) {
+                    suspendWait = true;
+                    waitRef.componentInstance.mode = 'determinate';
+                    waitRef.componentInstance.value = x * 100;
+                }
+            }
         }
     }
     showBusy() {
@@ -83,6 +111,13 @@ export class BusyService {
         };
     }
 
+}
+export class busyWithProgress {
+
+}
+export interface busyWithProgress {
+    progress(progress: number);
+    close();
 }
 @Injectable()
 export class LoaderInterceptor implements HttpInterceptor {

@@ -31,7 +31,7 @@ class RestEntityDataProvider implements EntityDataProvider {
 
     if (where) {
       filterObject = packToRawWhere(where);
-      if (addFilterToUrlAndReturnTrueIfSuccesfull(where, url))
+      if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
         filterObject = undefined;
     }
     if (filterObject)
@@ -46,7 +46,7 @@ class RestEntityDataProvider implements EntityDataProvider {
       if (options.where) {
 
         filterObject = packToRawWhere(options.where);//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
-        if (addFilterToUrlAndReturnTrueIfSuccesfull(filterObject, url))
+        if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
           filterObject = undefined;
       }
       if (options.orderBy && options.orderBy.Segments) {
@@ -183,7 +183,7 @@ function onError(error: any) {
   throw Promise.resolve(error);
 }
 
-export function addFilterToUrlAndReturnTrueIfSuccesfull(filter: any, url: UrlBuilder) {
+export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBuilder) {
   for (const key in filter) {
     if (Object.prototype.hasOwnProperty.call(filter, key)) {
       const element = filter[key];

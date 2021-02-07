@@ -389,10 +389,10 @@ export function __getValidationError(columns: Column[], message?: string) {
 
 }
 export function AddModelStateToError(result: any, columns: Column[]) {
-  if (!result.modelState)
-    result.modelState = {};
   columns.forEach(c => {
     if (c.validationError) {
+      if (!result.modelState)
+        result.modelState = {};
       result.modelState[c.defs.key] = c.validationError;
       if (!result.message) {
         result.message = c.defs.caption + ":" + c.validationError;

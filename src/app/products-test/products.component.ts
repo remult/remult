@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress } from '@remult/core';
 import { Products } from './products';
 import { DialogService } from '../../../projects/angular/schematics/hello/files/src/app/common/dialog';
 import { TestDialogComponent } from '../test-dialog/test-dialog.component';
@@ -25,27 +25,36 @@ export class ProductsComponent implements OnInit {
 
 
   constructor(private context: Context) { }
-  grid = this.context.for(Products).gridSettings({
-    allowCRUD: true,
-    where: p => new OrFilter(p.price.isEqualTo(0), p.price.isEqualTo(5))
 
-  });
   async ngOnInit() {
-    let p = this.context.for(Products).create();
-    await p.doSomething("the error");
+    let [count, items] =
+      await Promise.all([
+        this.context.for(Products).count(x => x.name.isContains('a')),
+        this.context.for(Products).find({ where: x => x.name.isContains('a') })
+      ]);
+    console.log({
+      count,
+      real: items.length
+    })
 
+    console.log( await ProductsComponent.doTest());
+    await ProductsComponent.doTest2();
+  }
+  @ServerFunction({ allowed: true, queue: true })
+  static async doTest(context?: Context, progress?: ServerProgress) {
+    for (let index = 0; index < 10; index++) {
+      await new Promise(r => {
+        setTimeout(() => r({}), 300);
+      });
+      progress.progress(index / 10);
+
+    }
+
+    console.log('Server function with queue');
+    return 1234;
   }
   @ServerFunction({ allowed: true })
-  static doTest(a: string, b: string, c: string, context?: Context) {
-    console.log({ a, b, c, user: context.user });
+  static doTest2(context?: Context) {
+    console.log('Server function with NO queue');
   }
-  async doIt() {
-    await this.context.openDialog(YesNoQuestionComponent, x => x.args = {
-      message: 'asdfdsa'
-    });
-  }
-
-
 }
-
-
