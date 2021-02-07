@@ -642,7 +642,7 @@ describe("data api", () => {
       }, clientIp: '', user: undefined, getHeader: x => ""
       , getBaseUrl: () => ''
     }, {
-      or:[
+      OR:[
         {status:1},
         {status:2}
       ]
