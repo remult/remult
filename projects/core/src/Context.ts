@@ -17,6 +17,7 @@ import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
 import { Sort } from './sort';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+import { CompoundIdColumn } from "./columns/compound-id-column";
 
 
 
@@ -444,7 +445,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                                 opts.orderBy = cont.entity.__options.defaultOrderBy;
                             else
                                 opts.orderBy = x => x.columns.idColumn;
-
+                        opts.orderBy = createAUniqueSort(opts.orderBy, cont.entity);
                         let sort = extractSort(opts.orderBy(cont.entity)).reverse();
 
                         findOptions.orderBy = x => sort;
@@ -560,7 +561,7 @@ export class ClassHelper {
 export class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
-export function setControllerSettings(target:any,options:ControllerOptions){
+export function setControllerSettings(target: any, options: ControllerOptions) {
     let r = target;
     while (true) {
         let helper = classHelpers.get(r);
@@ -579,7 +580,7 @@ export function setControllerSettings(target:any,options:ControllerOptions){
 export function EntityClass<T extends EntityType<any>>(theEntityClass: T) {
     let original = theEntityClass;
     let f = original;
-    setControllerSettings(theEntityClass,{allowed:false,key:undefined})
+    setControllerSettings(theEntityClass, { allowed: false, key: undefined })
     /*f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);
@@ -637,3 +638,26 @@ export interface IterateToArrayOptions {
 export const iterateConfig = {
     pageSize: 200
 };
+export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
+    let s = extractSort(orderBy(entity));
+    let criticalColumns = [entity.columns.idColumn];
+    if (entity.columns.idColumn instanceof CompoundIdColumn) {
+        criticalColumns = entity.columns.idColumn.columns;
+    }
+    let columnsToAdd: Column[] = [];
+    for (const c of criticalColumns) {
+        if (!s.Segments.find(x => x.column == c)) {
+            columnsToAdd.push(c);
+        }
+
+    }
+    if (columnsToAdd.length == 0)
+        return orderBy;
+    return (e: Entity) => {
+        let s = extractSort(orderBy(e));
+        for (const c of columnsToAdd) {
+            s.Segments.push({ column: e.columns.find(c) });
+        }
+        return s;
+    }
+}

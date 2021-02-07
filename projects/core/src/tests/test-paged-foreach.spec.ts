@@ -6,6 +6,11 @@ import { itAsync } from './testHelper.spec';
 import { Categories } from './testModel/models';
 
 import { iterateConfig } from '../context';
+import { Column, Context, createAUniqueSort, Entity } from '../..';
+import { TestBed } from '@angular/core/testing';
+import { EntityOrderBy, extractSort } from '../data-interfaces';
+import { StringColumn } from '../columns/string-column';
+import { CompoundIdColumn } from '../columns/compound-id-column';
 
 
 describe("test paged foreach ", async () => {
@@ -55,7 +60,7 @@ describe("test paged foreach ", async () => {
         }
         expect(i).toBe(5);
 
-        expect(( await c.iterate({
+        expect((await c.iterate({
             orderBy: x => x.categoryName
         }).first()).id.value).toBe(5);
 
@@ -108,6 +113,35 @@ describe("test paged foreach ", async () => {
             expect(x.id.value).toBe(++i);
         }
         expect(i).toBe(5);
+    });
+    itAsync("test make sort unique", async () => {
+        let context = new Context();
+        let e = context.for(Categories).create();
+        function test(orderBy: EntityOrderBy<Categories>, ...sort: Column[]) {
+            let s = extractSort(createAUniqueSort(orderBy, e)(e));
+            expect(s.Segments.map(x => x.column)).toEqual(sort);
+        }
+        test(x => x.id, e.id);
+        test(x => x.categoryName, e.categoryName, e.id);
+    });
+    itAsync("unique sort and  compound index", async () => {
+        let context = new Context();
+        let theTable = class extends Entity {
+            a = new StringColumn();
+            b = new StringColumn();
+            c = new StringColumn();
+            id = new CompoundIdColumn(this.b, this.c);
+        }
+
+        let e = context.for(theTable).create();
+        function test<T extends Entity>(blabla: T, orderBy: EntityOrderBy<T>, ...sort: Column[]) {
+            let s = extractSort(createAUniqueSort(orderBy, e)(e));
+            expect(s.Segments.map(x => x.column)).toEqual(sort);
+        }
+        test(e, x => [x.b, x.c], e.b, e.c);
+        test(e, x => x.a, e.a, e.b, e.c);
+        test(e, x => x.b, e.b, e.c);
+        test(e, x => x.c, e.c, e.b);
     });
 })
 
