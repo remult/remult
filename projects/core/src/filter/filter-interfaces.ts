@@ -13,7 +13,7 @@ export class Filter {
         return new AndFilter(this, filter);
     }
     or(filter: Filter): Filter {
-        return new OrFilter(filter);
+        return new OrFilter(this, filter);
     }
 }
 export interface FilterConsumer {
@@ -44,13 +44,15 @@ export class AndFilter extends Filter {
     }
 }
 export class OrFilter extends Filter {
-    
+
     constructor(...filters: Filter[]) {
         super(add => {
             let f = filters.filter(x => x !== undefined);
-            if (f.length > 0) {
+            if (f.length > 1) {
                 add.or(f);
             }
+            else if (f.length == 1)
+                f[0].__applyToConsumer(add);
         });
     }
 }

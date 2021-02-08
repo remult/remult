@@ -1,16 +1,17 @@
 
 
 import { createData } from './RowProvider.spec';
-import { itAsync } from './testHelper.spec';
+import { fitAsync, itAsync } from './testHelper.spec';
 
 import { Categories } from './testModel/models';
 
 import { iterateConfig } from '../context';
-import { Column, Context, createAUniqueSort, Entity } from '../..';
+import { Column, Context, createAfterFilter, createAUniqueSort, Entity } from '../..';
 import { TestBed } from '@angular/core/testing';
-import { EntityOrderBy, extractSort } from '../data-interfaces';
+import { EntityOrderBy, EntityWhere, extractSort } from '../data-interfaces';
 import { StringColumn } from '../columns/string-column';
 import { CompoundIdColumn } from '../columns/compound-id-column';
+import { packWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 
 
 describe("test paged foreach ", async () => {
@@ -142,6 +143,95 @@ describe("test paged foreach ", async () => {
         test(e, x => x.a, e.a, e.b, e.c);
         test(e, x => x.b, e.b, e.c);
         test(e, x => x.c, e.c, e.b);
+    });
+    itAsync("create rows after filter", async () => {
+        let context = new Context();
+        let theTable = class extends Entity {
+            a = new StringColumn();
+            b = new StringColumn();
+            c = new StringColumn();
+            id = new CompoundIdColumn(this.b, this.c);
+        }
+
+        let e = context.for(theTable).create();
+        e.a.value = 'a';
+        e.b.value = 'b';
+        e.c.value = 'c';
+        function test<T extends Entity>(theEntity: T, orderBy: EntityOrderBy<T>, expectedWhere: EntityWhere<T>) {
+            expect(JSON.stringify(packWhere(theEntity, createAfterFilter(orderBy, theEntity)))).toEqual(
+                JSON.stringify(packWhere(theEntity, expectedWhere)));
+        }
+        test(e, x => x.a, x => x.a.isGreaterThan('a'));
+        test(e, x => [{ column: x.a, descending: true }], x => x.a.isLessThan('a'));
+        test(e, x => [x.a, x.b], x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))));
+
+    });
+    itAsync("create rows after filter, values are frozen when filter is created", async () => {
+        let context = new Context();
+        let theTable = class extends Entity {
+            a = new StringColumn();
+            b = new StringColumn();
+            c = new StringColumn();
+            id = new CompoundIdColumn(this.b, this.c);
+        }
+
+        let e = context.for(theTable).create();
+        e.a.value = 'a';
+        e.b.value = 'b';
+        e.c.value = 'c';
+        
+        let f = createAfterFilter(x => [x.a, x.b],e);
+        e.a.value = '1';
+        e.b.value = '2';
+        expect(JSON.stringify(packWhere(e, f))).toEqual(
+            JSON.stringify(packWhere(e, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
+
+    });
+    itAsync("serialize filter with or", async () => {
+        let context = new Context();
+        let theTable = class extends Entity {
+            a = new StringColumn();
+            b = new StringColumn();
+            c = new StringColumn();
+            id = new CompoundIdColumn(this.b, this.c);
+        }
+
+        let e = context.for(theTable).create();
+
+        function test<T extends Entity>(theEntity: T, expectedWhere: EntityWhere<T>, expected: any) {
+            expect(JSON.stringify(packWhere(theEntity, expectedWhere))).toEqual(
+                JSON.stringify(expected));
+        }
+        test(e,
+            x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')).or(x.a.isGreaterThan('a')),
+            {
+                OR: [
+                    {
+                        a: 'a',
+                        b_gt: 'b'
+                    },
+                    {
+                        a_gt: 'a'
+                    }
+                ]
+            });
+        test(e,
+            x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')),
+            {
+                a: 'a',
+                b_gt: 'b'
+            });
+        test(e,
+            x => x.a.isEqualTo('a').or(x.b.isGreaterThan('b')),
+            {
+                OR: [
+                    { a: 'a' },
+                    { b_gt: 'b' }]
+            });
+
+
+
+
     });
 })
 

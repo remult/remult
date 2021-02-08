@@ -12,7 +12,7 @@ import { Entity } from "./entity";
 import { Lookup } from "./lookup";
 import { IDataSettings, GridSettings } from "./grid-settings";
 
-import { Filter } from './filter/filter-interfaces';
+import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
 import { Sort } from './sort';
@@ -659,5 +659,30 @@ export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
             s.Segments.push({ column: e.columns.find(c) });
         }
         return s;
+    }
+}
+export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity): EntityWhere<any> {
+    let values = new Map<string, any>();
+
+    for (const s of extractSort(orderBy(lastRow)).Segments) {
+        values.set(s.column.defs.key, s.column.value);
+    }
+    return x => {
+        let r: Filter = undefined;
+        let equalToColumn: Column[] = [];
+        for (const s of extractSort(orderBy(x)).Segments) {
+            let f: Filter;
+            for (const c of equalToColumn) {
+                f = new AndFilter(f, c.isEqualTo(values.get(c.defs.key)))
+            }
+            equalToColumn.push(s.column);
+            if (s.descending) {
+                f = new AndFilter(f, s.column.isLessThan(values.get(s.column.defs.key)));
+            }
+            else
+                f = new AndFilter(f, s.column.isGreaterThan(values.get(s.column.defs.key)));
+            r = new OrFilter(r, f);
+        }
+        return r;
     }
 }
