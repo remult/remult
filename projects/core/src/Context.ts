@@ -407,62 +407,47 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
             //@ts-ignore
             [Symbol.asyncIterator]() {
-                let findOptions: FindOptions<T> = {};
-                if (opts.where) {
-                    findOptions.where = opts.where;
+
+                if (!opts.where) {
+                    opts.where = x => undefined;
                 }
-
-
-
-                let pageIndex: number;
+                if (!opts.orderBy)
+                    if (cont.entity.__options.defaultOrderBy)
+                        opts.orderBy = cont.entity.__options.defaultOrderBy;
+                    else
+                        opts.orderBy = x => x.columns.idColumn;
+                opts.orderBy = createAUniqueSort(opts.orderBy, cont.entity);
                 let pageSize = iterateConfig.pageSize;
-                findOptions.limit = pageSize;
+
 
                 let itemIndex = -1;
                 let items: T[];
 
                 let itStrategy: (() => Promise<IteratorResult<T>>);
+                let nextPageFilter: EntityWhere<T> = x => undefined;;
+                
 
                 itStrategy = async () => {
-                    items = await cont.find({
-                        where: opts.where,
-                        orderBy: opts.orderBy,
-                        limit: pageSize
-                    });
-                    if (items.length < pageSize) {
-                        _count = items.length;
+                    if (items === undefined || itemIndex == items.length) {
+                        if (items && items.length < pageSize)
+                            return { value: <T>undefined, done: true };
+                        items = await cont.find({
+                            where: x => new AndFilter(opts.where(x), nextPageFilter(x)),
+                            orderBy: opts.orderBy,
+                            limit: pageSize
+                        });
                         itemIndex = 0;
-                        itStrategy = async () => {
-
-                            if (itemIndex >= items.length)
-                                return { value: <T>undefined, done: true };
-                            return { value: items[itemIndex++], done: false };
-                        };
-                    }
-                    else {
-                        if (!opts.orderBy)
-                            if (cont.entity.__options.defaultOrderBy)
-                                opts.orderBy = cont.entity.__options.defaultOrderBy;
-                            else
-                                opts.orderBy = x => x.columns.idColumn;
-                        opts.orderBy = createAUniqueSort(opts.orderBy, cont.entity);
-                        let sort = extractSort(opts.orderBy(cont.entity)).reverse();
-
-                        findOptions.orderBy = x => sort;
-                        pageIndex = Math.ceil(await this.count() / pageSize);
-                        itStrategy = async () => {
-                            while (itemIndex < 0) {
-                                if (pageIndex < 1) {
-                                    return { value: undefined, done: true };
-                                }
-                                findOptions.page = pageIndex--;
-                                items = await cont.find(findOptions);
-                                itemIndex = items.length - 1;
-                            }
-                            return { value: items[itemIndex--], done: false };
+                        if (items.length == 0) {
+                            return { value: <T>undefined, done: true };
+                        } else {
+                            nextPageFilter = createAfterFilter(opts.orderBy, items[items.length-1]);
                         }
+
                     }
-                    return itStrategy();
+                    if (itemIndex < items.length)
+                        return { value: items[itemIndex++], done: false };
+
+
                 };
                 return {
                     next: async () => {

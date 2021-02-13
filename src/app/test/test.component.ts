@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { DateColumn, BoolColumn, DataAreaSettings } from '@remult/core';
+import { DateColumn, BoolColumn, DataAreaSettings, Context, iterateConfig } from '@remult/core';
 import { StringColumn, ColumnOptions } from '@remult/core';
+import { Products } from '../products-test/products';
 
 
 @Component({
@@ -10,7 +11,7 @@ import { StringColumn, ColumnOptions } from '@remult/core';
 })
 export class TestComponent implements OnInit {
 
-  constructor() { }
+  constructor(private context: Context) { }
   column = new StringColumn("שלי");
   column1 = new StringColumn("שלי1");
   column2 = new StringColumn("שלי2");
@@ -33,7 +34,11 @@ export class TestComponent implements OnInit {
     ]
   });
 
-  ngOnInit() {
+  async ngOnInit() {
+    iterateConfig.pageSize = 2;
+    for await (const p of this.context.for(Products).iterate({})) {
+      console.log(p.name.value);
+    }
   }
 
 }
