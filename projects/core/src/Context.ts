@@ -425,9 +425,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
                 let itStrategy: (() => Promise<IteratorResult<T>>);
                 let nextPageFilter: EntityWhere<T> = x => undefined;;
-                
+
+                let j = 0;
 
                 itStrategy = async () => {
+                    if (opts.progress) {
+                        opts.progress.progress(j++ / await this.count());
+                    }
                     if (items === undefined || itemIndex == items.length) {
                         if (items && items.length < pageSize)
                             return { value: <T>undefined, done: true };
@@ -440,7 +444,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                         if (items.length == 0) {
                             return { value: <T>undefined, done: true };
                         } else {
-                            nextPageFilter = createAfterFilter(opts.orderBy, items[items.length-1]);
+                            nextPageFilter = createAfterFilter(opts.orderBy, items[items.length - 1]);
                         }
 
                     }
@@ -613,6 +617,7 @@ export interface RoleChecker {
 export interface IterateOptions<entityType extends Entity> {
     where?: EntityWhere<entityType>;
     orderBy?: EntityOrderBy<entityType>;
+    progress?: { progress: (progress: number) => void };
 }
 
 
