@@ -14,7 +14,7 @@ export class Products extends IdEntity {
   }
   constructor() {
     super({
-      name: "Products",
+      name: "Products_1",
       allowApiCRUD: true,
       allowApiRead: c => {  return true; },
       saving: () => {

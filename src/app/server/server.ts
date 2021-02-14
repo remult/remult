@@ -9,12 +9,25 @@ import { serverInit } from './server-init';
 import { ServerContext } from '@remult/core';
 import { ServerSignIn } from '../../../projects/angular/schematics/hello/files/src/app/users/server-sign-in';
 import { preparePostgressQueueStorage } from '@remult/server-postgres';
+import { Products } from '../products-test/products';
 
 
 
 
-
+const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
+    let c = new ServerContext(dataSource);
+    let p = await c.for(Products).findFirst();
+    if (p)
+        await p.delete();
+    p = c.for(Products).create();
+    p.name.value = '1';
+    p.availableFrom1.value = d;
+    await p.save();
+    p = await c.for(Products).findFirst(x => x.availableFrom1.isEqualTo(d));
+    console.log(p);
+
+    return;
 
     let app = express();
     app.use(cors());
@@ -23,7 +36,7 @@ serverInit().then(async (dataSource) => {
 
     let s = initExpress(app, dataSource, {
         disableHttpsForDevOnly: process.env.DISABLE_HTTPS == "true",
-      //  queueStorage: await preparePostgressQueueStorage(dataSource) 
+        //  queueStorage: await preparePostgressQueueStorage(dataSource) 
     });
     ServerSignIn.helper = new JWTCookieAuthorizationHelper(s, 'signKey');
     app.use(express.static('dist/my-project'));

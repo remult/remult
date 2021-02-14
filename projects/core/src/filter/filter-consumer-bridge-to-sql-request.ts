@@ -65,7 +65,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.add(col, val + '%', 'like');
   }
   private add(col: Column, val: any, operator: string) {
-    let x = col.defs.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(val);
+    let x = col.defs.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.__getStorage().toDb(val));
     this.addToWhere(x);
 
   }

@@ -25,6 +25,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccessful } from '../data-providers/rest-data-provider';
 import { OrFilter } from '../filter/filter-interfaces';
+import { DateTimeColumn } from '@remult/core';
 
 
 function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
@@ -48,7 +49,7 @@ function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: _
 
 export class TestDataApiResponse implements DataApiResponse {
   progress(progress: number): void {
-    
+
   }
   success(data: any): void {
     fail('didnt expect success: ' + JSON.stringify(data));
@@ -78,6 +79,9 @@ export class TestDataApiResponse implements DataApiResponse {
 
 
 describe('Test basic row functionality', () => {
+  it("filter on date keeps the type", () => {
+
+  });
   it("finds its id column", () => {
     let c = new Context().for(Categories).create();
     expect(c.columns.idColumn.defs.key).toBe("id");
@@ -276,7 +280,7 @@ describe("data api", () => {
     async (dataProvider) => {
 
       let s = await create4RowsInDp(ctx, dataProvider);
-      expect((await s.find({ where: c => new OrFilter(c.myId.isEqualTo(1),c.myId.isEqualTo(3))  })).length).toBe(2);
+      expect((await s.find({ where: c => new OrFilter(c.myId.isEqualTo(1), c.myId.isEqualTo(3)) })).length).toBe(2);
 
     });
   itWithDataProvider("put with validations on column fails", async (dp) => {
@@ -642,9 +646,9 @@ describe("data api", () => {
       }, clientIp: '', user: undefined, getHeader: x => ""
       , getBaseUrl: () => ''
     }, {
-      OR:[
-        {status:1},
-        {status:2}
+      OR: [
+        { status: 1 },
+        { status: 2 }
       ]
     });
     d.test();
@@ -1352,7 +1356,7 @@ describe("rest call use url get or fallback to post", () => {
   });
   it("should post ", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccessful({ or: [{a:1},{a:3}] }, url)).toBe(false);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ or: [{ a: 1 }, { a: 3 }] }, url)).toBe(false);
   });
 });
 describe("column validation", () => {
@@ -1375,6 +1379,30 @@ describe("column validation", () => {
     c.id.value = 1;
     expect(c.isValid()).toBe(true);
     expect(c.id.validationError).toBe(undefined);
+  });
+ itAsync("test date filter and values", async () => {
+    let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
+    let c = new Context();
+    await sql.execute("drop table if exists t1");
+    c.setDataProvider(sql);
+    let f = c.for(class extends Entity {
+      id = new NumberColumn();
+      name = new StringColumn()
+      c3 = new DateTimeColumn();
+      constructor() {
+        super({
+          name: 't1',
+          dbAutoIncrementId: true
+        })
+      }
+    });
+    let d = new Date(2020, 1, 2, 3, 4, 5, 6);
+    let p = f.create();
+    p.name.value = '1';
+    p.c3.value = d;
+    await p.save();
+    p = await f.findFirst(x => x.c3.isEqualTo(d));
+    expect(p.name.value).toBe('1');
   });
 
 });
@@ -1446,7 +1474,7 @@ describe("compound id", () => {
     let c = ctx.for(CompoundIdEntity).create();
     let f = new FilterSerializer();
     c.id.isEqualTo('1,11').__applyToConsumer(f);
-    expect(f.result).toEqual({a:'1',b:'11'});
+    expect(f.result).toEqual({ a: '1', b: '11' });
   });
   itAsync("update", async () => {
     let mem = new InMemoryDataProvider();
