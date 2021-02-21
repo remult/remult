@@ -1380,7 +1380,7 @@ describe("column validation", () => {
     expect(c.isValid()).toBe(true);
     expect(c.id.validationError).toBe(undefined);
   });
- itAsync("test date filter and values", async () => {
+  itAsync("test date filter and values", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Context();
     await sql.execute("drop table if exists t1");
@@ -1634,6 +1634,31 @@ describe("Column settings stuff", () => {
     expect(x.key).toBe("yael");
   });
 
+
+});
+describe("test number negative", () => {
+  it("negative", () => {
+    let nc = new NumberColumn();
+    nc.inputValue = '-';
+    expect(nc.value).toBe(0);
+    expect(nc.inputValue).toBe('-');
+  });
+  it("negative2", () => {
+    let nc = new NumberColumn();
+    nc.inputValue = '2-1';
+    expect(nc.value).toBe(0);
+    expect(nc.inputValue).toBe('0');
+  });
+  it("negative decimal", () => {
+    let nc = new NumberColumn();
+    nc.inputValue = '-0.00';
+    expect(nc.value).toBe(0);
+    expect(nc.inputValue).toBe('-0.00');
+    nc.inputValue = '-0.001';
+    expect(nc.value).toBe(-0.001);
+    expect(nc.inputValue).toBe('-0.001');
+
+  });
 
 });
 describe("check allowedDataType", () => {

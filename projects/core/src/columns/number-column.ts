@@ -19,9 +19,30 @@ export class NumberColumn extends Column<number>{
 
   }
   fromRawValue(value: any) {
-    if (value!==undefined)
+    if (value !== undefined)
       return +value;
-      return undefined;
+    return undefined;
+  }
+  private _tempInputValue: string = undefined;
+  get inputValue() {
+    if (this._tempInputValue !== undefined)
+      return this._tempInputValue;
+    if (this.rawValue !== undefined)
+      return this.rawValue.toString();
+    return '0';
+  }
+  set inputValue(value: string) {
+    this.rawValue = value;
+    this._tempInputValue = undefined;
+    if (value.startsWith('-') ) {
+      if (this.value == 0 || isNaN(this.value)) {
+        this._tempInputValue = value;
+        this.value = 0;
+      }
+    }
+    else if (isNaN(this.value)) {
+      this.value = 0;
+    }
   }
 }
 export interface NumberColumnSettings extends ColumnSettings<number> {

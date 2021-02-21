@@ -16,19 +16,6 @@ import { Products } from '../products-test/products';
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
-    let c = new ServerContext(dataSource);
-    let p = await c.for(Products).findFirst();
-    if (p)
-        await p.delete();
-    p = c.for(Products).create();
-    p.name.value = '1';
-    p.availableFrom1.value = d;
-    await p.save();
-    p = await c.for(Products).findFirst(x => x.availableFrom1.isEqualTo(d));
-    console.log(p);
-
-    return;
-
     let app = express();
     app.use(cors());
 

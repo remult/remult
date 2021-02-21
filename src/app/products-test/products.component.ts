@@ -25,36 +25,18 @@ export class ProductsComponent implements OnInit {
 
 
   constructor(private context: Context) { }
+  nc = new NumberColumn();
+
+  _n: number;
+  get n() {
+    return this._n;
+  }
+  set n(value: number) {
+    this._n = value;
+  }
 
   async ngOnInit() {
-    let [count, items] =
-      await Promise.all([
-        this.context.for(Products).count(x => x.name.isContains('a')),
-        this.context.for(Products).find({ where: x => x.name.isContains('a') })
-      ]);
-    console.log({
-      count,
-      real: items.length
-    })
 
-    console.log( await ProductsComponent.doTest());
-    await ProductsComponent.doTest2();
   }
-  @ServerFunction({ allowed: true, queue: true })
-  static async doTest(context?: Context, progress?: ServerProgress) {
-    for (let index = 0; index < 10; index++) {
-      await new Promise(r => {
-        setTimeout(() => r({}), 300);
-      });
-      progress.progress(index / 10);
 
-    }
-
-    console.log('Server function with queue');
-    return 1234;
-  }
-  @ServerFunction({ allowed: true })
-  static doTest2(context?: Context) {
-    console.log('Server function with NO queue');
-  }
 }
