@@ -1,5 +1,5 @@
 import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ValueListColumn, allEntities, SqlImplementation } from '@remult/core';
-import { JobsInQueueEntity, EntityQueueStorage ,ExpressBridge} from '@remult/server';
+import { JobsInQueueEntity, EntityQueueStorage, ExpressBridge } from '@remult/server';
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
@@ -177,9 +177,27 @@ export class PostgresSchemaBuilder {
         }
     }
     async verifyAllColumns<T extends Entity>(e: T) {
-        await Promise.all(e.columns.toArray().map(async column => {
-            await this.addColumnIfNotExist(e, () => column);
-        }));
+        try {
+            let cmd = this.pool.createCommand();
+
+
+            let cols = (await cmd.execute(`select column_name   
+        FROM information_schema.columns 
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.defs.dbName.toLocaleLowerCase())} ` + this.additionalWhere
+            )).rows.map(x => x.column_name);
+            for (const col of e.columns) {
+                if (!col.defs.dbReadOnly)
+                    if (!cols.includes(col.defs.dbName.toLocaleLowerCase())) {
+                        let sql = `alter table ${e.defs.dbName} add column ${this.addColumnSqlSyntax(col)}`;
+                        console.log(sql);
+                        await this.pool.execute(sql);
+                    }
+            }
+
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
     additionalWhere = '';
     constructor(private pool: SqlDatabase, schema?: string) {

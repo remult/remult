@@ -1,4 +1,4 @@
-import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn } from '@remult/core';
 @EntityClass
 
 export class Products extends IdEntity {
@@ -12,6 +12,7 @@ export class Products extends IdEntity {
     throw 'error';
     await this.save();
   }
+  archive = new BoolColumn();
   constructor() {
     super({
       name: "Products_1",
