@@ -1642,6 +1642,8 @@ describe("test number negative", () => {
     nc.inputValue = '-';
     expect(nc.value).toBe(0);
     expect(nc.inputValue).toBe('-');
+    nc.value = 1;
+    expect(nc.inputValue).toBe('1');
   });
   it("negative2", () => {
     let nc = new NumberColumn();

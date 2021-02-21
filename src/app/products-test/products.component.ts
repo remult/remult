@@ -32,7 +32,7 @@ export class ProductsComponent implements OnInit {
     return this._n;
   }
   set n(value: number) {
-    this._n = value;
+    this._n = +value;
   }
 
   async ngOnInit() {

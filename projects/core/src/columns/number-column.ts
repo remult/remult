@@ -13,6 +13,7 @@ export class NumberColumn extends Column<number>{
   __numOfDecimalDigits: number = 0;
   protected __processValue(value: number) {
 
+    this._tempInputValue = undefined;
     if (value != undefined && !(typeof value === "number"))
       return +value;
     return value;
@@ -34,14 +35,16 @@ export class NumberColumn extends Column<number>{
   set inputValue(value: string) {
     this.rawValue = value;
     this._tempInputValue = undefined;
-    if (value.startsWith('-') ) {
+    if (value.startsWith('-')) {
       if (this.value == 0 || isNaN(this.value)) {
-        this._tempInputValue = value;
         this.value = 0;
+        this._tempInputValue = value;
       }
     }
     else if (isNaN(this.value)) {
       this.value = 0;
+      if (value == '')
+        this._tempInputValue = '';
     }
   }
 }
