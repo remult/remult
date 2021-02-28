@@ -195,14 +195,14 @@ export class SiteArea {
       if (this.logApiEndpoints)
         console.log(myUrl);
       if (queue) {
-        this.bridge.queue.mapQueuedAction(url, what);
+        this.bridge.queue.mapQueuedAction(myUrl, what);
       }
       this.app.route(myUrl).post(this.process(
         async (req, res, orig) => {
 
           if (queue) {
             let r: jobWasQueuedResult = {
-              queuedJobId: await this.bridge.queue.submitJob(url, req, orig.body)
+              queuedJobId: await this.bridge.queue.submitJob(myUrl, req, orig.body)
             };
 
             res.success(r);
