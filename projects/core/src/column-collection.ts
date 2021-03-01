@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { FilterHelper } from "./filter/filter-helper";
-import { DataControlSettings, ValueListItem, DataControlInfo } from "./column-interfaces";
+import { DataControlSettings, ValueListItem, DataControlInfo, valueOrEntityExpressionToValue } from "./column-interfaces";
 import { Column } from "./column";
 import { Context } from "./context";
 import { isFunction } from "util";
@@ -10,11 +10,7 @@ import { IdEntity } from './id-entity';
 export class ColumnCollection<rowType extends Entity = Entity> {
   constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private context?: Context) {
 
-    if (this.allowDesignMode == undefined) {
-      if (location.search)
-        if (location.search.toLowerCase().indexOf('design=y') >= 0)
-          this.allowDesignMode = true;
-    }
+    
   }
   __showArea() {
     return this.showArea();
@@ -153,18 +149,20 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     this.items.splice(this.items.indexOf(col), 1);
     this.colListChanged();
   }
-  addCol(col: DataControlSettings,newCol:DataControlSettings) {
+  addCol(col: DataControlSettings, newCol: DataControlSettings) {
     this.items.splice(this.items.indexOf(col) + 1, 0, newCol);
     this.colListChanged();
   }
 
 
-  _getEditable(col: DataControlSettings) {
+  _getEditable(col: DataControlSettings, row: rowType) {
     if (!this.allowUpdate())
       return false;
     if (!col.column)
       return false
-    return !col.readOnly;
+    if (col.readOnly !== undefined)
+      return !valueOrEntityExpressionToValue(col.readOnly, row);
+    return true;
   }
   _click(col: DataControlSettings, row: any) {
     col.click(row);

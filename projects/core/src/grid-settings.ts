@@ -10,11 +10,9 @@ import { Sort } from "./sort";
 import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
-import { EntityProvider, FindOptions, entityOrderByToSort } from './data-interfaces';
-import { MatCheckboxChange } from '@angular/material/checkbox';
-import { AndFilter } from './filter/and-filter';
-import { _MatChipListMixinBase } from '@angular/material';
-import { SelectValueDialogComponent } from './angular/add-filter-dialog/add-filter-dialog.component';
+import { EntityProvider, FindOptions, entityOrderByToSort, EntityWhere, EntityOrderBy } from './data-interfaces';
+import { AndFilter } from "./filter/filter-interfaces";
+
 
 
 
@@ -36,7 +34,15 @@ export class GridSettings<rowType extends Entity = Entity>  {
 
       if (settings.columnSettings)
         this.columns.add(...settings.columnSettings(entityProvider.create()));
+      if (settings.allowCRUD !== undefined) {
 
+        if (settings.allowUpdate === undefined)
+          settings.allowUpdate = settings.allowCRUD;
+        if (settings.allowDelete === undefined)
+          settings.allowDelete = settings.allowCRUD;
+        if (settings.allowInsert === undefined)
+          settings.allowInsert = settings.allowCRUD;
+      }
       if (settings.allowUpdate)
         this.allowUpdate = true;
       if (settings.allowDelete)
@@ -47,7 +53,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
         this.showDataArea = settings.showDataArea;
       if (settings.showPagination === undefined)
         settings.showPagination = true;
-      
+
       if (settings.numOfColumnsInGrid != undefined)
         this.columns.numOfColumnsInGrid = settings.numOfColumnsInGrid;
 
@@ -70,7 +76,19 @@ export class GridSettings<rowType extends Entity = Entity>  {
       if (!this.caption && entityProvider) {
         this.caption = entityProvider.create().defs.caption;
       }
-      this.setGetOptions(settings.get);
+      let get = settings.get;
+      if (!get) {
+        get = {};
+      }
+      if (settings.where)
+        get.where = settings.where;
+      if (settings.orderBy)
+        get.orderBy = settings.orderBy;
+      if (settings.rowsInPage !== undefined)
+        get.limit = settings.rowsInPage;
+      if (settings.page !== undefined)
+        get.page = settings.page;
+      this.setGetOptions(get);
 
     }
 
@@ -108,16 +126,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
 
   }
-  async addCol(c: DataControlSettings) {
-    await this.context.openDialog(SelectValueDialogComponent, x => x.args({
-      values: this.origList,
-      onSelect: col => {
-        this.columns.addCol(c, col);
-        this.columns.numOfColumnsInGrid++;
-      }
-    }));
 
-  }
   deleteCol(c: DataControlSettings) {
     this.columns.deleteCol(c)
     this.columns.numOfColumnsInGrid--;
@@ -129,7 +138,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     if (get && get.limit)
       this.rowsPerPage = get.limit;
     else
-      this.rowsPerPage = 7;
+      this.rowsPerPage = 25;
     if (this.rowsPerPageOptions.indexOf(this.rowsPerPage) < 0) {
       this.rowsPerPageOptions.push(this.rowsPerPage);
       this.rowsPerPageOptions.sort((a, b) => +a - +b);
@@ -286,8 +295,8 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
     else {
       this.selectedRows.push(row);
-      if (this.selectedRows.length == this.totalRows)
-        this._selectedAll = true;
+
+      this._selectedAll = this.selectedRows.length == this.totalRows;
     }
   }
   isSelected(row: rowType) {
@@ -300,7 +309,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     return this.selectedRows.length > 0 && this.selectedRows.length == this.items.length && this._selectedAll;
   }
   private _selectedAll = false;
-  selectAllChanged(e: MatCheckboxChange) {
+  selectAllChanged(e: { checked: boolean }) {
 
     this.selectedRows.splice(0);
     if (e.checked) {
@@ -311,7 +320,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       this._selectedAll = false;
   }
   rowsPerPage: number;
-  rowsPerPageOptions = [10, 25, 50, 100, 500, 1000];
+  rowsPerPageOptions = [10, 25, 50, 100];
   get(options: FindOptions<rowType>) {
 
     this.setGetOptions(options);
@@ -357,13 +366,20 @@ export class GridSettings<rowType extends Entity = Entity>  {
   private getOptions: FindOptions<rowType>;
 
   totalRows: number;
-
+  /**
+     * reloads the data for the grid
+     * @deprecated Use `reloadData` instead
+     */
   getRecords() {
-
+    return this.reloadData();
+  }
+    
+  reloadData() {
     let opt: FindOptions<rowType> = this._internalBuildFindOptions();
     this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
     let result = this.restList.get(opt).then(() => {
       this.selectedRows.splice(0);
+      this._selectedAll = false;
 
       if (this.restList.items.length == 0) {
         this.setCurrentRow(undefined);
@@ -407,10 +423,10 @@ export class GridSettings<rowType extends Entity = Entity>  {
       let ids = this.selectedRows.map(x => x.columns.idColumn.value);
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(x(e), e.columns.idColumn.isIn(ids))
+        r.where = e => new AndFilter(x(e), e.columns.idColumn.isIn(...ids))
       }
       else
-        r.where = e => e.columns.idColumn.isIn(ids);
+        r.where = e => e.columns.idColumn.isIn(...ids);
     }
     return r;
   }
@@ -431,6 +447,7 @@ export interface IDataSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
+  allowCRUD?: boolean,
   showDataArea?: boolean,
   showPagination?: boolean,
   showFilter?: boolean,
@@ -443,7 +460,38 @@ export interface IDataSettings<rowType extends Entity> {
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[];
   gridButtons?: GridButton[];
+  /**
+     * controls the data that is presented on the data grid
+     * @deprecated Use `where`, `orderBy`, `rowsPerPage` and `page`
+     */
   get?: FindOptions<rowType>;
+  /** filters the data
+   * @example
+   * where p => p.price.isGreaterOrEqualTo(5)
+   * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
+   */
+  where?: EntityWhere<rowType>;
+  /** Determines the order in which the result will be sorted in
+   * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
+   */
+  orderBy?: EntityOrderBy<rowType>;
+  /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
+   * @example
+   * this.products = await this.context.for(Products).gridSettings({
+   *  rowsInPage:10,
+   *  page:2
+  * })
+  */
+  rowsInPage?: number;
+  /** Determines the page number that will be used to extract the data 
+   * @example
+   * this.products = await this.context.for(Products).gridSettings({
+   *  rowsInPage:10,
+   *  page:2
+   * })
+  */
+  page?: number;
+  __customFindData?: any;
   knowTotalRows?: boolean;
   saving?: (r: rowType) => void;
   validation?: (r: rowType) => void;
@@ -458,7 +506,7 @@ export interface RowButton<rowType extends Entity> {
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
   showInLine?: boolean;
-  textInMenu?: () => string;
+  textInMenu?: (string | ((row: rowType) => string));
   icon?: string;
   cssClass?: (string | ((row: rowType) => string));
 

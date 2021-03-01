@@ -172,6 +172,30 @@
             "type": "npm",
             "script": "release",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "release-docs",
+            "problemMatcher": [],
+            "label": "npm: release-docs",
+            "detail": "deploy.sh"
+        },
+        {
+            "type": "npm",
+            "script": "try-generate-typedoc-docs",
+            "problemMatcher": [],
+            "label": "npm: try-generate-typedoc-docs",
+            "detail": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work"
+        },
+        {
+            "type": "npm",
+            "script": "core-build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build",
+            "label": "npm: core-build",
+            "detail": "tsc -p projects/core/tsconfig.json && copyfiles -u 2 projects/core/package.json dist/core"
         }
     ]
 }

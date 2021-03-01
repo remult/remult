@@ -1,0 +1,82 @@
+[
+  {
+    "title": "Modules",
+    "children": [
+      "modules/_projects_core_src_column_interfaces_",
+      "interfaces/_projects_core_src_column_interfaces_.columnsettings",
+      "interfaces/_projects_core_src_column_interfaces_.columnstorage",
+      "interfaces/_projects_core_src_column_interfaces_.datacontrolsettings",
+      "interfaces/_projects_core_src_column_interfaces_.valuelistitem",
+      "interfaces/_projects_core_src_column_interfaces_.clickable",
+      "interfaces/_projects_core_src_column_interfaces_.displayoptions",
+      "modules/_projects_core_src_context_",
+      "classes/_projects_core_src_context_.context",
+      "classes/_projects_core_src_context_.role",
+      "classes/_projects_core_src_context_.servercontext",
+      "classes/_projects_core_src_context_.specificentityhelper",
+      "interfaces/_projects_core_src_context_.entitytype",
+      "interfaces/_projects_core_src_context_.iterateoptions",
+      "interfaces/_projects_core_src_context_.iteratetoarrayoptions",
+      "interfaces/_projects_core_src_context_.lookupcache",
+      "interfaces/_projects_core_src_context_.rolechecker",
+      "interfaces/_projects_core_src_context_.userinfo",
+      "modules/_projects_core_src_data_interfaces_",
+      "interfaces/_projects_core_src_data_interfaces_.dataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataproviderfindoptions",
+      "interfaces/_projects_core_src_data_interfaces_.entityprovider",
+      "interfaces/_projects_core_src_data_interfaces_.findoptions",
+      "interfaces/_projects_core_src_data_interfaces_.__rowsofdatafortesting",
+      "modules/_projects_core_src_entity_",
+      "classes/_projects_core_src_entity_.entity",
+      "classes/_projects_core_src_entity_.entitycolumns",
+      "classes/_projects_core_src_entity_.entitydefs",
+      "interfaces/_projects_core_src_entity_.entityoptions",
+      "modules/_projects_core_src_grid_settings_",
+      "classes/_projects_core_src_grid_settings_.gridsettings",
+      "interfaces/_projects_core_src_grid_settings_.gridbutton",
+      "interfaces/_projects_core_src_grid_settings_.idatasettings",
+      "interfaces/_projects_core_src_grid_settings_.rowbutton"
+    ]
+  },
+  {
+    "title": "Classes",
+    "children": [
+      "classes/_projects_core_src_context_.context",
+      "classes/_projects_core_src_context_.role",
+      "classes/_projects_core_src_context_.servercontext",
+      "classes/_projects_core_src_context_.specificentityhelper",
+      "classes/_projects_core_src_entity_.entity",
+      "classes/_projects_core_src_entity_.entitycolumns",
+      "classes/_projects_core_src_entity_.entitydefs",
+      "classes/_projects_core_src_grid_settings_.gridsettings"
+    ]
+  },
+  {
+    "title": "Interfaces",
+    "children": [
+      "interfaces/_projects_core_src_column_interfaces_.columnsettings",
+      "interfaces/_projects_core_src_column_interfaces_.columnstorage",
+      "interfaces/_projects_core_src_column_interfaces_.datacontrolsettings",
+      "interfaces/_projects_core_src_column_interfaces_.valuelistitem",
+      "interfaces/_projects_core_src_column_interfaces_.clickable",
+      "interfaces/_projects_core_src_column_interfaces_.displayoptions",
+      "interfaces/_projects_core_src_context_.entitytype",
+      "interfaces/_projects_core_src_context_.iterateoptions",
+      "interfaces/_projects_core_src_context_.iteratetoarrayoptions",
+      "interfaces/_projects_core_src_context_.lookupcache",
+      "interfaces/_projects_core_src_context_.rolechecker",
+      "interfaces/_projects_core_src_context_.userinfo",
+      "interfaces/_projects_core_src_data_interfaces_.dataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataprovider",
+      "interfaces/_projects_core_src_data_interfaces_.entitydataproviderfindoptions",
+      "interfaces/_projects_core_src_data_interfaces_.entityprovider",
+      "interfaces/_projects_core_src_data_interfaces_.findoptions",
+      "interfaces/_projects_core_src_data_interfaces_.__rowsofdatafortesting",
+      "interfaces/_projects_core_src_entity_.entityoptions",
+      "interfaces/_projects_core_src_grid_settings_.gridbutton",
+      "interfaces/_projects_core_src_grid_settings_.idatasettings",
+      "interfaces/_projects_core_src_grid_settings_.rowbutton"
+    ]
+  }
+]

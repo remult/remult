@@ -1,5 +1,5 @@
 import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ValueListColumn, allEntities, SqlImplementation } from '@remult/core';
-
+import { JobsInQueueEntity, EntityQueueStorage, ExpressBridge } from '@remult/server';
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
@@ -16,10 +16,19 @@ export class PostgresDataProvider implements SqlImplementation {
     async entityIsUsedForTheFirstTime(entity: Entity): Promise<void> {
 
     }
+    getLimitSqlSyntax(limit: number, offset: number) {
+        return ' limit ' + limit + ' offset ' + offset;
+    }
+
     createCommand(): SqlCommand {
         return new PostgrestBridgeToSQLCommand(this.pool);
     }
     constructor(private pool: PostgresPool) {
+    }
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: Entity<any>) {
+        let r = await command.execute(insertStatementString);
+        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.defs.dbName + "','" + entity.columns.idColumn.defs.dbName + "'));");
+        return +r.rows[0].currval;
     }
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
         let client = await this.pool.connect();
@@ -29,7 +38,9 @@ export class PostgresDataProvider implements SqlImplementation {
             await action({
                 createCommand: () => new PostgrestBridgeToSQLCommand(client),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
-                transaction: () => { throw "nested transactions not allowed" }
+                transaction: () => { throw "nested transactions not allowed" },
+                insertAndReturnAutoIncrementId: this.insertAndReturnAutoIncrementId,
+                getLimitSqlSyntax: this.getLimitSqlSyntax
             });
             await client.query('COMMIT');
         }
@@ -66,7 +77,7 @@ class PostgressBridgeToSQLQueryResult implements SqlResult {
         return this.r.fields[index].name;
     }
 
-    constructor(private r: QueryResult) {
+    constructor(public r: QueryResult) {
         this.rows = r.rows;
     }
     rows: any[];
@@ -104,9 +115,14 @@ export class PostgresSchemaBuilder {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
-                        result += this.addColumnSqlSyntax(x);
-                        if (x == e.columns.idColumn)
-                            result += ' primary key';
+                        //@ts-ignore
+                        if (x == e.columns.idColumn && e.__options.dbAutoIncrementId)
+                            result += x.defs.dbName + ' serial';
+                        else {
+                            result += this.addColumnSqlSyntax(x);
+                            if (x == e.columns.idColumn)
+                                result += ' primary key';
+                        }
                     }
                 }
 
@@ -123,20 +139,20 @@ export class PostgresSchemaBuilder {
         else if (x instanceof DateColumn)
             result += " date";
         else if (x instanceof BoolColumn)
-            result += " boolean default false not null";
+            result += " boolean" + (x.defs.allowNull ? "" : " default false not null");
         else if (x instanceof NumberColumn) {
             if (x.__numOfDecimalDigits == 0)
-                result += " int default 0 not null";
+                result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
             else
-                result += ' numeric default 0 not null';
+                result += " numeric" + (x.defs.allowNull ? "" : " default 0 not null");
         } else if (x instanceof ValueListColumn) {
             if (x.info.isNumeric)
-                result += ' int default 0 not null';
+                result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
             else
-                result += " varchar default '' not null ";
+                result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
         }
         else
-            result += " varchar default '' not null ";
+            result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
         return result;
     }
 
@@ -161,9 +177,27 @@ export class PostgresSchemaBuilder {
         }
     }
     async verifyAllColumns<T extends Entity>(e: T) {
-        await Promise.all(e.columns.toArray().map(async column => {
-            await this.addColumnIfNotExist(e, () => column);
-        }));
+        try {
+            let cmd = this.pool.createCommand();
+
+
+            let cols = (await cmd.execute(`select column_name   
+        FROM information_schema.columns 
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.defs.dbName.toLocaleLowerCase())} ` + this.additionalWhere
+            )).rows.map(x => x.column_name);
+            for (const col of e.columns) {
+                if (!col.defs.dbReadOnly)
+                    if (!cols.includes(col.defs.dbName.toLocaleLowerCase())) {
+                        let sql = `alter table ${e.defs.dbName} add column ${this.addColumnSqlSyntax(col)}`;
+                        console.log(sql);
+                        await this.pool.execute(sql);
+                    }
+            }
+
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
     additionalWhere = '';
     constructor(private pool: SqlDatabase, schema?: string) {
@@ -171,4 +205,16 @@ export class PostgresSchemaBuilder {
             this.additionalWhere = ' and table_schema=\'' + schema + '\'';
         }
     }
+}
+
+export async function preparePostgressQueueStorage(sql: SqlDatabase) {
+    let c = new ServerContext(sql);
+    {
+        let e = c.for(JobsInQueueEntity).create();
+        await new PostgresSchemaBuilder(sql).createIfNotExist(e);
+        await new PostgresSchemaBuilder(sql).verifyAllColumns(e);
+    }
+
+    return new EntityQueueStorage(c.for(JobsInQueueEntity));
+
 }

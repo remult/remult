@@ -6,11 +6,11 @@ import { Column } from './column';
 import { Entity } from './entity';
 import { Sort } from './sort';
 
-import { AndFilter } from './filter/and-filter';
+import { AndFilter } from './filter/filter-interfaces';
 import { StringColumn } from './columns/string-column';
 import { UserInfo, SpecificEntityHelper } from './context';
-import { FilterBase } from './filter/filter-interfaces';
-import { extractWhere } from './filter/filter-consumer-bridge-to-url-builder';
+import { Filter } from './filter/filter-interfaces';
+import { extractWhere, unpackWhere } from './filter/filter-consumer-bridge-to-url-builder';
 
 export class DataApi<T extends Entity = Entity> {
   getRoute() {
@@ -30,16 +30,16 @@ export class DataApi<T extends Entity = Entity> {
     }
     await this.doOnId(response, id, async row => response.success(this.entityProvider.toApiPojo(row)));
   }
-  async count(response: DataApiResponse, request: DataApiRequest) {
+  async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     try {
 
-      response.success({ count: +await this.entityProvider.count(t => this.buildWhere(t, request)) });
+      response.success({ count: +await this.entityProvider.count(t => this.buildWhere(t, request, filterBody)) });
     } catch (err) {
       response.error(err);
     }
   }
 
-  async getArray(response: DataApiResponse, request: DataApiRequest) {
+  async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     if (this.options.allowRead == false) {
       response.methodNotAllowed();
       return;
@@ -49,7 +49,7 @@ export class DataApi<T extends Entity = Entity> {
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
-      findOptions.where = t => this.buildWhere(t, request);
+      findOptions.where = t => this.buildWhere(t, request, filterBody);
       if (request) {
 
         let sort = <string>request.get("_sort");
@@ -89,24 +89,19 @@ export class DataApi<T extends Entity = Entity> {
       response.error(err);
     }
   }
-  private buildWhere(rowType: T, request: DataApiRequest) {
-    var where: FilterBase;
+  private buildWhere(rowType: T, request: DataApiRequest, filterBody: any) {
+    var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
       where = this.options.get.where(rowType);
     if (request) {
-      let r = extractWhere(rowType, request);
-      if (r) {
-        if (where) {
-          where = new AndFilter(where, r);
-        }
-        else 
-        where = r;
-      }
+      where = new AndFilter(where, extractWhere(rowType, request));
     }
+    if (filterBody)
+      where = new AndFilter(where, unpackWhere(rowType, filterBody))
     return where;
   }
 
-  
+
 
   private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
@@ -115,7 +110,7 @@ export class DataApi<T extends Entity = Entity> {
 
       await this.entityProvider.find({
         where: x => {
-          let where: FilterBase = x.columns.idColumn.isEqualTo(id);
+          let where: Filter = x.columns.idColumn.isEqualTo(id);
           if (this.options && this.options.get && this.options.get.where)
             where = new AndFilter(where, this.options.get.where(x));
           return where;
@@ -177,8 +172,8 @@ export interface DataApiSettings<rowType extends Entity> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
-  allowRead?: boolean,
   name?: string,
+  allowRead?: boolean,
   get?: FindOptions<rowType>
 
 }
@@ -191,6 +186,7 @@ export interface DataApiResponse {
   error(data: DataApiError): void;
   methodNotAllowed(): void;
   forbidden(): void;
+  progress(progress: number): void;
 
 }
 
@@ -207,7 +203,6 @@ export interface DataApiRequest {
   clientIp: string;
 }
 export interface DataApiServer {
-  addAllowedHeader(name: string): void;
   addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void;
 
 }

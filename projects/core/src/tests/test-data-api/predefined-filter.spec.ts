@@ -15,9 +15,9 @@ describe("data api", () => {
   itAsync("getArray works with predefined filter", async () => {
 
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
 
     var api = new DataApi(c);
@@ -35,9 +35,9 @@ describe("data api", () => {
   });
   itAsync("get works with predefined filter", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     });
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -53,9 +53,9 @@ describe("data api", () => {
   });
   itAsync("get id  works with predefined filterand shouldnt return anything", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -68,9 +68,9 @@ describe("data api", () => {
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -83,9 +83,9 @@ describe("data api", () => {
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -98,9 +98,9 @@ describe("data api", () => {
   });
   itAsync("put id  works with predefined filterand shouldnt return anything", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -113,9 +113,9 @@ describe("data api", () => {
   });
   itAsync("put id 1 works with predefined filterand shouldnt return anything", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -128,9 +128,9 @@ describe("data api", () => {
   });
   itAsync("getArray works with predefined filter", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
@@ -152,9 +152,9 @@ describe("data api", () => {
   });
   itAsync("works with predefined Entity Filter", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     }, class extends Categories {
       constructor() {
         super({
@@ -174,9 +174,9 @@ describe("data api", () => {
   });
   itAsync("works with predefined Entity Filter", async () => {
     let c = await createData(async (i) => {
-      i(1, 'noam', 'a');
-      i(2, 'yael', 'b');
-      i(3, 'yoni', 'a');
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
     });
     expect ((await c.iterate(x=>x.id.isEqualTo(1)).first()).categoryName.value).toBe('noam');
     expect ((await c.findId(1)).categoryName.value).toBe('noam');

@@ -2,9 +2,6 @@
  * Public API Surface of @remult/core
  */
 
-export * from './src/angular/remult-core.module';//V
-export { BusyService } from './src/angular/wait/busy-service';
-export * from './src/angular/navigate-to-component-route-service';
 
 
 export * from './src/data-interfaces';//V
@@ -16,14 +13,13 @@ export * from './src/data-providers/array-entity-data-provider';//V
 export * from './src/data-providers/web-sql-data-provider';//V
 export * from './src/data-providers/sql-database';//V
 export * from './src/data-providers/json-data-provider';//V
-
+//export * from './src/cookieBasedJwt'; breaks angular
 export * from './src/data-api';
 export * from './src/dataList';
 export * from './src/lookup';
 export * from './src/server-action';
 
 export * from './src/context';
-export * from './src/jwt-session-manager';
 export * from './src/id-entity';
 export * from './src/grid-settings';
 export * from './src/data-area-settings';
@@ -46,9 +42,9 @@ export * from './src/columns/datetime-column';
 export * from './src/columns/number-column';
 export * from './src/columns/string-column';
 
-export * from './src/filter/filter-interfaces';
-export * from './src/filter/filter';
-export * from './src/filter/and-filter';
+export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
+
+
 export * from './src/filter/filter-consumer-bridge-to-sql-request';
 export * from './src/filter/filter-consumer-bridge-to-url-builder';
 export * from './src/filter/filter-helper';

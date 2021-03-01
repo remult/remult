@@ -7,6 +7,9 @@ export class __EntityValueProvider implements ColumnValueProvider {
   register(listener: RowEvents) {
     this.listeners.push(listener);
   }
+  debugInfo(){
+    return this.data;
+  }
 
 
   dataProvider: EntityDataProvider;
@@ -79,10 +82,27 @@ export class __EntityValueProvider implements ColumnValueProvider {
       });
     }
   }
+  async updateBasedOnPackedRowInfo(d: packedRowInfo, e: Entity) {
+    if (!d.wasChanged)
+      await this.setData(d.data, e);
+    else
+      this.data = d.data;
+    if (this.newRow && !d.isNewRow)
+      this.newRow = false;
+  }
   private id: any;
   private newRow = true;
   private data: any = {};
   private originalData: any = {};
+  getPackedRowInfo(): packedRowInfo {
+    return {
+      data: this.data,
+      id: this.id,
+      isNewRow: this.newRow,
+      wasChanged: this.wasChanged()
+
+    }
+  }
   async setData(data: any, r: Entity) {
     if (!data)
       data = {};
@@ -107,6 +127,13 @@ export class __EntityValueProvider implements ColumnValueProvider {
   setValue(key: string, value: any): void {
     this.data[key] = value;
   }
+}
+export interface packedRowInfo {
+  data: any,
+  isNewRow: boolean,
+  id: string,
+  wasChanged: boolean
+
 }
 export interface ColumnValueProvider {
   getValue(key: string, calcDefaultValue: () => void): any;

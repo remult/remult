@@ -2,9 +2,10 @@
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { Entity } from '../entity';
-import { FilterConsumnerBridgeToUrlBuilder } from '../filter/filter-consumer-bridge-to-url-builder';
+import { FilterSerializer, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
-import { FilterBase } from '../filter/filter-interfaces';
+import { Filter } from '../filter/filter-interfaces';
+import { isArray, isObject } from 'util';
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
@@ -23,19 +24,30 @@ class RestEntityDataProvider implements EntityDataProvider {
 
   }
 
-  public count(where: FilterBase): Promise<number> {
+  public async count(where: Filter): Promise<number> {
     let url = new UrlBuilder(this.url);
     url.add("__action", "count");
+    let filterObject: any;
+
     if (where) {
-      where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+      filterObject = packToRawWhere(where);
+      if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
+        filterObject = undefined;
     }
-    return this.http.get(url.url).then(r => +(r.count));
+    if (filterObject)
+      return this.http.post(url.url, filterObject).then(r => +(r.count));
+    else
+      return this.http.get(url.url).then(r => +(r.count));
   }
   public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);
+    let filterObject: any;
     if (options) {
       if (options.where) {
-        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+
+        filterObject = packToRawWhere(options.where);//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+        if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
+          filterObject = undefined;
       }
       if (options.orderBy && options.orderBy.Segments) {
         let sort = '';
@@ -59,8 +71,12 @@ class RestEntityDataProvider implements EntityDataProvider {
       if (options.__customFindData)
         url.addObject(options.__customFindData);
     }
-
-    return this.http.get(url.url);
+    if (filterObject) {
+      url.add("__action", "get");
+      return this.http.post(url.url, filterObject);
+    }
+    else
+      return this.http.get(url.url);
   }
 
   public update(id: any, data: any): Promise<any> {
@@ -116,7 +132,7 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   }
 
 }
- function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
+function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
   if (!init)
     init = {};
   if (!init.headers)
@@ -124,14 +140,15 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   var h = init.headers as Headers;
   addRequestHeader.forEach(x => x((n, v) => h.append(n, v)));
   init.credentials = 'include';
-  
+
   return fetch(url, init).then(response => {
-    
+
     return onSuccess(response);
 
-  }, error => {
-    console.log(error);
-    throw Promise.resolve(error);
+  }).catch(async error => {
+    let r = await error;
+    console.log(r);
+    throw r;
   });
 }
 function onSuccess(response: Response) {
@@ -140,19 +157,57 @@ function onSuccess(response: Response) {
   if (response.status >= 200 && response.status < 300)
 
     return response.json();
-  else
+  else {
     throw response.json().then(x => {
 
       if (!x.message)
         x.message = response.statusText;
       return x;
-    });
+    }).catch(() => {
+      throw {
+        message: response.statusText,
+        url: response.url,
+        status: response.status
 
+      };
+    })
+  }
 
 
 }
+
+
+
+
 function onError(error: any) {
   throw Promise.resolve(error);
 }
 
+export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBuilder) {
+  for (const key in filter) {
+    if (Object.prototype.hasOwnProperty.call(filter, key)) {
+      const element = filter[key];
+      if (isArray(element)) {
+        if (element.length > 0 && isObject(element[0]))
+          return false;
+        if (element.length > 10)
+          return false;
+      }
 
+    }
+  }
+  for (const key in filter) {
+    if (Object.prototype.hasOwnProperty.call(filter, key)) {
+      const element = filter[key];
+      if (isArray(element)) {
+        if (key.endsWith("_in"))
+          url.add(key, JSON.stringify(element));
+        else
+          element.forEach(e => url.add(key, e));
+      }
+      else
+        url.add(key, element);
+    }
+  }
+  return true;
+}

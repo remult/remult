@@ -1,0 +1,9 @@
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../angular",
+  
+  "lib": {
+    "entryFile": "index.ts"
+  },
+  "whitelistedNonPeerDependencies": ["jsonwebtoken","uuid","@auth0/angular-jwt"] 
+}

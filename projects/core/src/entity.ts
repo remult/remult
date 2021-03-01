@@ -1,17 +1,17 @@
 import { Context, Allowed } from "./context";
 import { DataApiSettings } from "./data-api";
-import { Column } from "./column";
-import { FilterBase } from './filter/filter-interfaces';
+import { Column, makeTitle } from "./column";
+import { Filter } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
 import { valueOrExpressionToValue } from './column-interfaces';
-import { AndFilter } from './filter/and-filter';
+import { AndFilter } from './filter/filter-interfaces';
 import { SortSegment, Sort } from './sort';
 
 
 
 //@dynamic
 export class Entity<idType = any> {
-  __decorateWhere(where: FilterBase): FilterBase {
+  __decorateWhere(where: Filter): Filter {
     if (this.__options.fixedWhereFilter) {
       return new AndFilter(where, this.__options.fixedWhereFilter());
     }
@@ -36,6 +36,9 @@ export class Entity<idType = any> {
       };
     }
   }
+  __debug() {
+    return this.__entityData.debugInfo();
+  }
 
 
 
@@ -43,10 +46,15 @@ export class Entity<idType = any> {
   _getEntityApiSettings(r: Context): DataApiSettings<Entity> {
 
     let options = this.__options;
-    if (options.allowApiCRUD) {
-      options.allowApiDelete = true;
-      options.allowApiInsert = true;
-      options.allowApiUpdate = true;
+    if (options.allowApiCRUD !== undefined) {
+      if (options.allowApiDelete === undefined)
+        options.allowApiDelete = options.allowApiCRUD;
+      if (options.allowApiInsert === undefined)
+        options.allowApiInsert = options.allowApiCRUD;
+      if (options.allowApiUpdate === undefined)
+        options.allowApiUpdate = options.allowApiCRUD;
+      if (options.allowApiRead === undefined)
+        options.allowApiRead = options.allowApiCRUD;
     }
     return {
       allowRead: r.isAllowed(options.allowApiRead),
@@ -59,8 +67,8 @@ export class Entity<idType = any> {
     }
 
   }
-  //@internal
-   __options: EntityOptions;
+
+  __options: EntityOptions;
   //@internal
   private _defs: EntityDefs;
   get defs() {
@@ -106,57 +114,79 @@ export class Entity<idType = any> {
     if (!this.__idColumn)
       this.__idColumn = this.__columns[0];
   }
-  isValid() {
-    let ok = true;
-    this.__columns.forEach(c => {
-      if (c.validationError)
-        ok = false;
-    });
-    return ok;
-  }
-  isNew() {
-    return this.__entityData.isNewRow();
-  }
-  //@internal
-  private __getValidationError() {
-    let result: any = {};
-    result.modelState = {};
-    this.__columns.forEach(c => {
-      if (c.validationError) {
-        result.modelState[c.defs.key] = c.validationError;
-        if (!result.message) {
-          result.message = c.defs.caption + ":" + c.validationError;
-        }
-      }
-    });
-    return result;
-  }
-  //@internal
-  private __assertValidity() {
-    if (!this.isValid()) {
-
-      throw this.__getValidationError();
-    }
-  }
+  /** saves the changes made to this instance to the data source
+   * @example
+   * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
+   * p.price.value = 10;
+   * await p.save();
+   * @example
+   * let p = this.context.for(Products).create();
+   * p.name.value = 'Wine';
+   * await p.save();
+   */
   async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
-    this.__clearErrors();
-
-    this.__columns.forEach(c => {
-      c.__performValidation();
-    });
-
-    if (this.__onValidate)
-      this.__onValidate();
-    if (afterValidationBeforeSaving)
-      await afterValidationBeforeSaving(this);
-    this.__assertValidity();
+    await this.__validateEntity(afterValidationBeforeSaving);
     let doNotSave = false;
     await this.__onSavingRow(() => doNotSave = true);
     this.__assertValidity();
     return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
   }
+
+  async __validateEntity(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
+    this.__clearErrors();
+
+    for (const c of this.__columns) {
+      await c.__performValidation();
+    }
+
+    if (this.__onValidate)
+      await this.__onValidate();
+    if (afterValidationBeforeSaving)
+      await afterValidationBeforeSaving(this);
+    this.__assertValidity();
+  }
+
+  /** Delete a specific entity instance
+ * @example
+ * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
+ * await p.delete();
+ */
+  async delete() {
+    this.__clearErrors();
+    if (this.__options.deleting)
+      await this.__options.deleting();
+    this.__assertValidity();
+    return this.__entityData.delete(this.__options.deleted).catch(e => this.catchSaveErrors(e));
+
+  }
+  /** returns true if there are no validation errors for the entity or any of it's columns */
+  isValid() {
+    let ok = !this.validationError;
+    this.__columns.forEach(c => {
+      if (c.validationError)
+        ok = false;
+    });
+    return ok;
+
+  }
+  /** returns true if this entity is new and not yet exists in the db */
+  isNew() {
+    return this.__entityData.isNewRow();
+  }
+
+  /** returns true if a change was made to the instance */
+  wasChanged() {
+    return this.__entityData.wasChanged();
+  }
   //@internal
-  private catchSaveErrors(err: any): any {
+  private __assertValidity() {
+    if (!this.isValid()) {
+      throw __getValidationError(this.__columns, this.validationError);
+    }
+  }
+
+  //@internal
+  catchSaveErrors(err: any): any {
     let e = err;
 
     if (e instanceof Promise) {
@@ -185,18 +215,15 @@ export class Entity<idType = any> {
 
   }
 
-  async delete() {
-    this.__clearErrors();
-    if (this.__options.deleting)
-      await this.__options.deleting();
-    this.__assertValidity();
-    return this.__entityData.delete(this.__options.deleted).catch(e => this.catchSaveErrors(e));
-
-  }
+  /** returns all the values to their original value, prior to any change */
   undoChanges() {
     this.__entityData.reset();
     this.__clearErrors();
   }
+  /** reloads the data for the specific entity instance from data source
+   * @example
+   * await p.reload();
+  */
   async reload() {
     await this.__entityData.reload(this);
   }
@@ -205,9 +232,7 @@ export class Entity<idType = any> {
     this.__columns.forEach(c => c.__clearErrors());
     this.validationError = undefined;
   }
-  wasChanged() {
-    return this.__entityData.wasChanged();
-  }
+
 
 
 
@@ -231,33 +256,82 @@ export class Entity<idType = any> {
 
 }
 export interface EntityOptions {
+  /**
+ * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
+ */
   name: string;
+  /**
+   * The name of the table in the database that holds the data for this entity.
+   * If no name is set, the `name` will be used instead.
+   * @example
+   * dbName = 'myProducts'
+   * @example
+   * dbName = () => 'select distinct name from Products`
+   */
   dbName?: string | (() => string);
+  /**A human readable name for the entity */
   caption?: string;
+  /**
+   * Determines if this Entity is available for get requests using Rest Api 
+   * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiRead?: Allowed;
+  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiUpdate?: Allowed;
+  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiDelete?: Allowed;
+  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiInsert?: Allowed;
+  /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCRUD?: Allowed;
-  apiDataFilter?: () => FilterBase;
-  fixedWhereFilter?: () => FilterBase;
+  /** A filter that determines which rows can be queries using the api.
+   * @example
+   * apiDataFilter: () => {
+   *   if (!context.isSignedIn())
+   *      return this.availableTo.isGreaterOrEqualTo(new Date());
+   *   }
+  */
+  apiDataFilter?: () => Filter;
+  /** A filter that will be used for all queries from this entity both from the API and from within the server.
+   * @example
+   * fixedWhereFilter: () => this.archive.isEqualTo(false)
+   */
+  fixedWhereFilter?: () => Filter;
+  /** An order by to be used, in case no order by was specified
+   * @example
+   * defaultOrderBy: () => this.name
+   * 
+   * @example
+   * defaultOrderBy: () => [this.price, this.name]
+   * 
+   * @example
+   * defaultOrderBy: () => [{ column: this.price, descending: true }, this.name]
+   */
   defaultOrderBy?: (() => Sort) | (() => (Column)) | (() => (Column | SortSegment)[])
+  /** An event that will be fired before the Entity will be saved to the database.
+  * If the `validationError` property of the entity or any of it's columns will be set, the save will be aborted and an exception will be thrown.
+  * this is the place to run logic that we want to run in any case before an entity is saved. 
+  * @example
+  * saving: async () => {
+  *   if (context.onServer) {
+  *     if (this.isNew()) {
+  *         this.createDate.value = new Date();
+  *     }
+  *   }
+  * }
+  */
   saving?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
+  /** will be called after the Entity was saved to the data source. */
   saved?: () => Promise<any> | any
+  /** Will be called before an Entity is deleted. */
   deleting?: () => Promise<any> | any
+  /** Will be called after an Entity is deleted */
   deleted?: () => Promise<any> | any
 
   validation?: (e: Entity) => Promise<any> | any;
+  dbAutoIncrementId?: boolean;
 }
 
-function makeTitle(name: string) {
 
-  // insert a space before all caps
-  return name.replace(/([A-Z])/g, ' $1')
-    // uppercase the first character
-    .replace(/^./, (str) => str.toUpperCase()).replace('Email', 'eMail').replace(" I D", " ID");
-
-}
 export class EntityDefs {
 
   constructor(private __options: EntityOptions) {
@@ -304,4 +378,25 @@ export class EntityColumns<T>{
     return undefined;
   }
 
+}
+
+
+export function __getValidationError(columns: Column[], message?: string) {
+  let result: any = { message: message };
+  AddModelStateToError(result, columns);
+  return result;
+
+
+}
+export function AddModelStateToError(result: any, columns: Column[]) {
+  columns.forEach(c => {
+    if (c.validationError) {
+      if (!result.modelState)
+        result.modelState = {};
+      result.modelState[c.defs.key] = c.validationError;
+      if (!result.message) {
+        result.message = c.defs.caption + ":" + c.validationError;
+      }
+    }
+  });
 }

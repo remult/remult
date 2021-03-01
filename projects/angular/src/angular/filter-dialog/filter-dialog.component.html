@@ -1,0 +1,15 @@
+<h1 mat-dialog-title *ngIf="!info.rightToLeft">Filter {{this.info.filterColumnToAdd?.caption}}</h1>
+<h1 mat-dialog-title *ngIf="info.rightToLeft">סינון {{this.info.filterColumnToAdd?.caption}}</h1>
+<div mat-dialog-content>
+
+    <data-control *ngIf="this.info.filterColumnToAdd" [settings]="info.settings.columns" [map]="info.filterColumnToAdd"
+        [record]="info.settings.columns.filterHelper.filterRow" [notReadonly]="true"></data-control>
+</div>
+<div mat-dialog-actions>
+    <button mat-icon-button (click)="setFilter()">
+        <mat-icon>check</mat-icon>
+    </button>
+    <button mat-icon-button (click)="clear()">
+        <mat-icon>clear</mat-icon>
+    </button>
+</div>

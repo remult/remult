@@ -26,6 +26,6 @@ describe("test sql database", async () => {
         expect(cats[0].id.value).toBe(1);
         expect(cats[0].categoryName.value).toBe("noam");
     });
-
+    
 
 });

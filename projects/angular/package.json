@@ -1,0 +1,13 @@
+{
+  "name": "@remult/angular",
+  "schematics": "./schematics/collection.json",
+  "version": "2.1.20",
+  "description": "an angular module for remult",
+  "license": "MIT",
+  "author": {
+    "name": "Noam Honig"
+  },
+  "dependencies": {
+    "uuid": "^3.3.2"
+  }
+}

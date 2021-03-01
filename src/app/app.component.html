@@ -1,42 +1,36 @@
-<div style="height:100%;width:100%;display:flex;flex-direction: column;">
-  <mat-toolbar color="primary">
-    <button mat-button class="sidenav-toggle" (click)="sidenav.toggle()">
-      <mat-icon>menu</mat-icon>
-    </button>
-    <span class="toolbar-title">{{currentTitle()}}</span>
+<div style="height:100%;display:flex;flex-direction: column;">
+  <mat-toolbar color="primary" style="flex-shrink: 0;">
+  <button mat-button class="sidenav-toggle" (click)="sidenav.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span class="toolbar-title">{{currentTitle()}}</span>
+  <button mat-flat-button color="primary" (click)="signIn()">{{signInText()}}</button>
+</mat-toolbar>
+<mat-sidenav-container class="app-sidenav-container">
+  <mat-sidenav #sidenav class="app-sidenav mat-elevation-z10 no-print" [opened]="!dialogService.isScreenSmall()" [mode]="dialogService.isScreenSmall()?'over':'side'">
+    <div style="width:100%;text-align: center">
+      
+    </div>
+    <h4 *ngIf="context.isSignedIn()">Hello {{context.user.name}}</h4>
+    <mat-nav-list role="list">
+      <ng-container *ngFor="let m of router.config">
+        <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">
+          <a matLine [routerLink]="m.path" (click)="routeClicked()">{{routeName(m)}}</a>
+        </mat-list-item>
 
-  </mat-toolbar>
-  <mat-sidenav-container class="app-sidenav-container">
-    <mat-sidenav #sidenav class="app-sidenav mat-elevation-z10 no-print" [opened]="!dialogService.isScreenSmall()"
-      [mode]="dialogService.isScreenSmall()?'over':'side'">
-      <div style="width:100%;text-align: center">
 
+      </ng-container>
+    </mat-nav-list>
+
+  </mat-sidenav>
+  <div class="app-sidenav-content ">
+
+
+      <div class="wrapper"  style="height:100%">
+          <router-outlet></router-outlet>
       </div>
-      <h4 *ngIf="context.isSignedIn()">Hello {{context.user.name}}</h4>
-      <mat-nav-list role="list">
-        <ng-container *ngFor="let m of router.config">
-          <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">
-            <a matLine [routerLink]="m.path" (click)="routeClicked()">{{routeName(m)}}</a>
-          </mat-list-item>
 
-
-        </ng-container>
-      </mat-nav-list>
-
-    </mat-sidenav>
-    <mat-sidenav-content style="width: 100%">
-      <div style="height:100%; display:flex;flex-direction: column;">
-        <mat-toolbar color="accent" style="flex-shrink: 0;"></mat-toolbar>
-        <div class="app-sidenav-content">
-
-
-          <div style="height: 100%; margin: 10px">
-            <router-outlet></router-outlet>
-          </div>
-
-        </div>
-      </div>
-    </mat-sidenav-content>
+  </div>
 
   </mat-sidenav-container>
 </div>

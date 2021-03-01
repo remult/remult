@@ -5,7 +5,8 @@ import { Column } from "../column";
 import { Entity } from "../entity";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { CompoundIdColumn } from "../columns/compound-id-column";
-import { FilterBase } from '../filter/filter-interfaces';
+import { Filter } from '../filter/filter-interfaces';
+import { Sort, SortSegment } from '../sort';
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
@@ -22,10 +23,34 @@ export class SqlDatabase implements DataProvider {
         this.createdEntities.push(entity.defs.dbName);
         await this.sql.entityIsUsedForTheFirstTime(entity);
       }
-    });
+    }, this.sql);
   }
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
-    return this.sql.transaction(x => action(new SqlDatabase(x)));
+    return this.sql.transaction(async x => {
+      let completed = false;
+      try {
+        await action(new SqlDatabase({
+          createCommand: () => {
+            let c = x.createCommand();
+            return {
+              addParameterAndReturnSqlToken: x => c.addParameterAndReturnSqlToken(x),
+              execute: async (sql) => {
+                if (completed)
+                  throw "can't run a command after the transaction was completed";
+                return c.execute(sql)
+              }
+            };
+          },
+          getLimitSqlSyntax: this.sql.getLimitSqlSyntax,
+          entityIsUsedForTheFirstTime: y => x.entityIsUsedForTheFirstTime(y),
+          transaction: z => x.transaction(z),
+          insertAndReturnAutoIncrementId: x.insertAndReturnAutoIncrementId
+        }));
+      }
+      finally {
+        completed = true;
+      }
+    });
   }
   public static LogToConsole = false;
   public static durationThreshold = 0;
@@ -64,9 +89,9 @@ class LogSQLCommand implements SqlCommand {
       return r;
     }
     catch (err) {
-      console.log('Query:', sql);
-      console.log("Arguments", this.args);
-      console.log('Error:', err);
+      console.error('Error:', err);
+      console.error('Query:', sql);
+      console.error("Arguments", this.args);
       throw err;
     }
   }
@@ -74,14 +99,14 @@ class LogSQLCommand implements SqlCommand {
 
 class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity: Entity, private sql: SqlDatabase, private iAmUsed: () => Promise<void>) {
+  constructor(private entity: Entity, private sql: SqlDatabase, private iAmUsed: () => Promise<void>, private strategy: SqlImplementation) {
 
 
   }
 
 
 
-  async  count(where: FilterBase): Promise<number> {
+  async count(where: Filter): Promise<number> {
     await this.iAmUsed();
     let select = 'select count(*) count from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
@@ -92,7 +117,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     }
 
     return r.execute(select).then(r => {
-      return r.rows[0].count;
+      return +r.rows[0].count;
     });
 
   }
@@ -112,7 +137,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       }
     }
 
-    select += ' from ' + this.entity.defs.dbName;
+    select += '\n from ' + this.entity.defs.dbName;
     let r = this.sql.createCommand();
     if (options) {
       if (options.where) {
@@ -120,15 +145,26 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         options.where.__applyToConsumer(where);
         select += where.where;
       }
+      if (options.limit && !options.orderBy) {
+        options.orderBy = new Sort({ column: this.entity.columns.idColumn })
+      }
       if (options.orderBy) {
         let first = true;
-        options.orderBy.Segments.forEach(c => {
+        let segs: SortSegment[] = [];
+        for (const s of options.orderBy.Segments) {
+          if (s.column instanceof CompoundIdColumn) {
+            segs.push(...s.column.columns.map(c => ({ column: c, descending: s.descending })))
+          }
+          else segs.push(s);
+        }
+        segs.forEach(c => {
           if (first) {
             select += ' Order By ';
             first = false;
           }
           else
             select += ', ';
+
           select += c.column.defs.dbName;
           if (c.descending)
             select += ' desc';
@@ -143,7 +179,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           page = options.page;
         if (page < 1)
           page = 1;
-        select += ' limit ' + options.limit + ' offset ' + (page - 1) * options.limit;
+        select += ' ' + this.strategy.getLimitSqlSyntax(options.limit, (page - 1) * options.limit);
       }
     }
 
@@ -245,13 +281,15 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
     let statement = `insert into ${this.entity.defs.dbName} (${cols}) values (${vals})`;
-
-    return r.execute(statement).then(() => {
-      return this.find({ where: resultFilter }).then(y => {
-
-        return y[0];
-      });
+    if (this.entity.__options.dbAutoIncrementId) {
+      let newId = await this.strategy.insertAndReturnAutoIncrementId(r, statement, this.entity);
+      resultFilter = this.entity.columns.idColumn.isEqualTo(newId);
+    }
+    else await r.execute(statement);
+    return this.find({ where: resultFilter }).then(y => {
+      return y[0];
     });
+
   }
 
 }

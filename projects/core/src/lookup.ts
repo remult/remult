@@ -5,8 +5,8 @@ import { Column } from "./column";
 
 import { isFunction } from "util";
 import { UrlBuilder } from "./url-builder";
-import { FilterConsumnerBridgeToUrlBuilder } from "./filter/filter-consumer-bridge-to-url-builder";
-import { FilterBase } from './filter/filter-interfaces';
+import { FilterSerializer } from "./filter/filter-consumer-bridge-to-url-builder";
+import { Filter } from './filter/filter-interfaces';
 
 export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
 
@@ -18,14 +18,14 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
     private restList: DataList<entityType>;
     private cache: any = {};
   
-    get(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): entityType {
+    get(filter: Column<lookupIdType> | ((entityType: entityType) => Filter)): entityType {
       return this.getInternal(filter).value;
     }
-    found(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): boolean {
+    found(filter: Column<lookupIdType> | ((entityType: entityType) => Filter)): boolean {
       return this.getInternal(filter).found;
     }
   
-    private getInternal(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)): lookupRowInfo<entityType> {
+    private getInternal(filter: Column<lookupIdType> | ((entityType: entityType) => Filter)): lookupRowInfo<entityType> {
       let find: FindOptions<entityType> = {};
       if (filter instanceof Column)
         find.where = (e) => e.columns.idColumn.isEqualTo(filter);
@@ -40,10 +40,11 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
     _internalGetByOptions(find: FindOptions<entityType>): lookupRowInfo<entityType> {
   
       let key = "";
-      let url = new UrlBuilder("");
+      
+      let f = new FilterSerializer()
       if (find.where)
-        find.where(this.entity).__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
-      key = url.url;
+        find.where(this.entity).__applyToConsumer(f);
+      key = JSON.stringify(f);
   
       if (this.cache == undefined)
         this.cache = {};
@@ -72,7 +73,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
       }
     }
   
-    whenGet(filter: Column<lookupIdType> | ((entityType: entityType) => FilterBase)) {
+    whenGet(filter: Column<lookupIdType> | ((entityType: entityType) => Filter)) {
       return this.getInternal(filter).promise.then(r => r.value);
     }
   }

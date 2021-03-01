@@ -98,6 +98,21 @@ describe("grid filter stuff", () => {
 
 
   });
+  itAsync("test filter works without the get statement", async () => {
+    let c = await insertFourRows();
+    let ds = c.gridSettings({
+      
+        orderBy: c => new Sort({ column: c.id }),
+        where: c => c.categoryName.isContains('a'),
+        rowsInPage: 2
+      
+    });
+    await ds.getRecords();
+    expect(ds.items.length).toBe(2);
+    expect(await c.count(ds.getFilterWithSelectedRows().where)).toBe(3);
+
+
+  });
   itAsync("test filter works with user filter", async () => {
     let c = await insertFourRows();
     let ds = c.gridSettings({
@@ -157,9 +172,13 @@ describe("grid filter stuff", () => {
     expect(ds.selectedRows[0].id.value).toBe(1);
     expect(ds.selectedRows[1].id.value).toBe(3);
     let w = ds.getFilterWithSelectedRows().where;
-    console.log(packWhere(c.create(), w));
+    
     expect(await c.count(w)).toBe(2);
-    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
+    expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
+  });
+  itAsync("test in statement", async () => {
+    let c = await insertFourRows();
+    expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
   });
   itAsync("test all rows selected when some rows are outside the scope", async () => {
     let c = await insertFourRows();
@@ -171,8 +190,7 @@ describe("grid filter stuff", () => {
     });
     await ds.getRecords();
     ds.selectAllChanged({
-      checked: true,
-      source: undefined
+      checked: true
     });
     expect(ds.selectAllChecked()).toBe(true);
     expect(ds.selectedRows.length).toBe(3);
@@ -196,7 +214,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectAllChecked()).toBe(false, 'select all checked');
     expect(ds.selectedRows.length).toBe(3, 'selected rows');
     let w = ds.getFilterWithSelectedRows().where;
-    console.log(packWhere(c.create(), w));
+    
     expect(await c.count(w)).toBe(3, 'rows in count');
   });
   itAsync("select select row by row when all rows are in view", async () => {
@@ -335,9 +353,9 @@ describe("test row provider", () => {
       where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
 
     });
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isIn([1, 3]))) });
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isIn(1, 3))) });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isNotIn(1, 2, 3))) });
     expect(rows.length).toBe(1);
 
   });
@@ -616,7 +634,9 @@ describe("test row provider", () => {
 });
 describe("api test", () => {
   it("can build", () => {
-    let ctx = new Context(undefined);
+    let ctx = new Context();
+    ctx.setDataProvider(new InMemoryDataProvider());
+    
     let gs = ctx.for(Categories).gridSettings();
     gs.addArea({
       columnSettings: x => [
@@ -631,7 +651,8 @@ describe("api test", () => {
 
 });
 describe("column collection", () => {
-  let ctx = new Context(undefined);
+  let ctx = new Context();
+  ctx.setDataProvider(new InMemoryDataProvider());
   itAsync("uses a saparate column", async () => {
     let c = ctx.for(class extends Categories {
       categoryName = new StringColumn({ allowApiUpdate: false });
@@ -667,7 +688,8 @@ describe("column collection", () => {
 });
 describe("grid settings ",
   () => {
-    let ctx = new Context(undefined);
+    let ctx = new Context();
+    ctx.setDataProvider(new InMemoryDataProvider());
     it("sort is displayed right", () => {
       let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();
@@ -699,14 +721,14 @@ describe("grid settings ",
     });
     it("paging works", async () => {
       let c = await createData(async i => {
-        i(1, "a");
-        i(2, "b");
-        i(3, "a");
-        i(4, "b");
-        i(5, "a");
-        i(6, "b");
-        i(7, "a");
-        i(8, "b");
+        await i(1, "a");
+        await i(2, "b");
+        await i(3, "a");
+        await i(4, "b");
+        await i(5, "a");
+        await i(6, "b");
+        await i(7, "a");
+        await i(8, "b");
       });
 
       let ds = c.gridSettings({ get: { limit: 2 } });
@@ -725,14 +747,14 @@ describe("grid settings ",
     });
     it("paging works with filter", async () => {
       let c = await createData(async i => {
-        i(1, "a");
-        i(2, "b");
-        i(3, "a");
-        i(4, "b");
-        i(5, "a");
-        i(6, "b");
-        i(7, "a");
-        i(8, "b");
+        await i(1, "a");
+        await i(2, "b");
+        await i(3, "a");
+        await i(4, "b");
+        await i(5, "a");
+        await i(6, "b");
+        await i(7, "a");
+        await i(8, "b");
       });
 
       let ds = c.gridSettings({ get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
@@ -794,8 +816,8 @@ describe("order by api", () => {
   });
   itAsync("test several sort options", async () => {
     let c = await createData(async i => {
-      i(1, 'z');
-      i(2, 'y');
+      await i(1, 'z');
+      await i(2, 'y');
     });
 
     let r = await c.find({ orderBy: c => c.categoryName });

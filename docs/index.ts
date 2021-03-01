@@ -1,1 +1,0 @@
-Now that we have the application running, we can start using Angular to our advantage

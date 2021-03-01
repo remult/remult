@@ -1,0 +1,2 @@
+call typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/context.ts ./projects/core/src/entity.ts ./projects/core/src/data-interfaces.ts ./projects/core/src/column-interfaces.ts ./projects/core/src/grid-settings.ts
+node docs-work

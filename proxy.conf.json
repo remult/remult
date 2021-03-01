@@ -3,5 +3,10 @@
       "target": "http://localhost:3001",
       "secure": false,
       "debug":true
+    },
+    "/dataApi": {
+      "target": "http://localhost:56557",
+      "secure": false,
+      "debug":true
     }
   }

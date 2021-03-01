@@ -1,0 +1,24 @@
+<h1 mat-dialog-title>{{title}}</h1>
+
+<div mat-dialog-content>
+    <form (submit)="selectFirst()">
+        <mat-form-field>
+            <input matInput [(ngModel)]="searchString" [ngModelOptions]="{standalone: true}"> 
+        </mat-form-field>
+    </form>
+    <mat-nav-list role="list" *ngIf="values">
+        <ng-container *ngFor="let o of values">
+            <mat-list-item role="listitem" style="height:36px"
+                *ngIf="matchesFilter(o)" (click)="select(o)">
+                {{o.caption}}
+            </mat-list-item>
+            <mat-divider *ngIf="matchesFilter(o)"></mat-divider>
+        </ng-container>
+    </mat-nav-list>
+</div>
+<div mat-dialog-actions>
+
+    <button mat-icon-button mat-dialog-close>
+        <mat-icon>clear</mat-icon>
+    </button>
+</div>

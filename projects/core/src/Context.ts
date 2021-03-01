@@ -1,29 +1,29 @@
-import { Injectable } from "@angular/core";
+
 import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort } from "./data-interfaces";
-import { RestDataProvider } from "./data-providers/rest-data-provider";
-import { AngularHttpProvider } from "./angular/AngularHttpProvider";
+
+
 
 import { InMemoryDataProvider } from "./data-providers/in-memory-database";
 import { DataApiRequest, DataApiSettings } from "./data-api";
-import { HttpClient } from "@angular/common/http";
 import { isFunction, isString, isBoolean } from "util";
 
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Column } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
 import { IDataSettings, GridSettings } from "./grid-settings";
 
-import { FilterBase } from './filter/filter-interfaces';
+import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
 import { Sort } from './sort';
-import { nextContext } from '@angular/core/src/render3';
+import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+import { CompoundIdColumn } from "./columns/compound-id-column";
 
 
 
 
-@Injectable()
+
+
 export class Context {
     clearAllCache(): any {
         this.cache.clear();
@@ -33,18 +33,8 @@ export class Context {
     isSignedIn() {
         return !!this.user;
     }
-    constructor(http?: HttpClient, private _dialog?: MatDialog) {
-        if (http instanceof HttpClient) {
-            var prov = new AngularHttpProvider(http);
-            this._dataSource = new RestDataProvider(Context.apiBaseUrl
-                , prov
-                //,new restDataProviderHttpProviderUsingFetch()
-            );
-            Action.provider = prov;
-        }
-        else {
-            this._dataSource = new InMemoryDataProvider();
-        }
+    constructor() {
+        this._dataSource = new RestDataProvider(Context.apiBaseUrl, new RestDataProviderHttpProviderUsingFetch());
     }
 
     getCookie(name: string) {
@@ -58,7 +48,10 @@ export class Context {
     }
 
 
-    protected _dataSource: DataProvider;
+    _dataSource: DataProvider;
+    setDataProvider(dataProvider: DataProvider) {
+        this._dataSource = dataProvider;
+    }
     protected _onServer = false;
     get onServer(): boolean {
         return this._onServer;
@@ -129,15 +122,10 @@ export class Context {
 
         return r;
     }
-    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T) {
+    _dialog: any;//MatDialog
+    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T): Promise<T> {
 
-        let ref = this._dialog.open(component, component[dialogConfigMember]);
-        if (setParameters)
-            setParameters(ref.componentInstance);
-        var r = await ref.beforeClose().toPromise();
-        if (returnAValue)
-            return returnAValue(ref.componentInstance);
-        return r;
+        throw "requires specific implementation for this environment";
     }
 
     _lookupCache: LookupCache<any>[] = [];
@@ -145,7 +133,7 @@ export class Context {
 export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
     constructor(dp?: DataProvider) {
-        super(undefined);
+        super();
         this._onServer = true;
         if (dp)
             this.setDataProvider(dp);
@@ -181,9 +169,7 @@ export class ServerContext extends Context {
         this.req = req;
         this._user = req.user ? req.user : undefined;
     }
-    setDataProvider(dataProvider: DataProvider) {
-        this._dataSource = dataProvider;
-    }
+
     getOrigin() {
         if (!this.req)
             return undefined;
@@ -200,7 +186,15 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     private entity: T;
     private _edp: EntityDataProvider;
     private _factory: (newRow: boolean) => T;
-    constructor(public create: () => T, private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
+    constructor(
+        /** Creates a new instance of the entity
+         * @example
+         * let p = this.context.for(Products).create();
+         * p.name.value = 'Wine';
+         * await p.save();
+         */
+        public create: () => T
+        , private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
         this._factory = newRow => {
             let e = create();
             e.__entityData.dataProvider = this._edp;
@@ -222,8 +216,57 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         this._edp = dataSource.getEntityDataProvider(this.entity);
     }
 
+    /** Returns an array of rows for the specific type 
+    * @example
+    * let products = await context.for(Products).find();
+    * for (const p of products) {
+    *   console.log(p.name.value);
+    * }
+    * @example
+    * this.products = await this.context.for(Products).find({
+    *     orderBy: p => p.name
+    *     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
+    *     p.availableTo.isGreaterOrEqualTo(new Date()))
+    * });
+    * @see
+    * For all the different options see [FindOptions](ref_findoptions)
+    */
+    async find(options?: FindOptions<T>) {
+        let r = await this._edp.find(this.translateOptions(options));
+        return Promise.all(r.map(async i => {
+            let r = this._factory(false);
+            await r.__entityData.setData(i, r);
+            return r;
+        }));
+    }
+    /** returns a single entity based on a filter
+     * @example:
+     * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7))
+     */
+    async findFirst(options?: EntityWhere<T> | IterateOptions<T>) {
+        return this.iterate(options).first();
+    }
+    /** returns a single entity based on it's id 
+     * @example
+     * let p = await context.for(Products).findId(productId);
+    */
+    async findId(id: Column<lookupIdType> | lookupIdType) {
+        return this.iterate(x => x.columns.idColumn.isEqualTo(id)).first();
+    }
 
-    lookup(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): T {
+    /**
+     * Used to get non critical values from the Entity.
+    * The first time this method is called, it'll return a new instance of the Entity.
+    * It'll them call the server to get the actual value and cache it.
+    * Once the value is back from the server, any following call to this method will return the cached row.
+    * 
+    * It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
+    * 
+    * * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
+    * @example
+    * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
+     */
+    lookup(filter: Column<lookupIdType> | EntityWhere<T>): T {
 
         let key = this.entity.defs.name;
         let lookup: Lookup<lookupIdType, T>;
@@ -238,7 +281,11 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return lookup.get(filter);
 
     }
-    lookupAsync(filter: Column<lookupIdType> | ((entityType: T) => FilterBase)): Promise<T> {
+    /** returns a single row and caches the result for each future call
+     * @example
+     * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
+     */
+    lookupAsync(filter: Column<lookupIdType> | EntityWhere<T>): Promise<T> {
 
         let key = this.entity.defs.name;
         let lookup: Lookup<lookupIdType, T>;
@@ -254,8 +301,11 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
     }
 
-
-    async count(where?: (entity: T) => FilterBase) {
+    /** returns the number of rows that matches the condition 
+     * @example
+     * let count = await this.context.for(Products).count(p => p.price.isGreaterOrEqualTo(5))
+    */
+    async count(where?: EntityWhere<T>) {
         return await this._edp.count(this.entity.__decorateWhere(where ? where(this.entity) : undefined));
     }
 
@@ -283,19 +333,26 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return getOptions;
     }
 
-    async find(options?: FindOptions<T>) {
-        let r = await this._edp.find(this.translateOptions(options));
-        return Promise.all(r.map(async i => {
-            let r = this._factory(false);
-            await r.__entityData.setData(i, r);
-            return r;
-        }));
-    }
-    async findFirst(options?: ((entity: T) => FilterBase) | IterateOptions<T>) {
-        return this.iterate(options).first();
-    }
 
-    iterate(options?: ((entity: T) => FilterBase) | IterateOptions<T>) {
+    /** Iterate is a more robust version of Find, that is designed to iterate over a large dataset without loading all the data into an array
+     * It's safer to use Iterate when working with large datasets of data.
+     * 
+     * 
+     * @example
+     * for await (let p of this.context.for(Products).iterate()){
+     *   console.log(p.name.value);
+     * }
+     * @example
+     * for await (let p of this.context.for(Products).iterate({
+     *     orderBy: p => p.name
+     *     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
+     *     p.availableTo.isGreaterOrEqualTo(new Date()))
+        })){
+     *   console.log(p.name.value);
+     * }
+    */
+
+    iterate(options?: EntityWhere<T> | IterateOptions<T>) {
 
         let opts: IterateOptions<T> = {};
         if (options) {
@@ -350,62 +407,51 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
             //@ts-ignore
             [Symbol.asyncIterator]() {
-                let findOptions: FindOptions<T> = {};
-                if (opts.where) {
-                    findOptions.where = opts.where;
+
+                if (!opts.where) {
+                    opts.where = x => undefined;
                 }
-
-
-
-                let pageIndex: number;
+                if (!opts.orderBy)
+                    if (cont.entity.__options.defaultOrderBy)
+                        opts.orderBy = cont.entity.__options.defaultOrderBy;
+                    else
+                        opts.orderBy = x => x.columns.idColumn;
+                opts.orderBy = createAUniqueSort(opts.orderBy, cont.entity);
                 let pageSize = iterateConfig.pageSize;
-                findOptions.limit = pageSize;
+
 
                 let itemIndex = -1;
                 let items: T[];
 
                 let itStrategy: (() => Promise<IteratorResult<T>>);
+                let nextPageFilter: EntityWhere<T> = x => undefined;;
+
+                let j = 0;
 
                 itStrategy = async () => {
-                    items = await cont.find({
-                        where: opts.where,
-                        orderBy: opts.orderBy,
-                        limit: pageSize
-                    });
-                    if (items.length < pageSize) {
-                        _count = items.length;
+                    if (opts.progress) {
+                        opts.progress.progress(j++ / await this.count());
+                    }
+                    if (items === undefined || itemIndex == items.length) {
+                        if (items && items.length < pageSize)
+                            return { value: <T>undefined, done: true };
+                        items = await cont.find({
+                            where: x => new AndFilter(opts.where(x), nextPageFilter(x)),
+                            orderBy: opts.orderBy,
+                            limit: pageSize
+                        });
                         itemIndex = 0;
-                        itStrategy = async () => {
-
-                            if (itemIndex >= items.length)
-                                return { value: <T>undefined, done: true };
-                            return { value: items[itemIndex++], done: false };
-                        };
-                    }
-                    else {
-                        if (!opts.orderBy)
-                            if (cont.entity.__options.defaultOrderBy)
-                                opts.orderBy = cont.entity.__options.defaultOrderBy;
-                            else
-                                opts.orderBy = x => x.columns.idColumn;
-
-                        let sort = extractSort(opts.orderBy(cont.entity)).reverse();
-
-                        findOptions.orderBy = x => sort;
-                        pageIndex = Math.ceil(await this.count() / pageSize);
-                        itStrategy = async () => {
-                            while (itemIndex < 0) {
-                                if (pageIndex < 1) {
-                                    return { value: undefined, done: true };
-                                }
-                                findOptions.page = pageIndex--;
-                                items = await cont.find(findOptions);
-                                itemIndex = items.length - 1;
-                            }
-                            return { value: items[itemIndex--], done: false };
+                        if (items.length == 0) {
+                            return { value: <T>undefined, done: true };
+                        } else {
+                            nextPageFilter = createAfterFilter(opts.orderBy, items[items.length - 1]);
                         }
+
                     }
-                    return itStrategy();
+                    if (itemIndex < items.length)
+                        return { value: items[itemIndex++], done: false };
+
+
                 };
                 return {
                     next: async () => {
@@ -417,12 +463,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         }
         return r;
     }
-
+    /** Creates an instance of an entity based on a JSON object */
     async fromPojo(r: any) {
         let f = this._factory(false);
         await f.__entityData.setData(r, f);
         return f;
     }
+    /** Creates a JSON object based on an entity */
     toApiPojo(entity: T): any {
         let r = {};
         for (const c of entity.columns) {
@@ -439,20 +486,19 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         }
         return entity;
     }
-    async findId(id: Column<lookupIdType> | lookupIdType) {
 
-        return this.iterate(x => x.columns.idColumn.isEqualTo(id)).first();
-    }
-
+    /** creates an array of JSON objects based on an array of Entities  */
     toPojoArray(items: T[]) {
         return items.map(f => this.toApiPojo(f));
     }
-
+    /** returns a grid settings object for the specific entity */
     gridSettings(settings?: IDataSettings<T>) {
         if (!settings)
             settings = {};
         return new GridSettings(this, this.context, settings);
     }
+
+    /** returns an array of values that can be used in the value list property of a data control object */
 
     async getValueList(args?: {
         idColumn?: (e: T) => Column,
@@ -491,11 +537,39 @@ export interface EntityType<T> {
     new(...args: any[]): Entity<T>;
 }
 export const allEntities: EntityType<any>[] = [];
+export interface ControllerOptions {
+    key: string,
+    allowed: Allowed
 
+}
+
+export const classHelpers = new Map<any, ClassHelper>();
+export class ClassHelper {
+    methods: MethodHelper[] = [];
+}
+export class MethodHelper {
+    classes = new Map<any, ControllerOptions>();
+}
+export function setControllerSettings(target: any, options: ControllerOptions) {
+    let r = target;
+    while (true) {
+        let helper = classHelpers.get(r);
+        if (helper) {
+            for (const m of helper.methods) {
+                m.classes.set(target, options);
+            }
+        }
+        let p = Object.getPrototypeOf(r.prototype);
+        if (p == null)
+            break;
+        r = p.constructor;
+    }
+}
 
 export function EntityClass<T extends EntityType<any>>(theEntityClass: T) {
     let original = theEntityClass;
     let f = original;
+    setControllerSettings(theEntityClass, { allowed: false, key: undefined })
     /*f = class extends theEntityClass {
         constructor(...args: any[]) {
             super(...args);
@@ -528,15 +602,10 @@ declare type AllowedRule = string | Role | ((c: Context) => boolean) | boolean;;
 export declare type Allowed = AllowedRule | AllowedRule[];
 export declare type AngularComponent = { new(...args: any[]): any };
 
-export function DialogConfig(config: MatDialogConfig) {
-    return function (target) {
-        target[dialogConfigMember] = config;
-        return target;
-    };
-}
 
 
-const dialogConfigMember = Symbol("dialogConfigMember");
+
+
 
 interface LookupCache<T extends Entity> {
     key: string;
@@ -548,6 +617,7 @@ export interface RoleChecker {
 export interface IterateOptions<entityType extends Entity> {
     where?: EntityWhere<entityType>;
     orderBy?: EntityOrderBy<entityType>;
+    progress?: { progress: (progress: number) => void };
 }
 
 
@@ -558,3 +628,51 @@ export interface IterateToArrayOptions {
 export const iterateConfig = {
     pageSize: 200
 };
+export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
+    let s = extractSort(orderBy(entity));
+    let criticalColumns = [entity.columns.idColumn];
+    if (entity.columns.idColumn instanceof CompoundIdColumn) {
+        criticalColumns = entity.columns.idColumn.columns;
+    }
+    let columnsToAdd: Column[] = [];
+    for (const c of criticalColumns) {
+        if (!s.Segments.find(x => x.column == c)) {
+            columnsToAdd.push(c);
+        }
+
+    }
+    if (columnsToAdd.length == 0)
+        return orderBy;
+    return (e: Entity) => {
+        let s = extractSort(orderBy(e));
+        for (const c of columnsToAdd) {
+            s.Segments.push({ column: e.columns.find(c) });
+        }
+        return s;
+    }
+}
+export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity): EntityWhere<any> {
+    let values = new Map<string, any>();
+
+    for (const s of extractSort(orderBy(lastRow)).Segments) {
+        values.set(s.column.defs.key, s.column.value);
+    }
+    return x => {
+        let r: Filter = undefined;
+        let equalToColumn: Column[] = [];
+        for (const s of extractSort(orderBy(x)).Segments) {
+            let f: Filter;
+            for (const c of equalToColumn) {
+                f = new AndFilter(f, c.isEqualTo(values.get(c.defs.key)))
+            }
+            equalToColumn.push(s.column);
+            if (s.descending) {
+                f = new AndFilter(f, s.column.isLessThan(values.get(s.column.defs.key)));
+            }
+            else
+                f = new AndFilter(f, s.column.isGreaterThan(values.get(s.column.defs.key)));
+            r = new OrFilter(r, f);
+        }
+        return r;
+    }
+}

@@ -13,10 +13,39 @@ export class NumberColumn extends Column<number>{
   __numOfDecimalDigits: number = 0;
   protected __processValue(value: number) {
 
+    this._tempInputValue = undefined;
     if (value != undefined && !(typeof value === "number"))
       return +value;
     return value;
 
+  }
+  fromRawValue(value: any) {
+    if (value !== undefined)
+      return +value;
+    return undefined;
+  }
+  private _tempInputValue: string = undefined;
+  get inputValue() {
+    if (this._tempInputValue !== undefined)
+      return this._tempInputValue;
+    if (this.rawValue !== undefined)
+      return this.rawValue.toString();
+    return '0';
+  }
+  set inputValue(value: string) {
+    this.rawValue = value;
+    this._tempInputValue = undefined;
+    if (value.startsWith('-')) {
+      if (this.value == 0 || isNaN(this.value)) {
+        this.value = 0;
+        this._tempInputValue = value;
+      }
+    }
+    else if (isNaN(this.value)) {
+      this.value = 0;
+      if (value == '')
+        this._tempInputValue = '';
+    }
   }
 }
 export interface NumberColumnSettings extends ColumnSettings<number> {
