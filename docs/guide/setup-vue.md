@@ -111,7 +111,7 @@ At this stage, the vue app is ready for our demo
 Now we'll add the server functionality to the same project.
 
 ```sh
-npm i express express-force-https compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch
+npm i express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch
 ```
 
 
@@ -837,7 +837,7 @@ export class Users extends IdEntity {
 ```
 
 #### Step 5, store the token after the user signs in
-In the `sign-in.vue` file:
+In the `SignIn.vue` file:
 ```vue {2,11-14}
 <script lang="ts">
 import { authorization, context } from "@/common";
@@ -1070,7 +1070,7 @@ export class Users extends IdEntity {
     constructor() {
 ```
 
-Next we'll add a new file in the `src/users` folder, called `UpdatePasswordController.ts`
+Next we'll add a new file in the `src/users` folder, called `updatePasswordController.ts`
 ```ts {4-7,9,13-16,18}
 import { Users } from '../users/users';
 import { Context, ServerController, ServerMethod, StringColumn } from "@remult/core";
@@ -1108,7 +1108,7 @@ Next we'll need to register the controller in the `server.ts`
 import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
 import { authorization } from '../common';
 import '../users/users';
-import '../users/UpdatePasswordController';
+import '../users/updatePasswordController';
 ```
 
 Now you'll see in the `node-serve` terminal window a new api entry for this controller
@@ -1144,7 +1144,7 @@ in the `src/components` folder add a file called `UpdatePassword.vue`
 import { context } from "@/common";
 import router from "@/router";
 import { Component, Vue } from "vue-property-decorator";
-import { UpdatePasswordController } from "../users/UpdatePasswordController";
+import { UpdatePasswordController } from "../users/updatePasswordController";
 
 @Component
 export default class UpdatePasswordView extends Vue {
@@ -1161,7 +1161,7 @@ export default class UpdatePasswordView extends Vue {
 
 #### Add UpdatePassword route
 In the `router.ts` file
-```ts {13-16}
+```ts {17-20}
 const router = new VueRouter({
     mode: "history",
     base: process.env.BASE_URL,
