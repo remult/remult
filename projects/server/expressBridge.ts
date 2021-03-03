@@ -35,7 +35,7 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
   }
 
   app.use(compression());
-  if (!disableHttpsForDevOnly_or_args) {
+  if (!disableHttpsForDevOnly_or_args.disableHttpsForDevOnly) {
     app.use(secure);
   }
   app.use(bodyParser.json({ limit: disableHttpsForDevOnly_or_args.limit }));

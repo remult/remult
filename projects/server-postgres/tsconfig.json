@@ -7,7 +7,7 @@
                 "../../dist/core"
             ],
             "@remult/server": [
-                "../server"
+                "../../dist/server"
             ]
         }
     }
