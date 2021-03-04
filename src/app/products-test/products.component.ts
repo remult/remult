@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
 import { Products } from './products';
 import { DialogService } from '../../../projects/angular/schematics/hello/files/src/app/common/dialog';
 import { TestDialogComponent } from '../test-dialog/test-dialog.component';
@@ -7,6 +7,7 @@ import { InputAreaComponent } from '../../../projects/angular/schematics/hello/f
 import { DialogConfig } from '@remult/angular';
 import { isConstructorDeclaration } from 'typescript';
 import { YesNoQuestionComponent } from '../../../projects/angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
+import * as csv from 'convert-csv-to-array';
 
 
 
@@ -25,7 +26,7 @@ export class ProductsComponent implements OnInit {
 
 
   constructor(private context: Context) { }
-  nc = new NumberColumn();
+
 
   _n: number;
   get n() {
@@ -34,9 +35,21 @@ export class ProductsComponent implements OnInit {
   set n(value: number) {
     this._n = +value;
   }
+  total: number = 0;
+  count: number = 0;
+  products = this.context.for(Products).gridSettings({orderBy:p=>p.name});
+  async doit() {
+    iterateConfig.pageSize = 10;
+    for await (const p of this.context.for(Products).iterate(this.products.getFilterWithSelectedRows())) {
+      this.count++;
 
+    }
+  }
   async ngOnInit() {
+    this.total = await this.context.for(Products).count();
+
 
   }
+
 
 }

@@ -636,7 +636,7 @@ export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
     }
     let columnsToAdd: Column[] = [];
     for (const c of criticalColumns) {
-        if (!s.Segments.find(x => x.column == c)) {
+        if (!s.Segments.find(x => x.column.defs.key == c.defs.key)) {
             columnsToAdd.push(c);
         }
 

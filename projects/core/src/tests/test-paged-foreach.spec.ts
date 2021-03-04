@@ -125,6 +125,22 @@ describe("test paged foreach ", async () => {
         test(x => x.id, e.id);
         test(x => x.categoryName, e.categoryName, e.id);
     });
+    fitAsync("test make sort unique", async () => {
+        let context = new Context();
+        let e = context.for(Categories).create();
+        var gs = context.for(Categories).gridSettings({ orderBy: p => p.categoryName });
+        e.id.defs.caption = 'id from e';
+        e.categoryName.defs.caption = 'category name from e';
+        
+        function test(orderBy: EntityOrderBy<Categories>, ...sort: Column[]) {
+            let s = extractSort(createAUniqueSort(orderBy, e)(e));
+            expect(s.Segments.map(x => x.column.defs.caption)).toEqual(sort.map(x=>x.defs.caption));
+        }
+        test(e => {
+            let r = gs.getFilterWithSelectedRows().orderBy(e);
+            return extractSort(r);
+        }, e.categoryName, e.id);
+    });
     itAsync("unique sort and  compound index", async () => {
         let context = new Context();
         let theTable = class extends Entity {
@@ -179,8 +195,8 @@ describe("test paged foreach ", async () => {
         e.a.value = 'a';
         e.b.value = 'b';
         e.c.value = 'c';
-        
-        let f = createAfterFilter(x => [x.a, x.b],e);
+
+        let f = createAfterFilter(x => [x.a, x.b], e);
         e.a.value = '1';
         e.b.value = '2';
         expect(JSON.stringify(packWhere(e, f))).toEqual(

@@ -3,7 +3,7 @@ import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListC
 
 export class Products extends IdEntity {
   name = new StringColumn();
-  price = new NumberColumn();
+  price = new NumberColumn({decimalDigits:2,key:'price_1'});
   availableFrom1 = new DateTimeColumn();
   availableTo = new DateColumn();
   @ServerMethod({ allowed: true })
@@ -15,7 +15,7 @@ export class Products extends IdEntity {
   archive = new BoolColumn();
   constructor() {
     super({
-      name: "Products_1",
+      name: "Products",
       allowApiCRUD: true,
       allowApiRead: c => {  return true; },
       saving: () => {
