@@ -30,14 +30,14 @@ export class ProductsComponent implements OnInit {
 
   products = this.context.for(Products).gridSettings({
     allowCRUD: true,
-    showFilter: true,
-    columnSettings: p => [p.name, p.archive]
+    columnSettings: p => [p.name, p.archive],
+    allowSelection:true
   });
 
   async ngOnInit() {
 
 
-    await ProductsComponent.doIt1234();
+    
   }
   @ServerFunction({ allowed: true, queue: true })
   static async doIt1234() {
@@ -47,15 +47,5 @@ export class ProductsComponent implements OnInit {
 
   }
 
-
-}
-
-@ServerController({ allowed: true, key: 'asdf' })
-class demo {
-  @ServerMethod()
-  theMethod() {
-    let x;
-    x.toString();
-  }
 
 }

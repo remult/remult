@@ -299,6 +299,35 @@ export class GridSettings<rowType extends Entity = Entity>  {
       this._selectedAll = this.selectedRows.length == this.totalRows;
     }
   }
+  lastSelectedRowWithShift:rowType;
+  clickOnselectCheckboxFor(row: rowType, shift: boolean) {
+    if (shift) {
+      if (!this.lastSelectedRowWithShift) {
+        this.lastSelectedRowWithShift = row;
+      }
+      else {
+        let found = false;
+        for (const rule of this.items) {
+          
+            if (found) {
+              if (rule == row || rule == this.lastSelectedRowWithShift) {
+                this.lastSelectedRowWithShift = undefined;
+                return;
+              }
+              else this.selectedChanged(rule);
+            } else
+              found = rule == row || rule == this.lastSelectedRowWithShift;
+          
+        }
+
+
+      }
+    }
+
+    this.lastSelectedRowWithShift = row;
+    
+
+  }
   isSelected(row: rowType) {
     return this.selectedRows.indexOf(row) >= 0;
   }
@@ -373,7 +402,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
   getRecords() {
     return this.reloadData();
   }
-    
+
   reloadData() {
     let opt: FindOptions<rowType> = this._internalBuildFindOptions();
     this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
@@ -410,7 +439,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       opt = Object.assign(opt, this.getOptions);
     }
     if (this._currentOrderBy)
-      opt.orderBy = r =>  this._currentOrderBy.translateFor(r);
+      opt.orderBy = r => this._currentOrderBy.translateFor(r);
     opt.limit = this.rowsPerPage;
     if (this.page > 1)
       opt.page = this.page;

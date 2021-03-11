@@ -6,8 +6,7 @@ export class Products extends IdEntity {
     constructor() {
         super({
             name: "Products",
-            allowApiCRUD:true,
-            allowApiRead:true
+            allowApiCRUD:true
         });
     }
 }

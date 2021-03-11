@@ -17,7 +17,6 @@ export class Products extends IdEntity {
     super({
       name: "Products",
       allowApiCRUD: true,
-      allowApiRead: c => {  return true; },
       saving: () => {
         //       this.validationError = 'dont save';
       }

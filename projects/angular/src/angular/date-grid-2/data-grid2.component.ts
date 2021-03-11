@@ -114,6 +114,9 @@ export class DataGrid2Component implements OnChanges {
 
 
   }
+  clickOnselectCheckboxFor(row: any, e: MouseEvent) {
+    this.settings.clickOnselectCheckboxFor(row, e.shiftKey);
+  }
   hasVisibleButton(record) {
     return this.rowButtons.find(b => b.visible(record));
   }

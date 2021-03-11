@@ -62,7 +62,7 @@
           </div>
           <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
 
-            <mat-checkbox [checked]="settings.isSelected(record)" (change)="settings.selectedChanged(record)">
+            <mat-checkbox [checked]="settings.isSelected(record)" (change)="settings.selectedChanged(record)" (click)="clickOnselectCheckboxFor(record,$event)">
             </mat-checkbox>
 
           </div>

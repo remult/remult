@@ -10,10 +10,10 @@ Let's review:
 2. On line 5 we've defined a `name` column (the product name)
 3. On line 7 we've called the `super` class's constructor and defined:
    1.  Line 8 - the `name` for our `API` 
-   2.  Line 9 - `allowApiCRUD` determined that CRUD operations are allowed in the `API` (**CR**eate **U**pdate **D**elete)
-   3.  Line 10 - `allowApiRead` determines that data can be read from this `API`.
+   2.  Line 9 - `allowApiCRUD` determined that CRUD operations are allowed in the `API` (**C**reate **R**ead **U**pdate **D**elete)
+   
 
->The `allowApiRead` and `allowApiCRUD` properties are set by default to false, to secure the data of your application, you may want to restrict access to this data and we want to make sure that data will not be exposed by default. Later we'll review how to control access to data.
+>The `allowApiCRUD` properties are set by default to false, to secure the data of your application, you may want to restrict access to this data and we want to make sure that data will not be exposed by default. Later we'll review how to control access to data.
 
 ## Using the Entity in a Component
 Now let's add a grid on the `ProductsComponent` that displays the `Products` Entity.
