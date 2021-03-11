@@ -101,22 +101,7 @@ export class SiteArea {
     private rootUrl: string,
     private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<void>,
     private logApiEndpoints: boolean) {
-    this.addAction({
-      __register: x => {
-        x(Action.apiUrlForJobStatus, false, async (data: jobWasQueuedResult, req, res) => {
-          let job = await bridge.queue.getJobInfo(data.queuedJobId);
-          let userId = undefined;
-          if (req.user)
-            userId = req.user.id;
-          if (job.userId == '')
-            job.userId = undefined;
-          if (userId != job.userId)
-            res.forbidden();
-          else
-            res.success(job.info);
-        });
-      }
-    });
+
 
   }
 
@@ -187,6 +172,25 @@ export class SiteArea {
     })(req, undefined);
     return context;
   }
+  initQueue() {
+    this.addAction({
+      __register: x => {
+        x(Action.apiUrlForJobStatus, false, async (data: jobWasQueuedResult, req, res) => {
+          let job = await this.bridge.queue.getJobInfo(data.queuedJobId);
+          let userId = undefined;
+          if (req.user)
+            userId = req.user.id;
+          if (job.userId == '')
+            job.userId = undefined;
+          if (userId != job.userId)
+            res.forbidden();
+          else
+            res.success(job.info);
+        });
+      }
+    });
+    this.initQueue = () => { };
+  }
   addAction(action: {
     __register: (reg: (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) => void
   }) {
@@ -195,6 +199,7 @@ export class SiteArea {
       if (this.logApiEndpoints)
         console.log(myUrl);
       if (queue) {
+        this.initQueue();
         this.bridge.queue.mapQueuedAction(myUrl, what);
       }
       this.app.route(myUrl).post(this.process(
@@ -261,16 +266,21 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
 
   public error(data: DataApiError): void {
 
-    if (data instanceof TypeError) {
-      data = { message: data.message + '\n' + data.stack };
-    }
-    let x = JSON.parse(JSON.stringify(data));
-    if (!x.message && !x.modelState)
-      data = { message: data.message };
-    if (isString(x))
-      data = { message: x };
+    data = serializeError(data);
     this.r.status(400).json(data);
   }
+}
+
+function serializeError(data: DataApiError) {
+  if (data instanceof TypeError) {
+    data = { message: data.message + '\n' + data.stack };
+  }
+  let x = JSON.parse(JSON.stringify(data));
+  if (!x.message && !x.modelState)
+    data = { message: data.message };
+  if (isString(x))
+    data = { message: x };
+  return data;
 }
 
 function throwError() {
@@ -285,7 +295,9 @@ class inProcessQueueHandler {
     let job = await this.storage.getJobInfo(id);
 
     this.actions.get(url)(body, req, {
-      error: error => job.setErrorResult(error),
+      error: error => job.setErrorResult(serializeError(error))
+
+      ,
       success: result => job.setResult(result),
       progress: progress => job.setProgress(progress)
     });
