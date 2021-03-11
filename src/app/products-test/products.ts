@@ -22,7 +22,7 @@ export class Products extends IdEntity {
         //       this.validationError = 'dont save';
       }
     });
-    console.log('products constructor')
+    
   }
 }
 

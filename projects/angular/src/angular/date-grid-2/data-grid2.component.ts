@@ -5,6 +5,7 @@ import { isFunction } from 'util';
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
 import { Column, Context, DataControlSettings, Entity, GridButton, GridSettings, RowButton } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
+import { Directionality } from '@angular/cdk/bidi';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
@@ -14,15 +15,11 @@ import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dial
 
 
 
-export class DataGrid2Component implements OnChanges, AfterViewInit {
-  constructor(private context: Context) {
+export class DataGrid2Component implements OnChanges {
+  constructor(private context: Context, dir: Directionality) {
+    this.rightToLeft = dir.value === 'rtl';
+  }
 
-  }
-  ngAfterViewInit(): void {
-    if (window && window.getComputedStyle && this.dataGridDiv) {
-      this.rightToLeft = window.getComputedStyle(this.dataGridDiv.nativeElement, null).getPropertyValue('direction') == 'rtl';
-    }
-  }
   async addCol(c: DataControlSettings) {
     await this.context.openDialog(SelectValueDialogComponent, x => x.args({
       values: this.settings.origList,
@@ -47,9 +44,7 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     //this.dataGridDiv.nativeElement.scrollTop = 0;
   }
   rightToLeft = false;
-  //@ts-ignore
-  @ViewChild('dataGridDiv')
-  dataGridDiv: ElementRef;
+
   getTotalRows() {
     if (this.settings.totalRows)
       return Math.ceil(this.settings.totalRows / this.settings.rowsPerPage);
@@ -159,7 +154,16 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
   }
 
 
-
+  showSaveAllButton() {
+    return this.settings.items.find(x => x.wasChanged())
+  }
+  saveAllText() {
+    return this.rightToLeft ? ('שמור ' + this.settings.items.filter(x => x.wasChanged()).length + ' שורות') :
+      ('save ' + this.settings.items.filter(x => x.wasChanged()).length + ' rows');
+  }
+  async saveAllClick() {
+    await Promise.all(this.settings.items.filter(x => x.wasChanged()).map(x => x.save()));
+  }
 
   ngOnChanges(): void {
 
@@ -170,11 +174,10 @@ export class DataGrid2Component implements OnChanges, AfterViewInit {
     this.rowButtons = [];
     this.gridButtons = [];
     this.gridButtons.push({
-      visible: () => this.settings.items.find(x => x.wasChanged()),
-      textInMenu: () => this.rightToLeft ? ('שמור ' + this.settings.items.filter(x => x.wasChanged()).length + ' שורות') :
-        ('save ' + this.settings.items.filter(x => x.wasChanged()).length + ' rows'),
+      visible: () => this.showSaveAllButton(),
+      textInMenu: () => this.saveAllText(),
       click: async () => {
-        await Promise.all(this.settings.items.filter(x => x.wasChanged()).map(x => x.save()));
+        await this.saveAllClick();
       }
     });
     if (this.settings.settings.gridButtons) {

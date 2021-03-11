@@ -32,6 +32,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
 import { AngularHttpProvider } from './AngularHttpProvider';
 import { AuthorizationInterceptor, JwtSessionManager } from '../jwt-session-manager';
+import { BidiModule } from '@angular/cdk/bidi';
 
 
 
@@ -47,7 +48,7 @@ import { AuthorizationInterceptor, JwtSessionManager } from '../jwt-session-mana
     MatButtonModule,
     MatListModule,
     MatTooltipModule,
-    MatInputModule, MatIconModule, ReactiveFormsModule, MatCheckboxModule, MatMenuModule],
+    MatInputModule, MatIconModule, ReactiveFormsModule, MatCheckboxModule, MatMenuModule, BidiModule],
   providers: [{
     provide: Context,
     useFactory: buildContext,
@@ -90,7 +91,7 @@ export function buildContext(http: HttpClient, _dialog: MatDialog) {
   let prov = new AngularHttpProvider(http);
   Action.provider = prov;
   actionInfo.runActionWithoutBlockingUI = async x => await BusyService.singleInstance.donotWait(x);
-  actionInfo.startBusyWithProgress = ()=>BusyService.singleInstance.startBusyWithProgress()
+  actionInfo.startBusyWithProgress = () => BusyService.singleInstance.startBusyWithProgress()
   r.setDataProvider(new RestDataProvider(Context.apiBaseUrl, prov));
   return r;
 }

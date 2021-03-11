@@ -28,25 +28,14 @@ export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
 
 
-  _n: number;
-  get n() {
-    return this._n;
-  }
-  set n(value: number) {
-    this._n = +value;
-  }
-  total: number = 0;
-  count: number = 0;
-  products = this.context.for(Products).gridSettings({orderBy:p=>p.name});
-  async doit() {
-    iterateConfig.pageSize = 10;
-    for await (const p of this.context.for(Products).iterate(this.products.getFilterWithSelectedRows())) {
-      this.count++;
+  products = this.context.for(Products).gridSettings({
+    allowCRUD: true,
+    showFilter: true,
+    columnSettings:p=>[p.name,p.archive]
+  });
 
-    }
-  }
   async ngOnInit() {
-    this.total = await this.context.for(Products).count();
+
 
 
   }

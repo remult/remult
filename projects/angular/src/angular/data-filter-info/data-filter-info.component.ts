@@ -1,4 +1,5 @@
 
+import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { Column, Context, DataControlSettings, GridSettings } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
@@ -26,8 +27,8 @@ export class DataFilterInfoComponent {
 
 
     }
-    constructor(private context: Context) {
-
+    constructor(private context: Context, dir: Directionality) {
+        this.rightToLeft = dir.value === 'rtl';
     }
 
     showFilterButton = false;
@@ -84,12 +85,5 @@ export class DataFilterInfoComponent {
         this.showAddFilter = false;
     }
     rightToLeft = false;
-    //@ts-ignore
-    @ViewChild('theDiv')
-    theDiv: ElementRef;
-    ngAfterViewInit(): void {
-        if (window && window.getComputedStyle && this.theDiv) {
-            this.rightToLeft = window.getComputedStyle(this.theDiv.nativeElement, null).getPropertyValue('direction') == 'rtl';
-        }
-    }
+    
 }
