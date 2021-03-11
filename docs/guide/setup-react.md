@@ -155,9 +155,15 @@ Next to the existing `tsconfig.json` we'll add a new `tsconfig` file for the ser
   } 
 ```
 
-### Exclude server from the React tsconfig.json
-```JSON{5-7}
-...
+### Edit tsconfig.json
+Add support for `"experimentalDecorators":true,` and exclude the server code from the build
+
+```JSON{4,9-11}
+{
+  "compilerOptions": {
+    ....,
+    "experimentalDecorators": true
+  },
   "include": [
     "src"
   ],
@@ -183,13 +189,66 @@ in the `.gitignore` file add:
  Adjust when done to the final result considering deployment as well
 :::
 
-```json{6}
+```json{6,8}
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"node dist/backend/src/server/server.js"
+    "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"node dist/backend/src/server/server.js\""
   },
   "proxy": "http://localhost:3002",
 ```
+### Configure the remult context
+Add a file called `src/common.ts`
+```ts
+import { Context } from "@remult/core";
+export const context = new Context();
+```
+## Entities
+The first advantage that `remult` provides is the ability to define an entity once, and use the same code both on the server and in the browser.
+The Api, Database and communication are all derived from that one definition of an entity.
+
+Add a folder called `src/tasks` and in it add a file called `tasks.ts`, with the following code:
+
+
+```ts
+import { EntityClass, IdEntity, StringColumn } from "@remult/core";
+
+@EntityClass
+export class Tasks extends IdEntity {
+    name = new StringColumn();
+    constructor() {
+        super({
+            name: 'tasks',
+            allowApiCRUD: true
+        })
+    }
+}
+```
+In this source file we've defined the `Tasks` entity that has a single member called `name`.
+
+Next, we'll register it in the `server.ts`, add the following statement to the `server.ts` import section
+```ts
+import '../tasks/tasks';
+```
+
+Once you save the file you'll see in the `node-serve` terminal window that the table is created in the database, and that a new api entry called `/api/tasks` is created.
+```{5-9}
+10:09:32 AM - Starting compilation in watch mode...
+
+10:09:33 AM - Found 0 errors. Watching for file changes.
+start verify structure
+create table tasks (
+  id varchar default '' not null  primary key,
+  name varchar default '' not null
+)
+/api/tasks
+```
+
+The `/api/tasks` api route provides a RestApi for the data in the `users` entity
+
+Next we'll use this entity in our react app.
+
+### Create UserList.vue
+Add a new file called `components/UserList.vue` with the following code:

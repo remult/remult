@@ -224,7 +224,7 @@ in the `.gitignore` file add:
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"node dist-server/server/server.js"
+    "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"node dist-server/server/server.js\""
   },
 ```
 
