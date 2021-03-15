@@ -363,6 +363,7 @@ interface QueueStorage {
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>;
 
 }
+let test = 0;
 export class EntityQueueStorage implements QueueStorage {
   constructor(private context: SpecificEntityHelper<string, JobsInQueueEntity>) {
 
@@ -384,7 +385,7 @@ export class EntityQueueStorage implements QueueStorage {
         progress: q.progress.value
       },
       setErrorResult: async (error: any) => {
-
+        await this.sync;
         q.error.value = true;
         q.done.value = true;
         q.result.value = JSON.stringify(error);
@@ -393,11 +394,13 @@ export class EntityQueueStorage implements QueueStorage {
         await this.doSync(() => q.save());
       },
       setResult: async (result: any) => {
-
+        await this.sync;
         q.done.value = true;
         q.result.value = JSON.stringify(result);
         q.doneTime.value = new Date();
+
         await this.doSync(() => q.save());
+
       },
       setProgress: async (progress: number) => {
         if (progress === 0)
@@ -405,9 +408,11 @@ export class EntityQueueStorage implements QueueStorage {
         let now = new Date();
         if (lastProgress && now.valueOf() - lastProgress.valueOf() < 200)
           return;
-        lastProgress = now;
+        lastProgress = new Date();
+        await this.sync;
         q.progress.value = progress;
-        await q.save();
+        await this.doSync(() => q.save());
+
       }
     };
 

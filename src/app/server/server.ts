@@ -23,7 +23,7 @@ serverInit().then(async (dataSource) => {
 
     let s = initExpress(app, dataSource, {
         disableHttpsForDevOnly: process.env.DISABLE_HTTPS == "true",
-        //  queueStorage: await preparePostgressQueueStorage(dataSource) 
+          queueStorage: await preparePostgressQueueStorage(dataSource) 
     });
     ServerSignIn.helper = new JWTCookieAuthorizationHelper(s, 'signKey');
     app.use(express.static('dist/my-project'));

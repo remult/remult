@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DateColumn, BoolColumn, DataAreaSettings, Context, iterateConfig, ServerFunction, SqlDatabase } from '@remult/core';
+import { DateColumn, BoolColumn, DataAreaSettings, Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress } from '@remult/core';
 import { StringColumn, ColumnOptions } from '@remult/core';
 import { Products } from '../products-test/products';
 
@@ -34,25 +34,17 @@ export class TestComponent implements OnInit {
     ]
   });
 
-  @ServerFunction({ allowed: true })
-  static async doIt(context?: Context,db?:SqlDatabase) {
-    iterateConfig.pageSize = 20;
-    let i = 0;
-    let d:Date;
-    for await (const p of context.for(Products).iterate({
-      orderBy: x => [{ column: x.availableFrom1, descending: false }]
-    })) {
-      i++;
-      d = p.availableFrom1.value;
-      
-      console.log(i + ':' + p.name.value + " - " + p.availableFrom1.value.toISOString());
-      break;
+  @ServerFunction({ allowed: true, queue: true })
+  static async doIt(context?: Context, progress?: ServerProgress) {
+    let total = 100;
+    for (let index = 0; index < total; index++) {
+      progress.progress(index/total);
+      await new Promise((res)=>setTimeout(() => {
+        res({});
+      }, 100));
     }
-    
-    let p = await context.for(Products).findFirst(x=>x.availableFrom1.isGreaterOrEqualTo(d).and(x.availableFrom1.isLessOrEqualTo(d)));
-    console.log(p);
-    
-    
+    console.log('done');
+
   }
 
   async ngOnInit() {
