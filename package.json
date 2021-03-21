@@ -63,6 +63,7 @@
     "pg": "^7.6.1",
     "rxjs": "~6.3.3",
     "uuid": "^3.3.2",
+    "vuepress-plugin-code-copy": "^1.0.6",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
