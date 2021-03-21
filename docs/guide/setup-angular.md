@@ -405,7 +405,7 @@ create table tasks (
 ```
 
 ::: tip Run and try it
-Add a few new tasks using the ui, and see that they are added by viewing the result returned by the api at `http://localhost:3002/api/tasks` or by looking at the database using sql tools.
+Add a few new tasks using the ui, and see that they are added by viewing the result returned by the api at `http://localhost:4200/api/tasks` or by looking at the database using sql tools.
 :::
 
 ### Display the existing tasks
@@ -463,6 +463,28 @@ If you want to deploy it to `heroku` for example, after you install the heroku c
 Once it's done simply run the app using: `heroku apps:open`
 :::
 
+### Allowing the user to delete a task
+In the `app.component.ts` add the following code:
+```ts
+async deleteTask(task:Tasks){
+    await task.delete();
+    this.loadTasks();
+  }
+```
+
+In the `app.component.html`
+```html{7}
+<h1>Angular Remult Sample </h1>
+<input [(ngModel)]="newTask.name.value">
+<button (click)="addNewTasks()">Add New Task</button>
+<ul>
+    <li *ngFor="let task of tasks">
+        {{task.name.value}}
+        <button (click)="deleteTask(task)">Delete</button>
+    </li>
+</ul>
+```
+
 
 ### Allowing the user to edit a Task
 In the `app.component.html` 
@@ -475,16 +497,55 @@ In the `app.component.html`
         <input [(ngModel)]="task.name.inputValue">
         <button (click)="task.save()" 
         [disabled]="!task.wasChanged()">Save</button>
+        <button (click)="deleteTask(task)">Delete</button>
     </li>
 </ul>
 ```
 * We've replaced the text with an input to allow the user to edit the task.
-* we've added a save button, to save the changes.
-* We've made the button disabled if the task was not changed.
+* we've added a save button, to save the changes using the `save` method ot the `Tasks`.
+* We've made the button disabled if the task was not changed by using the `wasChanged` method of the `tasks`.
 
 
+### Adding validation
+Normally when you write an application a lot of your logic is spread across different files and pieces of code. For example you may have validation logic both in the front end code, and on the server for api calls.
 
+In remult we encourage you to encapsulate that logic in one place - in the entity.
 
+Since the same entity code is used both on the server, the browser and the api, placing the validation login there helps save a lot of errors and duplications.
+
+In the `tasks.ts` file we'll make the following change:
+
+```ts{6,7,8,9}
+import { EntityClass, IdEntity, StringColumn } from "@remult/core";
+
+@EntityClass
+export class Tasks extends IdEntity {
+    name = new StringColumn({
+        validate: () => {
+            if (this.name.value.length < 2)
+                this.name.validationError = 'task name is too short';
+        }
+    });
+    constructor() {
+        super({
+            name: 'tasks',
+            allowApiCRUD: true,
+        })
+    }
+}
+```
+::: tip Run and try it
+1. Try adding a task with a short name
+2. Try editing an existing task changing it's name to a short name.
+3. You can call the api directly using a tool like `postman` or just running the following code in the `console` window of the browser and you'll see that the validation also happens on the server side:
+```js
+await fetch("http://localhost:4200/api/tasks", {
+  "headers": {    "content-type": "application/json"},
+  "body": "{\"name\":\"2\"}",
+  "method": "POST"
+}).then(r=>r.json())
+```
+:::
 
 
 
@@ -502,3 +563,5 @@ In the `app.component.html`
 [] reconsider the find limit - currently it's set by default to 25 and that can cause problems.
 
 [] reconsider separating the setup code - to something the user can extract from a github template - and only worry about the setup if they want to.
+
+[] document the constructor parameters of column
