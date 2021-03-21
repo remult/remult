@@ -734,7 +734,7 @@ Try signing in with a user that does exist, and see that you get the user name
 :::
 
 
-## Securing the communication 
+## Securing the Application
 A critical part of any web application, is making sure that only authorized users can use an application, and that each request is coming from the correct user.
 
 After the user Signs In, we need to include their information for each request, and to make sure that it's indeed that user that is making the request.

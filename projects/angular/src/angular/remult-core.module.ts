@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action } from '@remult/core';
+import { actionInfo, Context, RestDataProvider, Action ,JwtSessionService} from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -31,7 +31,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
 
 import { AngularHttpProvider } from './AngularHttpProvider';
-import { AuthorizationInterceptor, JwtSessionManager } from '../jwt-session-manager';
+import { AuthorizationInterceptor } from '../authorization-interceptor';
 import { BidiModule } from '@angular/cdk/bidi';
 
 
@@ -53,7 +53,7 @@ import { BidiModule } from '@angular/cdk/bidi';
     provide: Context,
     useFactory: buildContext,
     deps: [HttpClient, MatDialog]
-  }, JwtSessionManager, NotSignedInGuard, SignedInGuard, RouteHelperService,
+  }, { provide: JwtSessionService, useClass: JwtSessionService, deps: [Context] }, NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
 
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },

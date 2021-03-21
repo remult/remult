@@ -10,6 +10,10 @@ import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
 import { isBoolean, isFunction, isString } from 'util';
 
+import { JwtSessionService } from '@remult/core';
+import { userInfo } from 'os';
+import { JWTCookieAuthorizationHelper } from './jwt-cookie-authoerization-helper';
+
 
 
 export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder,
@@ -18,8 +22,11 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
     disableHttpsForDevOnly?: boolean,
     limit?: string,
     disableAutoApi?: boolean,
-    queueStorage?: QueueStorage
+    queueStorage?: QueueStorage,
+    jwtTokenSignKey?: string,
+    jwtTokenExpiresIn?: number
   },) {
+
   if (isBoolean(disableHttpsForDevOnly_or_args)) {
     disableHttpsForDevOnly_or_args = {
       disableHttpsForDevOnly: disableHttpsForDevOnly_or_args
@@ -57,6 +64,18 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
     apiArea.setDataProviderFactory(builder);
     registerActionsOnServer(apiArea, builder);
     registerEntitiesOnServer(apiArea, builder);
+  }
+  if (!disableHttpsForDevOnly_or_args.jwtTokenSignKey) {
+    disableHttpsForDevOnly_or_args.jwtTokenSignKey = process.env.TOKEN_SIGN_KEY;
+
+  }
+  if (disableHttpsForDevOnly_or_args.jwtTokenSignKey) {
+    let a = new JWTCookieAuthorizationHelper(result, disableHttpsForDevOnly_or_args.jwtTokenSignKey);
+    let options: { expiresIn: number } = undefined;
+    if (disableHttpsForDevOnly_or_args.jwtTokenExpiresIn) {
+      options = { expiresIn: disableHttpsForDevOnly_or_args.jwtTokenExpiresIn };
+    }
+    JwtSessionService.createTokenOnServer = (user: UserInfo) => a.createSecuredTokenBasedOn(user, options);
   }
   return result;
 }

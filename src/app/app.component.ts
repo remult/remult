@@ -10,7 +10,8 @@ import { Context } from '@remult/core';
 
 
 import { DialogService } from '../../projects/angular/schematics/hello/files/src/app/common/dialog';
-import { JwtSessionManager, RouteHelperService } from '@remult/angular';
+import { RouteHelperService } from '@remult/angular';
+import { JwtSessionService } from '@remult/core';
 import { SignInComponent } from '../../projects/angular/schematics/hello/files/src/app/common/sign-in/sign-in.component';
 
 @Component({
@@ -22,7 +23,7 @@ export class AppComponent {
 
 
   constructor(
-    public sessionManager: JwtSessionManager,
+    public sessionManager: JwtSessionService,
     public router: Router,
     public activeRoute: ActivatedRoute,
     private dialog: MatDialog,

@@ -145,7 +145,7 @@ let database = new SqlDatabase(new PostgresDataProvider(pool));
 new PostgresSchemaBuilder(database).verifyStructureOfAllEntities().then(() => {
     //once the database is ok and all tables are created, setup the express code
     let app = express();
-    let s = initExpress(app, database, process.env.DISABLE_HTTPS == "true");
+    initExpress(app, database, process.env.DISABLE_HTTPS == "true");
     app.use(express.static('dist/angular-sample'));
     app.use('/*', async (req, res) => {
         res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
@@ -380,7 +380,7 @@ export class AppComponent {
 And the `app.component.html`
 ```html
 <h1>Angular Remult Sample </h1>
-<input [(ngModel)]="newTask.name.value">
+<input [(ngModel)]="newTask.name.inputValue">
 <button (click)="addNewTasks()">Add New Task</button>
 ```
 
@@ -454,11 +454,15 @@ New you can see that as you add tasks, these appear in the list immediately
 ::: tip Ready for production
 The application as it is now is ready to be deployed to production.
 
-If you want to deploy it to `heroku` for example, after you install the heroku cli and sign in you'll need to:
+If you want to deploy it to `heroku` for example, after you install the heroku cli and sign in you'll need to run the following commands in the terminal window:
+
+**Setup the site once**
+1. create an app on heroku `heroku apps:create`
+2. Provision a database `heroku addons:create heroku-postgresql:hobby-dev`
+
+**Every time you want to update the site**
 1. commit your changes to git.
-2. create an app on heroku `heroku apps:create`
-3. Provision a database `heroku addons:create heroku-postgresql:hobby-dev`
-4. Deploy to heroku using git `git push heroku master -f`
+2. Deploy to heroku using git `git push heroku master -f`
 
 Once it's done simply run the app using: `heroku apps:open`
 :::
@@ -490,7 +494,7 @@ In the `app.component.html`
 In the `app.component.html` 
 ```html{6,7,8}
 <h1>Angular Remult Sample </h1>
-<input [(ngModel)]="newTask.name.value">
+<input [(ngModel)]="newTask.name.inputValue">
 <button (click)="addNewTasks()">Add New Task</button>
 <ul>
     <li *ngFor="let task of tasks">
@@ -501,7 +505,7 @@ In the `app.component.html`
     </li>
 </ul>
 ```
-* We've replaced the text with an input to allow the user to edit the task.
+* We've replaced the text with an input to allow the user to edit the task. Note that we bind the `inputValue` field to the input. We use the `inputValue` field, because it handles the different inputs that are provided by html and translates them to the value in the `column`. It's less important for strings, but it's more significant in the cases where you use date or number or boolean.
 * we've added a save button, to save the changes using the `save` method ot the `Tasks`.
 * We've made the button disabled if the task was not changed by using the `wasChanged` method of the `tasks`.
 
@@ -534,22 +538,293 @@ export class Tasks extends IdEntity {
     }
 }
 ```
+
+#### Displaying the validation error
+We can use the column's `validationError` field to display the validation error to the user next to the relevant input.
+in the `app.component.html`
+```html{3,8}
+<h1>Angular Remult Sample </h1>
+<input [(ngModel)]="newTask.name.value">
+<span style="color:red">{{newTask.name.validationError}}</span>
+<button (click)="addNewTasks()">Add New Task</button>
+<ul>
+    <li *ngFor="let task of tasks">
+        <input [(ngModel)]="task.name.inputValue">
+        <span style="color:red">{{task.name.validationError}}</span>
+        <button (click)="task.save()" 
+        [disabled]="!task.wasChanged()">Save</button>
+        <button (click)="deleteTask(task)">Delete</button>
+    </li>
+</ul>
+```
+
 ::: tip Run and try it
 1. Try adding a task with a short name
 2. Try editing an existing task changing it's name to a short name.
 3. You can call the api directly using a tool like `postman` or just running the following code in the `console` window of the browser and you'll see that the validation also happens on the server side:
 ```js
 await fetch("http://localhost:4200/api/tasks", {
-  "headers": {    "content-type": "application/json"},
-  "body": "{\"name\":\"2\"}",
-  "method": "POST"
+  "headers": {"content-type": "application/json"},
+  "method": "POST",
+  "body": "{\"name\":\"2\"}"
 }).then(r=>r.json())
 ```
 :::
 
 
+## Add a column to the Entity
+We want to add a `completed` column to the tasks, indicating that a task has been completed.
+
+We'll edit the `tasks.ts` file:
+```ts{9}
+@EntityClass
+export class Tasks extends IdEntity {
+    name = new StringColumn({
+        validate: () => {
+            if (this.name.value.length < 2)
+                this.name.validationError = 'task name is too short';
+        }
+    });
+    completed = new BoolColumn();
+    constructor() {
+        super({
+            name: 'tasks',
+            allowApiCRUD: true,
+        })
+    }
+}
+```
+
+In the `app.component.html` 
+```html{7,8,9}
+<h1>Angular Remult Sample </h1>
+<input [(ngModel)]="newTask.name.value">
+<span style="color:red">{{newTask.name.validationError}}</span>
+<button (click)="addNewTasks()">Add New Task</button>
+<ul>
+    <li *ngFor="let task of tasks">
+        <input [(ngModel)]="task.completed.inputValue" type="checkbox">
+        <input [(ngModel)]="task.name.inputValue"
+          [style.textDecoration]="task.completed.value?'line-through':''">
+        <span style="color:red">{{task.name.validationError}}</span>
+        <button (click)="task.save()" 
+        [disabled]="!task.wasChanged()">Save</button>
+        <button (click)="deleteTask(task)">Delete</button>
+    </li>
+</ul>
+```
+* We've added an input for the `completed` column and used the `inputValue` as it's model
+* We've added a style condition, to add a line-through in case a task is completed
+
+## Sorting the tasks
+We want to show the uncompleted tasks before the completed once.
+In the `loadTasks` method in the  `app.component.ts` file:
+```ts{2,3,4}
+async loadTasks() {
+    this.tasks = await this.context.for(Tasks).find({
+      orderBy: task => task.completed
+    });
+  }
+```
+## Filtering the tasks
+We want to allow the user to hide completed tasks.
+In the `app.component.html` we'll add the following lines:
+```html{5,6}
+<h1>Angular Remult Sample </h1>
+<input [(ngModel)]="newTask.name.inputValue">
+<span style="color:red">{{newTask.name.validationError}}</span>
+<button (click)="addNewTasks()">Add New Task</button>
+<br>
+<input type="checkbox" [(ngModel)]="hideCompleted" (change)="loadTasks()">Hide Completed
+<ul>
+    <li *ngFor="let task of tasks">
+...
+```
+
+In the `app.component.ts`
+```ts{5,8}
+...
+  constructor(private context: Context) {
+  }
+  tasks: Tasks[];
+  hideCompleted: boolean;
+  async loadTasks() {
+    this.tasks = await this.context.for(Tasks).find({
+      where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
+      orderBy: task => task.completed,
+    });
+  }
+...
+```
+
+## Changing values from code
+Sometimes we want to change the values of columns from code - in our case we would like to add two buttons: `Set All as Completed` and `Set all as UnCompleted`.
+
+In the `app.component.html` we'll add the following buttons:
+```html
+<button (click)="setAll(true)">Set all as Completed</button> 
+&nbsp;
+<button (click)="setAll(false)">Set all as UnCompleted</button>
+```
+In the `app.component.ts` file we'll add the `setAll` method:
+```ts{2,3,4,5,6,7,8}
+...
+  async setAll(completed: boolean) {
+      for await (const task of this.context.for(Tasks).iterate()) {
+        task.completed.value = completed;
+        await task.save();
+      }
+      this.loadTasks();
+  }
+
+```
+* Note that we've used the `iterate` method as it is more robust and has a built in paging mechanism that is designed to handle large number of objects. The `iterate` method doesn't return an array like the `find` method, instead it returns an `iteratable` object that works with the javascript `for await` commands.
+
+### moving the logic to the Server
+In cases where there are hundreds of tasks, this method of iterating them in the browser and updating them one by one can take considerable amount of time.
+
+If this code would run on the server, we would get better results.
+
+One of the main benefits of using `remult` is that the change from having this code run in the browser to having it run in the server is very simple.
+We'll make the following changes to the `app.component.ts` file:
+```ts{2,5,6,7,8,9,10,11}
+  async setAll(completed: boolean) {
+    await AppComponent.setAll(completed);
+    this.loadTasks();
+  }
+  @ServerFunction({ allowed: true })
+  static async setAll(completed: boolean, context?: Context) {
+    for await (const task of context.for(Tasks).iterate()) {
+      task.completed.value = completed;
+      await task.save();
+    }
+  }
+```
+
+* We've created a `static` method and decorated it with the `@ServerFunction` decorator.
+* We've sent it `allowed:true` for permission control - we'll handle these later in this tutorial, but for now we are allowing anyone to run it.
+* We've defined a new parameter called `context?: Context` that is automatically injected with the correct context on the server.
+
+That's it - now this code runs on the serer - it uses the same language, the same code objects and just runs a lot faster.
+
+## Securing the Application
+A critical part of any web application, is making sure that only authorized users can use an application, and that each request is coming from the correct user.
+
+After the user Signs In, we need to include their information for each request, and to make sure that it's indeed that user that is making the request.
+
+For that we'll use a technology called JWT that provides us with a token that includes the user information and makes sure that that information was not altered. [See Jwt](https://jwt.io/).
+
+Here's how it's going to work:
+1. When the user signs in on the server, it'll generate a token using a secret hash key that only the server knows.
+2. Once the browser get's that token, it'll store it in a cookie and include it in each following request.
+3. Whenever a request reaches the server, it'll validate that info in the token, using the secret hash key, and will accept the request only if they match.
+
+This way the browser and server can share and trust that user info.
+
+* In angular, you can access the user info, using the `user` property of the `context` object.
+
+### Introducing JWT authorization to the project
+
+#### Step 1, add the secret hash key to .env
+
+in the `.env` file
+```
+TOKEN_SIGN_KEY='My very very secret key'
+```
+::: warning
+In production use a completely random string, you can generate one using: [Online UUID Generator
+](https://www.uuidgenerator.net/version4)
+:::
+
+::: tip Deployment to heroku
+You'll need to set the `TOKEN_SIGN_KEY` value on heroku as well, you can do that via the heroku ui, or using command line:
+```sh
+heroku config:set TOKEN_SIGN_KEY=Some very secret key you've generated
+```
+:::
+
+#### Step 2, add the `JwtSessionService` to the `app.module.ts`
+```ts{4}
+...
+  providers: [
+    { provide: ErrorHandler, useClass: DisplayAlertErrorErrorHandler },
+    { provide: JwtSessionService, useClass: JwtSessionService, deps: [Context] },
+    { provide: Context, useClass: Context }
+  ],
+...
+```
+
+### Now that we're all setup, let's use it
+In the `app.component.ts` make the following changes:
+```ts{2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}
+export class AppComponent {
+  constructor(public context: Context, public session: JwtSessionService) {
+  }
+  @ServerFunction({ allowed: true })
+  static async signIn(name: string) {
+    switch (name) {
+      case "Jane":
+        return JwtSessionService.createTokenOnServer({ id: '1', name: name, roles: [] });
+      case "Steve":
+        return JwtSessionService.createTokenOnServer({ id: '1', name: name, roles: [] });
+      default:
+        throw "Invalid User";
+    }
+  }
+  username: string;
+  async signIn() {
+    this.session.setToken(await AppComponent.signIn(this.username));
+  }
+
+...
+```
+* We've added the `JwtSessionService` to the constructor, and made both it and `context` public so that we can use them in our `html`
+* We've added a `@ServerFunction` called `signIn` that validates the user, and if the user is valid returns a JWT token that contains that user information.
+  For now we've used hard coded user names, later you can replace it with database values.
+* We've added a member called `username` and a `signIn` method for the Sign In process. It calls the `signIn` server function, and sends the result token to the JwtSessionService` to store and manage
+
+In the `app.component.html` file:
+```html {2,3,4,5,6,7,27}
+<h1>Angular Remult Sample </h1>
+<ng-container *ngIf="!context.isSignedIn()">
+    <input [(ngModel)]="username"> <button (click)="signIn()">Sign In</button>
+</ng-container>
+<ng-container *ngIf="context.isSignedIn()">
+    Hello {{context.user.name}}
+    <button (click)="session.signout()">Sign Out</button><br/>
+    <input [(ngModel)]="newTask.name.inputValue">
+    <span style="color:red">{{newTask.name.validationError}}</span>
+    <button (click)="addNewTasks()">Add New Task</button>
+    <br>
+    <input type="checkbox" [(ngModel)]="hideCompleted" (change)="loadTasks()">Hide Completed
+    <ul>
+        <li *ngFor="let task of tasks">
+            <input [(ngModel)]="task.completed.inputValue" type="checkbox">
+            <input [(ngModel)]="task.name.inputValue"
+            [style.textDecoration]="task.completed.value?'line-through':''">
+            <span style="color:red">{{task.name.validationError}}</span>
+            <button (click)="task.save()" 
+            [disabled]="!task.wasChanged()">Save</button>
+            <button (click)="deleteTask(task)">Delete</button>
+        </li>
+    </ul>
+    <button (click)="setAll(true)">Set all as Completed</button> 
+    &nbsp;
+    <button (click)="setAll(false)">Set all as UnCompleted</button>
+</ng-container>
+```
+* We've added two `ng-container` that display data based on the `signed in` status.
+* We've added an input and button to sign in, and one to sign out
+  
+
+
+
 
 ## todo
+[] finish release of remult after jwt changes introduced in v2.2.1
+
+[] Reconsider the Context Injection to use angular http client instead of nothing is it does right now. maybe even consider creating an AppContext and do something with it~~
+
 [] decide if on the setup of angular, we avoid the command line args, and let them decide whatever they want
 
 [] consider adding the jsonwebtoken package as a dependency of `@remult/server`
@@ -558,10 +833,15 @@ await fetch("http://localhost:4200/api/tasks", {
 
 [] Investigate why in the first stage the vendor bundle size is 4mb
 
-[] Reconsider the Context Injection to use angular http client instead of nothing is it does right now. maybe even consider creating an AppContext and do something with it~~
 
 [] reconsider the find limit - currently it's set by default to 25 and that can cause problems.
 
 [] reconsider separating the setup code - to something the user can extract from a github template - and only worry about the setup if they want to.
 
 [] document the constructor parameters of column
+
+[] Consider moving the error of not setting the jwt secret into the `JWTCookieAuthorizationHelper` so it'll read the environment and it'll throw the exception
+
+[] consider code that decodes jwt in jwt-session-service
+
+[] consider using NODE_ENV='production' to check if in production https://gist.github.com/leommoore/5763232

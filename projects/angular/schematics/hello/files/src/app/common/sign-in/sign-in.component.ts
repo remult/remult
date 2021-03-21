@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { JwtSessionManager } from '@remult/angular';
+import { JwtSessionService } from '@remult/core'; 
 import { ServerSignIn } from "../../users/server-sign-in";
 import { DialogService } from '../dialog';
 
@@ -15,7 +15,7 @@ import { DialogService } from '../dialog';
 export class SignInComponent implements OnInit {
 
   constructor(private dialog: DialogService,
-    private authService: JwtSessionManager,
+    private authService: JwtSessionService,
     public dialogRef: MatDialogRef<SignInComponent>) { }
   user: string;
   password: string;
