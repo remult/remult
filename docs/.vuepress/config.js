@@ -84,7 +84,8 @@ module.exports = {
                 'running-sql-on-the-server',
                 'rest-api',
                 'further-learning',
-                'VSCode-keyboard-shortcuts'
+                'VSCode-keyboard-shortcuts',
+                'setup-angular'
               ]
             },
             {

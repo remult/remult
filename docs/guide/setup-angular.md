@@ -704,6 +704,9 @@ We'll make the following changes to the `app.component.ts` file:
 * We've created a `static` method and decorated it with the `@ServerFunction` decorator.
 * We've sent it `allowed:true` for permission control - we'll handle these later in this tutorial, but for now we are allowing anyone to run it.
 * We've defined a new parameter called `context?: Context` that is automatically injected with the correct context on the server.
+::: error 
+explain that the call to the server is type safe in the sense that it gets compile time type validation that no other tool provides.
+:::
 
 That's it - now this code runs on the serer - it uses the same language, the same code objects and just runs a lot faster.
 
@@ -756,7 +759,7 @@ heroku config:set TOKEN_SIGN_KEY=Some very secret key you've generated
 
 ### Now that we're all setup, let's use it
 In the `app.component.ts` make the following changes:
-```ts{2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}
+```ts{2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,22,23}
 export class AppComponent {
   constructor(public context: Context, public session: JwtSessionService) {
   }
@@ -766,7 +769,7 @@ export class AppComponent {
       case "Jane":
         return JwtSessionService.createTokenOnServer({ id: '1', name: name, roles: [] });
       case "Steve":
-        return JwtSessionService.createTokenOnServer({ id: '1', name: name, roles: [] });
+        return JwtSessionService.createTokenOnServer({ id: '2', name: name, roles: [] });
       default:
         throw "Invalid User";
     }
@@ -775,13 +778,23 @@ export class AppComponent {
   async signIn() {
     this.session.setToken(await AppComponent.signIn(this.username));
   }
-
+  tasks: Tasks[];
+  hideCompleted: boolean;
+  async loadTasks() {
+    if (!this.context.isSignedIn())
+      return;
+    this.tasks = await this.context.for(Tasks).find({
+      orderBy: task => task.completed,
+      where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined
+    });
+  }
 ...
 ```
 * We've added the `JwtSessionService` to the constructor, and made both it and `context` public so that we can use them in our `html`
 * We've added a `@ServerFunction` called `signIn` that validates the user, and if the user is valid returns a JWT token that contains that user information.
   For now we've used hard coded user names, later you can replace it with database values.
 * We've added a member called `username` and a `signIn` method for the Sign In process. It calls the `signIn` server function, and sends the result token to the JwtSessionService` to store and manage
+* We've disabled the `loadTasks` method if he user is not signed in.
 
 In the `app.component.html` file:
 ```html {2,3,4,5,6,7,27}
@@ -818,6 +831,147 @@ In the `app.component.html` file:
   
 
 
+## Securing the API
+So far we changed the UI to hide the tasks if the user is not signed in, but for any web application it's crucial to secure the API itself - otherwise anyone can access the api directly and gain access to sensitive information.
+
+We want to prevent users from accessing the `tasks` entity and also prevent them from running the relevant `@ServerFunctions`
+
+To do that we'll edit the `tasks` entity to only allow `CRUD` for signed in users.
+```ts{15}
+import { BoolColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
+
+@EntityClass
+export class Tasks extends IdEntity {
+    name = new StringColumn({
+        validate: () => {
+            if (this.name.value.length < 2)
+                this.name.validationError = 'task name is too short';
+        }
+    });
+    completed = new BoolColumn();
+    constructor() {
+        super({
+            name: 'tasks',
+            allowApiCRUD: context => context.isSignedIn(),
+        })
+    }
+}
+```
+This will only allow access to the `Tasks` class for signed in users.
+
+In the `app.component.ts` file we'll secure the `setAll` server function
+```ts{1}
+@ServerFunction({ allowed: context => context.isSignedIn() })
+static async setAll(completed: boolean, context?: Context) {
+  for await (const task of context.for(Tasks).iterate()) {
+    task.completed.value = completed;
+    await task.save();
+  }
+}
+```
+
+## Using Roles
+Most real world application have different types of users with different privileges - these privileges are managed using `roles`.
+
+In this app we want to distinguish to type of users.
+1. All signed in users can see the tasks
+2. All signed in users can set `completed` to specific tasks.
+3. Only users with `admin` role can create, delete or edit the name of tasks.
+4. Only users with `admin` role can mark all tasks as completed.
+
+First we'll start by adding a file called `roles.ts` in the `src/app` folder
+```ts
+export class Roles {
+    static admin = 'admin';
+}
+```
+
+Next we'll edit the `tasks.ts` file to reflect the behavior we want:
+```ts{2,11,17,18,19,20}
+import { BoolColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { Roles } from "../roles";
+
+@EntityClass
+export class Tasks extends IdEntity {
+    name = new StringColumn({
+        validate: () => {
+            if (this.name.value.length < 2)
+                this.name.validationError = 'task name is too short';
+        },
+        allowApiUpdate: Roles.admin
+    });
+    completed = new BoolColumn();
+    constructor() {
+        super({
+            name: 'tasks',
+            allowApiRead: context => context.isSignedIn(),
+            allowApiUpdate: context => context.isSignedIn(),
+            allowApiInsert: Roles.admin,
+            allowApiDelete: Roles.admin
+        })
+    }
+}
+```
+
+
+Now we need to adjust the `signIn` method to assign the admin role to one of the users.
+In the `app.component.ts`
+```ts{5}
+  @ServerFunction({ allowed: true })
+  static async signIn(name: string) {
+    switch (name) {
+      case "Jane":
+        return JwtSessionService.createTokenOnServer({ id: '1', name: name, roles: [Roles.admin] });
+      case "Steve":
+        return JwtSessionService.createTokenOnServer({ id: '2', name: name, roles: [] });
+      default:
+        throw "Invalid User";
+
+    }
+  }
+```
+
+## Recording the completing user
+```ts{11,12,13,14,15,16,17,20,21,22,23,24,25,26,27}
+@EntityClass
+export class Tasks extends IdEntity {
+    name = new StringColumn({
+        validate: () => {
+            if (this.name.value.length < 2)
+                this.name.validationError = 'task name is too short';
+        },
+        allowApiUpdate: Roles.admin
+    });
+    completed = new BoolColumn();
+    completedUser = new StringColumn({
+        allowApiUpdate: false
+    })
+    completedTime = new DateTimeColumn({
+        allowApiUpdate: false
+    })
+    constructor(context: Context) {
+        super({
+            name: 'tasks',
+            saving: () => {
+                if (context.onServer) {
+                    if (this.completed.value != this.completed.originalValue) {
+                        this.completedUser.value = context.user.name;
+                        this.completedTime.value = new Date();
+                    }
+                }
+            },
+            allowApiRead: context => context.isSignedIn(),
+            allowApiUpdate: context => context.isSignedIn(),
+            allowApiInsert: Roles.admin,
+            allowApiDelete: Roles.admin
+        })
+    }
+}
+```
+* We've added the `completedUser` and `completedTime` column and marked then as `allowApiUpdate:false` so that they can only be updated by the server and can be trusted.
+* We've added the `context` to the constructor, the correct `context` object will be injected when the code executes. 
+* We've added logic in the `saving` event. This event is fired both in the browser and in the server, we use the `context.onServer` to conditionally run this code only on the server
+
 
 
 ## todo
@@ -825,11 +979,7 @@ In the `app.component.html` file:
 
 [] Reconsider the Context Injection to use angular http client instead of nothing is it does right now. maybe even consider creating an AppContext and do something with it~~
 
-[] decide if on the setup of angular, we avoid the command line args, and let them decide whatever they want
-
-[] consider adding the jsonwebtoken package as a dependency of `@remult/server`
-
-[] consider renaming postgres to postgresql all over the code (not sure because when you create a db it's name by default is postgres)
+[] extract from init express the usage of compression, secure etc... and make the JwtAuthentication recieve a authenticate provider interface that is simple and is implemented with the jwt. make JWTCookieAuthorizationHelper internal and only get sign and validate in the interface.
 
 [] Investigate why in the first stage the vendor bundle size is 4mb
 
@@ -840,8 +990,7 @@ In the `app.component.html` file:
 
 [] document the constructor parameters of column
 
-[] Consider moving the error of not setting the jwt secret into the `JWTCookieAuthorizationHelper` so it'll read the environment and it'll throw the exception
 
 [] consider code that decodes jwt in jwt-session-service
 
-[] consider using NODE_ENV='production' to check if in production https://gist.github.com/leommoore/5763232
+[] fix server ts to remove the then and create the entities in a simple line.
