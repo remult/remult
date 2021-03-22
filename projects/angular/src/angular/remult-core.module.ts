@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action ,JwtSessionService} from '@remult/core';
+import { actionInfo, Context, RestDataProvider, Action, JwtSessionService } from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -29,8 +29,6 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 
-
-import { AngularHttpProvider } from './AngularHttpProvider';
 import { AuthorizationInterceptor } from '../authorization-interceptor';
 import { BidiModule } from '@angular/cdk/bidi';
 
@@ -71,7 +69,8 @@ export function DialogConfig(config: MatDialogConfig) {
 }
 const dialogConfigMember = Symbol("dialogConfigMember");
 export function buildContext(http: HttpClient, _dialog: MatDialog) {
-  let r = new Context();
+  
+  let r = new Context(http);
 
   r.openDialog = async (component, setParameters, returnAValue) => {
     let ref = _dialog.open(component, component[dialogConfigMember]);
@@ -88,10 +87,8 @@ export function buildContext(http: HttpClient, _dialog: MatDialog) {
       return returnAValue(ref.componentInstance);
     return r;
   }
-  let prov = new AngularHttpProvider(http);
-  Action.provider = prov;
   actionInfo.runActionWithoutBlockingUI = async x => await BusyService.singleInstance.donotWait(x);
   actionInfo.startBusyWithProgress = () => BusyService.singleInstance.startBusyWithProgress()
-  r.setDataProvider(new RestDataProvider(Context.apiBaseUrl, prov));
+  
   return r;
 }

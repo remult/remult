@@ -16,14 +16,15 @@ We only added these command line arguments, so that angular will not ask you a b
 :::
 
 ### Additional angular configurations
-We'll add the angular `FormsModule` to the `app.module.ts` file to enable `[(ngModel)]` data binding:
-```ts{6,14}
+We'll add to the `app.module.ts` file the `FormsModule` to enable `[(ngModel)]` data binding and the `HttpClientModule`:
+```ts{6,7,15,16}
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { FormsModule } from '@angular/forms';
   imports: [
     BrowserModule,
     FormsModule,
+    HttpClientModule,
     AppRoutingModule
   ],
   providers: [],
@@ -44,7 +46,7 @@ export class AppModule { }
 #### Add General Error Handler
 To make it easier to see errors, we want to display them in an alert.
 
-We'll add a file called `src/app/common/error-handler.ts`
+We'll add a file called `src/app/error-handler.ts`
 ```ts
 import { ErrorHandler, Injectable } from '@angular/core';
 @Injectable()
@@ -68,7 +70,7 @@ import { ErrorHandler, NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-import { DisplayAlertErrorErrorHandler } from './common/error-handler';
+import { DisplayAlertErrorErrorHandler } from './error-handler';
 
 @NgModule({
   declarations: [
@@ -98,7 +100,7 @@ Replace the content of the `app.component.html` file with the following `html`
 Now we'll add the server functionality to the same project.
 
 ```sh
-npm i express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch dotenv
+npm i express @types/express pg  @types/pg dotenv @remult/core@pre-release @remult/server@pre-release @remult/server-postgres@pre-release tsc-watch 
 ```
 
 
@@ -111,13 +113,12 @@ In the production environment, these variables will be set by environment variab
 Place the following lines in that file:
 ```
 DATABASE_URL='postgres://postgres:somepassword@localhost/postgres'
-DISABLE_POSTGRES_SSL=true
-DISABLE_HTTPS=true
+DEV_MODE=true
 ```
 
 * `DATABASE_URL`: the url for connection to the database, using the structure: `postgres://*USERNAME*:*PASSWORD*@*HOST*:*PORT*/*DATABASE_NAME*`
-* `DISABLE_POSTGRES_SSL`: most dev environments are not configured to support ssl, this flag disables ssl for development, in production ssl will be used.
-* `DISABLE_HTTPS`: most dev environments do not require ssl, this flags disables ssl for development, in production ssl will  be used.
+* `DEV_MODE=true` will be use to configure different settings in our development environment to the ones we'll use in production
+
 
 
 ### Add the server code
@@ -129,30 +130,29 @@ import * as fs from 'fs';
 import { SqlDatabase } from '@remult/core';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
+import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
 import '../app.module';
 
 config(); //loads the configuration from the .env file
-let dbUrl = process.env.DATABASE_URL;
-if (!dbUrl) {
-    throw "No DATABASE_URL environment variable found, if you are developing locally, please add a '.env' file with DATABASE_URL='postgres://*USERNAME*:*PASSWORD*@*HOST*:*PORT*/*DATABASE*'";
-}
 const pool = new Pool({
-    connectionString: dbUrl,
-    ssl: process.env.DISABLE_POSTGRES_SSL ? false : { rejectUnauthorized: false }
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
 });
 let database = new SqlDatabase(new PostgresDataProvider(pool));
-new PostgresSchemaBuilder(database).verifyStructureOfAllEntities().then(() => {
-    //once the database is ok and all tables are created, setup the express code
-    let app = express();
-    initExpress(app, database, process.env.DISABLE_HTTPS == "true");
-    app.use(express.static('dist/angular-sample'));
-    app.use('/*', async (req, res) => {
+verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
+
+let app = express();
+initExpress(app, database);
+app.use(express.static('dist/angular-sample'));
+app.use('/*', async (req, res) => {
+    try {
         res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
-    });
-    let port = process.env.PORT || 3002;
-    app.listen(port);
+    } catch (err) {
+        res.sendStatus(500);
+    }
 });
+let port = process.env.PORT || 3002;
+app.listen(port);
 ```
 
 * Note that the project name `angular-sample` is mentioned twice in this code, if you use a different project name, change it there.
@@ -176,12 +176,12 @@ Next to the existing `tsconfig.json` we'll add a new `tsconfig` file for the ser
 ```
 
 ### Exclude server from the `tsconfig.app.json`
-```JSON{5}
+```JSON{4}
 ...
 "exclude": [
   "src/test.ts",
-  "src/**/*.spec.ts",
-  "src/app/server/**"
+  "src/app/server/**",
+  "src/**/*.spec.ts"
 ]
 ```
 
@@ -201,30 +201,13 @@ We'll add a file next to the `angular.json` file called `proxy.conf.json`:
 }
 ```
 
-
-And in the `angular.json` file we'll add in the `serve` / `options` section - a reference to the `proxy.conf.json` file:
-
-```json{5}
-"serve": {
-    "builder": "@angular-devkit/build-angular:dev-server",
-    "options": {
-      "browserTarget": "angular-sample:build",
-      "proxyConfig": "proxy.conf.json"
-    },
-    "configurations": {
-      "production": {
-          "browserTarget": "angular-sample:build:production"
-      }
-    },
-},
-```
 ### configure the scripts in package.json
-```json{4}
+```json{3,4,5,6}
   "scripts": {
     "ng": "ng",
     "start":"node dist/server/server/server.js",
     "build": "ng build && tsc -p tsconfig.server.json",
-    "dev-ng": "ng serve",
+    "dev-ng": "ng serve  --proxy-config proxy.conf.json",
     "dev-node": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run start\"",
     "test": "ng test",
     "lint": "ng lint",
@@ -245,14 +228,15 @@ The remult `Context` object is responsible for most of the server interactions, 
 
 To configure angular to be able to inject it, we'll add a `provider` for it in the `app.module.ts` file:
 
-```ts{8,21}
+```ts{7,9,22}
 import { BrowserModule } from '@angular/platform-browser';
 import { ErrorHandler, NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-import { DisplayAlertErrorErrorHandler } from './common/error-handler';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { DisplayAlertErrorErrorHandler } from './error-handler';
 import { Context } from '@remult/core';
 
 @NgModule({
@@ -262,16 +246,16 @@ import { Context } from '@remult/core';
   imports: [
     BrowserModule,
     FormsModule,
+    HttpClientModule,
     AppRoutingModule
   ],
   providers: [
-    { provide: ErrorHandler, useClass: DisplayAlertErrorErrorHandler },
-    { provide: Context, useClass: Context }
+    { provide: Context, useClass: Context, deps: [HttpClient] },
+    { provide: ErrorHandler, useClass: DisplayAlertErrorErrorHandler }
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
-
 ```
 
 
@@ -284,46 +268,7 @@ We'll run two terminal windows
 ::: tip  Optional Tip - Configuring tasks in vscode
 If you are using vs code, you might find it useful to configure the `dev-ng` and the `dev-node` as vscode tasks, and see them as a split screen in the terminal window.
 
-To do that, add the following tasks configuration to the `tasks.json` file
-```json
-{
-    "type": "npm",
-    "script": "dev-ng",
-    "problemMatcher": [
-        "$tsc-watch"
-    ],
-    "label": "npm: dev-ng",
-    "detail": "Angular Cli Dev Server",
-    "isBackground": true,
-    "presentation": {
-        "group": "dev"
-    }
-},
-{
-    "type": "npm",
-    "script": "dev-node",
-    "problemMatcher": [
-        "$tsc-watch"
-    ],
-    "label": "npm: dev-node",
-    "detail": "Node Dev Server",
-    "isBackground": true,
-    "presentation": {
-        "group": "dev"
-    }
-},
-{
-    "label": "dev",
-    "dependsOn": [
-        "npm: dev-ng",
-        "npm: dev-node"
-    ],
-    "detail":"runs both dev-ng and dev-node",
-    "problemMatcher": [
-    ],
-    "isBackground": true
-}
-```
+To do that, create a file called  `.vscode/tasks.json` and add to it the content of [tasks.json](https://gist.github.com/noam-honig/623898a6cd539d86113263d3c63260f0)
 
 Then you can simply run the task called 'dev'
 :::
@@ -470,10 +415,10 @@ Once it's done simply run the app using: `heroku apps:open`
 ### Allowing the user to delete a task
 In the `app.component.ts` add the following code:
 ```ts
-async deleteTask(task:Tasks){
-    await task.delete();
-    this.loadTasks();
-  }
+async deleteTask(task: Tasks){
+  await task.delete();
+  this.loadTasks();
+}
 ```
 
 In the `app.component.html`
@@ -527,7 +472,7 @@ export class Tasks extends IdEntity {
     name = new StringColumn({
         validate: () => {
             if (this.name.value.length < 2)
-                this.name.validationError = 'task name is too short';
+                this.name.validationError = 'too short';
         }
     });
     constructor() {
@@ -582,7 +527,7 @@ export class Tasks extends IdEntity {
     name = new StringColumn({
         validate: () => {
             if (this.name.value.length < 2)
-                this.name.validationError = 'task name is too short';
+                this.name.validationError = 'too short';
         }
     });
     completed = new BoolColumn();
@@ -759,7 +704,7 @@ heroku config:set TOKEN_SIGN_KEY=Some very secret key you've generated
 
 ### Now that we're all setup, let's use it
 In the `app.component.ts` make the following changes:
-```ts{2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,22,23}
+```ts{2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,23,24}
 export class AppComponent {
   constructor(public context: Context, public session: JwtSessionService) {
   }
@@ -777,6 +722,7 @@ export class AppComponent {
   username: string;
   async signIn() {
     this.session.setToken(await AppComponent.signIn(this.username));
+    this.loadTasks();
   }
   tasks: Tasks[];
   hideCompleted: boolean;
@@ -845,7 +791,7 @@ export class Tasks extends IdEntity {
     name = new StringColumn({
         validate: () => {
             if (this.name.value.length < 2)
-                this.name.validationError = 'task name is too short';
+                this.name.validationError = 'too short';
         }
     });
     completed = new BoolColumn();
@@ -896,7 +842,7 @@ export class Tasks extends IdEntity {
     name = new StringColumn({
         validate: () => {
             if (this.name.value.length < 2)
-                this.name.validationError = 'task name is too short';
+                this.name.validationError = 'too short';
         },
         allowApiUpdate: Roles.admin
     });
@@ -938,7 +884,7 @@ export class Tasks extends IdEntity {
     name = new StringColumn({
         validate: () => {
             if (this.name.value.length < 2)
-                this.name.validationError = 'task name is too short';
+                this.name.validationError = 'too short';
         },
         allowApiUpdate: Roles.admin
     });
@@ -994,3 +940,7 @@ export class Tasks extends IdEntity {
 [] consider code that decodes jwt in jwt-session-service
 
 [] fix server ts to remove the then and create the entities in a simple line.
+
+```sh
+npm i express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch dotenv
+```

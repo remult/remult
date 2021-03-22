@@ -202,7 +202,3 @@ export interface DataApiRequest {
   user: UserInfo;
   clientIp: string;
 }
-export interface DataApiServer {
-  addRequestProcessor(processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<boolean>): void;
-
-}

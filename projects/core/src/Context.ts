@@ -3,7 +3,7 @@ import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDat
 
 
 
-import { InMemoryDataProvider } from "./data-providers/in-memory-database";
+
 import { DataApiRequest, DataApiSettings } from "./data-api";
 import { isFunction, isString, isBoolean } from "util";
 
@@ -15,14 +15,43 @@ import { IDataSettings, GridSettings } from "./grid-settings";
 import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';
 import { ValueListItem } from './column-interfaces';
-import { Sort } from './sort';
-import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+
+import { RestDataProvider, RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { CompoundIdColumn } from "./columns/compound-id-column";
 
 
 
 
+export interface HttpProvider {
+    post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
+    delete(url: string): Promise<void> | { toPromise(): Promise<void> };
+    put(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
+    get(url: string): Promise<any> | { toPromise(): Promise<any> };
+}
+class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
+    constructor(private http: HttpProvider) {
 
+    }
+    post(url: string, data: any): Promise<any> {
+        return toPromise(this.http.post(url, data));
+    }
+    delete(url: string): Promise<void> {
+        return toPromise(this.http.delete(url));
+    }
+    put(url: string, data: any): Promise<any> {
+        return toPromise(this.http.put(url, data));
+    }
+    get(url: string): Promise<any> {
+        return toPromise(this.http.get(url));
+    }
+
+}
+function toPromise<T>(p: Promise<any> | { toPromise(): Promise<any> }) {
+    if (p["toPromise"] !== undefined) {
+        return p["toPromise"]();
+    }
+    return p;
+}
 
 export class Context {
     clearAllCache(): any {
@@ -33,8 +62,17 @@ export class Context {
     isSignedIn() {
         return !!this.user;
     }
-    constructor() {
-        this._dataSource = new RestDataProvider(Context.apiBaseUrl, new RestDataProviderHttpProviderUsingFetch());
+    constructor(http?: HttpProvider) {
+        let provider: RestDataProviderHttpProvider;
+        if (http) {
+            provider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
+        }
+
+        if (!provider) {
+            provider = new RestDataProviderHttpProviderUsingFetch();
+        }
+        this._dataSource = new RestDataProvider(Context.apiBaseUrl, provider);
+        Action.provider = provider;
     }
 
     getCookie(name: string) {

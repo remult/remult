@@ -2,14 +2,18 @@ import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
 import * as cors from 'cors';
-import { EntityQueueStorage, initExpress, JobsInQueueEntity, JWTCookieAuthorizationHelper } from '@remult/server';
+import { EntityQueueStorage, initExpress, JobsInQueueEntity } from '@remult/server';
 import * as fs from 'fs';
 import '../app.module';
 import { serverInit } from './server-init';
 import { ServerContext } from '@remult/core';
 import { ServerSignIn } from '../../../projects/angular/schematics/hello/files/src/app/users/server-sign-in';
-import { preparePostgressQueueStorage } from '@remult/server-postgres';
+import { preparePostgresQueueStorage } from '@remult/server-postgres';
 import { Products } from '../products-test/products';
+import * as compression from 'compression';
+import * as forceHttps from 'express-force-https';
+import * as jwt from 'jsonwebtoken';
+
 
 
 
@@ -18,14 +22,17 @@ const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
     let app = express();
     app.use(cors());
-
-
-
+    app.use(compression());
+    if (process.env.DISABLE_HTTPS != "true")
+        app.use(forceHttps);
     let s = initExpress(app, dataSource, {
-        disableHttpsForDevOnly: process.env.DISABLE_HTTPS == "true",
-          queueStorage: await preparePostgressQueueStorage(dataSource) 
+        queueStorage: await preparePostgresQueueStorage(dataSource),
+        tokenProvider: {
+            createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),
+            verifyToken: token => jwt.verify(token, process.env.TOKEN_SIGN_KEY)
+        }
     });
-    ServerSignIn.helper = new JWTCookieAuthorizationHelper(s, 'signKey');
+
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
         let c = await s.getValidContext(req);

@@ -1,6 +1,6 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, DataApiServer, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '@remult/core';
+import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest,  Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '@remult/core';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
@@ -11,76 +11,72 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 import { isBoolean, isFunction, isString } from 'util';
 
 import { JwtSessionService } from '@remult/core';
-import { userInfo } from 'os';
-import { JWTCookieAuthorizationHelper } from './jwt-cookie-authoerization-helper';
 
 
 
 export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder,
-  disableHttpsForDevOnly_or_args?: boolean |
-  {
-    disableHttpsForDevOnly?: boolean,
-    limit?: string,
-    disableAutoApi?: boolean,
-    queueStorage?: QueueStorage,
-    jwtTokenSignKey?: string,
-    jwtTokenExpiresIn?: number
-  },) {
+  options?:
+    {
 
-  if (isBoolean(disableHttpsForDevOnly_or_args)) {
-    disableHttpsForDevOnly_or_args = {
-      disableHttpsForDevOnly: disableHttpsForDevOnly_or_args
-    }
-  } else if (disableHttpsForDevOnly_or_args === undefined) {
-    disableHttpsForDevOnly_or_args = {}
+      bodySizeLimit?: string,
+      disableAutoApi?: boolean,
+      queueStorage?: QueueStorage,
+      tokenProvider?: TokenProvider
+    }) {
+
+  if (!options) {
+    options = {};
   }
-  if (disableHttpsForDevOnly_or_args.limit === undefined) {
-    disableHttpsForDevOnly_or_args.limit = '10mb';
+  if (options.bodySizeLimit === undefined) {
+    options.bodySizeLimit = '10mb';
   }
-  if (!disableHttpsForDevOnly_or_args.queueStorage) {
-    disableHttpsForDevOnly_or_args.queueStorage = new InMemoryQueueStorage();
+  if (!options.queueStorage) {
+    options.queueStorage = new InMemoryQueueStorage();
   }
 
-  app.use(compression());
-  if (!disableHttpsForDevOnly_or_args.disableHttpsForDevOnly) {
-    app.use(secure);
-  }
-  app.use(bodyParser.json({ limit: disableHttpsForDevOnly_or_args.limit }));
-  app.use(bodyParser.urlencoded({ extended: true, limit: disableHttpsForDevOnly_or_args.limit }));
+
+  app.use(bodyParser.json({ limit: options.bodySizeLimit }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: options.bodySizeLimit }));
 
   let builder: DataProviderFactoryBuilder;
   if (isFunction(dataProvider))
     builder = <DataProviderFactoryBuilder>dataProvider;
   else
     builder = () => <DataProvider>dataProvider;
-  let result = new ExpressBridge(app, new inProcessQueueHandler(disableHttpsForDevOnly_or_args.queueStorage));
+  let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage));
   let apiArea = result.addArea('/' + Context.apiBaseUrl);
 
 
-
-
-
-  if (!disableHttpsForDevOnly_or_args.disableAutoApi) {
+  if (!options.disableAutoApi) {
     apiArea.setDataProviderFactory(builder);
     registerActionsOnServer(apiArea, builder);
     registerEntitiesOnServer(apiArea, builder);
   }
-  if (!disableHttpsForDevOnly_or_args.jwtTokenSignKey) {
-    disableHttpsForDevOnly_or_args.jwtTokenSignKey = process.env.TOKEN_SIGN_KEY;
+  if (options.tokenProvider) {
+    let x = new JWTCookieAuthorizationHelper(options.tokenProvider);
+    result.addRequestProcessor(async req => {
+      let token = req.getHeader(x.authCookieName);
+      if (token && token.startsWith('Bearer '))
+        token = token.substring(7);
+      if (token) {
+        req.user = await x.validateToken(token);
 
+      } else {
+        var h = req.getHeader('cookie');
+        req.user = await x.authenticateCookie(h);
+      }
+      return !!req.user;
+    });
+    JwtSessionService.createTokenOnServer = (user: UserInfo) => x.createSecuredTokenBasedOn(user);
   }
-  if (disableHttpsForDevOnly_or_args.jwtTokenSignKey) {
-    let a = new JWTCookieAuthorizationHelper(result, disableHttpsForDevOnly_or_args.jwtTokenSignKey);
-    let options: { expiresIn: number } = undefined;
-    if (disableHttpsForDevOnly_or_args.jwtTokenExpiresIn) {
-      options = { expiresIn: disableHttpsForDevOnly_or_args.jwtTokenExpiresIn };
-    }
-    JwtSessionService.createTokenOnServer = (user: UserInfo) => a.createSecuredTokenBasedOn(user, options);
-  }
+ 
+    
+  
   return result;
 }
 
-export class ExpressBridge implements DataApiServer {
+
+export class ExpressBridge  {
 
   addRequestProcessor(processAndReturnTrueToAuthorize: (req: DataApiRequest) => void): void {
     this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAuthorize);
@@ -464,4 +460,47 @@ export class JobsInQueueEntity extends IdEntity {
       allowApiRead: false
     });
   }
+}
+
+class JWTCookieAuthorizationHelper {
+
+  constructor( private provider: TokenProvider, public authCookieName?: string) {
+    if (!authCookieName) {
+      this.authCookieName = 'authorization';
+
+    }
+  }
+
+  async authenticateCookie(cookieHeader: string) {
+    if (cookieHeader) {
+      for (const iterator of cookieHeader.split(';')) {
+        let itemInfo = iterator.split('=');
+        if (itemInfo && itemInfo[0].trim() == this.authCookieName) {
+          if (this.validateToken)
+            return await <UserInfo><any>this.validateToken(itemInfo[1]);
+        }
+      }
+      return undefined;
+    }
+  }
+
+  createSecuredTokenBasedOn(what: any) {
+    return this.provider.createToken(what);
+  }
+
+
+
+  validateToken: (token: string) => Promise<UserInfo> = async (x) => {
+    let result: UserInfo;
+    try {
+      result = <UserInfo><any>this.provider.verifyToken(x);
+    } catch (err) { }
+
+    return result;
+  };
+
+}
+export interface TokenProvider {
+  createToken(info: UserInfo): string;
+  verifyToken(token: string): UserInfo|any;
 }

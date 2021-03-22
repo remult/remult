@@ -21,7 +21,7 @@ export class PostgresDataProvider implements SqlImplementation {
     }
 
     createCommand(): SqlCommand {
-        return new PostgrestBridgeToSQLCommand(this.pool);
+        return new PostgresBridgeToSQLCommand(this.pool);
     }
     constructor(private pool: PostgresPool) {
     }
@@ -36,7 +36,7 @@ export class PostgresDataProvider implements SqlImplementation {
         try {
             await client.query('BEGIN');
             await action({
-                createCommand: () => new PostgrestBridgeToSQLCommand(client),
+                createCommand: () => new PostgresBridgeToSQLCommand(client),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
                 insertAndReturnAutoIncrementId: this.insertAndReturnAutoIncrementId,
@@ -59,7 +59,7 @@ export interface PostgresCommandSource {
     query(queryText: string, values?: any[]): Promise<QueryResult>;
 }
 
-class PostgrestBridgeToSQLCommand implements SqlCommand {
+class PostgresBridgeToSQLCommand implements SqlCommand {
     constructor(private source: PostgresCommandSource) {
 
     }
@@ -69,10 +69,10 @@ class PostgrestBridgeToSQLCommand implements SqlCommand {
         return '$' + this.values.length;
     }
     execute(sql: string): Promise<SqlResult> {
-        return this.source.query(sql, this.values).then(r => new PostgressBridgeToSQLQueryResult(r));
+        return this.source.query(sql, this.values).then(r => new PostgresBridgeToSQLQueryResult(r));
     }
 }
-class PostgressBridgeToSQLQueryResult implements SqlResult {
+class PostgresBridgeToSQLQueryResult implements SqlResult {
     getColumnKeyInResultForIndexInSelect(index: number): string {
         return this.r.fields[index].name;
     }
@@ -84,7 +84,9 @@ class PostgressBridgeToSQLQueryResult implements SqlResult {
 
 }
 
-
+export async function verifyStructureOfAllEntities(db:SqlDatabase){
+    return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities();
+}
 
 export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities() {
@@ -207,7 +209,7 @@ export class PostgresSchemaBuilder {
     }
 }
 
-export async function preparePostgressQueueStorage(sql: SqlDatabase) {
+export async function preparePostgresQueueStorage(sql: SqlDatabase) {
     let c = new ServerContext(sql);
     {
         let e = c.for(JobsInQueueEntity).create();
