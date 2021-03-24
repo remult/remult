@@ -3,14 +3,14 @@ import { Router, Route, CanActivate, ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatDialog } from '@angular/material/dialog';
 
-
-import { Context } from '@remult/core';
-
-
-import { SignInComponent } from './common/sign-in/sign-in.component';
+import { Context, JwtSessionService, ServerFunction, StringColumn, UserInfo } from '@remult/core';
 
 import { DialogService } from './common/dialog';
-import { JwtSessionManager, RouteHelperService } from '@remult/angular';
+import { RouteHelperService } from '@remult/angular';
+import { PasswordColumn, Users } from './users/users';
+import { Roles } from './users/roles';
+import { InputAreaComponent } from './common/input-area/input-area.component';
+import { async } from '@angular/core/testing';
 
 @Component({
   selector: 'app-root',
@@ -21,31 +21,111 @@ export class AppComponent {
 
 
   constructor(
-    public sessionManager: JwtSessionManager,
     public router: Router,
     public activeRoute: ActivatedRoute,
-    private dialog: MatDialog,
     private routeHelper: RouteHelperService,
-
     public dialogService: DialogService,
+    private session: JwtSessionService,
     public context: Context) {
-    sessionManager.loadSessionFromCookie();
+
 
   }
-  signInText() {
-    if (this.context.user)
-      return this.context.user.name;
-    return 'Sign in';
-  }
+
   async signIn() {
-    if (!this.context.user) {
-      this.dialog.open(SignInComponent);
-    } else {
-      if (await this.dialogService.yesNoQuestion("Would you like to sign out?")) {
-        this.sessionManager.signout();
-        this.router.navigate(['/']);
+    let user = new StringColumn("User Name");
+    let password = new PasswordColumn();
+    this.context.openDialog(InputAreaComponent, i => i.args = {
+      title: "Sign In",
+      columnSettings: () => [
+        user,
+        password
+      ],
+      ok: async () => {
+        this.session.setToken(await AppComponent.signIn(user.value, password.value));
       }
+    });
+  }
+  @ServerFunction({ allowed: true })
+  static async signIn(user: string, password: string, context?: Context) {
+    let result: UserInfo;
+    let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
+    if (u)
+      if (!u.password.value || PasswordColumn.passwordHelper.verify(password, u.password.value)) {
+        result = {
+          id: u.id.value,
+          roles: [],
+          name: u.name.value
+        };
+        if (u.admin.value) {
+          result.roles.push(Roles.admin);
+        }
+      }
+
+    if (result) {
+      return JwtSessionService.createTokenOnServer(result);
     }
+    throw new Error("Invalid Sign In Info");
+  }
+
+  signOut() {
+    this.session.signout();
+    this.router.navigate(['/']);
+  }
+  signUp() {
+    let user = this.context.for(Users).create();
+    let password = new PasswordColumn();
+    let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
+    this.context.openDialog(InputAreaComponent, i => i.args = {
+      title: "Sign Up",
+      columnSettings: () => [
+        user.name,
+        password,
+        confirmPassword
+      ],
+      ok: async () => {
+        if (password.value != confirmPassword.value) {
+          confirmPassword.validationError = "doesn't match password";
+          throw new Error(confirmPassword.defs.caption + " " + confirmPassword.validationError);
+        }
+        await user.create(password.value);
+        this.session.setToken(await AppComponent.signIn(user.name.value, password.value));
+
+      }
+    });
+  }
+
+  async updateInfo() {
+    let user = await this.context.for(Users).findId(this.context.user.id);
+    this.context.openDialog(InputAreaComponent, i => i.args = {
+      title: "Update Info",
+      columnSettings: () => [
+        user.name
+      ],
+      ok: async () => {
+        await user.save();
+      }
+    });
+  }
+  async changePassword() {
+    let user = await this.context.for(Users).findId(this.context.user.id);
+    let password = new PasswordColumn();
+    let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
+    this.context.openDialog(InputAreaComponent, i => i.args = {
+      title: "Change Password",
+      columnSettings: () => [
+        password,
+        confirmPassword
+      ],
+      ok: async () => {
+        if (password.value != confirmPassword.value) {
+          confirmPassword.validationError = "doesn't match password";
+          throw new Error(confirmPassword.defs.caption + " " + confirmPassword.validationError);
+        }
+        await user.updatePassword(password.value);
+        await user.save();
+      }
+    });
+
   }
 
   routeName(route: Route) {
@@ -67,12 +147,6 @@ export class AppComponent {
     return '<%= project %>';
   }
 
-
-  signOut() {
-
-    this.routeClicked();
-    this.sessionManager.signout();
-  }
   shouldDisplayRoute(route: Route) {
     if (!(route.path && route.path.indexOf(':') < 0 && route.path.indexOf('**') < 0))
       return false;
@@ -85,8 +159,6 @@ export class AppComponent {
       this.sidenav.close();
 
   }
-  test() {
 
-  }
 
 }

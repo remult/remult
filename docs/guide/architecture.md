@@ -23,14 +23,14 @@ This is configured in the `proxy.conf.json` file.
 
 
 ### Running the development environment
-To work in development we'll need to run two tasks:
-1. `ng-serve` - Runs the **Angular Dev Server**
+To work in development we'll run the `dev` task which in turn will run two tasks:
+1. `dev-ng` - Runs the **Angular Dev Server**
     ```sh
-    npm run ng-serve
+    npm run dev-ng
     ```
-2. `node-serve` - does several things:
+2. `dev-node` - does several things:
     ```sh
-    npm run node-serve
+    npm run dev-node
     ```
     1. "Compiles" the `typescript` code that we write, to the `javascript` code that the `Node JS` server can run. 
     2. Runs the `Node JS` server once the "compilation" is complete.
@@ -43,8 +43,8 @@ To build the project, we run:
 npm run build
 ```
 This performs the following tasks:
-1. Runs angular build, which "compiles" and minifies all the `typescript`, html and scss files and places them in the `./dist` folder.
-2. "compiles" all the `typescript` files that are used by the `server` and places them in the `./dist-server` folder.
+1. Runs angular build, which "compiles" and minifies all the `typescript`, html and scss files and places them in the `./dist/my-project` folder.
+2. "compiles" all the `typescript` files that are used by the `server` and places them in the `./dist/server` folder.
 
 ## The Production Environment
 ![](/production-architecture.png) 

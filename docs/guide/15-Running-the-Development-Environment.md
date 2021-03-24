@@ -18,15 +18,7 @@ Alternatively you can click <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
 and select `Tasks:Run Task`
 ![](/2019-09-23_14h40_29.png)
 
-And then the task you want to run.
-
-### 1. Run the Node JS server - `npm:node-serve`
-1. Go to menu `Terminal\Run Task..."
-2. Select `npm:node-serve`
-
-### 2. Run the Angular dev server `npm:ng-serve`
-1. Go to menu `Terminal\Run Task..."
-2. Select `npm:ng-serve`
+And then select the task called `dev`.
 
 **Great, now we can start**
 Once both tasks settle down you should see at the bottom of your screen the output of both tasks:
@@ -38,11 +30,11 @@ Simply open a browser with the url `http://localhost:4200` and you'll see your a
 
 
 ## A little more information
-* the task `npm:node-serve` build the code that will run on the NodeJS server and runs it. 
+* the task `npm:dev-node` build the code that will run on the NodeJS server and runs it. 
 
   Whenever a code file changes, it'll automatically rebuild the project and restart it.
 
-* The task `npm:ng-serve` runs the angular dev server, after it completes, you can open a browser using the `http://localhost:4200` url.
+* The task `npm:dev-ng` runs the angular dev server, after it completes, you can open a browser using the `http://localhost:4200` url.
 
   Whenever a code file changes, it'll automatically refresh the browser to reflect that change.
 

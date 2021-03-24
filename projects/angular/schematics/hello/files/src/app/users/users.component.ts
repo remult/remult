@@ -33,26 +33,26 @@ export class UsersComponent implements OnInit {
 
 
     ],
-    confirmDelete: async (h) => {
-      return await this.dialog.confirmDelete(h.name.value)
-    },
+    rowButtons: [{
+      name: 'Reset Password',
+      click:async  () => {
 
-
-  });
-
-
-  async resetPassword() {
     if (await this.dialog.yesNoQuestion("Are you sure you want to delete the password of " + this.users.currentRow.name.value)) {
       await UsersComponent.resetPassword(this.users.currentRow.id.value);
       this.dialog.info("Password deleted");
     };
-
+      }
   }
-  @ServerFunction({ allowed: c => c.isAllowed(Roles.admin) })
+    ],
+    confirmDelete: async (h) => {
+      return await this.dialog.confirmDelete(h.name.value)
+    },
+  });
+  @ServerFunction({ allowed:Roles.admin })
   static async resetPassword(userId: string, context?: Context) {
     let u = await context.for(Users).findId(userId);
     if (u){
-      u.realStoredPassword.value = '';
+      u.password.value = '';
       await u.save();
     }
   }

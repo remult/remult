@@ -1,46 +1,12 @@
 
-import { Entity, IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions } from "@remult/core";
+import { IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions, UserInfo, ColumnSettings, ServerFunction, ServerMethod } from "@remult/core";
 import { changeDate } from '../shared/types';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
-
-
-
-
+import { userInfo } from "os";
 
 @EntityClass
 export class Users extends IdEntity {
-
-    constructor(private context: Context) {
-
-        super({
-            name: "Users",
-            allowApiRead: true,
-            allowApiDelete: context.isSignedIn(),
-            allowApiUpdate: context.isSignedIn(),
-            allowApiInsert: true,
-            saving: async () => {
-                if (context.onServer) {
-                    if (this.password.value && this.password.value != this.password.originalValue && this.password.value != Users.emptyPassword) {
-                        this.realStoredPassword.value = Users.passwordHelper.generateHash(this.password.value);
-                    }
-                    if ((await context.for(Users).count()) == 0)
-                        this.admin.value = true;
-
-                    await checkForDuplicateValue(this, this.name, this.context.for(Users));
-                    if (this.isNew())
-                        this.createDate.value = new Date();
-                }
-            },
-            apiDataFilter: () => {
-                if (!context.isSignedIn())
-                    return this.id.isEqualTo("No User");
-                else if (!(context.isAllowed(Roles.admin)))
-                    return this.id.isEqualTo(this.context.user.id);
-            }
-        });
-    }
-    public static emptyPassword = 'password';
     name = new StringColumn({
         caption: "name",
         validate: () => {
@@ -49,28 +15,54 @@ export class Users extends IdEntity {
                 this.name.validationError = 'Name is too short';
         }
     });
-
-    realStoredPassword = new StringColumn({
-        dbName: 'password',
+    password = new PasswordColumn({
         includeInApi: false
     });
-    password = new StringColumn({ caption: 'password', dataControlSettings: () => ({ inputType: 'password' }), serverExpression: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
-
     createDate = new changeDate('Create Date');
 
-
-
     admin = new BoolColumn();
-    static passwordHelper: PasswordHelper = {
-        generateHash: x => { throw ""; },
-        verify: (x, y) => { throw ""; }
-    };
+    constructor(private context: Context) {
 
+        super({
+            name: "Users",
+            allowApiRead: context.isSignedIn(),
+            allowApiDelete: Roles.admin,
+            allowApiUpdate: context.isSignedIn(),
+            allowApiInsert: false,
+            saving: async () => {
+                if (context.onServer) {
+
+                    if (this.isNew()) {
+                        this.createDate.value = new Date();
+                        if ((await context.for(Users).count()) == 0)
+                            this.admin.value = true;// If it's the first user, make it an admin
+                    }
+                    await checkForDuplicateValue(this, this.name, this.context.for(Users));
+
+                }
+            },
+            apiDataFilter: () => {
+                if (!(context.isAllowed(Roles.admin)))
+                    return this.id.isEqualTo(this.context.user.id);
+            }
+        });
+    }
+    @ServerMethod({ allowed: true })
+    async create(password: string) {
+        if (!this.isNew())
+            throw "Invalid Operation";
+        this.password.value = PasswordColumn.passwordHelper.generateHash(password);
+        await this.save();
+    }
+    @ServerMethod({ allowed: context => context.isSignedIn() })
+    async updatePassword(password: string) {
+        if (this.isNew() || this.id.value != this.context.user.id)
+            throw "Invalid Operation";
+        this.password.value = PasswordColumn.passwordHelper.generateHash(password);
+        await this.save();
+    }
 }
-export interface PasswordHelper {
-    generateHash(password: string): string;
-    verify(password: string, realPasswordHash: string): boolean;
-}
+
 
 
 export class UserId extends IdColumn {
@@ -87,8 +79,21 @@ export class UserId extends IdColumn {
     get displayValue() {
         return this.context.for(Users).lookup(this).name.value;
     }
+}
+export class PasswordColumn extends StringColumn {
 
-
-
+    constructor(settings?: ColumnSettings<string>) {
+        super({
+            ...{ caption: 'Password' },
+            ...settings,
+            dataControlSettings: () => ({
+                inputType: 'password'
+            })
+        })
+    }
+    static passwordHelper: {
+        generateHash(password: string): string;
+        verify(password: string, realPasswordHash: string): boolean;
+    };
 }
 

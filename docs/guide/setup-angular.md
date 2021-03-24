@@ -100,7 +100,7 @@ Replace the content of the `app.component.html` file with the following `html`
 Now we'll add the server functionality to the same project.
 
 ```sh
-npm i express @types/express pg  @types/pg dotenv @remult/core@pre-release @remult/server@pre-release @remult/server-postgres@pre-release tsc-watch 
+npm i express @types/express pg  @types/pg dotenv @remult/core @remult/server @remult/server-postgres tsc-watch 
 ```
 
 
@@ -118,6 +118,13 @@ DEV_MODE=true
 
 * `DATABASE_URL`: the url for connection to the database, using the structure: `postgres://*USERNAME*:*PASSWORD*@*HOST*:*PORT*/*DATABASE_NAME*`
 * `DEV_MODE=true` will be use to configure different settings in our development environment to the ones we'll use in production
+
+#### Add the .env file to git ignore
+because this file contains sensitive information, like passwords etc... we don't want to commit it to the source control.
+in the `.gitignore` file add:
+```
+.env
+```
 
 
 
@@ -1065,6 +1072,8 @@ app.listen(port);
 
 ## todo
 [] finish release of remult after jwt changes introduced in v2.2.1
+
+[V] don't forget to add .env to the .gitignore
 
 [V] Reconsider the Context Injection to use angular http client instead of nothing is it does right now. maybe even consider creating an AppContext and do something with it~~
 

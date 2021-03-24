@@ -32,7 +32,6 @@ export function hello(_options: Schema): Rule {
 
     editGitIgnore(tree);
     let entryComponents = [{ name: 'YesNoQuestionComponent', path: './common/yes-no-question/yes-no-question.component' },
-    { name: 'SignInComponent', path: './common/sign-in/sign-in.component' },
     { name: 'InputAreaComponent', path: './common/input-area/input-area.component' },
 
     ];
@@ -40,9 +39,6 @@ export function hello(_options: Schema): Rule {
     addToNgModule(tree, {
       declarations: [
         { name: 'UsersComponent', path: './users/users.component' },
-        { name: 'UpdateInfoComponent', path: './users/update-info/update-info.component' },
-        { name: 'RegisterComponent', path: './users/register/register.component' },
-
         { name: 'HomeComponent', path: './home/home.component' },
         ...entryComponents
       ],
@@ -59,6 +55,7 @@ export function hello(_options: Schema): Rule {
         { name: 'MatInputModule', path: '@angular/material/input' },
         { name: 'MatButtonModule', path: '@angular/material/button' },
         { name: 'MatIconModule', path: '@angular/material/icon' },
+        { name: 'MatMenuModule', path: '@angular/material/menu' },
         { name: 'RemultModule', path: '@remult/angular' },
       ],
       providers: [
@@ -74,7 +71,7 @@ export function hello(_options: Schema): Rule {
         project = p;
         if (j.projects.hasOwnProperty(p)) {
           const element = j.projects[p];
-          element.architect.serve.options.proxyConfig = "proxy.conf.json";
+      //    element.architect.serve.options.proxyConfig = "proxy.conf.json";
           element.architect.build.options.styles.push("./node_modules/@remult/angular/input-styles.scss");
           return;
         }
@@ -115,20 +112,15 @@ export function hello(_options: Schema): Rule {
 
   function editPackageJson(tree: Tree) {
     editJson(tree, './package.json', json => {
-      json.scripts["ng-serve"] = json.scripts.start;
-      json.scripts["node-serve"] = "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run\"";
-      json.scripts["server:dev-run"] = "node --inspect dist-server/server/server.js";
-      json.scripts["ng:build"] = "ng build --prod";
-      json.scripts["build"] = "npm run server:build && npm run ng:build";
-      json.scripts.start = "node dist-server/server/server.js";
-      json.scripts["server:build-watch"] = "tsc -p tsconfig.server.json --watch";
-      json.scripts["server:build"] = "tsc -p tsconfig.server.json";
-      json.scripts["server:debug"] = "node --inspect --debug-brk dist-server/server/server.js";
+      json.scripts["dev-ng"] = "ng serve  --proxy-config proxy.conf.json";
+      json.scripts["dev-node"] = "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run start\"";
+      json.scripts["build"] = "ng build && tsc -p tsconfig.server.json";
+      json.scripts.start = "node dist/server/server/server.js";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["@remult/core"] = "^2.0.4";
-      json.dependencies["@remult/server"] = "^2.0.4";
-      json.dependencies["@remult/server-postgres"] = "^2.0.4";
+      json.dependencies["@remult/core"] = "^2.2.5";
+      json.dependencies["@remult/server"] = "^2.2.5";
+      json.dependencies["@remult/server-postgres"] = "^2.2.5";
       json.dependencies["@angular/material"] = "^7.3.7";
       json.dependencies["pg"] = "^8.3.0";
       json.dependencies["express-force-https"] = "^1.0.0";
@@ -156,10 +148,11 @@ export function hello(_options: Schema): Rule {
     let gitIgnorePath = './.gitignore';
     let r = tree.read(gitIgnorePath);
     let content = r!.toString('utf-8');
-    content += '\r\n.env\r\ndist-server/*';
+    content += '\r\n.env';
     tree.overwrite(gitIgnorePath, content);
 
   }
+  
   interface addToNdModuleParameters {
     declarations?: classToRegister[];
     imports?: classToRegister[];

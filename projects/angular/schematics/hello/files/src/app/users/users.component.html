@@ -1,7 +1,1 @@
-<mat-card>
-  <data-grid [settings]="users" height="300"></data-grid>
-
-  <button mat-raised-button color="warn" (click)="resetPassword()" *ngIf="users.currentRow">
-    Rest password for {{users.currentRow.name.value}}
-  </button>
-</mat-card>
+  <data-grid [settings]="users"></data-grid>
