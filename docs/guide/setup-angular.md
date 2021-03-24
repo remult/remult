@@ -1071,7 +1071,7 @@ app.listen(port);
 ```
 
 ## todo
-[] finish release of remult after jwt changes introduced in v2.2.1
+[V] finish release of remult after jwt changes introduced in v2.2.1
 
 [V] don't forget to add .env to the .gitignore
 
