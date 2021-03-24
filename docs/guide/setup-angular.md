@@ -649,13 +649,61 @@ We'll make the following changes to the `app.component.ts` file:
 * We've created a `static` method and decorated it with the `@ServerFunction` decorator.
 * We've sent it `allowed:true` for permission control - we'll handle these later in this tutorial, but for now we are allowing anyone to run it.
 * We've defined a new parameter called `context?: Context` that is automatically injected with the correct context on the server.
-::: error 
+
+::: danger do not forget to write 
 explain that the call to the server is type safe in the sense that it gets compile time type validation that no other tool provides.
 :::
 
 That's it - now this code runs on the serer - it uses the same language, the same code objects and just runs a lot faster.
 
 ## Securing the Application
+### Https
+The first stage of securing any application is making sure that the communication between the server and the browser will be encrypted using SSL and HTTPS.
+
+In our app, we want to make sure that any request that comes in without encryption (using http) will be automatically redirected to use encryption (https).
+
+To do that we'll install a package called:`express-force-https`
+```sh
+npm i express-force-https
+```
+
+And adjust the `server.ts` to call it. Since most dev environments do not have https - we'll only call it in production.
+```ts{8,20,21}
+import * as express from 'express';
+import { initExpress } from '@remult/server';
+import * as fs from 'fs';
+import { SqlDatabase } from '@remult/core';
+import { Pool } from 'pg';
+import { config } from 'dotenv';
+import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
+import * as forceHttps from 'express-force-https';
+import '../app.module';
+
+config(); //loads the configuration from the .env file
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
+});
+let database = new SqlDatabase(new PostgresDataProvider(pool));
+verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
+
+let app = express();
+if (!process.env.DEV_MODE)
+    app.use(forceHttps);
+initExpress(app, database);
+app.use(express.static('dist/angular-sample'));
+app.use('/*', async (req, res) => {
+    try {
+        res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
+    } catch (err) {
+        res.sendStatus(500);
+    }
+});
+let port = process.env.PORT || 3002;
+app.listen(port); 
+```
+
+### User Authorization
 A critical part of any web application, is making sure that only authorized users can use an application, and that each request is coming from the correct user.
 
 After the user Signs In, we need to include their information for each request, and to make sure that it's indeed that user that is making the request.
@@ -691,7 +739,54 @@ heroku config:set TOKEN_SIGN_KEY=Some very secret key you've generated
 ```
 :::
 
-#### Step 2, add the `JwtSessionService` to the `app.module.ts`
+#### Step 2, install and use jwt
+```sh
+npm i jsonwebtoken @types/jsonwebtoken
+```
+
+In the `server.ts` we'll use JWT as the token provider for the `initExpress` method:
+```ts{9,23,24,25,26,27,28}
+import * as express from 'express';
+import { initExpress } from '@remult/server';
+import * as fs from 'fs';
+import { SqlDatabase } from '@remult/core';
+import { Pool } from 'pg';
+import { config } from 'dotenv';
+import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
+import * as forceHttps from 'express-force-https';
+import * as jwt from 'jsonwebtoken';
+import '../app.module';
+
+config(); //loads the configuration from the .env file
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
+});
+let database = new SqlDatabase(new PostgresDataProvider(pool));
+verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
+
+let app = express();
+if (!process.env.DEV_MODE)
+    app.use(forceHttps);
+initExpress(app, database, {
+    tokenProvider: {
+        createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),
+        verifyToken: token => jwt.verify(token, process.env.TOKEN_SIGN_KEY)
+    }
+});
+app.use(express.static('dist/angular-sample'));
+app.use('/*', async (req, res) => {
+    try {
+        res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
+    } catch (err) {
+        res.sendStatus(500);
+    }
+});
+let port = process.env.PORT || 3002;
+app.listen(port); 
+```
+
+#### Step 3, add the `JwtSessionService` to the `app.module.ts`
 ```ts{4}
 ...
   providers: [
@@ -918,16 +1013,62 @@ export class Tasks extends IdEntity {
 * We've added the `context` to the constructor, the correct `context` object will be injected when the code executes. 
 * We've added logic in the `saving` event. This event is fired both in the browser and in the server, we use the `context.onServer` to conditionally run this code only on the server
 
+## Production Tips
+It's recommended to use compression on the server in production environments:
+```sh
+npm i compression
+```
 
+In `server.ts`
+```ts{10,22}
+import * as express from 'express';
+import { initExpress } from '@remult/server';
+import * as fs from 'fs';
+import { SqlDatabase } from '@remult/core';
+import { Pool } from 'pg';
+import { config } from 'dotenv';
+import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
+import * as forceHttps from 'express-force-https';
+import * as jwt from 'jsonwebtoken';
+import * as compression from 'compression';
+import '../app.module';
+
+config(); //loads the configuration from the .env file
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
+});
+let database = new SqlDatabase(new PostgresDataProvider(pool));
+verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
+
+let app = express();
+app.use(compression());
+if (!process.env.DEV_MODE)
+    app.use(forceHttps); 
+initExpress(app, database, { 
+    tokenProvider: {
+        createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),
+        verifyToken: token => jwt.verify(token, process.env.TOKEN_SIGN_KEY)
+    }
+});
+app.use(express.static('dist/angular-sample'));
+app.use('/*', async (req, res) => {
+    try {
+        res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
+    } catch (err) {
+        res.sendStatus(500);
+    }
+});
+let port = process.env.PORT || 3002;
+app.listen(port); 
+```
 
 ## todo
 [] finish release of remult after jwt changes introduced in v2.2.1
 
-[] Reconsider the Context Injection to use angular http client instead of nothing is it does right now. maybe even consider creating an AppContext and do something with it~~
+[V] Reconsider the Context Injection to use angular http client instead of nothing is it does right now. maybe even consider creating an AppContext and do something with it~~
 
-[] extract from init express the usage of compression, secure etc... and make the JwtAuthentication recieve a authenticate provider interface that is simple and is implemented with the jwt. make JWTCookieAuthorizationHelper internal and only get sign and validate in the interface.
-
-[] Investigate why in the first stage the vendor bundle size is 4mb
+[V] extract from init express the usage of compression, secure etc... and make the JwtAuthentication recieve a authenticate provider interface that is simple and is implemented with the jwt. make JWTCookieAuthorizationHelper internal and only get sign and validate in the interface.
 
 
 [] reconsider the find limit - currently it's set by default to 25 and that can cause problems.
@@ -939,8 +1080,5 @@ export class Tasks extends IdEntity {
 
 [] consider code that decodes jwt in jwt-session-service
 
-[] fix server ts to remove the then and create the entities in a simple line.
+[V] fix server ts to remove the then and create the entities in a simple line.
 
-```sh
-npm i express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch dotenv
-```
