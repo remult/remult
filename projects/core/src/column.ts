@@ -7,6 +7,7 @@ import { isBoolean } from 'util';
 import { DefaultStorage } from './columns/storage/default-storage';
 import { Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
+import { Entity } from './entity';
 
 export class Column<dataType = any>  {
   //@internal
@@ -32,7 +33,7 @@ export class Column<dataType = any>  {
   //@internal
   async __performValidation() {
     if (this.__settings.validate) {
-      await this.__settings.validate();
+      await this.__settings.validate(this);
     }
 
   }
@@ -43,7 +44,7 @@ export class Column<dataType = any>  {
   private __displayResult: DataControlSettings;
   get defs() {
     if (!this.__defs)
-      this.__defs = new ColumnDefs(this.__settings);
+      this.__defs = new ColumnDefs(this.__settings, () => this.__valueProvider.getEntity());
     return this.__defs;
   }
 
@@ -169,7 +170,7 @@ export class Column<dataType = any>  {
         add.isEqualTo(this, val);
     });
   }
-  
+
   isIn(...values: (Column<dataType> | dataType)[]) {
     return new Filter(add => add.isIn(this, values.map(x => this.__getVal(x))));
   }
@@ -241,6 +242,9 @@ export class Column<dataType = any>  {
   get originalValue() {
     return this.fromRawValue(this.__valueProvider.getOriginalValue(this.defs.key));
   }
+  wasChanged() {
+    return this.value != this.originalValue;
+  }
 
   protected __processValue(value: dataType) {
     return value;
@@ -274,6 +278,9 @@ export class Column<dataType = any>  {
 }
 
 class dummyColumnStorage implements ColumnValueProvider {
+  getEntity(): Entity<any> {
+    return undefined;
+  }
 
   private _val: string;
   private _wasSet = false;
@@ -289,13 +296,14 @@ class dummyColumnStorage implements ColumnValueProvider {
 
 
 
+
   public setValue(key: string, value: string): void {
     this._val = value;
     this._wasSet = true;
   }
 }
 export class ColumnDefs {
-  constructor(private settings: ColumnSettings) {
+  constructor(private settings: ColumnSettings, private _entity: () => Entity) {
 
   }
   get caption(): string {
@@ -313,6 +321,9 @@ export class ColumnDefs {
   }
   set key(v: string) {
     this.settings.key = v;
+  }
+  get entity(): Entity {
+    return this._entity();
   }
   get dbName(): string {
     if (this.settings.sqlExpression) {

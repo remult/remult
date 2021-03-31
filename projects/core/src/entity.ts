@@ -6,6 +6,7 @@ import { __EntityValueProvider } from './__EntityValueProvider';
 import { valueOrExpressionToValue } from './column-interfaces';
 import { AndFilter } from './filter/filter-interfaces';
 import { SortSegment, Sort } from './sort';
+import { EntityProvider } from "./data-interfaces";
 
 
 
@@ -70,17 +71,17 @@ export class Entity<idType = any> {
 
   __options: EntityOptions;
   //@internal
-  private _defs: EntityDefs;
+  private _defs: EntityDefs<this>;
   get defs() {
     if (!this._defs)
-      this._defs = new EntityDefs(this.__options);
+      this._defs = new EntityDefs(this.__options, this.__entityData);
     return this._defs;
   }
 
 
 
   //@internal
-  __entityData = new __EntityValueProvider();
+  __entityData = new __EntityValueProvider(this);
 
   //@internal
   __onSavingRow: (proceedWithoutSavingToDb: () => void) => void | Promise<void> = () => { };
@@ -332,10 +333,13 @@ export interface EntityOptions {
 }
 
 
-export class EntityDefs {
+export class EntityDefs<t extends Entity<any>> {
 
-  constructor(private __options: EntityOptions) {
+  constructor(private __options: EntityOptions, private __provider: __EntityValueProvider) {
 
+  }
+  get provider():EntityProvider<t> {
+    return this.__provider.entityProvider;
   }
   get name() {
     return this.__options.name;

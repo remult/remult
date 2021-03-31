@@ -140,11 +140,11 @@ export class DataApi<T extends Entity = Entity> {
     });
   }
   async delete(response: DataApiResponse, id: any) {
-    if (!this.options.allowDelete) {
-      response.methodNotAllowed();
-      return;
-    }
     await this.doOnId(response, id, async row => {
+      if (!this.options.allowDelete) {
+        response.methodNotAllowed();
+        return;
+      }
       await row.delete();
       response.deleted();
     });

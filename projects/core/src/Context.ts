@@ -236,6 +236,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         this._factory = newRow => {
             let e = create();
             e.__entityData.dataProvider = this._edp;
+            e.__entityData.entityProvider = this;
             if (this.context.onServer)
                 e.__entityData.initServerExpressions = async () => {
                     await Promise.all(e.columns.toArray().map(async c => {
@@ -571,7 +572,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         });
     }
 }
-export interface EntityType<T> {
+export interface EntityType<T = any> {
     new(...args: any[]): Entity<T>;
 }
 export const allEntities: EntityType<any>[] = [];

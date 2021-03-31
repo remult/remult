@@ -20,7 +20,7 @@ export interface ColumnSettings<valueType = any> {
 
     caption?: string;
     defaultValue?: ValueOrExpression<valueType>;
-    validate?: () => void | Promise<void>;
+    validate?: ColumnValidator<valueType>;
     valueChange?: () => void;
 
     dbName?: string;
@@ -31,6 +31,7 @@ export interface ColumnSettings<valueType = any> {
     allowNull?: boolean;
 
 }
+export declare type ColumnValidator<valueType = any> = (col: Column<valueType>) => void | Promise<void>;
 export declare type ColumnOptions<valueType = any> = ColumnSettings<valueType> | string;
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 export declare type ValueOrEntityExpression<valueType, entityType extends Entity> = valueType | ((e: entityType) => valueType);

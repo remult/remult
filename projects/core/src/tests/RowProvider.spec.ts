@@ -23,6 +23,7 @@ import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
+import { isNotEmpty, isUnique } from '../validators';
 
 
 
@@ -101,11 +102,11 @@ describe("grid filter stuff", () => {
   itAsync("test filter works without the get statement", async () => {
     let c = await insertFourRows();
     let ds = c.gridSettings({
-      
-        orderBy: c => new Sort({ column: c.id }),
-        where: c => c.categoryName.isContains('a'),
-        rowsInPage: 2
-      
+
+      orderBy: c => new Sort({ column: c.id }),
+      where: c => c.categoryName.isContains('a'),
+      rowsInPage: 2
+
     });
     await ds.getRecords();
     expect(ds.items.length).toBe(2);
@@ -172,7 +173,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectedRows[0].id.value).toBe(1);
     expect(ds.selectedRows[1].id.value).toBe(3);
     let w = ds.getFilterWithSelectedRows().where;
-    
+
     expect(await c.count(w)).toBe(2);
     expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
   });
@@ -214,7 +215,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectAllChecked()).toBe(false, 'select all checked');
     expect(ds.selectedRows.length).toBe(3, 'selected rows');
     let w = ds.getFilterWithSelectedRows().where;
-    
+
     expect(await c.count(w)).toBe(3, 'rows in count');
   });
   itAsync("select select row by row when all rows are in view", async () => {
@@ -396,6 +397,152 @@ describe("test row provider", () => {
     ds.items[0].categoryName.value = 'noam honig';
     await ds.items[0].save();
     expect(ds.items[0].categoryName.value).toBe('noam honig');
+  });
+  itAsync("Test Validation,", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    var c = context.for(class extends Categories {
+      a = new StringColumn({
+        validate: isNotEmpty
+      })
+    });
+    var cat = c.create();
+    cat.a.value = '';
+    var saved = false;
+    try {
+      await cat.save();
+      saved = true;
+    }
+    catch (err) {
+      expect(cat.a.validationError).toEqual("Should not be empty");
+    }
+    expect(saved).toBe(false);
+
+  });
+  itAsync("Test Validation 2", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    var c = context.for(class extends Categories {
+      a = new StringColumn({
+        validate: col => isNotEmpty(col, "m")
+      })
+    });
+    var cat = c.create();
+    cat.a.value = '';
+    var saved = false;
+    try {
+      await cat.save();
+      saved = true;
+    }
+    catch (err) {
+      expect(cat.a.validationError).toEqual("m");
+    }
+    expect(saved).toBe(false);
+
+  });
+  itAsync("Test Validation 3", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    var c = context.for(class extends Categories {
+      a = new StringColumn({
+        validate: isNotEmpty.config("m")
+      })
+    });
+    var cat = c.create();
+    cat.a.value = '';
+    var saved = false;
+    try {
+      await cat.save();
+      saved = true;
+    }
+    catch (err) {
+      expect(cat.a.validationError).toEqual("m");
+    }
+    expect(saved).toBe(false);
+  });
+  itAsync("Test unique Validation,", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    var c = context.for(class extends Categories {
+      a = new StringColumn({
+        validate: async () => {
+          if (this.isNew() || this.a.value != this.a.originalValue) {
+            if (await c.count(f => f.a.isEqualTo(this.a.value)))
+              this.a.validationError = 'already exists';
+          }
+        }
+      })
+    });
+    var cat = c.create();
+    cat.a.value = '12';
+    await cat.save();
+    cat = c.create();
+    cat.a.value = '12';
+
+    var saved = false;
+    try {
+      await cat.save();
+      saved = true;
+    }
+    catch (err) {
+      expect(cat.a.validationError).toEqual("already exists");
+    }
+    expect(saved).toBe(false);
+
+  });
+  itAsync("Test unique Validation 2", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    var c = context.for(class extends Categories {
+      a = new StringColumn({
+        validate: isUnique
+      })
+    });
+    var cat = c.create();
+    cat.a.value = '12';
+    await cat.save();
+    cat = c.create();
+    cat.a.value = '12';
+
+    var saved = false;
+    try {
+      await cat.save();
+      saved = true;
+    }
+    catch (err) {
+      expect(cat.a.validationError).toEqual("already exists");
+    }
+    expect(saved).toBe(false);
+
+  });
+  itAsync("Test unique Validation and is not empty", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    var c = context.for(class extends Categories {
+      a = new StringColumn({
+        validate: isNotEmpty.and(isUnique)
+      })
+    });
+    var cat = c.create();
+    var saved = false;
+    cat.a.value = '';
+    try {
+      await cat.save();
+      saved = true;
+    }
+    catch {
+      expect(cat.a.validationError).toEqual("Should not be empty");
+      cat.a.value = '12';
+      await cat.save();
+    }
+    expect(saved).toBe(false);
+    cat = c.create();
+    cat.a.value = '12';
+
+
+    try {
+      await cat.save();
+      saved = true;
+    }
+    catch (err) {
+      expect(cat.a.validationError).toEqual("already exists");
+    }
+    expect(saved).toBe(false);
+
   });
 
   itAsync("test grid update and validation cycle", async () => {
@@ -636,7 +783,7 @@ describe("api test", () => {
   it("can build", () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
-    
+
     let gs = ctx.for(Categories).gridSettings();
     gs.addArea({
       columnSettings: x => [
