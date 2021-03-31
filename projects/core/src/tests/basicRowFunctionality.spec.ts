@@ -359,6 +359,7 @@ describe("data api", () => {
     amount.__valueProvider = {
       getValue: (a, b) => '15',
       getOriginalValue: () => '15',
+      getEntity: () => undefined,
       setValue: (a, b) => { }
     };
     total.value += amount.value;
@@ -1277,6 +1278,33 @@ describe("data api", () => {
     await api.delete(t, 2);
     d.test();
   });
+  // itAsync("delete id  not Allowed for specific row", async () => {
+  //   let c = await createData(async (i) => {
+  //     await i(1, 'noam', 'a');
+  //     await i(2, 'yael', 'b');
+  //     await i(3, 'yoni', 'a');
+  //   }, class extends Categories {
+  //     constructor() {
+  //       super({
+  //         name: undefined,
+  //         allowApiDelete: () => this.id.value == 1
+  //       })
+  //     }
+  //   });
+  //   var api = new DataApi(c);
+  //   let t = new TestDataApiResponse();
+  //   let d = new Done();
+  //   t.methodNotAllowed = () => {
+  //     d.ok();
+  //   };
+  //   await api.delete(t, 2);
+  //   d.test();
+  //   t = new TestDataApiResponse();
+  //   d = new Done();
+  //   t.deleted = () => d.ok();
+  //   await api.delete(t, 1);
+  //   d.test();
+  // });
 
   itAsync("getArray works with sort", async () => {
     let c = await createData(async (i) => {
