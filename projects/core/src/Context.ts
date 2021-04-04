@@ -96,9 +96,14 @@ export class Context {
     }
     protected _user: UserInfo;
     get user() { return this._user; }
+    private _userChangeEvent = new EventSource();
 
+    get onUserChange() {
+        return this._userChangeEvent.dispatcher;
+    }
     _setUser(info: UserInfo) {
         this._user = info;
+        this._userChangeEvent.fire();
     }
     static apiBaseUrl = 'api';
 
@@ -756,4 +761,28 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
         }
         return r;
     }
+}
+export interface EventDispatcher {
+    register(what: () => any, fireOnceIfEverFired?: boolean): UnRegister;
+}
+export declare type UnRegister = () => void;
+export class EventSource {
+    listeners: (() => {})[] = []
+    fire() {
+        for (const l of this.listeners) {
+            l();
+        }
+    }
+    dispatcher: EventDispatcher = {
+        register: (what, fire) => {
+            this.listeners.push(what);
+            if (fire) {
+                what();
+            }
+            return () => {
+                this.listeners = this.listeners.filter(x => x != what);
+            }
+        }
+    };
+
 }

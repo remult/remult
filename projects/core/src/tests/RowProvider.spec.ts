@@ -198,6 +198,28 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
     expect(await c.count(w)).toBe(4);
   });
+  fit("test context change event",()=>{
+    let d = new Done();
+    let c= new Context();
+    let r = c.onUserChange.register(()=>d.ok(),true);
+    d.test("first fire");
+    d = new Done();
+    c._setUser({
+      id:'',
+      name:'',
+      roles:[]
+    });
+    d.test("changed on user changed");
+    d = new Done();
+    r();
+    c._setUser({
+      id:'1',
+      name:'1',
+      roles:[]
+    });
+    expect(d.happened).toBe(false,"should not have fired because unsubscribe has happened");
+    
+  });
   itAsync("test select rows in page is not select all", async () => {
     let c = await insertFourRows();
     let ds = c.gridSettings({
@@ -919,6 +941,7 @@ describe("grid settings ",
       expect(ds.items[0].id.value).toBe(6);
     });
   });
+  
 describe("order by api", () => {
   it("works with sort", () => {
     let c = new Categories();

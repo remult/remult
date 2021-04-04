@@ -23,7 +23,7 @@ export function fitAsync(name: string, runAsync: () => Promise<any>) {
   });
 }
 
-export function itAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item:T) => Promise<any>) {
+export function itAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>) {
   arrayOfT.forEach(i => {
     it(name + ' - ' + i, (done: DoneFn) => {
       runAsync(i).catch(e => {
@@ -47,9 +47,9 @@ export class Done {
   ok() {
     this.happened = true;
   }
-  test() {
+  test(message = 'expected to be done') {
     if (!this.happened)
-      fail('expected to be done');
+      fail(message);
   }
 
 }
