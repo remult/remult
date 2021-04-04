@@ -285,9 +285,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     async findFirst(options?: EntityWhere<T> | IterateOptions<T>) {
         return this.iterate(options).first();
     }
-    /** returns a single entity based on a filter
+    /** returns a single entity based on a filter, if it doesn't not exist, it is created with the default values set by the `isEqualTo` filters that were used
     * @example:
-    * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7))
+    * let p = await this.context.for(Products).findOrCreate(p => p.id.isEqualTo(7))
     */
     async findOrCreate(options?: EntityWhere<T> | IterateOptions<T>) {
         let r = await this.iterate(options).first();
