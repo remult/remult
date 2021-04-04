@@ -217,8 +217,8 @@ export class ServerContext extends Context {
 
 
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
-    _getApiSettings(forEntity?:Entity): DataApiSettings<T> {
-        return (forEntity?forEntity:this.entity)._getEntityApiSettings(this.context);
+    _getApiSettings(forEntity?: Entity): DataApiSettings<T> {
+        return (forEntity ? forEntity : this.entity)._getEntityApiSettings(this.context);
     }
 
     private entity: T;
@@ -284,6 +284,48 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
      */
     async findFirst(options?: EntityWhere<T> | IterateOptions<T>) {
         return this.iterate(options).first();
+    }
+    /** returns a single entity based on a filter
+    * @example:
+    * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7))
+    */
+    async findOrCreate(options?: EntityWhere<T> | IterateOptions<T>) {
+        let r = await this.iterate(options).first();
+        if (!r) {
+            r = this.create();
+            if (options) {
+                let opts: IterateOptions<T> = {};
+                if (options) {
+                    if (isFunction(options))
+                        opts.where = <any>options;
+                    else
+                        opts = <any>options;
+                }
+                if (opts.where) {
+                    let w = opts.where(r);
+                    if (w) {
+                        w.__applyToConsumer({
+                            isContainsCaseInsensitive: () => { },
+                            isDifferentFrom: () => { },
+                            isEqualTo: (col, val) => {
+                                col.value = val
+                            },
+                            isGreaterOrEqualTo: () => { },
+                            isGreaterThan: () => { },
+                            isIn: () => { },
+                            isLessOrEqualTo: () => { },
+                            isLessThan: () => { },
+                            isNotNull: () => { },
+                            isNull: () => { },
+                            isStartsWith: () => { },
+                            or: () => { }
+                        });
+                    }
+                }
+            }
+            return r;
+        }
+        return r;
     }
     /** returns a single entity based on it's id 
      * @example

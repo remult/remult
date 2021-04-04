@@ -107,6 +107,18 @@ describe('Test basic row functionality', () => {
     expect(c.categoryName.originalValue).toBe('yael');
 
   });
+  itAsync("Find or Create", async () => {
+    let context = await (await createData(async insert => { }, Categories));
+    let row = await context.findOrCreate(x => x.id.isEqualTo(1));
+    expect(row.isNew()).toBe(true);
+    expect(row.id.value).toBe(1);
+    await row.save();
+    let row2 = await context.findOrCreate(x => x.id.isEqualTo(1));
+    expect(row2.isNew()).toBe(false);
+    expect(row2.id.value).toBe(1);
+
+
+  });
 
   it("object is autonemous", () => {
     let x = new Context().for(Categories).create();
