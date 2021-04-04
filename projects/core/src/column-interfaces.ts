@@ -17,12 +17,11 @@ export interface ColumnSettings<valueType = any> {
     key?: string;
     includeInApi?: Allowed;
     allowApiUpdate?: Allowed;
-
     caption?: string;
     defaultValue?: ValueOrExpression<valueType>;
     validate?: ColumnValidator<valueType>;
     valueChange?: () => void;
-
+    inputType?:string;
     dbName?: string;
     sqlExpression?: ValueOrExpression<string>;
     serverExpression?: () => valueType | Promise<valueType>;

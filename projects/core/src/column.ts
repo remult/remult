@@ -89,6 +89,8 @@ export class Column<dataType = any>  {
   __decorateDataSettings(x: DataControlSettings, context?: Context) {
     if (!x.caption && this.defs.caption)
       x.caption = this.defs.caption;
+    if (!x.inputType && this.defs.inputType)
+      x.inputType = this.defs.inputType;
     if (x.readOnly == undefined) {
       if (this.__settings.sqlExpression)
         x.readOnly = true;
@@ -314,6 +316,14 @@ export class ColumnDefs {
   }
   get allowNull() {
     return !!this.settings.allowNull;
+  }
+  get inputType() {
+    if (this.settings.inputType)
+      return this.settings.inputType;
+    else 'text';
+  }
+  set inputType(inputType: string) {
+    this.settings.inputType = inputType;
   }
   get key(): string {
 
