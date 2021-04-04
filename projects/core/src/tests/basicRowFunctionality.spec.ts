@@ -1278,33 +1278,102 @@ describe("data api", () => {
     await api.delete(t, 2);
     d.test();
   });
-  // itAsync("delete id  not Allowed for specific row", async () => {
-  //   let c = await createData(async (i) => {
-  //     await i(1, 'noam', 'a');
-  //     await i(2, 'yael', 'b');
-  //     await i(3, 'yoni', 'a');
-  //   }, class extends Categories {
-  //     constructor() {
-  //       super({
-  //         name: undefined,
-  //         allowApiDelete: () => this.id.value == 1
-  //       })
-  //     }
-  //   });
-  //   var api = new DataApi(c);
-  //   let t = new TestDataApiResponse();
-  //   let d = new Done();
-  //   t.methodNotAllowed = () => {
-  //     d.ok();
-  //   };
-  //   await api.delete(t, 2);
-  //   d.test();
-  //   t = new TestDataApiResponse();
-  //   d = new Done();
-  //   t.deleted = () => d.ok();
-  //   await api.delete(t, 1);
-  //   d.test();
-  // });
+  itAsync("delete id  not Allowed for specific row", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, class extends Categories {
+      constructor() {
+        super({
+          name: undefined,
+          allowApiDelete: () => {
+            return this.id.value == 1;
+          }
+        })
+      }
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.methodNotAllowed = () => {
+      d.ok();
+    };
+    await api.delete(t, 2);
+    d.test();
+    t = new TestDataApiResponse();
+    d = new Done();
+    t.deleted = () => d.ok();
+    await api.delete(t, 1);
+    d.test();
+  });
+  itAsync("update id  not Allowed for specific row", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, class extends Categories {
+      constructor() {
+        super({
+          name: undefined,
+          allowApiUpdate: () => {
+            return this.id.value == 1;
+          }
+        })
+      }
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.methodNotAllowed = () => {
+      d.ok();
+    };
+    await api.put(t, 2,
+      {
+        categoryName: 'noam 1'
+      });
+    d.test();
+    t = new TestDataApiResponse();
+    d = new Done();
+    t.success = () => d.ok();
+    await api.put(t, 1,
+      {
+        categoryName: 'noam 1'
+      });
+    d.test();
+  });
+  itAsync("insert id  not Allowed for specific row", async () => {
+    let c = await createData(async (i) => {
+    }, class extends Categories {
+      constructor() {
+        super({
+          name: undefined,
+          allowApiInsert: () => {
+            return this.categoryName.value == 'ok';
+          }
+        })
+      }
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.methodNotAllowed = () => {
+      d.ok();
+    };
+    await api.post(t,
+      {
+        categoryName: 'wrong'
+      });
+    d.test();
+    t = new TestDataApiResponse();
+    d = new Done();
+    t.created = () => d.ok();
+    await api.post(t,
+      {
+        categoryName: 'ok'
+      });
+    d.test();
+  });
 
   itAsync("getArray works with sort", async () => {
     let c = await createData(async (i) => {

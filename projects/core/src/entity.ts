@@ -59,9 +59,9 @@ export class Entity<idType = any> {
     }
     return {
       allowRead: r.isAllowed(options.allowApiRead),
-      allowUpdate: r.isAllowed(options.allowApiUpdate),
-      allowDelete: r.isAllowed(options.allowApiDelete),
-      allowInsert: r.isAllowed(options.allowApiInsert),
+      allowUpdate: () => r.isAllowed(options.allowApiUpdate),
+      allowDelete: () => r.isAllowed(options.allowApiDelete),
+      allowInsert: () => r.isAllowed(options.allowApiInsert),
       get: {
         where: x => options.apiDataFilter ? options.apiDataFilter() : undefined
       }
@@ -338,7 +338,7 @@ export class EntityDefs<t extends Entity<any>> {
   constructor(private __options: EntityOptions, private __provider: __EntityValueProvider) {
 
   }
-  get provider():EntityProvider<t> {
+  get provider(): EntityProvider<t> {
     return this.__provider.entityProvider;
   }
   get name() {

@@ -217,8 +217,8 @@ export class ServerContext extends Context {
 
 
 export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
-    _getApiSettings(): DataApiSettings<T> {
-        return this.entity._getEntityApiSettings(this.context);
+    _getApiSettings(forEntity?:Entity): DataApiSettings<T> {
+        return (forEntity?forEntity:this.entity)._getEntityApiSettings(this.context);
     }
 
     private entity: T;

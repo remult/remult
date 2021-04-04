@@ -129,19 +129,21 @@ export class DataApi<T extends Entity = Entity> {
     }
   }
   async put(response: DataApiResponse, id: any, body: any) {
-    if (!this.options.allowUpdate) {
-      response.methodNotAllowed();
-      return;
-    }
+
     await this.doOnId(response, id, async row => {
       this.entityProvider._updateEntityBasedOnApi(row, body);
+      if (!this.entityProvider._getApiSettings(row).allowUpdate()) {
+        response.methodNotAllowed();
+        return;
+      }
       await row.save();
       response.success(this.entityProvider.toApiPojo(row));
     });
   }
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
-      if (!this.options.allowDelete) {
+
+      if (!this.entityProvider._getApiSettings(row).allowDelete()) {
         response.methodNotAllowed();
         return;
       }
@@ -152,13 +154,14 @@ export class DataApi<T extends Entity = Entity> {
 
 
   async post(response: DataApiResponse, body: any) {
-    if (!this.options.allowInsert) {
-      response.methodNotAllowed();
-      return;
-    }
+  
     try {
 
       let r = this.entityProvider._updateEntityBasedOnApi(this.entityProvider.create(), body);
+      if (!this.entityProvider._getApiSettings(r).allowInsert()) {
+        response.methodNotAllowed();
+        return;
+      }
 
       await r.save();
       response.created(this.entityProvider.toApiPojo(r));
@@ -169,9 +172,9 @@ export class DataApi<T extends Entity = Entity> {
 
 }
 export interface DataApiSettings<rowType extends Entity> {
-  allowUpdate?: boolean,
-  allowInsert?: boolean,
-  allowDelete?: boolean,
+  allowUpdate: () => boolean,
+  allowInsert: () => boolean,
+  allowDelete: () => boolean,
   name?: string,
   allowRead?: boolean,
   get?: FindOptions<rowType>
