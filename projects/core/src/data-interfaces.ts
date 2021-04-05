@@ -36,6 +36,11 @@ export interface EntityProvider<T extends Entity> {
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
 export declare type EntityWhere<entityType extends Entity> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
+/**Used to filter the desired result set
+ * @example
+ * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
+ */
+
 export declare type EntityWhereItem<entityType extends Entity> = ((entityType: entityType) => (Filter | Filter[]));
 /** Determines the order of rows returned by the query.
  * @example

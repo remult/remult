@@ -763,9 +763,9 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
     }
 }
 export interface EventDispatcher {
-    observe(what: () => any): UnRegister;
+    observe(what: () => any): UnObserve;
 }
-export declare type UnRegister = () => void;
+export declare type UnObserve = () => void;
 export class EventSource {
     listeners: (() => {})[] = []
     fire() {

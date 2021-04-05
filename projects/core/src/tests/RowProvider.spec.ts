@@ -23,7 +23,7 @@ import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
-import { required, isUnique } from '../validators';
+import { Validators } from '../validators';
 
 
 
@@ -434,7 +434,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: required
+        validate: Validators.required
       })
     });
     var cat = c.create();
@@ -454,7 +454,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: col => required(col, "m")
+        validate: col => Validators.required(col, "m")
       })
     });
     var cat = c.create();
@@ -474,7 +474,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: required.config("m")
+        validate: Validators.required.withMessage("m")
       })
     });
     var cat = c.create();
@@ -522,7 +522,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: isUnique
+        validate: Validators.unique
       })
     });
     var cat = c.create();
@@ -546,7 +546,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: [required, isUnique]
+        validate: [Validators.required, Validators.unique]
       })
     });
     var cat = c.create();
