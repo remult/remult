@@ -23,7 +23,7 @@ import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
-import { isNotEmpty, isUnique } from '../validators';
+import { required, isUnique } from '../validators';
 
 
 
@@ -198,27 +198,27 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
     expect(await c.count(w)).toBe(4);
   });
-  fit("test context change event",()=>{
+  it("test context change event", () => {
     let d = new Done();
-    let c= new Context();
-    let r = c.onUserChange.register(()=>d.ok(),true);
+    let c = new Context();
+    let r = c.userChange.observe(() => d.ok());
     d.test("first fire");
     d = new Done();
     c._setUser({
-      id:'',
-      name:'',
-      roles:[]
+      id: '',
+      name: '',
+      roles: []
     });
     d.test("changed on user changed");
     d = new Done();
     r();
     c._setUser({
-      id:'1',
-      name:'1',
-      roles:[]
+      id: '1',
+      name: '1',
+      roles: []
     });
-    expect(d.happened).toBe(false,"should not have fired because unsubscribe has happened");
-    
+    expect(d.happened).toBe(false, "should not have fired because unsubscribe has happened");
+
   });
   itAsync("test select rows in page is not select all", async () => {
     let c = await insertFourRows();
@@ -346,6 +346,16 @@ describe("test row provider", () => {
     rows = await c.find({ where: c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
+    rows = await c.find({
+      where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni')]
+    });
+    expect(rows.length).toBe(1);
+    expect(rows[0].id.value).toBe(2);
+    rows = await c.find({
+      where: c => [c.description.isEqualTo('y'), c.categoryName.isEqualTo('yoni')]
+    });
+    expect(rows.length).toBe(1);
+    expect(rows[0].id.value).toBe(2);
   });
   itAsync("test filter packer", async () => {
     let c = await insertFourRows();
@@ -424,7 +434,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: isNotEmpty
+        validate: required
       })
     });
     var cat = c.create();
@@ -444,7 +454,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: col => isNotEmpty(col, "m")
+        validate: col => required(col, "m")
       })
     });
     var cat = c.create();
@@ -464,7 +474,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: isNotEmpty.config("m")
+        validate: required.config("m")
       })
     });
     var cat = c.create();
@@ -536,7 +546,7 @@ describe("test row provider", () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for(class extends Categories {
       a = new StringColumn({
-        validate: isNotEmpty.and(isUnique)
+        validate: [required, isUnique]
       })
     });
     var cat = c.create();
@@ -941,7 +951,7 @@ describe("grid settings ",
       expect(ds.items[0].id.value).toBe(6);
     });
   });
-  
+
 describe("order by api", () => {
   it("works with sort", () => {
     let c = new Categories();

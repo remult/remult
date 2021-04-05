@@ -1,7 +1,7 @@
 
 
 
-import { FindOptions, EntityProvider } from './data-interfaces';
+import { FindOptions, EntityProvider, translateEntityWhere } from './data-interfaces';
 import { Column } from './column';
 import { Entity } from './entity';
 import { Sort } from './sort';
@@ -92,7 +92,7 @@ export class DataApi<T extends Entity = Entity> {
   private buildWhere(rowType: T, request: DataApiRequest, filterBody: any) {
     var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
-      where = this.options.get.where(rowType);
+      where = translateEntityWhere(this.options.get.where, rowType);
     if (request) {
       where = new AndFilter(where, extractWhere(rowType, request));
     }
@@ -112,7 +112,7 @@ export class DataApi<T extends Entity = Entity> {
         where: x => {
           let where: Filter = x.columns.idColumn.isEqualTo(id);
           if (this.options && this.options.get && this.options.get.where)
-            where = new AndFilter(where, this.options.get.where(x));
+            where = new AndFilter(where, translateEntityWhere(this.options.get.where, x));
           return where;
         }
       })
@@ -154,7 +154,7 @@ export class DataApi<T extends Entity = Entity> {
 
 
   async post(response: DataApiResponse, body: any) {
-  
+
     try {
 
       let r = this.entityProvider._updateEntityBasedOnApi(this.entityProvider.create(), body);

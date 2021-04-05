@@ -10,7 +10,7 @@ import { Sort } from "./sort";
 import { ColumnCollection } from "./column-collection";
 import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
 import { FilterHelper } from "./filter/filter-helper";
-import { EntityProvider, FindOptions, entityOrderByToSort, EntityWhere, EntityOrderBy } from './data-interfaces';
+import { EntityProvider, FindOptions, entityOrderByToSort, EntityWhere, EntityOrderBy, translateEntityWhere } from './data-interfaces';
 import { AndFilter } from "./filter/filter-interfaces";
 
 
@@ -452,7 +452,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       let ids = this.selectedRows.map(x => x.columns.idColumn.value);
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(x(e), e.columns.idColumn.isIn(...ids))
+        r.where = e => new AndFilter(translateEntityWhere(x,e), e.columns.idColumn.isIn(...ids))
       }
       else
         r.where = e => e.columns.idColumn.isIn(...ids);

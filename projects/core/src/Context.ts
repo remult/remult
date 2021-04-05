@@ -1,5 +1,5 @@
 
-import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort } from "./data-interfaces";
+import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere } from "./data-interfaces";
 
 
 
@@ -98,7 +98,7 @@ export class Context {
     get user() { return this._user; }
     private _userChangeEvent = new EventSource();
 
-    get onUserChange() {
+    get userChange() {
         return this._userChangeEvent.dispatcher;
     }
     _setUser(info: UserInfo) {
@@ -307,7 +307,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                         opts = <any>options;
                 }
                 if (opts.where) {
-                    let w = opts.where(r);
+                    let w = translateEntityWhere(opts.where, r);
                     if (w) {
                         w.__applyToConsumer({
                             isContainsCaseInsensitive: () => { },
@@ -392,7 +392,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
      * let count = await this.context.for(Products).count(p => p.price.isGreaterOrEqualTo(5))
     */
     async count(where?: EntityWhere<T>) {
-        return await this._edp.count(this.entity.__decorateWhere(where ? where(this.entity) : undefined));
+        return await this._edp.count(this.entity.__decorateWhere(where ? translateEntityWhere(where, this.entity) : undefined));
     }
 
 
@@ -404,7 +404,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             options = {};
         }
         if (options.where)
-            getOptions.where = options.where(this.entity);
+            getOptions.where = translateEntityWhere(options.where, this.entity);
         if (options.orderBy)
             getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
         else if (this.entity.__options.defaultOrderBy)
@@ -522,7 +522,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                         if (items && items.length < pageSize)
                             return { value: <T>undefined, done: true };
                         items = await cont.find({
-                            where: x => new AndFilter(opts.where(x), nextPageFilter(x)),
+                            where: x => new AndFilter(translateEntityWhere(opts.where, x), translateEntityWhere(nextPageFilter, x)),
                             orderBy: opts.orderBy,
                             limit: pageSize
                         });
@@ -763,7 +763,7 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
     }
 }
 export interface EventDispatcher {
-    register(what: () => any, fireOnceIfEverFired?: boolean): UnRegister;
+    observe(what: () => any): UnRegister;
 }
 export declare type UnRegister = () => void;
 export class EventSource {
@@ -774,11 +774,9 @@ export class EventSource {
         }
     }
     dispatcher: EventDispatcher = {
-        register: (what, fire) => {
+        observe: (what) => {
             this.listeners.push(what);
-            if (fire) {
-                what();
-            }
+            what();
             return () => {
                 this.listeners = this.listeners.filter(x => x != what);
             }

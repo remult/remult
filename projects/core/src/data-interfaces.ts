@@ -1,7 +1,8 @@
 import { Column } from './column';
 import { Entity } from './entity';
 import { Sort, SortSegment } from './sort';
-import { Filter } from './filter/filter-interfaces';
+import { AndFilter, Filter } from './filter/filter-interfaces';
+import { isArray, isFunction } from 'util';
 
 export interface DataProvider {
   getEntityDataProvider(entity: Entity): EntityDataProvider;
@@ -34,7 +35,8 @@ export interface EntityProvider<T extends Entity> {
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType extends Entity> = (entityType: entityType) => Filter;
+export declare type EntityWhere<entityType extends Entity> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
+export declare type EntityWhereItem<entityType extends Entity> = ((entityType: entityType) => (Filter | Filter[]));
 /** Determines the order of rows returned by the query.
  * @example
  * await this.context.for(Products).find({ orderBy: p => p.name })
@@ -99,4 +101,22 @@ export interface FindOptions<entityType extends Entity> {
 
 export interface __RowsOfDataForTesting {
   rows: any;
+}
+export function translateEntityWhere<entityType extends Entity>(where: EntityWhere<entityType>, entity: entityType): Filter {
+  if (isArray(where)) {
+    return new AndFilter(...where.map(x => {
+      let r = x(entity);
+      if (isArray(r))
+        return new AndFilter(...r);
+      return r;
+    }));
+
+  }
+  else if (isFunction(where)) {
+    let r = where(entity);
+    if (isArray(r))
+      return new AndFilter(...r);
+    return r;
+  }
+
 }

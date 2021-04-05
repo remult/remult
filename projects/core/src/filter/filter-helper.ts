@@ -1,6 +1,6 @@
 import { Entity } from "../entity";
 import { Column } from "../column";
-import { FindOptions } from "../data-interfaces";
+import { FindOptions, translateEntityWhere } from "../data-interfaces";
 import { DateTimeColumn } from "../columns/datetime-column";
 import { StringColumn } from "../columns/string-column";
 
@@ -54,7 +54,7 @@ export class FilterHelper<rowType extends Entity> {
 
       if (opt.where) {
         let x = opt.where;
-        opt.where = r => new AndFilter(x(r), f);
+        opt.where = r => new AndFilter(translateEntityWhere(x,r), f);
       }
       else opt.where = r => f;
     });

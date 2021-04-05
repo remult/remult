@@ -19,7 +19,7 @@ export interface ColumnSettings<valueType = any> {
     allowApiUpdate?: Allowed;
     caption?: string;
     defaultValue?: ValueOrExpression<valueType>;
-    validate?: ColumnValidator<valueType>;
+    validate?: ColumnValidator<valueType>|ColumnValidator<valueType>[];
     valueChange?: () => void;
     inputType?:string;
     dbName?: string;

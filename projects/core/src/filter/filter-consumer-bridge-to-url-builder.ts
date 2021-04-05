@@ -5,7 +5,7 @@ import { StringColumn } from "../columns/string-column";
 import { FilterConsumer, Filter } from './filter-interfaces';
 import { Entity } from '../entity';
 import { AndFilter, OrFilter } from './filter-interfaces';
-import { EntityWhere } from '../data-interfaces';
+import { EntityWhere, translateEntityWhere } from '../data-interfaces';
 import { isString } from "util";
 
 export class FilterSerializer implements FilterConsumer {
@@ -158,7 +158,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
 export function packWhere<entityType extends Entity>(entity: entityType, where: EntityWhere<entityType>) {
   if (!where)
     return {};
-  let w = where(entity);
+  let w = translateEntityWhere(where,entity);
   return packToRawWhere(w);
 
 }

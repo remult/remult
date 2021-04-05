@@ -2,7 +2,9 @@ import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListC
 @EntityClass
 
 export class Products extends IdEntity {
-  name = new StringColumn();
+  name = new StringColumn({
+    
+  });
   price = new NumberColumn({decimalDigits:2,key:'price_1'});
   availableFrom1 = new DateTimeColumn();
   availableTo = new DateColumn();

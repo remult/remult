@@ -9,11 +9,11 @@ export class JwtSessionService {
     constructor(
         private context: Context
     ) {
-      this.loadSessionFromCookie();
+      
     }
     private path: string;
     private tokenName: string;
-    loadSessionFromCookie(path?: string) {
+    loadUserInfo(path?: string) {
         this.path = path;
         this.tokenName = authToken;
         if (this.path)

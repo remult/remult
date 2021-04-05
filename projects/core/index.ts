@@ -49,5 +49,6 @@ export * from './src/filter/filter-consumer-bridge-to-sql-request';
 export * from './src/filter/filter-consumer-bridge-to-url-builder';
 export * from './src/filter/filter-helper';
 export * from './src/url-builder';
-export  * from './src/jwt-session-service';
+export * from './src/jwt-session-service';
+export * from './src/validators';
 
