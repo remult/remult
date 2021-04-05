@@ -36,6 +36,19 @@ export function itAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item: 
     });
   });
 }
+export function fitAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>) {
+  arrayOfT.forEach(i => {
+    fit(name + ' - ' + i, (done: DoneFn) => {
+      runAsync(i).catch(e => {
+        fail(e);
+        done();
+      }).then(done, e => {
+        fail(e);
+        done();
+      });
+    });
+  });
+}
 
 export interface MDHInterface {
   update?(id: any, data: any): Promise<any>;

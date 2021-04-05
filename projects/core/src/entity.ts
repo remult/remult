@@ -284,6 +284,7 @@ export interface EntityOptions {
   allowApiInsert?: Allowed;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCRUD?: Allowed;
+  
   /** A filter that determines which rows can be queries using the api.
    * @example
    * apiDataFilter: () => {

@@ -4,7 +4,7 @@ import { createData } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { itAsync, itAsyncForEach, Done, fitAsync } from './testHelper.spec';
+import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './testHelper.spec';
 
 import { Categories, Status } from './testModel/models';
 
@@ -28,9 +28,27 @@ import { OrFilter } from '../filter/filter-interfaces';
 import { DateTimeColumn } from '@remult/core';
 
 
-function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
+export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
   itAsyncForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
+    (dp) => new Promise((res, rej) => {
+      webSql.db.transaction(t => {
+        t.executeSql("select name from sqlite_master where type='table'", null,
+          (t1, r) => {
+            for (let i = 0; i < r.rows.length; i++) {
+              webSql.db.transaction(t => t.executeSql("delete from " + r.rows[i].name));
+            }
+            runAsync(dp, dp).then(res).catch(rej);
+          }, (t, e) => {
+            rej(e);
+            return undefined;
+          });
+      }, (e) => rej(e));
+    }));
+}
+export function fitWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
+  let webSql = new WebSqlDataProvider('test');
+  fitAsyncForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
     (dp) => new Promise((res, rej) => {
       webSql.db.transaction(t => {
         t.executeSql("select name from sqlite_master where type='table'", null,
