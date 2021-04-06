@@ -6,6 +6,7 @@ import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.co
 import { Column, Context, DataControlSettings, Entity, GridButton, GridSettings, RowButton } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
+import { openDialog } from '@remult/angular';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
@@ -21,7 +22,7 @@ export class DataGrid2Component implements OnChanges {
   }
 
   async addCol(c: DataControlSettings) {
-    await this.context.openDialog(SelectValueDialogComponent, x => x.args({
+    await openDialog(SelectValueDialogComponent, x => x.args({
       values: this.settings.origList,
       onSelect: col => {
         this.settings.columns.addCol(c, col);

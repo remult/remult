@@ -1,4 +1,4 @@
-import { ColumnOptions, DataControlSettings, ValueListItem } from '../column-interfaces';
+import { ColumnOptions, DataControlSettings, extend, ValueListItem,__getDataControlSettings } from '../column-interfaces';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
@@ -759,14 +759,14 @@ describe("test row provider", () => {
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
   });
   it("get value function works", () => {
-    let a = new NumberColumn({ dataControlSettings: () => ({ getValue: () => a.value * 3 }) });
+    let a = extend(new NumberColumn()).dataControl(s => s.getValue = () => a.value * 3);
     a.value = 5;
     var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(15);
   });
   it("readonly should work well", () => {
-    let a = new DateColumn({ dataControlSettings: () => ({ readOnly: true }) });
+    let a = extend(new DateColumn()).dataControl(s => s.readOnly = true);
 
     var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);
@@ -775,33 +775,21 @@ describe("test row provider", () => {
 
   });
   it("test consolidate", () => {
-    let a = 0;
-    let b = 0;
-    let r = Column.consolidateOptions({
-      caption: '1st',
-      dataControlSettings: () => {
-        a++;
-        return {
-          inputType: 'text'
-        };
+
+    var col = extend(extend(new NumberColumn({caption:'1st'},{caption:'2nd'})).dataControl(
+      x => {
+        x.inputType = 'text';
       }
-    }, {
-      caption: '2nd',
-      dataControlSettings: () => {
-        b++;
-        return { readOnly: true };
-      }
-    });
-    let s = r.dataControlSettings();
+    )).dataControl(x => x.readOnly = true);
+
+    let s = __getDataControlSettings(col);
     expect(s.inputType).toBe('text');
     expect(s.readOnly).toBe(true);
-    expect(a).toBe(1, 'a');
-    expect(b).toBe(1, 'b');
 
 
   });
   it("readonly should work well for string column", () => {
-    let a = new StringColumn({ dataControlSettings: () => ({ readOnly: true }) });
+    let a = extend(new StringColumn()).dataControl(x => x.readOnly = true);
 
     var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
     cc.add(a);

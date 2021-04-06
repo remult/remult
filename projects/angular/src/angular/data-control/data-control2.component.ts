@@ -3,7 +3,7 @@
 import { Component, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Column, ColumnCollection, DataControlSettings, Entity, StringColumn, ValueListItem } from '@remult/core';
+import { Column, ColumnCollection, DataControlSettings, Entity, StringColumn, ValueListItem ,decorateDataSettings} from '@remult/core';
 @Component({
   selector: 'data-control',
   templateUrl: './data-control2.component.html',
@@ -16,7 +16,7 @@ export class DataControl2Component {
       column: value
     };
     //@ts-ignore
-    this.map.column.__decorateDataSettings(this.map);
+    decorateDataSettings(this.map.column,this.map);
   }
   theId: any;
   @Input() record: Entity;

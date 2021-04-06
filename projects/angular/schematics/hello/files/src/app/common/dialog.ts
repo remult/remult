@@ -4,6 +4,7 @@ import { Context } from "@remult/core";
 
 import { YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
 import { isString } from 'util';
+import { openDialog } from "@remult/angular";
 
 
 
@@ -17,7 +18,7 @@ export class DialogService {
     }
     async error(err: any) {
 
-        return await this.context.openDialog(YesNoQuestionComponent, d => d.args = {
+        return await openDialog(YesNoQuestionComponent, d => d.args = {
             message: extractError(err),
             isAQuestion: false
         });
@@ -36,7 +37,7 @@ export class DialogService {
     }
 
     async yesNoQuestion(question: string) {
-        return await this.context.openDialog(YesNoQuestionComponent, d => d.args = { message: question }, d => d.okPressed);
+        return await openDialog(YesNoQuestionComponent, d => d.args = { message: question }, d => d.okPressed);
     }
     async confirmDelete(of: string) {
         return await this.yesNoQuestion("Are you sure you would like to delete " + of + "?");

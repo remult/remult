@@ -46,7 +46,7 @@ export class Column<dataType = any>  {
 
   private __settings: ColumnSettings<dataType>;
   private __defs: ColumnDefs;
-  private __displayResult: DataControlSettings;
+  
   get defs() {
     if (!this.__defs)
       this.__defs = new ColumnDefs(this.__settings, () => this.__valueProvider.getEntity());
@@ -69,18 +69,6 @@ export class Column<dataType = any>  {
         result.caption = options1;
       else {
         result = Object.assign(Object.assign({}, result), options1);
-
-        let op1 = options as ColumnSettings;
-        let op2 = options1 as ColumnSettings;
-        if (op1 && op2 && op1.dataControlSettings && op2.dataControlSettings) {
-          let d1 = op1.dataControlSettings;
-          let d2 = op2.dataControlSettings;
-          result.dataControlSettings = () => {
-            let t = d1();
-            let r = Object.assign(t, d2());
-            return r;
-          };
-        }
       }
     }
     return result;
@@ -89,69 +77,7 @@ export class Column<dataType = any>  {
   constructor(settingsOrCaption?: ColumnOptions<dataType>, settingsOrCaption1?: ColumnOptions<dataType>) {
     this.__settings = Column.consolidateOptions(settingsOrCaption, settingsOrCaption1);
   }
-  //reconsider approach - this prevents the user from overriding in a specific component
-  //@internal
-  __decorateDataSettings(x: DataControlSettings, context?: Context) {
-    if (!x.caption && this.defs.caption)
-      x.caption = this.defs.caption;
-    if (!x.inputType && this.defs.inputType)
-      x.inputType = this.defs.inputType;
-    if (x.readOnly == undefined) {
-      if (this.__settings.sqlExpression)
-        x.readOnly = true;
-      else
-        if (!context) {
-          if (isBoolean(this.__settings.allowApiUpdate))
-            x.readOnly = !this.__settings.allowApiUpdate;
-        }
-        else
-          x.readOnly = !context.isAllowed(this.__settings.allowApiUpdate);
-    }
-    if (this.__settings && this.__settings.dataControlSettings) {
-      this.__displayResult = this.__settings.dataControlSettings();
-      if (!x.getValue && this.__displayResult.getValue) {
-        x.getValue = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.columns.find(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.dataControlSettings();
-          return c.__displayResult.getValue(e);
-        };
-      }
-      if (!x.click && this.__displayResult.click) {
-        x.click = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.columns.find(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.dataControlSettings();
-          c.__displayResult.click(e);
-        };
-      }
-      if (!x.allowClick && this.__displayResult.allowClick) {
-        x.allowClick = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.columns.find(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.dataControlSettings();
-          return c.__displayResult.allowClick(e);
-        };
-      }
-      for (const key in this.__displayResult) {
-        if (this.__displayResult.hasOwnProperty(key)) {
-          const val = this.__displayResult[key];
-          if (val !== undefined && x[key] === undefined) {
-            x[key] = val;
-          }
-        }
-      }
 
-
-
-    }
-  }
 
 
   //@internal

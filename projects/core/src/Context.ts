@@ -14,7 +14,7 @@ import { IDataSettings, GridSettings } from "./grid-settings";
 
 import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';
-import { ValueListItem } from './column-interfaces';
+
 
 import { RestDataProvider, RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { CompoundIdColumn } from "./columns/compound-id-column";
@@ -165,11 +165,7 @@ export class Context {
 
         return r;
     }
-    _dialog: any;//MatDialog
-    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T): Promise<T> {
-
-        throw "requires specific implementation for this environment";
-    }
+    
 
     _lookupCache: LookupCache<any>[] = [];
 }
@@ -577,47 +573,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     toPojoArray(items: T[]) {
         return items.map(f => this.toApiPojo(f));
     }
-    /** returns a grid settings object for the specific entity */
-    gridSettings(settings?: IDataSettings<T>) {
-        if (!settings)
-            settings = {};
-        return new GridSettings(this, this.context, settings);
-    }
 
-    /** returns an array of values that can be used in the value list property of a data control object */
 
-    async getValueList(args?: {
-        idColumn?: (e: T) => Column,
-        captionColumn?: (e: T) => Column,
-        orderBy?: EntityOrderBy<T>,
-        where?: EntityWhere<T>
-    }): Promise<ValueListItem[]> {
-        if (!args) {
-            args = {};
-        }
-        if (!args.idColumn) {
-            args.idColumn = x => x.columns.idColumn;
-        }
-        if (!args.captionColumn) {
-            let idCol = args.idColumn(this.entity);
-            for (const keyInItem of this.entity.columns) {
-                if (keyInItem != idCol) {
-                    args.captionColumn = x => x.columns.find(keyInItem);
-                    break;
-                }
-            }
-        }
-        return (await this.find({
-            where: args.where,
-            orderBy: args.orderBy,
-            limit: 1000
-        })).map(x => {
-            return {
-                id: args.idColumn(x).value,
-                caption: args.captionColumn(x).value
-            }
-        });
-    }
+   
 }
 export interface EntityType<T = any> {
     new(...args: any[]): Entity<T>;

@@ -6,15 +6,7 @@ import { isNumber } from 'util';
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
 
   constructor(private valueListType:  classWithNew<T>, settingsOrCaption?: ColumnOptions<T>) {
-    super({
-      dataControlSettings: () => {
-        let opts = this.getOptions();
-        return {
-          valueList: opts
-        }
-      }
-
-    }, settingsOrCaption);
+    super(settingsOrCaption);
 
 
   }

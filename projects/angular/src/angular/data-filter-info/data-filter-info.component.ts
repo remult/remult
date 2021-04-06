@@ -1,6 +1,7 @@
 
 import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
+import { openDialog } from '@remult/angular';
 import { Column, Context, DataControlSettings, GridSettings } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { FilterDialogComponent } from '../filter-dialog/filter-dialog.component';
@@ -48,7 +49,7 @@ export class DataFilterInfoComponent {
     async showAddAnotherFilterDialog() {
         this.settings.initOrigList();
         this.filterColumnToAdd = undefined;
-        await this.context.openDialog(SelectValueDialogComponent, x => x.args({
+        await openDialog(SelectValueDialogComponent, x => x.args({
             title: this.rightToLeft ? "בחר עמודה לסינון" : "Select Column to Filter",
             values: this.settings.origList,
             onSelect: x => this.filterColumnToAdd = x
@@ -56,7 +57,7 @@ export class DataFilterInfoComponent {
 
 
         if (this.filterColumnToAdd) {
-            await this.context.openDialog(FilterDialogComponent, x => x.info = this);
+            await openDialog(FilterDialogComponent, x => x.info = this);
         }
 
         this.showAddFilter = true;
@@ -64,7 +65,7 @@ export class DataFilterInfoComponent {
     }
     public async editFilter(col: Column) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
-        await this.context.openDialog(FilterDialogComponent, x => x.info = this);
+        await openDialog(FilterDialogComponent, x => x.info = this);
     }
     confirmEditFilter() {
         this.settings.columns.filterRows(this.filterColumnToAdd);

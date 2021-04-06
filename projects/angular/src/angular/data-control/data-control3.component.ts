@@ -16,7 +16,7 @@ export class DataControl3Component {
       column: value
     };
     //@ts-ignore
-    this.map.column.__decorateDataSettings(this.map);
+    decorateDataSettings(this.map.column,this.map);
   }
   @Input() rightToLeft = false;
 

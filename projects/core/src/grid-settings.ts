@@ -17,13 +17,13 @@ import { AndFilter } from "./filter/filter-interfaces";
 
 
 export class GridSettings<rowType extends Entity = Entity>  {
-  constructor(private entityProvider: EntityProvider<rowType>, private context: Context, public settings?: IDataSettings<rowType>) {
+  constructor(private entityProvider: EntityProvider<rowType>, public settings?: IDataSettings<rowType>) {
     this.restList = new DataList<rowType>(entityProvider);
     if (entityProvider) {
       this.filterHelper.filterRow = <rowType>entityProvider.create();
     }
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, context)
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false)
 
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
