@@ -1,11 +1,6 @@
-import { Entity } from "./entity";
-import { FilterHelper } from "./filter/filter-helper";
-import { DataControlSettings, ValueListItem, DataControlInfo, valueOrEntityExpressionToValue, ColumnSettings,  configDataControlField } from "./column-interfaces";
-import { Column } from "./column";
-import { Context } from "./context";
-import { isBoolean, isFunction } from "util";
-import { IdEntity } from './id-entity';
-import { ValueListColumn } from "./columns/value-list-column";
+import { Column, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
+import { isFunction } from "util";
+import { DataControlInfo, DataControlSettings, decorateDataSettings } from "./data-control-interfaces";
 
 
 
@@ -64,7 +59,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
 
       }
       if (x.column) {
-        decorateDataSettings(x.column,x);
+        decorateDataSettings(x.column, x);
       }
 
       if (x.getValue) {
@@ -333,78 +328,3 @@ export class ColumnCollection<rowType extends Entity = Entity> {
   }
 }
 
-export function decorateDataSettings(col: Column<any>, x: DataControlSettings, context?: Context) {
-  if (!x.caption && col.defs.caption)
-    x.caption = col.defs.caption;
-  if (!x.inputType && col.defs.inputType)
-    x.inputType = col.defs.inputType;
-  let settings: ColumnSettings = col["__settings"];
-  if (x.readOnly == undefined) {
-    if (settings.sqlExpression)
-      x.readOnly = true;
-    else
-      if (!context) {
-        if (isBoolean(settings.allowApiUpdate))
-          x.readOnly = !settings.allowApiUpdate;
-      }
-      else
-        x.readOnly = !context.isAllowed(settings.allowApiUpdate);
-  }
-
-
-  col[__displayResult] = __getDataControlSettings(col);
-  if (col[__displayResult]) {
-    if (!x.getValue && col[__displayResult].getValue) {
-      x.getValue = e => {
-        let c: Column = col;
-        if (e)
-          c = e.columns.find(c) as Column;
-        if (!c[__displayResult])
-          c[__displayResult] = __getDataControlSettings(col);
-        return c[__displayResult].getValue(e);
-      };
-    }
-    if (!x.click && col[__displayResult].click) {
-      x.click = e => {
-        let c: Column = col;
-        if (e)
-          c = e.columns.find(c) as Column;
-        if (!c[__displayResult])
-          c[__displayResult] = __getDataControlSettings(col);
-        c[__displayResult].click(e);
-      };
-    }
-    if (!x.allowClick && col[__displayResult].allowClick) {
-      x.allowClick = e => {
-        let c: Column = col;
-        if (e)
-          c = e.columns.find(c) as Column;
-        if (!c[__displayResult])
-          c[__displayResult] = __getDataControlSettings(col);
-        return c[__displayResult].allowClick(e);
-      };
-    }
-    for (const key in col[__displayResult]) {
-      if (col[__displayResult].hasOwnProperty(key)) {
-        const val = col[__displayResult][key];
-        if (val !== undefined && x[key] === undefined) {
-          x[key] = val;
-        }
-      }
-    }
-  }
-}
-const  __displayResult =  Symbol("__displayResult");
-
-export function __getDataControlSettings(col: Column): DataControlSettings {
-  if (col[configDataControlField]) {
-      let r = {};
-      col[configDataControlField](r);
-      return r;
-  } if (col instanceof ValueListColumn) {
-      col[configDataControlField] = (x: DataControlSettings) => {
-          x.valueList = col.getOptions();
-      };
-  }
-  return undefined;
-}

@@ -2,7 +2,10 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
-import { dataAreaSettings, DataAreaSettings, ColumnCollection, DataControlSettings, getColumnsFromObject } from '@remult/core';
+import {  getColumnsFromObject } from '@remult/core';
+import { ColumnCollection } from '../../column-collection';
+import { DataAreaSettings, dataAreaSettings } from '../../data-area-settings';
+import { DataControlSettings } from '../../data-control-interfaces';
 
 @Component({
   selector: 'data-area',

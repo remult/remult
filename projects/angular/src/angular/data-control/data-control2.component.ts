@@ -1,9 +1,10 @@
-
-
 import { Component, Input } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Column, ColumnCollection, DataControlSettings, Entity, StringColumn, ValueListItem ,decorateDataSettings} from '@remult/core';
+import { Column,   Entity, StringColumn, ValueListItem } from '@remult/core';
+import { ColumnCollection } from '../../column-collection';
+import { DataControlSettings } from '../../data-control-interfaces';
+
+
 @Component({
   selector: 'data-control',
   templateUrl: './data-control2.component.html',

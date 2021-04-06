@@ -1,17 +1,7 @@
-import { Entity } from "./entity";
-
-
-import { Column } from "./column";
-import { DataControlSettings, DataControlInfo } from "./column-interfaces";
-import { Context } from "./context";
-
-import { DataList } from "./dataList";
-import { Sort } from "./sort";
+import { AndFilter, Column,  DataList, Entity, EntityOrderBy, entityOrderByToSort, EntityProvider, EntityWhere, FilterHelper, FindOptions,  Sort, translateEntityWhere } from "@remult/core";
 import { ColumnCollection } from "./column-collection";
-import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
-import { FilterHelper } from "./filter/filter-helper";
-import { EntityProvider, FindOptions, entityOrderByToSort, EntityWhere, EntityOrderBy, translateEntityWhere } from './data-interfaces';
-import { AndFilter } from "./filter/filter-interfaces";
+import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
+import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
 
 
@@ -552,7 +542,7 @@ export interface GridButton {
 
 function isNewRow(r: Entity) {
   if (r) {
-    r.__entityData.isNewRow();
+    r.isNew();
   }
   return false;
 }

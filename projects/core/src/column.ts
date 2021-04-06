@@ -1,5 +1,5 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { ColumnSettings, ColumnOptions, DataControlSettings, valueOrExpressionToValue } from './column-interfaces';
+import { ColumnSettings, ColumnOptions,  valueOrExpressionToValue } from './column-interfaces';
 
 import { isArray, isBoolean, isFunction } from 'util';
 

@@ -1,8 +1,7 @@
-import { Entity } from "./entity";
-import { DataControlSettings, DataControlInfo } from "./column-interfaces";
-import { ColumnCollection } from "./column-collection";
+import { Entity } from "@remult/core";
 import { isArray } from "util";
-import { Column } from './column';
+import { ColumnCollection } from "./column-collection";
+import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
 export interface IDataAreaSettings<rowType extends Entity = Entity> {
   columnSettings?: (rowType: rowType) => DataArealColumnSetting<rowType>[];

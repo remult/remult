@@ -10,7 +10,7 @@ import { isFunction, isString, isBoolean } from "util";
 import { Column } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
-import { IDataSettings, GridSettings } from "./grid-settings";
+
 
 import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';

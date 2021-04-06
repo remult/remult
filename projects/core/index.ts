@@ -21,10 +21,7 @@ export * from './src/server-action';
 
 export * from './src/context';
 export * from './src/id-entity';
-export * from './src/grid-settings';
-export * from './src/data-area-settings';
 export * from './src/sort';//V
-export * from './src/column-collection';
 
 
 export * from './src/entity';

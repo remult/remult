@@ -1,8 +1,11 @@
 
 import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
-import { openDialog } from '@remult/angular';
-import { Column, Context, DataControlSettings, GridSettings } from '@remult/core';
+import { openDialog } from '../remult-core.module';
+import { Column, Context } from '@remult/core';
+import { GridSettings } from '../../grid-settings';
+import { DataControlSettings } from '../../data-control-interfaces';
+
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { FilterDialogComponent } from '../filter-dialog/filter-dialog.component';
 @Component({

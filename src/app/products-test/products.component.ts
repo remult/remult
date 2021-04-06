@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig, GridSettings } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
 
 import { Products } from './products';
-import { DialogConfig,openDialog } from '@remult/angular';
+import { DialogConfig,GridSettings,openDialog } from '@remult/angular';
 
 
 

@@ -1,4 +1,5 @@
-import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn, DataControlSettings, Entity, extend } from '@remult/core';
+import { extend } from '@remult/angular';
+import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn,  Entity } from '@remult/core';
 import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 @EntityClass
 

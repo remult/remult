@@ -11,7 +11,7 @@ import { ValueListColumn } from '../columns/value-list-column';
 import { Sort } from '../sort';
 import { ColumnCollection } from '../column-collection';
 import { NumberColumn } from '../columns/number-column';
-import { DataAreaSettings } from '../data-area-settings';
+import { DataAreaSettings } from '../../../angular/src/data-area-settings';
 import { FilterHelper } from '../filter/filter-helper';
 import { Column } from '../column';
 import { DateTimeColumn } from '../columns/datetime-column';

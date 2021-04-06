@@ -57,45 +57,8 @@ export function valueOrEntityExpressionToValue<T, entityType extends Entity>(f: 
 }
 
 
-export type DataControlInfo<rowType extends Entity = Entity> = DataControlSettings<rowType> | Column;
-export interface DataControlSettings<entityType extends Entity = Entity> {
-
-    column?: Column;
-    getValue?: (row: entityType) => any;
-    readOnly?: ValueOrEntityExpression<boolean, entityType>;
-    cssClass?: (string | ((row: entityType) => string));
-
-    caption?: string;
-    visible?: (row: entityType) => boolean;
-
-    click?: (row: entityType) => void;
-    allowClick?: (row: entityType) => boolean;
-    clickIcon?: string;
-
-    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | (() => Promise<ValueListItem[]>);
-    inputType?: string; //used: password,date,tel,text,checkbox,number
-    hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
-    forceEqualFilter?: boolean;
-
-    width?: string;
-}
 
 
-export interface displayOptions<entityType> {
-    readOnlyValue(getValue?: (row: entityType) => any);
-    password();
-    date();
-    digits();
-    checkbox();
-    //dropDown(options: DropDownOptions);
-    text(click?: clickable<entityType>);
-
-}
-export interface clickable<entityType> {
-    click?: (row: entityType) => void;
-    allowClick?: (row: entityType) => boolean;
-    clickIcon?: string;
-}
 
 
 
@@ -103,29 +66,3 @@ export interface ValueListItem {
     id?: any;
     caption?: any;
 }
-
-export function extend<T extends Column>(col: T): {
-    dataControl(set: (settings: DataControlSettings) => void): T;
-} {
-    return {
-        dataControl: (set) => {
-            let configureDataControl: (settings: DataControlSettings) => void = col[configDataControlField];
-            if (configureDataControl) {
-                var existing = configureDataControl;
-                configureDataControl = z => {
-                    existing(z);
-                    set(z);
-                }
-            }
-            else
-                configureDataControl = set;
-            col[configDataControlField] = configureDataControl;
-            return col;
-        }
-    }
-}
-
-
-
-
-export const configDataControlField = Symbol('configDataControlField');

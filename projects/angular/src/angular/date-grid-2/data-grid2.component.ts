@@ -3,10 +3,13 @@ import { Component, OnChanges, Input, ViewChild, ElementRef, AfterViewInit } fro
 
 import { isFunction } from 'util';
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
-import { Column, Context, DataControlSettings, Entity, GridButton, GridSettings, RowButton } from '@remult/core';
+import { Column, Context, Entity } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
-import { openDialog } from '@remult/angular';
+
+import { DataControlSettings } from '../../data-control-interfaces';
+import { GridButton, GridSettings, RowButton } from '../../grid-settings';
+import { openDialog } from '../remult-core.module';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
