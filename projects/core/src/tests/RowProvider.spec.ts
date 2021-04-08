@@ -7,7 +7,7 @@ import { itAsync, Done } from './testHelper.spec';
 import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { ValueListColumn } from '../columns/value-list-column';
+import { OneToMany, ValueListColumn } from '../columns/value-list-column';
 import { Sort } from '../sort';
 
 import { NumberColumn } from '../columns/number-column';
@@ -25,6 +25,7 @@ import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
 import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
+import { Lookup } from '../lookup';
 
 
 
@@ -649,6 +650,46 @@ describe("test row provider", () => {
     expect(r.categoryName.value).toBe(undefined);
 
   });
+  itAsync("lookup with undefined doesn't fetch", async () => {
+
+    let cont = new ServerContext();
+    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    let c = cont.for(Categories);
+
+    let calledFind = false;
+    var l = new Lookup(c.create(), {
+      count: async () => 1,
+      create: () => c.create(),
+      find: async () => {
+        calledFind = true;
+        return [];
+      }
+
+    });
+    var nc = new NumberColumn();
+    nc.value = undefined;
+    expect(nc.value).toBe(undefined);
+    await l.whenGet(nc);
+    expect(calledFind).toBe(false, 'expected not to call find');
+    nc.value = 1;
+    await l.whenGet(nc);
+    expect(calledFind).toBe(true);
+
+  });
+  itAsync("lookup return the same new row", async () => {
+    let cont = new ServerContext();
+    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    let c = cont.for(Categories);
+    var nc = new NumberColumn();
+    nc.value = 1;
+    let r = c.lookup(nc);
+    expect(r.isNew()).toBe(true);
+    r.id.value = 5;
+    expect(c.lookup(nc).id.value).toBe(5);
+    r = await c.lookupAsync(nc);
+    expect(r.id.value).toBe(5);
+
+  });
   itAsync("column drop down", async () => {
     let c = await createData(async insert => {
       await insert(1, 'noam');
@@ -876,7 +917,7 @@ describe("grid settings ",
       let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();
       let y: Column;
-      let gs = new GridSettings(s,{ get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
+      let gs = new GridSettings(s, { get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
       expect(gs.sortedAscending(y)).toBe(true);
       expect(gs.sortedDescending(y)).toBe(false);
       expect(gs.sortedAscending(c.id)).toBe(false);
@@ -1160,6 +1201,30 @@ describe("value list column without id and caption", () => {
 
   })
 })
+describe("relation", () => {
+  itAsync("should get values", async () => {
+
+    let c = await insertFourRows();
+    let r = new OneToMany(c, {
+      where: x => x.description.isEqualTo("x")
+    });
+    let rows = await r.find();
+    expect(rows.length).toBe(2);
+    let n = r.create();
+    expect(n.description.value).toBe("x");
+  });
+  itAsync("should have an array and lazy load it", async () => {
+    let c = await insertFourRows();
+    let r = new OneToMany(c, {
+      where: x => x.description.isEqualTo("x")
+    });
+    let arr = r.items;
+    expect(arr.length).toBe(0);
+    await r.waitLoad();
+    expect(arr.length).toBe(2);
+
+  });
+});
 
 class myDp extends ArrayEntityDataProvider {
   constructor(entity: Entity) {

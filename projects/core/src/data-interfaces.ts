@@ -125,3 +125,25 @@ export function translateEntityWhere<entityType extends Entity>(where: EntityWhe
   }
 
 }
+
+export function updateEntityBasedOnWhere<lookupIdType, T extends Entity<lookupIdType>>(where: EntityWhere<T>, r: T) {
+  let w = translateEntityWhere(where, r);
+  if (w) {
+      w.__applyToConsumer({
+          isContainsCaseInsensitive: () => { },
+          isDifferentFrom: () => { },
+          isEqualTo: (col, val) => {
+              col.value = val;
+          },
+          isGreaterOrEqualTo: () => { },
+          isGreaterThan: () => { },
+          isIn: () => { },
+          isLessOrEqualTo: () => { },
+          isLessThan: () => { },
+          isNotNull: () => { },
+          isNull: () => { },
+          isStartsWith: () => { },
+          or: () => { }
+      });
+  }
+}

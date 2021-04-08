@@ -1,5 +1,5 @@
 
-import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere } from "./data-interfaces";
+import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere } from "./data-interfaces";
 
 
 
@@ -303,25 +303,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                         opts = <any>options;
                 }
                 if (opts.where) {
-                    let w = translateEntityWhere(opts.where, r);
-                    if (w) {
-                        w.__applyToConsumer({
-                            isContainsCaseInsensitive: () => { },
-                            isDifferentFrom: () => { },
-                            isEqualTo: (col, val) => {
-                                col.value = val
-                            },
-                            isGreaterOrEqualTo: () => { },
-                            isGreaterThan: () => { },
-                            isIn: () => { },
-                            isLessOrEqualTo: () => { },
-                            isLessThan: () => { },
-                            isNotNull: () => { },
-                            isNull: () => { },
-                            isStartsWith: () => { },
-                            or: () => { }
-                        });
-                    }
+                    updateEntityBasedOnWhere(opts.where, r);
                 }
             }
             return r;
@@ -594,6 +576,8 @@ export class ClassHelper {
 export class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
+
+
 export function setControllerSettings(target: any, options: ControllerOptions) {
     let r = target;
     while (true) {

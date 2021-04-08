@@ -13,7 +13,10 @@ export class FilterSerializer implements FilterConsumer {
   constructor() {
 
   }
+  hasUndefined = false;
   add(key: string, val: any) {
+    if (val === undefined)
+      this.hasUndefined = true;
     let r = this.result;
     if (!r[key]) {
       r[key] = val;
@@ -158,7 +161,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
 export function packWhere<entityType extends Entity>(entity: entityType, where: EntityWhere<entityType>) {
   if (!where)
     return {};
-  let w = translateEntityWhere(where,entity);
+  let w = translateEntityWhere(where, entity);
   return packToRawWhere(w);
 
 }

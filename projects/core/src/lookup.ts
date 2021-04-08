@@ -52,14 +52,15 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
       return this.cache[key];
     } else {
       let res = new lookupRowInfo<entityType>();
+      res.value = <entityType>this.entityProvider.create();
       this.cache[key] = res;
-
-      if (find == undefined || key == undefined) {
+      if (find == undefined || key == undefined || f.hasUndefined) {
         res.loading = false;
         res.found = false;
+        res.promise = Promise.resolve(res);
         return res;
       } else {
-        res.value = <entityType>this.entityProvider.create();
+        
         res.promise = this.restList.get(find).then(r => {
           res.loading = false;
           if (r.length > 0) {
