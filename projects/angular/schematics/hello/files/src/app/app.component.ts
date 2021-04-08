@@ -28,7 +28,7 @@ export class AppComponent {
     private session: JwtSessionService,
     public context: Context) {
 
-
+    session.loadUserInfo();
   }
 
   async signIn() {
