@@ -10,5 +10,5 @@ export { SelectValueDialogComponent } from './src/angular/add-filter-dialog/add-
 export * from './src/grid-settings';
 export * from './src/column-collection';
 export * from './src/data-control-interfaces';
-
+export * from './src/data-area-settings';
 
