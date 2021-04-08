@@ -28,6 +28,7 @@ export interface ColumnSettings<valueType = any> {
     serverExpression?: () => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     allowNull?: boolean;
+    displayValue?: () => string;
 
 }
 export declare type ColumnValidator<valueType = any> = (col: Column<valueType>) => void | Promise<void>;

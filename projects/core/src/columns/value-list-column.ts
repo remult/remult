@@ -5,8 +5,8 @@ import { isNumber } from 'util';
 
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
 
-  constructor(private valueListType:  classWithNew<T>, settingsOrCaption?: ColumnOptions<T>) {
-    super(settingsOrCaption);
+  constructor(private valueListType: classWithNew<T>, settingsOrCaption?: ColumnOptions<T>) {
+    super({ displayValue: () => this.value.caption }, settingsOrCaption);
 
 
   }
@@ -22,17 +22,13 @@ export class ValueListColumn<T extends ValueListItem> extends Column<T> {
     return this.info.byId(value);
   }
 
-  get displayValue() {
-    if (this.value)
-      return this.value.caption;
-    return '';
-  }
+
 
 }
-export declare type classWithNew<T > ={ new(...args: any[]): T; };
+export declare type classWithNew<T> = { new(...args: any[]): T; };
 
 export class ValueListTypeInfo<T extends ValueListItem>{
-  static get<T extends ValueListItem>(type: classWithNew<T>):ValueListTypeInfo<T> {
+  static get<T extends ValueListItem>(type: classWithNew<T>): ValueListTypeInfo<T> {
     let r = typeCache.get(type);
     if (!r)
       r = new ValueListTypeInfo(type);

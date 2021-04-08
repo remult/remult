@@ -1,4 +1,4 @@
-import { ColumnOptions, DataControlSettings, extend, ValueListItem,__getDataControlSettings } from '../column-interfaces';
+import { ColumnOptions, ValueListItem } from '../column-interfaces';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
@@ -9,7 +9,7 @@ import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusC
 import { Context, ServerContext } from '../context';
 import { ValueListColumn } from '../columns/value-list-column';
 import { Sort } from '../sort';
-import { ColumnCollection } from '../column-collection';
+
 import { NumberColumn } from '../columns/number-column';
 import { DataAreaSettings } from '../../../angular/src/data-area-settings';
 import { FilterHelper } from '../filter/filter-helper';
@@ -24,6 +24,7 @@ import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
+import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
 
 
 
@@ -86,7 +87,7 @@ async function insertFourRows() {
 describe("grid filter stuff", () => {
   itAsync("test filter works", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
         where: c => c.categoryName.isContains('a'),
@@ -101,7 +102,7 @@ describe("grid filter stuff", () => {
   });
   itAsync("test filter works without the get statement", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
 
       orderBy: c => new Sort({ column: c.id }),
       where: c => c.categoryName.isContains('a'),
@@ -116,7 +117,7 @@ describe("grid filter stuff", () => {
   });
   itAsync("test filter works with user filter", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
         where: c => c.categoryName.isContains('a'),
@@ -161,7 +162,7 @@ describe("grid filter stuff", () => {
 
   itAsync("test filter works with selected rows", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
         limit: 3
@@ -183,7 +184,7 @@ describe("grid filter stuff", () => {
   });
   itAsync("test all rows selected when some rows are outside the scope", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
         limit: 3
@@ -222,7 +223,7 @@ describe("grid filter stuff", () => {
   });
   itAsync("test select rows in page is not select all", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
         limit: 3
@@ -242,7 +243,7 @@ describe("grid filter stuff", () => {
   });
   itAsync("select select row by row when all rows are in view", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       knowTotalRows: true,
       get: {
         orderBy: c => new Sort({ column: c.id }),
@@ -418,7 +419,7 @@ describe("test row provider", () => {
   });
   itAsync("test grid update", async () => {
     let c = await insertFourRows();
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id })
       }
@@ -591,7 +592,7 @@ describe("test row provider", () => {
     await newC.save();
 
 
-    let ds = c.gridSettings({
+    let ds = new GridSettings(c, {
       saving: r => CategoriesWithValidation.orderOfOperation += "GridOnSavingRow,",
       validation: r => CategoriesWithValidation.orderOfOperation += "GridValidate,",
       get: {
@@ -655,7 +656,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
+    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -672,7 +673,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
+    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -689,7 +690,7 @@ describe("test row provider", () => {
     });
 
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { valueList: c.getValueList() } as DataControlSettings<Categories>
+    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -720,7 +721,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, valueList: c.getValueList() } as DataControlSettings<Categories>
+    let cs = { column: c1.id, valueList: getValueList(c) } as DataControlSettings<Categories>
     await cc.add(cs);
 
     let xx = cs.valueList as ValueListItem[];
@@ -776,7 +777,7 @@ describe("test row provider", () => {
   });
   it("test consolidate", () => {
 
-    var col = extend(extend(new NumberColumn({caption:'1st'},{caption:'2nd'})).dataControl(
+    var col = extend(extend(new NumberColumn({ caption: '1st' }, { caption: '2nd' })).dataControl(
       x => {
         x.inputType = 'text';
       }
@@ -804,7 +805,7 @@ describe("api test", () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
 
-    let gs = ctx.for(Categories).gridSettings();
+    let gs = new GridSettings(ctx.for(Categories));
     gs.addArea({
       columnSettings: x => [
         x.categoryName,
@@ -861,7 +862,7 @@ describe("grid settings ",
       let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();
 
-      let gs = s.gridSettings();
+      let gs = new GridSettings(s);
       expect(gs.sortedAscending(c.id)).toBe(false);
       expect(gs.sortedDescending(c.id)).toBe(false);
       gs.sort(c.id);
@@ -875,7 +876,7 @@ describe("grid settings ",
       let s = ctx.for(Categories, new InMemoryDataProvider());
       let c = s.create();
       let y: Column;
-      let gs = s.gridSettings({ get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
+      let gs = new GridSettings(s,{ get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
       expect(gs.sortedAscending(y)).toBe(true);
       expect(gs.sortedDescending(y)).toBe(false);
       expect(gs.sortedAscending(c.id)).toBe(false);
@@ -898,7 +899,7 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = c.gridSettings({ get: { limit: 2 } });
+      let ds = new GridSettings(c, { get: { limit: 2 } });
       await ds.getRecords();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id.value).toBe(1);
@@ -924,7 +925,7 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = c.gridSettings({ get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
+      let ds = new GridSettings(c, { get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
       await ds.getRecords();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id.value).toBe(2);

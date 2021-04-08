@@ -1,5 +1,5 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { ColumnSettings, ColumnOptions,  valueOrExpressionToValue } from './column-interfaces';
+import { ColumnSettings, ColumnOptions, valueOrExpressionToValue } from './column-interfaces';
 
 import { isArray, isBoolean, isFunction } from 'util';
 
@@ -46,7 +46,7 @@ export class Column<dataType = any>  {
 
   private __settings: ColumnSettings<dataType>;
   private __defs: ColumnDefs;
-  
+
   get defs() {
     if (!this.__defs)
       this.__defs = new ColumnDefs(this.__settings, () => this.__valueProvider.getEntity());
@@ -168,8 +168,11 @@ export class Column<dataType = any>  {
     this.rawValue = value;
   }
   get displayValue() {
-    if (this.value)
+    if (this.value) {
+      if (this.__settings.displayValue)
+        return this.__settings.displayValue();
       return this.value.toString();
+    }
     return '';
   }
   get originalValue() {

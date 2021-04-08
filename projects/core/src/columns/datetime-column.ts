@@ -4,16 +4,10 @@ import { DateTimeStorage } from "./storage/datetime-storage";
 
 export class DateTimeColumn extends Column<Date>{
   constructor(settingsOrCaption?: ColumnOptions<Date>) {
-    super(settingsOrCaption);
-
+    super({ displayValue: () => this.value.toLocaleString() }, settingsOrCaption);
   }
   getDayOfWeek() {
     return this.value.getDay();
-  }
-  get displayValue() {
-    if (!this.value)
-      return '';
-    return this.value.toLocaleString();
   }
   __defaultStorage() {
     return new DateTimeStorage();
