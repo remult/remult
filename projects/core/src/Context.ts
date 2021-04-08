@@ -53,6 +53,7 @@ function toPromise<T>(p: Promise<any> | { toPromise(): Promise<any> }) {
     return p;
 }
 
+
 export class Context {
     clearAllCache(): any {
         this.cache.clear();
@@ -60,7 +61,7 @@ export class Context {
     }
 
     isSignedIn() {
-        return !!this.user;
+        return this.user.id !== undefined;
     }
     constructor(http?: HttpProvider) {
         let provider: RestDataProviderHttpProvider;
@@ -95,7 +96,16 @@ export class Context {
         return this._onServer;
     }
     protected _user: UserInfo;
-    get user() { return this._user; }
+    get user(): UserInfo {
+        if (this._user === undefined) {
+            return {
+                id: undefined,
+                name: '',
+                roles: []
+            }
+        }
+        return this._user;
+    }
     private _userChangeEvent = new EventSource();
 
     get userChange() {
@@ -165,7 +175,7 @@ export class Context {
 
         return r;
     }
-    
+
 
     _lookupCache: LookupCache<any>[] = [];
 }
@@ -557,7 +567,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     }
 
 
-   
+
 }
 export interface EntityType<T = any> {
     new(...args: any[]): Entity<T>;
@@ -695,10 +705,10 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
             }
             equalToColumn.push(s.column);
             if (s.descending) {
-                f = new AndFilter(f, __isLessThan(s.column,values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isLessThan(s.column, values.get(s.column.defs.key)));
             }
             else
-                f = new AndFilter(f, __isGreaterThan( s.column,values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isGreaterThan(s.column, values.get(s.column.defs.key)));
             r = new OrFilter(r, f);
         }
         return r;

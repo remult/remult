@@ -1225,6 +1225,28 @@ describe("relation", () => {
 
   });
 });
+describe("context", () => {
+  it("what", () => {
+    var c = new Context();
+    expect(c.isSignedIn()).toBe(false);
+    expect(c.user.id).toBe(undefined);
+    expect(c.user.name).toBe("");
+    expect(c.user.roles.length).toBe(0);
+    c._setUser({
+      id: '1',
+      name: 'name',
+      roles: ["a"]
+    });
+    expect(c.isSignedIn()).toBe(true);
+    c._setUser(undefined);
+    expect(c.isSignedIn()).toBe(false);
+    expect(c.user.id).toBe(undefined);
+    expect(c.user.name).toBe("");
+    expect(c.user.roles.length).toBe(0);
+    
+  });
+
+});
 
 class myDp extends ArrayEntityDataProvider {
   constructor(entity: Entity) {
