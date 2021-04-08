@@ -26,8 +26,8 @@ export interface FilterConsumer {
     isGreaterThan(col: Column, val: any): void;
     isLessOrEqualTo(col: Column, val: any): void;
     isLessThan(col: Column, val: any): void;
-    isContainsCaseInsensitive(col: StringColumn, val: any): void;
-    isStartsWith(col: StringColumn, val: any): void;
+    containsCaseInsensitive(col: StringColumn, val: any): void;
+    startsWith(col: StringColumn, val: any): void;
     isIn(col: Column, val: any[]): void;
 }
 

@@ -38,7 +38,7 @@ export class FilterHelper<rowType extends Entity> {
       if (c instanceof StringColumn) {
         let fe = this.forceEqual;
         if (fe.indexOf(c) < 0)
-          f = c.isContains(val);
+          f = c.contains(val);
         if (val === undefined || val == '')
           f = c.isEqualTo('');
       }

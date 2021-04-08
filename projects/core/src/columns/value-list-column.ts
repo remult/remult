@@ -95,10 +95,10 @@ export class OneToMany<T extends Entity>{
     this.waitLoad();
     return this._items;
   }
-  private async waitLoad() {
+  async waitLoad() {
     if (this._currentPromise != null)
       return this._currentPromise;
-    if (this.items === undefined)
+    if (this._items === undefined)
       this._items = [];
     return this._currentPromise = this.find().then(x => {
       this._items.splice(0);

@@ -1,8 +1,8 @@
-import { Column } from "../column";
+import { Column, ComparableColumn } from "../column";
 import { ColumnSettings, ColumnOptions, getColumnSettings } from "../column-interfaces";
 import { BoolStorage } from "./storage/bool-storage";
 
-export class NumberColumn extends Column<number>{
+export class NumberColumn extends ComparableColumn<number>{
   constructor(settingsOrCaption?: NumberColumnOptions, settingsOrCaption2?: NumberColumnOptions) {
     super({ ...{ inputType: 'number' }, ...getColumnSettings(settingsOrCaption) }, settingsOrCaption2);
     let s = settingsOrCaption as NumberColumnSettings;

@@ -1,8 +1,8 @@
-import { Column } from "../column";
+import { Column, ComparableColumn } from "../column";
 import { ColumnOptions } from "../column-interfaces";
 import { DateTimeDateStorage } from "./storage/datetime-date-storage";
 
-export class DateColumn extends Column<Date>{
+export class DateColumn extends ComparableColumn<Date>{
   constructor(settingsOrCaption?: ColumnOptions<Date>) {
     super({ inputType: 'date', displayValue: () => this.value.toLocaleDateString() }, settingsOrCaption);
   }

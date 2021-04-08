@@ -7,7 +7,7 @@ import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDat
 import { DataApiRequest, DataApiSettings } from "./data-api";
 import { isFunction, isString, isBoolean } from "util";
 
-import { Column } from "./column";
+import { Column, __isGreaterThan, __isLessThan } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
 
@@ -695,10 +695,10 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
             }
             equalToColumn.push(s.column);
             if (s.descending) {
-                f = new AndFilter(f, s.column.isLessThan(values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isLessThan(s.column,values.get(s.column.defs.key)));
             }
             else
-                f = new AndFilter(f, s.column.isGreaterThan(values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isGreaterThan( s.column,values.get(s.column.defs.key)));
             r = new OrFilter(r, f);
         }
         return r;
@@ -726,3 +726,5 @@ export class EventSource {
     };
 
 }
+
+

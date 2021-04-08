@@ -184,7 +184,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         if (this.row[col.defs.key] >= val)
             this.ok = false;
     }
-    public isContainsCaseInsensitive(col: StringColumn, val: any): void {
+    public containsCaseInsensitive(col: StringColumn, val: any): void {
         let v = this.row[col.defs.key];
         if (!v) {
             this.ok = false;
@@ -197,7 +197,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
-    public isStartsWith(col: StringColumn, val: any): void {
+    public startsWith(col: StringColumn, val: any): void {
         let v = this.row[col.defs.key];
         if (!v) {
             this.ok = false;

@@ -123,18 +123,7 @@ export class Column<dataType = any>  {
         add.isDifferentFrom(this, val)
     });
   }
-  isGreaterOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
-  }
-  isGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
-  }
-  isLessOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
-  }
-  isLessThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
-  }
+
   //@internal
   __getVal(value: Column<dataType> | dataType): dataType {
 
@@ -324,4 +313,32 @@ export function makeTitle(name: string) {
     // uppercase the first character
     .replace(/^./, (str) => str.toUpperCase()).replace('Email', 'eMail').replace(" I D", " ID");
 
+}
+
+export class ComparableColumn<dataType = any> extends Column<dataType>{
+  isGreaterOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
+  }
+  isGreaterThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
+  }
+  isLessOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
+  }
+  isLessThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
+  }
+}
+
+export function __isGreaterOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isGreaterOrEqualTo(col, col.__getVal(value)));
+}
+export function __isGreaterThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isGreaterThan(col, col.__getVal(value)));
+}
+export function __isLessOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isLessOrEqualTo(col, col.__getVal(value)));
+}
+export function __isLessThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isLessThan(col, col.__getVal(value)));
 }

@@ -2,7 +2,7 @@ import { ColumnOptions, ValueListItem } from '../column-interfaces';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { itAsync, Done } from './testHelper.spec';
+import { itAsync, Done, fitAsync } from './testHelper.spec';
 
 import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
@@ -91,7 +91,7 @@ describe("grid filter stuff", () => {
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
-        where: c => c.categoryName.isContains('a'),
+        where: c => c.categoryName.contains('a'),
         limit: 2
       }
     });
@@ -106,7 +106,7 @@ describe("grid filter stuff", () => {
     let ds = new GridSettings(c, {
 
       orderBy: c => new Sort({ column: c.id }),
-      where: c => c.categoryName.isContains('a'),
+      where: c => c.categoryName.contains('a'),
       rowsInPage: 2
 
     });
@@ -121,7 +121,7 @@ describe("grid filter stuff", () => {
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
-        where: c => c.categoryName.isContains('a'),
+        where: c => c.categoryName.contains('a'),
         limit: 2
       }
     });
@@ -139,7 +139,7 @@ describe("grid filter stuff", () => {
       execute: () => { throw "rr" }
     });
     var col = new StringColumn({ dbName: 'col' });
-    x.isContainsCaseInsensitive(col, "no'am");
+    x.containsCaseInsensitive(col, "no'am");
     expect(x.where).toBe(" where lower (col) like lower ('%no''am%')");
   });
   it("filter with contains", () => {
@@ -148,7 +148,7 @@ describe("grid filter stuff", () => {
       execute: () => { throw "rr" }
     });
     var col = new StringColumn({ dbName: 'col' });
-    x.isContainsCaseInsensitive(col, "no'a'm");
+    x.containsCaseInsensitive(col, "no'a'm");
     expect(x.where).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
   it("filter with start with", () => {
@@ -157,7 +157,7 @@ describe("grid filter stuff", () => {
       execute: () => { throw "rr" }
     });
     var col = new StringColumn({ dbName: 'col' });
-    x.isStartsWith(col, "no'am");
+    x.startsWith(col, "no'am");
     expect(x.where).toBe(" where col like ?");
   });
 
@@ -1208,7 +1208,7 @@ describe("relation", () => {
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
-    let rows = await r.find();
+    let rows = await r.waitLoad();
     expect(rows.length).toBe(2);
     let n = r.create();
     expect(n.description.value).toBe("x");
