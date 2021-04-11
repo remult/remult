@@ -45,7 +45,7 @@ serverInit().then(async (dataSource) => {
         if (fs.existsSync(index)) {
             res.send(fs.readFileSync(index).toString());
         }
-        else {
+        else { 
             res.send('No Result' + index);
 
         }

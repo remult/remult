@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
 
 import { Products } from './products';
-import { DialogConfig,GridSettings,openDialog } from '@remult/angular';
+import { DialogConfig, GridSettings, openDialog } from '@remult/angular';
 
 
 
@@ -24,16 +24,34 @@ export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
 
 
-  products = new GridSettings( this.context.for(Products),{
+  products = new GridSettings(this.context.for(Products), {
     allowCRUD: true,
-    columnSettings: p => [p.name, p.a, p.b],
+    columnSettings: p => [p.name, {column:p.tags,readOnly:true}],
     allowSelection: true,
-    gridButtons:[{
-      name:'',
-      click:()=>{
+    gridButtons: [{
+      name: '',
+      click: () => {
         openDialog(ProductsComponent);
       }
-    }]
+    }],
+    rowButtons: [
+      {
+        textInMenu: 'noam',
+        click: r => {
+          if (!r.tags.value)
+            r.tags.value = [];
+          r.tags.value.push('noam');
+        }
+      },
+      {
+        textInMenu: 'yael',
+        click: r => {
+          if (!r.tags.value)
+            r.tags.value = [];
+          r.tags.value.push('yael');
+        }
+      }
+    ]
   });
 
   async ngOnInit() {

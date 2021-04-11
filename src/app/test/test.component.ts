@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { DateColumn, BoolColumn, DataAreaSettings, Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress } from '@remult/core';
+import { DateColumn, BoolColumn, Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress } from '@remult/core';
 import { StringColumn, ColumnOptions } from '@remult/core';
+import { DataAreaSettings } from '@remult/angular';
 import { Products } from '../products-test/products';
 
 

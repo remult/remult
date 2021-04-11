@@ -1,6 +1,8 @@
 import { extend } from '@remult/angular';
-import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn,  Entity } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn, Entity } from '@remult/core';
 import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
+import { isArray } from 'util';
+import { ObjectColumn } from '../../../projects/core/src/columns/object-column';
 @EntityClass
 
 export class Products extends IdEntity {
@@ -19,6 +21,16 @@ export class Products extends IdEntity {
     throw 'error';
     await this.save();
   }
+  tags = new ObjectColumn<string[]>({
+    defaultValue: [],
+    displayValue: () => {
+      
+      if (isArray( this.tags.value))
+        return this.tags.value.join(',')
+      return '';
+    }
+
+  });
   archive = new BoolColumn();
   constructor() {
     super({

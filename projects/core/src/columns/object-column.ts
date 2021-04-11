@@ -13,7 +13,7 @@ export class ObjectColumn<T> extends Column<T>{
         val =  value.toRawValue(value.value);
       else
          val =  value;
-        return new Filter(add => add.containsCaseInsensitive(this, JSON.stringify(val)));
+        return new Filter(add => add.containsCaseInsensitive(this, val));
     }
 }
 class TagStorage implements ColumnStorage<any>{
@@ -21,7 +21,9 @@ class TagStorage implements ColumnStorage<any>{
         return JSON.stringify(val);
     }
     fromDb(val: any): string[] {
-        return JSON.parse(val);
+        if (val&&val.toString().length>0)
+            return JSON.parse(val);
+        return undefined;
     }
 
 }
