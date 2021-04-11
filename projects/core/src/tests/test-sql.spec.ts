@@ -4,7 +4,7 @@ import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories } from './testModel/models';
 
-describe("test sql database", async () => {
+describe("test sql database",  () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
     let context = new ServerContext();
     context.setDataProvider(db);
@@ -13,7 +13,7 @@ describe("test sql database", async () => {
             await c.delete();
         }
     }
-    await itAsync("test basics", async () => {
+     itAsync("test basics", async () => {
         await deleteAll();
         expect (await context.for(Categories).count()).toBe(0);
         let c = context.for(Categories).create();
