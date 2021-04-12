@@ -62,6 +62,7 @@ export class Entity<idType = any> {
       allowUpdate: () => r.isAllowed(options.allowApiUpdate),
       allowDelete: () => r.isAllowed(options.allowApiDelete),
       allowInsert: () => r.isAllowed(options.allowApiInsert),
+      requireId: r.isAllowed(options.apiRequireId),
       get: {
         where: x => options.apiDataFilter ? options.apiDataFilter() : undefined
       }
@@ -284,7 +285,7 @@ export interface EntityOptions {
   allowApiInsert?: Allowed;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCRUD?: Allowed;
-  
+
   /** A filter that determines which rows can be queries using the api.
    * @example
    * apiDataFilter: () => {
@@ -293,6 +294,7 @@ export interface EntityOptions {
    *   }
   */
   apiDataFilter?: () => Filter;
+  apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
@@ -330,6 +332,7 @@ export interface EntityOptions {
   deleted?: () => Promise<any> | any
 
   validation?: (e: Entity) => Promise<any> | any;
+
   dbAutoIncrementId?: boolean;
 }
 

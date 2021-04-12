@@ -83,7 +83,7 @@ export class LookupColumn<T extends Entity<string>> extends StringColumn {
 }
 export class OneToMany<T extends Entity>{
   constructor(private provider: SpecificEntityHelper<string, T>,
-    private settings: {
+    private settings?: {
       create?: (newItem: T) => void,
     } & FindOptions<T>) {
     if (!this.settings)
