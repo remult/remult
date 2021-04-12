@@ -349,7 +349,7 @@ describe("test row provider", () => {
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
     rows = await c.find({
-      where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni')]
+      where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni'),undefined]
     });
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);

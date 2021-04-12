@@ -226,6 +226,7 @@ export interface DataApiResponse {
 
 export interface DataApiError {
   message: string;
+  stack?:string;
 }
 export interface DataApiRequest {
   getBaseUrl(): string;

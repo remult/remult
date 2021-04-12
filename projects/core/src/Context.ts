@@ -46,11 +46,26 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
     }
 
 }
-function toPromise<T>(p: Promise<any> | { toPromise(): Promise<any> }) {
+export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
+    let r: Promise<T>;
     if (p["toPromise"] !== undefined) {
-        return p["toPromise"]();
+        r = p["toPromise"]();
     }
-    return p;
+    //@ts-ignore
+    else r = p;
+    return r.catch(async ex => {
+        let z = await ex;
+        var error = z.error;
+        if (isString(error)) {
+            error = {
+                message: error
+            }
+        }
+        var result =  Object.assign(error, {
+            exception: ex
+        });
+        throw result;
+    });
 }
 
 

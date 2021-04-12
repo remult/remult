@@ -110,6 +110,8 @@ export interface __RowsOfDataForTesting {
 export function translateEntityWhere<entityType extends Entity>(where: EntityWhere<entityType>, entity: entityType): Filter {
   if (isArray(where)) {
     return new AndFilter(...where.map(x => {
+      if (x===undefined)
+      return undefined;
       let r = x(entity);
       if (isArray(r))
         return new AndFilter(...r);
