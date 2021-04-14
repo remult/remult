@@ -73,7 +73,7 @@ export class LookupColumn<T extends Entity<string>> extends StringColumn {
     super(settings);
   }
 
-  get lookup(): T {
+  get item(): T {
     return this.provider.lookup(this);
   }
   async waitLoad() {
