@@ -38,6 +38,7 @@ export * from './src/columns/date-column';
 export * from './src/columns/datetime-column';
 export * from './src/columns/number-column';
 export * from './src/columns/string-column';
+export * from './src/columns/object-column';
 
 export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 

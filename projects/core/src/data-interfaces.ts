@@ -149,3 +149,8 @@ export function updateEntityBasedOnWhere<lookupIdType, T extends Entity<lookupId
       });
   }
 }
+export interface ErrorInfo {
+  message?: string;
+  modelState?: { [key: string]: string };
+  stack?: string;
+}
