@@ -1798,24 +1798,7 @@ describe("test bool value", () => {
     expect(bc.value).toBe(false);
   });
 });
-describe("Column settings stuff", () => {
-  it("should translate caption", () => {
 
-    let x = Column.consolidateOptions("noam");
-    expect(x.caption).toBe("noam");
-  });
-  it("should translate caption2", () => {
-    let x = Column.consolidateOptions({ caption: 'noam' });
-    expect(x.caption).toBe("noam");
-  });
-  it("should translate caption2", () => {
-    let x = Column.consolidateOptions('noam', { key: 'yael' });
-    expect(x.caption).toBe("noam");
-    expect(x.key).toBe("yael");
-  });
-
-
-});
 describe("test number negative", () => {
   it("negative", () => {
     let nc = new NumberColumn();

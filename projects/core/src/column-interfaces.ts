@@ -32,16 +32,10 @@ export interface ColumnSettings<valueType = any> {
 
 }
 export declare type ColumnValidator<valueType = any> = (col: Column<valueType>) => void | Promise<void>;
-export declare type ColumnOptions<valueType = any> = ColumnSettings<valueType> | string;
+
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 export declare type ValueOrEntityExpression<valueType, entityType extends Entity> = valueType | ((e: entityType) => valueType);
-export function getColumnSettings<valueType>(options: ColumnOptions<valueType>): ColumnSettings<valueType> {
-    if (options === undefined)
-        return undefined;
-    if (isString(options))
-        return { caption: options };
-    return options;
-}
+
 export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
     if (isFunction(f)) {
         let x = f as any;

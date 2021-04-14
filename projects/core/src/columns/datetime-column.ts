@@ -1,10 +1,10 @@
 import { Column, ComparableColumn } from "../column";
-import { ColumnOptions } from "../column-interfaces";
+import { ColumnSettings } from "../column-interfaces";
 import { DateTimeStorage } from "./storage/datetime-storage";
 
 export class DateTimeColumn extends ComparableColumn<Date>{
-  constructor(settingsOrCaption?: ColumnOptions<Date>) {
-    super({ displayValue: () => this.value.toLocaleString() }, settingsOrCaption);
+  constructor(settings?: ColumnSettings<Date>) {
+    super({ displayValue: () => this.value.toLocaleString(),...settings });
   }
   getDayOfWeek() {
     return this.value.getDay();

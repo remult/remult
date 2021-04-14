@@ -1,4 +1,4 @@
-import { ColumnOptions, ValueListItem } from '../column-interfaces';
+import { ColumnSettings, ValueListItem } from '../column-interfaces';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
@@ -32,7 +32,7 @@ import { Lookup } from '../lookup';
 
 export class LanguageColumn extends ValueListColumn<Language> {
   constructor() {
-    super(Language, 'שפה');
+    super(Language, { caption: 'שפה' });
   }
 }
 
@@ -349,7 +349,7 @@ describe("test row provider", () => {
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
     rows = await c.find({
-      where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni'),undefined]
+      where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni'), undefined]
     });
     expect(rows.length).toBe(1);
     expect(rows[0].id.value).toBe(2);
@@ -818,7 +818,7 @@ describe("test row provider", () => {
   });
   it("test consolidate", () => {
 
-    var col = extend(extend(new NumberColumn({ caption: '1st' }, { caption: '2nd' })).dataControl(
+    var col = extend(extend(new NumberColumn({ caption: '1st' ,...{ caption: '2nd'} })).dataControl(
       x => {
         x.inputType = 'text';
       }
@@ -1178,7 +1178,7 @@ describe("test parameter priority", () => {
     expect(s.defs.caption).toBe('default');
   });
   it("c", () => {
-    let s = new AnotherTest('test');
+    let s = new AnotherTest({caption:'test'});
     expect(s.defs.caption).toBe('test');
   });
   it("d", () => {
@@ -1243,7 +1243,7 @@ describe("context", () => {
     expect(c.user.id).toBe(undefined);
     expect(c.user.name).toBe("");
     expect(c.user.roles.length).toBe(0);
-    
+
   });
 
 });
@@ -1262,7 +1262,7 @@ class testMyColumn extends StringColumn {
   allowApiUpdate = false;
 }
 class AnotherTest extends StringColumn {
-  constructor(x?: ColumnOptions<string>) {
+  constructor(x?: ColumnSettings<string>) {
     super(x);
     if (!this.defs.caption)
       this.defs.caption = 'default';

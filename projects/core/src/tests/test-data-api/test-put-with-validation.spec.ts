@@ -8,7 +8,7 @@ import { StringColumn } from '../../columns/string-column';
 import { StatusColumn } from '../testModel/models';
 import { Context } from '../../context';
 import { ValueListColumn } from '../../columns/value-list-column';
-import { ColumnOptions } from '../../column-interfaces';
+
 
 
 

@@ -1,5 +1,5 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { ColumnSettings, ColumnOptions, valueOrExpressionToValue } from './column-interfaces';
+import { ColumnSettings, valueOrExpressionToValue } from './column-interfaces';
 
 import { isArray, isBoolean, isFunction } from 'util';
 
@@ -53,29 +53,13 @@ export class Column<dataType = any>  {
     return this.__defs;
   }
 
-  static consolidateOptions(options: ColumnOptions, options1?: ColumnOptions): ColumnSettings {
-    let result: ColumnSettings;
-    if (typeof (options) === "string") {
-      result = { caption: options };
-    }
-    else
-      result = options;
-    if (!result) {
-      result = {};
-    }
-    if (options1) {
 
-      if (typeof (options1) === "string")
-        result.caption = options1;
-      else {
-        result = Object.assign(Object.assign({}, result), options1);
-      }
-    }
-    return result;
-  }
 
-  constructor(settingsOrCaption?: ColumnOptions<dataType>, settingsOrCaption1?: ColumnOptions<dataType>) {
-    this.__settings = Column.consolidateOptions(settingsOrCaption, settingsOrCaption1);
+  constructor(settings?: ColumnSettings<dataType>) {
+    this.__settings = settings;
+    if (!this.__settings) {
+      this.__settings = {};
+    }
   }
 
 

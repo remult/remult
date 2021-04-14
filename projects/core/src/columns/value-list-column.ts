@@ -1,5 +1,5 @@
 import { Column } from "../column";
-import { ColumnOptions, ColumnSettings, ValueListItem } from "../column-interfaces";
+import { ColumnSettings, ValueListItem } from "../column-interfaces";
 import { isNumber } from 'util';
 import { Entity } from "../entity";
 import { StringColumn } from "./string-column";
@@ -9,8 +9,8 @@ import { FindOptions, updateEntityBasedOnWhere } from "../data-interfaces";
 
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
 
-  constructor(private valueListType: classWithNew<T>, settingsOrCaption?: ColumnOptions<T>) {
-    super({ displayValue: () => this.value.caption }, settingsOrCaption);
+  constructor(private valueListType: classWithNew<T>, settings?: ColumnSettings<T>) {
+    super({ displayValue: () => this.value.caption,...settings });
 
 
   }

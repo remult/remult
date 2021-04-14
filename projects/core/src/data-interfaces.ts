@@ -153,4 +153,5 @@ export interface ErrorInfo {
   message?: string;
   modelState?: { [key: string]: string };
   stack?: string;
+  exception?:any;
 }
