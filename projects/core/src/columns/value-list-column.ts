@@ -1,4 +1,4 @@
-import { Column } from "../column";
+import { Column, makeTitle } from "../column";
 import { ColumnSettings, ValueListItem } from "../column-interfaces";
 import { isNumber } from 'util';
 import { Entity } from "../entity";
@@ -10,7 +10,7 @@ import { FindOptions, updateEntityBasedOnWhere } from "../data-interfaces";
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
 
   constructor(private valueListType: classWithNew<T>, settings?: ColumnSettings<T>) {
-    super({ displayValue: () => this.value.caption,...settings });
+    super({ displayValue: () => this.value.caption, ...settings });
 
 
   }
@@ -49,7 +49,7 @@ export class ValueListTypeInfo<T extends ValueListItem>{
         if (s.id === undefined)
           s.id = member;
         if (s.caption === undefined)
-          s.caption = member;
+          s.caption = makeTitle(member);
         if (isNumber(s.id))
           this.isNumeric = true;
         this.byIdMap.set(s.id, s);
@@ -106,7 +106,7 @@ export class OneToMany<T extends Entity>{
       return this._items;
     });
   }
-   async reload(){
+  async reload() {
     this._currentPromise = undefined;
     return this.waitLoad();
   }

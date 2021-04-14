@@ -7,7 +7,7 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { OneToMany, ValueListColumn } from '../columns/value-list-column';
+import { OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
 import { Sort } from '../sort';
 
 import { NumberColumn } from '../columns/number-column';
@@ -287,6 +287,10 @@ describe("Closed List  column", () => {
     x.__loadFromPojo({ 'abc': 10 });
     expect(x.value).toBe(Language.Russian);
 
+  });
+  it("test auto caption", () => {
+    let val = ValueListTypeInfo.get(valueList);
+    expect(valueList.firstName.caption).toBe('First Name');
   });
 });
 
@@ -818,7 +822,7 @@ describe("test row provider", () => {
   });
   it("test consolidate", () => {
 
-    var col = extend(extend(new NumberColumn({ caption: '1st' ,...{ caption: '2nd'} })).dataControl(
+    var col = extend(extend(new NumberColumn({ caption: '1st', ...{ caption: '2nd' } })).dataControl(
       x => {
         x.inputType = 'text';
       }
@@ -1178,7 +1182,7 @@ describe("test parameter priority", () => {
     expect(s.defs.caption).toBe('default');
   });
   it("c", () => {
-    let s = new AnotherTest({caption:'test'});
+    let s = new AnotherTest({ caption: 'test' });
     expect(s.defs.caption).toBe('test');
   });
   it("d", () => {
@@ -1267,4 +1271,10 @@ class AnotherTest extends StringColumn {
     if (!this.defs.caption)
       this.defs.caption = 'default';
   }
+}
+
+class valueList {
+  static firstName = new valueList();
+  static listName = new valueList();
+  constructor(public id?: string, public caption?: string) { }
 }
