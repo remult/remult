@@ -58,6 +58,8 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
       let token = req.getHeader(x.authCookieName);
       if (token && token.startsWith('Bearer '))
         token = token.substring(7);
+        if (token && token.startsWith('Token '))
+        token = token.substring(6);
       if (token) {
         req.user = await x.validateToken(token);
 
