@@ -4,7 +4,7 @@ import { isNumber } from 'util';
 import { Entity } from "../entity";
 import { StringColumn } from "./string-column";
 import { SpecificEntityHelper } from "../context";
-import { FindOptions, updateEntityBasedOnWhere } from "../data-interfaces";
+import { EntityWhere, FindOptions, updateEntityBasedOnWhere } from "../data-interfaces";
 
 
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
@@ -81,6 +81,18 @@ export class LookupColumn<T extends Entity<string>> extends StringColumn {
   }
 
 }
+export class ManyToOne<T extends Entity>{
+  constructor(private provider: SpecificEntityHelper<string, T>,
+    private where: EntityWhere<T>
+  ) { }
+  get item(): T {
+    return this.provider.lookup(this.where);
+  }
+  async waitLoad() {
+    return this.provider.lookupAsync(this.where);
+  }
+}
+
 export class OneToMany<T extends Entity>{
   constructor(private provider: SpecificEntityHelper<string, T>,
     private settings?: {

@@ -694,6 +694,23 @@ describe("test row provider", () => {
     expect(r.id.value).toBe(5);
 
   });
+  itAsync("lookup updates the data", async () => {
+    let c = await createData(async insert => await insert(1, 'noam'));
+    let r = c.lookup(c => c.id.isEqualTo(1));
+    expect(r.isNew()).toBe(true);
+    expect(r.id.value).toBe(1);
+    r = await c.lookupAsync(c => c.id.isEqualTo(1));
+    expect(r.isNew()).toBe(false);
+    await r.delete();
+    expect(await c.count()).toBe(0);
+    r = await c.lookupAsync(c => c.id.isEqualTo(1));
+    expect(r.isNew()).toBe(true);
+    expect(r.id.value).toBe(1);
+    await r.save();
+    expect(await c.count()).toBe(1);
+
+
+  });
   itAsync("column drop down", async () => {
     let c = await createData(async insert => {
       await insert(1, 'noam');
