@@ -61,7 +61,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
                 message: error
             }
         }
-        var result =  Object.assign(error, {
+        var result = Object.assign(error, {
             exception: ex
         });
         throw result;
@@ -247,8 +247,21 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return (forEntity ? forEntity : this.entity)._getEntityApiSettings(this.context);
     }
 
-    private entity: T;
-    private _edp: EntityDataProvider;
+    private __entity: T;
+    private get entity(): T {
+        if (!this.__entity)
+             this.__entity = this._factory(false);
+        return this.__entity;
+    }
+    private ___edp: EntityDataProvider;
+    private get _edp(): EntityDataProvider {
+        if (!this.___edp){
+            //@ts-ignore
+            this.___edp = {};
+            this.___edp = this.dataSource.getEntityDataProvider(this.entity);
+        }
+        return this.___edp;
+    }
     private _factory: (newRow: boolean) => T;
     constructor(
         /** Creates a new instance of the entity
@@ -258,7 +271,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
          * await p.save();
          */
         public create: () => T
-        , private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
+        , private _lookupCache: LookupCache<any>[], private context: Context, private dataSource: DataProvider) {
         this._factory = newRow => {
             let e = create();
             e.__entityData.dataProvider = this._edp;
@@ -277,8 +290,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         this.create = () => {
             return this._factory(true);
         };
-        this.entity = this._factory(false);
-        this._edp = dataSource.getEntityDataProvider(this.entity);
+
     }
 
     /** Returns an array of rows for the specific type 

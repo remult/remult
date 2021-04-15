@@ -72,7 +72,9 @@ export class LookupColumn<T extends Entity<string>> extends StringColumn {
   constructor(private provider: SpecificEntityHelper<string, T>, settings?: ColumnSettings<string>) {
     super(settings);
   }
-
+  exists() {
+    return !this.item.isNew();
+  }
   get item(): T {
     return this.provider.lookup(this);
   }
@@ -85,6 +87,9 @@ export class ManyToOne<T extends Entity>{
   constructor(private provider: SpecificEntityHelper<string, T>,
     private where: EntityWhere<T>
   ) { }
+  exists() {
+    return !this.item.isNew();
+  }
   get item(): T {
     return this.provider.lookup(this.where);
   }

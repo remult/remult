@@ -2,7 +2,7 @@ import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
 import * as cors from 'cors';
-import { EntityQueueStorage, initExpress, JobsInQueueEntity } from '@remult/server';
+import { EntityQueueStorage, initExpress, JobsInQueueEntity } from '@remult/core/server';
 import * as fs from 'fs';
 import '../app.module';
 import { serverInit } from './server-init';

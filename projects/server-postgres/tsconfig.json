@@ -1,14 +1,27 @@
-{
-    "extends": "../server/tsconfig.json",
-    "compilerOptions": {
-        "outDir":"../../dist/server-postgres",
-        "paths": {
-            "@remult/core": [
-                "../../dist/core"
+    {
+        "extends": "../../tsconfig.json",
+        "compilerOptions": {
+            "outDir": "../../dist/server-postgres",
+            "baseUrl": ".",
+            "declaration": true,
+            "stripInternal": true,
+            "experimentalDecorators": true,
+            "noImplicitAny": true,
+            "module": "commonjs",
+            "moduleResolution": "node",
+            "target": "es5",
+            "skipLibCheck": true,
+            "lib": [
+                "es2018",
+                "dom"
             ],
-            "@remult/server": [
-                "../../dist/server"
-            ]
+            "paths": {
+                "@remult/core": [
+                    "../../dist/core"
+                ],
+                "@remult/core/server": [
+                    "../../dist/core/server"
+                ]
+            }
         }
     }
-}

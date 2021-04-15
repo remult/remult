@@ -1,5 +1,5 @@
 import { SiteArea } from "./expressBridge";
-import { myServerAction, serverActionField, actionInfo, DataProviderFactoryBuilder, DataApiResponse, DataApiRequest, Action, queuedJobInfoResponse, jobWasQueuedResult, DataApi } from '@remult/core';
+import { myServerAction, serverActionField, actionInfo, DataProviderFactoryBuilder, DataApiResponse, DataApiRequest, Action, queuedJobInfoResponse, jobWasQueuedResult, DataApi } from '../';
 
 export function registerActionsOnServer(area: SiteArea, dataProvider: DataProviderFactoryBuilder) {
     var addAction = (a: any) => {

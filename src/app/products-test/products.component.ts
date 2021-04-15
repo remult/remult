@@ -23,73 +23,14 @@ export class ProductsComponent implements OnInit {
 
   constructor(private context: Context) { }
 
-
+  products = new GridSettings(this.context.for(Products));
   async ngOnInit() {
 
 
 
-    var p = await this.context.for(Products).findFirst();
-    try {
-      p.name.value += '1';
-      await p.save();
-    }
-    catch (err) {
-      console.log("entity save");
-      console.log(err);
-      console.log({ entityVE: p.validationError, nameVE: p.name.validationError })
-    }
-    try {
-      var p = await this.context.for(Products).findFirst();
-      p.name.value += '1';
-      await p.doit();
-    }
-    catch (err) {
-      console.log("entity server method");
-      console.log(err);
-    }
-    try {
-      await ProductsComponent.doServerFunction();
-    }
-    catch (err) {
-      console.log("server function");
-      console.log(err);
-    }
-    try {
-      await new myController(this.context).doit();
-    }
-    catch (err) {
-      console.log("server function");
-      console.log(err);
-    }
-
-
-  }
-  @ServerFunction({ allowed: true })
-  static async doServerFunction(context?: Context) {
-    let a = {};
-    //a['123'].toString();
-    throw new Error('123');
-    var p = await context.for(Products).findFirst();
-    p.name.value += '1';
-    await p.save();
   }
 
 
 
 }
 
-@ServerController({ allowed: true, key: 'myContorller' })
-class myController {
-  a = new StringColumn();
-  constructor(private context?: Context) {
-
-  }
-  @ServerMethod()
-  async doit() {
-    var p = await this.context.for(Products).findFirst();
-    p.name.value += '1';
-    await p.save();
-
-  }
-
-}

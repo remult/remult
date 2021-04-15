@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DateColumn, BoolColumn, Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress } from '@remult/core';
-import { StringColumn, ColumnOptions } from '@remult/core';
+import { StringColumn } from '@remult/core';
 import { DataAreaSettings } from '@remult/angular';
 import { Products } from '../products-test/products';
 
@@ -13,11 +13,11 @@ import { Products } from '../products-test/products';
 export class TestComponent implements OnInit {
 
   constructor(private context: Context) { }
-  column = new StringColumn("שלי");
-  column1 = new StringColumn("שלי1");
-  column2 = new StringColumn("שלי2");
-  column3 = new StringColumn("שלי3");
-  column4 = new StringColumn("שלי4");
+  column = new StringColumn();
+  column1 = new StringColumn();
+  column2 = new StringColumn();
+  column3 = new StringColumn();
+  column4 = new StringColumn();
 
   area = new DataAreaSettings({
     columnSettings: (f) => [

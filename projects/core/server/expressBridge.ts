@@ -1,16 +1,13 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '@remult/core';
+import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import * as compression from 'compression';
-// @ts-ignore: 
-import * as secure from 'express-force-https';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
 import { isBoolean, isFunction, isString } from 'util';
 
-import { JwtSessionService } from '@remult/core';
+import { JwtSessionService } from '../';
 
 
 

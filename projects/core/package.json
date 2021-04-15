@@ -1,13 +1,14 @@
 {
   "name": "@remult/core",
   "schematics": "./schematics/collection.json",
-  "version": "2.3.6",
+  "version": "2.3.10",
   "description": "remult core lib",
   "license": "MIT",
   "author": {
     "name": "Noam Honig"
   },
   "dependencies": {
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "body-parser": "^1.18.3"
   }
 }

@@ -7,7 +7,7 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
+import { LookupColumn, OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
 import { Sort } from '../sort';
 
 import { NumberColumn } from '../columns/number-column';
@@ -26,6 +26,7 @@ import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-brid
 import { Validators } from '../validators';
 import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
 import { Lookup } from '../lookup';
+import { IdEntity } from '../id-entity';
 
 
 
@@ -1266,6 +1267,10 @@ describe("context", () => {
     expect(c.user.roles.length).toBe(0);
 
   });
+  it("circular reference entity works",()=>{
+    var c= new Context();
+    var r = c.for(EntityA).create();
+  });
 
 });
 
@@ -1294,4 +1299,18 @@ class valueList {
   static firstName = new valueList();
   static listName = new valueList();
   constructor(public id?: string, public caption?: string) { }
+}
+
+
+class EntityA extends IdEntity {
+  b = new LookupColumn(this.context.for(EntityB));
+  constructor(private context: Context) {
+    super("a");
+  }
+}
+class EntityB extends IdEntity {
+  a = new LookupColumn(this.context.for(EntityA));
+  constructor(private context: Context) {
+    super("b");
+  }
 }

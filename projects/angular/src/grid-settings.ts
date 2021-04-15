@@ -1,4 +1,4 @@
-import { AndFilter, Column,  DataList, Entity, EntityOrderBy, entityOrderByToSort, EntityProvider, EntityWhere, FilterHelper, FindOptions,  Sort, translateEntityWhere } from "@remult/core";
+import { AndFilter, Column, DataList, Entity, EntityOrderBy, entityOrderByToSort, EntityProvider, EntityWhere, FilterHelper, FindOptions, Sort, translateEntityWhere } from "@remult/core";
 import { ColumnCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
@@ -8,6 +8,8 @@ import { DataControlInfo, DataControlSettings } from "./data-control-interfaces"
 
 export class GridSettings<rowType extends Entity = Entity>  {
   constructor(private entityProvider: EntityProvider<rowType>, public settings?: IDataSettings<rowType>) {
+    if (!settings)
+      this.settings = settings = {};
     this.restList = new DataList<rowType>(entityProvider);
     if (entityProvider) {
       this.filterHelper.filterRow = <rowType>entityProvider.create();
@@ -289,7 +291,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       this._selectedAll = this.selectedRows.length == this.totalRows;
     }
   }
-  lastSelectedRowWithShift:rowType;
+  lastSelectedRowWithShift: rowType;
   clickOnselectCheckboxFor(row: rowType, shift: boolean) {
     if (shift) {
       if (!this.lastSelectedRowWithShift) {
@@ -298,16 +300,16 @@ export class GridSettings<rowType extends Entity = Entity>  {
       else {
         let found = false;
         for (const rule of this.items) {
-          
-            if (found) {
-              if (rule == row || rule == this.lastSelectedRowWithShift) {
-                this.lastSelectedRowWithShift = undefined;
-                return;
-              }
-              else this.selectedChanged(rule);
-            } else
-              found = rule == row || rule == this.lastSelectedRowWithShift;
-          
+
+          if (found) {
+            if (rule == row || rule == this.lastSelectedRowWithShift) {
+              this.lastSelectedRowWithShift = undefined;
+              return;
+            }
+            else this.selectedChanged(rule);
+          } else
+            found = rule == row || rule == this.lastSelectedRowWithShift;
+
         }
 
 
@@ -315,7 +317,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
 
     this.lastSelectedRowWithShift = row;
-    
+
 
   }
   isSelected(row: rowType) {
@@ -442,7 +444,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       let ids = this.selectedRows.map(x => x.columns.idColumn.value);
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(translateEntityWhere(x,e), e.columns.idColumn.isIn(...ids))
+        r.where = e => new AndFilter(translateEntityWhere(x, e), e.columns.idColumn.isIn(...ids))
       }
       else
         r.where = e => e.columns.idColumn.isIn(...ids);
