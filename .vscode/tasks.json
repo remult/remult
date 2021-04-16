@@ -196,6 +196,16 @@
             "group": "build",
             "label": "npm: core-build",
             "detail": "tsc -p projects/core/tsconfig.json && copyfiles -u 2 projects/core/package.json dist/core"
+        },
+        {
+            "type": "npm",
+            "script": "remult-angular-build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build",
+            "label": "npm: remult-angular-build",
+            "detail": "copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V angular.json dist/build-angular && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/core/** dist/build-angular/node_modules/@remult && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles "
         }
     ]
 }

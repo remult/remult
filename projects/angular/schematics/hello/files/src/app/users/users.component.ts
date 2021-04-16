@@ -4,6 +4,7 @@ import { Context, ServerFunction } from '@remult/core';
 
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';
+import { GridSettings } from '@remult/angular';
 
 
 @Component({
@@ -18,7 +19,7 @@ export class UsersComponent implements OnInit {
     return this.context.isAllowed(Roles.admin);
   }
 
-  users = this.context.for(Users).gridSettings({
+  users = new GridSettings(this.context.for(Users),{
     allowDelete: true,
     allowInsert: true,
     allowUpdate: true,

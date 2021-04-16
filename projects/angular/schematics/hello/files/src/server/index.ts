@@ -1,7 +1,7 @@
 //import { CustomModuleLoader } from '../../../../../../repos/radweb/src/app/server/CustomModuleLoader';
 //let moduleLoader = new CustomModuleLoader('/dist-server/repos/radweb/projects/');
 import * as express from 'express';
-import { initExpress } from '@remult/server';
+import { initExpress } from '@remult/core/server';
 import * as fs from 'fs';
 import { SqlDatabase } from '@remult/core';
 import { Pool } from 'pg';
@@ -11,8 +11,8 @@ import * as forceHttps from 'express-force-https';
 import * as jwt from 'jsonwebtoken';
 import * as compression from 'compression';
 import * as passwordHash from 'password-hash';
-import '../app.module';
-import { PasswordColumn } from '../users/users';
+import '../app/app.module';
+import { PasswordColumn } from '../app/users/users';
 
 config(); //loads the configuration from the .env file
 const pool = new Pool({
