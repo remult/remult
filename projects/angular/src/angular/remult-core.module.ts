@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action, JwtSessionService } from '@remult/core';
+import { actionInfo, Context, RestDataProvider, Action, JwtSessionService, Column, EntityOrderBy, EntityWhere, Entity, ValueListItem, EntityProvider } from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -19,7 +19,7 @@ import { WaitComponent } from './wait/wait.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
-import { DataArea2Compnent } from './data-area/dataArea2';
+import { DataArea2Component } from './data-area/dataArea2';
 import { SelectValueDialogComponent } from './add-filter-dialog/add-filter-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
@@ -40,7 +40,7 @@ import { BidiModule } from '@angular/cdk/bidi';
 
 
 @NgModule({
-  declarations: [DataControl2Component, DataArea2Compnent, DataFilterInfoComponent, DataGrid2Component, WaitComponent, DataControl3Component, SelectValueDialogComponent, FilterDialogComponent],
+  declarations: [DataControl2Component, DataArea2Component, DataFilterInfoComponent, DataGrid2Component, WaitComponent, DataControl3Component, SelectValueDialogComponent, FilterDialogComponent],
   imports: [FormsModule, CommonModule, HttpClientModule, MatProgressSpinnerModule, MatDialogModule, BrowserAnimationsModule,
     MatFormFieldModule,
     MatButtonModule,
@@ -57,7 +57,7 @@ import { BidiModule } from '@angular/cdk/bidi';
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: AuthorizationInterceptor, multi: true }]
   ,
-  exports: [DataControl2Component, DataFilterInfoComponent, DataGrid2Component, DataArea2Compnent, SelectValueDialogComponent],
+  exports: [DataControl2Component, DataFilterInfoComponent, DataGrid2Component, DataArea2Component, SelectValueDialogComponent],
   entryComponents: [WaitComponent, SelectValueDialogComponent, FilterDialogComponent]
 })
 export class RemultModule { }
@@ -68,27 +68,70 @@ export function DialogConfig(config: MatDialogConfig) {
   };
 }
 const dialogConfigMember = Symbol("dialogConfigMember");
+var _matDialog: MatDialog;
 export function buildContext(http: HttpClient, _dialog: MatDialog) {
-  
+
   let r = new Context(http);
+  _matDialog = _dialog;
 
-  r.openDialog = async (component, setParameters, returnAValue) => {
-    let ref = _dialog.open(component, component[dialogConfigMember]);
-    if (setParameters)
-      setParameters(ref.componentInstance);
-    var r;
-    if (ref.beforeClosed)
-      r = await ref.beforeClosed().toPromise();
-    else
-      r = await ref.beforeClose().toPromise();
-
-
-    if (returnAValue)
-      return returnAValue(ref.componentInstance);
-    return r;
-  }
+  
   actionInfo.runActionWithoutBlockingUI = async x => await BusyService.singleInstance.donotWait(x);
   actionInfo.startBusyWithProgress = () => BusyService.singleInstance.startBusyWithProgress()
-  
+
   return r;
+}
+
+
+export async function openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T): Promise<T> {
+
+  let ref = _matDialog.open(component, component[dialogConfigMember]);
+  if (setParameters)
+    setParameters(ref.componentInstance);
+  var r;
+  if (ref.beforeClosed)
+    r = await ref.beforeClosed().toPromise();
+  else
+    r = await ref.beforeClose().toPromise();
+
+
+  if (returnAValue)
+    return returnAValue(ref.componentInstance);
+  return r;
+}
+
+
+/** returns an array of values that can be used in the value list property of a data control object */
+
+export async function getValueList<T extends Entity>(provider:EntityProvider<T>, args?: {
+  idColumn?: (e: T) => Column,
+  captionColumn?: (e: T) => Column,
+  orderBy?: EntityOrderBy<T>,
+  where?: EntityWhere<T>
+}): Promise<ValueListItem[]> {
+  if (!args) {
+    args = {};
+  }
+  if (!args.idColumn) {
+    args.idColumn = x => x.columns.idColumn;
+  }
+  if (!args.captionColumn) {
+    let entity = provider.create();
+    let idCol = args.idColumn(entity);
+    for (const keyInItem of entity.columns) {
+      if (keyInItem != idCol) {
+        args.captionColumn = x => x.columns.find(keyInItem);
+        break;
+      }
+    }
+  }
+  return (await provider.find({
+    where: args.where,
+    orderBy: args.orderBy,
+    limit: 1000
+  })).map(x => {
+    return {
+      id: args.idColumn(x).value,
+      caption: args.captionColumn(x).value
+    }
+  });
 }

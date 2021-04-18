@@ -1,13 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DataAreaSettings, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, packWhere, BoolColumn, StringColumn, DateColumn, ServerController, NumberColumn, ServerMethod, getColumnsFromObject, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig, OneToMany } from '@remult/core';
+
 import { Products } from './products';
-import { DialogService } from '../../../projects/angular/schematics/hello/files/src/app/common/dialog';
-import { TestDialogComponent } from '../test-dialog/test-dialog.component';
-import { InputAreaComponent } from '../../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
-import { DialogConfig } from '@remult/angular';
-import { isConstructorDeclaration } from 'typescript';
-import { YesNoQuestionComponent } from '../../../projects/angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
-import * as csv from 'convert-csv-to-array';
+import { DialogConfig, GridSettings, openDialog } from '@remult/angular';
+
 
 
 
@@ -27,25 +23,14 @@ export class ProductsComponent implements OnInit {
 
   constructor(private context: Context) { }
 
-
-  products = this.context.for(Products).gridSettings({
-    allowCRUD: true,
-    columnSettings: p => [p.name, p.archive],
-    allowSelection:true
-  });
-
+  products = new GridSettings(this.context.for(Products));
   async ngOnInit() {
 
 
-    
-  }
-  @ServerFunction({ allowed: true, queue: true })
-  static async doIt1234() {
-
-    let x;
-    x.toString();
 
   }
+
 
 
 }
+

@@ -15,8 +15,8 @@ export class CustomModuleLoader {
                 case "@remult/angular":
                     request = request = process.cwd() + root + '/angular';
                     break;
-                case "@remult/server":
-                    request = request = process.cwd() + root + '/server';
+                case "@remult/core/server":
+                    request = request = process.cwd() + root + '/core/server';
                     break;
                 case "@remult/server-postgres":
                     request = request = process.cwd() + root + '/server-postgres';

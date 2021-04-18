@@ -50,6 +50,34 @@ export class DataApi<T extends Entity = Entity> {
         Object.assign(findOptions, this.options.get);
       }
       findOptions.where = t => this.buildWhere(t, request, filterBody);
+      if (this.options.requireId) {
+        let hasId = false;
+        var e = this.entityProvider.create();
+        let w = translateEntityWhere(findOptions.where, e);
+        if (w) {
+          w.__applyToConsumer({
+            containsCaseInsensitive: () => { },
+            isDifferentFrom: () => { },
+            isEqualTo: (col, val) => {
+              if (col == e.columns.idColumn)
+                hasId = true;
+            },
+            isGreaterOrEqualTo: () => { },
+            isGreaterThan: () => { },
+            isIn: () => { },
+            isLessOrEqualTo: () => { },
+            isLessThan: () => { },
+            isNotNull: () => { },
+            isNull: () => { },
+            startsWith: () => { },
+            or: () => { }
+          });
+        }
+        if (!hasId) {
+          response.methodNotAllowed();
+          return
+        }
+      }
       if (request) {
 
         let sort = <string>request.get("_sort");
@@ -175,6 +203,7 @@ export interface DataApiSettings<rowType extends Entity> {
   allowUpdate: () => boolean,
   allowInsert: () => boolean,
   allowDelete: () => boolean,
+  requireId: boolean,
   name?: string,
   allowRead?: boolean,
   get?: FindOptions<rowType>
@@ -197,6 +226,7 @@ export interface DataApiResponse {
 
 export interface DataApiError {
   message: string;
+  stack?:string;
 }
 export interface DataApiRequest {
   getBaseUrl(): string;

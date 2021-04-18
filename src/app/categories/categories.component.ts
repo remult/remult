@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { GridSettings } from '@remult/angular';
 import { Context } from '@remult/core';
 import { Categories } from './categories';
 
@@ -11,7 +12,7 @@ export class CategoriesComponent implements OnInit {
 
   constructor(private context:Context) { }
 
-  categories = this.context.for(Categories).gridSettings();
+  categories =new GridSettings(this.context.for(Categories));
   ngOnInit() {
   }
 

@@ -2,12 +2,12 @@ import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
 import * as cors from 'cors';
-import { EntityQueueStorage, initExpress, JobsInQueueEntity } from '@remult/server';
+import { EntityQueueStorage, initExpress, JobsInQueueEntity } from '@remult/core/server';
 import * as fs from 'fs';
 import '../app.module';
 import { serverInit } from './server-init';
 import { ServerContext } from '@remult/core';
-import { ServerSignIn } from '../../../projects/angular/schematics/hello/files/src/app/users/server-sign-in';
+
 import { preparePostgresQueueStorage } from '@remult/server-postgres';
 import { Products } from '../products-test/products';
 import * as compression from 'compression';
@@ -45,7 +45,7 @@ serverInit().then(async (dataSource) => {
         if (fs.existsSync(index)) {
             res.send(fs.readFileSync(index).toString());
         }
-        else {
+        else { 
             res.send('No Result' + index);
 
         }

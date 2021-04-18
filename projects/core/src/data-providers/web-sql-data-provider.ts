@@ -29,6 +29,13 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         return ' limit ' + limit + ' offset ' + offset;
     }
     async entityIsUsedForTheFirstTime(entity: Entity) {
+        await this.createTable(entity);
+    }
+
+    async dropTable(entity: Entity) {
+        await this.createCommand().execute('drop  table if exists ' + entity.defs.dbName);
+    }
+    async createTable(entity: Entity<any>) {
         let result = '';
         for (const x of entity.columns) {
             if (!x.defs.dbReadOnly) {
@@ -39,7 +46,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 if (x == entity.columns.idColumn) {
                     result += ' primary key';
                     if (entity.__options.dbAutoIncrementId)
-                        result += " autoincrement"
+                        result += " autoincrement";
                 }
             }
         }

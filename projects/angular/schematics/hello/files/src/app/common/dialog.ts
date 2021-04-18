@@ -3,7 +3,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Context } from "@remult/core";
 
 import { YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
-import { isString } from 'util';
+import { openDialog } from "@remult/angular";
 
 
 
@@ -17,7 +17,7 @@ export class DialogService {
     }
     async error(err: any) {
 
-        return await this.context.openDialog(YesNoQuestionComponent, d => d.args = {
+        return await openDialog(YesNoQuestionComponent, d => d.args = {
             message: extractError(err),
             isAQuestion: false
         });
@@ -36,7 +36,7 @@ export class DialogService {
     }
 
     async yesNoQuestion(question: string) {
-        return await this.context.openDialog(YesNoQuestionComponent, d => d.args = { message: question }, d => d.okPressed);
+        return await openDialog(YesNoQuestionComponent, d => d.args = { message: question }, d => d.okPressed);
     }
     async confirmDelete(of: string) {
         return await this.yesNoQuestion("Are you sure you would like to delete " + of + "?");
@@ -47,9 +47,9 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
     constructor(private dialog: DialogService, private zone: NgZone) {
         super();
     }
-    lastErrorString: '';
+    lastErrorString= '';
     lastErrorTime: number;
-    async handleError(error) {
+    async handleError(error:any) {
         super.handleError(error);
         if (this.lastErrorString == error.toString() && new Date().valueOf() - this.lastErrorTime < 100)
             return;
@@ -63,8 +63,8 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
 }
 
 
-export function extractError(err: any) {
-    if (isString(err))
+export function extractError(err: any):string {
+    if (typeof err === 'string')
         return err;
     if (err.modelState) {
         if (err.message)

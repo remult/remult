@@ -3,8 +3,10 @@ import { StringColumn } from '../columns/string-column';
 
 
 export class Filter {
-    constructor(private apply: (add: FilterConsumer) => void) {
-
+    constructor(private apply?: (add: FilterConsumer) => void) {
+        if (!this.apply){
+            this.apply=()=>{};
+        }
     }
     __applyToConsumer(add: FilterConsumer) {
         this.apply(add);
@@ -26,8 +28,8 @@ export interface FilterConsumer {
     isGreaterThan(col: Column, val: any): void;
     isLessOrEqualTo(col: Column, val: any): void;
     isLessThan(col: Column, val: any): void;
-    isContainsCaseInsensitive(col: StringColumn, val: any): void;
-    isStartsWith(col: StringColumn, val: any): void;
+    containsCaseInsensitive(col: Column, val: any): void;
+    startsWith(col: Column, val: any): void;
     isIn(col: Column, val: any[]): void;
 }
 

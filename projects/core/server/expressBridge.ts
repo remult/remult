@@ -1,16 +1,13 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest,  Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '@remult/core';
+import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import * as compression from 'compression';
-// @ts-ignore: 
-import * as secure from 'express-force-https';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
-import { isBoolean, isFunction, isString } from 'util';
 
-import { JwtSessionService } from '@remult/core';
+
+import { JwtSessionService } from '../';
 
 
 
@@ -39,7 +36,7 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
   app.use(bodyParser.urlencoded({ extended: true, limit: options.bodySizeLimit }));
 
   let builder: DataProviderFactoryBuilder;
-  if (isFunction(dataProvider))
+  if (typeof dataProvider === 'function')
     builder = <DataProviderFactoryBuilder>dataProvider;
   else
     builder = () => <DataProvider>dataProvider;
@@ -58,6 +55,8 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
       let token = req.getHeader(x.authCookieName);
       if (token && token.startsWith('Bearer '))
         token = token.substring(7);
+        if (token && token.startsWith('Token '))
+        token = token.substring(6);
       if (token) {
         req.user = await x.validateToken(token);
 
@@ -69,14 +68,14 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
     });
     JwtSessionService.createTokenOnServer = (user: UserInfo) => x.createSecuredTokenBasedOn(user);
   }
- 
-    
-  
+
+
+
   return result;
 }
 
 
-export class ExpressBridge  {
+export class ExpressBridge {
 
   addRequestProcessor(processAndReturnTrueToAuthorize: (req: DataApiRequest) => void): void {
     this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAuthorize);
@@ -288,12 +287,12 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
 
 function serializeError(data: DataApiError) {
   if (data instanceof TypeError) {
-    data = { message: data.message + '\n' + data.stack };
+    data = { message: data.message, stack: data.stack };
   }
   let x = JSON.parse(JSON.stringify(data));
   if (!x.message && !x.modelState)
-    data = { message: data.message };
-  if (isString(x))
+    data = { message: data.message,stack:data.stack };
+  if (typeof x ==='string')
     data = { message: x };
   return data;
 }
@@ -464,7 +463,7 @@ export class JobsInQueueEntity extends IdEntity {
 
 class JWTCookieAuthorizationHelper {
 
-  constructor( private provider: TokenProvider, public authCookieName?: string) {
+  constructor(private provider: TokenProvider, public authCookieName?: string) {
     if (!authCookieName) {
       this.authCookieName = 'authorization';
 
@@ -502,5 +501,5 @@ class JWTCookieAuthorizationHelper {
 }
 export interface TokenProvider {
   createToken(info: UserInfo): string;
-  verifyToken(token: string): UserInfo|any;
+  verifyToken(token: string): UserInfo | any;
 }

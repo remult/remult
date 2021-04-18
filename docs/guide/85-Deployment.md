@@ -60,7 +60,9 @@ The **Authentication token sign key**, is used to authenticate the user that use
 
 It's important to set this value to some random crazy value that no one will have. A hacker with this key, will be able to impersonate anyone on your web site.
 
-To read more about it, see [jwt](https://jwt.io/)
+To read more about it, see [jwt](https://jwt.io/).
+
+To Generate a unique string, goto [uuidgenerator](https://www.uuidgenerator.net/)
 
 This key is required, so set it using:
 ```sh

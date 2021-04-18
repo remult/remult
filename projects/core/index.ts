@@ -21,10 +21,7 @@ export * from './src/server-action';
 
 export * from './src/context';
 export * from './src/id-entity';
-export * from './src/grid-settings';
-export * from './src/data-area-settings';
 export * from './src/sort';//V
-export * from './src/column-collection';
 
 
 export * from './src/entity';
@@ -41,6 +38,7 @@ export * from './src/columns/date-column';
 export * from './src/columns/datetime-column';
 export * from './src/columns/number-column';
 export * from './src/columns/string-column';
+export * from './src/columns/object-column';
 
 export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 

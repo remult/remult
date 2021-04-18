@@ -1,16 +1,12 @@
-import { Entity } from "./entity";
-import { FilterHelper } from "./filter/filter-helper";
-import { DataControlSettings, ValueListItem, DataControlInfo, valueOrEntityExpressionToValue } from "./column-interfaces";
-import { Column } from "./column";
-import { Context } from "./context";
-import { isFunction } from "util";
-import { IdEntity } from './id-entity';
+import { Column, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
+import { DataControlInfo, DataControlSettings, decorateDataSettings } from "./data-control-interfaces";
+
 
 
 export class ColumnCollection<rowType extends Entity = Entity> {
-  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private context?: Context) {
+  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean) {
 
-    
+
   }
   __showArea() {
     return this.showArea();
@@ -62,7 +58,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
 
       }
       if (x.column) {
-        x.column.__decorateDataSettings(x);
+        decorateDataSettings(x.column, x);
       }
 
       if (x.getValue) {
@@ -98,7 +94,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
           }
         }
       }
-      else if (isFunction(orig)) {
+      else if (typeof orig === "function") {
         result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
       }
       else {
@@ -200,7 +196,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
   _getColumnClass(col: DataControlSettings, row: any) {
 
     if (col.cssClass)
-      if (isFunction(col.cssClass)) {
+      if (typeof col.cssClass === 'function') {
         let anyFunc: any = col.cssClass;
         return anyFunc(row);
       }
@@ -330,3 +326,4 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     return this.nonGridColumns;
   }
 }
+

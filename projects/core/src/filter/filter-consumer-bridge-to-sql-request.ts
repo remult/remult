@@ -57,11 +57,11 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   isLessThan(col: Column, val: any): void {
     this.add(col, val, "<");
   }
-  public isContainsCaseInsensitive(col: StringColumn, val: any): void {
+  public containsCaseInsensitive(col: StringColumn, val: any): void {
 
     this.addToWhere('lower (' + col.defs.dbName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
   }
-  public isStartsWith(col: StringColumn, val: any): void {
+  public startsWith(col: StringColumn, val: any): void {
     this.add(col, val + '%', 'like');
   }
   private add(col: Column, val: any, operator: string) {

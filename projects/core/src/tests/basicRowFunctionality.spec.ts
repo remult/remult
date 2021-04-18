@@ -1308,6 +1308,59 @@ describe("data api", () => {
     await api.delete(t, 2);
     d.test();
   });
+  itAsync("apiRequireId", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, class extends Categories {
+      constructor() {
+        super({
+          name: undefined,
+          apiRequireId: true
+        })
+      }
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.methodNotAllowed = () => {
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "categoryName")
+          return "a";
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    });
+    d.test();
+
+    t = new TestDataApiResponse();
+    d = new Done();
+    t.success = () => {
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "id")
+          return "1";
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    });
+    d.test();
+
+    t = new TestDataApiResponse();
+    d = new Done();
+    t.success = () => {
+      d.ok();
+    };
+    await api.get(t, 1);
+    d.test();
+
+  });
   itAsync("delete id  not Allowed for specific row", async () => {
     let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
@@ -1745,24 +1798,7 @@ describe("test bool value", () => {
     expect(bc.value).toBe(false);
   });
 });
-describe("Column settings stuff", () => {
-  it("should translate caption", () => {
 
-    let x = Column.consolidateOptions("noam");
-    expect(x.caption).toBe("noam");
-  });
-  it("should translate caption2", () => {
-    let x = Column.consolidateOptions({ caption: 'noam' });
-    expect(x.caption).toBe("noam");
-  });
-  it("should translate caption2", () => {
-    let x = Column.consolidateOptions('noam', { key: 'yael' });
-    expect(x.caption).toBe("noam");
-    expect(x.key).toBe("yael");
-  });
-
-
-});
 describe("test number negative", () => {
   it("negative", () => {
     let nc = new NumberColumn();

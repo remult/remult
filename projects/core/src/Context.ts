@@ -1,20 +1,20 @@
 
-import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere } from "./data-interfaces";
+import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere } from "./data-interfaces";
 
 
 
 
 import { DataApiRequest, DataApiSettings } from "./data-api";
-import { isFunction, isString, isBoolean } from "util";
 
-import { Column } from "./column";
+
+import { Column, __isGreaterThan, __isLessThan } from "./column";
 import { Entity } from "./entity";
 import { Lookup } from "./lookup";
-import { IDataSettings, GridSettings } from "./grid-settings";
+
 
 import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';
-import { ValueListItem } from './column-interfaces';
+
 
 import { RestDataProvider, RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { CompoundIdColumn } from "./columns/compound-id-column";
@@ -46,12 +46,28 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
     }
 
 }
-function toPromise<T>(p: Promise<any> | { toPromise(): Promise<any> }) {
+export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
+    let r: Promise<T>;
     if (p["toPromise"] !== undefined) {
-        return p["toPromise"]();
+        r = p["toPromise"]();
     }
-    return p;
+    //@ts-ignore
+    else r = p;
+    return r.catch(async ex => {
+        let z = await ex;
+        var error = z.error;
+        if (typeof error === 'string') {
+            error = {
+                message: error
+            }
+        }
+        var result = Object.assign(error, {
+            exception: ex
+        });
+        throw result;
+    });
 }
+
 
 export class Context {
     clearAllCache(): any {
@@ -60,7 +76,7 @@ export class Context {
     }
 
     isSignedIn() {
-        return !!this.user;
+        return this.user.id !== undefined;
     }
     constructor(http?: HttpProvider) {
         let provider: RestDataProviderHttpProvider;
@@ -95,7 +111,16 @@ export class Context {
         return this._onServer;
     }
     protected _user: UserInfo;
-    get user() { return this._user; }
+    get user(): UserInfo {
+        if (this._user === undefined) {
+            return {
+                id: undefined,
+                name: '',
+                roles: []
+            }
+        }
+        return this._user;
+    }
     private _userChangeEvent = new EventSource();
 
     get userChange() {
@@ -119,10 +144,10 @@ export class Context {
             return false;
         }
 
-        if (isFunction(roles)) {
+        if (typeof roles === 'function') {
             return (<any>roles)(this);
         }
-        if (isBoolean(roles))
+        if (typeof roles === 'boolean')
             return roles;
 
         if (roles instanceof Role) {
@@ -130,7 +155,7 @@ export class Context {
         }
         if (!this.user)
             return false;
-        if (isString(roles))
+        if (typeof roles === 'string')
             if (this.user.roles.indexOf(roles.toString()) >= 0)
                 return true;
 
@@ -165,11 +190,7 @@ export class Context {
 
         return r;
     }
-    _dialog: any;//MatDialog
-    async openDialog<T, C>(component: { new(...args: any[]): C; }, setParameters?: (it: C) => void, returnAValue?: (it: C) => T): Promise<T> {
 
-        throw "requires specific implementation for this environment";
-    }
 
     _lookupCache: LookupCache<any>[] = [];
 }
@@ -226,8 +247,21 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return (forEntity ? forEntity : this.entity)._getEntityApiSettings(this.context);
     }
 
-    private entity: T;
-    private _edp: EntityDataProvider;
+    private __entity: T;
+    private get entity(): T {
+        if (!this.__entity)
+            this.__entity = this._factory(false);
+        return this.__entity;
+    }
+    private ___edp: EntityDataProvider;
+    private get _edp(): EntityDataProvider {
+        if (!this.___edp) {
+            //@ts-ignore
+            this.___edp = {};
+            this.___edp = this.dataSource.getEntityDataProvider(this.entity);
+        }
+        return this.___edp;
+    }
     private _factory: (newRow: boolean) => T;
     constructor(
         /** Creates a new instance of the entity
@@ -237,7 +271,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
          * await p.save();
          */
         public create: () => T
-        , private _lookupCache: LookupCache<any>[], private context: Context, dataSource: DataProvider) {
+        , private _lookupCache: LookupCache<any>[], private context: Context, private dataSource: DataProvider) {
         this._factory = newRow => {
             let e = create();
             e.__entityData.dataProvider = this._edp;
@@ -256,8 +290,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         this.create = () => {
             return this._factory(true);
         };
-        this.entity = this._factory(false);
-        this._edp = dataSource.getEntityDataProvider(this.entity);
+
     }
 
     /** Returns an array of rows for the specific type 
@@ -301,31 +334,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             if (options) {
                 let opts: IterateOptions<T> = {};
                 if (options) {
-                    if (isFunction(options))
+                    if (typeof options === 'function')
                         opts.where = <any>options;
                     else
                         opts = <any>options;
                 }
                 if (opts.where) {
-                    let w = translateEntityWhere(opts.where, r);
-                    if (w) {
-                        w.__applyToConsumer({
-                            isContainsCaseInsensitive: () => { },
-                            isDifferentFrom: () => { },
-                            isEqualTo: (col, val) => {
-                                col.value = val
-                            },
-                            isGreaterOrEqualTo: () => { },
-                            isGreaterThan: () => { },
-                            isIn: () => { },
-                            isLessOrEqualTo: () => { },
-                            isLessThan: () => { },
-                            isNotNull: () => { },
-                            isNull: () => { },
-                            isStartsWith: () => { },
-                            or: () => { }
-                        });
-                    }
+                    updateEntityBasedOnWhere(opts.where, r);
                 }
             }
             return r;
@@ -442,7 +457,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
         let opts: IterateOptions<T> = {};
         if (options) {
-            if (isFunction(options))
+            if (typeof options ==='function')
                 opts.where = <any>options;
             else
                 opts = <any>options;
@@ -577,47 +592,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     toPojoArray(items: T[]) {
         return items.map(f => this.toApiPojo(f));
     }
-    /** returns a grid settings object for the specific entity */
-    gridSettings(settings?: IDataSettings<T>) {
-        if (!settings)
-            settings = {};
-        return new GridSettings(this, this.context, settings);
-    }
 
-    /** returns an array of values that can be used in the value list property of a data control object */
 
-    async getValueList(args?: {
-        idColumn?: (e: T) => Column,
-        captionColumn?: (e: T) => Column,
-        orderBy?: EntityOrderBy<T>,
-        where?: EntityWhere<T>
-    }): Promise<ValueListItem[]> {
-        if (!args) {
-            args = {};
-        }
-        if (!args.idColumn) {
-            args.idColumn = x => x.columns.idColumn;
-        }
-        if (!args.captionColumn) {
-            let idCol = args.idColumn(this.entity);
-            for (const keyInItem of this.entity.columns) {
-                if (keyInItem != idCol) {
-                    args.captionColumn = x => x.columns.find(keyInItem);
-                    break;
-                }
-            }
-        }
-        return (await this.find({
-            where: args.where,
-            orderBy: args.orderBy,
-            limit: 1000
-        })).map(x => {
-            return {
-                id: args.idColumn(x).value,
-                caption: args.captionColumn(x).value
-            }
-        });
-    }
+
 }
 export interface EntityType<T = any> {
     new(...args: any[]): Entity<T>;
@@ -636,6 +613,8 @@ export class ClassHelper {
 export class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
+
+
 export function setControllerSettings(target: any, options: ControllerOptions) {
     let r = target;
     while (true) {
@@ -753,10 +732,10 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
             }
             equalToColumn.push(s.column);
             if (s.descending) {
-                f = new AndFilter(f, s.column.isLessThan(values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isLessThan(s.column, values.get(s.column.defs.key)));
             }
             else
-                f = new AndFilter(f, s.column.isGreaterThan(values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isGreaterThan(s.column, values.get(s.column.defs.key)));
             r = new OrFilter(r, f);
         }
         return r;
@@ -784,3 +763,5 @@ export class EventSource {
     };
 
 }
+
+

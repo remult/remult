@@ -14,7 +14,6 @@ import { Column, getColumnsFromObject } from './column';
 import { AddModelStateToError, Entity, __getValidationError } from './entity';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
-import { isString } from 'util';
 import { DataProvider } from './data-interfaces';
 
 
@@ -302,7 +301,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                             rowInfo: y.__entityData.getPackedRowInfo()
                                         };
                                     } catch (err) {
-                                        if (isString(err))
+                                        if (typeof err === 'string')
                                             err = { message: err };
                                         AddModelStateToError(err, [...y.columns]);
                                         throw err;
@@ -318,7 +317,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                             columns: packColumns(y)
                                         };
                                     } catch (err) {
-                                        if (isString(err))
+                                        if (typeof err === 'string')
                                             err = { message: err };
                                         AddModelStateToError(err, getColumnsFromObject(y));
                                         throw err;

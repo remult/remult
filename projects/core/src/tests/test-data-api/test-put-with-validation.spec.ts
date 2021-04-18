@@ -1,4 +1,4 @@
-import { itAsync, Done } from "../testHelper.spec";
+import { itAsync, Done, fitAsync } from "../testHelper.spec";
 import { createData, CategoriesForTesting } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
@@ -8,7 +8,7 @@ import { StringColumn } from '../../columns/string-column';
 import { StatusColumn } from '../testModel/models';
 import { Context } from '../../context';
 import { ValueListColumn } from '../../columns/value-list-column';
-import { ColumnOptions } from '../../column-interfaces';
+
 
 
 

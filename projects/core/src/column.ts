@@ -1,7 +1,7 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { ColumnSettings, ColumnOptions, DataControlSettings, valueOrExpressionToValue } from './column-interfaces';
+import { ColumnSettings, valueOrExpressionToValue } from './column-interfaces';
 
-import { isArray, isBoolean, isFunction } from 'util';
+
 
 
 import { DefaultStorage } from './columns/storage/default-storage';
@@ -33,11 +33,11 @@ export class Column<dataType = any>  {
   //@internal
   async __performValidation() {
     if (this.__settings.validate) {
-      if (isArray(this.__settings.validate)) {
+      if (Array.isArray(this.__settings.validate)) {
         for (const v of this.__settings.validate) {
           await v(this);
         }
-      } else if (isFunction(this.__settings.validate))
+      } else if (typeof this.__settings.validate === 'function')
         await this.__settings.validate(this);
     }
 
@@ -46,112 +46,22 @@ export class Column<dataType = any>  {
 
   private __settings: ColumnSettings<dataType>;
   private __defs: ColumnDefs;
-  private __displayResult: DataControlSettings;
+
   get defs() {
     if (!this.__defs)
       this.__defs = new ColumnDefs(this.__settings, () => this.__valueProvider.getEntity());
     return this.__defs;
   }
 
-  static consolidateOptions(options: ColumnOptions, options1?: ColumnOptions): ColumnSettings {
-    let result: ColumnSettings;
-    if (typeof (options) === "string") {
-      result = { caption: options };
-    }
-    else
-      result = options;
-    if (!result) {
-      result = {};
-    }
-    if (options1) {
-
-      if (typeof (options1) === "string")
-        result.caption = options1;
-      else {
-        result = Object.assign(Object.assign({}, result), options1);
-
-        let op1 = options as ColumnSettings;
-        let op2 = options1 as ColumnSettings;
-        if (op1 && op2 && op1.dataControlSettings && op2.dataControlSettings) {
-          let d1 = op1.dataControlSettings;
-          let d2 = op2.dataControlSettings;
-          result.dataControlSettings = () => {
-            let t = d1();
-            let r = Object.assign(t, d2());
-            return r;
-          };
-        }
-      }
-    }
-    return result;
-  }
-
-  constructor(settingsOrCaption?: ColumnOptions<dataType>, settingsOrCaption1?: ColumnOptions<dataType>) {
-    this.__settings = Column.consolidateOptions(settingsOrCaption, settingsOrCaption1);
-  }
-  //reconsider approach - this prevents the user from overriding in a specific component
-  //@internal
-  __decorateDataSettings(x: DataControlSettings, context?: Context) {
-    if (!x.caption && this.defs.caption)
-      x.caption = this.defs.caption;
-    if (!x.inputType && this.defs.inputType)
-      x.inputType = this.defs.inputType;
-    if (x.readOnly == undefined) {
-      if (this.__settings.sqlExpression)
-        x.readOnly = true;
-      else
-        if (!context) {
-          if (isBoolean(this.__settings.allowApiUpdate))
-            x.readOnly = !this.__settings.allowApiUpdate;
-        }
-        else
-          x.readOnly = !context.isAllowed(this.__settings.allowApiUpdate);
-    }
-    if (this.__settings && this.__settings.dataControlSettings) {
-      this.__displayResult = this.__settings.dataControlSettings();
-      if (!x.getValue && this.__displayResult.getValue) {
-        x.getValue = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.columns.find(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.dataControlSettings();
-          return c.__displayResult.getValue(e);
-        };
-      }
-      if (!x.click && this.__displayResult.click) {
-        x.click = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.columns.find(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.dataControlSettings();
-          c.__displayResult.click(e);
-        };
-      }
-      if (!x.allowClick && this.__displayResult.allowClick) {
-        x.allowClick = e => {
-          let c: Column<dataType> = this;
-          if (e)
-            c = e.columns.find(c) as Column<dataType>;
-          if (!c.__displayResult)
-            c.__displayResult = c.__settings.dataControlSettings();
-          return c.__displayResult.allowClick(e);
-        };
-      }
-      for (const key in this.__displayResult) {
-        if (this.__displayResult.hasOwnProperty(key)) {
-          const val = this.__displayResult[key];
-          if (val !== undefined && x[key] === undefined) {
-            x[key] = val;
-          }
-        }
-      }
 
 
-
+  constructor(settings?: ColumnSettings<dataType>) {
+    this.__settings = settings;
+    if (!this.__settings) {
+      this.__settings = {};
     }
   }
+
 
 
   //@internal
@@ -197,18 +107,7 @@ export class Column<dataType = any>  {
         add.isDifferentFrom(this, val)
     });
   }
-  isGreaterOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
-  }
-  isGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
-  }
-  isLessOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
-  }
-  isLessThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
-  }
+
   //@internal
   __getVal(value: Column<dataType> | dataType): dataType {
 
@@ -242,8 +141,11 @@ export class Column<dataType = any>  {
     this.rawValue = value;
   }
   get displayValue() {
-    if (this.value)
+    if (this.value) {
+      if (this.__settings.displayValue)
+        return this.__settings.displayValue();
       return this.value.toString();
+    }
     return '';
   }
   get originalValue() {
@@ -395,4 +297,32 @@ export function makeTitle(name: string) {
     // uppercase the first character
     .replace(/^./, (str) => str.toUpperCase()).replace('Email', 'eMail').replace(" I D", " ID");
 
+}
+
+export class ComparableColumn<dataType = any> extends Column<dataType>{
+  isGreaterOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
+  }
+  isGreaterThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
+  }
+  isLessOrEqualTo(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
+  }
+  isLessThan(value: Column<dataType> | dataType) {
+    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
+  }
+}
+
+export function __isGreaterOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isGreaterOrEqualTo(col, col.__getVal(value)));
+}
+export function __isGreaterThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isGreaterThan(col, col.__getVal(value)));
+}
+export function __isLessOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isLessOrEqualTo(col, col.__getVal(value)));
+}
+export function __isLessThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
+  return new Filter(add => add.isLessThan(col, col.__getVal(value)));
 }

@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import {JsonEntityStorage } from '@remult/core';
+import {JsonEntityStorage } from '../index';
 
 
 export class JsonEntityFileStorage implements JsonEntityStorage {
