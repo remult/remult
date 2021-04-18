@@ -1,20 +1,28 @@
-# Setup for Angular
+# Todo App with Angular
+### Build a production ready task list app with Remult using Angular + Node/Express/Postgres
 
-This tutorial uses the angular cli project template as a starting point. 
-It assumes that you have some angular experience
+In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for UI, Node/Express as our web framework, a PostgreSQL database and Remult. By the end, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
-## Create the Angular Project
-We'll run the following command:
+### Prerequisites
+
+This tutorial assumes you are familiar with `TypeScript` and `Angular`.
+
+Before you begin, make sure you have [Node.js](https://nodejs.org/en/) and [Postgres](https://www.postgresql.org/) installed.
+
+## Creating an Angular Project
+We'll start by creating an Angular project, so if you don't have Angular CLI already installed then install it.
 ```sh
-ng new --style=scss --routing=true  angular-sample
+npm i -g @angular/cli
 ```
-* we set the `--routing` flag to add routes to the angular code, we don't need it for this demo, but you'll probably need it for an actual project
-* we set the styles to scss, but you can set it to anything you want
-
+Create the new Angular project.
+```sh
+ng new angular-sample
+```
 ::: tip 
-We only added these command line arguments, so that angular will not ask you a bunch of questions :)
+The ng new command prompts you for information about features to include in the initial app project. Accept the defaults by pressing the Enter or Return key.
 :::
 
+<!--
 ### Additional angular configurations
 We'll add to the `app.module.ts` file the `FormsModule` to enable `[(ngModel)]` data binding and the `HttpClientModule`:
 ```ts{6,7,15,16}
@@ -27,7 +35,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [
+  declarations: [c
     AppComponent
   ],
   imports: [
@@ -95,109 +103,157 @@ Replace the content of the `app.component.html` file with the following `html`
 ```html
 <h1>Angular Remult Sample </h1>
 ```
-## Setup Remult
-### Install the Server components
-Now we'll add the server functionality to the same project.
 
+-->
+## Adding Remult and Server Stuff
+In this tutorial we'll be using the project directory created by `Angular` as the root directory for our server project as well.
 ```sh
-npm i express @types/express pg  @types/pg dotenv @remult/core @remult/server @remult/server-postgres tsc-watch 
+cd angular-sample
+```
+### Installing a few required modules
+#### Server modules
+We need `express` to serve our API backend and `pg` to connect to Postgres
+```sh
+npm i express pg 
+```
+#### Remult modules
+The following Remult modules are required for this tutorial:
+* The `core` module is required in both client and server side code
+* The `server` module is only required in server side code
+* The `server-postgres` is only required for apps using a Postgres database
+```sh
+ npm i @remult/core @remult/server @remult/server-postgres
 ```
 
+### Server Project
 
+Create a `server` directory under the `src/` directory. 
+```sh
+cd src
+md server
+cd..
+```
 
-### Add .env file for server configuration
-in the root directory of the project, create a file called `.env` this file will hold all the environment information for the server in your development environment.
+#### TypeScript config file for the server project
+In the project root directory, create a `tsconfig.server.json` file for the server TypeScript project.
 
-In the production environment, these variables will be set by environment variables from the server.
+*tsconfig.server.json*
+```json
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist/server",
+        "module": "commonjs",
+        "target": "es5",
+        "skipLibCheck": true,
+        "emitDecoratorMetadata": true
+    },
+    "files": [
+        "src/server/*.ts"
+    ]
+}
+```
 
-Place the following lines in that file:
+<!--
+#### .env file for config vars
+In the root directory of the project, create a new file named `.env`. This file should contain environment variables and **should not be committed**, but replaced in production with the relevant (different) values.
+
+1. Paste these lines into the newly created .env file:
 ```
 DATABASE_URL='postgres://postgres:somepassword@localhost/postgres'
 DEV_MODE=true
 ```
-
-* `DATABASE_URL`: the url for connection to the database, using the structure: `postgres://*USERNAME*:*PASSWORD*@*HOST*:*PORT*/*DATABASE_NAME*`
-* `DEV_MODE=true` will be use to configure different settings in our development environment to the ones we'll use in production
-
-#### Add the .env file to git ignore
-because this file contains sensitive information, like passwords etc... we don't want to commit it to the source control.
-in the `.gitignore` file add:
+::: warning Check DATABASE_URL
+Make sure the `DATABASE_URL` is consistent with your Postgres database. The URL format is `postgres://<user>:<password>@<host>:<port>/<database>`
+:::
+2. In the root directory of the project, find the `.gitignore` file and add a new line with the `.env` file name.
 ```
 .env
 ```
+-->
 
+#### Main server module
+The main server module initializes the application server by performing the following tasks:
+1. Initializing `Postgres` connection pool
+2. Binding `Remult` to `express` and connection pool
+3. Start listening for API requests
+::: tip Under the hood
+As you will see later on, API requests received by the server are handled by `Remult`, which in turn passes relevant SQL commands to `Postgres`.
+:::
 
+Create a `server.ts` file in the `src/server/` directory with the following code:
 
-### Add the server code
-create a folder called `server` under the `src/app` folder, and in it add a file called `server.ts` with the following code
+*server.ts*
 ```ts
-import * as express from 'express';
-import { initExpress } from '@remult/server';
-import * as fs from 'fs';
-import { SqlDatabase } from '@remult/core';
 import { Pool } from 'pg';
-import { config } from 'dotenv';
+import * as express from 'express';
+import { SqlDatabase } from '@remult/core';
 import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
-import '../app.module';
+import { initExpress } from '@remult/server';
+import '../app/app.module';
 
-config(); //loads the configuration from the .env file
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
-});
+const pool = new Pool();
 let database = new SqlDatabase(new PostgresDataProvider(pool));
 verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
 
 let app = express();
 initExpress(app, database);
-app.use(express.static('dist/angular-sample'));
-app.use('/*', async (req, res) => {
-    try {
-        res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
-    } catch (err) {
-        res.sendStatus(500);
-    }
-});
-let port = process.env.PORT || 3002;
-app.listen(port);
+app.listen(process.env.PORT || 3002);
 ```
 
-* Note that the project name `angular-sample` is mentioned twice in this code, if you use a different project name, change it there.
-
-### Add tsconfig.server.json
-Next to the existing `tsconfig.json` we'll add a new `tsconfig` file for the server project. in the root directory add a file called `tsconfig.server.json` and place the following content in it.
-```json
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./dist/server",
-    "module": "commonjs",
-    "target": "es5",
-    "skipLibCheck": true,
-    "emitDecoratorMetadata": true
-  },
-  "files": [
-    "./src/app/server/server.ts"
-  ]
-}
+#### Server dev tools
+In our development environment we'll use `ts-node` to run the server and `nodemon` to automatically restart the server when changes are made to the application code.
+```sh
+npm i --save-dev ts-node nodemon
 ```
 
-### Exclude server from the `tsconfig.app.json`
-```JSON{4}
-...
-"exclude": [
-  "src/test.ts",
-  "src/app/server/**",
-  "src/**/*.spec.ts"
-]
+## Setting up an Angular DI Provider for Remult
+Our Angular starter project is almost ready. All that is left is to add a dependency injection provider for the `Remult` `Context` object. The `Context` object will be used to communicate with the server.
+
+This requires making the following changes to `src/app/app.module.ts`:
+1. Import Angular's `HttpClientModule`
+2. Add a `provider` for the `Context` object, which depends on Angular's `HttpClient` object
+
+While we're editing the root Angular module, we can also import the `FormsModule` which we'll need later in order to use the `[(ngModel)]` directive.
+
+*app.module.ts*
+```ts{5-7,15-16,19}
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+
+import { AppComponent } from './app.component';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { Context } from '@remult/core';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    FormsModule
+  ],
+  providers: [
+    { provide: Context, useClass: Context, deps: [HttpClient] },
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
 ```
 
-### Add a proxy configuration
-In production both the static html (generated by angular) and the data from the api will be served from the same server they will share the same url.
+## Finishing up the Starter Project
 
-During development we'll need to configure the angular cli so that any call to the `api` directory will be forwarded to our `node` server for it's data.
+### Proxy API requests from Webpack DevServer to Node
+The Angular app created in this tutorial is intended to be served from the same domain as its API. 
+However, during development, the Node/Express server will be listening on `http://localhost:3002`, while the Angular app is served from `http://localhost:4200`. 
 
-We'll add a file next to the `angular.json` file called `proxy.conf.json`:
+We'll use the proxying feature of webpack dev server to divert all calls for `http://localhost:4200/api` to our dev server.
+
+Create a file `proxy.conf.json` in the project directory, with the following content:
+
+*proxy.conf.json*
 ```json
 {
     "/api": {
@@ -208,88 +264,41 @@ We'll add a file next to the `angular.json` file called `proxy.conf.json`:
 }
 ```
 
-### configure the scripts in package.json
-```json{3,4,5,6}
+### Configure scripts in package.json
+In this tutorial we'll use the following `npm` scripts:
+* The `start` script runs the production server
+* The `build` script builds the Angular app and transpiles the server TypeScript code
+* The `dev-node` script runs the dev Node/Express API server
+* The `dev-ng` script runs the Angular dev server
+
+*package.json*
+```json{4-7}
+...
   "scripts": {
     "ng": "ng",
-    "start":"node dist/server/server/server.js",
+    "start":"node dist/server/server.js",
     "build": "ng build && tsc -p tsconfig.server.json",
-    "dev-ng": "ng serve  --proxy-config proxy.conf.json",
-    "dev-node": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run start\"",
+    "dev-ng": "ng serve --proxy-config proxy.conf.json",
+    "dev-node": "nodemon --watch \"src/**\" --ext \"ts,json\" --exec \"ts-node --project tsconfig.server.json src/server/server.ts\"",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
-  },
-```
-* We changed the `start` script to start the `node` server is we'll do in production.
-* we changed the `build` script to also built to server
-* We've added the `dev-ng` and `dev-node` scripts to run the angular cli dev server and the node server respectively
-
-
-
-
-
-
-### Configure the remult context
-The remult `Context` object is responsible for most of the server interactions, it helps extract data from the db, identify the current application user and their roles etc...
-
-To configure angular to be able to inject it, we'll add a `provider` for it in the `app.module.ts` file:
-
-```ts{7,9,22}
-import { BrowserModule } from '@angular/platform-browser';
-import { ErrorHandler, NgModule } from '@angular/core';
-
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { DisplayAlertErrorErrorHandler } from './error-handler';
-import { Context } from '@remult/core';
-
-@NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    HttpClientModule,
-    AppRoutingModule
-  ],
-  providers: [
-    { provide: Context, useClass: Context, deps: [HttpClient] },
-    { provide: ErrorHandler, useClass: DisplayAlertErrorErrorHandler }
-  ],
-  bootstrap: [AppComponent]
-})
-export class AppModule { }
+  }
+...
 ```
 
+### Run the starter project
+Open two terminals and run the `dev-node` and `dev-ng` scripts in parallel. Then, open your browser and navigate to `http://localhost:4200/'.
 
-### Run the Project
-We'll run two terminal windows
-1. Vue Dev Server - `npm run dev-ng`
-2. Node Server - `npm run dev-node`
-
-
-::: tip  Optional Tip - Configuring tasks in vscode
-If you are using vs code, you might find it useful to configure the `dev-ng` and the `dev-node` as vscode tasks, and see them as a split screen in the terminal window.
-
-To do that, create a file called  `.vscode/tasks.json` and add to it the content of [tasks.json](https://gist.github.com/noam-honig/623898a6cd539d86113263d3c63260f0)
-
-Then you can simply run the task called 'dev'
+::: tip  Running dev-node and dev-ng concurrently with a split terminal in Visual Studio Code
+If you are using Visual Studio Code and would like to run both `dev-node` and `dev-ng` scripts using a single Visual Studio Code  `task`, create a `.vscode/tasks.json` file with the contents found [here](https://gist.github.com/noam-honig/623898a6cd539d86113263d3c63260f0) and run the `dev` task.
 :::
-
-
-
-
-
 
 ## Entities
 The first advantage that `remult` provides is the ability to define an entity once, and use the same code both on the server and in the browser.
 The Api, Database and communication are all derived from that one definition of an entity.
 
-Add a folder called `src/app/tasks` and in it adda file called `tasks.ts` with the following code
+Add a directory called `src/app/tasks` and in it adda file called `tasks.ts` with the following code
 ```ts
 import { EntityClass, IdEntity, StringColumn } from "@remult/core";
 
@@ -927,7 +936,7 @@ In this app we want to distinguish to type of users.
 3. Only users with `admin` role can create, delete or edit the name of tasks.
 4. Only users with `admin` role can mark all tasks as completed.
 
-First we'll start by adding a file called `roles.ts` in the `src/app` folder
+First we'll start by adding a file called `roles.ts` in the `src/app` directory
 ```ts
 export class Roles {
     static admin = 'admin';
@@ -1091,3 +1100,16 @@ app.listen(port);
 
 [V] fix server ts to remove the then and create the entities in a simple line.
 
+[] do we really need @types/express
+
+[] copy code does not work well
+
+[] go back to fix server.ts
+
+[] use pg env vars instead of dotenv
+
+[] test with latest angular cli - npm is showing security vulnerabilities
+
+[] verifyStructureOfAllEntities better name (should include the word schema)
+
+[] explain import of app.module in server.ts
