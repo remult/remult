@@ -1,9 +1,8 @@
 
-import { IdEntity, checkForDuplicateValue, StringColumn, BoolColumn, ColumnSettings, ServerMethod, LookupColumn } from "@remult/core";
+import { IdEntity, checkForDuplicateValue, StringColumn, BoolColumn, ColumnSettings, ServerMethod, LookupColumn, Filter } from "@remult/core";
 import { changeDate } from '../shared/types';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
-import { userInfo } from "os";
 import { extend } from "@remult/angular";
 
 @EntityClass
@@ -45,6 +44,7 @@ export class Users extends IdEntity {
             apiDataFilter: () => {
                 if (!(context.isAllowed(Roles.admin)))
                     return this.id.isEqualTo(this.context.user.id);
+                return new Filter(()=>{});
             }
         });
     }

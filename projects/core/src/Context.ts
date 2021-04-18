@@ -5,7 +5,7 @@ import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDat
 
 
 import { DataApiRequest, DataApiSettings } from "./data-api";
-import { isFunction, isString, isBoolean } from "util";
+
 
 import { Column, __isGreaterThan, __isLessThan } from "./column";
 import { Entity } from "./entity";
@@ -56,7 +56,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     return r.catch(async ex => {
         let z = await ex;
         var error = z.error;
-        if (isString(error)) {
+        if (typeof error === 'string') {
             error = {
                 message: error
             }
@@ -144,10 +144,10 @@ export class Context {
             return false;
         }
 
-        if (isFunction(roles)) {
+        if (typeof roles === 'function') {
             return (<any>roles)(this);
         }
-        if (isBoolean(roles))
+        if (typeof roles === 'boolean')
             return roles;
 
         if (roles instanceof Role) {
@@ -155,7 +155,7 @@ export class Context {
         }
         if (!this.user)
             return false;
-        if (isString(roles))
+        if (typeof roles === 'string')
             if (this.user.roles.indexOf(roles.toString()) >= 0)
                 return true;
 
@@ -250,12 +250,12 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     private __entity: T;
     private get entity(): T {
         if (!this.__entity)
-             this.__entity = this._factory(false);
+            this.__entity = this._factory(false);
         return this.__entity;
     }
     private ___edp: EntityDataProvider;
     private get _edp(): EntityDataProvider {
-        if (!this.___edp){
+        if (!this.___edp) {
             //@ts-ignore
             this.___edp = {};
             this.___edp = this.dataSource.getEntityDataProvider(this.entity);
@@ -334,7 +334,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             if (options) {
                 let opts: IterateOptions<T> = {};
                 if (options) {
-                    if (isFunction(options))
+                    if (typeof options === 'function')
                         opts.where = <any>options;
                     else
                         opts = <any>options;
@@ -457,7 +457,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
         let opts: IterateOptions<T> = {};
         if (options) {
-            if (isFunction(options))
+            if (typeof options ==='function')
                 opts.where = <any>options;
             else
                 opts = <any>options;

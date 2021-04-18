@@ -1,7 +1,7 @@
 
-import { Component, OnChanges, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnChanges, Input, ViewChild } from '@angular/core';
 
-import { isFunction } from 'util';
+
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
 import { Column, Context, Entity } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
@@ -100,7 +100,7 @@ export class DataGrid2Component implements OnChanges {
   getButtonCssClass(b: RowButton<any>, row: any) {
     if (!b.cssClass)
       return "";
-    if (isFunction(b.cssClass))
+    if (typeof b.cssClass === 'function')
       return (<((row: any) => string)>b.cssClass)(row);
     return b.cssClass.toString();
 
@@ -108,7 +108,7 @@ export class DataGrid2Component implements OnChanges {
   getButtonText(b: RowButton<any>, row: any) {
     if (!b.textInMenu)
       return b.name;
-    if (isFunction(b.textInMenu)) {
+    if (typeof b.textInMenu ==="function") {
       if (!row)
         return '';
       //@ts-ignore
@@ -137,7 +137,7 @@ export class DataGrid2Component implements OnChanges {
       b.visible = r => true;
     if (!b.cssClass)
       b.cssClass = r => "btn";
-    else if (!isFunction(b.cssClass)) {
+    else if (!(typeof b.cssClass === 'function')) {
       let x = b.cssClass;
       b.cssClass = <any>((r: any) => x);
     }

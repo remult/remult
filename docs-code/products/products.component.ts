@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Context } from '@remult/core';
+import { GridSettings } from '@remult/angular';
 import { Products } from './products';
 
 @Component({
@@ -9,7 +10,7 @@ import { Products } from './products';
 })
 export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
-  products = this.context.for(Products).gridSettings({
+  products = new GridSettings(this.context.for(Products), {
     allowCRUD: true
   });
   ngOnInit() {

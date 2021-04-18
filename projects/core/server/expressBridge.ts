@@ -5,7 +5,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
-import { isBoolean, isFunction, isString } from 'util';
+
 
 import { JwtSessionService } from '../';
 
@@ -36,7 +36,7 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
   app.use(bodyParser.urlencoded({ extended: true, limit: options.bodySizeLimit }));
 
   let builder: DataProviderFactoryBuilder;
-  if (isFunction(dataProvider))
+  if (typeof dataProvider === 'function')
     builder = <DataProviderFactoryBuilder>dataProvider;
   else
     builder = () => <DataProvider>dataProvider;
@@ -292,7 +292,7 @@ function serializeError(data: DataApiError) {
   let x = JSON.parse(JSON.stringify(data));
   if (!x.message && !x.modelState)
     data = { message: data.message,stack:data.stack };
-  if (isString(x))
+  if (typeof x ==='string')
     data = { message: x };
   return data;
 }

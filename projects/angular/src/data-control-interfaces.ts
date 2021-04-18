@@ -1,5 +1,4 @@
 import { Column, ColumnSettings, Entity, ValueListColumn, ValueListItem, ValueOrEntityExpression } from "@remult/core";
-import { isBoolean } from "util";
 
 export type DataControlInfo<rowType extends Entity = Entity> = DataControlSettings<rowType> | Column;
 export interface DataControlSettings<entityType extends Entity = Entity> {
@@ -62,7 +61,7 @@ export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
             x.readOnly = true;
         else
 
-            if (isBoolean(settings.allowApiUpdate))
+            if (typeof settings.allowApiUpdate === 'boolean')
                 x.readOnly = !settings.allowApiUpdate;
 
 

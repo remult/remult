@@ -19,7 +19,7 @@ import { WaitComponent } from './wait/wait.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
-import { DataArea2Compnent } from './data-area/dataArea2';
+import { DataArea2Component } from './data-area/dataArea2';
 import { SelectValueDialogComponent } from './add-filter-dialog/add-filter-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
@@ -40,7 +40,7 @@ import { BidiModule } from '@angular/cdk/bidi';
 
 
 @NgModule({
-  declarations: [DataControl2Component, DataArea2Compnent, DataFilterInfoComponent, DataGrid2Component, WaitComponent, DataControl3Component, SelectValueDialogComponent, FilterDialogComponent],
+  declarations: [DataControl2Component, DataArea2Component, DataFilterInfoComponent, DataGrid2Component, WaitComponent, DataControl3Component, SelectValueDialogComponent, FilterDialogComponent],
   imports: [FormsModule, CommonModule, HttpClientModule, MatProgressSpinnerModule, MatDialogModule, BrowserAnimationsModule,
     MatFormFieldModule,
     MatButtonModule,
@@ -57,7 +57,7 @@ import { BidiModule } from '@angular/cdk/bidi';
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: AuthorizationInterceptor, multi: true }]
   ,
-  exports: [DataControl2Component, DataFilterInfoComponent, DataGrid2Component, DataArea2Compnent, SelectValueDialogComponent],
+  exports: [DataControl2Component, DataFilterInfoComponent, DataGrid2Component, DataArea2Component, SelectValueDialogComponent],
   entryComponents: [WaitComponent, SelectValueDialogComponent, FilterDialogComponent]
 })
 export class RemultModule { }

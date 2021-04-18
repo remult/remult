@@ -1,5 +1,4 @@
 import { Column, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
-import { isFunction } from "util";
 import { DataControlInfo, DataControlSettings, decorateDataSettings } from "./data-control-interfaces";
 
 
@@ -95,7 +94,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
           }
         }
       }
-      else if (isFunction(orig)) {
+      else if (typeof orig === "function") {
         result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
       }
       else {
@@ -197,7 +196,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
   _getColumnClass(col: DataControlSettings, row: any) {
 
     if (col.cssClass)
-      if (isFunction(col.cssClass)) {
+      if (typeof col.cssClass === 'function') {
         let anyFunc: any = col.cssClass;
         return anyFunc(row);
       }

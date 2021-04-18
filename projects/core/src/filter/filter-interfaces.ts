@@ -3,8 +3,10 @@ import { StringColumn } from '../columns/string-column';
 
 
 export class Filter {
-    constructor(private apply: (add: FilterConsumer) => void) {
-
+    constructor(private apply?: (add: FilterConsumer) => void) {
+        if (!this.apply){
+            this.apply=()=>{};
+        }
     }
     __applyToConsumer(add: FilterConsumer) {
         this.apply(add);

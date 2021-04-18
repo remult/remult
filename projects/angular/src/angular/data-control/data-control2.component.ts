@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { Column,   Entity, StringColumn, ValueListItem } from '@remult/core';
 import { ColumnCollection } from '../../column-collection';
-import { DataControlSettings } from '../../data-control-interfaces';
+import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
 
 
 @Component({
@@ -16,7 +16,6 @@ export class DataControl2Component {
     this.map = {
       column: value
     };
-    //@ts-ignore
     decorateDataSettings(this.map.column,this.map);
   }
   theId: any;

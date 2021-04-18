@@ -4,7 +4,7 @@
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 import {  getColumnsFromObject } from '@remult/core';
 import { ColumnCollection } from '../../column-collection';
-import { DataAreaSettings, dataAreaSettings } from '../../data-area-settings';
+import { DataAreaSettings } from '../../data-area-settings';
 import { DataControlSettings } from '../../data-control-interfaces';
 
 @Component({
@@ -15,9 +15,9 @@ import { DataControlSettings } from '../../data-control-interfaces';
   encapsulation: ViewEncapsulation.None
 
 })
-export class DataArea2Compnent implements OnChanges {
+export class DataArea2Component implements OnChanges {
 
-  @Input() settings: dataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true), lines: undefined };
+  @Input() settings: DataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true), lines: undefined };
   @Input() object: any;
 
   ngOnChanges(): void {

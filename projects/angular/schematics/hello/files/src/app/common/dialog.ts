@@ -3,7 +3,6 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Context } from "@remult/core";
 
 import { YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
-import { isString } from 'util';
 import { openDialog } from "@remult/angular";
 
 
@@ -48,9 +47,9 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
     constructor(private dialog: DialogService, private zone: NgZone) {
         super();
     }
-    lastErrorString: '';
+    lastErrorString= '';
     lastErrorTime: number;
-    async handleError(error) {
+    async handleError(error:any) {
         super.handleError(error);
         if (this.lastErrorString == error.toString() && new Date().valueOf() - this.lastErrorTime < 100)
             return;
@@ -64,8 +63,8 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
 }
 
 
-export function extractError(err: any) {
-    if (isString(err))
+export function extractError(err: any):string {
+    if (typeof err === 'string')
         return err;
     if (err.modelState) {
         if (err.message)

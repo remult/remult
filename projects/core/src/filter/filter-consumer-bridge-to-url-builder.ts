@@ -6,7 +6,7 @@ import { FilterConsumer, Filter } from './filter-interfaces';
 import { Entity } from '../entity';
 import { AndFilter, OrFilter } from './filter-interfaces';
 import { EntityWhere, translateEntityWhere } from '../data-interfaces';
-import { isString } from "util";
+
 
 export class FilterSerializer implements FilterConsumer {
   result: any = {};
@@ -94,7 +94,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
           let theVal = val;
           if (jsonArray) {
             let arr: [];
-            if (isString(val))
+            if (typeof val ==='string')
               arr = JSON.parse(val);
             else
               arr = val;

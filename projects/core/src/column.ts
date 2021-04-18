@@ -1,7 +1,7 @@
 import { Allowed, Context, RoleChecker } from './context';
 import { ColumnSettings, valueOrExpressionToValue } from './column-interfaces';
 
-import { isArray, isBoolean, isFunction } from 'util';
+
 
 
 import { DefaultStorage } from './columns/storage/default-storage';
@@ -33,11 +33,11 @@ export class Column<dataType = any>  {
   //@internal
   async __performValidation() {
     if (this.__settings.validate) {
-      if (isArray(this.__settings.validate)) {
+      if (Array.isArray(this.__settings.validate)) {
         for (const v of this.__settings.validate) {
           await v(this);
         }
-      } else if (isFunction(this.__settings.validate))
+      } else if (typeof this.__settings.validate === 'function')
         await this.__settings.validate(this);
     }
 

@@ -1,6 +1,5 @@
 import { Column, makeTitle } from "../column";
 import { ColumnSettings, ValueListItem } from "../column-interfaces";
-import { isNumber } from 'util';
 import { Entity } from "../entity";
 import { StringColumn } from "./string-column";
 import { SpecificEntityHelper } from "../context";
@@ -50,7 +49,7 @@ export class ValueListTypeInfo<T extends ValueListItem>{
           s.id = member;
         if (s.caption === undefined)
           s.caption = makeTitle(member);
-        if (isNumber(s.id))
+        if (typeof s.id ==='number')
           this.isNumeric = true;
         this.byIdMap.set(s.id, s);
         this.values.push(s);

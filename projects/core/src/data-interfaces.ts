@@ -2,7 +2,7 @@ import { Column } from './column';
 import { Entity } from './entity';
 import { Sort, SortSegment } from './sort';
 import { AndFilter, Filter } from './filter/filter-interfaces';
-import { isArray, isFunction } from 'util';
+
 
 export interface DataProvider {
   getEntityDataProvider(entity: Entity): EntityDataProvider;
@@ -108,20 +108,20 @@ export interface __RowsOfDataForTesting {
   rows: any;
 }
 export function translateEntityWhere<entityType extends Entity>(where: EntityWhere<entityType>, entity: entityType): Filter {
-  if (isArray(where)) {
+  if (Array.isArray(where)) {
     return new AndFilter(...where.map(x => {
       if (x===undefined)
       return undefined;
       let r = x(entity);
-      if (isArray(r))
+      if (Array.isArray(r))
         return new AndFilter(...r);
       return r;
     }));
 
   }
-  else if (isFunction(where)) {
+  else if (typeof where ==='function') {
     let r = where(entity);
-    if (isArray(r))
+    if (Array.isArray(r))
       return new AndFilter(...r);
     return r;
   }

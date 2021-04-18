@@ -1,5 +1,4 @@
 import { Entity } from "@remult/core";
-import { isArray } from "util";
 import { ColumnCollection } from "./column-collection";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
@@ -22,7 +21,7 @@ export class DataAreaSettings<rowType extends Entity = Entity>
 
 
       for (const colSettings of settings.columnSettings(entity)) {
-        if (isArray(colSettings)) {
+        if (Array.isArray(colSettings)) {
           let x = columns.items.length;
           //@ts-ignore
           columns.add(...colSettings);
@@ -47,8 +46,3 @@ export class DataAreaSettings<rowType extends Entity = Entity>
 
 export type DataArealColumnSetting<rowType extends Entity> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
 
-
-export interface dataAreaSettings {
-  columns: ColumnCollection;
-  lines: DataControlSettings[][];
-}

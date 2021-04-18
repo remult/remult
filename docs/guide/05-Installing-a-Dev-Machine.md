@@ -46,5 +46,5 @@ code --install-extension sibiraj-s.vscode-scss-formatter
 ## Angular Cli
 From the command prompt, run the following command to install angular cli with the specific version we used for this demo
 ```sh
-npm install -g @angular/cli@8.3.19
+npm install -g @angular/cli@11.2.10
 ```
