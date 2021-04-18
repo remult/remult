@@ -20,7 +20,7 @@ export class Users extends IdEntity {
     });
     createDate = new changeDate({ caption: 'Create Date' });
 
-    admin = new BoolColumn();
+    admin = new BoolColumn({ allowApiUpdate: Roles.admin });
     constructor(private context: Context) {
 
         super({
@@ -44,7 +44,7 @@ export class Users extends IdEntity {
             apiDataFilter: () => {
                 if (!(context.isAllowed(Roles.admin)))
                     return this.id.isEqualTo(this.context.user.id);
-                return new Filter(()=>{});
+                return new Filter(() => { });
             }
         });
     }
