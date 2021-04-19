@@ -1,3 +1,11 @@
 {
-    "files.associations": { "*.json": "jsonc" }
+    "files.associations": {
+        "*.json": "jsonc"
+    },
+    "cSpell.words": [
+        "angular",
+        "angular's",
+        "postgres",
+        "remult"
+    ]
 }
