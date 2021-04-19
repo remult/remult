@@ -12,34 +12,17 @@ In the command line run
 ng g c --skipTests=true question
 ```
 
-For a normal component, at this stage we would create a route, but since this is a dialog - we don't want the user to navigate to - we'll not do that - instead we'll need to register it in the `app.module.ts` class, in the `entryComponents` array:
-```ts{14}
-@NgModule({
-  declarations: [
-      //removed for clarity
-  ],
-  imports: [
-//removed for clarity
-  ],
-  providers: [
-      //removed for clarity
-  ],
-  bootstrap: [AppComponent],
-  entryComponents: [YesNoQuestionComponent
-  , SignInComponent
-  , QuestionComponent
-  ]
-})
-export class AppModule { }
-```
+For a normal component, at this stage we would create a route, but since this is a dialog - we don't want the user to navigate to - we'll not do that.
 
 Now that we have the component, let's call it.
 
 let's add a button in the `home.component` and call the `testDialog` method that we'll add to the `home.component.ts` class:
 ```ts
-async testDialog() {
-   await this.context.openDialog(QuestionComponent);
-}
+import { openDialog } from '@remult/angular';
+....
+  async testDialog() {
+     await openDialog(QuestionComponent);
+  }
 ```
 
 Test that it works by clicking on the button.

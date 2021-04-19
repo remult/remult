@@ -1,3 +1,7 @@
+/*
+run in target project folder for testing:
+node /Users/Yoni/AppData/Roaming/npm/node_modules/@angular-devkit/schematics-cli/bin/schematics.js /repos/radweb/dist/angular/schematics/collection.json:ng-add --dry-run false
+*/
 import { Rule, SchematicContext, Tree, apply, mergeWith, template, url, SchematicsException } from '@angular-devkit/schematics';
 
 import { strings } from '@angular-devkit/core';
@@ -20,15 +24,15 @@ export function hello(_options: Schema): Rule {
 
     editPackageJson(tree);
     const installTaskId = _context.addTask(new NodePackageInstallTask());
-    _context.addTask(new RunSchematicTask('@angular/material/schematics/collection.json', 'ng-add', { gestures: true, animations: true, theme: 'indigo-pink' }), [installTaskId]);
+    _context.addTask(new RunSchematicTask('@angular/material/schematics/collection.json', 'ng-add', { gestures: true, typography: true, animations: true, theme: 'indigo-pink' }), [installTaskId]);
     let appTsConfig = "./tsconfig.app.json";
     if (!tree.exists(appTsConfig))
       appTsConfig = "./src/tsconfig.app.json";
 
     editJson(tree, appTsConfig, j => {
       j.compilerOptions.emitDecoratorMetadata = true;
-      j.exclude.push("./app/server**");
     });
+    editJson(tree, 'tsconfig.json', j => j.compilerOptions.strictNullChecks = false);
 
     editGitIgnore(tree);
     let entryComponents = [{ name: 'YesNoQuestionComponent', path: './common/yes-no-question/yes-no-question.component' },
@@ -71,7 +75,7 @@ export function hello(_options: Schema): Rule {
         project = p;
         if (j.projects.hasOwnProperty(p)) {
           const element = j.projects[p];
-      //    element.architect.serve.options.proxyConfig = "proxy.conf.json";
+          //    element.architect.serve.options.proxyConfig = "proxy.conf.json";
           element.architect.build.options.styles.push("./node_modules/@remult/angular/input-styles.scss");
           return;
         }
@@ -113,15 +117,14 @@ export function hello(_options: Schema): Rule {
   function editPackageJson(tree: Tree) {
     editJson(tree, './package.json', json => {
       json.scripts["dev-ng"] = "ng serve  --proxy-config proxy.conf.json";
-      json.scripts["dev-node"] = "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run start\"";
+      json.scripts["dev-node"] = "ts-node-dev --project tsconfig.server.json src/server/";
       json.scripts["build"] = "ng build && tsc -p tsconfig.server.json";
-      json.scripts.start = "node dist/server/server/server.js";
+      json.scripts.start = "node dist/server/server/";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["@remult/core"] = "^2.2.5";
-      json.dependencies["@remult/server"] = "^2.2.5";
-      json.dependencies["@remult/server-postgres"] = "^2.2.5";
-      json.dependencies["@angular/material"] = "^7.3.7";
+      json.dependencies["@remult/core"] = "^2.3.15";
+      json.dependencies["@remult/server-postgres"] = "^2.3.15";
+
       json.dependencies["pg"] = "^8.3.0";
       json.dependencies["express-force-https"] = "^1.0.0";
       json.dependencies["jsonwebtoken"] = "^8.5.1";
@@ -129,20 +132,44 @@ export function hello(_options: Schema): Rule {
       json.dependencies["express"] = "^4.16.4";
       json.dependencies["reflect-metadata"] = "^0.1.12";
       json.dependencies["compression"] = "^1.7.3";
-      json.devDependencies["tsc-watch"] = "^4.0.0";
+      json.devDependencies["ts-node-dev"] = "^1.1.6";
       json.devDependencies["@types/pg"] = "^7.14.4";
       json.devDependencies["@types/express"] = "^4.16.1";
+      json.devDependencies["@types/compression"] = "^1.7.0";
+      json.devDependencies["@types/jsonwebtoken"] = "^8.5.1";
+      json.devDependencies["@types/password-hash"] = "^1.2.20";
+
+
+      const angularMaterial = "@angular/material";
+      let angularVersion = json.dependencies["@angular/core"];
+      if (!json.dependencies[angularMaterial]) {
+        if (angularVersion.startsWith("~11"))
+          json.dependencies[angularMaterial] = "^11.2.9";
+        else if (angularVersion.startsWith("~10"))
+          json.dependencies[angularMaterial] = "^10.2.7";
+        else if (angularVersion.startsWith("~9"))
+          json.dependencies[angularMaterial] = "^9.2.4";
+        else
+          json.dependencies[angularMaterial] = "^7.3.7";
+      }
 
     });
 
   }
   function editJson(tree: Tree, path: string, edit: (j: any) => void) {
     let r = tree.read(path);
-    let json = JSON.parse(r!.toString('utf-8'));
+    let s = r!.toString('utf-8');
+    let prev = '';
+    if (s.startsWith('/*')) {
+      let end = s.indexOf('{');
+      prev = s.substring(0, end);
+      s = s.substring(end);
+    }
+    let json = JSON.parse(s);
     if (!json)
       console.error("couldn't find json file: " + path);
     edit(json);
-    tree.overwrite(path, JSON.stringify(json, null, 2));
+    tree.overwrite(path, prev + JSON.stringify(json, null, 2));
   }
   function editGitIgnore(tree: Tree) {
     let gitIgnorePath = './.gitignore';
@@ -152,7 +179,7 @@ export function hello(_options: Schema): Rule {
     tree.overwrite(gitIgnorePath, content);
 
   }
-  
+
   interface addToNdModuleParameters {
     declarations?: classToRegister[];
     imports?: classToRegister[];

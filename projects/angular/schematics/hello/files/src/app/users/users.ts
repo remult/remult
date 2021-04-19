@@ -1,9 +1,9 @@
 
-import { IdEntity, IdColumn, checkForDuplicateValue, StringColumn, BoolColumn, ColumnOptions, UserInfo, ColumnSettings, ServerFunction, ServerMethod } from "@remult/core";
+import { IdEntity, checkForDuplicateValue, StringColumn, BoolColumn, ColumnSettings, ServerMethod, LookupColumn, Filter } from "@remult/core";
 import { changeDate } from '../shared/types';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
-import { userInfo } from "os";
+import { extend } from "@remult/angular";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -18,9 +18,9 @@ export class Users extends IdEntity {
     password = new PasswordColumn({
         includeInApi: false
     });
-    createDate = new changeDate('Create Date');
+    createDate = new changeDate({ caption: 'Create Date' });
 
-    admin = new BoolColumn();
+    admin = new BoolColumn({ allowApiUpdate: Roles.admin });
     constructor(private context: Context) {
 
         super({
@@ -44,6 +44,7 @@ export class Users extends IdEntity {
             apiDataFilter: () => {
                 if (!(context.isAllowed(Roles.admin)))
                     return this.id.isEqualTo(this.context.user.id);
+                return new Filter(() => { });
             }
         });
     }
@@ -65,30 +66,27 @@ export class Users extends IdEntity {
 
 
 
-export class UserId extends IdColumn {
+export class UserId extends LookupColumn<Users> {
 
-    constructor(private context: Context, settingsOrCaption?: ColumnOptions<string>) {
-        super({
-            dataControlSettings: () => ({
-                getValue: () => this.displayValue,
-                hideDataOnInput: true,
-                width: '200'
-            })
-        }, settingsOrCaption);
+    constructor(context: Context, settings?: ColumnSettings<string>) {
+        super(context.for(Users), {
+            displayValue: () => this.item.name.value
+            , ...settings
+        });
+        extend(this).dataControl(settings => {
+            settings.getValue = () => this.displayValue;
+            settings.hideDataOnInput = true;
+            settings.width = '200';
+        });
     }
-    get displayValue() {
-        return this.context.for(Users).lookup(this).name.value;
-    }
+
 }
 export class PasswordColumn extends StringColumn {
 
     constructor(settings?: ColumnSettings<string>) {
         super({
-            ...{ caption: 'Password' },
-            ...settings,
-            dataControlSettings: () => ({
-                inputType: 'password'
-            })
+            ...{ caption: 'Password', inputType: 'password' },
+            ...settings
         })
     }
     static passwordHelper: {

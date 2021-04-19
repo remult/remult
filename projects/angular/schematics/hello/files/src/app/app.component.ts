@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Context, JwtSessionService, ServerFunction, StringColumn, UserInfo } from '@remult/core';
 
 import { DialogService } from './common/dialog';
-import { RouteHelperService } from '@remult/angular';
+import { openDialog, RouteHelperService } from '@remult/angular';
 import { PasswordColumn, Users } from './users/users';
 import { Roles } from './users/roles';
 import { InputAreaComponent } from './common/input-area/input-area.component';
@@ -32,9 +32,9 @@ export class AppComponent {
   }
 
   async signIn() {
-    let user = new StringColumn("User Name");
+    let user = new StringColumn({ caption: "User Name" });
     let password = new PasswordColumn();
-    this.context.openDialog(InputAreaComponent, i => i.args = {
+    openDialog(InputAreaComponent, i => i.args = {
       title: "Sign In",
       columnSettings: () => [
         user,
@@ -75,7 +75,7 @@ export class AppComponent {
     let user = this.context.for(Users).create();
     let password = new PasswordColumn();
     let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
-    this.context.openDialog(InputAreaComponent, i => i.args = {
+    openDialog(InputAreaComponent, i => i.args = {
       title: "Sign Up",
       columnSettings: () => [
         user.name,
@@ -96,7 +96,7 @@ export class AppComponent {
 
   async updateInfo() {
     let user = await this.context.for(Users).findId(this.context.user.id);
-    this.context.openDialog(InputAreaComponent, i => i.args = {
+    openDialog(InputAreaComponent, i => i.args = {
       title: "Update Info",
       columnSettings: () => [
         user.name
@@ -110,7 +110,7 @@ export class AppComponent {
     let user = await this.context.for(Users).findId(this.context.user.id);
     let password = new PasswordColumn();
     let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
-    this.context.openDialog(InputAreaComponent, i => i.args = {
+    openDialog(InputAreaComponent, i => i.args = {
       title: "Change Password",
       columnSettings: () => [
         password,

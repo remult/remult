@@ -22,7 +22,7 @@ We are using the `data-grid` and `GridSettings` objects from `remult`. The `data
 
 in `products.component.ts`
 
-<<< @/docs-code/products/products.component.ts{11-15} 
+<<< @/docs-code/products/products.component.ts{12-15} 
 
 let's review:
 1. We've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them. See "adding the import statements" note below)
@@ -54,21 +54,16 @@ let's review:
 
 ## The result on the server
 Now if we'll look at the bottom of our screen, at the Terminal output for the task `node-serve`, we'll see that the server restarted and a new api is now available:
-```{9-12,16}
-12:08:26 PM - Found 0 errors. Watching for file changes.
-
-> my-project@0.0.0 server:dev-run c:\try\test1\my-project
-> node --inspect dist-server/server/server.js
-
-Debugger listening on ws://127.0.0.1:9229/9c63d9ea-2a61-4848-8e8f-b2802cb42777
-For help, see: https://nodejs.org/en/docs/inspector
+```{2-5,11}
 start verify structure
 create table Products (
   id varchar default '' not null  primary key,
   name varchar default '' not null
 )
-/api/signIn
+/api/Users_methods/create
+/api/Users_methods/updatePassword
 /api/resetPassword
+/api/signIn
 /api/Users
 /api/Products
 ```
@@ -114,25 +109,17 @@ In the `products.ts` file
 
 
 Once we've added these columns we'll be able to see in the `node-serve` terminal window that these columns were added to our database:
-```{12-14}
-12:21:03 PM - File change detected. Starting incremental compilation...
-
-
-12:21:03 PM - Found 0 errors. Watching for file changes.
-
-> my-project@0.0.0 server:dev-run c:\try\test1\my-project
-> node --inspect dist-server/server/server.js
-
-Debugger listening on ws://127.0.0.1:9229/67e4d3a7-c829-4769-8ff0-f576726719a7
-For help, see: https://nodejs.org/en/docs/inspector
+```{2-4}
 start verify structure
 alter table Products add column price int default 0 not null
 alter table Products add column availableFrom date
 alter table Products add column availableTo date
-/api/signIn
+/api/Users_methods/create
+/api/Users_methods/updatePassword
 /api/resetPassword
-/api/Users
+/api/signIn
 /api/Products
+/api/Users
 ```
 
 And when we'll look at the browser, we'll see that there are 3 more columns to the grid

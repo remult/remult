@@ -24,12 +24,12 @@
             "type": "node",
             "request": "launch",
             "name": "debug schematics",
-            "cwd": "c:/try/test6/my-project",
+            "cwd": "c:/try/test49/my-project",
             "stopOnEntry": true,
             "preLaunchTask": "schemas:build",
             "program": "/Users/Yoni/AppData/Roaming/npm/node_modules/@angular-devkit/schematics-cli/bin/schematics.js",
             "args": [
-                "/repos/radweb/dist/core/schematics/collection.json:ng-add",
+                "/repos/radweb/dist/angular/schematics/collection.json:ng-add",
                 "--dry-run false"
             ],
             "outFiles": []

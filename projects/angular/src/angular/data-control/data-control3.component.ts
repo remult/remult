@@ -3,7 +3,10 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Column, ColumnCollection, DataControlSettings, Entity, StringColumn, ValueListItem } from '@remult/core';
+import { Column,  Entity, StringColumn, ValueListItem } from '@remult/core';
+import { ColumnCollection } from '../../column-collection';
+import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
+
 @Component({
   selector: 'data-control3',
   templateUrl: './data-control3.component.html',
@@ -15,8 +18,7 @@ export class DataControl3Component {
     this.map = {
       column: value
     };
-    //@ts-ignore
-    this.map.column.__decorateDataSettings(this.map);
+    decorateDataSettings(this.map.column,this.map);
   }
   @Input() rightToLeft = false;
 

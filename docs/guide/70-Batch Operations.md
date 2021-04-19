@@ -22,7 +22,7 @@ Next we'll adjust the html to display above the grid an input for our column and
 ## Updating the data
 In the `products.component.ts`:
 
-<<< @/docs-code/products-batch-operations/products.component.step2.ts{19-24}
+<<< @/docs-code/products-batch-operations/products.component.step2.ts{19-23}
 
 * We use `await p.save()` to save the products one by one. (to do this, we have to add the word `async` before the `updatePrice` method as we've done in the previous step)
 * we use `this.products.getRecords()` to refresh the data displayed on the grid.

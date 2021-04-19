@@ -1,12 +1,12 @@
-import { Column } from "../column";
+import { Column, ComparableColumn } from "../column";
 import { Filter } from "../filter/filter-interfaces";
 
-export class StringColumn extends Column<string>{
+export class StringColumn extends ComparableColumn<string>{
  
-    isContains(value: StringColumn | string) {
-      return new Filter(add => add.isContainsCaseInsensitive(this, this.__getVal(value)));
+    contains(value: StringColumn | string) {
+      return new Filter(add => add.containsCaseInsensitive(this, this.__getVal(value)));
     }
-    isStartsWith(value: StringColumn | string) {
-      return new Filter(add => add.isStartsWith(this, this.__getVal(value)));
+    startsWith(value: StringColumn | string) {
+      return new Filter(add => add.startsWith(this, this.__getVal(value)));
     }
   } 

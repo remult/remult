@@ -1,19 +1,15 @@
-import { Column } from "../column";
-import { ColumnOptions } from "../column-interfaces";
+import { Column, ComparableColumn } from "../column";
+import { ColumnSettings } from "../column-interfaces";
 import { DateTimeDateStorage } from "./storage/datetime-date-storage";
 
-export class DateColumn extends Column<Date>{
-  constructor(settingsOrCaption?: ColumnOptions<Date>) {
-    super( { dataControlSettings: () => ({ inputType: 'date' }) },settingsOrCaption);
+export class DateColumn extends ComparableColumn<Date>{
+  constructor(settings?: ColumnSettings<Date>) {
+    super({ inputType: 'date', displayValue: () => this.value.toLocaleDateString(), ...settings });
   }
   getDayOfWeek() {
     return new Date(this.value).getDay();
   }
-  get displayValue() {
-    if (!this.value)
-      return '';
-    return this.value.toLocaleDateString();
-  }
+
   __defaultStorage() {
     return new DateTimeDateStorage();
   }

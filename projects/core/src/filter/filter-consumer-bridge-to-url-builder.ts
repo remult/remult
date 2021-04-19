@@ -1,19 +1,22 @@
 
 import { UrlBuilder } from "../url-builder";
-import { Column } from "../column";
+import { Column, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from "../column";
 import { StringColumn } from "../columns/string-column";
 import { FilterConsumer, Filter } from './filter-interfaces';
 import { Entity } from '../entity';
 import { AndFilter, OrFilter } from './filter-interfaces';
 import { EntityWhere, translateEntityWhere } from '../data-interfaces';
-import { isString } from "util";
+
 
 export class FilterSerializer implements FilterConsumer {
   result: any = {};
   constructor() {
 
   }
+  hasUndefined = false;
   add(key: string, val: any) {
+    if (val === undefined)
+      this.hasUndefined = true;
     let r = this.result;
     if (!r[key]) {
       r[key] = val;
@@ -68,10 +71,10 @@ export class FilterSerializer implements FilterConsumer {
   public isLessThan(col: Column, val: any): void {
     this.add(col.defs.key + '_lt', val);
   }
-  public isContainsCaseInsensitive(col: StringColumn, val: any): void {
+  public containsCaseInsensitive(col: StringColumn, val: any): void {
     this.add(col.defs.key + "_contains", val);
   }
-  public isStartsWith(col: StringColumn, val: any): void {
+  public startsWith(col: StringColumn, val: any): void {
     this.add(col.defs.key + "_st", val);
   }
 }
@@ -91,7 +94,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
           let theVal = val;
           if (jsonArray) {
             let arr: [];
-            if (isString(val))
+            if (typeof val ==='string')
               arr = JSON.parse(val);
             else
               arr = val;
@@ -117,10 +120,10 @@ export function extractWhere(rowType: Entity, filterInfo: {
       }
     }
     addFilter('', val => col.isEqualTo(val));
-    addFilter('_gt', val => col.isGreaterThan(val));
-    addFilter('_gte', val => col.isGreaterOrEqualTo(val));
-    addFilter('_lt', val => col.isLessThan(val));
-    addFilter('_lte', val => col.isLessOrEqualTo(val));
+    addFilter('_gt', val => __isGreaterThan(col, val));
+    addFilter('_gte', val => __isGreaterOrEqualTo(col, val));
+    addFilter('_lt', val => __isLessThan(col, val));
+    addFilter('_lte', val => __isLessOrEqualTo(col, val));
     addFilter('_ne', val => col.isDifferentFrom(val));
     addFilter('_in', val => col.isIn(...val), true);
     addFilter('_null', val => {
@@ -136,14 +139,14 @@ export function extractWhere(rowType: Entity, filterInfo: {
     });
     addFilter('_contains', val => {
       let c = col as StringColumn;
-      if (c != null && c.isContains) {
-        return c.isContains(val);
+      if (c != null && c.contains) {
+        return c.contains(val);
       }
     });
     addFilter('_st', val => {
       let c = col as StringColumn;
-      if (c != null && c.isContains) {
-        return c.isStartsWith(val);
+      if (c != null && c.contains) {
+        return c.startsWith(val);
       }
     });
   });
@@ -158,7 +161,7 @@ export function extractWhere(rowType: Entity, filterInfo: {
 export function packWhere<entityType extends Entity>(entity: entityType, where: EntityWhere<entityType>) {
   if (!where)
     return {};
-  let w = translateEntityWhere(where,entity);
+  let w = translateEntityWhere(where, entity);
   return packToRawWhere(w);
 
 }

@@ -5,7 +5,7 @@ import { Entity } from '../entity';
 import { FilterSerializer, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { Filter } from '../filter/filter-interfaces';
-import { isArray, isObject } from 'util';
+
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
@@ -187,8 +187,8 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
   for (const key in filter) {
     if (Object.prototype.hasOwnProperty.call(filter, key)) {
       const element = filter[key];
-      if (isArray(element)) {
-        if (element.length > 0 && isObject(element[0]))
+      if (Array.isArray(element)) {
+        if (element.length > 0 && typeof element[0] === 'object')
           return false;
         if (element.length > 10)
           return false;
@@ -199,7 +199,7 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
   for (const key in filter) {
     if (Object.prototype.hasOwnProperty.call(filter, key)) {
       const element = filter[key];
-      if (isArray(element)) {
+      if (Array.isArray(element)) {
         if (key.endsWith("_in"))
           url.add(key, JSON.stringify(element));
         else

@@ -7,5 +7,6 @@
         "angular's",
         "postgres",
         "remult"
-    ]
+    ],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

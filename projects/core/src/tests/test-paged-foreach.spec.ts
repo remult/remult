@@ -12,6 +12,7 @@ import { EntityOrderBy, EntityWhere, extractSort } from '../data-interfaces';
 import { StringColumn } from '../columns/string-column';
 import { CompoundIdColumn } from '../columns/compound-id-column';
 import { packWhere } from '../filter/filter-consumer-bridge-to-url-builder';
+import { GridSettings } from '@remult/angular';
 
 
 describe("test paged foreach ", async () => {
@@ -128,13 +129,13 @@ describe("test paged foreach ", async () => {
     itAsync("test make sort unique", async () => {
         let context = new Context();
         let e = context.for(Categories).create();
-        var gs = context.for(Categories).gridSettings({ orderBy: p => p.categoryName });
+        var gs = new GridSettings(context.for(Categories), { orderBy: p => p.categoryName });
         e.id.defs.caption = 'id from e';
         e.categoryName.defs.caption = 'category name from e';
-        
+
         function test(orderBy: EntityOrderBy<Categories>, ...sort: Column[]) {
             let s = extractSort(createAUniqueSort(orderBy, e)(e));
-            expect(s.Segments.map(x => x.column.defs.caption)).toEqual(sort.map(x=>x.defs.caption));
+            expect(s.Segments.map(x => x.column.defs.caption)).toEqual(sort.map(x => x.defs.caption));
         }
         test(e => {
             let r = gs.getFilterWithSelectedRows().orderBy(e);

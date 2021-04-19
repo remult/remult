@@ -1,29 +1,41 @@
-import { IdEntity, StringColumn, EntityClass, ColumnOptions, Context, ValueListColumn, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn } from '@remult/core';
+import { extend } from '@remult/angular';
+import { IdEntity, StringColumn, EntityClass, Context, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn, Entity, ServerFunction } from '@remult/core';
+
 @EntityClass
 
 export class Products extends IdEntity {
   name = new StringColumn({
-    
+
   });
-  price = new NumberColumn({decimalDigits:2,key:'price_1'});
+  price = new NumberColumn({ decimalDigits: 2, key: 'price_1' });
   availableFrom1 = new DateTimeColumn();
   availableTo = new DateColumn();
-  @ServerMethod({ allowed: true })
-  async doSomething(p: string) {
-    this.name.validationError = p;
-    throw 'error';
-    await this.save();
-  }
   archive = new BoolColumn();
-  constructor() {
+  constructor(context: Context) {
     super({
       name: "Products",
       allowApiCRUD: true,
       saving: () => {
-        //       this.validationError = 'dont save';
+        if (context.onServer)
+          this.name.validationError = 'dont save';
       }
     });
-    
+
+  }
+  @ServerMethod({ allowed: true })
+  async doit() {
+    await this.save();
   }
 }
+
+
+export class bColumn extends StringColumn {
+  constructor() {
+    super()
+    extend(this).dataControl(s => s.valueList = ['c', 'd']);
+  }
+}
+
+
+
 

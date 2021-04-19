@@ -1,5 +1,5 @@
 import { SiteArea } from "./expressBridge";
-import { allEntities, ServerContext, DataApi, DataProviderFactoryBuilder } from "@remult/core";
+import { allEntities, ServerContext, DataApi, DataProviderFactoryBuilder } from "../";
 
 
 export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProviderFactoryBuilder) {

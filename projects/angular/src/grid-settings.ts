@@ -1,29 +1,21 @@
-import { Entity } from "./entity";
-
-
-import { Column } from "./column";
-import { DataControlSettings, DataControlInfo } from "./column-interfaces";
-import { Context } from "./context";
-
-import { DataList } from "./dataList";
-import { Sort } from "./sort";
+import { AndFilter, Column, DataList, Entity, EntityOrderBy, entityOrderByToSort, EntityProvider, EntityWhere, FilterHelper, FindOptions, Sort, translateEntityWhere } from "@remult/core";
 import { ColumnCollection } from "./column-collection";
-import { IDataAreaSettings, DataAreaSettings } from "./data-area-settings";
-import { FilterHelper } from "./filter/filter-helper";
-import { EntityProvider, FindOptions, entityOrderByToSort, EntityWhere, EntityOrderBy, translateEntityWhere } from './data-interfaces';
-import { AndFilter } from "./filter/filter-interfaces";
+import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
+import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
 
 
 
 export class GridSettings<rowType extends Entity = Entity>  {
-  constructor(private entityProvider: EntityProvider<rowType>, private context: Context, public settings?: IDataSettings<rowType>) {
+  constructor(private entityProvider: EntityProvider<rowType>, public settings?: IDataSettings<rowType>) {
+    if (!settings)
+      this.settings = settings = {};
     this.restList = new DataList<rowType>(entityProvider);
     if (entityProvider) {
       this.filterHelper.filterRow = <rowType>entityProvider.create();
     }
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, context)
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false)
 
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
@@ -299,7 +291,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       this._selectedAll = this.selectedRows.length == this.totalRows;
     }
   }
-  lastSelectedRowWithShift:rowType;
+  lastSelectedRowWithShift: rowType;
   clickOnselectCheckboxFor(row: rowType, shift: boolean) {
     if (shift) {
       if (!this.lastSelectedRowWithShift) {
@@ -308,16 +300,16 @@ export class GridSettings<rowType extends Entity = Entity>  {
       else {
         let found = false;
         for (const rule of this.items) {
-          
-            if (found) {
-              if (rule == row || rule == this.lastSelectedRowWithShift) {
-                this.lastSelectedRowWithShift = undefined;
-                return;
-              }
-              else this.selectedChanged(rule);
-            } else
-              found = rule == row || rule == this.lastSelectedRowWithShift;
-          
+
+          if (found) {
+            if (rule == row || rule == this.lastSelectedRowWithShift) {
+              this.lastSelectedRowWithShift = undefined;
+              return;
+            }
+            else this.selectedChanged(rule);
+          } else
+            found = rule == row || rule == this.lastSelectedRowWithShift;
+
         }
 
 
@@ -325,7 +317,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
 
     this.lastSelectedRowWithShift = row;
-    
+
 
   }
   isSelected(row: rowType) {
@@ -452,7 +444,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
       let ids = this.selectedRows.map(x => x.columns.idColumn.value);
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(translateEntityWhere(x,e), e.columns.idColumn.isIn(...ids))
+        r.where = e => new AndFilter(translateEntityWhere(x, e), e.columns.idColumn.isIn(...ids))
       }
       else
         r.where = e => e.columns.idColumn.isIn(...ids);
@@ -552,7 +544,7 @@ export interface GridButton {
 
 function isNewRow(r: Entity) {
   if (r) {
-    r.__entityData.isNewRow();
+    r.isNew();
   }
   return false;
 }
