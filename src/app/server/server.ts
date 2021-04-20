@@ -26,7 +26,7 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
     let s = initExpress(app,  {
-        dataProvider:dataSource,
+//        dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource),
         tokenProvider: {
             createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),
