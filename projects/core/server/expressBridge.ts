@@ -8,13 +8,15 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 
 import { JwtSessionService } from '../';
+import { JsonEntityFileStorage } from './JsonEntityFileStorage';
+import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 
 
 
-export function initExpress(app: express.Express, dataProvider: DataProvider | DataProviderFactoryBuilder,
+export function initExpress(app: express.Express,
   options?:
     {
-
+      dataProvider?: DataProvider | DataProviderFactoryBuilder,
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage,
@@ -36,10 +38,16 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
   app.use(bodyParser.urlencoded({ extended: true, limit: options.bodySizeLimit }));
 
   let builder: DataProviderFactoryBuilder;
-  if (typeof dataProvider === 'function')
-    builder = <DataProviderFactoryBuilder>dataProvider;
-  else
-    builder = () => <DataProvider>dataProvider;
+  if (options.dataProvider) {
+    let dataProvider = options.dataProvider;
+    if (typeof dataProvider === 'function')
+      builder = <DataProviderFactoryBuilder>dataProvider;
+    else
+      builder = () => <DataProvider>dataProvider;
+  }
+  else {
+    builder = () => new JsonDataProvider(new JsonEntityFileStorage('./db'));
+  }
   let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage));
   let apiArea = result.addArea('/' + Context.apiBaseUrl);
 
@@ -55,7 +63,7 @@ export function initExpress(app: express.Express, dataProvider: DataProvider | D
       let token = req.getHeader(x.authCookieName);
       if (token && token.startsWith('Bearer '))
         token = token.substring(7);
-        if (token && token.startsWith('Token '))
+      if (token && token.startsWith('Token '))
         token = token.substring(6);
       if (token) {
         req.user = await x.validateToken(token);
@@ -291,8 +299,8 @@ function serializeError(data: DataApiError) {
   }
   let x = JSON.parse(JSON.stringify(data));
   if (!x.message && !x.modelState)
-    data = { message: data.message,stack:data.stack };
-  if (typeof x ==='string')
+    data = { message: data.message, stack: data.stack };
+  if (typeof x === 'string')
     data = { message: x };
   return data;
 }

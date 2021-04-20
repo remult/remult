@@ -2,7 +2,7 @@ import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist-server/projects');
 import * as express from 'express';
 import * as cors from 'cors';
-import { EntityQueueStorage, initExpress, JobsInQueueEntity } from '@remult/core/server';
+import { initExpress } from '@remult/core/server';
 import * as fs from 'fs';
 import '../app.module';
 import { serverInit } from './server-init';
@@ -25,7 +25,8 @@ serverInit().then(async (dataSource) => {
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
-    let s = initExpress(app, dataSource, {
+    let s = initExpress(app,  {
+        dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource),
         tokenProvider: {
             createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),

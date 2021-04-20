@@ -16,8 +16,7 @@ export class Products extends IdEntity {
       name: "Products",
       allowApiCRUD: true,
       saving: () => {
-        if (context.onServer)
-          this.name.validationError = 'dont save';
+     
       }
     });
 
