@@ -31,11 +31,12 @@ PasswordColumn.passwordHelper = {
 let app = express();
 app.use(compression());
 if (!process.env.DEV_MODE)
-    app.use(forceHttps); 
-initExpress(app, database, { 
+    app.use(forceHttps);
+initExpress(app, {
+    dataProvider: database,
     tokenProvider: {
-        createToken: userInfo => jwt.sign(userInfo, <string> process.env.TOKEN_SIGN_KEY ),
-        verifyToken: token => jwt.verify(token, <string> process.env.TOKEN_SIGN_KEY)
+        createToken: userInfo => jwt.sign(userInfo, <string>process.env.TOKEN_SIGN_KEY),
+        verifyToken: token => jwt.verify(token, <string>process.env.TOKEN_SIGN_KEY)
     }
 });
 app.use(express.static('dist/<%= project %>'));
@@ -47,4 +48,4 @@ app.use('/*', async (req, res) => {
     }
 });
 let port = process.env.PORT || 3000;
-app.listen(port); 
+app.listen(port);

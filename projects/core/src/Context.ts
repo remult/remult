@@ -62,7 +62,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
             }
         }
         var result = Object.assign(error, {
-            exception: ex
+       //     exception: ex disabled for now because JSON.stringify crashed with this
         });
         throw result;
     });
