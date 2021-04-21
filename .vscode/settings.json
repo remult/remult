@@ -2,5 +2,11 @@
     "files.associations": {
         "*.json": "jsonc"
     },
+    "cSpell.words": [
+        "angular",
+        "angular's",
+        "postgres",
+        "remult"
+    ],
     "typescript.tsdk": "node_modules\\typescript\\lib"
 }
