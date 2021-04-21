@@ -7,7 +7,6 @@ import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
 
 
-import { JwtSessionService } from '../';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 
@@ -19,12 +18,15 @@ export function initExpress(app: express.Express,
       dataProvider?: DataProvider | DataProviderFactoryBuilder,
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
-      queueStorage?: QueueStorage,
-      tokenProvider?: TokenProvider
+      queueStorage?: QueueStorage
+      getUserFromRequest?: (origReq: express.Request) => Promise<UserInfo>,
     }) {
 
   if (!options) {
     options = {};
+  }
+  if (!options.getUserFromRequest) {
+    options.getUserFromRequest = x => x['user'];
   }
   if (options.bodySizeLimit === undefined) {
     options.bodySizeLimit = '10mb';
@@ -48,7 +50,8 @@ export function initExpress(app: express.Express,
   else {
     builder = () => new JsonDataProvider(new JsonEntityFileStorage('./db'));
   }
-  let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage));
+
+  let result = new ExpressBridge(app, options.getUserFromRequest, new inProcessQueueHandler(options.queueStorage));
   let apiArea = result.addArea('/' + Context.apiBaseUrl);
 
 
@@ -57,26 +60,6 @@ export function initExpress(app: express.Express,
     registerActionsOnServer(apiArea, builder);
     registerEntitiesOnServer(apiArea, builder);
   }
-  if (options.tokenProvider) {
-    let x = new JWTCookieAuthorizationHelper(options.tokenProvider);
-    result.addRequestProcessor(async req => {
-      let token = req.getHeader(x.authCookieName);
-      if (token && token.startsWith('Bearer '))
-        token = token.substring(7);
-      if (token && token.startsWith('Token '))
-        token = token.substring(6);
-      if (token) {
-        req.user = await x.validateToken(token);
-
-      } else {
-        var h = req.getHeader('cookie');
-        req.user = await x.authenticateCookie(h);
-      }
-      return !!req.user;
-    });
-    JwtSessionService.createTokenOnServer = (user: UserInfo) => x.createSecuredTokenBasedOn(user);
-  }
-
 
 
   return result;
@@ -85,24 +68,21 @@ export function initExpress(app: express.Express,
 
 export class ExpressBridge {
 
-  addRequestProcessor(processAndReturnTrueToAuthorize: (req: DataApiRequest) => void): void {
-    this.preProcessRequestAndReturnTrueToAuthorize.push(processAndReturnTrueToAuthorize);
-  }
-  preProcessRequestAndReturnTrueToAuthorize: ((req: DataApiRequest) => void)[] = [];
 
 
 
-  constructor(private app: express.Express, public queue: inProcessQueueHandler) {
+
+
+  constructor(private app: express.Express, public getUserFromRequest: (origReq: express.Request) => Promise<UserInfo>, public queue: inProcessQueueHandler) {
 
   }
   logApiEndPoints = true;
   private firstArea: SiteArea;
 
   addArea(
-    rootUrl: string,
-    processRequest?: (req: DataApiRequest) => Promise<void>
+    rootUrl: string
   ) {
-    var r = new SiteArea(this, this.app, rootUrl, processRequest, this.logApiEndPoints);
+    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints);
     if (!this.firstArea) {
       this.firstArea = r;
 
@@ -121,7 +101,6 @@ export class SiteArea {
     private bridge: ExpressBridge,
     private app: express.Express,
     private rootUrl: string,
-    private processAndReturnTrueToAouthorise: (req: DataApiRequest) => Promise<void>,
     private logApiEndpoints: boolean) {
 
 
@@ -177,12 +156,7 @@ export class SiteArea {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
-      for (let i = 0; i < this.bridge.preProcessRequestAndReturnTrueToAuthorize.length; i++) {
-        await this.bridge.preProcessRequestAndReturnTrueToAuthorize[i](myReq);
-
-      }
-      if (this.processAndReturnTrueToAouthorise)
-        await this.processAndReturnTrueToAouthorise(myReq);
+      myReq.user = await this.bridge.getUserFromRequest(req);
       what(myReq, myRes, req);
     }
   };
@@ -469,45 +443,3 @@ export class JobsInQueueEntity extends IdEntity {
   }
 }
 
-class JWTCookieAuthorizationHelper {
-
-  constructor(private provider: TokenProvider, public authCookieName?: string) {
-    if (!authCookieName) {
-      this.authCookieName = 'authorization';
-
-    }
-  }
-
-  async authenticateCookie(cookieHeader: string) {
-    if (cookieHeader) {
-      for (const iterator of cookieHeader.split(';')) {
-        let itemInfo = iterator.split('=');
-        if (itemInfo && itemInfo[0].trim() == this.authCookieName) {
-          if (this.validateToken)
-            return await <UserInfo><any>this.validateToken(itemInfo[1]);
-        }
-      }
-      return undefined;
-    }
-  }
-
-  createSecuredTokenBasedOn(what: any) {
-    return this.provider.createToken(what);
-  }
-
-
-
-  validateToken: (token: string) => Promise<UserInfo> = async (x) => {
-    let result: UserInfo;
-    try {
-      result = <UserInfo><any>this.provider.verifyToken(x);
-    } catch (err) { }
-
-    return result;
-  };
-
-}
-export interface TokenProvider {
-  createToken(info: UserInfo): string;
-  verifyToken(token: string): UserInfo | any;
-}

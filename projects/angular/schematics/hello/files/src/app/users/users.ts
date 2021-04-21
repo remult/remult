@@ -52,14 +52,14 @@ export class Users extends IdEntity {
     async create(password: string) {
         if (!this.isNew())
             throw "Invalid Operation";
-        this.password.value = PasswordColumn.passwordHelper.generateHash(password);
+        await this.password.hashAndSet(password);
         await this.save();
     }
     @ServerMethod({ allowed: context => context.isSignedIn() })
     async updatePassword(password: string) {
         if (this.isNew() || this.id.value != this.context.user.id)
             throw "Invalid Operation";
-        this.password.value = PasswordColumn.passwordHelper.generateHash(password);
+        await this.password.hashAndSet(password);
         await this.save();
     }
 }
@@ -89,9 +89,11 @@ export class PasswordColumn extends StringColumn {
             ...settings
         })
     }
-    static passwordHelper: {
-        generateHash(password: string): string;
-        verify(password: string, realPasswordHash: string): boolean;
-    };
+    async hashAndSet(password: string) {
+        this.value = (await import('password-hash'.toString())).generate(password);
+    }
+    async matches(password: string) {
+        return !this.value || (await import('password-hash'.toString())).verify(password, this.value);
+    }
 }
 

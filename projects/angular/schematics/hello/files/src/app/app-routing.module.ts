@@ -7,6 +7,7 @@ import { HomeComponent } from './home/home.component';
 import { UsersComponent } from './users/users.component';
 import { Roles, AdminGuard } from './users/roles';
 import { ShowDialogOnErrorErrorHandler } from './common/dialog';
+import { JwtModule } from '@auth0/angular-jwt';
 
 
 const routes: Routes = [
@@ -18,7 +19,11 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes), RemultModule],
+  imports: [RouterModule.forRoot(routes),
+    RemultModule,
+    JwtModule.forRoot({
+      config: { tokenGetter: () => sessionStorage.getItem('auth_token') }
+    })],
   providers: [AdminGuard, { provide: ErrorHandler, useClass: ShowDialogOnErrorErrorHandler }],
   exports: [RouterModule]
 })

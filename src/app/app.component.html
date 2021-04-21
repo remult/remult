@@ -1,19 +1,31 @@
 <div style="height:100%;display:flex;flex-direction: column;">
   <mat-toolbar color="primary" style="flex-shrink: 0;">
-  <button mat-button class="sidenav-toggle" (click)="sidenav.toggle()">
-    <mat-icon>menu</mat-icon>
-  </button>
-  <span class="toolbar-title">{{currentTitle()}}</span>
-  <button mat-flat-button color="primary" (click)="signIn()">{{signInText()}}</button>
-</mat-toolbar>
-<mat-sidenav-container class="app-sidenav-container">
-  <mat-sidenav #sidenav class="app-sidenav mat-elevation-z10 no-print" [opened]="!dialogService.isScreenSmall()" [mode]="dialogService.isScreenSmall()?'over':'side'">
-    <div style="width:100%;text-align: center">
-      
-    </div>
-    <h4 *ngIf="context.isSignedIn()">Hello {{context.user.name}}</h4>
-    <mat-nav-list role="list">
-      <ng-container *ngFor="let m of router.config">
+    <button mat-button class="sidenav-toggle" (click)="sidenav.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span class="toolbar-title">{{currentTitle()}}</span>
+    <ng-container *ngIf="!context.isSignedIn()">
+      <button mat-flat-button color="primary" (click)="signIn()">Sign In</button>
+      <button mat-flat-button color="primary" (click)="signUp()">Sign Up</button>
+    </ng-container>
+    <ng-container *ngIf="context.isSignedIn()">
+      <button mat-flat-button color="primary" [matMenuTriggerFor]="menu">{{context.user.name}}</button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="updateInfo()">Update Info</button>
+        <button mat-menu-item (click)="changePassword()">Change Password</button>
+        <button mat-menu-item (click)="signOut()">Sign Out</button>
+      </mat-menu>
+    </ng-container>
+  </mat-toolbar>
+  <mat-sidenav-container class="app-sidenav-container">
+    <mat-sidenav #sidenav class="app-sidenav mat-elevation-z10 no-print" [opened]="!dialogService.isScreenSmall()"
+      [mode]="dialogService.isScreenSmall()?'over':'side'">
+      <div style="width:100%;text-align: center">
+
+      </div>
+      <h4 *ngIf="context.isSignedIn()">Hello {{context.user.name}}</h4>
+      <mat-nav-list role="list">
+        <ng-container *ngFor="let m of router.config">
         <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">
           <a matLine [routerLink]="m.path" (click)="routeClicked()">{{routeName(m)}}</a>
         </mat-list-item>

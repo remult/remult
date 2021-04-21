@@ -9,9 +9,9 @@ import { config } from 'dotenv';
 import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
 //@ts-ignore
 import * as forceHttps from 'express-force-https';
-import * as jwt from 'jsonwebtoken';
+import * as jwt from 'express-jwt';
 import * as compression from 'compression';
-import * as passwordHash from 'password-hash';
+
 import '../app/app.module';
 import { PasswordColumn } from '../app/users/users';
 
@@ -23,21 +23,14 @@ const pool = new Pool({
 let database = new SqlDatabase(new PostgresDataProvider(pool));
 verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
 
-PasswordColumn.passwordHelper = {
-    generateHash: p => passwordHash.generate(p),
-    verify: (p, h) => passwordHash.verify(p, h)
-}
 
 let app = express();
+app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
 app.use(compression());
 if (!process.env.DEV_MODE)
     app.use(forceHttps);
 initExpress(app, {
-    dataProvider: database,
-    tokenProvider: {
-        createToken: userInfo => jwt.sign(userInfo, <string>process.env.TOKEN_SIGN_KEY),
-        verifyToken: token => jwt.verify(token, <string>process.env.TOKEN_SIGN_KEY)
-    }
+    dataProvider: database
 });
 app.use(express.static('dist/<%= project %>'));
 app.use('/*', async (req, res) => {

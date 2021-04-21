@@ -126,7 +126,7 @@ export class Context {
     get userChange() {
         return this._userChangeEvent.dispatcher;
     }
-    _setUser(info: UserInfo) {
+    setUser(info: UserInfo) {
         this._user = info;
         this._userChangeEvent.fire();
     }

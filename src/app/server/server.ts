@@ -6,32 +6,33 @@ import { initExpress } from '@remult/core/server';
 import * as fs from 'fs';
 import '../app.module';
 import { serverInit } from './server-init';
-import { ServerContext } from '@remult/core';
+
 
 import { preparePostgresQueueStorage } from '@remult/server-postgres';
-import { Products } from '../products-test/products';
+
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
-import * as jwt from 'jsonwebtoken';
+import * as jwt from 'express-jwt';
+import { PasswordColumn } from '../../../projects/angular/schematics/hello/files/src/app/users/users';
+import * as passwordHash from 'password-hash';
 
 
-
+PasswordColumn.passwordHelper = {
+    generateHash: p => passwordHash.generate(p),
+    verify: (p, h) => passwordHash.verify(p, h)
+}
 
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
     let app = express();
+    app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
-    let s = initExpress(app,  {
-//        dataProvider:dataSource,
+    let s = initExpress(app, {
         queueStorage: await preparePostgresQueueStorage(dataSource),
-        tokenProvider: {
-            createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),
-            verifyToken: token => jwt.verify(token, process.env.TOKEN_SIGN_KEY)
-        }
     });
 
     app.use(express.static('dist/my-project'));
@@ -46,7 +47,7 @@ serverInit().then(async (dataSource) => {
         if (fs.existsSync(index)) {
             res.send(fs.readFileSync(index).toString());
         }
-        else { 
+        else {
             res.send('No Result' + index);
 
         }
@@ -56,4 +57,4 @@ serverInit().then(async (dataSource) => {
     app.listen(port);
 
 
-});  
+});

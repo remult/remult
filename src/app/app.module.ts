@@ -25,6 +25,8 @@ import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
 import { TestDialogComponent } from './test-dialog/test-dialog.component';
 import { ProductsComponent } from './products-test/products.component';
+import { JwtModule } from '@auth0/angular-jwt';
+import { MatMenuModule } from '@angular/material';
 
 
 
@@ -60,6 +62,12 @@ import { ProductsComponent } from './products-test/products.component';
     MatButtonModule,
     MatIconModule,
     FormsModule,
+    MatMenuModule,
+    JwtModule.forRoot({
+      config:{
+        tokenGetter: () => sessionStorage.getItem("auth_token")
+      }
+    })
   ],
   entryComponents:[YesNoQuestionComponent,InputAreaComponent,TestDialogComponent],
   

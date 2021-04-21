@@ -122,13 +122,14 @@ export function hello(_options: Schema): Rule {
       json.scripts.start = "node dist/server/server/";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["@remult/core"] = "^2.4.2";
-      json.dependencies["@remult/server-postgres"] = "^2.4.2";
+      json.dependencies["@remult/core"] = "^2.5.1";
+      json.dependencies["@remult/server-postgres"] = "^2.5.1";
 
       json.dependencies["pg"] = "^8.3.0";
       json.dependencies["express-force-https"] = "^1.0.0";
       json.dependencies["jsonwebtoken"] = "^8.5.1";
-      json.dependencies["@auth0/angular-jwt"] = "3.0.0";
+      json.dependencies["@auth0/angular-jwt"] = "^5.0.2";
+      json.dependencies["express-jwt"] = "^6.0.0";
       json.dependencies["express"] = "^4.16.4";
       json.dependencies["reflect-metadata"] = "^0.1.12";
       json.dependencies["compression"] = "^1.7.3";
@@ -138,6 +139,7 @@ export function hello(_options: Schema): Rule {
       json.devDependencies["@types/compression"] = "^1.7.0";
       json.devDependencies["@types/jsonwebtoken"] = "^8.5.1";
       json.devDependencies["@types/password-hash"] = "^1.2.20";
+      json.devDependencies["@types/express-jwt"] = "^6.0.1";
 
 
       const angularMaterial = "@angular/material";

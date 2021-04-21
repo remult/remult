@@ -1835,7 +1835,7 @@ describe("check allowedDataType", () => {
   let roleA = new Role(strA);
   let roleB = new Role(strB);
   let roleC = new Role(strC);
-  c._setUser({ id: 'x', name: 'y', roles: [strA, strB] }
+  c.setUser({ id: 'x', name: 'y', roles: [strA, strB] }
   );
   it("1", () => {
     expect(c.isAllowed(strA)).toBe(true);
@@ -1867,7 +1867,7 @@ describe("check allowedDataType", () => {
   it("no context", () => {
     let c = new Context();
     c.setDataProvider(new InMemoryDataProvider());
-    c._setUser(undefined);
+    c.setUser(undefined);
     expect(c.isAllowed(true)).toBe(true);
     expect(c.isAllowed(c => true)).toBe(true);
     expect(c.isAllowed(false)).toBe(false);
