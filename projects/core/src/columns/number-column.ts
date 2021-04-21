@@ -57,6 +57,14 @@ export class BoolColumn extends Column<boolean>{
     super({ inputType: 'checkbox', ...settings });
 
   }
+  fromRawValue(value: any) {
+    if (typeof value === "boolean")
+      return value;
+    if (value !== undefined) {
+      return value.toString().trim().toLowerCase() == 'true';
+    }
+    return undefined;
+  }
   __defaultStorage() {
     return new BoolStorage();
   }
