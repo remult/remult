@@ -16,8 +16,8 @@ export class JsonDataProvider implements DataProvider {
   getEntityDataProvider(entity: Entity): EntityDataProvider {
     return new JsonEntityDataProvider(entity, this.storage);
   }
-  transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
-    throw new Error("transactions are not yet supported for JSON");
+  async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+    await action(this);
   }
 }
 
@@ -39,25 +39,25 @@ class JsonEntityDataProvider implements EntityDataProvider {
     return this.p = this.p.then(() => this.loadEntityData((dp, save) => dp.find(options)));
   }
   count(where?: Filter): Promise<number> {
-    return this.p = this.p.then(() =>this.loadEntityData((dp, save) => dp.count(where)));
+    return this.p = this.p.then(() => this.loadEntityData((dp, save) => dp.count(where)));
   }
 
 
   update(id: any, data: any): Promise<any> {
-    return this.p = this.p.then(() =>this.loadEntityData((dp, save) => dp.update(id, data).then(x => {
+    return this.p = this.p.then(() => this.loadEntityData((dp, save) => dp.update(id, data).then(x => {
       save();
       return x;
     })));
 
   }
   delete(id: any): Promise<void> {
-    return this.p = this.p.then(() =>this.loadEntityData((dp, save) => dp.delete(id).then(x => {
+    return this.p = this.p.then(() => this.loadEntityData((dp, save) => dp.delete(id).then(x => {
       save();
       return x;
     })));
   }
   insert(data: any): Promise<any> {
-    return this.p = this.p.then(() =>this.loadEntityData((dp, save) => dp.insert(data).then(x => {
+    return this.p = this.p.then(() => this.loadEntityData((dp, save) => dp.insert(data).then(x => {
       save();
       return x;
     })));

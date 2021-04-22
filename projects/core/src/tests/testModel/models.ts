@@ -7,11 +7,8 @@ import { NumberColumn } from "../../columns/number-column";
 import { StringColumn } from "../../columns/string-column";
 import { ValueListColumn } from "../../columns/value-list-column";
 
-export const environment = {
-  production: false
-};
 @EntityClass
-export class Categories extends Entity<number> {
+export class Categories extends Entity {
   id = new NumberColumn({ dbName: 'CategoryID' });
   categoryName = new StringColumn();
   description = new StringColumn();

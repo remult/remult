@@ -207,7 +207,7 @@ describe("grid filter stuff", () => {
     let r = c.userChange.observe(() => d.ok());
     d.test("first fire");
     d = new Done();
-    c._setUser({
+    c.setUser({
       id: '',
       name: '',
       roles: []
@@ -215,7 +215,7 @@ describe("grid filter stuff", () => {
     d.test("changed on user changed");
     d = new Done();
     r();
-    c._setUser({
+    c.setUser({
       id: '1',
       name: '1',
       roles: []
@@ -1254,13 +1254,13 @@ describe("context", () => {
     expect(c.user.id).toBe(undefined);
     expect(c.user.name).toBe("");
     expect(c.user.roles.length).toBe(0);
-    c._setUser({
+    c.setUser({
       id: '1',
       name: 'name',
       roles: ["a"]
     });
     expect(c.isSignedIn()).toBe(true);
-    c._setUser(undefined);
+    c.setUser(undefined);
     expect(c.isSignedIn()).toBe(false);
     expect(c.user.id).toBe(undefined);
     expect(c.user.name).toBe("");

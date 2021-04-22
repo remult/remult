@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action, JwtSessionService, Column, EntityOrderBy, EntityWhere, Entity, ValueListItem, EntityProvider } from '@remult/core';
+import { actionInfo, Context, RestDataProvider, Action,  Column, EntityOrderBy, EntityWhere, Entity, ValueListItem, EntityProvider } from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -28,8 +28,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
-
-import { AuthorizationInterceptor } from '../authorization-interceptor';
 import { BidiModule } from '@angular/cdk/bidi';
 
 
@@ -51,11 +49,11 @@ import { BidiModule } from '@angular/cdk/bidi';
     provide: Context,
     useFactory: buildContext,
     deps: [HttpClient, MatDialog]
-  }, { provide: JwtSessionService, useClass: JwtSessionService, deps: [Context] }, NotSignedInGuard, SignedInGuard, RouteHelperService,
+  }, 
+  NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
 
-  { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
-  { provide: HTTP_INTERCEPTORS, useClass: AuthorizationInterceptor, multi: true }]
+  { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
   ,
   exports: [DataControl2Component, DataFilterInfoComponent, DataGrid2Component, DataArea2Component, SelectValueDialogComponent],
   entryComponents: [WaitComponent, SelectValueDialogComponent, FilterDialogComponent]

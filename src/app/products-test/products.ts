@@ -7,7 +7,7 @@ export class Products extends IdEntity {
   name = new StringColumn({
 
   });
-  price = new NumberColumn({ decimalDigits: 2, key: 'price_1' });
+  price = extend( new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x=>x.getValue=()=>this.price.value);
   availableFrom1 = new DateTimeColumn();
   availableTo = new DateColumn();
   archive = new BoolColumn();
@@ -16,8 +16,7 @@ export class Products extends IdEntity {
       name: "Products",
       allowApiCRUD: true,
       saving: () => {
-        if (context.onServer)
-          this.name.validationError = 'dont save';
+     
       }
     });
 

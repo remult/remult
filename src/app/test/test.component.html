@@ -1,2 +1,11 @@
-<data-area [settings]="area"></data-area>
-{{column.value}}
+<input [(ngModel)]="newTask.name.value"> <button (click)="this.save()">add</button>
+<ul>
+    <li *ngFor="let t of tasks">
+        <input [(ngModel)]="t.completed.inputValue" type="checkbox" > {{t.name.value}}<button
+            (click)="t.save()">save</button> 
+    </li>
+</ul>
+
+<input [(ngModel)]="cb1" type="checkbox" > {{cb1|json}}
+<input [(ngModel)]="cb2" [type]="'checkbox'" name="mf" value="yes"> {{cb2|json}}
+<input [(ngModel)]="cb3" type="{{'checkbox'}}"> {{cb3|json}}

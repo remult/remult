@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DateColumn, BoolColumn, Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress } from '@remult/core';
+import { DateColumn, BoolColumn, Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress, NumberColumn, EntityClass, Entity } from '@remult/core';
 import { StringColumn } from '@remult/core';
 import { DataAreaSettings } from '@remult/angular';
 import { Products } from '../products-test/products';
@@ -13,44 +13,38 @@ import { Products } from '../products-test/products';
 export class TestComponent implements OnInit {
 
   constructor(private context: Context) { }
-  column = new StringColumn();
-  column1 = new StringColumn();
-  column2 = new StringColumn();
-  column3 = new StringColumn();
-  column4 = new StringColumn();
 
-  area = new DataAreaSettings({
-    columnSettings: (f) => [
-      this.column,
-      this.column1,
-      [{
-        column: this.column2,
-        visible: () => this.column.value && this.column.value.length > 3
-
-
-      },
-      this.column3],
-      this.column4,
-
-    ]
-  });
-
-  @ServerFunction({ allowed: true, queue: true })
-  static async doIt(context?: Context, progress?: ServerProgress) {
-    let total = 100;
-    for (let index = 0; index < total; index++) {
-      progress.progress(index/total);
-      await new Promise((res)=>setTimeout(() => {
-        res({});
-      }, 100));
-    }
-    console.log('done');
-
-  }
-
+  newTask = this.context.for(tasks).create();
   async ngOnInit() {
+this.loadTasks();
 
-    await TestComponent.doIt();
+  }
+  cb1:any;
+  cb2:any;
+  cb3:any;
+  tasks: tasks[] = [];
+  async save() {
+    await this.newTask.save();
+    this.newTask = this.context.for(tasks).create();
+  }
+  async loadTasks() {
+    this.tasks = await this.context.for(tasks).find({where:t=>t.completed.isDifferentFrom(true)});
   }
 
+}
+
+@EntityClass
+class tasks extends Entity {
+
+  name = new StringColumn();
+  completed = new BoolColumn();
+  constructor() {
+    super({
+      name: 'tasks',
+      allowApiCRUD: true,
+      saving:()=>{
+        console.log(this.completed.rawValue);
+      }
+    })
+  }
 }

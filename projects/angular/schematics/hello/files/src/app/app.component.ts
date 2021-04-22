@@ -1,23 +1,22 @@
-import { Component, Injector, ViewChild } from '@angular/core';
-import { Router, Route, CanActivate, ActivatedRoute } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router, Route,  ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
-import { MatDialog } from '@angular/material/dialog';
 
-import { Context, JwtSessionService, ServerFunction, StringColumn, UserInfo } from '@remult/core';
+import { Context, ServerFunction, StringColumn, UserInfo } from '@remult/core';
 
 import { DialogService } from './common/dialog';
 import { openDialog, RouteHelperService } from '@remult/angular';
 import { PasswordColumn, Users } from './users/users';
 import { Roles } from './users/roles';
 import { InputAreaComponent } from './common/input-area/input-area.component';
-import { async } from '@angular/core/testing';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
 
   constructor(
@@ -25,10 +24,9 @@ export class AppComponent {
     public activeRoute: ActivatedRoute,
     private routeHelper: RouteHelperService,
     public dialogService: DialogService,
-    private session: JwtSessionService,
     public context: Context) {
 
-    session.loadUserInfo();
+
   }
 
   async signIn() {
@@ -41,7 +39,7 @@ export class AppComponent {
         password
       ],
       ok: async () => {
-        this.session.setToken(await AppComponent.signIn(user.value, password.value));
+        this.setToken(await AppComponent.signIn(user.value, password.value));
       }
     });
   }
@@ -50,7 +48,7 @@ export class AppComponent {
     let result: UserInfo;
     let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
-      if (!u.password.value || PasswordColumn.passwordHelper.verify(password, u.password.value)) {
+      if (await u.password.matches(password) ) {
         result = {
           id: u.id.value,
           roles: [],
@@ -62,13 +60,27 @@ export class AppComponent {
       }
 
     if (result) {
-      return JwtSessionService.createTokenOnServer(result);
+      //@ts-ignore
+      return (await import('jsonwebtoken'.toString())).sign(result, process.env.TOKEN_SIGN_KEY);
     }
     throw new Error("Invalid Sign In Info");
   }
+  setToken(token: string) {
+    if (token) {
+      this.context.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
+      sessionStorage.setItem("auth_token", token);
+    }
+    else {
+      this.context.setUser(undefined);
+      sessionStorage.removeItem("auth_token");
+    }
+  }
+  ngOnInit(): void {
+    this.setToken(sessionStorage.getItem('auth_token'))
+  }
 
   signOut() {
-    this.session.signout();
+    this.setToken(undefined);
     this.router.navigate(['/']);
   }
   signUp() {
@@ -88,7 +100,7 @@ export class AppComponent {
           throw new Error(confirmPassword.defs.caption + " " + confirmPassword.validationError);
         }
         await user.create(password.value);
-        this.session.setToken(await AppComponent.signIn(user.name.value, password.value));
+        this.setToken(await AppComponent.signIn(user.name.value, password.value));
 
       }
     });

@@ -62,7 +62,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
             }
         }
         var result = Object.assign(error, {
-            exception: ex
+       //     exception: ex disabled for now because JSON.stringify crashed with this
         });
         throw result;
     });
@@ -126,7 +126,7 @@ export class Context {
     get userChange() {
         return this._userChangeEvent.dispatcher;
     }
-    _setUser(info: UserInfo) {
+    setUser(info: UserInfo) {
         this._user = info;
         this._userChangeEvent.fire();
     }

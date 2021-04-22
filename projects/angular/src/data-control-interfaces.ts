@@ -76,7 +76,7 @@ export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
                 if (e)
                     c = e.columns.find(c) as Column;
                 if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(col);
+                    c[__displayResult] = __getDataControlSettings(c);
                 return c[__displayResult].getValue(e);
             };
         }
@@ -86,7 +86,7 @@ export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
                 if (e)
                     c = e.columns.find(c) as Column;
                 if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(col);
+                    c[__displayResult] = __getDataControlSettings(c);
                 c[__displayResult].click(e);
             };
         }
@@ -96,7 +96,7 @@ export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
                 if (e)
                     c = e.columns.find(c) as Column;
                 if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(col);
+                    c[__displayResult] = __getDataControlSettings(c);
                 return c[__displayResult].allowClick(e);
             };
         }
