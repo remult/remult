@@ -54,12 +54,8 @@ let's review:
 
 ## The result on the server
 Now if we'll look at the bottom of our screen, at the Terminal output for the task `node-serve`, we'll see that the server restarted and a new api is now available:
-```{2-5,11}
+```{7}
 start verify structure
-create table Products (
-  id varchar default '' not null  primary key,
-  name varchar default '' not null
-)
 /api/Users_methods/create
 /api/Users_methods/updatePassword
 /api/resetPassword
@@ -68,8 +64,16 @@ create table Products (
 /api/Products
 ```
 Let's review:
-1. When the server restarted, it checked if a `Products` table exists in the database, and since it didn't exist it created it in lines 9-12.
-2. On line 16 it added an api endpoint for our `Products` `Entity`
+1. On line 7 it added an api endpoint for our `Products` `Entity`
+:::tip
+Initially in this tutorial we're using a json file based database - later when we'll use an sql database, the table will be automatically creating using a script similar to:
+```sql
+create table Products (
+  id varchar default '' not null  primary key,
+  name varchar default '' not null
+)
+```
+:::
 
 
 When we'll review the products page, we'll be able to see an empty grid with a column called `id` and a column called `name`, we can add new rows by clicking on the `+` sign at the bottom, and saving them when we edit them.
@@ -78,6 +82,12 @@ Let's add a few products:
 1. Beer
 2. Wine
 3. Bread
+
+
+:::tip
+At this stage we are using a json file based database, you can see it's data by opening the `db` folder in your project, and review the `products.ts` file to see the values.
+See how when you update the data, the file automatically gets updated.
+:::
 
 ## Viewing the Rest Api
 We can also navigate through the browser directly to the api address `http://localhost:4200/api/products` and see the Json result we'll get when calling the api.
@@ -107,19 +117,15 @@ In the `products.ts` file
 <<< @/docs-code/products-batch-operations/products.ts{6-8}
 
 
+And when we'll look at the browser, we'll see that there are 3 more columns to the grid
 
-Once we've added these columns we'll be able to see in the `node-serve` terminal window that these columns were added to our database:
-```{2-4}
-start verify structure
+:::tip
+Later, when we'll use an sql database, the columns will also automatically be created in the database using a script similar to:
+```sql
 alter table Products add column price int default 0 not null
 alter table Products add column availableFrom date
 alter table Products add column availableTo date
-/api/Users_methods/create
-/api/Users_methods/updatePassword
-/api/resetPassword
-/api/signIn
-/api/Products
-/api/Users
 ```
+:::
 
-And when we'll look at the browser, we'll see that there are 3 more columns to the grid
+

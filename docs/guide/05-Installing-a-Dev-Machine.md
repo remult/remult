@@ -13,20 +13,6 @@ Git is the most widely used source control and versioning tool.
 Download and install it from:
 [https://git-scm.com/download/win](https://git-scm.com/download/win)
 
-## Postgres database   
-We'll use the great and free database called Postgres
-
-Download and install it from:
-[https://www.enterprisedb.com/downloads/postgres-postgresql-downloads](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
-
-In this demo we've used Windows x86-64 version, 11.5
-
-When Installing you will be prompted for a password, give it a password, and remember it (we'll need it later)
-::: tip
- when creating this demo we used the password: MASTERKEY
-:::
-
-[For a step by step walk-through for the postgres setup, click here](Additional-info/Install%20Postgres%20Step%20by%20Step/)
 
 ## Visual Studio Code 
 A source code editor which we use to develop application.

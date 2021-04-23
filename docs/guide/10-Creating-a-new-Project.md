@@ -19,19 +19,6 @@ And run the following command to install the `remult` framework starter kit.
 ng add @remult/angular
 ```
 
-## Commit to Git
-In the command prompt run:
-```sh
-git add .
-git commit -m "install remult"
-```
-
-## Change the password for the postgres connection.
-If you did not use the default password we've used (MASTERKEY), then you can change the postgres password, in the `.env` file,
-just replace the word (MASTERKEY) with the password you've chosen for the postgres database.
-
-Don't worry, your password is safe, the `.env` file exists only locally on your dev machine and is never sent anywhere.
-
 ## open vs code in the `my-project` directory
 In the command prompt type:
 ```

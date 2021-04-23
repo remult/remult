@@ -84,6 +84,7 @@ module.exports = {
                 'running-sql-on-the-server',
                 'rest-api',
                 'further-learning',
+                'using-postgres-on-your-dev-machine',
                 'VSCode-keyboard-shortcuts',
                 'setup-angular'
               ]
