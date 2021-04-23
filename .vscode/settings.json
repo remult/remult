@@ -6,7 +6,8 @@
         "angular",
         "angular's",
         "postgres",
-        "remult"
+        "remult",
+        "unchecks"
     ],
     "typescript.tsdk": "node_modules\\typescript\\lib"
 }
