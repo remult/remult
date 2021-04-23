@@ -122,8 +122,8 @@ export function hello(_options: Schema): Rule {
       json.scripts.start = "node dist/server/server/";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["@remult/core"] = "^2.5.1";
-      json.dependencies["@remult/server-postgres"] = "^2.5.1";
+      json.dependencies["@remult/core"] = "^2.5.4";
+      json.dependencies["@remult/server-postgres"] = "^2.5.4";
 
       json.dependencies["pg"] = "^8.3.0";
       json.dependencies["express-force-https"] = "^1.0.0";
@@ -140,7 +140,10 @@ export function hello(_options: Schema): Rule {
       json.devDependencies["@types/jsonwebtoken"] = "^8.5.1";
       json.devDependencies["@types/password-hash"] = "^1.2.20";
       json.devDependencies["@types/express-jwt"] = "^6.0.1";
-
+      json.browser = {
+        "jsonwebtoken": false,
+        "password-hash": false
+      };
 
       const angularMaterial = "@angular/material";
       let angularVersion = json.dependencies["@angular/core"];
@@ -178,6 +181,7 @@ export function hello(_options: Schema): Rule {
     let r = tree.read(gitIgnorePath);
     let content = r!.toString('utf-8');
     content += '\r\n.env';
+    content += '\r\ndb/';
     tree.overwrite(gitIgnorePath, content);
 
   }

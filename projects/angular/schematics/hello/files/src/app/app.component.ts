@@ -60,8 +60,7 @@ export class AppComponent implements OnInit {
       }
 
     if (result) {
-      //@ts-ignore
-      return (await import('jsonwebtoken'.toString())).sign(result, process.env.TOKEN_SIGN_KEY);
+      return (await import('jsonwebtoken')).sign(result, process.env.TOKEN_SIGN_KEY);
     }
     throw new Error("Invalid Sign In Info");
   }
