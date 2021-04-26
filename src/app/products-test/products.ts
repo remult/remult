@@ -8,7 +8,7 @@ export class Products extends IdEntity {
 
   });
   price = extend( new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x=>x.getValue=()=>this.price.value);
-  availableFrom1 = new DateTimeColumn();
+  availableFrom1 = new DateColumn();
   availableTo = new DateColumn();
   archive = new BoolColumn();
   constructor(context: Context) {
