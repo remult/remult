@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
     let result: UserInfo;
     let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
-      if (!u.password.value || PasswordColumn.passwordHelper.verify(password, u.password.value)) {
+      if (!u.password.value || u.password.matches(password)) {
         result = {
           id: u.id.value,
           roles: [],

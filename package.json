@@ -98,5 +98,10 @@
     "tslint": "~5.11.0",
     "typescript": "~3.1.6",
     "vuepress": "^1.5.2"
+  },
+  "browser": {
+    "jsonwebtoken": false,
+    "argon2": false,
+    "password-hash": false
   }
 }

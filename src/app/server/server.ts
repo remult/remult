@@ -13,14 +13,9 @@ import { preparePostgresQueueStorage } from '@remult/server-postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { PasswordColumn } from '../../../projects/angular/schematics/hello/files/src/app/users/users';
-import * as passwordHash from 'password-hash';
 
 
-PasswordColumn.passwordHelper = {
-    generateHash: p => passwordHash.generate(p),
-    verify: (p, h) => passwordHash.verify(p, h)
-}
+
 
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);

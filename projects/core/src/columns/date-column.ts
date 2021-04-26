@@ -30,6 +30,7 @@ export class DateColumn extends ComparableColumn<Date>{
     var d = val as Date;
     if (!d)
       return '';
+      //return val.toISOString().split('T')[0];
     let month = addZeros(d.getMonth() + 1),
       day = addZeros(d.getDate()),
       year = d.getFullYear();
