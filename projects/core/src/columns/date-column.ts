@@ -24,17 +24,14 @@ export class DateColumn extends ComparableColumn<Date>{
   static stringToDate(value: string) {
     if (!value || value == '' || value == '0000-00-00')
       return undefined;
-    return new Date(Date.parse(value));
+    let r =new Date(Date.parse(value)); 
+    return  new Date(r.valueOf() + r.getTimezoneOffset() * 60000);
   }
   static dateToString(val: Date): string {
     var d = val as Date;
     if (!d)
       return '';
-      //return val.toISOString().split('T')[0];
-    let month = addZeros(d.getMonth() + 1),
-      day = addZeros(d.getDate()),
-      year = d.getFullYear();
-    return [year, month, day].join('-');
+    return val.toISOString().split('T')[0];
   }
 
 }
