@@ -4,7 +4,7 @@ import { DateTimeDateStorage } from "./storage/datetime-date-storage";
 
 export class DateColumn extends ComparableColumn<Date>{
   constructor(settings?: ColumnSettings<Date>) {
-    super({ inputType: 'date', displayValue: () => this.value.toLocaleDateString(), ...settings });
+    super({ inputType: 'date', displayValue: () => this.value.toLocaleDateString(undefined,{timeZone:'UTC'}), ...settings });
   }
   getDayOfWeek() {
     return new Date(this.value).getDay();
@@ -24,14 +24,18 @@ export class DateColumn extends ComparableColumn<Date>{
   static stringToDate(value: string) {
     if (!value || value == '' || value == '0000-00-00')
       return undefined;
-    let r =new Date(Date.parse(value)); 
-    return  new Date(r.valueOf() + r.getTimezoneOffset() * 60000);
+    return new Date(Date.parse(value));
   }
   static dateToString(val: Date): string {
     var d = val as Date;
     if (!d)
       return '';
-    return val.toISOString().split('T')[0];
+    return d.toISOString().substring(0,10);
+    let month = addZeros(d.getUTCMonth() + 1),
+      day = addZeros(d.getUTCDate()),
+      year = d.getUTCFullYear();
+    return [year, month, day].join('-');
+    //
   }
 
 }

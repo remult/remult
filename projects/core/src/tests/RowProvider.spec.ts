@@ -1137,7 +1137,7 @@ describe("test datetime column", () => {
     x.value = new Date(1976, 11, 16, 8, 55, 31, 65)
     //expect(x.rawValue).toBe('1976-12-16T06:55:31.065Z',"compare to string"); only relevant to il timezone
 
- 
+
     expect(x.value.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
@@ -1172,12 +1172,21 @@ describe("test datetime column", () => {
     //expect(x.value.toDateString()).toBe(new Date('1976-06-16').toDateString());
     //  expect(x.dateValue.getHours()).toBe(0);
   });
-  it("date Storage works", () => {
+  it("date Storage works 1", () => {
     var x = new DateTimeDateStorage();
 
     expect(x.toDb('1976-06-16').toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
+    expect(x.toDb('1976-06-16').getDate()).toBe(16);
+    let toDb = x.toDb('2021-04-26');
+    if (toDb.getTimezoneOffset() < 0)
+      expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-25');
+    else
+      expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-26');
+
+    //
 
   });
+  
 });
 describe("Test char date storage", () => {
   let x = new CharDateStorage();
