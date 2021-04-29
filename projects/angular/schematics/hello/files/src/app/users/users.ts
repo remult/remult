@@ -28,7 +28,7 @@ export class Users extends IdEntity {
             allowApiRead: context.isSignedIn(),
             allowApiDelete: Roles.admin,
             allowApiUpdate: context.isSignedIn(),
-            allowApiInsert: false,
+            allowApiInsert: Roles.admin,
             saving: async () => {
                 if (context.onServer) {
 
@@ -90,10 +90,10 @@ export class PasswordColumn extends StringColumn {
         })
     }
     async hashAndSet(password: string) {
-        this.value = (await import('password-hash'.toString())).generate(password);
+        this.value = (await import('password-hash')).generate(password);
     }
     async matches(password: string) {
-        return !this.value || (await import('password-hash'.toString())).verify(password, this.value);
+        return !this.value || (await import('password-hash')).verify(password, this.value);
     }
 }
 
