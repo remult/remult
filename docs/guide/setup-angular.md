@@ -1,7 +1,7 @@
 # Todo App with Angular
-### Build a production ready task list app with Remult using Angular + Node/Express/Postgres
+### Build a production ready task list app with Remult using Angular + Node
 
-In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Express for the API server, a and Remult as our full stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
+In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node + Express for the API server, a and Remult as our full stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
 ### Prerequisites
 
@@ -29,21 +29,46 @@ In this tutorial we'll be using the project folder created by `Angular` as the r
 ```sh
 cd angular-sample
 ```
-#### Installing required modules
+#### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
 ```sh
 npm i express @remult/core
 ```
-#### The server project
+#### The API server project
 
-1. Create a `server` folder under the `src/` folder. 
+The starter API server TypeScript project contains a single module which initializes `Express`, starts Remult and begins listening for API requests.
+
+In our development environment we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server.
+
+1. Install `ts-node-dev`
    ```sh
-   cd src
-   md server
-   cd..
+   npm i ts-node-dev --save-dev
    ```
 
-2. In the project root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
+2. Open your IDE.
+
+3. Create a `server` folder under the `src/` folder created by Angular.
+
+4. Create an `index.ts` file in the `src/server/` folder with the following code:
+
+   *src/server/index.ts*
+   ```ts
+   import * as express from 'express';
+   import { initExpress } from '@remult/core/server';
+   import '../app/app.module';
+
+   let app = express();
+   initExpress(app);
+   app.listen(3002, () => console.log("Server started"));
+   ```
+
+   ::: warning Note
+   Remult creates RESTful API endpoints based on decorators in the application code. Importing the Angular `../app/app.module` in the main server module **ensures all the decorators used in our app are found by Remult**.
+
+   Sure, this means the entire Angular app is loaded on the server-side, but that's a small price to pay for keeping our code simple.
+   :::
+
+5. In the root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
 
    *tsconfig.server.json*
    ```json
@@ -61,29 +86,66 @@ npm i express @remult/core
       ]
    }
    ```
-#### Main server module
-The main server module initializes `Express`, starts Remult by calling `initExpress` and begins listening for API requests.
 
-Create an `index.ts` file in the `src/server/` folder with the following code:
+6. Create an `npm` script `dev-node` to start the dev API server, by adding the following entry to the `scripts` section of `package.json`.
 
-*src/server/index.ts*
-```ts
-import * as express from 'express';
-import { initExpress } from '@remult/core/server';
-import '../app/app.module';
+   *package.json*
+   ```json
+   "dev-node": "ts-node-dev --project tsconfig.server.json src/server/"
+   ```
+   
+7. Start the dev API server.
 
-let app = express();
-initExpress(app);
-app.listen(3002);
-```
+   ```sh
+   npm run dev-node
+   ```
+
+   The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
+
+### Finishing up the Starter Project
+
+#### Proxy API requests from Webpack DevServer to Node and run the Angular app
+The Angular app created in this tutorial is intended to be served from the same domain as its API. 
+However, during development, the API server will be listening on `http://localhost:3002`, while the Angular app is served from `http://localhost:4200`. 
+
+We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-server) feature of webpack dev server to divert all calls for `http://localhost:4200/api` to our dev API server.
+
+1. Create a file `proxy.conf.json` in the root folder, with the following contents:
+
+   *proxy.conf.json*
+   ```json
+   {
+      "/api": {
+         "target": "http://localhost:3002",
+         "secure": false
+      }
+   }
+   ```
+
+2. Create an `npm` script `dev-ng` to serve the Angular app with the `--proxy-config` option, by adding the following entry to the `scripts` section of `package.json`.
+
+   *package.json*
+   ```json
+   "dev-ng": "ng serve --proxy-config proxy.conf.json --open"
+   ```
+
+3. Start the Angular app in a new terminal. **Don't stop the `dev-node` script. `dev-ng` and `dev-node` should be running concurrently.**
+
+   ```sh
+   npm run dev-ng
+   ```
+
+   The default Angular app main screen should be displayed.
+
+   ::: tip
+   If you are using Visual Studio Code and would like to run both `dev-node` and `dev-ng` scripts using a single Visual Studio Code `task`, create a `.vscode/tasks.json` file with the contents found [here](https://gist.github.com/noam-honig/623898a6cd539d86113263d3c63260f0) and run the `dev` task.
+   :::
 
 ::: warning Note
-Remult creates RESTful API endpoints based on decorators in the application code. Importing the Angular `../app/app.module` in the main server module **ensures all the decorators used in our app are found by Remult**.
-
-Sure, this means the entire Angular app is loaded on the server-side, but that's a small price to pay for keeping our code simple.
+The `start` and `build` npm scripts created by Angular CLI will be modified in the [Deployment](#deployment) section of this tutorial to script that will `start` and `build` the full-stack app.
 :::
 
-### Setting up an Angular DI Provider for Remult
+#### Setting up an Angular DI Provider for Remult
 Our Angular starter project is almost ready. All that's left is to add a dependency injection provider for the `Remult` `Context` object. The `Context` object provided will be used to communicate with the API server.
 
 This requires making the following changes to `app.module.ts`:
@@ -119,62 +181,6 @@ import { Context } from '@remult/core';
 export class AppModule { }
 ```
 
-### Finishing up the Starter Project
-
-#### Proxy API requests from Webpack DevServer to Node
-The Angular app created in this tutorial is intended to be served from the same domain as its API. 
-However, during development, the API server will be listening on `http://localhost:3002`, while the Angular app is served from `http://localhost:4200`. 
-
-We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-server) feature of webpack dev server to divert all calls for `http://localhost:4200/api` to our dev API server.
-
-Create a file `proxy.conf.json` in the project folder, with the following contents:
-
-*proxy.conf.json*
-```json
-{
-    "/api": {
-        "target": "http://localhost:3002",
-        "secure": false
-    }
-}
-```
-#### Install server dev tools
-In our development environment we'll use `ts-node-dev` to run the API server.
-```sh
-npm i ts-node-dev --save-dev
-```
-
-#### Configure scripts in package.json
-In this tutorial we'll use the following `npm` scripts:
-* The `start` script runs the production server
-* The `build` script builds the Angular app and transpiles the server TypeScript code
-* The `dev-node` script runs the dev Node/Express API server
-* The `dev-ng` script runs the Angular dev server
-
-*package.json*
-```json{4-7}
-...
-  "scripts": {
-    "ng": "ng",
-    "start": "node dist/server/server/index.js",
-    "build": "ng build && tsc -p tsconfig.server.json",
-    "dev-ng": "ng serve --open --proxy-config proxy.conf.json",
-    "dev-node": "ts-node-dev --project tsconfig.server.json src/server/index.ts",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
-  }
-...
-```
-
-#### Run the starter project
-Open two terminals and run the `dev-node` and `dev-ng` scripts in parallel. 
-
-The default Angular app main screen should be displayed.
-
-::: tip
-If you are using Visual Studio Code and would like to run both `dev-node` and `dev-ng` scripts using a single Visual Studio Code `task`, create a `.vscode/tasks.json` file with the contents found [here](https://gist.github.com/noam-honig/623898a6cd539d86113263d3c63260f0) and run the `dev` task.
-:::
 
 ## Entities
 
@@ -639,7 +645,7 @@ After the browser refreshed, the "Set all..." buttons function exactly the same,
 
 ## Authentication and Authorization
 
-Our todo app is nearly functionally completed, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
+Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
 
 Remult provides a flexible mechanism which enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field level authorization code should be placed in entity classes**.
 
@@ -682,7 +688,7 @@ Let's add a sign in area to the todo app, with an `input` for typing in a `usern
 In this section, we'll be using the following packages:
 * [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) to create JSON web tokens
 * [@auth0/angular-jwt](https://github.com/auth0/angular2-jwt) for client-side JWT decoding and passing HTTP `Authorization` headers to the API server
-* [express-jwt](https://github.com/auth0/express-jwt) to validate JWT on the API server
+* [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
 
 1. Open a terminal and run the following command to install the required packages:
    ```sh
@@ -705,7 +711,7 @@ In this section, we'll be using the following packages:
    static async signIn(username: string) {
       let validUsers = {
          ["Jane"]: { id: "1", name: "Jane", roles: [] },
-         ["Steve"]: { id: "2", name: "Steve", roles: [] },
+         ["Steve"]: { id: "2", name: "Steve", roles: [] }
       };
       let user = validUsers[username];
       if (!user)
@@ -714,7 +720,10 @@ In this section, we'll be using the following packages:
    }
    ```
 
-4. Exclude `jsonwebtoken` from browser builds by adding the following JSON to package.json.
+   ::: warning Note
+   The secret hash key used to sign the JWT should be kept secret (dah) 
+
+4. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
 
    *package.json*
    ```json
@@ -724,10 +733,36 @@ In this section, we'll be using the following packages:
    ```
 
    ::: danger This step is not optional
-   Angular CLI will fail to serve/build the app unless `jsonwebtoken` is excluded
+   Angular CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
    :::
 
-5. Add the following code to the `AppComponent` class.
+5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. Then, provide the `UserInfo` JWT payload (stored by `express-jwt` in `req.user`) to Remult.
+
+   *src/server/index.ts*
+   ```ts{4,7-10}
+   import * as express from 'express';
+   import { initExpress } from '@remult/core/server';
+   import '../app/app.module';
+   import * as expressJwt from 'express-jwt';
+
+   let app = express();
+   app.use(expressJwt({ 
+      secret: "my secret hash key", 
+      credentialsRequired: false, 
+      algorithms: ['HS256'] }));
+   initExpress(app, {
+      getUserFromRequest: req => req.user
+   });
+   app.listen(3002, () => console.log("Server started"));
+   ```
+
+   The `secret` provided to `express-jwt` must be identical to the one used by `jsonwebtoken` to sign the JWT in the `signIn` server function.
+
+   `credentialsRequired` is set to `false` to allow unauthenticated API requests (e.g. the request to `signIn`).
+
+   The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
+
+6. Add the following code to the `AppComponent` class.
 
    *src/app/app.component.ts*
    ```ts
@@ -755,7 +790,7 @@ In this section, we'll be using the following packages:
    This code requires imports for `UserInfo` from `@remult/core` and `JwtHelperService` from `@auth0/angular-jwt`.
    :::
 
-6. Add the following HTML after the `title` element of the `app.component.html` template.
+7. Add the following `HTML` after the `title` element of the `app.component.html` template.
 
    *src/app/app.component.html*
    ```html
@@ -770,7 +805,7 @@ In this section, we'll be using the following packages:
    </ng-container>
    ```
 
-7. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of `AppModule`.
+8. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
 
    *src/app/app.module.ts*
    ```ts
@@ -781,316 +816,216 @@ In this section, we'll be using the following packages:
    })
    ```
 
-8. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. Then, provide the `UserInfo` JWT payload (stored by `express-jwt` in `req.user`) to Remult.
+The todo app now supports signing in and out, with all access restricted to signed in users only.
+
+As there is no point in displaying anything but the sign in area to users who haven't signed in yet, we can move the rest of the template elements into the second `ng-container`, conditioned by `*ngIf="context.isSignedIn()"`.
+
+### Role-based authorization
+Usually, not all application users have the same privileges. Let's define an `admin` role for our todo list, and enforce the following authorization rules:
+
+* All signed in users can see the list of tasks.
+* All signed in users can set specific tasks as `completed`.
+* Only users belonging to the `admin` role can create, delete or edit the titles of tasks.
+* Only users belonging to the `admin` role can mark all tasks as completed or uncompleted.
+
+1. Create a `roles.ts` file in the `src/app/` folder, with the following `Roles` class definition:
+
+   *src/app/roles.ts*
+   ```ts
+   export class Roles {
+      static readonly admin = 'admin';
+   }
+   ```
+
+2. Modify the highlighted lines in the `Tasks` entity class to reflect the top three authorization rules.
+
+   *src/app/tasks.ts*
+   ```ts{2,11,17-20}
+   import { EntityClass, IdEntity, StringColumn, BoolColumn } from "@remult/core";
+   import { Roles } from "../roles";
+
+   @EntityClass
+   export class Tasks extends IdEntity {
+      readonly title = new StringColumn({
+         validate: () => {
+            if (this.title.value.length < 3)
+               this.title.validationError = 'is too short';
+         },
+         allowApiUpdate: Roles.admin
+      });
+      readonly completed = new BoolColumn();
+      constructor() {
+         super({
+            name: 'tasks',
+            allowApiRead: context => context.isSignedIn(),
+            allowApiUpdate: context => context.isSignedIn(),
+            allowApiInsert: Roles.admin,
+            allowApiDelete: Roles.admin
+         })
+      }
+   }
+   ```
+
+3. Modify the `@ServerFunction` decorator of the AppComponent's `setAll` server function, to reflect the required `admin` role.
+
+   *src/app/app.component.ts*
+   ```ts
+   @ServerFunction({ allowed: Roles.admin })
+   ```
+
+4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
+
+   *src/app/app.component.ts*
+   ```ts{4}
+   @ServerFunction({ allowed: true })
+   static async signIn(username: string) {
+      let validUsers = {
+         ["Jane"]: { id: "1", name: "Jane", roles: [ Roles.admin ] },
+         ["Steve"]: { id: "2", name: "Steve", roles: [] },
+      };
+      let user = validUsers[username];
+      if (!user)
+         throw "Invalid User";
+      return jwt.sign(user, "my secret key");
+   }
+   ```
+
+
+**Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**
+
+<p>&nbsp;</p> 
+
+::: tip Bonus - store the user who completed the task
+
+Now that our todo app requires a valid, signed in, user, we can easily add a `completedUser` field to the `Tasks` entity class and store the name of the authenticated user who completed each task.
+
+1. Add a `completedUser` field (of type `StringColumn`) to the `Tasks` entity class, and define it with `allowApiUpdate: false` to ensure it is only updated by server-side code.
+
+   *src/app/tasks.ts*
+   ```ts
+   completedUser = new StringColumn({
+      allowApiUpdate: false
+   })
+   ```
+
+2. Add a `context` argument to the constructor of the `Tasks` entity class, and set the `saving` property of the `EntityOptions` implemented in the constructor to the following arrow function.
+
+   *src/app/tasks.ts*
+   ```ts{4-8}
+   constructor(context: Context) {
+      super({
+         name: 'tasks',
+         saving: () => {
+            if (context.onServer && this.completed.wasChanged() && this.completed.value) {
+                  this.completedUser.value = context.user.name;
+            }
+         },
+         allowApiRead: context => context.isSignedIn(),
+         allowApiUpdate: context => context.isSignedIn(),
+         allowApiInsert: Roles.admin,
+         allowApiDelete: Roles.admin
+      })
+   }
+   ```
+
+The `context` constructor argument will be injected with either a client-side `Context` implementation or a server-side one, depending on the runtime context of the code.
+
+When the `save` method of a `Tasks` object is called in client-side code, the `saving` function is executed twice. First, it runs in the browser, before the an API `put` request is submitted. Next, when the API request is handled on the API server, the `saving` function is invoked again before the database is updated. The `Context.onServer` property is used here to ensure our code runs only once, on the server-side.
+
+:::
+
+## Deployment
+
+In this tutorial, we'll deploy both the Angular app files and the API server project to the same host, and redirect all non-API requests to return the Angular app's `index.html` page.
+
+In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware to improve security.
+
+1. Install `compression` and `helmet`.
+
+   ```sh
+   npm i compression helmet
+   ```
+
+2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts
+   ```ts{5-6,9-10,18-22}
    import * as express from 'express';
    import { initExpress } from '@remult/core/server';
    import '../app/app.module';
    import * as expressJwt from 'express-jwt';
+   import * as compression from 'compression';
+   import * as helmet from 'helmet';
 
    let app = express();
-   app.use(expressJwt({ secret: "my secret key", credentialsRequired: false, algorithms: ['HS256'] }));
-   initExpress(app);
-   app.listen(3002);
+   app.use(compression());
+   app.use(helmet());
+   app.use(expressJwt({ 
+      secret: "my secret hash key", 
+      credentialsRequired: false, 
+      algorithms: ['HS256'] }));
+   initExpress(app, {
+      getUserFromRequest: req => req.user
+   });
+   app.use(express.static('dist/angular-sample'));
+   app.use('/*', async (req, res) => {
+      res.sendFile('dist/angular-sample/index.html');
+   });
+   app.listen(process.env.PORT || 3002, () => console.log("Server started"));
    ```
-### Introducing JWT authorization to the project
 
-#### Step 1, add the secret hash key to .env
+3. Modify the project's `build` npm script to also transpile the API server's TypeScript code (using `tsc`).
 
-in the `.env` file
-```
-TOKEN_SIGN_KEY='My very very secret key'
-```
-::: warning
-In production use a completely random string, you can generate one using: [Online UUID Generator
-](https://www.uuidgenerator.net/version4)
+   *package.json*
+   ```json
+   "build": "ng build && tsc -p tsconfig.server.json"
+   ```
+
+4. Modify the project's `start` npm script to start the production Node server.
+
+   *package.json*
+   ```json
+   "start": "node dist/server/server/"
+   ```
+
+The todo app is now ready for deployment to production.
+
+#### Deploy to heroku
+
+In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need a `heroku` account. You'll also need [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install) installed.
+
+1. In the root folder, initialize Git and commit your work:
+
+   ```sh
+   git init
+   git add .
+   git commit -m "todo app tutorial"
+   ```
+
+2. Create a Heroku `app`:
+
+   ```sh
+   heroku create
+   ```
+
+3. Deploy to Heroku using `git push`:
+
+   ```sh
+   git push heroku master
+   ```
+
+4. Run the production app using `heroku apps:open` command: 
+
+   ```sh
+   heroku apps:open
+   ```
+
+::: warning Note
+If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
 :::
 
-::: tip Deployment to heroku
-You'll need to set the `TOKEN_SIGN_KEY` value on heroku as well, you can do that via the heroku ui, or using command line:
-```sh
-heroku config:set TOKEN_SIGN_KEY=Some very secret key you've generated
-```
-:::
+#### Use PostreSQL as production database
 
-#### Step 2, install and use jwt
-```sh
-npm i jsonwebtoken @types/jsonwebtoken
-```
-
-In the `server.ts` we'll use JWT as the token provider for the `initExpress` method:
-```ts{9,23,24,25,26,27,28}
-import * as express from 'express';
-import { initExpress } from '@remult/server';
-import * as fs from 'fs';
-import { SqlDatabase } from '@remult/core';
-import { Pool } from 'pg';
-import { config } from 'dotenv';
-import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
-import * as forceHttps from 'express-force-https';
-import * as jwt from 'jsonwebtoken';
-import '../app.module';
-
-config(); //loads the configuration from the .env file
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
-});
-let database = new SqlDatabase(new PostgresDataProvider(pool));
-verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
-
-let app = express();
-if (!process.env.DEV_MODE)
-    app.use(forceHttps);
-initExpress(app, database, {
-    tokenProvider: {
-        createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),
-        verifyToken: token => jwt.verify(token, process.env.TOKEN_SIGN_KEY)
-    }
-});
-app.use(express.static('dist/angular-sample'));
-app.use('/*', async (req, res) => {
-    try {
-        res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
-    } catch (err) {
-        res.sendStatus(500);
-    }
-});
-let port = process.env.PORT || 3002;
-app.listen(port); 
-```
-
-#### Step 3, add the `JwtSessionService` to the `app.module.ts`
-```ts{4}
-...
-  providers: [
-    { provide: ErrorHandler, useClass: DisplayAlertErrorErrorHandler },
-    { provide: JwtSessionService, useClass: JwtSessionService, deps: [Context] },
-    { provide: Context, useClass: Context }
-  ],
-...
-```
-
-### Now that we're all setup, let's use it
-In the `app.component.ts` make the following changes:
-```ts{2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,23,24}
-export class AppComponent {
-  constructor(public context: Context, public session: JwtSessionService) {
-  }
-  @ServerFunction({ allowed: true })
-  static async signIn(name: string) {
-    switch (name) {
-      case "Jane":
-        return JwtSessionService.createTokenOnServer({ id: '1', name: name, roles: [] });
-      case "Steve":
-        return JwtSessionService.createTokenOnServer({ id: '2', name: name, roles: [] });
-      default:
-        throw "Invalid User";
-    }
-  }
-  username: string;
-  async signIn() {
-    this.session.setToken(await AppComponent.signIn(this.username));
-    this.loadTasks();
-  }
-  tasks: Tasks[];
-  hideCompleted: boolean;
-  async loadTasks() {
-    if (!this.context.isSignedIn())
-      return;
-    this.tasks = await this.context.for(Tasks).find({
-      orderBy: task => task.completed,
-      where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined
-    });
-  }
-...
-```
-* We've added the `JwtSessionService` to the constructor, and made both it and `context` public so that we can use them in our `html`
-* We've added a `@ServerFunction` called `signIn` that validates the user, and if the user is valid returns a JWT token that contains that user information.
-  For now we've used hard coded user names, later you can replace it with database values.
-* We've added a member called `username` and a `signIn` method for the Sign In process. It calls the `signIn` server function, and sends the result token to the JwtSessionService` to store and manage
-* We've disabled the `loadTasks` method if he user is not signed in.
-
-In the `app.component.html` file:
-```html {2,3,4,5,6,7,27}
-<h1>Angular Remult Sample </h1>
-<ng-container *ngIf="!context.isSignedIn()">
-    <input [(ngModel)]="username"> <button (click)="signIn()">Sign In</button>
-</ng-container>
-<ng-container *ngIf="context.isSignedIn()">
-    Hello {{context.user.name}}
-    <button (click)="session.signout()">Sign Out</button><br/>
-    <input [(ngModel)]="newtask.title.inputValue">
-    <span style="color:red">{{newtask.title.validationError}}</span>
-    <button (click)="addNewTasks()">Add New Task</button>
-    <br>
-    <input type="checkbox" [(ngModel)]="hideCompleted" (change)="loadTasks()">Hide Completed
-    <ul>
-        <li *ngFor="let task of tasks">
-            <input [(ngModel)]="task.completed.inputValue" type="checkbox">
-            <input [(ngModel)]="task.title.inputValue"
-            [style.textDecoration]="task.completed.value?'line-through':''">
-            <span style="color:red">{{task.title.validationError}}</span>
-            <button (click)="task.save()" 
-            [disabled]="!task.wasChanged()">Save</button>
-            <button (click)="deleteTask(task)">Delete</button>
-        </li>
-    </ul>
-    <button (click)="setAll(true)">Set all as Completed</button> 
-    &nbsp;
-    <button (click)="setAll(false)">Set all as UnCompleted</button>
-</ng-container>
-```
-* We've added two `ng-container` that display data based on the `signed in` status.
-* We've added an input and button to sign in, and one to sign out
-  
-
-
-### Securing the API
-So far we changed the UI to hide the tasks if the user is not signed in, but for any web application it's crucial to secure the API itself - otherwise anyone can access the api directly and gain access to sensitive information.
-
-We want to prevent users from accessing the `tasks` entity and also prevent them from running the relevant `@ServerFunctions`
-
-To do that we'll edit the `tasks` entity to only allow `CRUD` for signed in users.
-```ts{15}
-import { BoolColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
-
-@EntityClass
-export class Tasks extends IdEntity {
-    name = new StringColumn({
-        validate: () => {
-            if (this.name.value.length < 2)
-                this.name.validationError = 'too short';
-        }
-    });
-    completed = new BoolColumn();
-    constructor() {
-        super({
-            name: 'tasks',
-            allowApiCRUD: context => context.isSignedIn(),
-        })
-    }
-}
-```
-This will only allow access to the `Tasks` class for signed in users.
-
-In the `app.component.ts` file we'll secure the `setAll` server function
-```ts{1}
-@ServerFunction({ allowed: context => context.isSignedIn() })
-static async setAll(completed: boolean, context?: Context) {
-  for await (const task of context.for(Tasks).iterate()) {
-    task.completed.value = completed;
-    await task.save();
-  }
-}
-```
-
-### Using Roles
-Most real world application have different types of users with different privileges - these privileges are managed using `roles`.
-
-In this app we want to distinguish to type of users.
-1. All signed in users can see the tasks
-2. All signed in users can set `completed` to specific tasks.
-3. Only users with `admin` role can create, delete or edit the name of tasks.
-4. Only users with `admin` role can mark all tasks as completed.
-
-First we'll start by adding a file called `roles.ts` in the `src/app` folder
-```ts
-export class Roles {
-    static admin = 'admin';
-}
-```
-
-Next we'll edit the `tasks.ts` file to reflect the behavior we want:
-```ts{2,11,17,18,19,20}
-import { BoolColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
-import { Roles } from "../roles";
-
-@EntityClass
-export class Tasks extends IdEntity {
-    name = new StringColumn({
-        validate: () => {
-            if (this.name.value.length < 2)
-                this.name.validationError = 'too short';
-        },
-        allowApiUpdate: Roles.admin
-    });
-    completed = new BoolColumn();
-    constructor() {
-        super({
-            name: 'tasks',
-            allowApiRead: context => context.isSignedIn(),
-            allowApiUpdate: context => context.isSignedIn(),
-            allowApiInsert: Roles.admin,
-            allowApiDelete: Roles.admin
-        })
-    }
-}
-```
-
-
-Now we need to adjust the `signIn` method to assign the admin role to one of the users.
-In the `app.component.ts`
-```ts{5}
-  @ServerFunction({ allowed: true })
-  static async signIn(name: string) {
-    switch (name) {
-      case "Jane":
-        return JwtSessionService.createTokenOnServer({ id: '1', name: name, roles: [Roles.admin] });
-      case "Steve":
-        return JwtSessionService.createTokenOnServer({ id: '2', name: name, roles: [] });
-      default:
-        throw "Invalid User";
-
-    }
-  }
-```
-
-### Recording the completing user
-```ts{11,12,13,14,15,16,17,20,21,22,23,24,25,26,27}
-@EntityClass
-export class Tasks extends IdEntity {
-    name = new StringColumn({
-        validate: () => {
-            if (this.name.value.length < 2)
-                this.name.validationError = 'too short';
-        },
-        allowApiUpdate: Roles.admin
-    });
-    completed = new BoolColumn();
-    completedUser = new StringColumn({
-        allowApiUpdate: false
-    })
-    completedTime = new DateTimeColumn({
-        allowApiUpdate: false
-    })
-    constructor(context: Context) {
-        super({
-            name: 'tasks',
-            saving: () => {
-                if (context.onServer) {
-                    if (this.completed.value != this.completed.originalValue) {
-                        this.completedUser.value = context.user.name;
-                        this.completedTime.value = new Date();
-                    }
-                }
-            },
-            allowApiRead: context => context.isSignedIn(),
-            allowApiUpdate: context => context.isSignedIn(),
-            allowApiInsert: Roles.admin,
-            allowApiDelete: Roles.admin
-        })
-    }
-}
-```
-* We've added the `completedUser` and `completedTime` column and marked then as `allowApiUpdate:false` so that they can only be updated by the server and can be trusted.
-* We've added the `context` to the constructor, the correct `context` object will be injected when the code executes. 
-* We've added logic in the `saving` event. This event is fired both in the browser and in the server, we use the `context.onServer` to conditionally run this code only on the server
-
-
-## Deployment
 
 ### Https
 The first stage of securing any application is making sure that the communication between the server and the browser will be encrypted using SSL and HTTPS.
@@ -1223,20 +1158,10 @@ app.listen(port);
 
 [] document the constructor parameters of column
 
-[] consider code that decodes jwt in jwt-session-service
-
-[] copy code does not work well
-
 [] verifyStructureOfAllEntities better name (should include the word schema)
-
-[] auto create the data folder and tasks.json 
-
-[] use json-base for dev
 
 [] explain Column
 
 [] use pg for deployment
-
-[] remove @remult/server when we can
 
 [] consider more code reviews
