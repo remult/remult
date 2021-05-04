@@ -31,6 +31,7 @@ export interface EntityProvider<T extends Entity> {
 
 }
 
+
 /**Used to filter the desired result set
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))

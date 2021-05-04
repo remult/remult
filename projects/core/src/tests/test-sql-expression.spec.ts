@@ -11,17 +11,17 @@ describe("test sql database", async () => {
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {
-        for (const c of await context.for(testSqlExpression).find()) {
+        for (const c of await context.for_old(testSqlExpression).find()) {
             await c.delete();
         }
     }
     await itAsync("test basics", async () => {
         await deleteAll();
-        let x = context.for(testSqlExpression).create();
+        let x = context.for_old(testSqlExpression).create();
         x.code.value = 3;
         await x.save();
         expect(x.testExpression.value).toBe(15);
-        x = await context.for(testSqlExpression).findFirst();
+        x = await context.for_old(testSqlExpression).findFirst();
         expect(x.testExpression.value).toBe(15);
     });
 

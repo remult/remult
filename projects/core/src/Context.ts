@@ -18,6 +18,8 @@ import { Action } from './server-action';
 
 import { RestDataProvider, RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { CompoundIdColumn } from "./columns/compound-id-column";
+import { NewEntity, Repository } from "./remult3";
+import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 
 
 
@@ -62,7 +64,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
             }
         }
         var result = Object.assign(error, {
-       //     exception: ex disabled for now because JSON.stringify crashed with this
+            //     exception: ex disabled for now because JSON.stringify crashed with this
         });
         throw result;
     });
@@ -163,8 +165,13 @@ export class Context {
         return false;
     }
 
+    public for<T>(entity: NewEntity<T>): Repository<T> {
+        return new RepositoryImplementation(entity, this);
+    }
+
+
     cache = new Map<DataProvider, Map<any, SpecificEntityHelper<any, Entity>>>();
-    public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProvider) {
+    public for_old<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProvider) {
         if (!dataSource)
             dataSource = this._dataSource;
 
@@ -457,7 +464,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
 
         let opts: IterateOptions<T> = {};
         if (options) {
-            if (typeof options ==='function')
+            if (typeof options === 'function')
                 opts.where = <any>options;
             else
                 opts = <any>options;

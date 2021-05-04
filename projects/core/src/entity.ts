@@ -91,7 +91,7 @@ export class Entity<idType = any> {
 
   validationError: string;
   //@internal
-  private __idColumn: Column<idType>;
+   __idColumn: Column<idType>;
   //@internal
   __initColumns(idColumn?: Column<idType>) {
     if (!this.__options.name) {

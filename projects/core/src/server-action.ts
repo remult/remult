@@ -252,7 +252,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
                     if (!controllerOptions.key) {
-                        controllerOptions.key = c.for(constructor).create().defs.name + "_methods";
+                        controllerOptions.key = c.for_old(constructor).create().defs.name + "_methods";
                     }
 
 
@@ -277,10 +277,10 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
                                     let y: Entity;
                                     if (d.rowInfo.isNewRow) {
-                                        y = context.for(constructor)._updateEntityBasedOnApi(context.for(constructor).create(), d.rowInfo.data);
+                                        y = context.for_old(constructor)._updateEntityBasedOnApi(context.for_old(constructor).create(), d.rowInfo.data);
                                     }
                                     else {
-                                        let rows = await context.for(constructor).find({
+                                        let rows = await context.for_old(constructor).find({
                                             where: x => {
                                                 let where: Filter = x.columns.idColumn.isEqualTo(d.rowInfo.id);
                                                 if (this.options && this.options.get && this.options.get.where)
@@ -291,7 +291,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         if (rows.length != 1)
                                             throw new Error("not found or too many matches");
                                         y = rows[0];
-                                        context.for(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
+                                        context.for_old(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
                                     }
 
                                     await y.__validateEntity();

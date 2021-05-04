@@ -11,16 +11,16 @@ describe("test default value", () => {
     itAsync("test basics", async () => {
         let c = new ServerContext(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
-        let r = c.for(testDefaultValue).create();
+        let r = c.for_old(testDefaultValue).create();
         expect(r.test.value).toBe(1);
         expect(testDefaultValue.testVal).toBe(2);
     });
     itAsync("test create without querying the value", async () => {
         let c = new ServerContext(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
-        let r = c.for(testDefaultValue).create();
+        let r = c.for_old(testDefaultValue).create();
         await r.save();
-        let res =await c.for(testDefaultValue).find({});
+        let res =await c.for_old(testDefaultValue).find({});
         expect(res.length).toBe(1);
         expect (testDefaultValue.testVal).toBe(2);
         expect(res[0].test.value).toBe(1);

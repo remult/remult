@@ -118,7 +118,7 @@ describe("test paged foreach ", async () => {
     });
     itAsync("test make sort unique", async () => {
         let context = new Context();
-        let e = context.for(Categories).create();
+        let e = context.for_old(Categories).create();
         function test(orderBy: EntityOrderBy<Categories>, ...sort: Column[]) {
             let s = extractSort(createAUniqueSort(orderBy, e)(e));
             expect(s.Segments.map(x => x.column)).toEqual(sort);
@@ -128,8 +128,8 @@ describe("test paged foreach ", async () => {
     });
     itAsync("test make sort unique", async () => {
         let context = new Context();
-        let e = context.for(Categories).create();
-        var gs = new GridSettings(context.for(Categories), { orderBy: p => p.categoryName });
+        let e = context.for_old(Categories).create();
+        var gs = new GridSettings(context.for_old(Categories), { orderBy: p => p.categoryName });
         e.id.defs.caption = 'id from e';
         e.categoryName.defs.caption = 'category name from e';
 
@@ -151,7 +151,7 @@ describe("test paged foreach ", async () => {
             id = new CompoundIdColumn(this.b, this.c);
         }
 
-        let e = context.for(theTable).create();
+        let e = context.for_old(theTable).create();
         function test<T extends Entity>(blabla: T, orderBy: EntityOrderBy<T>, ...sort: Column[]) {
             let s = extractSort(createAUniqueSort(orderBy, e)(e));
             expect(s.Segments.map(x => x.column)).toEqual(sort);
@@ -170,7 +170,7 @@ describe("test paged foreach ", async () => {
             id = new CompoundIdColumn(this.b, this.c);
         }
 
-        let e = context.for(theTable).create();
+        let e = context.for_old(theTable).create();
         e.a.value = 'a';
         e.b.value = 'b';
         e.c.value = 'c';
@@ -192,7 +192,7 @@ describe("test paged foreach ", async () => {
             id = new CompoundIdColumn(this.b, this.c);
         }
 
-        let e = context.for(theTable).create();
+        let e = context.for_old(theTable).create();
         e.a.value = 'a';
         e.b.value = 'b';
         e.c.value = 'c';
@@ -213,7 +213,7 @@ describe("test paged foreach ", async () => {
             id = new CompoundIdColumn(this.b, this.c);
         }
 
-        let e = context.for(theTable).create();
+        let e = context.for_old(theTable).create();
 
         function test<T extends Entity>(theEntity: T, expectedWhere: EntityWhere<T>, expected: any) {
             expect(JSON.stringify(packWhere(theEntity, expectedWhere))).toEqual(

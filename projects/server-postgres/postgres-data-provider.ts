@@ -217,6 +217,6 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
         await new PostgresSchemaBuilder(sql).verifyAllColumns(e);
     }
 
-    return new EntityQueueStorage(c.for(JobsInQueueEntity));
+    return new EntityQueueStorage(c.for_old(JobsInQueueEntity));
 
 }

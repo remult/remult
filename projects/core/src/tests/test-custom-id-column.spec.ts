@@ -19,7 +19,7 @@ import { NumberColumn } from '../columns/number-column';
 describe("custom id column", () => {
     itWithDataProvider("basic test", async (dpf) => {
         let context = new ServerContext(dpf);
-        let c = context.for(class extends Entity<number>{
+        let c = context.for_old(class extends Entity<number>{
             a = new NumberColumn();
             b = new NumberColumn();
             constructor() {
@@ -43,7 +43,7 @@ describe("custom id column", () => {
     });
     itWithDataProvider("basic test id column not first column", async (dpf) => {
         let context = new ServerContext(dpf);
-        let c = context.for(class extends Entity<number>{
+        let c = context.for_old(class extends Entity<number>{
             a = new NumberColumn();
             id = new NumberColumn();
             constructor() {

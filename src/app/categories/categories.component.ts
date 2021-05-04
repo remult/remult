@@ -12,7 +12,7 @@ export class CategoriesComponent implements OnInit {
 
   constructor(private context:Context) { }
 
-  categories =new GridSettings(this.context.for(Categories));
+  
   ngOnInit() {
   }
 

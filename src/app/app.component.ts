@@ -52,7 +52,7 @@ export class AppComponent implements OnInit {
   @ServerFunction({ allowed: true })
   static async signIn(user: string, password: string, context?: Context) {
     let result: UserInfo;
-    let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
+    let u = await context.for_old(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
       if (!u.password.value || u.password.matches(password)) {
         result = {

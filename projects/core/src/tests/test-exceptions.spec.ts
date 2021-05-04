@@ -30,7 +30,7 @@ describe("test exception", () => {
             transaction: undefined
         });
         var ok = new Done();
-        var x = c.for(class extends Entity<number> {
+        var x = c.for_old(class extends Entity<number> {
             id = new NumberColumn();
             constructor() {
                 super('test');

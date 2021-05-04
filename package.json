@@ -17,7 +17,7 @@
     "patch-versions": "cd projects/core && npm version patch && cd.. && cd server-postgres && npm version patch && cd.. && cd..  && cd projects/angular && npm version patch && cd..",
     "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run",
     "build-server-watch": "tsc -p tsconfig.server.json --watch",
-    "server:dev-run": "node --inspect dist-server/src/app/server/server.js",
+    "server:dev-run": "node dist-server/src/app/server/server.js",
     "docs": "vuepress dev docs",
     "build-docs": "vuepress build docs",
     "release-docs": "deploy.sh",

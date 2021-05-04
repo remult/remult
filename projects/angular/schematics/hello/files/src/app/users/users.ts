@@ -69,7 +69,7 @@ export class Users extends IdEntity {
 export class UserId extends LookupColumn<Users> {
 
     constructor(context: Context, settings?: ColumnSettings<string>) {
-        super(context.for(Users), {
+        super(context.for_old(Users), {
             displayValue: () => this.item.name.value
             , ...settings
         });

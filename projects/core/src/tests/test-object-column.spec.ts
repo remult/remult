@@ -14,24 +14,24 @@ describe("test object column",  () => {
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {
-        let e = context.for(ObjectColumnTest).create();
+        let e = context.for_old(ObjectColumnTest).create();
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
      itAsync("test basics with wsql", async () => {
         await deleteAll();
-        var x = context.for(ObjectColumnTest).create();
+        var x = context.for_old(ObjectColumnTest).create();
         x.id.value = 1;
         x.col.value = {
             firstName: 'noam',
             lastName: 'honig'
         }
         await x.save();
-        x = await context.for(ObjectColumnTest).findFirst();
+        x = await context.for_old(ObjectColumnTest).findFirst();
         expect(x.col.value.firstName).toBe('noam');
-        x = await context.for(ObjectColumnTest).findFirst(x=>x.col.contains("yael"));
+        x = await context.for_old(ObjectColumnTest).findFirst(x=>x.col.contains("yael"));
         expect(x).toBeUndefined();
-        x = await context.for(ObjectColumnTest).findFirst(x=>x.col.contains("noam"));
+        x = await context.for_old(ObjectColumnTest).findFirst(x=>x.col.contains("noam"));
         expect(x.id.value).toBe(1);
 
     });
@@ -40,14 +40,14 @@ describe("test object column",  () => {
         var mem = new InMemoryDataProvider();
         var c = new ServerContext(mem);
 
-        var x = c.for(ObjectColumnTest).create();
+        var x = c.for_old(ObjectColumnTest).create();
         x.id.value = 1;
         x.col.value = {
             firstName: 'noam',
             lastName: 'honig'
         }
         await x.save();
-        x = await context.for(ObjectColumnTest).findFirst();
+        x = await context.for_old(ObjectColumnTest).findFirst();
         expect(x.col.value.firstName).toBe('noam');
         expect(mem.rows[x.defs.name][0].col).toEqual({
             firstName:'noam',

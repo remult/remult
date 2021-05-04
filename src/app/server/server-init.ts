@@ -7,6 +7,9 @@ import * as passwordHash from 'password-hash';
 
 import '../app.module';
 import { SqlDatabase } from '@remult/core';
+import { createOldEntity } from '../../../projects/core/src/remult3';
+import { Products } from '../../../projects/core/src/tests/remult-3-entities';
+
 
 
 
@@ -32,7 +35,9 @@ export async function serverInit() {
         ssl: ssl
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
-    await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
-    return r;
+ //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
+
+    createOldEntity(Products)
+ return r;
 
 }

@@ -12,7 +12,7 @@ describe("test server expression value", async () => {
         let c = new ServerContext(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        let r = c.for(testServerExpression).create();
+        let r = c.for_old(testServerExpression).create();
         r.code.value = 5;
         await r.save();
         expect(r.test.value).toBe(1);
@@ -24,12 +24,12 @@ describe("test server expression value", async () => {
         let c = new ServerContext(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        let r = c.for(testServerExpression).create();
+        let r = c.for_old(testServerExpression).create();
         r.code.value = 5;
         await r.save();
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        r = (await c.for(testServerExpression).find({}))[0];
+        r = (await c.for_old(testServerExpression).find({}))[0];
         expect(r.test.value).toBe(1);
         expect(r.testPromise.value).toBe(11);
         expect(testServerExpression.testVal).toBe(2);
@@ -40,7 +40,7 @@ describe("test server expression value", async () => {
         (<any>c)._onServer = false;
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        let r = c.for(testServerExpression).create();
+        let r = c.for_old(testServerExpression).create();
         r.code.value = 5;
         await r.save();
         expect(r.test.value).toBe(undefined);
@@ -52,12 +52,12 @@ describe("test server expression value", async () => {
         let c = new ServerContext(new InMemoryDataProvider());
         (<any>c)._onServer = false;
         
-        let r = c.for(testServerExpression).create();
+        let r = c.for_old(testServerExpression).create();
         r.code.value = 5;
         await r.save();
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        r = (await c.for(testServerExpression).find({}))[0];
+        r = (await c.for_old(testServerExpression).find({}))[0];
         expect(r.test.value).toBe(undefined);
         expect(r.testPromise.value).toBe(undefined);
         expect(testServerExpression.testVal).toBe(1);

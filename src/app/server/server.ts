@@ -29,6 +29,7 @@ serverInit().then(async (dataSource) => {
     let s = initExpress(app, {
         dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource),
+        disableAutoApi:true
     });
 
     app.use(express.static('dist/my-project'));

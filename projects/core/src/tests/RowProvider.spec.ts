@@ -65,7 +65,7 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
     entity = Categories;
   await doInsert(async (id, name, description, status) => {
 
-    let c: CategoriesForTesting = context.for(entity).create();
+    let c: CategoriesForTesting = context.for_old(entity).create();
     c.id.value = id;
     c.categoryName.value = name;
     c.description.value = description;
@@ -74,7 +74,7 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
     await c.save();
 
   });
-  return context.for(entity);
+  return context.for_old(entity);
 }
 
 async function insertFourRows() {
@@ -298,7 +298,7 @@ describe("Closed List  column", () => {
 
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Context().for(Categories).create();
+    var cat = new Context().for_old(Categories).create();
     expect(cat.defs.name).toBe('Categories');
   });
   itAsync("Insert", async () => {
@@ -439,7 +439,7 @@ describe("test row provider", () => {
   });
   itAsync("Test Validation,", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
+    var c = context.for_old(class extends Categories {
       a = new StringColumn({
         validate: Validators.required
       })
@@ -459,7 +459,7 @@ describe("test row provider", () => {
   });
   itAsync("Test Validation 2", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
+    var c = context.for_old(class extends Categories {
       a = new StringColumn({
         validate: col => Validators.required(col, "m")
       })
@@ -479,7 +479,7 @@ describe("test row provider", () => {
   });
   itAsync("Test Validation 3", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
+    var c = context.for_old(class extends Categories {
       a = new StringColumn({
         validate: Validators.required.withMessage("m")
       })
@@ -498,7 +498,7 @@ describe("test row provider", () => {
   });
   itAsync("Test unique Validation,", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
+    var c = context.for_old(class extends Categories {
       a = new StringColumn({
         validate: async () => {
           if (this.isNew() || this.a.value != this.a.originalValue) {
@@ -527,7 +527,7 @@ describe("test row provider", () => {
   });
   itAsync("Test unique Validation 2", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
+    var c = context.for_old(class extends Categories {
       a = new StringColumn({
         validate: Validators.unique
       })
@@ -551,7 +551,7 @@ describe("test row provider", () => {
   });
   itAsync("Test unique Validation and is not empty", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
+    var c = context.for_old(class extends Categories {
       a = new StringColumn({
         validate: [Validators.required, Validators.unique]
       })
@@ -587,7 +587,7 @@ describe("test row provider", () => {
   itAsync("test grid update and validation cycle", async () => {
     var context = new ServerContext();
     context.setDataProvider(new InMemoryDataProvider());
-    var c = context.for(class extends CategoriesWithValidation {
+    var c = context.for_old(class extends CategoriesWithValidation {
       categoryName = new StringColumn({
         validate: () => { CategoriesWithValidation.orderOfOperation += "ColumnValidate," }
       });
@@ -634,7 +634,7 @@ describe("test row provider", () => {
   itAsync("update should fail nicely", async () => {
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(Categories).create();
+    let c = cont.for_old(Categories).create();
     c.id.value = 1;
     c.categoryName.value = 'noam';
     await c.save();
@@ -659,7 +659,7 @@ describe("test row provider", () => {
 
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(Categories);
+    let c = cont.for_old(Categories);
 
     let calledFind = false;
     var l = new Lookup(c.create(), {
@@ -684,7 +684,7 @@ describe("test row provider", () => {
   itAsync("lookup return the same new row", async () => {
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(Categories);
+    let c = cont.for_old(Categories);
     var nc = new NumberColumn();
     nc.value = 1;
     let r = c.lookup(nc);
@@ -868,7 +868,7 @@ describe("api test", () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
 
-    let gs = new GridSettings(ctx.for(Categories));
+    let gs = new GridSettings(ctx.for_old(Categories));
     gs.addArea({
       columnSettings: x => [
         x.categoryName,
@@ -885,7 +885,7 @@ describe("column collection", () => {
   let ctx = new Context();
   ctx.setDataProvider(new InMemoryDataProvider());
   itAsync("uses a saparate column", async () => {
-    let c = ctx.for(class extends Categories {
+    let c = ctx.for_old(class extends Categories {
       categoryName = new StringColumn({ allowApiUpdate: false });
     }).create();
 
@@ -898,7 +898,7 @@ describe("column collection", () => {
 
   })
   itAsync("jsonSaverIsNice", async () => {
-    let c = ctx.for(Categories).create();
+    let c = ctx.for_old(Categories).create();
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
     await cc.add(c.categoryName);
     expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe("x.categoryName");
@@ -909,7 +909,7 @@ describe("column collection", () => {
   }`);
   })
   itAsync("works ok with filter", async () => {
-    let c = ctx.for(Categories).create();
+    let c = ctx.for_old(Categories).create();
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }), () => true);
     await cc.add(c.id);
     cc.filterHelper.filterColumn(cc.items[0].column, false, false);
@@ -922,7 +922,7 @@ describe("grid settings ",
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
     it("sort is displayed right", () => {
-      let s = ctx.for(Categories, new InMemoryDataProvider());
+      let s = ctx.for_old(Categories, new InMemoryDataProvider());
       let c = s.create();
 
       let gs = new GridSettings(s);
@@ -936,7 +936,7 @@ describe("grid settings ",
       expect(gs.sortedDescending(c.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let s = ctx.for(Categories, new InMemoryDataProvider());
+      let s = ctx.for_old(Categories, new InMemoryDataProvider());
       let c = s.create();
       let y: Column;
       let gs = new GridSettings(s, { get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
@@ -1279,7 +1279,7 @@ describe("context", () => {
   });
   it("circular reference entity works",()=>{
     var c= new Context();
-    var r = c.for(EntityA).create();
+    var r = c.for_old(EntityA).create();
   });
 
 });
@@ -1313,13 +1313,13 @@ class valueList {
 
 
 class EntityA extends IdEntity {
-  b = new LookupColumn(this.context.for(EntityB));
+  b = new LookupColumn(this.context.for_old(EntityB));
   constructor(private context: Context) {
     super("a");
   }
 }
 class EntityB extends IdEntity {
-  a = new LookupColumn(this.context.for(EntityA));
+  a = new LookupColumn(this.context.for_old(EntityA));
   constructor(private context: Context) {
     super("b");
   }
