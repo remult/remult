@@ -13,7 +13,7 @@ export class IdEntity {
 */
 
 
-interface rowHelper<T> {
+export interface rowHelper<T> {
     save();
     delete();
     isNew();
@@ -61,7 +61,7 @@ export interface FindOptions<T> {
 
 
 }
-export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>, context: Context) => (Filter | Filter[]));
+export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]));
 
 export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
 
@@ -92,15 +92,15 @@ export class BaseEntity {
     _: entityOf<this>;
 }
 
-interface filterOptions<x> {
+export interface filterOptions<x> {
     isEqualTo(val: x): Filter;
     isIn(val: x[]): Filter;
 }
 
-interface comparableFilterItem<x> extends filterOptions<x> {
+export interface comparableFilterItem<x> extends filterOptions<x> {
     isGreaterThan(val: x): Filter;
 }
-interface supportsContains<x> extends filterOptions<x> {
+export interface supportsContains<x> extends filterOptions<x> {
     contains(val: string): Filter;
 }
 

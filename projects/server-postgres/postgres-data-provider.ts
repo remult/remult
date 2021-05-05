@@ -212,7 +212,7 @@ export class PostgresSchemaBuilder {
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
     let c = new ServerContext(sql);
     {
-        let e = c.for(JobsInQueueEntity).create();
+        let e = c.for_old(JobsInQueueEntity).create();
         await new PostgresSchemaBuilder(sql).createIfNotExist(e);
         await new PostgresSchemaBuilder(sql).verifyAllColumns(e);
     }
