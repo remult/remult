@@ -48,7 +48,7 @@ export class Language {
 
 }
 
-export interface CategoriesForTesting extends Entity<number> {
+export interface CategoriesForTestingOld extends Entity<number> {
   id: NumberColumn;
   categoryName: StringColumn;
   description: StringColumn;
@@ -56,8 +56,8 @@ export interface CategoriesForTesting extends Entity<number> {
 }
 
 
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
-  new(): CategoriesForTesting
+export async function createDataOld(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
+  new(): CategoriesForTestingOld
 }) {
   let context = new ServerContext();
   context.setDataProvider(new InMemoryDataProvider());
@@ -65,7 +65,27 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
     entity = Categories;
   await doInsert(async (id, name, description, status) => {
 
-    let c: CategoriesForTesting = context.for_old(entity).create();
+    let c: CategoriesForTestingOld = context.for_old(entity).create();
+    c.id.value = id;
+    c.categoryName.value = name;
+    c.description.value = description;
+    if (status)
+      c.status.value = status;
+    await c.save();
+
+  });
+  return context.for_old(entity);
+}
+export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
+  new(): CategoriesForTestingOld
+}) {
+  let context = new ServerContext();
+  context.setDataProvider(new InMemoryDataProvider());
+  if (!entity)
+    entity = Categories;
+  await doInsert(async (id, name, description, status) => {
+
+    let c: CategoriesForTestingOld = context.for_old(entity).create();
     c.id.value = id;
     c.categoryName.value = name;
     c.description.value = description;
@@ -79,7 +99,7 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
 
 async function insertFourRows() {
 
-  return createData(async i => {
+  return createDataOld(async i => {
     await i(1, 'noam', 'x');
     await i(4, 'yael', 'x');
     await i(2, 'yoni', 'y');
@@ -303,7 +323,7 @@ describe("test row provider", () => {
   });
   itAsync("Insert", async () => {
 
-    let forCat = await createData(async x => { });
+    let forCat = await createDataOld(async x => { });
     let rows = await forCat.find();
     expect(rows.length).toBe(0);
     let c = forCat.create();
@@ -320,7 +340,7 @@ describe("test row provider", () => {
 
   itAsync("test  delete", async () => {
 
-    let c = await createData(async insert => await insert(5, 'noam'));
+    let c = await createDataOld(async insert => await insert(5, 'noam'));
 
     let rows = await c.find();
     expect(rows.length).toBe(1);
@@ -331,7 +351,7 @@ describe("test row provider", () => {
 
   });
   itAsync("test update", async () => {
-    let c = await createData(async insert => await insert(5, 'noam'));
+    let c = await createDataOld(async insert => await insert(5, 'noam'));
     let r = await c.find();
     expect(r[0].categoryName.value).toBe('noam');
     r[0].categoryName.value = 'yael';
@@ -696,7 +716,7 @@ describe("test row provider", () => {
 
   });
   itAsync("lookup updates the data", async () => {
-    let c = await createData(async insert => await insert(1, 'noam'));
+    let c = await createDataOld(async insert => await insert(1, 'noam'));
     let r = c.lookup(c => c.id.isEqualTo(1));
     expect(r.isNew()).toBe(true);
     expect(r.id.value).toBe(1);
@@ -713,7 +733,7 @@ describe("test row provider", () => {
 
   });
   itAsync("column drop down", async () => {
-    let c = await createData(async insert => {
+    let c = await createDataOld(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -730,7 +750,7 @@ describe("test row provider", () => {
 
   });
   itAsync("column drop down with promise", async () => {
-    let c = await createData(async insert => {
+    let c = await createDataOld(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -747,7 +767,7 @@ describe("test row provider", () => {
 
   });
   itAsync("column drop down with promise", async () => {
-    let c = await createData(async insert => {
+    let c = await createDataOld(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -778,7 +798,7 @@ describe("test row provider", () => {
 
   });
   itAsync("column drop down 1", async () => {
-    let c = await createData(async insert => {
+    let c = await createDataOld(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -951,7 +971,7 @@ describe("grid settings ",
       expect(gs.sortedDescending(c.categoryName)).toBe(false);
     });
     it("paging works", async () => {
-      let c = await createData(async i => {
+      let c = await createDataOld(async i => {
         await i(1, "a");
         await i(2, "b");
         await i(3, "a");
@@ -977,7 +997,7 @@ describe("grid settings ",
       expect(ds.items[0].id.value).toBe(3);
     });
     it("paging works with filter", async () => {
-      let c = await createData(async i => {
+      let c = await createDataOld(async i => {
         await i(1, "a");
         await i(2, "b");
         await i(3, "a");
@@ -1047,7 +1067,7 @@ describe("order by api", () => {
     expect(s.Segments[1].column).toBe(c.categoryName);
   });
   itAsync("test several sort options", async () => {
-    let c = await createData(async i => {
+    let c = await createDataOld(async i => {
       await i(1, 'z');
       await i(2, 'y');
     });

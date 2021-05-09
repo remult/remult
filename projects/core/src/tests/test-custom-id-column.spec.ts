@@ -1,6 +1,6 @@
 
 
-import { createData } from './RowProvider.spec';
+import { createDataOld } from './RowProvider.spec';
 import { fitAsync, itAsync } from './testHelper.spec';
 
 import { Categories } from './testModel/models';

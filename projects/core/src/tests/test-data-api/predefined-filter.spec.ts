@@ -1,5 +1,5 @@
 import { itAsync, Done } from "../testHelper.spec";
-import { createData, CategoriesForTesting } from '../RowProvider.spec';
+import { createDataOld, CategoriesForTestingOld } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 import { Entity } from '../../entity';
@@ -14,7 +14,7 @@ describe("data api", () => {
   let context = new Context();
   itAsync("getArray works with predefined filter", async () => {
 
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -34,7 +34,7 @@ describe("data api", () => {
 
   });
   itAsync("get works with predefined filter", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -52,7 +52,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("get id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -67,7 +67,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -82,7 +82,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -97,7 +97,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -112,7 +112,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id 1 works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -127,7 +127,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("getArray works with predefined filter", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -151,7 +151,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("works with predefined Entity Filter", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -173,7 +173,7 @@ describe("data api", () => {
     expect((await c.lookupAsync(x => x.id.isEqualTo(1))).isNew()).toBe(true,'lookup ');
   });
   itAsync("works with predefined Entity Filter", async () => {
-    let c = await createData(async (i) => {
+    let c = await createDataOld(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -185,7 +185,7 @@ describe("data api", () => {
       
 });
 
-class CategoriesForThisTest extends Entity<number> implements CategoriesForTesting {
+class CategoriesForThisTest extends Entity<number> implements CategoriesForTestingOld {
   id = new NumberColumn();
   categoryName = new StringColumn();
   description = new StringColumn();

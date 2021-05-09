@@ -1,11 +1,12 @@
-import { Column,Entity } from "../remult3";
+import { Column, Entity } from "../remult3";
+import { Status } from "./testModel/models";
 
 @Entity({
-    name:'Products'
+    name: 'Products'
 })
 export class Products {
     @Column()
-    id:number;
+    id: number;
     @Column()
     name: string;
     @Column()
@@ -13,5 +14,30 @@ export class Products {
     @Column()
     archived: boolean;
     @Column()
-    availableFrom:Date;
+    availableFrom: Date;
+}
+
+@Entity({
+    name: 'Categories',
+    allowApiCRUD: true
+})
+export class Categories {
+    @Column({
+        dbName: 'CategoryID'
+    })
+    id: Number;
+    @Column()
+    categoryName: string;
+    @Column()
+    description;
+    @Column<Categories, Number>({
+        serverExpression1: c => c.categoryName ? c.categoryName.length : undefined
+    })
+    categoryNameLength: number;
+    @Column<Categories, number>({
+        serverExpression1: (c) => Promise.resolve(c.categoryName ? c.categoryName.length : undefined)
+    })
+    categoryNameLengthAsync: number;
+    @Column()
+    status: Status;
 }

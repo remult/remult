@@ -5,20 +5,61 @@ import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
 import { Column as oldColumn, __isGreaterThan } from '../column';
-import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper } from "./remult3";
-import { Context } from "../context";
+import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult } from "./remult3";
+import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
-    private _helper: import("c:/repos/radweb/projects/core/src/context").SpecificEntityHelper<any, oldEntity<any>>;
+    private _helper: SpecificEntityHelper<any, oldEntity<any>>;
     private _info: EntityFullInfo<any>;
     constructor(private entity: NewEntity<T>, private context: Context) {
         this._info = createOldEntity(entity);
 
         //@ts-ignore
         this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
+    }
+    iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T> {
+        let r = this._helper.iterate(this.translateIterateOptions(options));
+        return {
+            count: () => r.count(),
+            first: () => r.first().then(r => this.mapOldEntityToResult(r)),
+            toArray: (o) => r.toArray(o).then(r => r.map(r => this.mapOldEntityToResult(r))),
+            forEach: (what: (item: T) => Promise<any>) => r.forEach(async x => {
+                await what(this.mapOldEntityToResult(x));
+            }),
+            [Symbol.asyncIterator]: () => {
+                let i = r[Symbol.asyncIterator]();
+                return {
+                    next: () => {
+                        let z = i.next();
+                        return z.then(y => ({
+                            value: this.mapOldEntityToResult(y.value),
+                            done: y.done
+                        }))
+                    }
+                }
+            }
+        };
+
+    }
+    findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
+        return this._helper.findOrCreate(this.translateIterateOptions(options)).then(r => this.mapOldEntityToResult(r))
+    }
+    lookup(filter: EntityWhere<T>): T {
+        let r = this._helper.lookup(translateEntityWhere(this._info, filter));
+        if (!r[pojoCacheInEntity]) {
+            r[pojoCacheInEntity] = this.mapOldEntityToResult(r);
+        }
+        return r[pojoCacheInEntity];
+    }
+    async lookupAsync(filter: EntityWhere<T>): Promise<T> {
+        let r = await this._helper.lookupAsync(translateEntityWhere(this._info, filter));
+        if (!r[pojoCacheInEntity]) {
+            r[pojoCacheInEntity] = this.mapOldEntityToResult(r);
+        }
+        return r[pojoCacheInEntity];
     }
     entityOf<T>(entity: T) {
         let x = entity[entityMember];
@@ -47,6 +88,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     }
     private mapOldEntityToResult(r: oldEntity<any>) {
+        if (!r)
+            return undefined;
         let x = new this.entity(this.context);
         x[entityMember] = this._info.createEntityOf(r, x);
         for (const col of this._info.columns) {
@@ -58,17 +101,35 @@ export class RepositoryImplementation<T> implements Repository<T>{
     async count(where?: EntityWhere<T>): Promise<number> {
         return this._helper.count(translateEntityWhere(this._info, where));
     }
-    async findFirst(where: EntityWhere<T>): Promise<T> {
-        throw new Error("Method not implemented.");
+    async findFirst(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
+
+        return this._helper.findFirst(this.translateIterateOptions(options)).then(r => this.mapOldEntityToResult(r));
     }
+    private translateIterateOptions(options: EntityWhere<T> | IterateOptions<T>) {
+        let opt: oldIterateOptions<any>;
+        if (options) {
+            opt = {};
+            if (typeof options === "function") {
+                opt.where = translateEntityWhere(this._info, options);
+            } else {
+                let o = options as IterateOptions<T>;
+                if (o.where) {
+                    opt.where = translateEntityWhere(this._info, o.where);
+                }
+                opt.progress = o.progress;
+            }
+        }
+        return opt;
+    }
+
     create(): T {
         let r = new this.entity(this.context);
         r[entityMember] = this._info.createEntityOf(this._helper.create(), r);
         return r;
     }
     findId(id: any): Promise<T> {
-        throw new Error("Method not implemented.");
-    }//
+        return this._helper.findId(id).then(r => this.mapOldEntityToResult(r));
+    }
 }
 export function translateEntityWhere<entityType>(info: EntityFullInfo<entityType>, where: EntityWhere<entityType>): old.EntityWhereItem<oldEntity<any>> {
     if (!where)
@@ -99,6 +160,7 @@ export function translateEntityWhere<entityType>(info: EntityFullInfo<entityType
 const columnInfo = Symbol("columnInfo");
 const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
+const pojoCacheInEntity = Symbol("pojoCacheInEntity");
 export function createOldEntity(entity: NewEntity<any>) {
     let r: columnInfo[] = Reflect.getMetadata(columnInfo, entity);
 
@@ -200,11 +262,11 @@ class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
 
 
 
-export function Column<T = any>(settings?: ColumnSettings & {
+export function Column<T = any,colType=any>(settings?: ColumnSettings & {
     allowApiUpdate1?: ((x: entityOf<T>) => boolean),
     validate1?: (x: column<any>) => void,
     defaultValue1?: (x: T) => void,
-    serverExpression1?: (x: T) => any
+    serverExpression1?: (x:T) => colType | Promise<colType>,
 }) {
     if (!settings) {
         settings = {};

@@ -1,5 +1,5 @@
 import { itAsync, Done, fitAsync } from "../testHelper.spec";
-import { createData, CategoriesForTesting } from '../RowProvider.spec';
+import { createDataOld, CategoriesForTestingOld } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 import { Entity } from '../../entity';
@@ -16,7 +16,7 @@ describe("data api", () => {
     let context = new Context();
     itAsync("put with validations fails", async () => {
 
-        let c = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
+        let c = await createDataOld(async insert => insert(1, 'noam'), CategoriesForThisTest);
 
         var api = new DataApi(c);
         let t = new TestDataApiResponse();
@@ -37,7 +37,7 @@ describe("data api", () => {
     itAsync("post with validation fails", async () => {
 
 
-        let c = await createData(async () => { }, CategoriesForThisTest);
+        let c = await createDataOld(async () => { }, CategoriesForThisTest);
 
         var api = new DataApi(c);
         let t = new TestDataApiResponse();
@@ -57,7 +57,7 @@ describe("data api", () => {
 
 });
 
-class CategoriesForThisTest extends Entity<number> implements CategoriesForTesting {
+class CategoriesForThisTest extends Entity<number> implements CategoriesForTestingOld {
     id = new NumberColumn();
     categoryName = new StringColumn();
     description = new StringColumn();
