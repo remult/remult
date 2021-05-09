@@ -14,7 +14,7 @@ import { Sort, SortSegment } from "../sort";
 
 export class RepositoryImplementation<T> implements Repository<T>{
     private _helper: SpecificEntityHelper<any, oldEntity<any>>;
-    private _info: EntityFullInfo<any>;
+    private _info: EntityFullInfo<T>;
     constructor(private entity: NewEntity<T>, private context: Context) {
         this._info = createOldEntity(entity);
 
@@ -49,20 +49,20 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return this._helper.findOrCreate(this.translateIterateOptions(options)).then(r => this.mapOldEntityToResult(r))
     }
     lookup(filter: EntityWhere<T>): T {
-        let r = this._helper.lookup(translateEntityWhere(this._info, filter));
+        let r = this._helper.lookup(this.translateEntityWhere(filter));
         if (!r[pojoCacheInEntity]) {
             r[pojoCacheInEntity] = this.mapOldEntityToResult(r);
         }
         return r[pojoCacheInEntity];
     }
     async lookupAsync(filter: EntityWhere<T>): Promise<T> {
-        let r = await this._helper.lookupAsync(translateEntityWhere(this._info, filter));
+        let r = await this._helper.lookupAsync(this.translateEntityWhere(filter));
         if (!r[pojoCacheInEntity]) {
             r[pojoCacheInEntity] = this.mapOldEntityToResult(r);
         }
         return r[pojoCacheInEntity];
     }
-    entityOf<T>(entity: T) {
+    entityOf(entity: T) {
         let x = entity[entityMember];
         if (!x) {
             x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity);
@@ -81,9 +81,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (options) {
             opt = {};
             if (options.where)
-                opt.where = translateEntityWhere(this._info, options.where);
+                opt.where = this.translateEntityWhere(options.where);
             if (options.orderBy)
-                opt.orderBy = translateEntityOrderBy(this._info, options.orderBy)
+                opt.orderBy = this.translateEntityOrderBy(options.orderBy)
         }
         return this._helper.find(opt).then(rows => rows.map(r =>
             this.mapOldEntityToResult(r)
@@ -102,7 +102,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
     async count(where?: EntityWhere<T>): Promise<number> {
-        return this._helper.count(translateEntityWhere(this._info, where));
+        return this._helper.count(this.translateEntityWhere(where));
     }
     async findFirst(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
 
@@ -113,14 +113,14 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (options) {
             opt = {};
             if (typeof options === "function") {
-                opt.where = translateEntityWhere(this._info, options);
+                opt.where = this.translateEntityWhere(options);
             } else {
                 let o = options as IterateOptions<T>;
                 if (o.where) {
-                    opt.where = translateEntityWhere(this._info, o.where);
+                    opt.where = this.translateEntityWhere(o.where);
                 }
                 if (o.orderBy)
-                    opt.orderBy = translateEntityOrderBy(this._info, o.orderBy)
+                    opt.orderBy = this.translateEntityOrderBy(o.orderBy)
                 opt.progress = o.progress;
             }
         }
@@ -135,56 +135,57 @@ export class RepositoryImplementation<T> implements Repository<T>{
     findId(id: any): Promise<T> {
         return this._helper.findId(id).then(r => this.mapOldEntityToResult(r));
     }
-}
-function translateEntityWhere<entityType>(info: EntityFullInfo<entityType>, where: EntityWhere<entityType>): old.EntityWhereItem<oldEntity<any>> {
-    if (!where)
-        return undefined;
-    else
-        return (e: oldEntity<any>) => {
-            let entity = info.createFilterOf(e);
-            if (Array.isArray(where)) {
-                return new AndFilter(...where.map(x => {
-                    if (x === undefined)
-                        return undefined;
-                    let r = x(entity);
+    private translateEntityWhere(where: EntityWhere<T>): old.EntityWhereItem<oldEntity<any>> {
+        if (!where)
+            return undefined;
+        else
+            return (e: oldEntity<any>) => {
+                let entity = this._info.createFilterOf(e);
+                if (Array.isArray(where)) {
+                    return new AndFilter(...where.map(x => {
+                        if (x === undefined)
+                            return undefined;
+                        let r = x(entity);
+                        if (Array.isArray(r))
+                            return new AndFilter(...r);
+                        return r;
+                    }));
+
+                }
+                else if (typeof where === 'function') {
+                    let r = where(entity);
                     if (Array.isArray(r))
                         return new AndFilter(...r);
                     return r;
-                }));
-
+                }
             }
-            else if (typeof where === 'function') {
-                let r = where(entity);
+    }
+    private translateEntityOrderBy(orderBy: EntityOrderBy<T>): old.EntityOrderBy<oldEntity<any>> {
+        if (!orderBy)
+            return undefined;
+        else
+            return (e: oldEntity<any>) => {
+                let entity = this._info.createSortOf(e);
+                let r = orderBy(entity);//
                 if (Array.isArray(r))
-                    return new AndFilter(...r);
-                return r;
+                    return r.map(r => r.__toSegment());
+                else
+                    return [r.__toSegment()];
             }
-        }
+    }
 }
-function translateEntityOrderBy<entityType>(info: EntityFullInfo<entityType>, orderBy: EntityOrderBy<entityType>): old.EntityOrderBy<oldEntity<any>> {
-    if (!orderBy)
-        return undefined;
-    else
-        return (e: oldEntity<any>) => {
-            let entity = info.createSortOf(e);
-            let r = orderBy(entity);//
-            if (Array.isArray(r))
-                return r.map(r => r.__toSegment());
-            else
-                return [r.__toSegment()];
-        }
-}
+
 
 const columnInfo = Symbol("columnInfo");
 const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
 const pojoCacheInEntity = Symbol("pojoCacheInEntity");
-export function createOldEntity(entity: NewEntity<any>) {
+export function createOldEntity<T>(entity: NewEntity<T>) {
     let r: columnInfo[] = Reflect.getMetadata(columnInfo, entity);
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
 
-    return new EntityFullInfo(r, info);
+    return new EntityFullInfo<T>(r, info);
 }
 class EntityOfImpl<T> implements rowHelper<T>{
     constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T) {
