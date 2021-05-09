@@ -58,9 +58,36 @@ export interface Repository<T> {
     delete(entity:T):Promise<T>
 }
 export interface FindOptions<T> {
-
+  /** filters the data
+   * @example
+   * where p => p.price.isGreaterOrEqualTo(5)
+   * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
+   */
+   where?: EntityWhere<T>;
+   /** Determines the order in which the result will be sorted in
+    * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
+    */
+   orderBy?: EntityOrderBy<T>;
+   /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
+    * @example
+    * this.products = await this.context.for(Products).find({
+    *  limit:10,
+    *  page:2
+    * })
+   */
+   limit?: number;
+   /** Determines the page number that will be used to extract the data 
+    * @example
+    * this.products = await this.context.for(Products).find({
+    *  limit:10,
+    *  page:2
+    * })
+   */
+   page?: number;
+   __customFindData?: any;
 
 }
+export declare type EntityOrderBy<t > = (entity: sortOf<T>) => TheSort[] | TheSort;
 export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]));
 
 export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];

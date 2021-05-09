@@ -7,7 +7,7 @@ import { Entity as oldEntity, EntityOptions } from "../entity";
 import { Column as oldColumn, __isGreaterThan } from '../column';
 import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper } from "./remult3";
 import { Context } from "../context";
-import { EntityWhereItem as oldEntityWhereItem } from '../data-interfaces';
+import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
 
 
@@ -28,31 +28,41 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return x;
     }
 
-    delete(entity: T): Promise<T> {
-        throw new Error("Method not implemented.");
+    async delete(entity: T): Promise<T> {
+        return await this.entityOf(entity).Delete();
     }
     async save(entity: T): Promise<T> {
-        let e = await this._helper.create();
-        for (const col of this._info.columns) {
-            e.columns.find(col.key).value = entity[col.key];
-        }
-        await e.save();
-        return entity;
-
+        return await this.entityOf(entity).save();
     }
     find(options?: FindOptions<T>): Promise<T[]> {
-        throw new Error("Method not implemented.");
+        let opt: old.FindOptions<any>;
+        if (options) {
+            opt = {};
+            if (options.where)
+                opt.where = translateEntityWhere(this._info, options.where);
+        }
+        return this._helper.find(opt).then(rows => rows.map(r =>
+            this.mapOldEntityToResult(r)
+        ));
+
     }
+    private mapOldEntityToResult(r: oldEntity<any>) {
+        let x = new this.entity(this.context);
+        x[entityMember] = this._info.createEntityOf(r, x);
+        for (const col of this._info.columns) {
+            x[col.key] = r.columns.find(col.key).value;
+        }
+        return x;
+    }
+
     async count(where?: EntityWhere<T>): Promise<number> {
-
-
         return this._helper.count(translateEntityWhere(this._info, where));
     }
-    findFirst(where: EntityWhere<T>): Promise<T> {
+    async findFirst(where: EntityWhere<T>): Promise<T> {
         throw new Error("Method not implemented.");
     }
     create(): T {
-        let r = new this.entity();
+        let r = new this.entity(this.context);
         r[entityMember] = this._info.createEntityOf(this._helper.create(), r);
         return r;
     }
@@ -60,7 +70,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         throw new Error("Method not implemented.");
     }//
 }
-export function translateEntityWhere<entityType>(info: EntityFullInfo<entityType>, where: EntityWhere<entityType>): oldEntityWhereItem<any> {
+export function translateEntityWhere<entityType>(info: EntityFullInfo<entityType>, where: EntityWhere<entityType>): old.EntityWhereItem<oldEntity<any>> {
     if (!where)
         return undefined;
     else
@@ -122,7 +132,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
         return this.oldEntity.wasChanged();
     }
 }
-export function getEntityOf<T>(item: T):entityOf<T> {
+export function getEntityOf<T>(item: T): entityOf<T> {
     let x = item[entityMember];
     if (!x)
         throw new Error("item " + item + " was not initialized using a context");

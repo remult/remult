@@ -32,6 +32,10 @@ describe("remult-3-basics", () => {
         p.archived = false;
         await c.for(Products).save(p);
         expect(await c.for(Products).count()).toBe(3);
+        let products = await c.for(Products).find({
+            where: x => x.id.isEqualTo(2)
+        });
+        expect(products[0].name).toBe("yael");
     });//
 });
 
