@@ -17,6 +17,12 @@ export class Products {
     availableFrom: Date;
 }
 
+export interface CategoriesForTesting {
+    id: number;
+    categoryName: string;
+    description: string;
+    status: Status;
+}
 @Entity({
     name: 'Categories',
     allowApiCRUD: true
@@ -25,7 +31,7 @@ export class Categories {
     @Column({
         dbName: 'CategoryID'
     })
-    id: Number;
+    id: number;
     @Column()
     categoryName: string;
     @Column()

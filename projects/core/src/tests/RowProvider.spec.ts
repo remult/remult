@@ -27,6 +27,7 @@ import { Validators } from '../validators';
 import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
+import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
 
 
@@ -77,26 +78,36 @@ export async function createDataOld(doInsert: (insert: (id: number, name: string
   return context.for_old(entity);
 }
 export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
-  new(): CategoriesForTestingOld
+  new(): CategoriesForTesting
 }) {
   let context = new ServerContext();
   context.setDataProvider(new InMemoryDataProvider());
   if (!entity)
-    entity = Categories;
+    entity = newCategories;
+  let rep = context.for(entity);
   await doInsert(async (id, name, description, status) => {
 
-    let c: CategoriesForTestingOld = context.for_old(entity).create();
-    c.id.value = id;
-    c.categoryName.value = name;
-    c.description.value = description;
+    let c = rep.create();
+    c.id = id;
+    c.categoryName = name;
+    c.description = description;
     if (status)
-      c.status.value = status;
-    await c.save();
+      c.status = status;
+    await rep.save(c);
 
   });
-  return context.for_old(entity);
+  return rep;
 }
 
+async function insertFourRowsNew() {
+
+  return createData(async i => {
+    await i(1, 'noam', 'x');
+    await i(4, 'yael', 'x');
+    await i(2, 'yoni', 'y');
+    await i(3, 'maayan', 'y');
+  });
+};
 async function insertFourRows() {
 
   return createDataOld(async i => {
@@ -201,8 +212,8 @@ describe("grid filter stuff", () => {
     expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
   });
   itAsync("test in statement", async () => {
-    let c = await insertFourRows();
-    expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
+    let c = await insertFourRowsNew();
+    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
   itAsync("test all rows selected when some rows are outside the scope", async () => {
     let c = await insertFourRows();
@@ -361,7 +372,7 @@ describe("test row provider", () => {
   });
 
   itAsync("test filter", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsNew();
 
     let rows = await c.find();
     expect(rows.length).toBe(4);
@@ -369,20 +380,20 @@ describe("test row provider", () => {
     expect(rows.length).toBe(2);
     rows = await c.find({ where: c => c.id.isEqualTo(4) });
     expect(rows.length).toBe(1);
-    expect(rows[0].categoryName.value).toBe('yael');
+    expect(rows[0].categoryName).toBe('yael');
     rows = await c.find({ where: c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
+    expect(rows[0].id).toBe(2);
     rows = await c.find({
       where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni'), undefined]
     });
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
+    expect(rows[0].id).toBe(2);
     rows = await c.find({
       where: c => [c.description.isEqualTo('y'), c.categoryName.isEqualTo('yoni')]
     });
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
+    expect(rows[0].id).toBe(2);
   });
   itAsync("test filter packer", async () => {
     let c = await insertFourRows();
@@ -420,18 +431,18 @@ describe("test row provider", () => {
 
   });
   itAsync("sort", async () => {
-    let c = await insertFourRows();
-    let rows = await c.find({ orderBy: c => new Sort({ column: c.id }) });
-    expect(rows[0].id.value).toBe(1);
-    expect(rows[1].id.value).toBe(2);
-    expect(rows[2].id.value).toBe(3);
-    expect(rows[3].id.value).toBe(4);
+    let c = await insertFourRowsNew();
+    let rows = await c.find({ orderBy: c => c.id });
+    expect(rows[0].id).toBe(1);
+    expect(rows[1].id).toBe(2);
+    expect(rows[2].id).toBe(3);
+    expect(rows[3].id).toBe(4);
 
-    rows = await c.find({ orderBy: c => new Sort({ column: c.categoryName, descending: true }) });
-    expect(rows[0].id.value).toBe(2);
-    expect(rows[1].id.value).toBe(4);
-    expect(rows[2].id.value).toBe(1);
-    expect(rows[3].id.value).toBe(3);
+    rows = await c.find({ orderBy: c => c.categoryName.descending });
+    expect(rows[0].id).toBe(2);
+    expect(rows[1].id).toBe(4);
+    expect(rows[2].id).toBe(1);
+    expect(rows[3].id).toBe(3);
   });
   itAsync("counts", async () => {
     let c = await insertFourRows();
@@ -1206,7 +1217,7 @@ describe("test datetime column", () => {
     //
 
   });
-  
+
 });
 describe("Test char date storage", () => {
   let x = new CharDateStorage();
@@ -1297,8 +1308,8 @@ describe("context", () => {
     expect(c.user.roles.length).toBe(0);
 
   });
-  it("circular reference entity works",()=>{
-    var c= new Context();
+  it("circular reference entity works", () => {
+    var c = new Context();
     var r = c.for_old(EntityA).create();
   });
 

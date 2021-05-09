@@ -2,6 +2,7 @@ import { ColumnSettings } from "../column-interfaces";
 import { Context, IterateToArrayOptions, UserInfo } from "../context";
 import { EntityOptions } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
+import { Sort, SortSegment } from "../sort";
 
 
 export class IdEntity {
@@ -28,7 +29,8 @@ export type sortOf<Type> = {
     [Properties in keyof Type]: TheSort
 }
 export interface TheSort {
-    descending: TheSort,
+    descending: TheSort;
+    __toSegment(): SortSegment;
 }
 export type idOf<Type> = {
     [Properties in keyof Type]: IdDefs

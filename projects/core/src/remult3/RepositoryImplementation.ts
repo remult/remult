@@ -5,10 +5,11 @@ import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
 import { Column as oldColumn, __isGreaterThan } from '../column';
-import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult } from "./remult3";
+import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy } from "./remult3";
 import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
+import { Sort, SortSegment } from "../sort";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -81,6 +82,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
             opt = {};
             if (options.where)
                 opt.where = translateEntityWhere(this._info, options.where);
+            if (options.orderBy)
+                opt.orderBy = translateEntityOrderBy(this._info, options.orderBy)
         }
         return this._helper.find(opt).then(rows => rows.map(r =>
             this.mapOldEntityToResult(r)
@@ -116,6 +119,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
                 if (o.where) {
                     opt.where = translateEntityWhere(this._info, o.where);
                 }
+                if (o.orderBy)
+                    opt.orderBy = translateEntityOrderBy(this._info, o.orderBy)
                 opt.progress = o.progress;
             }
         }
@@ -131,7 +136,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return this._helper.findId(id).then(r => this.mapOldEntityToResult(r));
     }
 }
-export function translateEntityWhere<entityType>(info: EntityFullInfo<entityType>, where: EntityWhere<entityType>): old.EntityWhereItem<oldEntity<any>> {
+function translateEntityWhere<entityType>(info: EntityFullInfo<entityType>, where: EntityWhere<entityType>): old.EntityWhereItem<oldEntity<any>> {
     if (!where)
         return undefined;
     else
@@ -154,6 +159,19 @@ export function translateEntityWhere<entityType>(info: EntityFullInfo<entityType
                     return new AndFilter(...r);
                 return r;
             }
+        }
+}
+function translateEntityOrderBy<entityType>(info: EntityFullInfo<entityType>, orderBy: EntityOrderBy<entityType>): old.EntityOrderBy<oldEntity<any>> {
+    if (!orderBy)
+        return undefined;
+    else
+        return (e: oldEntity<any>) => {
+            let entity = info.createSortOf(e);
+            let r = orderBy(entity);//
+            if (Array.isArray(r))
+                return r.map(r => r.__toSegment());
+            else
+                return [r.__toSegment()];
         }
 }
 
@@ -243,6 +261,29 @@ class EntityFullInfo<T> {
         }
         return r as filterOf<T>;
     }
+    createSortOf(e: oldEntity): sortOf<T> {
+        let r = {};
+        for (const c of this.columns) {
+            r[c.key] = new sortHelper(e.columns.find(c.key));
+        }
+        return r as sortOf<T>;
+    }
+}
+class sortHelper implements TheSort {
+    constructor(private col: oldColumn, private _descending = false) {
+
+    }
+    get descending(): TheSort {
+        return new sortHelper(this.col, !this._descending);
+    }
+    __toSegment(): SortSegment {
+        return {
+            column: this.col,
+            descending: this._descending
+        }
+    }
+
+
 }
 class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
     constructor(private col: oldColumn) {
@@ -262,11 +303,11 @@ class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
 
 
 
-export function Column<T = any,colType=any>(settings?: ColumnSettings & {
+export function Column<T = any, colType = any>(settings?: ColumnSettings & {
     allowApiUpdate1?: ((x: entityOf<T>) => boolean),
     validate1?: (x: column<any>) => void,
     defaultValue1?: (x: T) => void,
-    serverExpression1?: (x:T) => colType | Promise<colType>,
+    serverExpression1?: (x: T) => colType | Promise<colType>,
 }) {
     if (!settings) {
         settings = {};
