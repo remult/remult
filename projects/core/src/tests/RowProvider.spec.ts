@@ -331,22 +331,22 @@ describe("Closed List  column", () => {
 
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Context().for_old(Categories).create();
-    expect(cat.defs.name).toBe('Categories');
+    var cat = new Context().for(newCategories).create();
+    expect(cat._.defs.name).toBe('Categories');
   });
   itAsync("Insert", async () => {
 
-    let forCat = await createDataOld(async x => { });
+    let forCat = await createData(async x => { });
     let rows = await forCat.find();
     expect(rows.length).toBe(0);
     let c = forCat.create();
-    c.id.value = 1;
-    c.categoryName.value = 'noam';
-    await c.save();
+    c.id = 1;
+    c.categoryName = 'noam';
+    await c._.save();
     rows = await forCat.find();
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(1);
-    expect(rows[0].categoryName.value).toBe('noam');
+    expect(rows[0].id).toBe(1);
+    expect(rows[0].categoryName).toBe('noam');
   });
 
 

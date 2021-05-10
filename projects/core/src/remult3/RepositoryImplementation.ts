@@ -22,7 +22,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         //@ts-ignore
         this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
     }
-  
+
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T> {
         let r = this._helper.iterate(this.translateIterateOptions(options));
         return {
@@ -134,7 +134,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     create(): T {
         let r = new this.entity(this.context);
-        r[entityMember] = this._info.createEntityOf(this._helper.create(), r);
+        this.entityOf(r);
         return r;
     }
     findId(id: any): Promise<T> {
@@ -201,10 +201,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
     packWhere(where: EntityWhere<T>) {
-        return packWhere(this._helper.create(),this.translateEntityWhere(where));
+        return packWhere(this._helper.create(), this.translateEntityWhere(where));
     }
     unpackWhere(packed: any): Filter {
-        return unpackWhere(this._helper.create(),packed);
+        return unpackWhere(this._helper.create(), packed);
     }
 }
 
@@ -225,6 +225,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
     constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T) {
 
     }
+    defs = { name: this.oldEntity.defs.name };
     private _columns: entityOf<T>;
     get columns(): entityOf<T> {
         if (!this._columns) {

@@ -43,17 +43,20 @@ export async function serverInit() {
             columnsB: columnsOfType.get(b.prototype),
 
         })
-    let x = new noam();
-    x["run"] = () => { return "yael" };
-    console.log(x.run());
+    let c = new child();
+    console.log(c instanceof entityBase);
+
+
     return r;
 
 }
 
-class noam {
-    run=()=> {
-        return "noam";
-    }
+class entityBase {
+
+}
+@Entity({name:'x'})
+class child extends entityBase {
+
 }
 
 @Entity({ name: 'a' })

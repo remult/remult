@@ -20,6 +20,9 @@ export interface rowHelper<T> {
     isNew();
     wasChanged();
     columns: entityOf<T>;
+    defs:{
+        name:string
+    }
 }
 export type entityOf<Type> = {
     [Properties in keyof Type]: column<Type[Properties]>
@@ -117,7 +120,7 @@ export class ManyToOne<T> {
     }
     item: T;
 }
-export class BaseEntity {
+export class EntityBase {
     _: rowHelper<this>;
 }
 
@@ -160,8 +163,3 @@ export interface IteratableResult<T> {
         next: () => Promise<IteratorResult<T>>;
     };
 }
-export class EntityBase {
-    _: entityOf<this>;
-}
-
-
