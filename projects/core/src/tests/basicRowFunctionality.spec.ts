@@ -163,40 +163,40 @@ describe('Test basic row functionality', () => {
     expect(y.id).toBe(1);
     expect(y.categoryName).toBe('noam');
   });
-  itAsync("json name is important", async () => {
-    let ctx = new Context().for_old(Categories);
-    let x = ctx.create();
-    x.id.value = 1;
-    x.categoryName.defs.key = 'xx';
-    x.categoryName.value = 'noam';
-    let y = ctx.toApiPojo(x);;
-    expect(y.id).toBe(1);
-    expect(y.xx).toBe('noam');
-  });
-  itAsync("json name is important 1", async () => {
-    let ctx = new Context().for_old(myTestEntity);
-    let x = ctx.create();
-    x.id.value = 1;
-    expect(x.name1.defs.key).toBe('name');
-    x.name1.value = 'noam';
-    let y = ctx.toApiPojo(x);
-    expect(y.id).toBe(1);
-    expect(y.name).toBe('noam', JSON.stringify(y));
-    y.name = 'yael';
-    new Context().for_old(myTestEntity)._updateEntityBasedOnApi(x, y);
+  // itAsync("json name is important", async () => {
+  //   let ctx = new Context().for(newCategories);
+  //   let x = ctx.create();
+  //   x.id = 1;
+  //   x.categoryName.defs.key = 'xx';
+  //   x.categoryName = 'noam';
+  //   let y = x._.toApiPojo();;
+  //   expect(y.id).toBe(1);
+  //   expect(y.xx).toBe('noam');
+  // });
+  // itAsync("json name is important 1", async () => {
+  //   let ctx = new Context().for_old(myTestEntity);
+  //   let x = ctx.create();
+  //   x.id.value = 1;
+  //   expect(x.name1.defs.key).toBe('name');
+  //   x.name1.value = 'noam';
+  //   let y = ctx.toApiPojo(x);
+  //   expect(y.id).toBe(1);
+  //   expect(y.name).toBe('noam', JSON.stringify(y));
+  //   y.name = 'yael';
+  //   new Context().for_old(myTestEntity)._updateEntityBasedOnApi(x, y);
 
-    expect(x.name1.value).toBe('yael');
+  //   expect(x.name1.value).toBe('yael');
 
-  });
-  it("json name is important", () => {
-    let x = new myTestEntity();
-    x.id.value = 1;
-    x.name1.value = 'a';
-    var y = new myTestEntity();
-    expect(x.columns.find(y.name1).value).toBe('a');
+  // });
+  // it("json name is important", () => {
+  //   let x = new myTestEntity();
+  //   x.id.value = 1;
+  //   x.name1.value = 'a';
+  //   var y = new myTestEntity();
+  //   expect(x.columns.find(y.name1).value).toBe('a');
 
 
-  });
+  // });
 
 });
 @EntityClass
@@ -1064,14 +1064,14 @@ describe("data api", () => {
   itAsync("row reload", async () => {
     let context = new Context();
 
-    let c = await createDataOld(async insert => await insert(1, 'noam'), Categories);
+    let c = await createData(async insert => await insert(1, 'noam'));
     let a = await c.findId(1);
     let b = await c.findId(1);
-    a.categoryName.value = "yael";
-    await a.save();
-    expect(b.categoryName.value).toBe('noam');
-    await b.reload();
-    expect(b.categoryName.value).toBe('yael');
+    a.categoryName = "yael";
+    await a._.save();
+    expect(b.categoryName).toBe('noam');
+    await b._.reload();
+    expect(b.categoryName).toBe('yael');
   });
 
   itAsync("put updates", async () => {
