@@ -63,6 +63,7 @@ export interface Repository<T> {
     findId(id: any): Promise<T>;
     save(entity: T): Promise<T>;
     delete(entity: T): Promise<T>;
+    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
 }
 export interface FindOptions<T> {
     /** filters the data
@@ -99,17 +100,7 @@ export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityT
 
 export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
 
-export class OneToMany<T> {
-    constructor(rep: Repository<T>, options: FindOptions<T>) {
 
-    }
-    create(): T {
-        return undefined;
-    }
-    items: T[];
-
-
-}
 export class ManyToOne<T> {
     constructor(rep: Repository<T>, where: EntityWhere<T>) {
 
@@ -161,3 +152,8 @@ export interface IteratableResult<T> {
         next: () => Promise<IteratorResult<T>>;
     };
 }
+export class EntityBase{
+    _:entityOf<this>;
+}
+
+

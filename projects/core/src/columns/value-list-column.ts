@@ -3,7 +3,8 @@ import { ColumnSettings, ValueListItem } from "../column-interfaces";
 import { Entity } from "../entity";
 import { StringColumn } from "./string-column";
 import { SpecificEntityHelper } from "../context";
-import { EntityWhere, FindOptions, updateEntityBasedOnWhere } from "../data-interfaces";
+import { EntityWhere, updateEntityBasedOnWhere } from "../data-interfaces";
+import { FindOptions, Repository } from "../remult3";
 
 
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
@@ -49,7 +50,7 @@ export class ValueListTypeInfo<T extends ValueListItem>{
           s.id = member;
         if (s.caption === undefined)
           s.caption = makeTitle(member);
-        if (typeof s.id ==='number')
+        if (typeof s.id === 'number')
           this.isNumeric = true;
         this.byIdMap.set(s.id, s);
         this.values.push(s);
@@ -97,8 +98,8 @@ export class ManyToOne<T extends Entity>{
   }
 }
 
-export class OneToMany<T extends Entity>{
-  constructor(private provider: SpecificEntityHelper<string, T>,
+export class OneToMany<T>{
+  constructor(private provider: Repository<T>,
     private settings?: {
       create?: (newItem: T) => void,
     } & FindOptions<T>) {
@@ -131,7 +132,7 @@ export class OneToMany<T extends Entity>{
   }
   create(): T {
     let r = this.provider.create();
-    updateEntityBasedOnWhere(this.settings.where, r);
+    this.provider.updateEntityBasedOnWhere(this.settings.where, r);
     if (this.settings.create)
       this.settings.create(r);
     return r;

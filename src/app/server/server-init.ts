@@ -7,7 +7,7 @@ import * as passwordHash from 'password-hash';
 
 import '../app.module';
 import { SqlDatabase } from '@remult/core';
-import { Column,  Entity, entityInfo,columnsOfType } from '../../../projects/core/src/remult3';
+import { Column, Entity, entityInfo, columnsOfType } from '../../../projects/core/src/remult3';
 
 
 
@@ -36,16 +36,24 @@ export async function serverInit() {
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
+    if (false)
+        console.log({
+            bp: b.prototype,
+            columnsA: columnsOfType.get(a.prototype),
+            columnsB: columnsOfType.get(b.prototype),
 
-    console.log({
-        bp:b.prototype,
-        columnsA:columnsOfType.get(a.prototype),
-        columnsB:columnsOfType.get(b.prototype),
-
-    })
-   
+        })
+    let x = new noam();
+    x["run"] = () => { return "yael" };
+    console.log(x.run());
     return r;
 
+}
+
+class noam {
+    run=()=> {
+        return "noam";
+    }
 }
 
 @Entity({ name: 'a' })
@@ -53,7 +61,7 @@ class a {
     @Column()
     a: string;
     @Column()
-    a1:string;
+    a1: string;
 }
 @Entity({ name: 'b' })
 class b extends a {

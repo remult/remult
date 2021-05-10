@@ -5,7 +5,7 @@ import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
 import { Column as oldColumn, __isGreaterThan, __isLessOrEqualTo } from '../column';
-import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy } from "./remult3";
+import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase } from "./remult3";
 import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
@@ -66,6 +66,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
         let x = entity[entityMember];
         if (!x) {
             x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity);
+            if (entity instanceof EntityBase) {
+                entity._ = x;
+            }
         }
         return x;
     }
@@ -135,11 +138,11 @@ export class RepositoryImplementation<T> implements Repository<T>{
     findId(id: any): Promise<T> {
         return this._helper.findId(id).then(r => this.mapOldEntityToResult(r));
     }
-    private translateEntityWhere(where: EntityWhere<T>): old.EntityWhereItem<oldEntity<any>> {
+    private translateEntityWhere(where: EntityWhere<T>): (e: oldEntity<any>) => Filter {
         if (!where)
             return undefined;
         else
-            return (e: oldEntity<any>) => {
+            return (e: oldEntity<any>): Filter => {
                 let entity = this._info.createFilterOf(e);
                 if (Array.isArray(where)) {
                     return new AndFilter(...where.map(x => {
@@ -173,6 +176,28 @@ export class RepositoryImplementation<T> implements Repository<T>{
                     return [r.__toSegment()];
             }
     }
+    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T) {
+        let w = this.translateEntityWhere(where)(this._helper.create());
+
+        if (w) {
+            w.__applyToConsumer({
+                containsCaseInsensitive: () => { },
+                isDifferentFrom: () => { },
+                isEqualTo: (col, val) => {
+                    r[col.defs.key] = val;
+                },
+                isGreaterOrEqualTo: () => { },
+                isGreaterThan: () => { },
+                isIn: () => { },
+                isLessOrEqualTo: () => { },
+                isLessThan: () => { },
+                isNotNull: () => { },
+                isNull: () => { },
+                startsWith: () => { },
+                or: () => { }
+            });
+        }
+    }
 }
 
 
@@ -180,9 +205,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
 const pojoCacheInEntity = Symbol("pojoCacheInEntity");
-export const columnsOfType = new Map<any,columnInfo[]>();
+export const columnsOfType = new Map<any, columnInfo[]>();
 export function createOldEntity<T>(entity: NewEntity<T>) {
-    let r: columnInfo[] = columnsOfType.get( entity.prototype);
+    let r: columnInfo[] = columnsOfType.get(entity.prototype);
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
 
@@ -349,20 +374,19 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings & {
         if (!settings.key) {
             settings.key = key;
         }
-        
+
         let names: columnInfo[] = columnsOfType.get(target);
         if (!names) {
             names = [];
-            columnsOfType.set(target,names)
+            columnsOfType.set(target, names)
         }
-        
+
         let type = Reflect.getMetadata("design:type", target, key);
         names.push({
             key,
             settings,
             type
         });
-        console.log({ target, key });
 
     }
 

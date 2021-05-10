@@ -7,7 +7,7 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { LookupColumn, OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
+import { LookupColumn, OneToMany , ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
 import { Sort } from '../sort';
 
 import { NumberColumn } from '../columns/number-column';
@@ -29,6 +29,7 @@ import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf } from '../remult3/RepositoryImplementation';
+
 
 
 
@@ -632,40 +633,40 @@ describe("test row provider", () => {
     expect(CategoriesWithValidation.orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
   });
   itAsync("test that it fails nicely", async () => {
-    let c = (await insertFourRowsOld()).create();
-    c.id.value = 1;
-    c.categoryName.value = 'bla bla';
+    let c = (await insertFourRows()).create();
+    c.id = 1;
+    c.categoryName = 'bla bla';
     try {
-      await c.save();
+      await c._.save();
       fail("Shouldnt have reached this");
     }
     catch (err) {
 
     }
-    expect(c.categoryName.value).toBe('bla bla');
+    expect(c.categoryName).toBe('bla bla');
   });
   itAsync("update should fail nicely", async () => {
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for_old(Categories).create();
-    c.id.value = 1;
-    c.categoryName.value = 'noam';
-    await c.save();
-    c.categoryName.value = 'yael';
+    let c = cont.for(newCategories).create();
+    c.id = 1;
+    c.categoryName = 'noam';
+    await cont.for(newCategories).save( c);
+    c.categoryName = 'yael';
     try {
-      await c.save();
+      await cont.for(newCategories).save( c);
       fail("shouldnt be here");
     } catch (err) {
-      expect(c.categoryName.value).toBe('yael');
+      expect(c.categoryName).toBe('yael');
     }
   });
   itAsync("filter should return none", async () => {
 
-    let c = await insertFourRowsOld();
+    let c = await insertFourRows();
 
 
     let r = await c.lookupAsync(c => c.categoryName.isEqualTo(undefined));
-    expect(r.categoryName.value).toBe(undefined);
+    expect(r.categoryName).toBe(undefined);
 
   });
   itAsync("lookup with undefined doesn't fetch", async () => {
@@ -697,15 +698,15 @@ describe("test row provider", () => {
   itAsync("lookup return the same new row", async () => {
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for_old(Categories);
+    let c = cont.for(newCategories);
     var nc = new NumberColumn();
     nc.value = 1;
-    let r = c.lookup(nc);
-    expect(r.isNew()).toBe(true);
-    r.id.value = 5;
-    expect(c.lookup(nc).id.value).toBe(5);
-    r = await c.lookupAsync(nc);
-    expect(r.id.value).toBe(5);
+    let r = c.lookup(x=>x.id.isEqualTo(nc.value));
+    expect(getEntityOf(r).isNew()).toBe(true);
+    r.id = 5;
+    expect(c.lookup(x=>x.id.isEqualTo(nc.value)).id).toBe(5);
+    r = await c.lookupAsync(x=>x.id.isEqualTo(nc.value));
+    expect(r.id).toBe(5);
 
   });
   itAsync("lookup updates the data", async () => {
@@ -1249,17 +1250,17 @@ describe("value list column without id and caption", () => {
 describe("relation", () => {
   itAsync("should get values", async () => {
 
-    let c = await insertFourRowsOld();
+    let c = await insertFourRows();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
     let rows = await r.waitLoad();
     expect(rows.length).toBe(2);
     let n = r.create();
-    expect(n.description.value).toBe("x");
+    expect(n.description).toBe("x");
   });
   itAsync("should have an array and lazy load it", async () => {
-    let c = await insertFourRowsOld();
+    let c = await insertFourRows();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
@@ -1332,6 +1333,7 @@ class myDp extends ArrayEntityDataProvider {
     throw new Error("what");
   }
 }
+
 
 
 class testMyColumn extends StringColumn {
