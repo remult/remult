@@ -100,10 +100,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
             return undefined;
         let x = new this.entity(this.context);
         x[entityMember] = this._info.createEntityOf(r, x, this.context);
+        x[entityMember].updateEntityBasedOnOldEntity();
 
-        for (const col of this._info.columns) {
-            x[col.key] = r.columns.find(col.key).value;
-        }
         if (x instanceof EntityBase)
             x._ = x[entityMember];
         return x;
@@ -228,6 +226,11 @@ class EntityOfImpl<T> implements rowHelper<T>{
     constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context) {
 
     }
+    async reload(): Promise<void> {
+        let r = await this.oldEntity.reload();
+        this.updateEntityBasedOnOldEntity();
+
+    }
     toApiPojo() {
         this.updateOldEntityBasedOnEntity();
 
@@ -240,6 +243,11 @@ class EntityOfImpl<T> implements rowHelper<T>{
 
 
     }
+    updateEntityBasedOnOldEntity() {
+        for (const col of this.info.columns) {
+            this.entity[col.key] = this.oldEntity.columns.find(col.key).value;
+        }
+    }
     defs = { name: this.oldEntity.defs.name };
     private _columns: entityOf<T>;
     get columns(): entityOf<T> {
@@ -248,7 +256,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
                 find: (c: column<any>) => r[c.key]
             };
             for (const c of this.info.columns) {
-                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key),this.entity);
+                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key), this.entity);
             }
 
             this._columns = r as unknown as entityOf<T>;
@@ -279,7 +287,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
     }
 }
 export class columnBridge implements column<any>{
-    constructor(private col: oldColumn,private item:any) {
+    constructor(private col: oldColumn, private item: any) {
 
     }
     get caption(): string { return this.col.defs.caption }
@@ -287,7 +295,7 @@ export class columnBridge implements column<any>{
     get error(): string { return this.col.validationError }
     get displayValue(): string { return this.col.displayValue };
     get inputValue(): string { return this.col.inputValue };
-    get value(): any { return this.item[this.col.defs.key]  };
+    get value(): any { return this.item[this.col.defs.key] };
     get originalValue(): any { return this.col.originalValue };
     get key(): string { return this.col.defs.key };
     wasChanged(): boolean {

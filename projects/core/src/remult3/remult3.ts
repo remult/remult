@@ -11,15 +11,17 @@ export class IdEntity {
 /*
 [] think of id entity.
 [] rename `name` to `key` in Entity Settings
+[] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
 */
 
 
 export interface rowHelper<T> {
-    save():Promise<T>;
-    delete():Promise<void>;
-    isNew():boolean;
-    wasChanged():boolean;
-    toApiPojo():any;
+    save(): Promise<T>;
+    reload(): Promise<void>;
+    delete(): Promise<void>;
+    isNew(): boolean;
+    wasChanged(): boolean;
+    toApiPojo(): any;
     columns: entityOf<T>;
     defs: {
         name: string
@@ -47,7 +49,7 @@ export interface IdDefs {
 }
 
 export interface column<T> {
-    key:string;
+    key: string;
     caption: string;
     inputType: string;
     error: string;
