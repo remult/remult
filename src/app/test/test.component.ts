@@ -28,7 +28,7 @@ this.loadTasks();
     this.newTask = this.context.for(tasks).create();
   }
   async loadTasks() {
-    this.tasks = await this.context.for(tasks).find({where:t=>t.completed.isDifferentFrom(true)});
+    
   }
 
 }

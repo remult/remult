@@ -4,7 +4,7 @@ import { DateColumn } from "../columns/date-column";
 import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
-import { Column as oldColumn, __isGreaterThan } from '../column';
+import { Column as oldColumn, __isGreaterThan, __isLessOrEqualTo } from '../column';
 import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy } from "./remult3";
 import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
@@ -62,7 +62,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
         return r[pojoCacheInEntity];
     }
-    entityOf(entity: T) {
+    entityOf(entity: T): rowHelper<T> {
         let x = entity[entityMember];
         if (!x) {
             x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity);
@@ -71,7 +71,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
     async delete(entity: T): Promise<T> {
-        return await this.entityOf(entity).Delete();
+        return await this.entityOf(entity).delete();
     }
     async save(entity: T): Promise<T> {
         return await this.entityOf(entity).save();
@@ -176,12 +176,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
 }
 
 
-const columnInfo = Symbol("columnInfo");
-const entityInfo = Symbol("entityInfo");
+
+export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
 const pojoCacheInEntity = Symbol("pojoCacheInEntity");
+export const columnsOfType = new Map<any,columnInfo[]>();
 export function createOldEntity<T>(entity: NewEntity<T>) {
-    let r: columnInfo[] = Reflect.getMetadata(columnInfo, entity);
+    let r: columnInfo[] = columnsOfType.get( entity.prototype);
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
 
@@ -190,6 +191,17 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
 class EntityOfImpl<T> implements rowHelper<T>{
     constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T) {
 
+    }
+    private _columns: entityOf<T>;
+    get columns(): entityOf<T> {
+        if (!this._columns) {
+            let r = {};
+            for (const c of this.info.columns) {
+                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key));
+            }
+            this._columns = r as entityOf<T>;
+        }
+        return this._columns;
     }
     async save() {
         this.updateOldEntityBasedOnEntity();
@@ -213,7 +225,23 @@ class EntityOfImpl<T> implements rowHelper<T>{
         return this.oldEntity.wasChanged();
     }
 }
-export function getEntityOf<T>(item: T): entityOf<T> {
+export class columnBridge implements column<any>{
+    constructor(private col: oldColumn) {
+
+    }
+    get caption(): string { return this.col.defs.caption }
+    get inputType(): string { return this.col.defs.inputType }
+    get error(): string { return this.col.validationError }
+    get displayValue(): string { return this.col.displayValue };
+    get inputValue(): string { return this.col.inputValue };
+    get value(): any { return this.col.value };
+    get originalValue(): any { return this.col.originalValue };
+    wasChanged(): boolean {
+        return this.col.wasChanged();
+    }
+
+}
+export function getEntityOf<T>(item: T): rowHelper<T> {
     let x = item[entityMember];
     if (!x)
         throw new Error("item " + item + " was not initialized using a context");
@@ -290,6 +318,9 @@ class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
     constructor(private col: oldColumn) {
 
     }
+    isLessOrEqualTo(val: any): Filter {
+        return __isLessOrEqualTo(this.col, val);
+    }
     isGreaterThan(val: any): Filter {
         return __isGreaterThan(this.col, val);
     }
@@ -318,17 +349,20 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings & {
         if (!settings.key) {
             settings.key = key;
         }
-        let names: columnInfo[] = Reflect.getMetadata(columnInfo, target.constructor);
+        
+        let names: columnInfo[] = columnsOfType.get(target);
         if (!names) {
             names = [];
-            Reflect.defineMetadata(columnInfo, names, target.constructor);
+            columnsOfType.set(target,names)
         }
+        
         let type = Reflect.getMetadata("design:type", target, key);
         names.push({
             key,
             settings,
             type
         });
+        console.log({ target, key });
 
     }
 

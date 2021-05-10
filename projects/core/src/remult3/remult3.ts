@@ -19,10 +19,11 @@ export interface rowHelper<T> {
     delete();
     isNew();
     wasChanged();
+    columns:entityOf<T>;
 }
 export type entityOf<Type> = {
     [Properties in keyof Type]: column<Type[Properties]>
-} & rowHelper<Type>
+} 
 
 
 export type sortOf<Type> = {
@@ -131,6 +132,7 @@ export interface filterOptions<x> {
 }
 
 export interface comparableFilterItem<x> extends filterOptions<x> {
+    isLessOrEqualTo(val: x): Filter ;
     isGreaterThan(val: x): Filter;
 }
 export interface supportsContains<x> extends filterOptions<x> {

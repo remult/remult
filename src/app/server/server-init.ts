@@ -7,8 +7,8 @@ import * as passwordHash from 'password-hash';
 
 import '../app.module';
 import { SqlDatabase } from '@remult/core';
-import { createOldEntity } from '../../../projects/core/src/remult3';
-import { Products } from '../../../projects/core/src/tests/remult-3-entities';
+import { Column,  Entity, entityInfo,columnsOfType } from '../../../projects/core/src/remult3';
+
 
 
 
@@ -35,9 +35,28 @@ export async function serverInit() {
         ssl: ssl
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
- //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
+    //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
 
-    createOldEntity(Products)
- return r;
+    console.log({
+        bp:b.prototype,
+        columnsA:columnsOfType.get(a.prototype),
+        columnsB:columnsOfType.get(b.prototype),
 
+    })
+   
+    return r;
+
+}
+
+@Entity({ name: 'a' })
+class a {
+    @Column()
+    a: string;
+    @Column()
+    a1:string;
+}
+@Entity({ name: 'b' })
+class b extends a {
+    @Column()
+    b: string;
 }

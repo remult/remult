@@ -28,6 +28,7 @@ import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettin
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
+import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf } from '../remult3/RepositoryImplementation';
 
 
 
@@ -99,7 +100,7 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
   return rep;
 }
 
-async function insertFourRowsNew() {
+async function insertFourRows() {
 
   return createData(async i => {
     await i(1, 'noam', 'x');
@@ -108,7 +109,7 @@ async function insertFourRowsNew() {
     await i(3, 'maayan', 'y');
   });
 };
-async function insertFourRows() {
+async function insertFourRowsOld() {
 
   return createDataOld(async i => {
     await i(1, 'noam', 'x');
@@ -119,7 +120,7 @@ async function insertFourRows() {
 };
 describe("grid filter stuff", () => {
   itAsync("test filter works", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
@@ -134,7 +135,7 @@ describe("grid filter stuff", () => {
 
   });
   itAsync("test filter works without the get statement", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
 
       orderBy: c => new Sort({ column: c.id }),
@@ -149,7 +150,7 @@ describe("grid filter stuff", () => {
 
   });
   itAsync("test filter works with user filter", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
@@ -194,7 +195,7 @@ describe("grid filter stuff", () => {
   });
 
   itAsync("test filter works with selected rows", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
@@ -212,11 +213,11 @@ describe("grid filter stuff", () => {
     expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
   });
   itAsync("test in statement", async () => {
-    let c = await insertFourRowsNew();
+    let c = await insertFourRows();
     expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
   itAsync("test all rows selected when some rows are outside the scope", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
@@ -255,7 +256,7 @@ describe("grid filter stuff", () => {
 
   });
   itAsync("test select rows in page is not select all", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id }),
@@ -275,7 +276,7 @@ describe("grid filter stuff", () => {
     expect(await c.count(w)).toBe(3, 'rows in count');
   });
   itAsync("select select row by row when all rows are in view", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
       knowTotalRows: true,
       get: {
@@ -372,7 +373,7 @@ describe("test row provider", () => {
   });
 
   itAsync("test filter", async () => {
-    let c = await insertFourRowsNew();
+    let c = await insertFourRows();
 
     let rows = await c.find();
     expect(rows.length).toBe(4);
@@ -396,7 +397,7 @@ describe("test row provider", () => {
     expect(rows[0].id).toBe(2);
   });
   itAsync("test filter packer", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let rows = await c.find();
     expect(rows.length).toBe(4);
 
@@ -416,7 +417,7 @@ describe("test row provider", () => {
 
   });
   itAsync("test in filter packer", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let rows = await c.find();
     expect(rows.length).toBe(4);
 
@@ -431,7 +432,7 @@ describe("test row provider", () => {
 
   });
   itAsync("sort", async () => {
-    let c = await insertFourRowsNew();
+    let c = await insertFourRows();
     let rows = await c.find({ orderBy: c => c.id });
     expect(rows[0].id).toBe(1);
     expect(rows[1].id).toBe(2);
@@ -455,7 +456,7 @@ describe("test row provider", () => {
     expect(count).toBe(2);
   });
   itAsync("test grid update", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let ds = new GridSettings(c, {
       get: {
         orderBy: c => new Sort({ column: c.id })
@@ -468,26 +469,7 @@ describe("test row provider", () => {
     await ds.items[0].save();
     expect(ds.items[0].categoryName.value).toBe('noam honig');
   });
-  itAsync("Test Validation,", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for_old(class extends Categories {
-      a = new StringColumn({
-        validate: Validators.required
-      })
-    });
-    var cat = c.create();
-    cat.a.value = '';
-    var saved = false;
-    try {
-      await cat.save();
-      saved = true;
-    }
-    catch (err) {
-      expect(cat.a.validationError).toEqual("Should not be empty");
-    }
-    expect(saved).toBe(false);
 
-  });
   itAsync("Test Validation 2", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
     var c = context.for_old(class extends Categories {
@@ -650,7 +632,7 @@ describe("test row provider", () => {
     expect(CategoriesWithValidation.orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
   });
   itAsync("test that it fails nicely", async () => {
-    let c = (await insertFourRows()).create();
+    let c = (await insertFourRowsOld()).create();
     c.id.value = 1;
     c.categoryName.value = 'bla bla';
     try {
@@ -679,7 +661,7 @@ describe("test row provider", () => {
   });
   itAsync("filter should return none", async () => {
 
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
 
 
     let r = await c.lookupAsync(c => c.categoryName.isEqualTo(undefined));
@@ -1267,7 +1249,7 @@ describe("value list column without id and caption", () => {
 describe("relation", () => {
   itAsync("should get values", async () => {
 
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
@@ -1277,7 +1259,7 @@ describe("relation", () => {
     expect(n.description.value).toBe("x");
   });
   itAsync("should have an array and lazy load it", async () => {
-    let c = await insertFourRows();
+    let c = await insertFourRowsOld();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
@@ -1313,6 +1295,33 @@ describe("context", () => {
     var r = c.for_old(EntityA).create();
   });
 
+});
+
+@EntityDecorator<TestCategories1>({ name: '123' })
+class TestCategories1 extends newCategories {
+  @ColumnDecorator({
+    validate: Validators.required
+  })
+  a: string;
+}
+describe("test ", () => {
+  itAsync("Test Validation,", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+
+    var c = context.for(TestCategories1);
+    var cat = c.create();
+    cat.a = '';
+    var saved = false;
+    try {
+      await c.save(cat);
+      saved = true;
+    }
+    catch (err) {
+      expect(getEntityOf(cat).columns.a.error).toEqual("Should not be empty");
+    }
+    expect(saved).toBe(false);
+
+  });
 });
 
 class myDp extends ArrayEntityDataProvider {

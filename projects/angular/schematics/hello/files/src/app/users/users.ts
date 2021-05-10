@@ -37,7 +37,7 @@ export class Users extends IdEntity {
                         if ((await context.for(Users).count()) == 0)
                             this.admin.value = true;// If it's the first user, make it an admin
                     }
-                    await checkForDuplicateValue(this, this.name, this.context.for(Users));
+                    await checkForDuplicateValue(this, this.name, this.context.for_old(Users));
 
                 }
             },
