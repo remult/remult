@@ -43,21 +43,18 @@ export async function serverInit() {
             columnsB: columnsOfType.get(b.prototype),
 
         })
-    let c = new child();
-    console.log(c instanceof entityBase);
+    let x = new b();
+    console.log({
+        //@ts-ignore
+        p:b.prototype.prototype
+    })
 
 
     return r;
 
 }
 
-class entityBase {
 
-}
-@Entity({name:'x'})
-class child extends entityBase {
-
-}
 
 @Entity({ name: 'a' })
 class a {

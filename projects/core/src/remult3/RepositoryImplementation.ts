@@ -82,14 +82,15 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return await this.entityOf(entity).save();
     }
     find(options?: FindOptions<T>): Promise<T[]> {
-        let opt: old.FindOptions<any>;
-        if (options) {
-            opt = {};
-            if (options.where)
-                opt.where = this.translateEntityWhere(options.where);
-            if (options.orderBy)
-                opt.orderBy = this.translateEntityOrderBy(options.orderBy)
-        }
+        let opt: old.FindOptions<any> = {};
+        if (!options)
+            options = {};
+
+        opt = {};
+        opt.where = this.translateEntityWhere(options.where);
+        if (options.orderBy)
+            opt.orderBy = this.translateEntityOrderBy(options.orderBy)
+
         return this._helper.find(opt).then(rows => rows.map(r =>
             this.mapOldEntityToResult(r)
         ));
@@ -115,21 +116,20 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return this._helper.findFirst(this.translateIterateOptions(options)).then(r => this.mapOldEntityToResult(r));
     }
     private translateIterateOptions(options: EntityWhere<T> | IterateOptions<T>) {
-        let opt: oldIterateOptions<any>;
-        if (options) {
-            opt = {};
-            if (typeof options === "function") {
-                opt.where = this.translateEntityWhere(options);
-            } else {
-                let o = options as IterateOptions<T>;
-                if (o.where) {
-                    opt.where = this.translateEntityWhere(o.where);
-                }
-                if (o.orderBy)
-                    opt.orderBy = this.translateEntityOrderBy(o.orderBy)
-                opt.progress = o.progress;
-            }
+        let opt: oldIterateOptions<any> = {};
+        if (!options)
+            options = {};
+        
+        if (typeof options === "function") {
+            opt.where = this.translateEntityWhere(options);
+        } else {
+            let o = options as IterateOptions<T>;
+            opt.where = this.translateEntityWhere(o.where);
+            if (o.orderBy)
+                opt.orderBy = this.translateEntityOrderBy(o.orderBy)
+            opt.progress = o.progress;
         }
+
         return opt;
     }
 
@@ -142,9 +142,16 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return this._helper.findId(id).then(r => this.mapOldEntityToResult(r));
     }
     private translateEntityWhere(where: EntityWhere<T>): (e: oldEntity<any>) => Filter {
+        if (this._info.entityInfo.fixedWhereFilter1) {
+            if (Array.isArray(where))
+                where = [this._info.entityInfo.fixedWhereFilter1, ...where];
+            else
+                where = [this._info.entityInfo.fixedWhereFilter1, where];
+        }
         if (!where)
             return undefined;
-        else
+        else {
+
             return (e: oldEntity<any>): Filter => {
                 let entity = this._info.createFilterOf(e);
                 if (Array.isArray(where)) {
@@ -165,6 +172,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                     return r;
                 }
             }
+        }
     }
     private translateEntityOrderBy(orderBy: EntityOrderBy<T>): old.EntityOrderBy<oldEntity<any>> {
         if (!orderBy)
@@ -217,8 +225,14 @@ const pojoCacheInEntity = Symbol("pojoCacheInEntity");
 export const columnsOfType = new Map<any, columnInfo[]>();
 export function createOldEntity<T>(entity: NewEntity<T>) {
     let r: columnInfo[] = columnsOfType.get(entity.prototype);
+    if (!r)
+        columnsOfType.set(entity.prototype, r = []);
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
+    if (info.extends) {
+        r.push(...columnsOfType.get(info.extends.prototype));
+        info.extends = undefined;
+    }
 
     return new EntityFullInfo<T>(r, info);
 }
@@ -448,7 +462,9 @@ export function Entity<T>(options: EntityOptions & {
     validating1?: (entity: T) => Promise<any>,
     defaultOrderBy1?: (entity: sortOf<T>) => TheSort[] | TheSort,
     apiDataFilter1?: EntityWhere<T>,
-    id?: (entity: idOf<T>) => IdDefs[]
+
+    id?: (entity: idOf<T>) => IdDefs[],
+
 }) {
     return target => {
 

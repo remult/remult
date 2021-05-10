@@ -7,6 +7,7 @@ import { valueOrExpressionToValue } from './column-interfaces';
 import { AndFilter } from './filter/filter-interfaces';
 import { SortSegment, Sort } from './sort';
 import { EntityProvider } from "./data-interfaces";
+import { EntityWhere, EntityWhereItem, NewEntity } from "./remult3";
 
 
 
@@ -257,7 +258,9 @@ export class Entity<idType = any> {
 
 
 }
-export interface EntityOptions {
+export interface EntityOptions<T=any> {
+  fixedWhereFilter1?: EntityWhereItem<T>;
+  extends?:NewEntity<any>;
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
  */
