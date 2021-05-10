@@ -1,6 +1,6 @@
 
 
-import { createDataOld } from './RowProvider.spec';
+import { createData, createDataOld } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
@@ -25,6 +25,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccessful } from '../data-providers/rest-data-provider';
 import { OrFilter } from '../filter/filter-interfaces';
+import { Categories as newCategories } from './remult-3-entities';
 import { DateTimeColumn } from '@remult/core';
 
 
@@ -114,51 +115,51 @@ describe('Test basic row functionality', () => {
 
   });
   itAsync("Original values update correctly", async () => {
-    let c = await (await createDataOld(async insert => await insert(1, 'noam'), Categories)).findFirst();
-    expect(c.categoryName.value).toBe('noam');
-    expect(c.categoryName.originalValue).toBe('noam');
-    c.categoryName.value = 'yael';
-    expect(c.categoryName.value).toBe('yael');
-    expect(c.categoryName.originalValue).toBe('noam');
-    await c.save();
-    expect(c.categoryName.value).toBe('yael');
-    expect(c.categoryName.originalValue).toBe('yael');
+    let c = await (await createData(async insert => await insert(1, 'noam'))).findFirst();
+    expect(c.categoryName).toBe('noam');
+    expect(c._.columns.categoryName.originalValue).toBe('noam');
+    c.categoryName = 'yael';
+    expect(c.categoryName).toBe('yael');
+    expect(c._.columns.categoryName.originalValue).toBe('noam');
+    await c._.save();
+    expect(c.categoryName).toBe('yael');
+    expect(c._.columns.categoryName.originalValue).toBe('yael');
 
   });
   itAsync("Find or Create", async () => {
-    let context = await (await createDataOld(async insert => { }, Categories));
+    let context = await (await createData());
     let row = await context.findOrCreate(x => x.id.isEqualTo(1));
-    expect(row.isNew()).toBe(true);
-    expect(row.id.value).toBe(1);
-    await row.save();
+    expect(row._.isNew()).toBe(true);
+    expect(row.id).toBe(1);
+    await row._.save();
     let row2 = await context.findOrCreate(x => x.id.isEqualTo(1));
-    expect(row2.isNew()).toBe(false);
-    expect(row2.id.value).toBe(1);
+    expect(row2._.isNew()).toBe(false);
+    expect(row2.id).toBe(1);
 
 
   });
 
   it("object is autonemous", () => {
-    let x = new Context().for_old(Categories).create();
-    let y = new Context().for_old(Categories).create();
-    x.categoryName.value = 'noam';
-    y.categoryName.value = 'yael';
-    expect(x.categoryName.value).toBe('noam');
-    expect(y.categoryName.value).toBe('yael');
+    let x = new Context().for(newCategories).create();
+    let y = new Context().for(newCategories).create();
+    x.categoryName = 'noam';
+    y.categoryName = 'yael';
+    expect(x.categoryName).toBe('noam');
+    expect(y.categoryName).toBe('yael');
   })
   it("find the col value", () => {
-    let x = new Context().for_old(Categories).create();
-    let y = new Context().for_old(Categories).create();
-    x.categoryName.value = 'noam';
-    y.categoryName.value = 'yael';
-    expect(y.columns.find(x.categoryName).value).toBe('yael');
+    let x = new Context().for(newCategories).create();
+    let y = new Context().for(newCategories).create();
+    x.categoryName = 'noam';
+    y.categoryName = 'yael';
+    expect(y._.columns.find(x._.columns.categoryName).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
-    let ctx = new Context().for_old(Categories);
+    let ctx = new Context().for(newCategories);
     let x = ctx.create();
-    x.id.value = 1;
-    x.categoryName.value = 'noam';
-    let y = ctx.toApiPojo(x);
+    x.id = 1;
+    x.categoryName = 'noam';
+    let y = x._.toApiPojo();
     expect(y.id).toBe(1);
     expect(y.categoryName).toBe('noam');
   });

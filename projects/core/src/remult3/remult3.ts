@@ -15,17 +15,20 @@ export class IdEntity {
 
 
 export interface rowHelper<T> {
-    save();
-    delete();
-    isNew();
-    wasChanged();
+    save():Promise<T>;
+    delete():Promise<void>;
+    isNew():boolean;
+    wasChanged():boolean;
+    toApiPojo():any;
     columns: entityOf<T>;
-    defs:{
-        name:string
+    defs: {
+        name: string
     }
 }
 export type entityOf<Type> = {
     [Properties in keyof Type]: column<Type[Properties]>
+} & {
+    find(col: column<any>): column<any>
 }
 
 
@@ -44,6 +47,7 @@ export interface IdDefs {
 }
 
 export interface column<T> {
+    key:string;
     caption: string;
     inputType: string;
     error: string;
@@ -58,14 +62,14 @@ export interface Repository<T> {
     find(options?: FindOptions<T>): Promise<T[]>;
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T>;
     count(where?: EntityWhere<T>): Promise<number>;
-    findFirst(where: EntityWhere<T> | IterateOptions<T>): Promise<T>;
+    findFirst(where?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
     findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
     lookup(filter: EntityWhere<T>): T;
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
     create(): T;
     findId(id: any): Promise<T>;
     save(entity: T): Promise<T>;
-    delete(entity: T): Promise<T>;
+    delete(entity: T): Promise<void>;
 
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
     packWhere(where: EntityWhere<T>): any;
@@ -132,8 +136,8 @@ export interface filterOptions<x> {
 }
 
 export interface comparableFilterItem<x> extends filterOptions<x> {
-    
-    
+
+
     isLessOrEqualTo(val: x): Filter;
     isGreaterThan(val: x): Filter;
 }

@@ -79,7 +79,7 @@ export async function createDataOld(doInsert: (insert: (id: number, name: string
   });
   return context.for_old(entity);
 }
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
+export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting
 }) {
   let context = new ServerContext();
@@ -87,7 +87,8 @@ export async function createData(doInsert: (insert: (id: number, name: string, d
   if (!entity)
     entity = newCategories;
   let rep = context.for(entity);
-  await doInsert(async (id, name, description, status) => {
+  if (doInsert)
+    await doInsert(async (id, name, description, status) => {
 
     let c = rep.create();
     c.id = id;
@@ -353,24 +354,24 @@ describe("test row provider", () => {
 
   itAsync("test  delete", async () => {
 
-    let c = await createDataOld(async insert => await insert(5, 'noam'));
+    let c = await createData(async insert => await insert(5, 'noam'));
 
     let rows = await c.find();
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(5);
-    await rows[0].delete();
+    expect(rows[0].id).toBe(5);
+    await rows[0]._.delete();
     rows = await c.find();
     expect(rows.length).toBe(0);
 
   });
   itAsync("test update", async () => {
-    let c = await createDataOld(async insert => await insert(5, 'noam'));
+    let c = await createData(async insert => await insert(5, 'noam'));
     let r = await c.find();
-    expect(r[0].categoryName.value).toBe('noam');
-    r[0].categoryName.value = 'yael';
-    await r[0].save();
+    expect(r[0].categoryName).toBe('noam');
+    r[0].categoryName = 'yael';
+    await r[0]._.save();
     r = await c.find();
-    expect(r[0].categoryName.value).toBe('yael');
+    expect(r[0].categoryName).toBe('yael');
   });
 
   itAsync("test filter", async () => {
@@ -710,18 +711,18 @@ describe("test row provider", () => {
 
   });
   itAsync("lookup updates the data", async () => {
-    let c = await createDataOld(async insert => await insert(1, 'noam'));
+    let c = await createData(async insert => await insert(1, 'noam'));
     let r = c.lookup(c => c.id.isEqualTo(1));
-    expect(r.isNew()).toBe(true);
-    expect(r.id.value).toBe(1);
+    expect(r._.isNew()).toBe(true);
+    expect(r.id).toBe(1);
     r = await c.lookupAsync(c => c.id.isEqualTo(1));
-    expect(r.isNew()).toBe(false);
-    await r.delete();
+    expect(r._.isNew()).toBe(false);
+    await r._.delete();
     expect(await c.count()).toBe(0);
     r = await c.lookupAsync(c => c.id.isEqualTo(1));
-    expect(r.isNew()).toBe(true);
-    expect(r.id.value).toBe(1);
-    await r.save();
+    expect(r._.isNew()).toBe(true);
+    expect(r.id).toBe(1);
+    await r._.save();
     expect(await c.count()).toBe(1);
 
 
@@ -1061,22 +1062,22 @@ describe("order by api", () => {
     expect(s.Segments[1].column).toBe(c.categoryName);
   });
   itAsync("test several sort options", async () => {
-    let c = await createDataOld(async i => {
+    let c = await createData(async i => {
       await i(1, 'z');
       await i(2, 'y');
     });
 
     let r = await c.find({ orderBy: c => c.categoryName });
     expect(r.length).toBe(2);
-    expect(r[0].id.value).toBe(2);
+    expect(r[0].id).toBe(2);
 
     r = await c.find({ orderBy: c => [c.categoryName] });
     expect(r.length).toBe(2);
-    expect(r[0].id.value).toBe(2);
+    expect(r[0].id).toBe(2);
 
-    r = await c.find({ orderBy: c => [{ column: c.categoryName, descending: true }] });
+    r = await c.find({ orderBy: c =>c.categoryName.descending });
     expect(r.length).toBe(2);
-    expect(r[0].id.value).toBe(1);
+    expect(r[0].id).toBe(1);
 
   });
 });

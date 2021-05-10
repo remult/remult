@@ -67,7 +67,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     entityOf(entity: T): rowHelper<T> {
         let x = entity[entityMember];
         if (!x) {
-            x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity);
+            x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity, this.context);
             if (entity instanceof EntityBase) {
                 entity._ = x;
             }
@@ -75,8 +75,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return x;
     }
 
-    async delete(entity: T): Promise<T> {
-        return await this.entityOf(entity).delete();
+    async delete(entity: T): Promise<void> {
+        await this.entityOf(entity).delete();
     }
     async save(entity: T): Promise<T> {
         return await this.entityOf(entity).save();
@@ -99,10 +99,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!r)
             return undefined;
         let x = new this.entity(this.context);
-        x[entityMember] = this._info.createEntityOf(r, x);
+        x[entityMember] = this._info.createEntityOf(r, x, this.context);
+
         for (const col of this._info.columns) {
             x[col.key] = r.columns.find(col.key).value;
         }
+        if (x instanceof EntityBase)
+            x._ = x[entityMember];
         return x;
     }
 
@@ -222,24 +225,40 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
     return new EntityFullInfo<T>(r, info);
 }
 class EntityOfImpl<T> implements rowHelper<T>{
-    constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T) {
+    constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context) {
+
+    }
+    toApiPojo() {
+        this.updateOldEntityBasedOnEntity();
+
+        let r = {};
+        for (const c of this.oldEntity.columns) {
+
+            c.__addToPojo(r, this.context)
+        }
+        return r;
+
 
     }
     defs = { name: this.oldEntity.defs.name };
     private _columns: entityOf<T>;
     get columns(): entityOf<T> {
         if (!this._columns) {
-            let r = {};
+            let r = {
+                find: (c: column<any>) => r[c.key]
+            };
             for (const c of this.info.columns) {
-                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key));
+                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key),this.entity);
             }
-            this._columns = r as entityOf<T>;
+
+            this._columns = r as unknown as entityOf<T>;
         }
         return this._columns;
     }
     async save() {
         this.updateOldEntityBasedOnEntity();
-        await this.oldEntity.save();
+        let r = await this.oldEntity.save();
+        return this.entity;
 
     }
     private updateOldEntityBasedOnEntity() {
@@ -249,7 +268,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
     }
 
     delete() {
-        this.oldEntity.delete();
+        return this.oldEntity.delete();
     }
     isNew() {
         return this.oldEntity.isNew();
@@ -260,7 +279,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
     }
 }
 export class columnBridge implements column<any>{
-    constructor(private col: oldColumn) {
+    constructor(private col: oldColumn,private item:any) {
 
     }
     get caption(): string { return this.col.defs.caption }
@@ -268,8 +287,9 @@ export class columnBridge implements column<any>{
     get error(): string { return this.col.validationError }
     get displayValue(): string { return this.col.displayValue };
     get inputValue(): string { return this.col.inputValue };
-    get value(): any { return this.col.value };
+    get value(): any { return this.item[this.col.defs.key]  };
     get originalValue(): any { return this.col.originalValue };
+    get key(): string { return this.col.defs.key };
     wasChanged(): boolean {
         return this.col.wasChanged();
     }
@@ -284,8 +304,8 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 }
 
 class EntityFullInfo<T> {
-    createEntityOf(e: oldEntity<any>, item: T): entityOf<T> {
-        return new EntityOfImpl<T>(e, this, item) as unknown as entityOf<T>;
+    createEntityOf(e: oldEntity<any>, item: T, context: Context): entityOf<T> {
+        return new EntityOfImpl<T>(e, this, item, context) as unknown as entityOf<T>;
     }
 
 
