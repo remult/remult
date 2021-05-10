@@ -141,7 +141,9 @@ export interface comparableFilterItem<x> extends filterOptions<x> {
 
 
     isLessOrEqualTo(val: x): Filter;
+    isLessThan(val:x):Filter;
     isGreaterThan(val: x): Filter;
+    isGreaterOrEqualTo(val:x):Filter;
 }
 export interface supportsContains<x> extends filterOptions<x> {
     contains(val: string): Filter;

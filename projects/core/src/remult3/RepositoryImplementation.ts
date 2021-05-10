@@ -4,7 +4,7 @@ import { DateColumn } from "../columns/date-column";
 import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
-import { Column as oldColumn, __isGreaterThan, __isLessOrEqualTo } from '../column';
+import { Column as oldColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
 import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase } from "./remult3";
 import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
@@ -119,7 +119,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         let opt: oldIterateOptions<any> = {};
         if (!options)
             options = {};
-        
+
         if (typeof options === "function") {
             opt.where = this.translateEntityWhere(options);
         } else {
@@ -393,6 +393,12 @@ class sortHelper implements TheSort {
 class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
     constructor(private col: oldColumn) {
 
+    }
+    isLessThan(val: any): Filter {
+        return __isLessThan(this.col, val);
+    }
+    isGreaterOrEqualTo(val: any): Filter {
+        return __isGreaterOrEqualTo(this.col, val);
     }
     isNotIn(val: any[]): Filter {
         return this.col.isNotIn(...val);
