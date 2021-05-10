@@ -10,6 +10,7 @@ import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } fr
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
+import { packWhere, unpackWhere } from "../filter/filter-consumer-bridge-to-url-builder";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -21,6 +22,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         //@ts-ignore
         this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
     }
+  
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T> {
         let r = this._helper.iterate(this.translateIterateOptions(options));
         return {
@@ -198,6 +200,12 @@ export class RepositoryImplementation<T> implements Repository<T>{
             });
         }
     }
+    packWhere(where: EntityWhere<T>) {
+        return packWhere(this._helper.create(),this.translateEntityWhere(where));
+    }
+    unpackWhere(packed: any): Filter {
+        return unpackWhere(this._helper.create(),packed);
+    }
 }
 
 
@@ -342,6 +350,12 @@ class sortHelper implements TheSort {
 class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
     constructor(private col: oldColumn) {
 
+    }
+    isNotIn(val: any[]): Filter {
+        return this.col.isNotIn(...val);
+    }
+    isDifferentFrom(val: any) {
+        return this.col.isDifferentFrom(val);
     }
     isLessOrEqualTo(val: any): Filter {
         return __isLessOrEqualTo(this.col, val);

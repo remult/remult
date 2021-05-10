@@ -1,4 +1,4 @@
-import { Column, Entity } from "../remult3";
+import { BaseEntity, Column, Entity } from "../remult3";
 import { Status } from "./testModel/models";
 
 @Entity({
@@ -17,7 +17,7 @@ export class Products {
     availableFrom: Date;
 }
 
-export interface CategoriesForTesting {
+export interface CategoriesForTesting extends BaseEntity {
     id: number;
     categoryName: string;
     description: string;
@@ -27,7 +27,7 @@ export interface CategoriesForTesting {
     name: 'Categories',
     allowApiCRUD: true
 })
-export class Categories {
+export class Categories extends BaseEntity{
     @Column({
         dbName: 'CategoryID'
     })

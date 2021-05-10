@@ -19,11 +19,11 @@ export interface rowHelper<T> {
     delete();
     isNew();
     wasChanged();
-    columns:entityOf<T>;
+    columns: entityOf<T>;
 }
 export type entityOf<Type> = {
     [Properties in keyof Type]: column<Type[Properties]>
-} 
+}
 
 
 export type sortOf<Type> = {
@@ -63,7 +63,11 @@ export interface Repository<T> {
     findId(id: any): Promise<T>;
     save(entity: T): Promise<T>;
     delete(entity: T): Promise<T>;
+
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
+    packWhere(where: EntityWhere<T>): any;
+    unpackWhere(packed: any): Filter;
+
 }
 export interface FindOptions<T> {
     /** filters the data
@@ -114,16 +118,20 @@ export class ManyToOne<T> {
     item: T;
 }
 export class BaseEntity {
-    _: entityOf<this>;
+    _: rowHelper<this>;
 }
 
 export interface filterOptions<x> {
     isEqualTo(val: x): Filter;
+    isDifferentFrom(val: x);
     isIn(val: x[]): Filter;
+    isNotIn(val: x[]): Filter;
 }
 
 export interface comparableFilterItem<x> extends filterOptions<x> {
-    isLessOrEqualTo(val: x): Filter ;
+    
+    
+    isLessOrEqualTo(val: x): Filter;
     isGreaterThan(val: x): Filter;
 }
 export interface supportsContains<x> extends filterOptions<x> {
@@ -152,8 +160,8 @@ export interface IteratableResult<T> {
         next: () => Promise<IteratorResult<T>>;
     };
 }
-export class EntityBase{
-    _:entityOf<this>;
+export class EntityBase {
+    _: entityOf<this>;
 }
 
 

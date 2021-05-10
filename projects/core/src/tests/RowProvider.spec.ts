@@ -7,7 +7,7 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { LookupColumn, OneToMany , ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
+import { LookupColumn, OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
 import { Sort } from '../sort';
 
 import { NumberColumn } from '../columns/number-column';
@@ -398,37 +398,37 @@ describe("test row provider", () => {
     expect(rows[0].id).toBe(2);
   });
   itAsync("test filter packer", async () => {
-    let c = await insertFourRowsOld();
-    let rows = await c.find();
+    let r = await insertFourRows();
+    let rows = await r.find();
     expect(rows.length).toBe(4);
 
-    rows = await c.find({
-      where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
+    rows = await r.find({
+      where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('x')))
 
     });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isEqualTo(4))) });
+    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isEqualTo(4))) });
     expect(rows.length).toBe(1);
-    expect(rows[0].categoryName.value).toBe('yael');
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+    expect(rows[0].categoryName).toBe('yael');
+    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+    expect(rows[0].id).toBe(2);
+    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
     expect(rows.length).toBe(2);
 
   });
   itAsync("test in filter packer", async () => {
-    let c = await insertFourRowsOld();
-    let rows = await c.find();
+    let r = await insertFourRows();
+    let rows = await r.find();
     expect(rows.length).toBe(4);
 
-    rows = await c.find({
-      where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
+    rows = await r.find({
+      where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('x')))
 
     });
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isIn(1, 3))) });
+    rows = await r.find({ where: c => r.unpackWhere(r.packWhere( c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isNotIn(1, 2, 3))) });
+    rows = await r.find({ where: c => r.unpackWhere(r.packWhere( c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });
@@ -651,10 +651,10 @@ describe("test row provider", () => {
     let c = cont.for(newCategories).create();
     c.id = 1;
     c.categoryName = 'noam';
-    await cont.for(newCategories).save( c);
+    await cont.for(newCategories).save(c);
     c.categoryName = 'yael';
     try {
-      await cont.for(newCategories).save( c);
+      await cont.for(newCategories).save(c);
       fail("shouldnt be here");
     } catch (err) {
       expect(c.categoryName).toBe('yael');
@@ -701,11 +701,11 @@ describe("test row provider", () => {
     let c = cont.for(newCategories);
     var nc = new NumberColumn();
     nc.value = 1;
-    let r = c.lookup(x=>x.id.isEqualTo(nc.value));
+    let r = c.lookup(x => x.id.isEqualTo(nc.value));
     expect(getEntityOf(r).isNew()).toBe(true);
     r.id = 5;
-    expect(c.lookup(x=>x.id.isEqualTo(nc.value)).id).toBe(5);
-    r = await c.lookupAsync(x=>x.id.isEqualTo(nc.value));
+    expect(c.lookup(x => x.id.isEqualTo(nc.value)).id).toBe(5);
+    r = await c.lookupAsync(x => x.id.isEqualTo(nc.value));
     expect(r.id).toBe(5);
 
   });
