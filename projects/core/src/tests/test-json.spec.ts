@@ -9,6 +9,7 @@ import { BoolColumn, NumberColumn } from '../columns/number-column';
 import { StringColumn } from '../columns/string-column';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
+import { Categories as newCategories } from './remult-3-entities';
 
 
 describe("test json database", () => {
@@ -16,10 +17,38 @@ describe("test json database", () => {
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {
-        for (const c of await context.for_old(Categories).find()) {
-            await c.delete();
+        for (const c of await context.for(newCategories).find()) {
+            await c._.delete();
         }
     }
+    itAsync("test raw basics", async () => {
+        let e = context.for_old(Categories).create();
+        let o: string;
+        let p = new JsonDataProvider({
+            getItem: () => o,
+            setItem: (k, v) => o = v
+        }).getEntityDataProvider(e);
+        await Promise.all([ p.insert("noam"), p.insert("yael"), p.insert("yoni")]);
+        expect(o).toBe(JSON.stringify(["noam","yael","yoni"], undefined, 2));
+
+    });
+    itAsync("test basics", async () => {
+        await deleteAll();
+        expect(await context.for(newCategories).count()).toBe(0);
+        let promisis = [];
+        for (let index = 1; index < 4; index++) {
+            let c = context.for(newCategories).create();
+            c.id = index;
+            c.categoryName = "noam" + index;
+            promisis.push(c._.save());
+        }
+        await Promise.all(promisis);
+        expect(await context.for(newCategories).count()).toBe(3, 'count');
+        let cats = await context.for(newCategories).find();
+        expect(cats.length).toBe(3);
+        expect(cats[0].id).toBe(1);
+        expect(cats[0].categoryName).toBe("noam1");
+    });
     itAsync("test basics", async () => {
         await deleteAll();
         expect(await context.for_old(Categories).count()).toBe(0);
@@ -31,7 +60,7 @@ describe("test json database", () => {
             promisis.push(c.save());
         }
         await Promise.all(promisis);
-        expect(await context.for_old(Categories).count()).toBe(3);
+        expect(await context.for_old(Categories).count()).toBe(3, 'count');
         let cats = await context.for_old(Categories).find();
         expect(cats.length).toBe(3);
         expect(cats[0].id.value).toBe(1);
@@ -68,7 +97,7 @@ describe("test tasks", () => {
         t.id.value = 3;
         t.completed.value = true;
         await t.save();
-        
+
         expect(await c.count(t => t.completed.isDifferentFrom(true))).toBe(1);
         expect(await c.count(t => t.completed.isEqualTo(true))).toBe(2);
         expect(await c.count(t => t.completed.isEqualTo(false))).toBe(0);

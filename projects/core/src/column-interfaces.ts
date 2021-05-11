@@ -14,7 +14,7 @@ export interface ColumnStorage<valueType> {
 
 
 
-export interface ColumnSettings<valueType = any> {
+export interface ColumnSettings<valueType = any, entityType = any> {
     key?: string;
     includeInApi?: Allowed;
     allowApiUpdate?: Allowed;
@@ -25,7 +25,7 @@ export interface ColumnSettings<valueType = any> {
     inputType?: string;
     dbName?: string;
     sqlExpression?: ValueOrExpression<string>;
-    serverExpression?: () => valueType | Promise<valueType>;
+    serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     allowNull?: boolean;
     displayValue?: () => string;
@@ -44,7 +44,7 @@ export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
     return <T>f;
 }
 export function valueOrEntityExpressionToValue<T, entityType extends Entity>(f: ValueOrEntityExpression<T, entityType>, e: entityType): T {
-    if (typeof f ==='function') {
+    if (typeof f === 'function') {
         let x = f as any;
         return x(e);
     }

@@ -7,7 +7,7 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { LookupColumn, OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
+import { OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
 import { Sort } from '../sort';
 
 import { NumberColumn } from '../columns/number-column';
@@ -90,15 +90,15 @@ export async function createData(doInsert?: (insert: (id: number, name: string, 
   if (doInsert)
     await doInsert(async (id, name, description, status) => {
 
-    let c = rep.create();
-    c.id = id;
-    c.categoryName = name;
-    c.description = description;
-    if (status)
-      c.status = status;
-    await rep.save(c);
+      let c = rep.create();
+      c.id = id;
+      c.categoryName = name;
+      c.description = description;
+      if (status)
+        c.status = status;
+      await rep.save(c);
 
-  });
+    });
   return rep;
 }
 
@@ -427,9 +427,9 @@ describe("test row provider", () => {
       where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('x')))
 
     });
-    rows = await r.find({ where: c => r.unpackWhere(r.packWhere( c => c.id.isIn([1, 3]))) });
+    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: c => r.unpackWhere(r.packWhere( c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });
@@ -674,25 +674,26 @@ describe("test row provider", () => {
 
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for_old(Categories);
+    let c = cont.for(newCategories);
 
     let calledFind = false;
-    var l = new Lookup(c.create(), {
-      count: async () => 1,
-      create: () => c.create(),
-      find: async () => {
+    var l = new Lookup({
+      ...c,
+      updateEntityBasedOnWhere:(x,y)=>c.updateEntityBasedOnWhere(x,y),
+      create:()=>c.create(),
+      packWhere:x=>c.packWhere(x),
+      find: options => {
         calledFind = true;
-        return [];
+        return c.find(options)
       }
-
     });
     var nc = new NumberColumn();
     nc.value = undefined;
     expect(nc.value).toBe(undefined);
-    await l.whenGet(nc);
+    await l.whenGet(c => c.id.isEqualTo(nc.value));
     expect(calledFind).toBe(false, 'expected not to call find');
     nc.value = 1;
-    await l.whenGet(nc);
+    await l.whenGet(c => c.id.isEqualTo(nc.value));
     expect(calledFind).toBe(true);
 
   });
@@ -1075,7 +1076,7 @@ describe("order by api", () => {
     expect(r.length).toBe(2);
     expect(r[0].id).toBe(2);
 
-    r = await c.find({ orderBy: c =>c.categoryName.descending });
+    r = await c.find({ orderBy: c => c.categoryName.descending });
     expect(r.length).toBe(2);
     expect(r[0].id).toBe(1);
 
@@ -1292,10 +1293,7 @@ describe("context", () => {
     expect(c.user.roles.length).toBe(0);
 
   });
-  it("circular reference entity works", () => {
-    var c = new Context();
-    var r = c.for_old(EntityA).create();
-  });
+ 
 
 });
 
@@ -1354,16 +1352,3 @@ class valueList {
   constructor(public id?: string, public caption?: string) { }
 }
 
-
-class EntityA extends IdEntity {
-  b = new LookupColumn(this.context.for_old(EntityB));
-  constructor(private context: Context) {
-    super("a");
-  }
-}
-class EntityB extends IdEntity {
-  a = new LookupColumn(this.context.for_old(EntityA));
-  constructor(private context: Context) {
-    super("b");
-  }
-}

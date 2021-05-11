@@ -17,9 +17,9 @@ export class Column<dataType = any>  {
     }
   }
   //@internal
-  async __calcServerExpression() {
+  async __calcServerExpression(entity:any) {
     if (this.__settings.serverExpression) {
-      let x = this.__settings.serverExpression();
+      let x = this.__settings.serverExpression(entity);
       x = await x;
       this.value = x;
 

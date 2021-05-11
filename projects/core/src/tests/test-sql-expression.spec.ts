@@ -1,28 +1,31 @@
-import { itAsync } from './testHelper.spec';
-import { ServerContext, EntityClass } from '../context';
-import { Entity } from '../entity';
+import { fitAsync, itAsync } from './testHelper.spec';
+import { ServerContext } from '../context';
+
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { NumberColumn } from '../columns/number-column';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
+import { Column, Entity, EntityBase } from '../remult3';
 
 describe("test sql database", async () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {
-        for (const c of await context.for_old(testSqlExpression).find()) {
-            await c.delete();
+        for (const c of await context.for(testSqlExpression).find()) {
+            await c._.delete();
         }
     }
     await itAsync("test basics", async () => {
         await deleteAll();
-        let x = context.for_old(testSqlExpression).create();
-        x.code.value = 3;
-        await x.save();
-        expect(x.testExpression.value).toBe(15);
-        x = await context.for_old(testSqlExpression).findFirst();
-        expect(x.testExpression.value).toBe(15);
+        let x = context.for(testSqlExpression).create();
+        x.code = 3;
+        await x._.save();
+        expect (x.code).toBe(3);
+        expect(x.testExpression).toBe(15,"after save");
+        x = await context.for(testSqlExpression).findFirst();
+        
+        expect(x.testExpression).toBe(15);
     });
 
 
@@ -30,15 +33,17 @@ describe("test sql database", async () => {
 
 
 
-@EntityClass
-class testSqlExpression extends Entity<number>{
-    code = new NumberColumn();
-    testExpression = new NumberColumn({
-        sqlExpression: () => {
-            return this.code.defs.dbName + ' * 5';
+@Entity({ name: 'testSqlExpression' })
+class testSqlExpression extends EntityBase {
+    @Column()
+    code: number;
+    @Column(
+        {
+            sqlExpression: () => {
+                return 'code * 5';
+            }
         }
-    });
-    constructor() {
-        super();
-    }
+    )
+    testExpression: number;
+
 }

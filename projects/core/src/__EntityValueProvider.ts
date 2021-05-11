@@ -21,7 +21,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
 
   dataProvider: EntityDataProvider;
   _deleted = false;
-  initServerExpressions: () => Promise<void> = async () => { };
+  initServerExpressions: (item:any) => Promise<void> = async () => { };
   delete(deleted: () => Promise<any> | any) {
     return this.dataProvider.delete(this.id).then(async () => {
       if (deleted)
@@ -122,7 +122,7 @@ export class __EntityValueProvider implements ColumnValueProvider {
       this.newRow = false;
     }
     this.data = data;
-    await this.initServerExpressions();
+  //  await this.initServerExpressions(undefined);
     this.originalData = JSON.parse(JSON.stringify(this.data));
   }
   getValue(key: string) {

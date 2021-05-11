@@ -74,7 +74,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
 export class Context {
     clearAllCache(): any {
         this.cache.clear();
-        this._lookupCache = [];
+        this.repCache.clear();
     }
 
     isSignedIn() {
@@ -164,9 +164,14 @@ export class Context {
 
         return false;
     }
-
+    repCache = new Map<NewEntity<any>, Repository<any>>();
     public for<T>(entity: NewEntity<T>): Repository<T> {
-        return new RepositoryImplementation(entity, this);
+        let r = this.repCache.get(entity);
+        if (!r){
+            this.repCache.set(entity,r= new RepositoryImplementation(entity, this));
+        }
+        return r;
+        
     }
 
 
@@ -189,7 +194,7 @@ export class Context {
                 e.__initColumns((<any>e).id);
 
                 return e;
-            }, this._lookupCache, this, dataSource);
+            }, this, dataSource);
             dsCache.set(c, r);
         }
 
@@ -199,7 +204,7 @@ export class Context {
     }
 
 
-    _lookupCache: LookupCache<any>[] = [];
+    
 }
 export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
@@ -278,15 +283,15 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
          * await p.save();
          */
         public create: () => T
-        , private _lookupCache: LookupCache<any>[], private context: Context, private dataSource: DataProvider) {
+        , private context: Context, private dataSource: DataProvider) {
         this._factory = newRow => {
             let e = create();
             e.__entityData.dataProvider = this._edp;
             e.__entityData.entityProvider = this;
             if (this.context.onServer)
-                e.__entityData.initServerExpressions = async () => {
+                e.__entityData.initServerExpressions = async (ee) => {
                     await Promise.all(e.columns.toArray().map(async c => {
-                        await c.__calcServerExpression();
+                        await c.__calcServerExpression(ee);
                     }));
                 }
             if (newRow) {
@@ -362,52 +367,8 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return this.iterate(x => x.columns.idColumn.isEqualTo(id)).first();
     }
 
-    /**
-     * Used to get non critical values from the Entity.
-    * The first time this method is called, it'll return a new instance of the Entity.
-    * It'll them call the server to get the actual value and cache it.
-    * Once the value is back from the server, any following call to this method will return the cached row.
-    * 
-    * It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
-    * 
-    * * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
-    * @example
-    * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
-     */
-    lookup(filter: Column<lookupIdType> | EntityWhere<T>): T {
-
-        let key = this.entity.defs.name;
-        let lookup: Lookup<lookupIdType, T>;
-        this._lookupCache.forEach(l => {
-            if (l.key == key)
-                lookup = l.lookup;
-        });
-        if (!lookup) {
-            lookup = new Lookup(this.entity, this);
-            this._lookupCache.push({ key, lookup });
-        }
-        return lookup.get(filter);
-
-    }
-    /** returns a single row and caches the result for each future call
-     * @example
-     * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
-     */
-    lookupAsync(filter: Column<lookupIdType> | EntityWhere<T>): Promise<T> {
-
-        let key = this.entity.defs.name;
-        let lookup: Lookup<lookupIdType, T>;
-        this._lookupCache.forEach(l => {
-            if (l.key == key)
-                lookup = l.lookup;
-        });
-        if (!lookup) {
-            lookup = new Lookup(this.entity, this);
-            this._lookupCache.push({ key, lookup });
-        }
-        return lookup.whenGet(filter);
-
-    }
+  
+  
 
     /** returns the number of rows that matches the condition 
      * @example
@@ -679,10 +640,6 @@ export declare type AngularComponent = { new(...args: any[]): any };
 
 
 
-interface LookupCache<T extends Entity> {
-    key: string;
-    lookup: Lookup<any, T>;
-}
 export interface RoleChecker {
     isAllowed(roles: Allowed): boolean;
 }

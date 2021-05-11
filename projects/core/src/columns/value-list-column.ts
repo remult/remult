@@ -1,10 +1,7 @@
 import { Column, makeTitle } from "../column";
 import { ColumnSettings, ValueListItem } from "../column-interfaces";
-import { Entity } from "../entity";
-import { StringColumn } from "./string-column";
-import { SpecificEntityHelper } from "../context";
-import { EntityWhere, updateEntityBasedOnWhere } from "../data-interfaces";
-import { FindOptions, Repository } from "../remult3";
+
+import { EntityWhere, FindOptions, Repository } from "../remult3";
 
 
 export class ValueListColumn<T extends ValueListItem> extends Column<T> {
@@ -68,33 +65,19 @@ export class ValueListTypeInfo<T extends ValueListItem>{
 }
 const typeCache = new Map<any, ValueListTypeInfo<any>>();
 
-export class LookupColumn<T extends Entity<string>> extends StringColumn {
-  constructor(private provider: SpecificEntityHelper<string, T>, settings?: ColumnSettings<string>) {
-    super(settings);
-  }
-  exists() {
-    return !this.item.isNew();
-  }
-  get item(): T {
-    return this.provider.lookup(this);
-  }
-  async waitLoad() {
-    return this.provider.lookupAsync(this);
-  }
 
-}
-export class ManyToOne<T extends Entity>{
-  constructor(private provider: SpecificEntityHelper<string, T>,
+export class ManyToOne<T>{
+  constructor(private repository: Repository< T>,
     private where: EntityWhere<T>
   ) { }
   exists() {
-    return !this.item.isNew();
+    return !this.repository.getRowHelper( this.item).isNew();
   }
   get item(): T {
-    return this.provider.lookup(this.where);
+    return this.repository.lookup(this.where);
   }
   async waitLoad() {
-    return this.provider.lookupAsync(this.where);
+    return this.repository.lookupAsync(this.where);
   }
 }
 

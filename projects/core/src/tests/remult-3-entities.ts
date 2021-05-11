@@ -37,11 +37,11 @@ export class Categories extends EntityBase{
     @Column()
     description;
     @Column<Categories, Number>({
-        serverExpression1: c => c.categoryName ? c.categoryName.length : undefined
+        serverExpression: c => c.categoryName ? c.categoryName.length : undefined
     })
     categoryNameLength: number;
     @Column<Categories, number>({
-        serverExpression1: (c) => Promise.resolve(c.categoryName ? c.categoryName.length : undefined)
+        serverExpression: (c) => Promise.resolve(c.categoryName ? c.categoryName.length : undefined)
     })
     categoryNameLengthAsync: number;
     @Column()

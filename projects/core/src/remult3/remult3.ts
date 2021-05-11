@@ -9,18 +9,30 @@ export class IdEntity {
     id: string;
 }
 /*
+[] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
 [] think of id entity.
 [] rename `name` to `key` in Entity Settings
 [] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
+[] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
+[] original data should reflect the values after server expressions
+[] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
+[] use helmet instead of force https
+[] fix timeout by using a repeat mechanism in context.
+[] replace method not allowed with forbidden - when something is not allowed
+[] add reflect metadata to dependencies
+
 */
 
 
 export interface rowHelper<T> {
+    isValid(): boolean;
+    undoChanges();
     save(): Promise<T>;
     reload(): Promise<void>;
     delete(): Promise<void>;
     isNew(): boolean;
     wasChanged(): boolean;
+    wasDeleted():boolean;
     toApiPojo(): any;
     columns: entityOf<T>;
     defs: {
@@ -66,7 +78,23 @@ export interface Repository<T> {
     count(where?: EntityWhere<T>): Promise<number>;
     findFirst(where?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
     findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
+        /**
+     * Used to get non critical values from the Entity.
+    * The first time this method is called, it'll return a new instance of the Entity.
+    * It'll them call the server to get the actual value and cache it.
+    * Once the value is back from the server, any following call to this method will return the cached row.
+    * 
+    * It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
+    * 
+    * * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
+    * @example
+    * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
+     */
     lookup(filter: EntityWhere<T>): T;
+       /** returns a single row and caches the result for each future call
+     * @example
+     * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
+     */
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
     create(): T;
     findId(id: any): Promise<T>;
@@ -76,6 +104,7 @@ export interface Repository<T> {
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
     packWhere(where: EntityWhere<T>): any;
     unpackWhere(packed: any): Filter;
+    getRowHelper(item:T):rowHelper<T>;
 
 }
 export interface FindOptions<T> {
