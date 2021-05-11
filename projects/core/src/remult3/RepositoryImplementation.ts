@@ -61,7 +61,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     getRowHelper(entity: T): rowHelper<T> {
         let x = entity[entityMember];
         if (!x) {
-            x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity, this.context);
+            x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity, this.context, this);
             if (entity instanceof EntityBase) {
                 entity._ = x;
             }
@@ -94,7 +94,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!r)
             return undefined;
         let x = new this.entity(this.context);
-        let helper = this._info.createEntityOf(r, x, this.context);
+        let helper = this._info.createEntityOf(r, x, this.context, this);
         x[entityMember] = helper;
         await helper.updateEntityBasedOnOldEntity();
         if (x instanceof EntityBase)
@@ -232,9 +232,10 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
     return new EntityFullInfo<T>(r, info);
 }
 class EntityOfImpl<T> implements rowHelper<T>{
-    constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context) {
+    constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context, public repository: Repository<T>) {
 
     }
+
     wasDeleted(): boolean {
         return this.oldEntity.__entityData._deleted;
     }
@@ -281,10 +282,10 @@ class EntityOfImpl<T> implements rowHelper<T>{
     get columns(): entityOf<T> {
         if (!this._columns) {
             let r = {
-                find: (c: column<any>) => r[c.key]
+                find: (c: column<any, T>) => r[c.key]
             };
             for (const c of this.info.columns) {
-                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key), this.entity);
+                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key), this.entity, this);
             }
 
             this._columns = r as unknown as entityOf<T>;
@@ -293,7 +294,9 @@ class EntityOfImpl<T> implements rowHelper<T>{
     }
     async save() {
         this.updateOldEntityBasedOnEntity();
-        await this.oldEntity.save();
+        await this.oldEntity.save(undefined,async (c, validate) => {
+            validate(this.columns[c.defs.key], this.entity);
+        });
         await this.updateEntityBasedOnOldEntity();
         return this.entity;
 
@@ -315,10 +318,11 @@ class EntityOfImpl<T> implements rowHelper<T>{
         return this.oldEntity.wasChanged();
     }
 }
-export class columnBridge implements column<any>{
-    constructor(private col: oldColumn, private item: any) {
+export class columnBridge<T, ET> implements column<T, ET>{
+    constructor(private col: oldColumn, private item: any, public rowHelper: rowHelper<ET>) {
 
     }
+
     get caption(): string { return this.col.defs.caption }
     get inputType(): string { return this.col.defs.inputType }
     get error(): string { return this.col.validationError }
@@ -342,10 +346,8 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 }
 
 class EntityFullInfo<T> {
-    createEntityOf(e: oldEntity<any>, item: T, context: Context, newRow = false): EntityOfImpl<T> {
-        let r = new EntityOfImpl<T>(e, this, item, context);
-        if (newRow)
-            r.justUpdateEntityBasedOnOldEntity();
+    createEntityOf(e: oldEntity<any>, item: T, context: Context, repo: Repository<T>): EntityOfImpl<T> {
+        let r = new EntityOfImpl<T>(e, this, item, context, repo);
         return r;
     }
 
@@ -444,9 +446,6 @@ class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
 
 export function Column<T = any, colType = any>(settings?: ColumnSettings<colType, T> & {
     allowApiUpdate1?: ((x: entityOf<T>) => boolean),
-    validate1?: (x: column<any>) => void,
-    defaultValue1?: (x: T) => void,
-
 }) {
     if (!settings) {
         settings = {};

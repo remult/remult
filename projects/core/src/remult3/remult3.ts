@@ -20,6 +20,7 @@ export class IdEntity {
 [] fix timeout by using a repeat mechanism in context.
 [] replace method not allowed with forbidden - when something is not allowed
 [] add reflect metadata to dependencies
+[] rebuild validation model for ServerMethod
 
 */
 
@@ -37,12 +38,14 @@ export interface rowHelper<T> {
     columns: entityOf<T>;
     defs: {
         name: string
-    }
+    };
+    repository:Repository<T>
+
 }
 export type entityOf<Type> = {
-    [Properties in keyof Type]: column<Type[Properties]>
+    [Properties in keyof Type]: column<Type[Properties],Type>
 } & {
-    find(col: column<any>): column<any>
+    find(col: column<any,Type>): column<any,Type>
 }
 
 
@@ -60,7 +63,7 @@ export interface IdDefs {
 
 }
 
-export interface column<T> {
+export interface column<T,entityType> {
     key: string;
     caption: string;
     inputType: string;
@@ -70,6 +73,7 @@ export interface column<T> {
     value: T;
     originalValue: T;
     wasChanged(): boolean;
+    rowHelper:rowHelper<entityType>
 }
 
 export interface Repository<T> {

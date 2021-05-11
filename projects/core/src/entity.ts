@@ -3,7 +3,7 @@ import { DataApiSettings } from "./data-api";
 import { Column, makeTitle } from "./column";
 import { Filter } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
-import { valueOrExpressionToValue } from './column-interfaces';
+import { delmeColumnValidatorHelper, valueOrExpressionToValue } from './column-interfaces';
 import { AndFilter } from './filter/filter-interfaces';
 import { SortSegment, Sort } from './sort';
 import { EntityProvider } from "./data-interfaces";
@@ -92,7 +92,7 @@ export class Entity<idType = any> {
 
   validationError: string;
   //@internal
-   __idColumn: Column<idType>;
+  __idColumn: Column<idType>;
   //@internal
   __initColumns(idColumn?: Column<idType>) {
     if (!this.__options.name) {
@@ -127,19 +127,22 @@ export class Entity<idType = any> {
    * p.name.value = 'Wine';
    * await p.save();
    */
-  async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
-    await this.__validateEntity(afterValidationBeforeSaving);
+  async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any, validationHelper?: delmeColumnValidatorHelper<any, any>) {
+    if (!validationHelper) {
+      validationHelper = async (a, b) => b(undefined, undefined);
+    }
+    await this.__validateEntity(afterValidationBeforeSaving, validationHelper);
     let doNotSave = false;
     await this.__onSavingRow(() => doNotSave = true);
     this.__assertValidity();
     return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
   }
 
-  async __validateEntity(afterValidationBeforeSaving?: (row: this) => Promise<any> | any) {
+  async __validateEntity(afterValidationBeforeSaving: (row: this) => Promise<any> | any, helper: delmeColumnValidatorHelper<any, any>) {
     this.__clearErrors();
 
     for (const c of this.__columns) {
-      await c.__performValidation();
+      await c.__performValidation(helper);
     }
 
     if (this.__onValidate)
@@ -258,9 +261,9 @@ export class Entity<idType = any> {
 
 
 }
-export interface EntityOptions<T=any> {
+export interface EntityOptions<T = any> {
   fixedWhereFilter1?: EntityWhereItem<T>;
-  extends?:NewEntity<any>;
+  extends?: NewEntity<any>;
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
  */

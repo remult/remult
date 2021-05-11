@@ -3,6 +3,7 @@ import { Column } from './column';
 
 import { Entity } from './entity';
 import { ValueListColumn } from './columns/value-list-column';
+import { column } from './remult3';
 
 
 
@@ -20,7 +21,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     allowApiUpdate?: Allowed;
     caption?: string;
     defaultValue?: ValueOrExpression<valueType>;
-    validate?: ColumnValidator<valueType> | ColumnValidator<valueType>[];
+    validate?: ColumnValidator<valueType,entityType> | ColumnValidator<valueType,entityType>[];
     valueChange?: () => void;
     inputType?: string;
     dbName?: string;
@@ -31,7 +32,8 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     displayValue?: () => string;
 
 }
-export declare type ColumnValidator<valueType = any> = (col: Column<valueType>) => void | Promise<void>;
+export declare type delmeColumnValidatorHelper<T,ET>=(col:Column<T>,validate:ColumnValidator<T,ET>)=>Promise<void>;
+export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType,entityType>, entity: entityType) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 export declare type ValueOrEntityExpression<valueType, entityType extends Entity> = valueType | ((e: entityType) => valueType);

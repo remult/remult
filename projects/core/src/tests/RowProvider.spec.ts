@@ -474,126 +474,169 @@ describe("test row provider", () => {
 
   itAsync("Test Validation 2", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for_old(class extends Categories {
-      a = new StringColumn({
-        validate: col => Validators.required(col, "m")
-      })
-    });
+    let type = class extends newCategories {
+      a: string;
+    };
+    EntityDecorator({ name: '' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: (col, entity) => Validators.required(col, entity, "m")
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
-    cat.a.value = '';
+    cat.a = '';
     var saved = false;
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("m");
+      expect(cat._.columns.a.error).toEqual("m");
+    }
+    expect(saved).toBe(false);
+
+  });
+  itAsync("Test Validation 2_1", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    let type = class extends newCategories {
+      a: string;
+    };
+    EntityDecorator({ name: '' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: (col, entity) => {
+        if (!entity.a || entity.a.length == 0)
+          col.error = "m";
+      }
+    })(type.prototype, "a");
+    var c = context.for(type);
+    var cat = c.create();
+    cat.a = '';
+    var saved = false;
+    try {
+      await cat._.save();
+      saved = true;
+    }
+    catch (err) {
+      expect(cat._.columns.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
 
   });
   itAsync("Test Validation 3", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for_old(class extends Categories {
-      a = new StringColumn({
-        validate: Validators.required.withMessage("m")
-      })
-    });
+    let type = class extends newCategories {
+      a: string
+    };
+    EntityDecorator({ name: '' })(type);
+    ColumnDecorator({
+      validate: Validators.required.withMessage("m")
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
-    cat.a.value = '';
+    cat.a = '';
     var saved = false;
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("m");
+      expect(cat._.columns.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
   });
   itAsync("Test unique Validation,", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for_old(class extends Categories {
-      a = new StringColumn({
-        validate: async () => {
-          if (this.isNew() || this.a.value != this.a.originalValue) {
-            if (await c.count(f => f.a.isEqualTo(this.a.value)))
-              this.a.validationError = 'already exists';
-          }
+
+    let type = class extends newCategories {
+      a: string
+    };
+    EntityDecorator({ name: '' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: async (col, en) => {
+        if (en._.isNew() || en.a != en._.columns.a.originalValue) {
+          if (await c.count(f => f.a.isEqualTo(en.a)))
+            en._.columns.a.error = 'already exists';
         }
-      })
-    });
+      }
+    })(type.prototype, "a");
+    var c = context.for(type);
+
     var cat = c.create();
-    cat.a.value = '12';
-    await cat.save();
+    cat.a = '12';
+    await cat._.save();
     cat = c.create();
-    cat.a.value = '12';
+    cat.a = '12';
 
     var saved = false;
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("already exists");
+      expect(cat._.columns.a.error).toEqual("already exists");
     }
     expect(saved).toBe(false);
 
   });
   itAsync("Test unique Validation 2", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for_old(class extends Categories {
-      a = new StringColumn({
-        validate: Validators.unique
-      })
-    });
+    let type = class extends newCategories {
+      a: string
+    };
+    EntityDecorator({ name: '' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: Validators.unique
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
-    cat.a.value = '12';
-    await cat.save();
+    cat.a = '12';
+    await cat._.save();
     cat = c.create();
-    cat.a.value = '12';
+    cat.a = '12';
 
     var saved = false;
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("already exists");
+      expect(cat._.columns.a.error).toEqual("already exists");
     }
     expect(saved).toBe(false);
 
   });
   itAsync("Test unique Validation and is not empty", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for_old(class extends Categories {
-      a = new StringColumn({
-        validate: [Validators.required, Validators.unique]
-      })
-    });
+    let type = class extends newCategories {
+      a: string
+    };
+    EntityDecorator({ name: '' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: [Validators.required, Validators.unique]
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
     var saved = false;
-    cat.a.value = '';
+    cat.a = '';
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch {
-      expect(cat.a.validationError).toEqual("Should not be empty");
-      cat.a.value = '12';
-      await cat.save();
+      expect(cat._.columns.a.error).toEqual("Should not be empty");
+      cat.a = '12';
+      await cat._.save();
     }
     expect(saved).toBe(false);
     cat = c.create();
-    cat.a.value = '12';
+    cat.a = '12';
 
 
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("already exists");
+      expect(cat._.columns.a.error).toEqual("already exists");
     }
     expect(saved).toBe(false);
 
@@ -610,7 +653,7 @@ describe("test row provider", () => {
     var newC = c.create();
     newC.categoryName.value = 'noam';
     newC.id.value = 1;
-    await newC.save();
+    await newC.save(undefined,async (a, b) => b(undefined, undefined));;
 
 
     let ds = new GridSettings(c, {
@@ -679,9 +722,9 @@ describe("test row provider", () => {
     let calledFind = false;
     var l = new Lookup({
       ...c,
-      updateEntityBasedOnWhere:(x,y)=>c.updateEntityBasedOnWhere(x,y),
-      create:()=>c.create(),
-      packWhere:x=>c.packWhere(x),
+      updateEntityBasedOnWhere: (x, y) => c.updateEntityBasedOnWhere(x, y),
+      create: () => c.create(),
+      packWhere: x => c.packWhere(x),
       find: options => {
         calledFind = true;
         return c.find(options)
@@ -1293,7 +1336,7 @@ describe("context", () => {
     expect(c.user.roles.length).toBe(0);
 
   });
- 
+
 
 });
 

@@ -294,7 +294,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         context.for_old(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
                                     }
 
-                                    await y.__validateEntity();
+                                    await y.__validateEntity(undefined, () => { throw new Error("Validation on server method not yet implemented") });
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
@@ -340,7 +340,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                 let self = this;
                 args = args.map(x => x !== undefined ? x : customUndefined);
                 if (self instanceof Entity) {
-                    await self.__validateEntity();
+                    await self.__validateEntity(undefined, () => { throw new Error("validation on server method not implemented yet") });
                     let classOptions = mh.classes.get(self.constructor);
                     if (!classOptions.key) {
                         classOptions.key = self.defs.name + "_methods";
@@ -412,7 +412,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 async function validateObject(y: any) {
     let cols = getColumnsFromObject(y);
     cols.forEach(x => x.__clearErrors());
-    await Promise.all(cols.map(x => x.__performValidation()));
+    await Promise.all(cols.map(x => x.__performValidation(() => { throw new Error("validation on server action not yet implemented"); })));
     if (cols.find(x => !!x.validationError)) {
         throw __getValidationError(cols);
     }

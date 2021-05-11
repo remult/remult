@@ -1,5 +1,5 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { ColumnSettings, valueOrExpressionToValue } from './column-interfaces';
+import { ColumnSettings, delmeColumnValidatorHelper, valueOrExpressionToValue } from './column-interfaces';
 
 
 
@@ -17,7 +17,7 @@ export class Column<dataType = any>  {
     }
   }
   //@internal
-  async __calcServerExpression(entity:any) {
+  async __calcServerExpression(entity: any) {
     if (this.__settings.serverExpression) {
       let x = this.__settings.serverExpression(entity);
       x = await x;
@@ -31,14 +31,14 @@ export class Column<dataType = any>  {
     this.validationError = undefined;
   }
   //@internal
-  async __performValidation() {
+  async __performValidation(helper: delmeColumnValidatorHelper<any, any>) {
     if (this.__settings.validate) {
       if (Array.isArray(this.__settings.validate)) {
         for (const v of this.__settings.validate) {
-          await v(this);
+          await helper(this, v);
         }
       } else if (typeof this.__settings.validate === 'function')
-        await this.__settings.validate(this);
+        await  helper(this,this.__settings.validate);
     }
 
   }
