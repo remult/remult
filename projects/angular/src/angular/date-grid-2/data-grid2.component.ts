@@ -238,7 +238,7 @@ export class DataGrid2Component implements OnChanges {
             if (!await this.settings.settings.confirmDelete(r))
               return;
           }
-          r.delete();
+          r.delete({});
 
         },
 

@@ -1,13 +1,15 @@
 import { itAsync, Done, fitAsync } from "../testHelper.spec";
-import { createDataOld, CategoriesForTestingOld } from '../RowProvider.spec';
+import { createDataOld, CategoriesForTestingOld, createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
-import { Entity } from '../../entity';
+
 import { NumberColumn } from '../../columns/number-column';
 import { StringColumn } from '../../columns/string-column';
 import { StatusColumn } from '../testModel/models';
 import { Context } from '../../context';
 import { ValueListColumn } from '../../columns/value-list-column';
+import { Categories } from "../remult-3-entities";
+import { Entity } from "../../remult3";
 
 
 
@@ -16,7 +18,7 @@ describe("data api", () => {
     let context = new Context();
     itAsync("put with validations fails", async () => {
 
-        let c = await createDataOld(async insert => insert(1, 'noam'), CategoriesForThisTest);
+        let c = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
 
         var api = new DataApi(c);
         let t = new TestDataApiResponse();
@@ -31,13 +33,13 @@ describe("data api", () => {
         });
         d.test();
         var x = await c.find({ where: c => c.id.isEqualTo(1) });
-        expect(x[0].categoryName.value).toBe('noam');
+        expect(x[0].categoryName).toBe('noam');
 
     });
     itAsync("post with validation fails", async () => {
 
 
-        let c = await createDataOld(async () => { }, CategoriesForThisTest);
+        let c = await createData(async () => { }, CategoriesForThisTest);
 
         var api = new DataApi(c);
         let t = new TestDataApiResponse();
@@ -57,22 +59,19 @@ describe("data api", () => {
 
 });
 
-class CategoriesForThisTest extends Entity<number> implements CategoriesForTestingOld {
-    id = new NumberColumn();
-    categoryName = new StringColumn();
-    description = new StringColumn();
-    status = new StatusColumn();
-    constructor() {
-        super({
-            name: undefined,
-            allowApiUpdate: true,
-            allowApiInsert: true,
-            saving: () => {
-                if (this.categoryName.value.indexOf('1') >= 0)
-                    this.categoryName.validationError = 'invalid'
-            }
-        });
+@Entity<CategoriesForThisTest>({
+    name: undefined,
+    allowApiUpdate: true,
+    allowApiInsert: true,
+    extends:Categories,
+    saving: (t) => {
+        if (t.categoryName.indexOf('1') >= 0)
+            t._.columns.categoryName.error = 'invalid'
     }
+})
+class CategoriesForThisTest extends Categories {
+    
+   
 
 
 }

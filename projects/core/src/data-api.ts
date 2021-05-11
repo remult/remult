@@ -1,26 +1,16 @@
-
-
-
-import { FindOptions, EntityProvider, translateEntityWhere } from './data-interfaces';
-import { Column } from './column';
-import { Entity } from './entity';
-import { Sort } from './sort';
-
+import {  EntityOptions } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
-import { StringColumn } from './columns/string-column';
-import { UserInfo, SpecificEntityHelper } from './context';
+import { UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { extractWhere, unpackWhere } from './filter/filter-consumer-bridge-to-url-builder';
+import { FindOptions, Repository, TheSort } from './remult3';
 
-export class DataApi<T extends Entity = Entity> {
+export class DataApi<T> {
   getRoute() {
-    if (!this.options.name)
-      return this.entityProvider.create().defs.name;
     return this.options.name;
   }
   options: DataApiSettings<T>;
-  constructor(private entityProvider: SpecificEntityHelper<any, T>) {
-    this.options = entityProvider._getApiSettings();
+  constructor(private repository: Repository<T>) {
+    this.options = repository._getApiSettings();
   }
 
   async get(response: DataApiResponse, id: any) {
@@ -28,12 +18,12 @@ export class DataApi<T extends Entity = Entity> {
       response.methodNotAllowed();
       return;
     }
-    await this.doOnId(response, id, async row => response.success(this.entityProvider.toApiPojo(row)));
+    await this.doOnId(response, id, async row => response.success(this.repository.getRowHelper(row).toApiPojo()));
   }
   async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     try {
 
-      response.success({ count: +await this.entityProvider.count(t => this.buildWhere(t, request, filterBody)) });
+      response.success({ count: +await this.repository.count(t => this.buildWhere(request, filterBody)) });
     } catch (err) {
       response.error(err);
     }
@@ -49,18 +39,17 @@ export class DataApi<T extends Entity = Entity> {
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
-      findOptions.where = t => this.buildWhere(t, request, filterBody);
+      findOptions.where = t => this.buildWhere(request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        var e = this.entityProvider.create();
-        let w = translateEntityWhere(findOptions.where, e);
+        let w = this.repository.translateWhereToFilter(findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {
-              if (col == e.columns.idColumn)
-                hasId = true;
+                 if (this.repository.isIdColumn(col))
+                   hasId = true;
             },
             isGreaterOrEqualTo: () => { },
             isGreaterThan: () => { },
@@ -87,17 +76,14 @@ export class DataApi<T extends Entity = Entity> {
           if (dir)
             dirItems = dir.split(',');
           findOptions.orderBy = x => {
-            let r = new Sort();
-            sort.split(',').forEach((name, i) => {
-              let col = x.columns.find(name.trim());
-              if (col) {
-                r.Segments.push({
-                  column: col,
-                  descending: i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d")
-                });
-              }
+
+            return sort.split(',').map((name, i) => {
+              let r: TheSort = x[name];
+              if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
+                return r.descending;
+              return r;
             });
-            return r;
+
           }
 
         }
@@ -108,24 +94,24 @@ export class DataApi<T extends Entity = Entity> {
         findOptions.page = +request.get("_page");
 
       }
-      await this.entityProvider.find(findOptions)
+      await this.repository.find(findOptions)
         .then(async r => {
-          response.success(await Promise.all(r.map(async y => this.entityProvider.toApiPojo(y))));
+          response.success(await Promise.all(r.map(async y => this.repository.getRowHelper(y).toApiPojo())));
         });
     }
     catch (err) {
       response.error(err);
     }
   }
-  private buildWhere(rowType: T, request: DataApiRequest, filterBody: any) {
+  private buildWhere(request: DataApiRequest, filterBody: any) {
     var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
-      where = translateEntityWhere(this.options.get.where, rowType);
+      where = this.repository.translateWhereToFilter(this.options.get.where);
     if (request) {
-      where = new AndFilter(where, extractWhere(rowType, request));
+      where = new AndFilter(where, this.repository.extractWhere(request));
     }
     if (filterBody)
-      where = new AndFilter(where, unpackWhere(rowType, filterBody))
+      where = new AndFilter(where, this.repository.unpackWhere(filterBody))
     return where;
   }
 
@@ -136,11 +122,11 @@ export class DataApi<T extends Entity = Entity> {
 
 
 
-      await this.entityProvider.find({
+      await this.repository.find({
         where: x => {
-          let where: Filter = x.columns.idColumn.isEqualTo(id);
+          let where: Filter =this.repository.getIdFilter(id) ;
           if (this.options && this.options.get && this.options.get.where)
-            where = new AndFilter(where, translateEntityWhere(this.options.get.where, x));
+            where = new AndFilter(where, this.repository.translateWhereToFilter(this.options.get.where));
           return where;
         }
       })
@@ -159,23 +145,26 @@ export class DataApi<T extends Entity = Entity> {
   async put(response: DataApiResponse, id: any, body: any) {
 
     await this.doOnId(response, id, async row => {
-      this.entityProvider._updateEntityBasedOnApi(row, body);
-      if (!this.entityProvider._getApiSettings(row).allowUpdate()) {
+      this.repository.getRowHelper(row)._updateEntityBasedOnApi(body);
+      if (!this._getApiSettings(row).allowUpdate(row)) {
         response.methodNotAllowed();
         return;
       }
-      await row.save();
-      response.success(this.entityProvider.toApiPojo(row));
+      await this.repository.getRowHelper(row).save();
+      response.success(this.repository.getRowHelper(row).toApiPojo());
     });
+  }
+  private _getApiSettings(row: T):DataApiSettings<T>{
+    return this.repository._getApiSettings();
   }
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
 
-      if (!this.entityProvider._getApiSettings(row).allowDelete()) {
+      if (!this._getApiSettings(row).allowDelete(row)) {
         response.methodNotAllowed();
         return;
       }
-      await row.delete();
+      await this.repository.getRowHelper(row).delete();
       response.deleted();
     });
   }
@@ -184,25 +173,25 @@ export class DataApi<T extends Entity = Entity> {
   async post(response: DataApiResponse, body: any) {
 
     try {
-
-      let r = this.entityProvider._updateEntityBasedOnApi(this.entityProvider.create(), body);
-      if (!this.entityProvider._getApiSettings(r).allowInsert()) {
+      let newr = this.repository.create();
+      this.repository.getRowHelper(newr)._updateEntityBasedOnApi(body);
+      if (!this._getApiSettings(newr).allowInsert(newr)) {
         response.methodNotAllowed();
         return;
       }
 
-      await r.save();
-      response.created(this.entityProvider.toApiPojo(r));
+      await this.repository.getRowHelper(newr).save();
+      response.created(this.repository.getRowHelper(newr).toApiPojo());
     } catch (err) {
       response.error(err);
     }
   }
 
 }
-export interface DataApiSettings<rowType extends Entity> {
-  allowUpdate: () => boolean,
-  allowInsert: () => boolean,
-  allowDelete: () => boolean,
+export interface DataApiSettings<rowType> {
+  allowUpdate: (row:rowType) => boolean,
+  allowInsert: (row:rowType) => boolean,
+  allowDelete: (row:rowType) => boolean,
   requireId: boolean,
   name?: string,
   allowRead?: boolean,
@@ -226,7 +215,7 @@ export interface DataApiResponse {
 
 export interface DataApiError {
   message: string;
-  stack?:string;
+  stack?: string;
 }
 export interface DataApiRequest {
   getBaseUrl(): string;

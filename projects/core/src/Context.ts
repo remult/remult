@@ -167,11 +167,11 @@ export class Context {
     repCache = new Map<NewEntity<any>, Repository<any>>();
     public for<T>(entity: NewEntity<T>): Repository<T> {
         let r = this.repCache.get(entity);
-        if (!r){
-            this.repCache.set(entity,r= new RepositoryImplementation(entity, this));
+        if (!r) {
+            this.repCache.set(entity, r = new RepositoryImplementation(entity, this));
         }
         return r;
-        
+
     }
 
 
@@ -204,7 +204,7 @@ export class Context {
     }
 
 
-    
+
 }
 export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
@@ -367,15 +367,15 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         return this.iterate(x => x.columns.idColumn.isEqualTo(id)).first();
     }
 
-  
-  
+
+
 
     /** returns the number of rows that matches the condition 
      * @example
      * let count = await this.context.for(Products).count(p => p.price.isGreaterOrEqualTo(5))
     */
     async count(where?: EntityWhere<T>) {
-        return await this._edp.count(this.entity.__decorateWhere(where ? translateEntityWhere(where, this.entity) : undefined));
+        return await this._edp.count(where ? translateEntityWhere(where, this.entity) : undefined);
     }
 
 
@@ -390,15 +390,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
             getOptions.where = translateEntityWhere(options.where, this.entity);
         if (options.orderBy)
             getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
-        else if (this.entity.__options.defaultOrderBy)
-            getOptions.orderBy = extractSort(this.entity.__options.defaultOrderBy());
         if (options.limit)
             getOptions.limit = options.limit;
         if (options.page)
             getOptions.page = options.page;
         if (options.__customFindData)
             getOptions.__customFindData = options.__customFindData;
-        getOptions.where = this.entity.__decorateWhere(getOptions.where);
+        getOptions.where = getOptions.where;
         return getOptions;
     }
 
@@ -481,10 +479,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                     opts.where = x => undefined;
                 }
                 if (!opts.orderBy)
-                    if (cont.entity.__options.defaultOrderBy)
-                        opts.orderBy = cont.entity.__options.defaultOrderBy;
-                    else
-                        opts.orderBy = x => x.columns.idColumn;
+                    opts.orderBy = x => x.columns.idColumn;
                 opts.orderBy = createAUniqueSort(opts.orderBy, cont.entity);
                 let pageSize = iterateConfig.pageSize;
 
@@ -633,6 +628,8 @@ export class Role {
 }
 declare type AllowedRule = string | Role | ((c: Context) => boolean) | boolean;;
 export declare type Allowed = AllowedRule | AllowedRule[];
+declare type EntityAllowedRule<T> = string | Role | ((c: Context, entity: T) => boolean) | boolean;;
+export declare type EntityAllowed<T> = EntityAllowedRule<T> | EntityAllowedRule<T>[];
 export declare type AngularComponent = { new(...args: any[]): any };
 
 

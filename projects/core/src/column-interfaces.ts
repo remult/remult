@@ -30,6 +30,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     dbReadOnly?: boolean;
     allowNull?: boolean;
     displayValue?: () => string;
+    type?:any;
 
 }
 export declare type delmeColumnValidatorHelper<T,ET>=(col:Column<T>,validate:ColumnValidator<T,ET>)=>Promise<void>;

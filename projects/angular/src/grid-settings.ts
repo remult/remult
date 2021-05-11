@@ -208,7 +208,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
   deleteCurentRow() {
     if (!this.deleteCurrentRowAllowed)
       return;
-    this.currentRowAsRestListItemRow().delete();
+    this.currentRowAsRestListItemRow().delete({});
   }
   currentRowAsRestListItemRow() {
     if (!this.currentRow)

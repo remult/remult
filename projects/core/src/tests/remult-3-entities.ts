@@ -35,7 +35,7 @@ export class Categories extends EntityBase{
     @Column()
     categoryName: string;
     @Column()
-    description;
+    description:string;
     @Column<Categories, Number>({
         serverExpression: c => c.categoryName ? c.categoryName.length : undefined
     })

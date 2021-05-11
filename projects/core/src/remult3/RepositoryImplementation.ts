@@ -10,8 +10,10 @@ import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } fr
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
-import { packWhere, unpackWhere } from "../filter/filter-consumer-bridge-to-url-builder";
+import { extractWhere, packWhere, unpackWhere } from "../filter/filter-consumer-bridge-to-url-builder";
 import { Lookup } from "../lookup";
+import { DataApiSettings } from "../data-api";
+import { DateTimeColumn } from "../columns/datetime-column";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -24,6 +26,23 @@ export class RepositoryImplementation<T> implements Repository<T>{
         //@ts-ignore
         this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
     }
+    defs = {
+        getName: () => this._helper.create().defs.name,
+        getDbName: () => this._helper.create().defs.dbName
+    };
+
+    _getApiSettings(): DataApiSettings<T> {
+        return this._helper.create()._getEntityApiSettings(this.context);
+    }
+
+    isIdColumn(col: oldColumn<any>): boolean {
+        let old = this._helper.create();
+        return old.columns.find(col) == col;
+    }
+    getIdFilter(id: any): Filter {
+        return this._helper.create().columns.idColumn.isEqualTo(id);
+    }
+
 
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T> {
         let r = this._helper.iterate(this.translateIterateOptions(options));
@@ -61,7 +80,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     getRowHelper(entity: T): rowHelper<T> {
         let x = entity[entityMember];
         if (!x) {
-            x = entity[entityMember] = this._info.createEntityOf(this._helper.create(), entity, this.context, this);
+            x = entity[entityMember] = new EntityOfImpl(this._helper.create(), this._info, entity, this.context, this, this._helper);
             if (entity instanceof EntityBase) {
                 entity._ = x;
             }
@@ -81,7 +100,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
             options = {};
 
         opt = {};
-        opt.where = this.translateEntityWhere(options.where);
+        opt.where = this.bridgeEntityWhereToOldEntity(options.where);
+        if (!options.orderBy) {
+            options.orderBy = this._info.entityInfo.defaultOrderBy;
+        }
         if (options.orderBy)
             opt.orderBy = this.translateEntityOrderBy(options.orderBy)
 
@@ -94,7 +116,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!r)
             return undefined;
         let x = new this.entity(this.context);
-        let helper = this._info.createEntityOf(r, x, this.context, this);
+        let helper = new EntityOfImpl(r, this._info, x, this.context, this, this._helper)
         x[entityMember] = helper;
         await helper.updateEntityBasedOnOldEntity();
         if (x instanceof EntityBase)
@@ -103,7 +125,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
     async count(where?: EntityWhere<T>): Promise<number> {
-        return this._helper.count(this.translateEntityWhere(where));
+        return this._helper.count(this.bridgeEntityWhereToOldEntity(where));
     }
     async findFirst(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
 
@@ -115,10 +137,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
             options = {};
 
         if (typeof options === "function") {
-            opt.where = this.translateEntityWhere(options);
+            opt.where = this.bridgeEntityWhereToOldEntity(options);
         } else {
             let o = options as IterateOptions<T>;
-            opt.where = this.translateEntityWhere(o.where);
+            opt.where = this.bridgeEntityWhereToOldEntity(o.where);
+            if (!o.orderBy) {
+                o.orderBy = this._info.entityInfo.defaultOrderBy;
+            }
             if (o.orderBy)
                 opt.orderBy = this.translateEntityOrderBy(o.orderBy)
             opt.progress = o.progress;
@@ -136,12 +161,12 @@ export class RepositoryImplementation<T> implements Repository<T>{
     findId(id: any): Promise<T> {
         return this._helper.findId(id).then(r => this.mapOldEntityToResult(r));
     }
-    private translateEntityWhere(where: EntityWhere<T>): (e: oldEntity<any>) => Filter {
-        if (this._info.entityInfo.fixedWhereFilter1) {
+    bridgeEntityWhereToOldEntity(where: EntityWhere<T>): (e: oldEntity<any>) => Filter {
+        if (this._info.entityInfo.fixedWhereFilter) {
             if (Array.isArray(where))
-                where = [this._info.entityInfo.fixedWhereFilter1, ...where];
+                where = [this._info.entityInfo.fixedWhereFilter, ...where];
             else
-                where = [this._info.entityInfo.fixedWhereFilter1, where];
+                where = [this._info.entityInfo.fixedWhereFilter, where];
         }
         if (!where)
             return undefined;
@@ -182,8 +207,11 @@ export class RepositoryImplementation<T> implements Repository<T>{
                     return [r.__toSegment()];
             }
     }
+    translateWhereToFilter(where: EntityWhere<T>): Filter {
+        return this.bridgeEntityWhereToOldEntity(where)(this._helper.create());
+    }
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T) {
-        let w = this.translateEntityWhere(where)(this._helper.create());
+        let w = this.translateWhereToFilter(where);
 
         if (w) {
             w.__applyToConsumer({
@@ -205,10 +233,14 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
     packWhere(where: EntityWhere<T>) {
-        return packWhere(this._helper.create(), this.translateEntityWhere(where));
+        return packWhere(this._helper.create(), this.bridgeEntityWhereToOldEntity(where));
     }
     unpackWhere(packed: any): Filter {
-        return unpackWhere(this._helper.create(), packed);
+        return this.extractWhere({ get: (key: string) => packed[key] });
+
+    }
+    extractWhere(filterInfo: { get: (key: string) => any; }): Filter {
+        return extractWhere(this._helper.create(), filterInfo);
     }
 }
 
@@ -216,7 +248,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
-const pojoCacheInEntity = Symbol("pojoCacheInEntity");
+
 export const columnsOfType = new Map<any, columnInfo[]>();
 export function createOldEntity<T>(entity: NewEntity<T>) {
     let r: columnInfo[] = columnsOfType.get(entity.prototype);
@@ -225,15 +257,20 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
     if (info.extends) {
-        r.push(...columnsOfType.get(info.extends.prototype));
+
+        r.unshift(...columnsOfType.get(info.extends.prototype).filter(x => !r.find(y => y.key == x.key)));
         info.extends = undefined;
     }
 
     return new EntityFullInfo<T>(r, info);
 }
 class EntityOfImpl<T> implements rowHelper<T>{
-    constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context, public repository: Repository<T>) {
+    constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context, public repository: Repository<T>, private helper: SpecificEntityHelper<any, oldEntity<any>>) {
 
+    }
+    _updateEntityBasedOnApi(body: any) {
+        this.helper._updateEntityBasedOnApi(this.oldEntity, body);
+        this.updateEntityBasedOnOldEntity();
     }
 
     wasDeleted(): boolean {
@@ -294,9 +331,9 @@ class EntityOfImpl<T> implements rowHelper<T>{
     }
     async save() {
         this.updateOldEntityBasedOnEntity();
-        await this.oldEntity.save(undefined,async (c, validate) => {
+        await this.oldEntity.save(undefined, async (c, validate) => {
             validate(this.columns[c.defs.key], this.entity);
-        });
+        }, this.entity);
         await this.updateEntityBasedOnOldEntity();
         return this.entity;
 
@@ -308,7 +345,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
     }
 
     delete() {
-        return this.oldEntity.delete();
+        return this.oldEntity.delete(this.entity);
     }
     isNew() {
         return this.oldEntity.isNew();
@@ -321,6 +358,9 @@ class EntityOfImpl<T> implements rowHelper<T>{
 export class columnBridge<T, ET> implements column<T, ET>{
     constructor(private col: oldColumn, private item: any, public rowHelper: rowHelper<ET>) {
 
+    }
+    get dbName(): string {
+        return this.col.defs.dbName;
     }
 
     get caption(): string { return this.col.defs.caption }
@@ -346,10 +386,6 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 }
 
 class EntityFullInfo<T> {
-    createEntityOf(e: oldEntity<any>, item: T, context: Context, repo: Repository<T>): EntityOfImpl<T> {
-        let r = new EntityOfImpl<T>(e, this, item, context, repo);
-        return r;
-    }
 
 
     constructor(public columns: columnInfo[], public entityInfo: EntityOptions) {
@@ -368,7 +404,7 @@ class EntityFullInfo<T> {
             else if (col.type == Number)
                 c = new NumberColumn(col.settings);
             else if (col.type == Date)
-                c = new DateColumn(col.settings);
+                c = new DateTimeColumn(col.settings);
             else
                 c = new oldColumn(col.settings);
             x.__applyColumn(c);
@@ -462,7 +498,9 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
             columnsOfType.set(target, names)
         }
 
-        let type = Reflect.getMetadata("design:type", target, key);
+        let type = settings.type;
+        if (!type)
+            type = Reflect.getMetadata("design:type", target, key);
         names.push({
             key,
             settings,
@@ -478,13 +516,13 @@ interface columnInfo {
     settings: ColumnSettings,
     type: any
 }
-export function Entity<T>(options: EntityOptions & {
+export function Entity<T>(options: EntityOptions<T> & {
     allowApiCRUD1?: (context: Context, entity: T) => boolean,
     allowApiUpdate1?: (context: Context, entity: T) => boolean,
     allowApiDelete1?: (context: Context, entity: T) => boolean,
     saving1?: (entity: T, context: Context) => Promise<any>,
     validating1?: (entity: T) => Promise<any>,
-    defaultOrderBy1?: (entity: sortOf<T>) => TheSort[] | TheSort,
+
     apiDataFilter1?: EntityWhere<T>,
 
     id?: (entity: idOf<T>) => IdDefs[],

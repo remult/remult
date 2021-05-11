@@ -3,13 +3,14 @@ import { ServerContext } from '../context';
 import { Categories } from './testModel/models';
 import { JsonDataProvider } from '../data-providers/json-data-provider';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Entity } from '../entity';
+
 import { IdEntity } from '../id-entity';
 import { BoolColumn, NumberColumn } from '../columns/number-column';
 import { StringColumn } from '../columns/string-column';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
 import { Categories as newCategories } from './remult-3-entities';
+import { Column, Entity, EntityBase } from '../remult3';
 
 
 describe("test json database", () => {
@@ -28,8 +29,8 @@ describe("test json database", () => {
             getItem: () => o,
             setItem: (k, v) => o = v
         }).getEntityDataProvider(e);
-        await Promise.all([ p.insert("noam"), p.insert("yael"), p.insert("yoni")]);
-        expect(o).toBe(JSON.stringify(["noam","yael","yoni"], undefined, 2));
+        await Promise.all([p.insert("noam"), p.insert("yael"), p.insert("yoni")]);
+        expect(o).toBe(JSON.stringify(["noam", "yael", "yoni"], undefined, 2));
 
     });
     itAsync("test basics", async () => {
@@ -67,7 +68,16 @@ describe("test json database", () => {
         expect(cats[0].categoryName.value).toBe("noam1");
     });
 });
+@Entity({ name: 'tasks' })
+class tasks extends EntityBase {
+    @Column()
+    id: number;
+    @Column()
+    name: string;
+    @Column()
+    completed: boolean;
 
+}
 describe("test tasks", () => {
     itAsync("test tasks", async () => {
         let storage = '';
@@ -76,27 +86,18 @@ describe("test tasks", () => {
             setItem: (x, y) => storage = y
         });
         let cont = new ServerContext(db);
-        let c = cont.for_old(class extends Entity {
-            id = new NumberColumn();
-            name = new StringColumn();
-            completed = new BoolColumn();
-            constructor() {
-                super({
-                    name: 'tasks'
-                })
-            }
-        });
+        let c = cont.for(tasks);
         let t = c.create();
-        t.id.value = 1;
-        await t.save();
+        t.id = 1;
+        await t._.save();
         t = c.create();
-        t.id.value = 2;
-        t.completed.value = true;
-        await t.save();
+        t.id = 2;
+        t.completed = true;
+        await t._.save();
         t = c.create();
-        t.id.value = 3;
-        t.completed.value = true;
-        await t.save();
+        t.id = 3;
+        t.completed = true;
+        await t._.save();
 
         expect(await c.count(t => t.completed.isDifferentFrom(true))).toBe(1);
         expect(await c.count(t => t.completed.isEqualTo(true))).toBe(2);
@@ -117,8 +118,5 @@ describe("test tasks", () => {
             , getBaseUrl: () => ''
         });
         d.test();
-
-
-
     });
 });

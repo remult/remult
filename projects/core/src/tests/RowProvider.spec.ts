@@ -333,7 +333,7 @@ describe("Closed List  column", () => {
 describe("test row provider", () => {
   it("auto name", () => {
     var cat = new Context().for(newCategories).create();
-    expect(cat._.defs.name).toBe('Categories');
+    expect(cat._.repository.defs.getName()).toBe('Categories');
   });
   itAsync("Insert", async () => {
 

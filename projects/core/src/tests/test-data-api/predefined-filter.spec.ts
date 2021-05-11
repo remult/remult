@@ -1,5 +1,5 @@
 import { itAsync, Done, fitAsync } from "../testHelper.spec";
-import { createDataOld, CategoriesForTestingOld, createData } from '../RowProvider.spec';
+import {   createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 import { Entity } from '../../entity';
@@ -8,7 +8,7 @@ import { StringColumn } from '../../columns/string-column';
 import { StatusColumn, Categories } from '../testModel/models';
 import { Context } from '../../context';
 import { Categories as newCategories } from '../remult-3-entities';
-import { Entity as EntityDecorator } from '../../remult3';
+import { Column, Entity as EntityDecorator, EntityBase } from '../../remult3';
 
 
 
@@ -16,7 +16,7 @@ describe("data api", () => {
   let context = new Context();
   itAsync("getArray works with predefined filter", async () => {
 
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -36,7 +36,7 @@ describe("data api", () => {
 
   });
   itAsync("get works with predefined filter", async () => {
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -54,7 +54,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("get id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -69,7 +69,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -84,7 +84,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -99,7 +99,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -114,7 +114,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id 1 works with predefined filterand shouldnt return anything", async () => {
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -129,7 +129,7 @@ describe("data api", () => {
     d.test();
   });
   itAsync("getArray works with predefined filter", async () => {
-    let c = await createDataOld(async (i) => {
+    let c = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -144,7 +144,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create().description.defs.key)
+        if (x == c.create()._.columns.description.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -168,8 +168,8 @@ describe("data api", () => {
 
 @EntityDecorator<stam1>({
   name: 'categories',
-  extends:newCategories,
-  fixedWhereFilter1: (c) => {
+  extends: newCategories,
+  fixedWhereFilter: (c) => {
     return c.description.isEqualTo('b')
   }
 })
@@ -192,21 +192,13 @@ describe("", () => {
   });
 })
 
-class CategoriesForThisTest extends Entity<number> implements CategoriesForTestingOld {
-  id = new NumberColumn();
-  categoryName = new StringColumn();
-  description = new StringColumn();
-  status = new StatusColumn();
-  constructor() {
-    super({
-      name: undefined,
-      allowApiUpdate: true,
-      allowApiDelete: true,
-      apiDataFilter: () => {
-        return this.description.isEqualTo('b')
-      }
-    });
-  }
-
-
-}
+@EntityDecorator<CategoriesForThisTest>({
+  name: undefined,
+  allowApiUpdate: true,
+  allowApiDelete: true,
+  apiDataFilter: (x) => {
+    return x.description.isEqualTo('b')
+  },
+  extends: newCategories
+})
+class CategoriesForThisTest extends newCategories { }

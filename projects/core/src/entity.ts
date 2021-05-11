@@ -1,4 +1,4 @@
-import { Context, Allowed } from "./context";
+import { Context, Allowed, EntityAllowed } from "./context";
 import { DataApiSettings } from "./data-api";
 import { Column, makeTitle } from "./column";
 import { Filter } from './filter/filter-interfaces';
@@ -7,18 +7,13 @@ import { delmeColumnValidatorHelper, valueOrExpressionToValue } from './column-i
 import { AndFilter } from './filter/filter-interfaces';
 import { SortSegment, Sort } from './sort';
 import { EntityProvider } from "./data-interfaces";
-import { EntityWhere, EntityWhereItem, NewEntity } from "./remult3";
+import { entityOf, EntityOrderBy, EntityWhere, EntityWhereItem, NewEntity } from "./remult3";
 
 
 
 //@dynamic
 export class Entity<idType = any> {
-  __decorateWhere(where: Filter): Filter {
-    if (this.__options.fixedWhereFilter) {
-      return new AndFilter(where, this.__options.fixedWhereFilter());
-    }
-    return where;
-  }
+
 
   constructor(options?: EntityOptions | string) {
     if (options) {
@@ -27,7 +22,8 @@ export class Entity<idType = any> {
       } else {
         this.__options = options;
         if (options.saving)
-          this.__onSavingRow = (proceedWithoutSavingToDb: () => void) => options.saving(proceedWithoutSavingToDb);
+          this.__onSavingRow = (row, proceedWithoutSavingToDb: () => void) =>
+            options.saving(row, proceedWithoutSavingToDb);
         if (options.validation)
           this.__onValidate = () => options.validation(this);
       }
@@ -45,7 +41,7 @@ export class Entity<idType = any> {
 
 
   //@internal 
-  _getEntityApiSettings(r: Context): DataApiSettings<Entity> {
+  _getEntityApiSettings<T>(r: Context): DataApiSettings<T> {
 
     let options = this.__options;
     if (options.allowApiCRUD !== undefined) {
@@ -58,14 +54,27 @@ export class Entity<idType = any> {
       if (options.allowApiRead === undefined)
         options.allowApiRead = options.allowApiCRUD;
     }
+    let checkAllowed = (x: EntityAllowed<any>, entity: any) => {
+      if (Array.isArray(x)) {
+        {
+          for (const item of x) {
+            if (checkAllowed(item, entity))
+              return true;
+          }
+        }
+      }
+      else if (typeof (x) === "function") {
+        return x(r, entity)
+      } else return r.isAllowed(x as Allowed);
+    }
     return {
       allowRead: r.isAllowed(options.allowApiRead),
-      allowUpdate: () => r.isAllowed(options.allowApiUpdate),
-      allowDelete: () => r.isAllowed(options.allowApiDelete),
-      allowInsert: () => r.isAllowed(options.allowApiInsert),
+      allowUpdate: (e) => checkAllowed(options.allowApiUpdate, e),
+      allowDelete: (e) => checkAllowed(options.allowApiDelete, e),
+      allowInsert: (e) => checkAllowed(options.allowApiInsert, e),
       requireId: r.isAllowed(options.apiRequireId),
       get: {
-        where: x => options.apiDataFilter ? options.apiDataFilter() : undefined
+        where: options.apiDataFilter
       }
     }
 
@@ -86,7 +95,7 @@ export class Entity<idType = any> {
   __entityData = new __EntityValueProvider(this);
 
   //@internal
-  __onSavingRow: (proceedWithoutSavingToDb: () => void) => void | Promise<void> = () => { };
+  __onSavingRow: (row: any, proceedWithoutSavingToDb: () => void) => void | Promise<void> = () => { };
   //@internal
   __onValidate: () => void | Promise<void> = () => { };
 
@@ -127,15 +136,25 @@ export class Entity<idType = any> {
    * p.name.value = 'Wine';
    * await p.save();
    */
-  async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any, validationHelper?: delmeColumnValidatorHelper<any, any>) {
+  async save(afterValidationBeforeSaving?: (row: this) => Promise<any> | any, validationHelper?: delmeColumnValidatorHelper<any, any>, row?: any) {
     if (!validationHelper) {
-      validationHelper = async (a, b) => b(undefined, undefined);
+      validationHelper = async (a, b) => b(undefined, row);
     }
     await this.__validateEntity(afterValidationBeforeSaving, validationHelper);
     let doNotSave = false;
-    await this.__onSavingRow(() => doNotSave = true);
+    await this.__onSavingRow(row, () => doNotSave = true);
+    if (row) {
+      for (const col of this.columns) {
+        let val = row[col.defs.key];
+        if (val != col.value)
+          col.value = val;
+      }
+    }
     this.__assertValidity();
-    return await this.__entityData.save(this, doNotSave, this.__options.saved).catch(e => this.catchSaveErrors(e));
+    return await this.__entityData.save(this, doNotSave, async () => {
+      if (this.__options.saved)
+        this.__options.saved(row);
+    }).catch(e => this.catchSaveErrors(e));
   }
 
   async __validateEntity(afterValidationBeforeSaving: (row: this) => Promise<any> | any, helper: delmeColumnValidatorHelper<any, any>) {
@@ -157,12 +176,15 @@ export class Entity<idType = any> {
  * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
  * await p.delete();
  */
-  async delete() {
+  async delete(row: any) {
     this.__clearErrors();
     if (this.__options.deleting)
-      await this.__options.deleting();
+      await this.__options.deleting(row);
     this.__assertValidity();
-    return this.__entityData.delete(this.__options.deleted).catch(e => this.catchSaveErrors(e));
+    return this.__entityData.delete(() => {
+      if (this.__options.deleted)
+        this.__options.deleted(row)
+    }).catch(e => this.catchSaveErrors(e));
 
   }
   /** returns true if there are no validation errors for the entity or any of it's columns */
@@ -262,7 +284,7 @@ export class Entity<idType = any> {
 
 }
 export interface EntityOptions<T = any> {
-  fixedWhereFilter1?: EntityWhereItem<T>;
+
   extends?: NewEntity<any>;
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
@@ -276,7 +298,7 @@ export interface EntityOptions<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | (() => string);
+  dbName?: string | ((entity: entityOf<T>) => string);
   /**A human readable name for the entity */
   caption?: string;
   /**
@@ -284,11 +306,11 @@ export interface EntityOptions<T = any> {
    * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiRead?: Allowed;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiUpdate?: Allowed;
+  allowApiUpdate?: EntityAllowed<T>;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiDelete?: Allowed;
+  allowApiDelete?: EntityAllowed<T>;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiInsert?: Allowed;
+  allowApiInsert?: EntityAllowed<T>;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCRUD?: Allowed;
 
@@ -299,13 +321,13 @@ export interface EntityOptions<T = any> {
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */
-  apiDataFilter?: () => Filter;
+  apiDataFilter?: EntityWhereItem<T>;
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  fixedWhereFilter?: () => Filter;
+  fixedWhereFilter?: EntityWhereItem<T>;
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: () => this.name
@@ -316,7 +338,7 @@ export interface EntityOptions<T = any> {
    * @example
    * defaultOrderBy: () => [{ column: this.price, descending: true }, this.name]
    */
-  defaultOrderBy?: (() => Sort) | (() => (Column)) | (() => (Column | SortSegment)[])
+  defaultOrderBy?: EntityOrderBy<T>,
   /** An event that will be fired before the Entity will be saved to the database.
   * If the `validationError` property of the entity or any of it's columns will be set, the save will be aborted and an exception will be thrown.
   * this is the place to run logic that we want to run in any case before an entity is saved. 
@@ -329,15 +351,15 @@ export interface EntityOptions<T = any> {
   *   }
   * }
   */
-  saving?: (proceedWithoutSavingToDb: () => void) => Promise<any> | any;
+  saving?: (row: T, proceedWithoutSavingToDb: () => void) => Promise<any> | any;
   /** will be called after the Entity was saved to the data source. */
-  saved?: () => Promise<any> | any
+  saved?: (row: T) => Promise<any> | any
   /** Will be called before an Entity is deleted. */
-  deleting?: () => Promise<any> | any
+  deleting?: (row: T) => Promise<any> | any
   /** Will be called after an Entity is deleted */
-  deleted?: () => Promise<any> | any
+  deleted?: (row: T) => Promise<any> | any
 
-  validation?: (e: Entity) => Promise<any> | any;
+  validation?: (e: T) => Promise<any> | any;
 
   dbAutoIncrementId?: boolean;
 }
@@ -357,6 +379,7 @@ export class EntityDefs<t extends Entity<any>> {
   get dbName() {
     if (!this.__options.dbName)
       this.__options.dbName = this.name;
+    //@ts-ignore - to fix later
     return valueOrExpressionToValue(this.__options.dbName);
   }
   get caption() {
