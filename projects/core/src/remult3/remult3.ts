@@ -1,5 +1,7 @@
+import { Column } from "../column";
 import { ColumnSettings } from "../column-interfaces";
 import { Context, IterateToArrayOptions, UserInfo } from "../context";
+import { DataApiRequest } from "../data-api";
 import { EntityOptions } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -22,10 +24,21 @@ export class IdEntity {
 [] add reflect metadata to dependencies
 [] rebuild validation model for ServerMethod
 
+[] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
+[] chose error instead of validationError
+[] fix allowApiCrud
+    [] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
+[] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
+[] "dbname of entity can use column names"
+[] "compound id"
+[]"getArray works with filter and in with closed list columns"
+[]"getArray works with filter and multiple values with closed list columns"
+[] "apiRequireId"
 */
 
 
 export interface rowHelper<T> {
+    _updateEntityBasedOnApi(body: any);
     isValid(): boolean;
     undoChanges();
     save(): Promise<T>;
@@ -36,9 +49,7 @@ export interface rowHelper<T> {
     wasDeleted():boolean;
     toApiPojo(): any;
     columns: entityOf<T>;
-    defs: {
-        name: string
-    };
+  
     repository:Repository<T>
 
 }
@@ -64,6 +75,7 @@ export interface IdDefs {
 }
 
 export interface column<T,entityType> {
+    dbName: string;
     key: string;
     caption: string;
     inputType: string;
@@ -77,6 +89,14 @@ export interface column<T,entityType> {
 }
 
 export interface Repository<T> {
+    _getApiSettings(): import("../data-api").DataApiSettings<T>;
+    defs: {
+        getName(): string,
+        getDbName():string
+    };
+    
+    
+   
     find(options?: FindOptions<T>): Promise<T[]>;
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T>;
     count(where?: EntityWhere<T>): Promise<number>;
@@ -108,7 +128,13 @@ export interface Repository<T> {
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
     packWhere(where: EntityWhere<T>): any;
     unpackWhere(packed: any): Filter;
+    extractWhere(filterInfo: {
+        get: (key: string) => any;
+      }): Filter;
     getRowHelper(item:T):rowHelper<T>;
+    translateWhereToFilter(where:EntityWhere<T>):Filter;
+    isIdColumn(col: Column<any>):boolean;
+    getIdFilter(id: any): Filter;
 
 }
 export interface FindOptions<T> {
