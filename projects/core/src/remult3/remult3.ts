@@ -5,11 +5,10 @@ import { DataApiRequest } from "../data-api";
 import { EntityOptions } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
+import { RowEvents } from "../__EntityValueProvider";
 
 
-export class IdEntity {
-    id: string;
-}
+
 /*
 [] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
 [] think of id entity.
@@ -34,29 +33,63 @@ export class IdEntity {
 []"getArray works with filter and in with closed list columns"
 []"getArray works with filter and multiple values with closed list columns"
 [] "apiRequireId"
+[] change the getValue - to  displayValue
+[] change the input type to support code+value, displayValueOnly
+[] "test make sort unique" - both tests
+[]"test filter works with user filter"
+[]"test filter works with selected rows"
+[]"test select rows in page is not select all"
+[] "column drop down"
+[] "column drop down with promise"
+[] "column drop down with promise"
+[] "sort is displayed right on start"
+[] "sort is displayed right"
+[] "column drop down 1"
+[] "works ok with filter"
+[] "uses a saparate column"
+[] remult angular:
+    [] fix ignore id in id Entity
+    [] fix sort method on grid settings
+    [] fix getColumnsFromObject and it's usages
+    [] data area with local columns "get value function works"
+        [] "test consolidate"
+        [] "works without entity"
+        [] "get value function works"
 */
 
 
 export interface rowHelper<T> {
+    register(listener: RowEvents);
     _updateEntityBasedOnApi(body: any);
     isValid(): boolean;
     undoChanges();
-    save(): Promise<T>;
+    save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T>;
     reload(): Promise<void>;
     delete(): Promise<void>;
     isNew(): boolean;
     wasChanged(): boolean;
-    wasDeleted():boolean;
+    wasDeleted(): boolean;
     toApiPojo(): any;
     columns: entityOf<T>;
-  
-    repository:Repository<T>
+
+    repository: Repository<T>;
+    validationError:string;
 
 }
 export type entityOf<Type> = {
-    [Properties in keyof Type]: column<Type[Properties],Type>
+    [Properties in keyof Type]: column<Type[Properties], Type>
 } & {
-    find(col: column<any,Type>): column<any,Type>
+    find(col: columnDefs): column<any, Type>,
+    readonly _items: column<any,Type>[],
+    idColumn:column<any,Type>
+
+}
+export type columnDefsOf<Type> = {
+    [Properties in keyof Type]: columnDefs
+} & {
+    find(col: columnDefs): columnDefs,
+    readonly _items: columnDefs[],
+    idColumn:columnDefs
 }
 
 
@@ -74,51 +107,59 @@ export interface IdDefs {
 
 }
 
-export interface column<T,entityType> {
-    dbName: string;
-    key: string;
-    caption: string;
+export interface column<T, entityType> extends columnDefs {
     inputType: string;
     error: string;
     displayValue: string;
-    inputValue: string;
     value: T;
     originalValue: T;
     wasChanged(): boolean;
-    rowHelper:rowHelper<entityType>
+    rowHelper: rowHelper<entityType>
 }
+export interface columnDefs {
+    key: string;
+    caption: string;
+    inputType: string;
+    dbName: string;
+}
+export interface EntityDefs<T> {
 
+    getName(): string,
+    getDbName(): string,
+    getColumns(): columnDefsOf<T>,
+    readonly caption: string
+
+}
 export interface Repository<T> {
+    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort;
+    createIdInFilter(items: T[]): Filter;
     _getApiSettings(): import("../data-api").DataApiSettings<T>;
-    defs: {
-        getName(): string,
-        getDbName():string
-    };
-    
-    
-   
+    defs: EntityDefs<T>;
+
+
+
     find(options?: FindOptions<T>): Promise<T[]>;
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T>;
     count(where?: EntityWhere<T>): Promise<number>;
     findFirst(where?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
     findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
-        /**
-     * Used to get non critical values from the Entity.
-    * The first time this method is called, it'll return a new instance of the Entity.
-    * It'll them call the server to get the actual value and cache it.
-    * Once the value is back from the server, any following call to this method will return the cached row.
-    * 
-    * It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
-    * 
-    * * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
-    * @example
-    * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
-     */
+    /**
+ * Used to get non critical values from the Entity.
+* The first time this method is called, it'll return a new instance of the Entity.
+* It'll them call the server to get the actual value and cache it.
+* Once the value is back from the server, any following call to this method will return the cached row.
+* 
+* It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
+* 
+* * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
+* @example
+* return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
+ */
     lookup(filter: EntityWhere<T>): T;
-       /** returns a single row and caches the result for each future call
-     * @example
-     * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
-     */
+    /** returns a single row and caches the result for each future call
+  * @example
+  * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
+  */
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
     create(): T;
     findId(id: any): Promise<T>;
@@ -130,10 +171,10 @@ export interface Repository<T> {
     unpackWhere(packed: any): Filter;
     extractWhere(filterInfo: {
         get: (key: string) => any;
-      }): Filter;
-    getRowHelper(item:T):rowHelper<T>;
-    translateWhereToFilter(where:EntityWhere<T>):Filter;
-    isIdColumn(col: Column<any>):boolean;
+    }): Filter;
+    getRowHelper(item: T): rowHelper<T>;
+    translateWhereToFilter(where: EntityWhere<T>): Filter;
+    isIdColumn(col: Column<any>): boolean;
     getIdFilter(id: any): Filter;
 
 }
@@ -173,18 +214,7 @@ export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityT
 export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
 
 
-export class ManyToOne<T> {
-    constructor(rep: Repository<T>, where: EntityWhere<T>) {
 
-    }
-    async waitLoad() {
-
-    }
-    exists() {
-        return false;
-    }
-    item: T;
-}
 export class EntityBase {
     _: rowHelper<this>;
 }
@@ -200,9 +230,9 @@ export interface comparableFilterItem<x> extends filterOptions<x> {
 
 
     isLessOrEqualTo(val: x): Filter;
-    isLessThan(val:x):Filter;
+    isLessThan(val: x): Filter;
     isGreaterThan(val: x): Filter;
-    isGreaterOrEqualTo(val:x):Filter;
+    isGreaterOrEqualTo(val: x): Filter;
 }
 export interface supportsContains<x> extends filterOptions<x> {
     contains(val: string): Filter;

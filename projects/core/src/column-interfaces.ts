@@ -37,7 +37,7 @@ export declare type delmeColumnValidatorHelper<T,ET>=(col:Column<T>,validate:Col
 export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType,entityType>, entity: entityType) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
-export declare type ValueOrEntityExpression<valueType, entityType extends Entity> = valueType | ((e: entityType) => valueType);
+export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);
 
 export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
     if (typeof f === 'function') {

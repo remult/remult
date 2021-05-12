@@ -28,16 +28,7 @@ export class Categories extends Entity {
 
   }
 }
-export class CategoriesWithValidation extends Categories {
-  static orderOfOperation: string;
-  constructor() {
-    super({
-      name: undefined,
-      saving: () => CategoriesWithValidation.orderOfOperation += "EntityOnSavingRow,",
-      validation: r => CategoriesWithValidation.orderOfOperation += "EntityValidate,",
-    });
-  }
-}
+
 
 export class Status {
   static open = new Status(0, "open");

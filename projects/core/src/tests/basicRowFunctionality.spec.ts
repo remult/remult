@@ -1727,7 +1727,7 @@ describe("compound id", () => {
 });
 describe("test data list", () => {
   itAsync("delete works", async () => {
-    let c = await createDataOld(async i => {
+    let c = await createData(async i => {
       await i(1, 'a');
       await i(2, 'b');
       await i(3, 'c');
@@ -1735,7 +1735,7 @@ describe("test data list", () => {
     let rl = new DataList(c);
     await rl.get();
     expect(rl.items.length).toBe(3);
-    await rl.items[1].delete({});
+    await rl.items[1]._.delete();
     expect(rl.items.length).toBe(2);
   });
   it("dbname string works", () => {
@@ -1773,16 +1773,16 @@ describe("test data list", () => {
         return r;
       }, transaction: undefined
     });
-    let rl = new DataList(cont.for_old(Categories));
+    let rl = new DataList(cont.for(newCategories));
     await rl.get();
     expect(rl.items.length).toBe(3);
     try {
-      await rl.items[1].delete({});
+      await rl.items[1]._.delete();
       fail("was not supposed to get here");
     }
     catch (err) {
       expect(rl.items.length).toBe(3);
-      expect(rl.items[1].validationError).toBe("error");
+      expect(rl.items[1]._.validationError).toBe("error");
     }
   });
 

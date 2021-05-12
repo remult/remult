@@ -5,7 +5,7 @@ import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
 import { Column as oldColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
-import { filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase } from "./remult3";
+import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
 import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
@@ -14,10 +14,12 @@ import { extractWhere, packWhere, unpackWhere } from "../filter/filter-consumer-
 import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
 import { DateTimeColumn } from "../columns/datetime-column";
+import { RowEvents } from "../__EntityValueProvider";
+import { ObjectColumn } from "../columns/object-column";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
-    private _helper: SpecificEntityHelper<any, oldEntity<any>>;
+    _helper: SpecificEntityHelper<any, oldEntity<any>>;
     private _info: EntityFullInfo<T>;
     private _lookup = new Lookup(this);
     constructor(private entity: NewEntity<T>, private context: Context) {
@@ -26,10 +28,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         //@ts-ignore
         this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
     }
-    defs = {
-        getName: () => this._helper.create().defs.name,
-        getDbName: () => this._helper.create().defs.dbName
-    };
+    defs = new myEntityDefs(this);
 
     _getApiSettings(): DataApiSettings<T> {
         return this._helper.create()._getEntityApiSettings(this.context);
@@ -106,6 +105,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
         if (options.orderBy)
             opt.orderBy = this.translateEntityOrderBy(options.orderBy)
+        opt.limit = options.limit;
+        opt.page = options.page;
 
         return this._helper.find(opt).then(rows => Promise.all(rows.map(r =>
             this.mapOldEntityToResult(r)
@@ -194,7 +195,15 @@ export class RepositoryImplementation<T> implements Repository<T>{
             }
         }
     }
-    private translateEntityOrderBy(orderBy: EntityOrderBy<T>): old.EntityOrderBy<oldEntity<any>> {
+    createIdInFilter(items: T[]): Filter {
+        let idColumn = this._helper.create().columns.idColumn;
+        return idColumn.isIn(items.map(i => this.getRowHelper(i).columns[idColumn.defs.key].value));
+    }
+    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort {
+        let r = this.translateEntityOrderBy(orderBy)(this._helper.create());
+        return new Sort(...r);
+    }
+    private translateEntityOrderBy(orderBy: EntityOrderBy<T>): (e: oldEntity) => SortSegment[] {
         if (!orderBy)
             return undefined;
         else
@@ -244,7 +253,23 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 }
 
+class myEntityDefs<T> implements EntityDefs<T>{
+    constructor(private parent: RepositoryImplementation<T>) {
 
+    }
+    getName(): string {
+        return this.parent._helper.create().defs.name;
+    }
+    getDbName(): string {
+        return this.parent._helper.create().defs.dbName;
+    }
+    getColumns(): columnDefsOf<T> {
+        return this.parent.getRowHelper(this.parent.create()).columns;
+    }
+    get caption() {
+        return this.parent._helper.create().defs.caption;
+    }
+}
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
@@ -267,6 +292,16 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
 class EntityOfImpl<T> implements rowHelper<T>{
     constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context, public repository: Repository<T>, private helper: SpecificEntityHelper<any, oldEntity<any>>) {
 
+    }
+    get validationError() {
+        return this.oldEntity.validationError;
+    }
+    set validationError(val: string) {
+        this.oldEntity.validationError = val;
+    }
+
+    register(listener: RowEvents) {
+        this.oldEntity.__entityData.register(listener);
     }
     _updateEntityBasedOnApi(body: any) {
         this.helper._updateEntityBasedOnApi(this.oldEntity, body);
@@ -308,7 +343,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
 
 
     }
-    defs = { name: this.oldEntity.defs.name };
+
     private _columns: entityOf<T>;
     justUpdateEntityBasedOnOldEntity() {
         for (const col of this.info.columns) {
@@ -319,19 +354,22 @@ class EntityOfImpl<T> implements rowHelper<T>{
     get columns(): entityOf<T> {
         if (!this._columns) {
             let r = {
-                find: (c: column<any, T>) => r[c.key]
+                find: (c: column<any, T>) => r[c.key],
+                _items: []
             };
             for (const c of this.info.columns) {
-                r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key), this.entity, this);
+                r._items.push(r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key), this.entity, this));
             }
 
             this._columns = r as unknown as entityOf<T>;
         }
         return this._columns;
     }
-    async save() {
+    async save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any) {
         this.updateOldEntityBasedOnEntity();
-        await this.oldEntity.save(undefined, async (c, validate) => {
+        await this.oldEntity.save(!afterValidationBeforeSaving ? undefined : async x => {
+            afterValidationBeforeSaving(this.entity)
+        }, async (c, validate) => {
             validate(this.columns[c.defs.key], this.entity);
         }, this.entity);
         await this.updateEntityBasedOnOldEntity();
@@ -447,9 +485,18 @@ class sortHelper implements TheSort {
 
 
 }
-class filterHelper implements filterOptions<any>, comparableFilterItem<any>  {
+class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
     constructor(private col: oldColumn) {
 
+    }
+    contains(val: string): Filter {
+        if (this.col instanceof StringColumn ) {
+            return this.col.contains(val);
+        }
+        if ( this.col instanceof ObjectColumn) {
+            return this.col.contains(val);
+        }
+        throw new Error("contains doesnt work with this type")
     }
     isLessThan(val: any): Filter {
         return __isLessThan(this.col, val);

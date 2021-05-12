@@ -3,7 +3,7 @@
  */
 
 
-
+//export * from './src/remult3';
 export * from './src/data-interfaces';//V
 export * from './src/sql-command';//V
 export * from './src/column-interfaces'; // revisit input type

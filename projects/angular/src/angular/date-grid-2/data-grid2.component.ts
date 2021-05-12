@@ -10,6 +10,7 @@ import { Directionality } from '@angular/cdk/bidi';
 import { DataControlSettings } from '../../data-control-interfaces';
 import { GridButton, GridSettings, RowButton } from '../../grid-settings';
 import { openDialog } from '../remult-core.module';
+import { columnDefs } from '../../../../core/src/remult3';
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
@@ -87,7 +88,7 @@ export class DataGrid2Component implements OnChanges {
 
   @Input() records: any;
   @Input() settings: GridSettings<any>;
-  isFiltered(c: Column) {
+  isFiltered(c: columnDefs) {
     return this.settings.columns.filterHelper.isFiltered(c);
   }
   //@ts-ignore
@@ -249,7 +250,7 @@ export class DataGrid2Component implements OnChanges {
         this.addButton(b);
       }
     if (!this.records && this.settings) {
-      this.settings.getRecords().then((r: any) => {
+      this.settings.reloadData().then((r: any) => {
         this.records = r;
 
       });

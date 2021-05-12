@@ -1,9 +1,10 @@
 import { Column, ColumnSettings, Entity, ValueListColumn, ValueListItem, ValueOrEntityExpression } from "@remult/core";
+import { column, columnDefs, getEntityOf } from "../../core/src/remult3";
 
-export type DataControlInfo<rowType extends Entity = Entity> = DataControlSettings<rowType> | Column;
-export interface DataControlSettings<entityType extends Entity = Entity> {
+export type DataControlInfo<rowType> = DataControlSettings<rowType> | column<any, any>;
+export interface DataControlSettings<entityType = any> {
 
-    column?: Column;
+    column?: columnDefs;
     getValue?: (row: entityType) => any;
     readOnly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
@@ -50,31 +51,32 @@ export function extend<T extends Column>(col: T): {
 
 export const configDataControlField = Symbol('configDataControlField');
 
-export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
-    if (!x.caption && col.defs.caption)
-        x.caption = col.defs.caption;
-    if (!x.inputType && col.defs.inputType)
-        x.inputType = col.defs.inputType;
+export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
+    if (!x.caption && col.caption)
+        x.caption = col.caption;
+    if (!x.inputType && col.inputType)
+        x.inputType = col.inputType;
     let settings: ColumnSettings = col["__settings"];
-    if (x.readOnly == undefined) {
-        if (settings.sqlExpression)
-            x.readOnly = true;
-        else
+    if (settings)
+        if (x.readOnly == undefined) {
+            if (settings.sqlExpression)
+                x.readOnly = true;
+            else
 
-            if (typeof settings.allowApiUpdate === 'boolean')
-                x.readOnly = !settings.allowApiUpdate;
+                if (typeof settings.allowApiUpdate === 'boolean')
+                    x.readOnly = !settings.allowApiUpdate;
 
 
-    }
+        }
 
 
     col[__displayResult] = __getDataControlSettings(col);
     if (col[__displayResult]) {
         if (!x.getValue && col[__displayResult].getValue) {
             x.getValue = e => {
-                let c: Column = col;
+                let c: columnDefs = col;
                 if (e)
-                    c = e.columns.find(c) as Column;
+                    c = getEntityOf(e).columns.find(c) as columnDefs;
                 if (!c[__displayResult])
                     c[__displayResult] = __getDataControlSettings(c);
                 return c[__displayResult].getValue(e);
@@ -82,9 +84,9 @@ export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
         }
         if (!x.click && col[__displayResult].click) {
             x.click = e => {
-                let c: Column = col;
+                let c: columnDefs = col;
                 if (e)
-                    c = e.columns.find(c) as Column;
+                    c = getEntityOf(e).columns.find(c) as columnDefs;
                 if (!c[__displayResult])
                     c[__displayResult] = __getDataControlSettings(c);
                 c[__displayResult].click(e);
@@ -92,9 +94,9 @@ export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
         }
         if (!x.allowClick && col[__displayResult].allowClick) {
             x.allowClick = e => {
-                let c: Column = col;
+                let c: columnDefs = col;
                 if (e)
-                    c = e.columns.find(c) as Column;
+                    c = getEntityOf(e).columns.find(c) as columnDefs;
                 if (!c[__displayResult])
                     c[__displayResult] = __getDataControlSettings(c);
                 return c[__displayResult].allowClick(e);
@@ -112,7 +114,7 @@ export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
 }
 const __displayResult = Symbol("__displayResult");
 
-export function __getDataControlSettings(col: Column): DataControlSettings {
+export function __getDataControlSettings(col: columnDefs): DataControlSettings {
     if (col[configDataControlField]) {
         let r = {};
         col[configDataControlField](r);

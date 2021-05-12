@@ -25,6 +25,7 @@ export class DataArea2Component implements OnChanges {
       if (this.object) {
         //@ts-ignore
         this.settings = new DataAreaSettings({
+          //@ts-ignore
           columnSettings: () => getColumnsFromObject(this.object)
         });
       }

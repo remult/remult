@@ -1,23 +1,24 @@
 import { Entity } from "../entity";
 import { Column } from "../column";
-import { FindOptions, translateEntityWhere } from "../data-interfaces";
+
 import { DateTimeColumn } from "../columns/datetime-column";
 import { StringColumn } from "../columns/string-column";
 
 import { AndFilter, Filter } from './filter-interfaces';
 import { ObjectColumn } from "../columns/object-column";
+import { columnDefs, FindOptions, Repository } from "../remult3";
 
-export class FilterHelper<rowType extends Entity> {
+export class FilterHelper<rowType > {
   filterRow: rowType;
-  filterColumns: Column[] = [];
-  forceEqual: Column[] = [];
-  constructor(private reloadData: () => void) {
+  filterColumns: columnDefs[] = [];
+  forceEqual: columnDefs[] = [];
+  constructor(private reloadData: () => void,private repository:Repository<rowType>) {
 
   }
-  isFiltered(column: Column) {
+  isFiltered(column: columnDefs) {
     return this.filterColumns.indexOf(column) >= 0;
   }
-  filterColumn(column: Column, clearFilter: boolean, forceEqual: boolean) {
+  filterColumn(column: columnDefs, clearFilter: boolean, forceEqual: boolean) {
     if (!column)
       return;
     if (clearFilter) {
@@ -34,7 +35,9 @@ export class FilterHelper<rowType extends Entity> {
   addToFindOptions(opt: FindOptions<rowType>) {
     this.filterColumns.forEach(c => {
 
+      //@ts-ignore
       let val = this.filterRow.columns.find(c).value;
+      //@ts-ignore
       let f: Filter = c.isEqualTo(val);
       if (c instanceof StringColumn) {
         let fe = this.forceEqual;
@@ -62,7 +65,7 @@ export class FilterHelper<rowType extends Entity> {
 
       if (opt.where) {
         let x = opt.where;
-        opt.where = r => new AndFilter(translateEntityWhere(x,r), f);
+        opt.where = r => new AndFilter(this.repository.translateWhereToFilter(x), f);
       }
       else opt.where = r => f;
     });

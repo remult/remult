@@ -1,17 +1,18 @@
 import { Entity } from "@remult/core";
+import { columnDefsOf } from "../../core/src/remult3";
 import { ColumnCollection } from "./column-collection";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
-export interface IDataAreaSettings<rowType extends Entity = Entity> {
-  columnSettings?: (rowType: rowType) => DataArealColumnSetting<rowType>[];
+export interface IDataAreaSettings<rowType=any > {
+  columnSettings?: (rowType: columnDefsOf<rowType>) => DataArealColumnSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
 }
 
-export class DataAreaSettings<rowType extends Entity = Entity>
+export class DataAreaSettings<rowType =any>
 {
   lines: DataControlSettings[][] = [];
-  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
+  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?:columnDefsOf<rowType>) {
     if (columns == undefined) {
       columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true);
       columns.numOfColumnsInGrid = 0;
@@ -44,5 +45,5 @@ export class DataAreaSettings<rowType extends Entity = Entity>
 }
 
 
-export type DataArealColumnSetting<rowType extends Entity> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
+export type DataArealColumnSetting<rowType > = DataControlInfo<rowType> | DataControlInfo<rowType>[];
 

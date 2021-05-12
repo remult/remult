@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action,  Column, EntityOrderBy, EntityWhere, Entity, ValueListItem, EntityProvider } from '@remult/core';
+import { actionInfo, Context, RestDataProvider, Action,  Column,  Entity, ValueListItem, EntityProvider } from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -29,6 +29,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
+import { Repository,EntityOrderBy, EntityWhere, columnDefs,EntityDefs } from '../../../core/src/remult3';
 
 
 
@@ -100,9 +101,9 @@ export async function openDialog<T, C>(component: { new(...args: any[]): C; }, s
 
 /** returns an array of values that can be used in the value list property of a data control object */
 
-export async function getValueList<T extends Entity>(provider:EntityProvider<T>, args?: {
-  idColumn?: (e: T) => Column,
-  captionColumn?: (e: T) => Column,
+export async function getValueList<T >(repository:Repository<T>, args?: {
+  idColumn?: (e: EntityDefs<T>) => columnDefs,
+  captionColumn?: (e: EntityDefs<T>) => columnDefs,
   orderBy?: EntityOrderBy<T>,
   where?: EntityWhere<T>
 }): Promise<ValueListItem[]> {
@@ -110,26 +111,25 @@ export async function getValueList<T extends Entity>(provider:EntityProvider<T>,
     args = {};
   }
   if (!args.idColumn) {
-    args.idColumn = x => x.columns.idColumn;
+    args.idColumn = x => x.getColumns().idColumn;
   }
   if (!args.captionColumn) {
-    let entity = provider.create();
-    let idCol = args.idColumn(entity);
-    for (const keyInItem of entity.columns) {
+    let idCol = args.idColumn(repository.defs);
+    for (const keyInItem of repository.defs.getColumns()._items) {
       if (keyInItem != idCol) {
-        args.captionColumn = x => x.columns.find(keyInItem);
+        args.captionColumn = x => x.getColumns().find(keyInItem);
         break;
       }
     }
   }
-  return (await provider.find({
+  return (await repository.find({
     where: args.where,
     orderBy: args.orderBy,
     limit: 1000
   })).map(x => {
     return {
-      id: args.idColumn(x).value,
-      caption: args.captionColumn(x).value
+      id:repository.getRowHelper(x).columns.find(args.idColumn(repository.defs)).value,
+      caption: repository.getRowHelper(x).columns.find(args.captionColumn(repository.defs)).value,
     }
   });
 }

@@ -1,10 +1,11 @@
 import { Column, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
+import { column, columnDefs, EntityDefs, getEntityOf } from "../../core/src/remult3";
 import { DataControlInfo, DataControlSettings, decorateDataSettings } from "./data-control-interfaces";
 
 
 
-export class ColumnCollection<rowType extends Entity = Entity> {
-  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean) {
+export class ColumnCollection<rowType = any> {
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean) {
 
 
   }
@@ -12,12 +13,12 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     return this.showArea();
 
   }
-  __getColumn(map: DataControlSettings, record: Entity) {
-    let result: Column;
+  __getColumn(map: DataControlSettings, record: any) {
+    let result: column<any, any>;
     if (record)
-      result = record.columns.find(map.column);
+      result = getEntityOf(record).columns.find(map.column);
     if (!result)
-      result = map.column;
+      result = map.column as column<any, any>;
     return result;
   }
 
@@ -51,7 +52,8 @@ export class ColumnCollection<rowType extends Entity = Entity> {
         continue;
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
-      if (!x.column && c instanceof Column) {
+      let col = c as columnDefs;
+      if (!x.column && col.key && col.caption && col.dbName && col.inputType) {
         x = {
           column: c,
         }
@@ -208,16 +210,16 @@ export class ColumnCollection<rowType extends Entity = Entity> {
   _getError(col: DataControlSettings, r: Entity) {
     if (!col.column)
       return undefined;
-    return this.__getColumn(col, r).validationError;
+    return this.__getColumn(col, r).error;
   }
-  autoGenerateColumnsBasedOnData(r: Entity) {
+  autoGenerateColumnsBasedOnData(defs: EntityDefs<any>) {
     if (this.items.length == 0) {
 
-      if (r) {
-        let ignoreCol: Column = undefined;
-        if (r instanceof IdEntity)
-          ignoreCol = r.id;
-        for (const c of r.columns) {
+      if (defs) {
+        let ignoreCol: columnDefs = undefined;
+        //   if (r instanceof IdEntity)
+        //    ignoreCol = r.id;
+        for (const c of defs.getColumns()._items) {
           if (c != ignoreCol)
             this.add(c);
         }
@@ -229,60 +231,7 @@ export class ColumnCollection<rowType extends Entity = Entity> {
 
 
   }
-  __columnSettingsTypeScript() {
-    let memberName = 'x';
-    if (this.currentRow())
-      memberName = this.currentRow().defs.name;
-    memberName = memberName[0].toLocaleLowerCase() + memberName.substring(1);
-    let result = ''
 
-    this.items.forEach(c => {
-      if (result.length > 0)
-        result += ',\n';
-
-      result += '  ' + this.__columnTypeScriptDescription(c, memberName);
-
-    });
-    result = `columnSettings: ${memberName} => [\n` + result + "\n]";
-    return result;
-  }
-  __columnTypeScriptDescription(c: DataControlSettings, memberName: string) {
-    let properties = "";
-    function addToProperties(name: string, value: any) {
-      if (properties.length > 0)
-        properties += ', ';
-      properties += "\n    " + name + ": " + value;
-    }
-    function addString(name: string, value: string) {
-      addToProperties(name, "'" + value + "'");
-
-    }
-    let columnMember = '';
-    if (c.column) {
-      columnMember += memberName + "." + c.column.defs.key;
-      if (c == c.column)
-        columnMember += '/*equal*/';
-      if (c.caption != c.column.defs.caption) {
-        addString('caption', c.caption)
-      }
-
-    } else {
-      addString('caption', c.caption);
-    }
-    if (c.width && c.width.length > 0)
-      addString('width', c.width);
-    if (properties.length > 0) {
-      if (columnMember != '') {
-        properties = '\n    column: ' + columnMember + ', ' + properties;
-      }
-    }
-    let whatToAdd = '';
-    if (properties.length > 0)
-      whatToAdd = "{" + properties + "\n  }";
-    else if (columnMember != '')
-      whatToAdd = columnMember;
-    return whatToAdd;
-  }
   __changeWidth(col: DataControlSettings, what: number) {
     let width = col.width;
     if (!width)

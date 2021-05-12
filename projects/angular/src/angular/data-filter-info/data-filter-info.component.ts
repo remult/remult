@@ -8,6 +8,7 @@ import { DataControlSettings } from '../../data-control-interfaces';
 
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { FilterDialogComponent } from '../filter-dialog/filter-dialog.component';
+import { columnDefs } from '../../../../core/src/remult3';
 @Component({
     selector: 'Data-Filter',
     templateUrl: './data-filter-info.component.html',
@@ -21,7 +22,7 @@ export class DataFilterInfoComponent {
 
     @Input() settings: GridSettings<any>;
     filterColumnToAdd: DataControlSettings;
-    getCurrentFilterValue(col: Column) {
+    getCurrentFilterValue(col: columnDefs) {
         this.settings.initOrigList();
         let m = this.settings.origList.find(x => x.column == col);
         return this.settings.columns._getColDisplayValue(m, this.settings.filterHelper.filterRow);
@@ -38,7 +39,7 @@ export class DataFilterInfoComponent {
     showFilterButton = false;
     showAddFilter = false;
     editFilterVisible = false;
-    showEditFilter(col: Column) {
+    showEditFilter(col: columnDefs) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
         this.editFilterVisible = true;
         this.showAddFilter = false;
@@ -66,7 +67,7 @@ export class DataFilterInfoComponent {
         this.showAddFilter = true;
         this.filterColumnToAdd = undefined;
     }
-    public async editFilter(col: Column) {
+    public async editFilter(col: columnDefs) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
         await openDialog(FilterDialogComponent, x => x.info = this);
     }
