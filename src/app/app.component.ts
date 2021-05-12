@@ -10,7 +10,7 @@ import { DialogService } from '../../projects/angular/schematics/hello/files/src
 import { InputAreaComponent } from '../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
 import { PasswordColumn, Users } from '../../projects/angular/schematics/hello/files/src/app/users/users';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { Roles } from '../../docs-code/users/roles';
+import { Roles } from '../../docs/docs-code/users/roles';
 
 
 
