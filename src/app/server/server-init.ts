@@ -43,11 +43,6 @@ export async function serverInit() {
             columnsB: columnsOfType.get(b.prototype),
 
         })
-    let x = new b();
-    console.log({
-        //@ts-ignore
-        p:b.prototype.prototype
-    })
 
 
     return r;

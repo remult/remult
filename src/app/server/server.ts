@@ -27,9 +27,8 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
     let s = initExpress(app, {
-        dataProvider:dataSource,
-        queueStorage: await preparePostgresQueueStorage(dataSource),
-        disableAutoApi:true
+ //       dataProvider:dataSource,
+        queueStorage: await preparePostgresQueueStorage(dataSource)
     });
 
     app.use(express.static('dist/my-project'));

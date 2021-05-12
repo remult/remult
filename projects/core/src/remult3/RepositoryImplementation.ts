@@ -6,7 +6,7 @@ import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
 import { Column as oldColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
-import { Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
+import { allEntities, Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -281,6 +281,8 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
         columnsOfType.set(entity.prototype, r = []);
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
+    if (!info)
+        throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity()?")
     if (info.extends) {
 
         r.unshift(...columnsOfType.get(info.extends.prototype).filter(x => !r.find(y => y.key == x.key)));
@@ -407,6 +409,10 @@ export class columnBridge<T, ET> implements column<T, ET>{
     set error(val: string) { this.col.validationError = val; }
     get displayValue(): string { return this.col.displayValue };
     get inputValue(): string { return this.col.inputValue };
+    set inputValue(val: string) {
+        this.col.inputValue = val
+        this.item[this.col.defs.key] = this.col.value;
+    };
     get value(): any { return this.item[this.col.defs.key] };
     get originalValue(): any { return this.col.originalValue };
     get key(): string { return this.col.defs.key };
@@ -490,10 +496,10 @@ class filterHelper implements filterOptions<any>, comparableFilterItem<any>, sup
 
     }
     contains(val: string): Filter {
-        if (this.col instanceof StringColumn ) {
+        if (this.col instanceof StringColumn) {
             return this.col.contains(val);
         }
-        if ( this.col instanceof ObjectColumn) {
+        if (this.col instanceof ObjectColumn) {
             return this.col.contains(val);
         }
         throw new Error("contains doesnt work with this type")
@@ -576,7 +582,7 @@ export function Entity<T>(options: EntityOptions<T> & {
 
 }) {
     return target => {
-
+        allEntities.push(target);
         Reflect.defineMetadata(entityInfo, options, target);
         return target;
     }

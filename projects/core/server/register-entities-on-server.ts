@@ -11,7 +11,7 @@ export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProvi
             let c = new ServerContext();
             c.setReq(r);
             c.setDataProvider((dataProvider)(c));
-            return new DataApi(c.for_old(e));
+            return new DataApi(c.for(e));
         });
 
     });

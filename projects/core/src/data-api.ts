@@ -4,7 +4,7 @@ import { UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FindOptions, Repository, TheSort } from './remult3';
 
-export class DataApi<T> {
+export class DataApi<T=any> {
   getRoute() {
     return this.options.name;
   }

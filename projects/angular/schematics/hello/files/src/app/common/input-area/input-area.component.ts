@@ -42,7 +42,8 @@ export class InputAreaComponent implements OnInit {
       this.area = new DataAreaSettings({ columnSettings: () => this.args.columnSettings() });
     }
     else if (this.args.object) {
-      this.area = new DataAreaSettings({ columnSettings: () => getColumnsFromObject(this.args.object) })
+      throw new Error("Not implemented");
+      //this.area = new DataAreaSettings({ columnSettings: () => getColumnsFromObject(this.args.object) })
     }
   }
   cancel() {

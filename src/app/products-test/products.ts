@@ -1,29 +1,27 @@
 import { extend } from '@remult/angular';
-import { IdEntity, StringColumn, EntityClass, Context, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn, Entity, ServerFunction } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, Context, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn, ServerFunction } from '@remult/core';
+import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
-@EntityClass
+@Entity({
+  name: "Products",
+  allowApiCRUD: true,
+})
 
-export class Products extends IdEntity {
-  name = new StringColumn({
+export class Products extends EntityBase {
+  @Column()
+  name = '';
+  @Column()
+  price = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
+  @Column() // should be Date
+  availableFrom1: Date;
+  @Column() // should be Date
+  availableTo: Date;
+  @Column()
+  archive: boolean;
 
-  });
-  price = extend( new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x=>x.getValue=()=>this.price.value);
-  availableFrom1 = new DateColumn();
-  availableTo = new DateColumn();
-  archive = new BoolColumn();
-  constructor(context: Context) {
-    super({
-      name: "Products",
-      allowApiCRUD: true,
-      saving: () => {
-     
-      }
-    });
-
-  }
   @ServerMethod({ allowed: true })
   async doit() {
-    await this.save();
+    await this._.save();
   }
 }
 

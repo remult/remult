@@ -68,6 +68,7 @@ export class Entity<idType = any> {
       } else return r.isAllowed(x as Allowed);
     }
     return {
+      name:options.name,
       allowRead: r.isAllowed(options.allowApiRead),
       allowUpdate: (e) => checkAllowed(options.allowApiUpdate, e),
       allowDelete: (e) => checkAllowed(options.allowApiDelete, e),

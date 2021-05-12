@@ -1,8 +1,5 @@
 import { Column } from "../column";
-import { ColumnSettings } from "../column-interfaces";
-import { Context, IterateToArrayOptions, UserInfo } from "../context";
-import { DataApiRequest } from "../data-api";
-import { EntityOptions } from "../entity";
+import { IterateToArrayOptions } from "../context";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 import { RowEvents } from "../__EntityValueProvider";
@@ -22,7 +19,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] replace method not allowed with forbidden - when something is not allowed
 [] add reflect metadata to dependencies
 [] rebuild validation model for ServerMethod
-
+[] consider the setting decimal digits, instead might be useful to determine db storage
 [] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 [] chose error instead of validationError
 [] fix allowApiCrud
@@ -30,6 +27,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
 [] "dbname of entity can use column names"
 [] "compound id"
+[] "bool column doesn't need contains, isin and is not in"
 []"getArray works with filter and in with closed list columns"
 []"getArray works with filter and multiple values with closed list columns"
 [] "apiRequireId"
@@ -47,7 +45,9 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "column drop down 1"
 [] "works ok with filter"
 [] "uses a saparate column"
+[] completed = false; didn't serialize as false to json
 [] remult angular:
+    [] redesign extend 
     [] fix ignore id in id Entity
     [] fix sort method on grid settings
     [] fix getColumnsFromObject and it's usages
@@ -73,15 +73,15 @@ export interface rowHelper<T> {
     columns: entityOf<T>;
 
     repository: Repository<T>;
-    validationError:string;
+    validationError: string;
 
 }
 export type entityOf<Type> = {
     [Properties in keyof Type]: column<Type[Properties], Type>
 } & {
     find(col: columnDefs): column<any, Type>,
-    readonly _items: column<any,Type>[],
-    idColumn:column<any,Type>
+    readonly _items: column<any, Type>[],
+    idColumn: column<any, Type>
 
 }
 export type columnDefsOf<Type> = {
@@ -89,7 +89,7 @@ export type columnDefsOf<Type> = {
 } & {
     find(col: columnDefs): columnDefs,
     readonly _items: columnDefs[],
-    idColumn:columnDefs
+    idColumn: columnDefs
 }
 
 
@@ -113,6 +113,7 @@ export interface column<T, entityType> extends columnDefs {
     displayValue: string;
     value: T;
     originalValue: T;
+    inputValue:string;
     wasChanged(): boolean;
     rowHelper: rowHelper<entityType>
 }
