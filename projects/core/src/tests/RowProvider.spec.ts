@@ -82,39 +82,56 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
   createData: (doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>,
     entity?: {
       new(): CategoriesForTesting
-    }) => Promise<Repository<T>>
+    }) => Promise<Repository<T>>,
+  insertFourRows: () => Promise<Repository<T>>
 }) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
   var sql = new SqlDatabase(webSql);
+  SqlDatabase.LogToConsole = true;
   for (const r of await (await sql.execute("select name from sqlite_master where type='table'")).rows) {
     switch (r.name) {
       case "__WebKitDatabaseInfoTable__":
         break;
       default:
-        await sql.execute("drop table " + r.name);
+        await sql.execute("drop table if exists " + r.name);
     }
   }
 
-  for (const db of [new InMemoryDataProvider(), sql]) {
+  for (const db of [
+    new InMemoryDataProvider()
+    //, 
+    //sql
+  ]) {
     let context = new ServerContext(db);
+    let createData = async (doInsert, entity?) => {
+      if (!entity)
+        entity = newCategories;
+      let rep = context.for(entity) as Repository<T>;
+      if (doInsert)
+        await doInsert(async (id, name, description, status) => {
+
+          let c = rep.create();
+          c.id = id;
+          c.categoryName = name;
+          c.description = description;
+          if (status)
+            c.status = status;
+          await rep.save(c);
+
+        });
+      return rep;
+    };
+
     await doTest({
-      context, createData: async (doInsert, entity) => {
-        if (!entity)
-          entity = newCategories;
-        let rep = context.for(entity) as Repository<T>;
-        if (doInsert)
-          await doInsert(async (id, name, description, status) => {
-
-            let c = rep.create();
-            c.id = id;
-            c.categoryName = name;
-            c.description = description;
-            if (status)
-              c.status = status;
-            await rep.save(c);
-
-          });
-        return rep;
+      context,
+      createData,
+      insertFourRows: async () => {
+        return createData(async i => {
+          await i(1, 'noam', 'x');
+          await i(4, 'yael', 'x');
+          await i(2, 'yoni', 'y');
+          await i(3, 'maayan', 'y');
+        });
       }
     });
   }
@@ -152,15 +169,7 @@ async function insertFourRows() {
     await i(3, 'maayan', 'y');
   });
 };
-async function insertFourRowsOld() {
 
-  return createDataOld(async i => {
-    await i(1, 'noam', 'x');
-    await i(4, 'yael', 'x');
-    await i(2, 'yoni', 'y');
-    await i(3, 'maayan', 'y');
-  });
-};
 describe("grid filter stuff", () => {
   itAsync("test filter works", async () => {
     let c = await insertFourRows();
@@ -370,24 +379,25 @@ describe("test row provider", () => {
     expect(cat._.repository.defs.name).toBe('Categories');
   });
   itAsync("Insert", async () => {
-
-    let forCat = await createData(async x => { });
-    let rows = await forCat.find();
-    expect(rows.length).toBe(0);
-    let c = forCat.create();
-    c.id = 1;
-    c.categoryName = 'noam';
-    await c._.save();
-    rows = await forCat.find();
-    expect(rows.length).toBe(1);
-    expect(rows[0].id).toBe(1);
-    expect(rows[0].categoryName).toBe('noam');
+    await testAllDbs(async ({ createData }) => {
+      let forCat = await createData(async x => { });
+      let rows = await forCat.find();
+      expect(rows.length).toBe(0);
+      let c = forCat.create();
+      c.id = 1;
+      c.categoryName = 'noam';
+      await c._.save();
+      rows = await forCat.find();
+      expect(rows.length).toBe(1);
+      expect(rows[0].id).toBe(1);
+      expect(rows[0].categoryName).toBe('noam');
+    })
   });
 
 
 
-  itAsync("test  delete", async () => {
-    
+  itAsync("test delete", async () => {
+
     await testAllDbs(async ({ createData }) => {
       let c = await createData(async insert => await insert(5, 'noam'));
 
@@ -436,23 +446,25 @@ describe("test row provider", () => {
     expect(rows[0].id).toBe(2);
   });
   itAsync("test filter packer", async () => {
-    let r = await insertFourRows();
-    let rows = await r.find();
-    expect(rows.length).toBe(4);
+    await testAllDbs(async ({ insertFourRows }) => {
+      let r = await insertFourRows();
+      let rows = await r.find();
+      expect(rows.length).toBe(4);
 
-    rows = await r.find({
-      where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('x')))
+      rows = await r.find({
+        where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('x')))
 
-    });
-    expect(rows.length).toBe(2);
-    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isEqualTo(4))) });
-    expect(rows.length).toBe(1);
-    expect(rows[0].categoryName).toBe('yael');
-    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
-    expect(rows.length).toBe(1);
-    expect(rows[0].id).toBe(2);
-    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
-    expect(rows.length).toBe(2);
+      });
+      expect(rows.length).toBe(2);
+      rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isEqualTo(4))) });
+      expect(rows.length).toBe(1);
+      expect(rows[0].categoryName).toBe('yael');
+      rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+      expect(rows.length).toBe(1);
+      expect(rows[0].id).toBe(2);
+      rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+      expect(rows.length).toBe(2);
+    })
 
   });
   itAsync("test in filter packer", async () => {
@@ -512,9 +524,10 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string;
     };
-    EntityDecorator({ name: '' })(type);
+    EntityDecorator({ name: '', extends: newCategories })(type);
     ColumnDecorator<typeof type.prototype, string>({
-      validate: (col, entity) => Validators.required(col, entity, "m")
+      validate: (col, entity) =>
+        Validators.required(col, entity, "m")
     })(type.prototype, "a");
     var c = context.for(type);
     var cat = c.create();
@@ -579,64 +592,67 @@ describe("test row provider", () => {
     expect(saved).toBe(false);
   });
   itAsync("Test unique Validation,", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
-
-    let type = class extends newCategories {
-      a: string
-    };
-    EntityDecorator({ name: '' })(type);
-    ColumnDecorator<typeof type.prototype, string>({
-      validate: async (col, en) => {
-        if (en._.isNew() || en.a != en._.columns.a.originalValue) {
-          if (await c.count(f => f.a.isEqualTo(en.a)))
-            en._.columns.a.error = 'already exists';
+    await testAllDbs(async ({ context }) => {
+      let type = class extends newCategories {
+        a: string
+      };
+      EntityDecorator({ name: 'categories', extends: newCategories })(type);
+      ColumnDecorator<typeof type.prototype, string>({
+        validate: async (col, en) => {
+          if (en._.isNew() || en.a != en._.columns.a.originalValue) {
+            if (await c.count(f => f.a.isEqualTo(en.a)))
+              en._.columns.a.error = 'already exists';
+          }
         }
-      }
-    })(type.prototype, "a");
-    var c = context.for(type);
+      })(type.prototype, "a");
+      var c = context.for(type);
 
-    var cat = c.create();
-    cat.a = '12';
-    await cat._.save();
-    cat = c.create();
-    cat.a = '12';
-
-    var saved = false;
-    try {
+      var cat = c.create();
+      cat.a = '12';
+      cat.id = 1;
       await cat._.save();
-      saved = true;
-    }
-    catch (err) {
-      expect(cat._.columns.a.error).toEqual("already exists");
-    }
-    expect(saved).toBe(false);
+      cat = c.create();
+      cat.a = '12';
+
+      var saved = false;
+      try {
+        await cat._.save();
+        saved = true;
+      }
+      catch (err) {
+        expect(cat._.columns.a.error).toEqual("already exists");
+      }
+      expect(saved).toBe(false);
+    });
 
   });
   itAsync("Test unique Validation 2", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
-    let type = class extends newCategories {
-      a: string
-    };
-    EntityDecorator({ name: '' })(type);
-    ColumnDecorator<typeof type.prototype, string>({
-      validate: Validators.unique
-    })(type.prototype, "a");
-    var c = context.for(type);
-    var cat = c.create();
-    cat.a = '12';
-    await cat._.save();
-    cat = c.create();
-    cat.a = '12';
+    await testAllDbs(async ({ context }) => {
+      let type = class extends newCategories {
+        a: string
+      };
+      EntityDecorator({ name: 'sdfgds', extends: newCategories })(type);
+      ColumnDecorator<typeof type.prototype, string>({
+        validate: Validators.unique
+      })(type.prototype, "a");
+      var c = context.for(type);
+      var cat = c.create();
+      cat.a = '12';
 
-    var saved = false;
-    try {
       await cat._.save();
-      saved = true;
-    }
-    catch (err) {
-      expect(cat._.columns.a.error).toEqual("already exists");
-    }
-    expect(saved).toBe(false);
+      cat = c.create();
+      cat.a = '12';
+
+      var saved = false;
+      try {
+        await cat._.save();
+        saved = true;
+      }
+      catch (err) {
+        expect(cat._.columns.a.error).toEqual("already exists");
+      }
+      expect(saved).toBe(false);
+    });
 
   });
   itAsync("Test unique Validation and is not empty", async () => {
@@ -644,7 +660,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string
     };
-    EntityDecorator({ name: '' })(type);
+    EntityDecorator({ name: 'asdfa' ,extends:newCategories })(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
@@ -686,7 +702,7 @@ describe("test row provider", () => {
     }
     let orderOfOperation = '';
     EntityDecorator({
-      name: '',
+      name: 'asdf',
       saving: () => orderOfOperation += "EntityOnSavingRow,",
       validation: r => orderOfOperation += "EntityValidate,",
       extends: newCategories

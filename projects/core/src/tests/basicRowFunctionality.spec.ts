@@ -25,7 +25,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful } from '../data-providers/rest-
 import { OrFilter } from '../filter/filter-interfaces';
 import { Categories as newCategories } from './remult-3-entities';
 import { BoolColumn, DateTimeColumn, NumberColumn, StringColumn } from '@remult/core';
-import { Column, Entity, EntityBase } from '../remult3';
+import { Column, CompoundId, Entity, EntityBase } from '../remult3';
 
 
 export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
@@ -1888,7 +1888,7 @@ describe("check allowedDataType", () => {
   });
 
 });
-@Entity<CompoundIdEntity>({ name: 'compountIdEntity', id: x => [x.a, x.b] })
+@Entity<CompoundIdEntity>({ name: 'compountIdEntity', id: x =>new CompoundId(x.a, x.b) })
 class CompoundIdEntity extends EntityBase {
   @Column()
   a: number;

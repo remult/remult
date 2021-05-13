@@ -152,8 +152,8 @@ export class Column<dataType = any>  {
   }
   get displayValue() {
     if (this.value) {
-      if (this.__settings.displayValue)
-        return this.__settings.displayValue();
+      if (this.__settings.displayValue&&false)
+        
       return this.value.toString();
     }
     return '';

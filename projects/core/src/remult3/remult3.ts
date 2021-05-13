@@ -28,6 +28,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
 [] "dbname of entity can use column names"
 [] "compound id"
+[] test default value set in the pojo itself: a=0;
 [] "test object column"
 [] test-paged-foreach
 [] "order by api"
@@ -123,7 +124,7 @@ export interface column<T, entityType> extends columnDefs {
 }
 
 export interface EntityDefs<T = any> {
-    dbAutoIncrementId: any;
+    dbAutoIncrementId: boolean;
     idColumn: columnDefs<any>;
 
     readonly name: string,

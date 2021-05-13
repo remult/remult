@@ -3,11 +3,11 @@ import { DataApiSettings } from "./data-api";
 import { Column, makeTitle } from "./column";
 import { Filter } from './filter/filter-interfaces';
 import { __EntityValueProvider } from './__EntityValueProvider';
-import { delmeColumnValidatorHelper, valueOrExpressionToValue } from './column-interfaces';
+import { columnDefs, delmeColumnValidatorHelper, valueOrExpressionToValue } from './column-interfaces';
 import { AndFilter } from './filter/filter-interfaces';
 import { SortSegment, Sort } from './sort';
 import { EntityProvider } from "./data-interfaces";
-import { entityOf, EntityOrderBy, EntityWhere, EntityWhereItem, NewEntity } from "./remult3";
+import { entityOf, EntityOrderBy, EntityWhere, EntityWhereItem, NewEntity, EntityDefs as newEntityDefs, columnDefsOf } from "./remult3";
 
 
 
@@ -68,7 +68,7 @@ export class Entity<idType = any> {
       } else return r.isAllowed(x as Allowed);
     }
     return {
-      name:options.name,
+      name: options.name,
       allowRead: r.isAllowed(options.allowApiRead),
       allowUpdate: (e) => checkAllowed(options.allowApiUpdate, e),
       allowDelete: (e) => checkAllowed(options.allowApiDelete, e),
@@ -286,6 +286,7 @@ export class Entity<idType = any> {
 }
 export interface EntityOptions<T = any> {
 
+  id?: (entity: columnDefsOf<T>) => columnDefs,
   extends?: NewEntity<any>;
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
@@ -299,7 +300,7 @@ export interface EntityOptions<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: entityOf<T>) => string);
+  dbName?: string | ((entity: columnDefsOf<T>) => string);
   /**A human readable name for the entity */
   caption?: string;
   /**

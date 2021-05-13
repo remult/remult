@@ -158,7 +158,7 @@ export class Context {
     public for<T>(entity: NewEntity<T>): Repository<T> {
         let r = this.repCache.get(entity);
         if (!r) {
-            this.repCache.set(entity, r = new RepositoryImplementation(entity, this));
+            this.repCache.set(entity, r = new RepositoryImplementation(entity, this,this._dataSource));
         }
         return r;
 

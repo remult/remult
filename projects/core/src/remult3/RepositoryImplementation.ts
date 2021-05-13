@@ -1,7 +1,7 @@
 
 import { columnDefs, ColumnSettings, dbLoader, jsonLoader } from "../column-interfaces";
 import { Entity as oldEntity, EntityOptions } from "../entity";
-import { BoolColumn, Column as oldColumn, columnBridgeToDefs, DateTimeColumn, makeTitle, NumberColumn, StringColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
+import { BoolColumn, Column as oldColumn, columnBridgeToDefs, ColumnDefs, CompoundIdColumn, DateTimeColumn, makeTitle, NumberColumn, StringColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
 import { allEntities, Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
@@ -13,19 +13,24 @@ import { DataApiSettings } from "../data-api";
 
 import { RowEvents } from "../__EntityValueProvider";
 import { ObjectColumn } from "../columns/object-column";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
     _helper: SpecificEntityHelper<any, oldEntity<any>>;
     private _info: EntityFullInfo<T>;
     private _lookup = new Lookup(this);
-    constructor(private entity: NewEntity<T>, private context: Context) {
+    private __edp: EntityDataProvider;
+    private get edp() {
+        return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.defs);
+    }
+    constructor(private entity: NewEntity<T>, private context: Context, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity);
-        this.defs = new myEntityDefs(this._info.createOldEntity());
+
         //@ts-ignore
         this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
     }
-    defs: EntityDefs;
+    get defs(): EntityDefs { return this._info };
 
     _getApiSettings(): DataApiSettings<T> {
         return this._helper.create()._getEntityApiSettings(this.context);
@@ -94,7 +99,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     getRowHelper(entity: T): rowHelper<T> {
         let x = entity[entityMember];
         if (!x) {
-            x = entity[entityMember] = new EntityOfImpl(this._helper.create(), this._info, entity, this.context, this, this._helper);
+            x = entity[entityMember] = new rowHelperImplementation(this._info, entity, this, this.edp, this.context, true);
             if (entity instanceof EntityBase) {
                 entity._ = x;
             }
@@ -108,24 +113,23 @@ export class RepositoryImplementation<T> implements Repository<T>{
     async save(entity: T): Promise<T> {
         return await this.getRowHelper(entity).save();
     }
-    find(options?: FindOptions<T>): Promise<T[]> {
-        let opt: old.FindOptions<any> = {};
+    async find(options?: FindOptions<T>): Promise<T[]> {
+        let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
 
         opt = {};
-        opt.where = this.bridgeEntityWhereToOldEntity(options.where);
-        if (!options.orderBy) {
-            options.orderBy = this._info.entityInfo.defaultOrderBy;
-        }
-        if (options.orderBy)
-            opt.orderBy = this.translateEntityOrderBy(options.orderBy)
+        opt.where = this.translateWhereToFilter(options.where);
+        opt.orderBy = this.translateOrderByToSort(options.orderBy);
+
         opt.limit = options.limit;
         opt.page = options.page;
 
-        return this._helper.find(opt).then(rows => Promise.all(rows.map(r =>
-            this.mapOldEntityToResult(r)
-        )));
+        let rawRows = await this.edp.find(opt);
+        let result = await Promise.all(rawRows.map(async r =>
+            await this.mapRawDataToResult(r)
+        ));
+        return result;
 
     }
     private async mapOldEntityToResult(r: oldEntity<any>) {
@@ -135,6 +139,18 @@ export class RepositoryImplementation<T> implements Repository<T>{
         let helper = new EntityOfImpl(r, this._info, x, this.context, this, this._helper)
         x[entityMember] = helper;
         await helper.updateEntityBasedOnOldEntity();
+        if (x instanceof EntityBase)
+            x._ = x[entityMember];
+        return x;
+    }
+    private async mapRawDataToResult(r: any) {
+        if (!r)
+            return undefined;
+        let x = new this.entity(this.context);
+        let helper = new rowHelperImplementation(this._info, x, this, this.edp, this.context, false);
+        helper.loadDataFrom(r);
+
+        x[entityMember] = helper;
         if (x instanceof EntityBase)
             x._ = x[entityMember];
         return x;
@@ -170,8 +186,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     create(): T {
         let r = new this.entity(this.context);
-        let z = this.getRowHelper(r) as EntityOfImpl<T>;
-        z.justUpdateEntityBasedOnOldEntity();
+        let z = this.getRowHelper(r);
+
         return r;
     }
     findId(id: any): Promise<T> {
@@ -189,7 +205,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         else {
 
             return (e: oldEntity<any>): Filter => {
-                let entity = this._info.createFilterOf(e);
+                let entity = this._info.createFilterOf();
                 if (Array.isArray(where)) {
                     return new AndFilter(...where.map(x => {
                         if (x === undefined)
@@ -215,15 +231,22 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return idColumn.isIn(items.map(i => this.getRowHelper(i).columns[idColumn.defs.key].value));
     }
     translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort {
-        let r = this.translateEntityOrderBy(orderBy)(this._helper.create());
-        return new Sort(...r);
+        if (!orderBy)
+            return undefined;
+        let entity = this._info.createSortOf();
+        let r = orderBy(entity);//
+        if (Array.isArray(r))
+            return new Sort(...r.map(r => r.__toSegment()));
+        else
+            return new Sort(r.__toSegment());
+
     }
     private translateEntityOrderBy(orderBy: EntityOrderBy<T>): (e: oldEntity) => SortSegment[] {
         if (!orderBy)
             return undefined;
         else
             return (e: oldEntity<any>) => {
-                let entity = this._info.createSortOf(e);
+                let entity = this._info.createSortOf();
                 let r = orderBy(entity);//
                 if (Array.isArray(r))
                     return r.map(r => r.__toSegment());
@@ -232,7 +255,24 @@ export class RepositoryImplementation<T> implements Repository<T>{
             }
     }
     translateWhereToFilter(where: EntityWhere<T>): Filter {
-        return this.bridgeEntityWhereToOldEntity(where)(this._helper.create());
+        let entity = this._info.createFilterOf();
+        if (Array.isArray(where)) {
+            return new AndFilter(...where.map(x => {
+                if (x === undefined)
+                    return undefined;
+                let r = x(entity);
+                if (Array.isArray(r))
+                    return new AndFilter(...r);
+                return r;
+            }));
+
+        }
+        else if (typeof where === 'function') {
+            let r = where(entity);
+            if (Array.isArray(r))
+                return new AndFilter(...r);
+            return r;
+        }
     }
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T) {
         let w = this.translateWhereToFilter(where);
@@ -324,6 +364,289 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
 
     return new EntityFullInfo<T>(r, info);
 }
+class rowHelperImplementation<T> implements rowHelper<T>{
+
+
+    constructor(private info: EntityFullInfo<T>, private entity: T, public repository: Repository<T>, private edp: EntityDataProvider, private context: Context, private _isNew: boolean) {
+
+    }
+    validationError: string;
+    private _wasDeleted = false;
+
+    listeners: RowEvents[];
+    register(listener: RowEvents) {
+        if (!this.listeners)
+            this.listeners = []
+        this.listeners.push(listener);
+    }
+
+    _updateEntityBasedOnApi(body: any) {
+        throw new Error("not yet implemented");
+
+    }
+
+    wasDeleted(): boolean {
+        return this._wasDeleted;
+    }
+    isValid(): boolean {
+        return !!!this.validationError && this.errors == undefined;
+
+    }
+    undoChanges() {
+        throw new Error("not yet implemented");
+    }
+    async reload(): Promise<void> {
+        throw new Error("not yet implemented");
+    }
+    toApiPojo() {
+        let result: any = {};
+        for (const col of this.info.columnsInfo) {
+            if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
+                result[col.key] = col.settings.jsonLoader.toJson(this.entity[col.key]);
+            }
+        }
+        return result;
+    }
+    async updateEntityBasedOnOldEntity() {
+        throw new Error("not yet implemented");
+
+
+    }
+
+
+
+    justUpdateEntityBasedOnOldEntity() {
+        throw new Error("not yet implemented");
+    }
+    private _columns: entityOf<T>;
+
+    get columns(): entityOf<T> {
+        if (!this._columns) {
+            let r = {
+                find: (c: column<any, T>) => r[c.key],
+                _items: []
+            };
+            for (const c of this.info.columnsInfo) {
+                r._items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.entity, this));
+            }
+
+            this._columns = r as unknown as entityOf<T>;
+        }
+        return this._columns;
+
+    }
+    async __validateEntity(afterValidationBeforeSaving: (row: T) => Promise<any> | any) {
+        this.__clearErrors();
+
+        for (const c of this.info.columnsInfo) {
+            if (c.settings.validate) {
+                let col = new columnImpl(c.settings, this.info.columns[c.key], this.entity, this);
+                await col.__performValidation();
+            }
+        }
+
+        if (this.info.entityInfo.validation)
+            await this.info.entityInfo.validation(this.entity);
+        if (afterValidationBeforeSaving)
+            await afterValidationBeforeSaving(this.entity);
+        this.__assertValidity();
+    }
+    async save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T> {
+        await this.__validateEntity(afterValidationBeforeSaving);
+        let doNotSave = false;
+        if (this.info.entityInfo.saving) {
+            this.info.entityInfo.saving(this.entity, () => doNotSave = true);
+        }
+
+        this.__assertValidity();
+
+        let d = this.copyDataToObject();
+        if (this.info.idColumn instanceof CompoundIdColumn)
+            d.id = undefined;
+        let updatedRow: any;
+        try {
+            if (this.isNew()) {
+                updatedRow = await this.edp.insert(d);
+            }
+            else {
+                if (doNotSave) {
+                    updatedRow = (await this.edp.find({ where: this.repository.getIdFilter(this.id) }))[0];
+                }
+                else
+                    updatedRow = await this.edp.update(this.id, d);
+            }
+            this.loadDataFrom(updatedRow);
+            if (this.info.entityInfo.saved)
+                await this.info.entityInfo.saved(this.entity);
+            if (this.listeners)
+                this.listeners.forEach(x => {
+                    if (x.rowSaved)
+                        x.rowSaved(true);
+                });
+            this.saveOriginalData();
+            this._isNew = false;
+            return this.entity;
+        }
+        catch (err) {
+            this.catchSaveErrors(err);
+        }
+
+    }
+
+    private copyDataToObject() {
+        let d: any = {};
+        for (const col of this.info.columns._items) {
+            d[col.key] = this.entity[col.key];
+        }
+        return d;
+    }
+    originalValues: any = {};
+    private saveOriginalData() {
+        this.originalValues = this.copyDataToObject();
+    }
+
+
+
+    async delete() {
+        this.__clearErrors();
+        if (this.info.entityInfo.deleting)
+            await this.info.entityInfo.deleting(this.entity);
+        this.__assertValidity();
+
+
+        await this.edp.delete(this.id);
+        if (this.info.entityInfo.deleted)
+            await this.info.entityInfo.deleted(this.entity);
+        if (this.listeners) {
+            for (const l of this.listeners) {
+                if (l.rowDeleted)
+                    l.rowDeleted();
+            }
+        }
+        this._wasDeleted = true;
+    }
+    errors: { [key: string]: string };
+    private __assertValidity() {
+        if (!this.isValid()) {
+            let error: ErrorInfo = {
+                modelState: Object.assign({}, this.errors),
+                message: this.validationError
+            }
+            if (!error.message) {
+                for (const col of this.info.columns._items) {
+                    if (this.errors[col.key]) {
+                        error.message = col.caption + ": " + this.errors[col.key];
+                    }
+                }
+
+            }
+            throw error;
+
+
+        }
+    }
+    catchSaveErrors(err: any): any {
+        let e = err;
+
+        if (e instanceof Promise) {
+            return e.then(x => this.catchSaveErrors(x));
+        }
+        if (e.error) {
+            e = e.error;
+        }
+
+        if (e.message)
+            this.validationError = e.message;
+        else if (e.Message)
+            this.validationError = e.Message;
+        else this.validationError = e;
+        let s = e.modelState;
+        if (!s)
+            s = e.ModelState;
+        if (s) {
+            this.errors = s;
+        }
+        throw err;
+
+    }
+    __clearErrors() {
+        this.errors = undefined;
+        this.validationError = undefined;
+    }
+    loadDataFrom(data: any) {
+        for (const col of this.info.columns._items) {
+            this.entity[col.key] = data[col.key];
+        }
+        if (this.repository.defs.idColumn instanceof CompoundIdColumn) {
+            data.columns.idColumn.__addIdToPojo(data);
+        }
+        this.id = data[this.repository.defs.idColumn.key];
+    }
+    private id;
+
+    isNew(): boolean {
+        return this._isNew;
+    }
+    wasChanged(): boolean {
+        throw new Error("not yet implemented");
+    }
+}
+class columnImpl<T> implements column<any, T> {
+    constructor(private settings: ColumnSettings, private defs: columnDefs, private entity: any, private helper: rowHelperImplementation<T>) {
+
+    }
+    inputType: string = this.settings.inputType;;
+    get error(): string {
+        if (!this.helper.errors)
+            return undefined;
+        return this.helper.errors[this.key];
+    }
+    set error(error: string) {
+        if (!this.helper.errors)
+            this.helper.errors = {};
+        this.helper.errors[this.key] = error;
+    }
+    get displayValue(): string {
+        if (this.value != undefined) {
+            if (this.settings.displayValue)
+                return this.settings.displayValue(this.value, this.entity);
+            else
+                return this.value.toString();
+        }
+        return "";
+    };
+    get value() { return this.entity[this.key] };
+    set value(value: any) { this.entity[this.key] = value };
+    originalValue: any;
+    inputValue: string;
+    wasChanged(): boolean {
+        return this.originalValue != this.value;
+    }
+    rowHelper: rowHelper<any> = this.helper;
+    dbReadOnly: boolean = this.defs.dbReadOnly;
+    isVirtual: boolean = this.defs.isVirtual;
+    key: string = this.defs.key;
+    caption: string = this.defs.caption;
+    dbName: string = this.defs.dbName;
+    dbLoader: dbLoader<any> = this.defs.dbLoader;
+    jsonLoader: jsonLoader<any> = this.defs.jsonLoader;
+    type: any = this.defs.type;
+    dbType?: string = this.defs.dbType;
+
+    async __performValidation() {
+        let x = typeof (this.settings.validate);
+        if (Array.isArray(this.settings.validate)) {
+            for (const v of this.settings.validate) {
+                await v(this, this.entity);
+            }
+        } else if (typeof this.settings.validate === 'function')
+            await this.settings.validate(this, this.entity);
+    }
+
+
+
+
+}
 class EntityOfImpl<T> implements rowHelper<T>{
     constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context, public repository: Repository<T>, private helper: SpecificEntityHelper<any, oldEntity<any>>) {
 
@@ -381,7 +704,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
 
     private _columns: entityOf<T>;
     justUpdateEntityBasedOnOldEntity() {
-        for (const col of this.info.columns) {
+        for (const col of this.info.columns._items) {
             this.entity[col.key] = this.oldEntity.columns.find(col.key).value;
         }
     }
@@ -392,7 +715,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
                 find: (c: column<any, T>) => r[c.key],
                 _items: []
             };
-            for (const c of this.info.columns) {
+            for (const c of this.info.columns._items) {
                 r._items.push(r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key), this.entity, this));
             }
 
@@ -412,7 +735,7 @@ class EntityOfImpl<T> implements rowHelper<T>{
 
     }
     private updateOldEntityBasedOnEntity() {
-        for (const col of this.info.columns) {
+        for (const col of this.info.columns._items) {
             this.oldEntity.columns.find(col.key).value = this.entity[col.key];
         }
     }
@@ -468,28 +791,66 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 
 }
 
-class EntityFullInfo<T> {
 
-    private defs: columnDefs<any>[];
-    constructor(public columns: columnInfo[], public entityInfo: EntityOptions) {
-        this.defs = columns.map(x => ({
-            caption: x.settings.caption,
-            dbLoader: x.settings.dbLoader,
-            dbName: x.settings.dbName,
-            inputType: x.settings.inputType,
-            jsonLoader: x.settings.jsonLoader,
-            key: x.settings.key,
-            dbReadOnly: x.settings.dbReadOnly,
-            isVirtual: !!x.settings.serverExpression,
-            type: x.settings.type,
-            dbType: x.settings.dbType
-        }));
+class EntityFullInfo<T> implements EntityDefs<T> {
+
+
+
+    constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions) {
+
+
+        let r = {
+            find: (c: column<any, T>) => r[c.key],
+            _items: []
+        };
+
+        for (const x of columnsInfo) {
+            r._items.push(r[x.key] = {
+                caption: x.settings.caption,
+                dbLoader: x.settings.dbLoader,
+                dbName: x.settings.dbName,
+                inputType: x.settings.inputType,
+                jsonLoader: x.settings.jsonLoader,
+                key: x.settings.key,
+                dbReadOnly: x.settings.dbReadOnly,
+                isVirtual: !!x.settings.serverExpression,
+                type: x.settings.type,
+                dbType: x.settings.dbType
+            });
+        }
+
+        this.columns = r as unknown as entityOf<T>;
+
+        this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
+        this.name = entityInfo.name;
+        this.caption = entityInfo.caption;
+        if (typeof entityInfo.dbName === "string")
+            this.dbName = entityInfo.dbName;
+        else if (typeof entityInfo.dbName === "function")
+            this.dbName = entityInfo.dbName(this.columns);
+        if (entityInfo.id) {
+            this.idColumn = entityInfo.id(this.columns)
+        } else {
+            if (this.columns["id"])
+                this.idColumn = this.columns["id"];
+            else
+                this.idColumn = this.columns._items[0];
+        }
     }
+
+    dbAutoIncrementId: boolean;
+    idColumn: columnDefs<any>;
+    columns: columnDefsOf<T>;
+
+
+    name: string;
+    dbName: string;
+    caption: string;
     createOldEntity() {
         let x = new oldEntity(this.entityInfo);
 
         let firstCol: oldColumn;
-        for (const col of this.columns) {
+        for (const col of this.columnsInfo) {
             let c: oldColumn;
             if (col.type == String)
                 c = new StringColumn(col.settings);
@@ -510,23 +871,23 @@ class EntityFullInfo<T> {
         }
         return x;
     }
-    createFilterOf(e: oldEntity): filterOf<T> {
+    createFilterOf(): filterOf<T> {
         let r = {};
-        for (const c of this.defs) {
+        for (const c of this.columns._items) {
             r[c.key] = new filterHelper(c);
         }
         return r as filterOf<T>;
     }
-    createSortOf(e: oldEntity): sortOf<T> {
+    createSortOf(): sortOf<T> {
         let r = {};
-        for (const c of this.columns) {
-            r[c.key] = new sortHelper(e.columns.find(c.key));
+        for (const c of this.columns._items) {
+            r[c.key] = new sortHelper(c);
         }
         return r as sortOf<T>;
     }
 }
 class sortHelper implements TheSort {
-    constructor(private col: oldColumn, private _descending = false) {
+    constructor(private col: columnDefs, private _descending = false) {
 
     }
     get descending(): TheSort {
@@ -534,7 +895,7 @@ class sortHelper implements TheSort {
     }
     __toSegment(): SortSegment {
         return {
-            column: new columnBridgeToDefs(this.col),
+            column: this.col,
             descending: this._descending
         }
     }
@@ -611,13 +972,28 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
         }
 
         let type = settings.type;
-        if (!type)
+        if (!type) {
             type = Reflect.getMetadata("design:type", target, key);
+            settings.type = type;
+        }
+
         if (!settings.dbLoader) {
-            settings.dbLoader = {
-                fromDb: x => x,
-                toDb: x => x
-            }
+            if (settings.type == Number) {
+                settings.dbLoader = {
+                    //@ts-ignore
+                    fromDb: value => {
+                        if (value !== undefined)
+                            return +value;
+                        return undefined;
+                    },
+                    toDb: value => value
+
+                }
+            } else
+                settings.dbLoader = {
+                    fromDb: x => x,
+                    toDb: x => x
+                }
         }
         if (!settings.jsonLoader) {
             if (settings.type == Boolean) {
@@ -633,7 +1009,8 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
                     },
                     toJson: x => x
                 }
-            } else
+            }
+            else
                 settings.jsonLoader = {
                     fromJson: x => x,
                     toJson: x => x
@@ -663,12 +1040,35 @@ export function Entity<T>(options: EntityOptions<T> & {
 
     apiDataFilter1?: EntityWhere<T>,
 
-    id?: (entity: idOf<T>) => IdDefs[],
+
 
 }) {
+    if (!options.dbName)
+        options.dbName = options.name;
     return target => {
         allEntities.push(target);
         Reflect.defineMetadata(entityInfo, options, target);
         return target;
     }
+}
+
+
+
+
+export class CompoundId implements columnDefs<string>{
+    constructor(...columns: columnDefs[]) {
+        if (false)
+            console.log(columns);
+    }
+    dbReadOnly: boolean;
+    isVirtual: boolean;
+    key: string;
+    caption: string;
+    inputType: string;
+    dbName: string;
+    dbLoader: dbLoader<string>;
+    jsonLoader: jsonLoader<string>;
+    type: any;
+    dbType?: string;
+
 }

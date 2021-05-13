@@ -14,7 +14,7 @@ import { EntityOrderBy, EntityWhere, extractSort } from '../data-interfaces';
 
 import { GridSettings } from '@remult/angular';
 import { Categories as newCategories } from './remult-3-entities';
-import { Entity, EntityBase,Column } from '../remult3';
+import { Entity, EntityBase,Column, CompoundId } from '../remult3';
 
 
 describe("test paged foreach ", async () => {
@@ -253,7 +253,7 @@ describe("test paged foreach ", async () => {
 
 @Entity<theTable>({
     name:'',
-    id:t=>[t.a,t.b]
+    id:t=>new CompoundId(t.a,t.b)
 })
 class theTable extends EntityBase{
     @Column()

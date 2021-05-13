@@ -8,6 +8,7 @@ import { Entity } from "../entity";
 import { ValueListColumn } from "../column";
 import { EntityDefs } from "../remult3";
 import { columnDefs } from "../column-interfaces";
+import { SqlDatabase } from "./sql-database";
 
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
@@ -50,7 +51,10 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 }
             }
         }
-        await this.createCommand().execute('create table if not exists ' + entity.dbName + ' (' + result + '\r\n)');
+        let sql = 'create table if not exists ' + entity.dbName + ' (' + result + '\r\n)';
+        if (SqlDatabase.LogToConsole)
+            console.log(sql);
+        await this.createCommand().execute(sql);
     }
 
     createCommand(): SqlCommand {

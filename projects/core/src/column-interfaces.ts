@@ -33,7 +33,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     allowNull?: boolean;
-    displayValue?: () => string;
+    displayValue?: (value:valueType,entity:entityType) => string;
     type?: any;
     dbLoader?: dbLoader<valueType>;
     jsonLoader?: jsonLoader<valueType>;

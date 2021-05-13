@@ -27,15 +27,15 @@ export interface CategoriesForTesting extends EntityBase {
     name: 'Categories',
     allowApiCRUD: true
 })
-export class Categories extends EntityBase{
+export class Categories extends EntityBase {
     @Column({
         dbName: 'CategoryID'
     })
-    id: number;
+    id: number = 0;
     @Column()
     categoryName: string;
     @Column()
-    description:string;
+    description: string;
     @Column<Categories, Number>({
         serverExpression: c => c.categoryName ? c.categoryName.length : undefined
     })
