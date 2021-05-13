@@ -1,22 +1,11 @@
 
-import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere } from "./data-interfaces";
-
-
-
-
+import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest, DataApiSettings } from "./data-api";
-
-
-import { Column, __isGreaterThan, __isLessThan } from "./column";
+import { Column, columnBridgeToDefs, __isGreaterThan, __isLessThan } from "./column";
 import { Entity } from "./entity";
-import { Lookup } from "./lookup";
-
-
 import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';
-
-
-import { RestDataProvider, RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+import { RestDataProvider,  RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { CompoundIdColumn } from "./columns/compound-id-column";
 import { NewEntity, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
@@ -693,10 +682,10 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
             }
             equalToColumn.push(s.column);
             if (s.descending) {
-                f = new AndFilter(f, __isLessThan(s.column, values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isLessThan(new columnBridgeToDefs(s.column), values.get(s.column.defs.key)));
             }
             else
-                f = new AndFilter(f, __isGreaterThan(s.column, values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isGreaterThan(new columnBridgeToDefs(s.column), values.get(s.column.defs.key)));
             r = new OrFilter(r, f);
         }
         return r;

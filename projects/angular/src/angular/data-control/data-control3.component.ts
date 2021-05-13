@@ -3,8 +3,8 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Column,  Entity, StringColumn, ValueListItem } from '@remult/core';
-import { columnDefs } from '../../../../core/src/remult3';
+import { columnDefs,  Entity, StringColumn, ValueListItem } from '@remult/core';
+
 import { ColumnCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
 

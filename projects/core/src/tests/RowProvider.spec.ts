@@ -13,7 +13,7 @@ import { Sort } from '../sort';
 import { NumberColumn } from '../columns/number-column';
 import { DataAreaSettings } from '../../../angular/src/data-area-settings';
 import { FilterHelper } from '../filter/filter-helper';
-import { Column } from '../column';
+import { Column, columnBridgeToDefs } from '../column';
 import { DateTimeColumn } from '../columns/datetime-column';
 import { DateColumn } from '../columns/date-column';
 import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
@@ -21,7 +21,6 @@ import { CharDateStorage } from '../columns/storage/char-date-storage';
 import { StringColumn } from '../columns/string-column';
 import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
-import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
 import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
@@ -174,7 +173,7 @@ describe("grid filter stuff", () => {
       execute: () => { throw "rr" }
     });
     var col = new StringColumn({ dbName: 'col' });
-    x.containsCaseInsensitive(col, "no'am");
+    x.containsCaseInsensitive(new columnBridgeToDefs(col), "no'am");
     expect(x.where).toBe(" where lower (col) like lower ('%no''am%')");
   });
   it("filter with contains", () => {
@@ -183,7 +182,7 @@ describe("grid filter stuff", () => {
       execute: () => { throw "rr" }
     });
     var col = new StringColumn({ dbName: 'col' });
-    x.containsCaseInsensitive(col, "no'a'm");
+    x.containsCaseInsensitive(new columnBridgeToDefs(col), "no'a'm");
     expect(x.where).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
   it("filter with start with", () => {
@@ -192,7 +191,7 @@ describe("grid filter stuff", () => {
       execute: () => { throw "rr" }
     });
     var col = new StringColumn({ dbName: 'col' });
-    x.startsWith(col, "no'am");
+    x.startsWith(new columnBridgeToDefs(col), "no'am");
     expect(x.where).toBe(" where col like ?");
   });
   if (false)

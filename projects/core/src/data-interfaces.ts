@@ -23,6 +23,13 @@ export interface EntityDataProviderFindOptions {
   orderBy?: Sort;
   __customFindData?: any;
 }
+export interface RestDataProviderHttpProvider {
+  post(url: string, data: any): Promise<any>;
+  delete(url: string): Promise<void>;
+  put(url: string, data: any): Promise<any>;
+  get(url: string): Promise<any>;
+
+}
 
 export interface EntityProvider<T extends Entity> {
   find(options?: FindOptions<T>): Promise<T[]>
@@ -136,7 +143,7 @@ export function updateEntityBasedOnWhere<lookupIdType, T extends Entity<lookupId
           containsCaseInsensitive: () => { },
           isDifferentFrom: () => { },
           isEqualTo: (col, val) => {
-              col.value = val;
+              r[col.key] = val;
           },
           isGreaterOrEqualTo: () => { },
           isGreaterThan: () => { },

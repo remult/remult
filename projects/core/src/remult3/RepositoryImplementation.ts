@@ -1,16 +1,16 @@
 
-import { ColumnSettings } from "../column-interfaces";
+import { columnDefs, ColumnSettings, dbLoader, jsonLoader } from "../column-interfaces";
 import { DateColumn } from "../columns/date-column";
 import { BoolColumn, NumberColumn } from "../columns/number-column";
 import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
-import { Column as oldColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
+import { Column as oldColumn, makeTitle, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
 import { allEntities, Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
-import { extractWhere, packWhere, unpackWhere } from "../filter/filter-consumer-bridge-to-url-builder";
+import { extractWhere, FilterSerializer, packToRawWhere } from "../filter/filter-consumer-bridge-to-url-builder";
 import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
 import { DateTimeColumn } from "../columns/datetime-column";
@@ -34,9 +34,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return this._helper.create()._getEntityApiSettings(this.context);
     }
 
-    isIdColumn(col: oldColumn<any>): boolean {
+    isIdColumn(col: columnDefs<any>): boolean {
         let old = this._helper.create();
-        return old.columns.find(col) == col;
+        return old.columns.idColumn.defs.key == col.key;
     }
     getIdFilter(id: any): Filter {
         return this._helper.create().columns.idColumn.isEqualTo(id);
@@ -67,8 +67,26 @@ export class RepositoryImplementation<T> implements Repository<T>{
         };
 
     }
-    findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
-        return this._helper.findOrCreate(this.translateIterateOptions(options)).then(r => this.mapOldEntityToResult(r))
+    async findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
+
+        let r = await this.iterate(options).first();
+        if (!r) {
+            r = this.create();
+            if (options) {
+                let opts: IterateOptions<T> = {};
+                if (options) {
+                    if (typeof options === 'function')
+                        opts.where = <any>options;
+                    else
+                        opts = <any>options;
+                }
+                if (opts.where) {
+                    this.updateEntityBasedOnWhere(opts.where, r);
+                }
+            }
+            return r;
+        }
+        return r;
     }
     lookup(filter: EntityWhere<T>): T {
         return this._lookup.get(filter);
@@ -227,7 +245,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                 containsCaseInsensitive: () => { },
                 isDifferentFrom: () => { },
                 isEqualTo: (col, val) => {
-                    r[col.defs.key] = val;
+                    r[col.key] = val;
                 },
                 isGreaterOrEqualTo: () => { },
                 isGreaterThan: () => { },
@@ -242,14 +260,17 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
     packWhere(where: EntityWhere<T>) {
-        return packWhere(this._helper.create(), this.bridgeEntityWhereToOldEntity(where));
+        if (!where)
+            return {};
+        return packToRawWhere(this.translateWhereToFilter(where));
+
     }
     unpackWhere(packed: any): Filter {
         return this.extractWhere({ get: (key: string) => packed[key] });
 
     }
     extractWhere(filterInfo: { get: (key: string) => any; }): Filter {
-        return extractWhere(this._helper.create(), filterInfo);
+        return extractWhere(this.defs.getColumns()._items, filterInfo);
     }
 }
 
@@ -399,6 +420,8 @@ export class columnBridge<T, ET> implements column<T, ET>{
     constructor(private col: oldColumn, private item: any, public rowHelper: rowHelper<ET>) {
 
     }
+    jsonLoader: jsonLoader<any> = { fromJson: x => this.col.fromRawValue(x), toJson: x => this.col.toRawValue(x) };
+    dbLoader: dbLoader<any> = this.col.__getStorage();
     get dbName(): string {
         return this.col.defs.dbName;
     }
@@ -431,9 +454,16 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 
 class EntityFullInfo<T> {
 
-
+    private defs: columnDefs<any>[];
     constructor(public columns: columnInfo[], public entityInfo: EntityOptions) {
-
+        this.defs = columns.map(x => ({
+            caption: x.settings.caption,
+            dbLoader: x.settings.dbLoader,
+            dbName: x.settings.dbName,
+            inputType: x.settings.inputType,
+            jsonLoader: x.settings.jsonLoader,
+            key: x.settings.key
+        }));
     }
     createOldEntity() {
         let x = new oldEntity(this.entityInfo);
@@ -462,8 +492,8 @@ class EntityFullInfo<T> {
     }
     createFilterOf(e: oldEntity): filterOf<T> {
         let r = {};
-        for (const c of this.columns) {
-            r[c.key] = new filterHelper(e.columns.find(c.key));
+        for (const c of this.defs) {
+            r[c.key] = new filterHelper(c);
         }
         return r as filterOf<T>;
     }
@@ -491,18 +521,17 @@ class sortHelper implements TheSort {
 
 
 }
-class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
-    constructor(private col: oldColumn) {
+export class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
+    constructor(private col: columnDefs) {
 
     }
+    startsWith(val: any): Filter {
+        return new Filter(add => add.startsWith(this.col, val));
+    }
+    
     contains(val: string): Filter {
-        if (this.col instanceof StringColumn) {
-            return this.col.contains(val);
-        }
-        if (this.col instanceof ObjectColumn) {
-            return this.col.contains(val);
-        }
-        throw new Error("contains doesnt work with this type")
+        return new Filter(add => add.containsCaseInsensitive(this.col, val));
+
     }
     isLessThan(val: any): Filter {
         return __isLessThan(this.col, val);
@@ -510,11 +539,15 @@ class filterHelper implements filterOptions<any>, comparableFilterItem<any>, sup
     isGreaterOrEqualTo(val: any): Filter {
         return __isGreaterOrEqualTo(this.col, val);
     }
-    isNotIn(val: any[]): Filter {
-        return this.col.isNotIn(...val);
+    isNotIn(values: any[]): Filter {
+        return new Filter(add => {
+            for (const v of values) {
+                add.isDifferentFrom(this.col, v);
+            }
+        });
     }
     isDifferentFrom(val: any) {
-        return this.col.isDifferentFrom(val);
+        return new Filter(add => add.isDifferentFrom(this.col, val));
     }
     isLessOrEqualTo(val: any): Filter {
         return __isLessOrEqualTo(this.col, val);
@@ -523,10 +556,10 @@ class filterHelper implements filterOptions<any>, comparableFilterItem<any>, sup
         return __isGreaterThan(this.col, val);
     }
     isEqualTo(val: any): Filter {
-        return this.col.isEqualTo(val);
+        return new Filter(add => add.isEqualTo(this.col, val));
     }
     isIn(val: any[]): Filter {
-        return this.col.isIn(...val);
+        return new Filter(add => add.isIn(this.col, val));
     }
 
 }
@@ -539,11 +572,28 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
     if (!settings) {
         settings = {};
     }
+    if (!settings.dbLoader) {
+        settings.dbLoader = {
+            fromDb: x => x,
+            toDb: x => x
+        }
+    }
+    if (!settings.jsonLoader) {
+        settings.jsonLoader = {
+            fromJson: x => x,
+            toJson: x => x
+        }
+    }
 
     return (target, key) => {
         if (!settings.key) {
             settings.key = key;
         }
+        if (!settings.caption) {
+            settings.caption = makeTitle(settings.key);
+        }
+        if (!settings.dbName)
+            settings.dbName = settings.key;
 
         let names: columnInfo[] = columnsOfType.get(target);
         if (!names) {

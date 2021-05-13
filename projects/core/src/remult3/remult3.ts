@@ -1,4 +1,5 @@
 import { Column } from "../column";
+import { columnDefs, dbLoader } from "../column-interfaces";
 import { IterateToArrayOptions } from "../context";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -27,6 +28,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
 [] "dbname of entity can use column names"
 [] "compound id"
+[] test-paged-foreach
 [] "bool column doesn't need contains, isin and is not in"
 []"getArray works with filter and in with closed list columns"
 []"getArray works with filter and multiple values with closed list columns"
@@ -117,12 +119,7 @@ export interface column<T, entityType> extends columnDefs {
     wasChanged(): boolean;
     rowHelper: rowHelper<entityType>
 }
-export interface columnDefs {
-    key: string;
-    caption: string;
-    inputType: string;
-    dbName: string;
-}
+
 export interface EntityDefs<T> {
 
     getName(): string,
@@ -175,7 +172,7 @@ export interface Repository<T> {
     }): Filter;
     getRowHelper(item: T): rowHelper<T>;
     translateWhereToFilter(where: EntityWhere<T>): Filter;
-    isIdColumn(col: Column<any>): boolean;
+    isIdColumn(col: columnDefs): boolean;
     getIdFilter(id: any): Filter;
 
 }

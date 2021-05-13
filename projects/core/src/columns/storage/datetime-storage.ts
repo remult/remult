@@ -1,6 +1,6 @@
-import { ColumnStorage } from "../../column-interfaces";
+import { dbLoader } from "../../column-interfaces";
 import { DateTimeColumn } from "../datetime-column";
-export class DateTimeStorage implements ColumnStorage<string>{
+export class DateTimeStorage implements dbLoader<string>{
   toDb(val: string) {
     return DateTimeColumn.stringToDate(val);
   }

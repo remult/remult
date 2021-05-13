@@ -1,6 +1,6 @@
-import { ColumnStorage } from "../../column-interfaces";
+import { dbLoader } from "../../column-interfaces";
 
-export class CharDateStorage implements ColumnStorage<string> {
+export class CharDateStorage implements dbLoader<string> {
     toDb(val: string) {
       return val.replace(/-/g, '');
     }

@@ -1,5 +1,5 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { ColumnSettings, delmeColumnValidatorHelper, valueOrExpressionToValue } from './column-interfaces';
+import { columnDefs, ColumnSettings, dbLoader, delmeColumnValidatorHelper, jsonLoader, valueOrExpressionToValue } from './column-interfaces';
 
 
 
@@ -8,6 +8,7 @@ import { DefaultStorage } from './columns/storage/default-storage';
 import { Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
 import { Entity } from './entity';
+
 
 export class Column<dataType = any>  {
   //@internal
@@ -38,7 +39,7 @@ export class Column<dataType = any>  {
           await helper(this, v);
         }
       } else if (typeof this.__settings.validate === 'function')
-        await  helper(this,this.__settings.validate);
+        await helper(this, this.__settings.validate);
     }
 
   }
@@ -82,19 +83,19 @@ export class Column<dataType = any>  {
     return new Filter(add => {
       let val = this.__getVal(value);
       if (val === null)
-        add.isNull(this);
+        add.isNull(new columnBridgeToDefs(this));
       else
-        add.isEqualTo(this, val);
+        add.isEqualTo(new columnBridgeToDefs(this), val);
     });
   }
 
   isIn(...values: (Column<dataType> | dataType)[]) {
-    return new Filter(add => add.isIn(this, values.map(x => this.__getVal(x))));
+    return new Filter(add => add.isIn(new columnBridgeToDefs(this), values));
   }
   isNotIn(...values: (Column<dataType> | dataType)[]) {
     return new Filter(add => {
       for (const v of values) {
-        add.isDifferentFrom(this, this.__getVal(v));
+        add.isDifferentFrom(new columnBridgeToDefs(this), (v));
       }
     });
   }
@@ -102,9 +103,9 @@ export class Column<dataType = any>  {
     return new Filter(add => {
       const val = this.__getVal(value);
       if (val === null)
-        add.isNotNull(this);
+        add.isNotNull(new columnBridgeToDefs(this));
       else
-        add.isDifferentFrom(this, val)
+        add.isDifferentFrom(new columnBridgeToDefs(this), val)
     });
   }
 
@@ -301,28 +302,44 @@ export function makeTitle(name: string) {
 
 export class ComparableColumn<dataType = any> extends Column<dataType>{
   isGreaterOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
+    return new Filter(add => add.isGreaterOrEqualTo(new columnBridgeToDefs(this), value));
   }
   isGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
+    return new Filter(add => add.isGreaterThan(new columnBridgeToDefs(this), value));
   }
   isLessOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
+    return new Filter(add => add.isLessOrEqualTo(new columnBridgeToDefs(this), value));
   }
   isLessThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
+    return new Filter(add => add.isLessThan(new columnBridgeToDefs(this), value));
   }
 }
 
-export function __isGreaterOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isGreaterOrEqualTo(col, col.__getVal(value)));
+export function __isGreaterOrEqualTo<dataType>(col: columnDefs<dataType>, value: dataType) {
+  return new Filter(add => add.isGreaterOrEqualTo(col, value));
 }
-export function __isGreaterThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isGreaterThan(col, col.__getVal(value)));
+export function __isGreaterThan<dataType>(col: columnDefs<dataType>, value: dataType) {
+  return new Filter(add => add.isGreaterThan(col, value));
 }
-export function __isLessOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isLessOrEqualTo(col, col.__getVal(value)));
+export function __isLessOrEqualTo<dataType>(col: columnDefs<dataType>, value: dataType) {
+  return new Filter(add => add.isLessOrEqualTo(col, value));
 }
-export function __isLessThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isLessThan(col, col.__getVal(value)));
+export function __isLessThan<dataType>(col: columnDefs<dataType>, value: dataType) {
+  return new Filter(add => add.isLessThan(col, value));
+}
+
+export class columnBridgeToDefs implements columnDefs {
+  constructor(private col: Column) {
+
+  }
+  jsonLoader: jsonLoader<any> = {
+    fromJson: x => this.col.toRawValue(x),
+    toJson: x => this.col.fromRawValue(x)
+  }
+  key = this.col.defs.key;
+  caption = this.col.defs.caption;
+  inputType = this.col.defs.inputType;
+  dbName = this.col.defs.dbName;
+  dbLoader = this.col.__getStorage();
+
 }

@@ -1,5 +1,5 @@
-import { Column, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
-import { column, columnDefs, EntityDefs, getEntityOf } from "../../core/src/remult3";
+import { columnDefs, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
+import { column,  EntityDefs, getEntityOf } from "../../core/src/remult3";
 import { DataControlInfo, DataControlSettings, decorateDataSettings } from "./data-control-interfaces";
 
 
@@ -171,7 +171,7 @@ export class ColumnCollection<rowType = any> {
     if (col.getValue) {
 
       r = col.getValue(row)
-      if (r instanceof Column)
+      if (r.value)
         r = r.value;
 
 

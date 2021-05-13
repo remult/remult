@@ -1,6 +1,6 @@
-import { ColumnStorage } from "../../column-interfaces";
+import { dbLoader } from "../../column-interfaces";
 
-export class DefaultStorage<dataType> implements ColumnStorage<dataType>{
+export class DefaultStorage<dataType> implements dbLoader<dataType>{
     toDb(val: dataType) {
         return val;
     }

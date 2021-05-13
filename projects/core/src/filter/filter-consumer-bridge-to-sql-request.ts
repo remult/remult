@@ -3,6 +3,8 @@ import { SqlCommand } from "../sql-command";
 import { Column } from "../column";
 import { StringColumn } from "../columns/string-column";
 import { Filter, FilterConsumer } from './filter-interfaces';
+import { columnDefs } from "../column-interfaces";
+
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
@@ -27,45 +29,45 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     }
     this.addToWhere("(" + statement + ")");
   }
-  isNull(col: Column<any>): void {
-    this.addToWhere(col.defs.dbName + ' is null');
+  isNull(col: columnDefs): void {
+    this.addToWhere(col.dbName + ' is null');
   }
-  isNotNull(col: Column<any>): void {
-    this.addToWhere(col.defs.dbName + ' is not null');
+  isNotNull(col: columnDefs): void {
+    this.addToWhere(col.dbName + ' is not null');
   }
-  isIn(col: Column, val: any[]): void {
+  isIn(col: columnDefs, val: any[]): void {
     if (val && val.length > 0)
-      this.addToWhere(col.defs.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(x)).join(",") + ")");
+      this.addToWhere(col.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(x)).join(",") + ")");
     else
       this.addToWhere('1 = 0 /*isIn with no values*/');
   }
-  isEqualTo(col: Column, val: any): void {
+  isEqualTo(col: columnDefs, val: any): void {
     this.add(col, val, "=");
   }
-  isDifferentFrom(col: Column, val: any): void {
+  isDifferentFrom(col: columnDefs, val: any): void {
     this.add(col, val, "<>");
   }
-  isGreaterOrEqualTo(col: Column, val: any): void {
+  isGreaterOrEqualTo(col: columnDefs, val: any): void {
     this.add(col, val, ">=");
   }
-  isGreaterThan(col: Column, val: any): void {
+  isGreaterThan(col: columnDefs, val: any): void {
     this.add(col, val, ">");
   }
-  isLessOrEqualTo(col: Column, val: any): void {
+  isLessOrEqualTo(col: columnDefs, val: any): void {
     this.add(col, val, "<=");
   }
-  isLessThan(col: Column, val: any): void {
+  isLessThan(col: columnDefs, val: any): void {
     this.add(col, val, "<");
   }
-  public containsCaseInsensitive(col: StringColumn, val: any): void {
+  public containsCaseInsensitive(col: columnDefs, val: any): void {
 
-    this.addToWhere('lower (' + col.defs.dbName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
+    this.addToWhere('lower (' + col.dbName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
   }
-  public startsWith(col: StringColumn, val: any): void {
+  public startsWith(col: columnDefs, val: any): void {
     this.add(col, val + '%', 'like');
   }
-  private add(col: Column, val: any, operator: string) {
-    let x = col.defs.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.__getStorage().toDb(val));
+  private add(col: columnDefs, val: any, operator: string) {
+    let x = col.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.dbLoader.toDb(val));
     this.addToWhere(x);
 
   }

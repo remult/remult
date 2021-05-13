@@ -1,8 +1,8 @@
 
 
-import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
+import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
 import { Entity } from '../entity';
-import { FilterSerializer, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
+import { FilterSerializer, packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { Filter } from '../filter/filter-interfaces';
 
@@ -96,13 +96,7 @@ function JsonContent(add: (name: string, value: string) => void) {
   add('Content-type', "application/json");
 }
 
-export interface RestDataProviderHttpProvider {
-  post(url: string, data: any): Promise<any>;
-  delete(url: string): Promise<void>;
-  put(url: string, data: any): Promise<any>;
-  get(url: string): Promise<any>;
 
-}
 export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderHttpProvider {
   constructor(private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)

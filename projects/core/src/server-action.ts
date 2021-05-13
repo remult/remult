@@ -8,13 +8,13 @@ import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntitie
 
 
 import { DataApiRequest, DataApiResponse } from './data-api';
-import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+
 import { SqlDatabase } from './data-providers/sql-database';
 import { Column, getColumnsFromObject } from './column';
 import { AddModelStateToError, Entity, __getValidationError } from './entity';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
-import { DataProvider } from './data-interfaces';
+import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 
 
 
@@ -29,7 +29,7 @@ export abstract class Action<inParam, outParam>{
 
     }
     static apiUrlForJobStatus = 'jobStatusInQueue';
-    static provider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
+    static provider: RestDataProviderHttpProvider;
     async run(pIn: inParam): Promise<outParam> {
 
         let r = await Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);

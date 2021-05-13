@@ -6,7 +6,8 @@ import { StringColumn } from "../columns/string-column";
 
 import { AndFilter, Filter } from './filter-interfaces';
 import { ObjectColumn } from "../columns/object-column";
-import { columnDefs, FindOptions, Repository } from "../remult3";
+import {  FindOptions, Repository } from "../remult3";
+import { columnDefs } from "../column-interfaces";
 
 export class FilterHelper<rowType > {
   filterRow: rowType;

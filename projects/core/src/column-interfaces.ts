@@ -8,9 +8,13 @@ import { column } from './remult3';
 
 
 
-export interface ColumnStorage<valueType> {
+export interface dbLoader<valueType> {
     toDb(val: valueType): any;
     fromDb(val: any): valueType;
+}
+export interface jsonLoader<valueType> {
+    toJson(val: valueType): any;
+    fromJson(val: any): valueType;
 }
 
 
@@ -21,7 +25,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     allowApiUpdate?: Allowed;
     caption?: string;
     defaultValue?: ValueOrExpression<valueType>;
-    validate?: ColumnValidator<valueType,entityType> | ColumnValidator<valueType,entityType>[];
+    validate?: ColumnValidator<valueType, entityType> | ColumnValidator<valueType, entityType>[];
     valueChange?: () => void;
     inputType?: string;
     dbName?: string;
@@ -30,11 +34,21 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     dbReadOnly?: boolean;
     allowNull?: boolean;
     displayValue?: () => string;
-    type?:any;
+    type?: any;
+    dbLoader?: dbLoader<valueType>;
+    jsonLoader?:jsonLoader<valueType>;
 
 }
-export declare type delmeColumnValidatorHelper<T,ET>=(col:Column<T>,validate:ColumnValidator<T,ET>)=>Promise<void>;
-export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType,entityType>, entity: entityType) => void | Promise<void>;
+export interface columnDefs<T=any> {
+    key: string;
+    caption: string;
+    inputType: string;
+    dbName: string;
+    dbLoader:dbLoader<T>;
+    jsonLoader:jsonLoader<T>;
+}
+export declare type delmeColumnValidatorHelper<T, ET> = (col: Column<T>, validate: ColumnValidator<T, ET>) => Promise<void>;
+export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType, entityType>, entity: entityType) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);

@@ -1,7 +1,7 @@
-import { ColumnStorage } from "../../column-interfaces";
+import { dbLoader } from "../../column-interfaces";
 
 
-export class DateTimeDateStorage implements ColumnStorage<string>{
+export class DateTimeDateStorage implements dbLoader<string>{
   toDb(val: string) {
 
     if (!val || val == '' || val == '0000-00-00')

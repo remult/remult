@@ -1,7 +1,7 @@
-import { ColumnStorage } from "../../column-interfaces";
+import { dbLoader } from "../../column-interfaces";
 
 
-export class BoolStorage implements ColumnStorage<any>{
+export class BoolStorage implements dbLoader<any>{
     toDb(val: any) {
       return val;
     }

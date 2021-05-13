@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action,  Column,  Entity, ValueListItem, EntityProvider } from '@remult/core';
+import { actionInfo, Context, RestDataProvider, Action,  columnDefs,  Entity, ValueListItem, EntityProvider } from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -29,7 +29,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
-import { Repository,EntityOrderBy, EntityWhere, columnDefs,EntityDefs } from '../../../core/src/remult3';
+import { Repository,EntityOrderBy, EntityWhere, EntityDefs } from '../../../core/src/remult3';
 
 
 

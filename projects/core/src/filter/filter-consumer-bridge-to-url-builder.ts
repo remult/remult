@@ -1,11 +1,9 @@
-
-import { UrlBuilder } from "../url-builder";
-import { Column, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from "../column";
-import { StringColumn } from "../columns/string-column";
+import {  __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from "../column";
 import { FilterConsumer, Filter } from './filter-interfaces';
-import { Entity } from '../entity';
 import { AndFilter, OrFilter } from './filter-interfaces';
-import { EntityWhere, translateEntityWhere } from '../data-interfaces';
+import { columnDefs } from "../column-interfaces";
+import { filterHelper } from "../remult3";
+
 
 
 export class FilterSerializer implements FilterConsumer {
@@ -38,57 +36,57 @@ export class FilterSerializer implements FilterConsumer {
       return f.result;
     }));
   }
-  isNull(col: Column<any>): void {
-    this.add(col.defs.key + "_null", true);
+  isNull(col: columnDefs): void {
+    this.add(col.key + "_null", true);
   }
-  isNotNull(col: Column<any>): void {
-    this.add(col.defs.key + "_null", false);
+  isNotNull(col: columnDefs): void {
+    this.add(col.key + "_null", false);
   }
-  isIn(col: Column, val: any[]): void {
-    this.add(col.defs.key + "_in", val);
-  }
-
-  public isEqualTo(col: Column, val: any): void {
-    this.add(col.defs.key, val);
+  isIn(col: columnDefs, val: any[]): void {
+    this.add(col.key + "_in", val);
   }
 
-  public isDifferentFrom(col: Column, val: any): void {
-    this.add(col.defs.key + '_ne', val);
+  public isEqualTo(col: columnDefs, val: any): void {
+    this.add(col.key, val);
   }
 
-  public isGreaterOrEqualTo(col: Column, val: any): void {
-    this.add(col.defs.key + '_gte', val);
+  public isDifferentFrom(col: columnDefs, val: any): void {
+    this.add(col.key + '_ne', val);
   }
 
-  public isGreaterThan(col: Column, val: any): void {
-    this.add(col.defs.key + '_gt', val);
+  public isGreaterOrEqualTo(col: columnDefs, val: any): void {
+    this.add(col.key + '_gte', val);
   }
 
-  public isLessOrEqualTo(col: Column, val: any): void {
-    this.add(col.defs.key + '_lte', val);
+  public isGreaterThan(col: columnDefs, val: any): void {
+    this.add(col.key + '_gt', val);
   }
 
-  public isLessThan(col: Column, val: any): void {
-    this.add(col.defs.key + '_lt', val);
+  public isLessOrEqualTo(col: columnDefs, val: any): void {
+    this.add(col.key + '_lte', val);
   }
-  public containsCaseInsensitive(col: StringColumn, val: any): void {
-    this.add(col.defs.key + "_contains", val);
+
+  public isLessThan(col: columnDefs, val: any): void {
+    this.add(col.key + '_lt', val);
   }
-  public startsWith(col: StringColumn, val: any): void {
-    this.add(col.defs.key + "_st", val);
+  public containsCaseInsensitive(col: columnDefs, val: any): void {
+    this.add(col.key + "_contains", val);
+  }
+  public startsWith(col: columnDefs, val: any): void {
+    this.add(col.key + "_st", val);
   }
 }
 
-export function unpackWhere(rowType: Entity, packed: any) {
-  return extractWhere(rowType, { get: (key: string) => packed[key] });
+export function unpackWhere(columns: columnDefs[], packed: any) {
+  return extractWhere(columns, { get: (key: string) => packed[key] });
 }
-export function extractWhere(rowType: Entity, filterInfo: {
+export function extractWhere(columns: columnDefs[], filterInfo: {
   get: (key: string) => any;
 }) {
   let where: Filter = undefined;
-  rowType.columns.toArray().forEach(col => {
+  columns.forEach(col => {
     function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false) {
-      let val = filterInfo.get(col.defs.key + operation);
+      let val = filterInfo.get(col.key + operation);
       if (val != undefined) {
         let addFilter = (val: any) => {
           let theVal = val;
@@ -98,9 +96,9 @@ export function extractWhere(rowType: Entity, filterInfo: {
               arr = JSON.parse(val);
             else
               arr = val;
-            theVal = arr.map(x => col.fromRawValue(x));
+            theVal = arr.map(x => col.jsonLoader.fromJson (x));
           } else {
-            theVal = col.fromRawValue(theVal);
+            theVal = col.jsonLoader.fromJson(theVal);
           }
           let f = theFilter(theVal);
           if (f) {
@@ -119,52 +117,43 @@ export function extractWhere(rowType: Entity, filterInfo: {
           addFilter(val);
       }
     }
-    addFilter('', val => col.isEqualTo(val));
+    let c = new filterHelper(col);
+    addFilter('', val => c.isEqualTo(val));
     addFilter('_gt', val => __isGreaterThan(col, val));
     addFilter('_gte', val => __isGreaterOrEqualTo(col, val));
     addFilter('_lt', val => __isLessThan(col, val));
     addFilter('_lte', val => __isLessOrEqualTo(col, val));
-    addFilter('_ne', val => col.isDifferentFrom(val));
-    addFilter('_in', val => col.isIn(...val), true);
+    addFilter('_ne', val => c.isDifferentFrom(val));
+    addFilter('_in', val => c.isIn(val), true);
     addFilter('_null', val => {
       val = val.toString().trim().toLowerCase();
       switch (val) {
         case "y":
         case "true":
         case "yes":
-          return col.isEqualTo(null);
+          return c.isEqualTo(null);
         default:
-          return col.isDifferentFrom(null);
+          return c.isDifferentFrom(null);
       }
     });
     addFilter('_contains', val => {
-      let c = col as StringColumn;
-      if (c != null && c.contains) {
+      
         return c.contains(val);
-      }
+      
     });
     addFilter('_st', val => {
-      let c = col as StringColumn;
-      if (c != null && c.contains) {
         return c.startsWith(val);
-      }
     });
   });
   let val = filterInfo.get('OR');
   if (val)
     where = new AndFilter(where, new OrFilter(...val.map(x =>
-      unpackWhere(rowType, x)
+      unpackWhere(columns, x)
 
     )))
   return where;
 }
-export function packWhere<entityType extends Entity>(entity: entityType, where: EntityWhere<entityType>) {
-  if (!where)
-    return {};
-  let w = translateEntityWhere(where, entity);
-  return packToRawWhere(w);
 
-}
 
 export function packToRawWhere(w: Filter) {
   let r = new FilterSerializer();

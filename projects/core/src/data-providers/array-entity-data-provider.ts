@@ -3,6 +3,8 @@ import { Entity } from '../entity';
 import { Filter, FilterConsumer } from '../filter/filter-interfaces';
 import { Column } from '../column';
 import { StringColumn } from '../columns/string-column';
+import { columnDefs } from '../column-interfaces';
+
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
     constructor(private entity: Entity, private rows?: any[]) {
@@ -136,56 +138,56 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
         this.ok = false;
     }
-    isNull(col: Column<any>): void {
-        if (this.row[col.defs.key] != null)
+    isNull(col: columnDefs): void {
+        if (this.row[col.key] != null)
             this.ok = false;
     }
-    isNotNull(col: Column<any>): void {
-        if (this.row[col.defs.key] == null)
+    isNotNull(col: columnDefs): void {
+        if (this.row[col.key] == null)
             this.ok = false;
     }
-    isIn(col: Column, val: any[]): void {
+    isIn(col: columnDefs, val: any[]): void {
 
         for (const v of val) {
-            if (this.row[col.defs.key] == v) {
+            if (this.row[col.key] == v) {
                 return;
             }
         }
         this.ok = false;
     }
-    public isEqualTo(col: Column, val: any): void {
+    public isEqualTo(col: columnDefs, val: any): void {
 
-        if (this.row[col.defs.key] != val)
+        if (this.row[col.key] != val)
             this.ok = false;
     }
 
-    public isDifferentFrom(col: Column, val: any): void {
-        if (this.row[col.defs.key] == val)
+    public isDifferentFrom(col: columnDefs, val: any): void {
+        if (this.row[col.key] == val)
             this.ok = false;
     }
 
-    public isGreaterOrEqualTo(col: Column, val: any): void {
-        if (this.row[col.defs.key] < val)
+    public isGreaterOrEqualTo(col: columnDefs, val: any): void {
+        if (this.row[col.key] < val)
             this.ok = false;
     }
 
-    public isGreaterThan(col: Column, val: any): void {
+    public isGreaterThan(col: columnDefs, val: any): void {
 
-        if (this.row[col.defs.key] <= val)
+        if (this.row[col.key] <= val)
             this.ok = false;
     }
 
-    public isLessOrEqualTo(col: Column, val: any): void {
-        if (this.row[col.defs.key] > val)
+    public isLessOrEqualTo(col: columnDefs, val: any): void {
+        if (this.row[col.key] > val)
             this.ok = false;
     }
 
-    public isLessThan(col: Column, val: any): void {
-        if (this.row[col.defs.key] >= val)
+    public isLessThan(col: columnDefs, val: any): void {
+        if (this.row[col.key] >= val)
             this.ok = false;
     }
-    public containsCaseInsensitive(col: StringColumn, val: any): void {
-        let v = this.row[col.defs.key];
+    public containsCaseInsensitive(col: columnDefs, val: any): void {
+        let v = this.row[col.key];
         if (!v) {
             this.ok = false;
             return;
@@ -197,8 +199,8 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
-    public startsWith(col: StringColumn, val: any): void {
-        let v = this.row[col.defs.key];
+    public startsWith(col: columnDefs, val: any): void {
+        let v = this.row[col.key];
         if (!v) {
             this.ok = false;
             return;

@@ -1,22 +1,19 @@
 import { Filter } from "../filter/filter-interfaces";
-import { Column } from "../column";
-import { ColumnStorage } from "../column-interfaces";
+import { Column, columnBridgeToDefs } from "../column";
+import { dbLoader } from "../column-interfaces";
+import { columnBridge } from "../remult3";
+import { StringColumn } from "./string-column";
 
 export class ObjectColumn<T> extends Column<T>{
     __getStorage() {
         return new TagStorage();
     }
-    contains(value: Column<string> | string) {
-
-        var val: string;
-        if (value instanceof Column)
-            val = value.toRawValue(value.value);
-        else
-            val = value;
-        return new Filter(add => add.containsCaseInsensitive(this, val));
-    }
+    
+  contains(value: StringColumn | string) {
+    return new Filter(add => add.containsCaseInsensitive(new columnBridgeToDefs(this), value));
+  }
 }
-class TagStorage implements ColumnStorage<any>{
+class TagStorage implements dbLoader<any>{
     toDb(val: any) {
         return JSON.stringify(val);
     }
