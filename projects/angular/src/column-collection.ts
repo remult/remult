@@ -219,7 +219,7 @@ export class ColumnCollection<rowType = any> {
         let ignoreCol: columnDefs = undefined;
         //   if (r instanceof IdEntity)
         //    ignoreCol = r.id;
-        for (const c of defs.getColumns()._items) {
+        for (const c of defs.columns._items) {
           if (c != ignoreCol)
             this.add(c);
         }

@@ -1647,7 +1647,7 @@ describe("compound id", () => {
     let ctx = new ServerContext(mem);
     let s = ctx.for(CompoundIdEntity);
 
-    mem.rows[s.defs.getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[s.defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     var r = await s.find();
@@ -1665,7 +1665,7 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     var r = await c.find();
@@ -1677,15 +1677,15 @@ describe("compound id", () => {
     expect(r[0].c).toBe(55);
 
 
-    expect(mem.rows[c.defs.getName()][0].c).toBe(55);
-    expect(mem.rows[c.defs.getName()][0].id).toBe(undefined);
+    expect(mem.rows[c.defs.name][0].c).toBe(55);
+    expect(mem.rows[c.defs.name][0].id).toBe(undefined);
     expect(r[0].id).toBe('1,11');
   });
   itAsync("update2", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     var r = await c.find();
@@ -1693,35 +1693,35 @@ describe("compound id", () => {
     let saved = await r[0]._.save();
 
 
-    expect(mem.rows[c.defs.getName()][0].b).toBe(55);
-    expect(mem.rows[c.defs.getName()][0].id).toBe(undefined);
+    expect(mem.rows[c.defs.name][0].b).toBe(55);
+    expect(mem.rows[c.defs.name][0].id).toBe(undefined);
     expect(r[0].id).toBe('1,55');
   });
   itAsync("insert", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity).create();
-    mem.rows[ctx.for(CompoundIdEntity).defs.getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[ctx.for(CompoundIdEntity).defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     c.a = 3;
     c.b = 33;
     c.c = 3333;
     await c._.save();
-    expect(mem.rows[ctx.for(CompoundIdEntity).defs.getName()][2].b).toBe(33);
-    expect(mem.rows[ctx.for(CompoundIdEntity).defs.getName()][2].id).toBe(undefined);
+    expect(mem.rows[ctx.for(CompoundIdEntity).defs.name][2].b).toBe(33);
+    expect(mem.rows[ctx.for(CompoundIdEntity).defs.name][2].id).toBe(undefined);
     expect(c.id).toBe('3,33');
   });
   itAsync("delete", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.getName()].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.defs.name].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
     let r = await c.find();
     await r[1]._.delete();
-    expect(mem.rows[c.defs.getName()].length).toBe(1);
-    expect(mem.rows[c.defs.getName()][0].a).toBe(1);
+    expect(mem.rows[c.defs.name].length).toBe(1);
+    expect(mem.rows[c.defs.name][0].a).toBe(1);
   });
 
 });

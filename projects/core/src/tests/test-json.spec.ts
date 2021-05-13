@@ -14,7 +14,7 @@ import { Column, Entity, EntityBase } from '../remult3';
 
 
 describe("test json database", () => {
-    let db = new JsonDataProvider(localStorage);
+    let db = new JsonDataProvider(localStorage); 
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {

@@ -120,11 +120,11 @@ export interface column<T, entityType> extends columnDefs {
     rowHelper: rowHelper<entityType>
 }
 
-export interface EntityDefs<T> {
+export interface EntityDefs<T = any> {
 
-    getName(): string,
-    getDbName(): string,
-    getColumns(): columnDefsOf<T>,
+    readonly name: string,
+    readonly dbName: string,
+    readonly columns: columnDefsOf<T>,
     readonly caption: string
 
 }

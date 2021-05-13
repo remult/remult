@@ -325,7 +325,7 @@ describe("Closed List  column", () => {
 describe("test row provider", () => {
   it("auto name", () => {
     var cat = new Context().for(newCategories).create();
-    expect(cat._.repository.defs.getName()).toBe('Categories');
+    expect(cat._.repository.defs.name).toBe('Categories');
   });
   itAsync("Insert", async () => {
 
@@ -959,10 +959,10 @@ describe("column collection", () => {
 
 
     var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
-    await cc.add(c.defs.getColumns().categoryName);
-    expect(cc.items[0] === c.defs.getColumns().categoryName).toBe(false);
+    await cc.add(c.defs.columns.categoryName);
+    expect(cc.items[0] === c.defs.columns.categoryName).toBe(false);
     expect(cc.items[0] === cc.items[0].column).toBe(false);
-    expect(cc.items[0].caption == c.defs.getColumns().categoryName.caption).toBe(true);
+    expect(cc.items[0].caption == c.defs.columns.categoryName.caption).toBe(true);
     expect(cc.items[0].readOnly).toBe(true);
 
   })
@@ -971,7 +971,7 @@ describe("column collection", () => {
   itAsync("works ok with filter", async () => {
     let c = ctx.for(newCategories);
     var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true);
-    await cc.add(c.defs.getColumns().id);
+    await cc.add(c.defs.columns.id);
     cc.filterHelper.filterColumn(cc.items[0].column, false, false);
     expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
 
@@ -987,14 +987,14 @@ describe("grid settings ",
 
 
       let gs = new GridSettings(s);
-      expect(gs.sortedAscending(s.defs.getColumns().id)).toBe(false);
-      expect(gs.sortedDescending(s.defs.getColumns().id)).toBe(false);
-      gs.sort(s.defs.getColumns().id);
-      expect(gs.sortedAscending(s.defs.getColumns().id)).toBe(true);
-      expect(gs.sortedDescending(s.defs.getColumns().id)).toBe(false);
-      gs.sort(s.defs.getColumns().id);
-      expect(gs.sortedAscending(s.defs.getColumns().id)).toBe(false);
-      expect(gs.sortedDescending(s.defs.getColumns().id)).toBe(true);
+      expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
+      expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
+      gs.sort(s.defs.columns.id);
+      expect(gs.sortedAscending(s.defs.columns.id)).toBe(true);
+      expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
+      gs.sort(s.defs.columns.id);
+      expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
+      expect(gs.sortedDescending(s.defs.columns.id)).toBe(true);
     });
     if (false)
       it("sort is displayed right on start", () => {
@@ -1004,13 +1004,13 @@ describe("grid settings ",
         let gs = new GridSettings(s, { orderBy: c => c.categoryName });
         //   expect(gs.sortedAscending(y)).toBe(true);
         //   expect(gs.sortedDescending(y)).toBe(false);
-        expect(gs.sortedAscending(s.defs.getColumns().id)).toBe(false);
-        expect(gs.sortedDescending(s.defs.getColumns().id)).toBe(false);
-        gs.sort(s.defs.getColumns().id);
-        expect(gs.sortedAscending(s.defs.getColumns().id)).toBe(true);
-        expect(gs.sortedDescending(s.defs.getColumns().id)).toBe(false);
-        expect(gs.sortedAscending(s.defs.getColumns().categoryName)).toBe(false);
-        expect(gs.sortedDescending(s.defs.getColumns().categoryName)).toBe(false);
+        expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
+        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
+        gs.sort(s.defs.columns.id);
+        expect(gs.sortedAscending(s.defs.columns.id)).toBe(true);
+        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
+        expect(gs.sortedAscending(s.defs.columns.categoryName)).toBe(false);
+        expect(gs.sortedDescending(s.defs.columns.categoryName)).toBe(false);
       });
     it("paging works", async () => {
       let c = await createData(async i => {

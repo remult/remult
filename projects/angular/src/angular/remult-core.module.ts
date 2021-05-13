@@ -111,13 +111,13 @@ export async function getValueList<T >(repository:Repository<T>, args?: {
     args = {};
   }
   if (!args.idColumn) {
-    args.idColumn = x => x.getColumns().idColumn;
+    args.idColumn = x => x.columns.idColumn;
   }
   if (!args.captionColumn) {
     let idCol = args.idColumn(repository.defs);
-    for (const keyInItem of repository.defs.getColumns()._items) {
+    for (const keyInItem of repository.defs.columns._items) {
       if (keyInItem != idCol) {
-        args.captionColumn = x => x.getColumns().find(keyInItem);
+        args.captionColumn = x => x.columns.find(keyInItem);
         break;
       }
     }

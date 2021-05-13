@@ -27,7 +27,7 @@ export class GridSettings<rowType>  {
 
       if (settings.columnSettings)
       {
-        let x = settings.columnSettings(repository.defs.getColumns());
+        let x = settings.columnSettings(repository.defs.columns);
         this.columns.add(...x);
       }
       if (settings.allowCRUD !== undefined) {
@@ -161,7 +161,7 @@ export class GridSettings<rowType>  {
     let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false);
     col.numOfColumnsInGrid = 0;
 
-    return new DataAreaSettings<rowType>(settings, col, this.repository.defs.getColumns());
+    return new DataAreaSettings<rowType>(settings, col, this.repository.defs.columns);
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {

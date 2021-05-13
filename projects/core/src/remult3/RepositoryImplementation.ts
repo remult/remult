@@ -270,7 +270,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     }
     extractWhere(filterInfo: { get: (key: string) => any; }): Filter {
-        return extractWhere(this.defs.getColumns()._items, filterInfo);
+        return extractWhere(this.defs.columns._items, filterInfo);
     }
 }
 
@@ -278,13 +278,13 @@ class myEntityDefs<T> implements EntityDefs<T>{
     constructor(private parent: RepositoryImplementation<T>) {
 
     }
-    getName(): string {
+    get name(): string {
         return this.parent._helper.create().defs.name;
     }
-    getDbName(): string {
+    get dbName(): string {
         return this.parent._helper.create().defs.dbName;
     }
-    getColumns(): columnDefsOf<T> {
+    get columns(): columnDefsOf<T> {
         return this.parent.getRowHelper(this.parent.create()).columns;
     }
     get caption() {
