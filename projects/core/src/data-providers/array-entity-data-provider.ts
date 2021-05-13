@@ -2,12 +2,13 @@ import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-inter
 import { Entity } from '../entity';
 import { Filter, FilterConsumer } from '../filter/filter-interfaces';
 import { Column } from '../column';
-import { StringColumn } from '../columns/string-column';
+
 import { columnDefs } from '../column-interfaces';
+import { EntityDefs } from '../remult3';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    constructor(private entity: Entity, private rows?: any[]) {
+    constructor(private entity: EntityDefs, private rows?: any[]) {
         if (!rows)
             rows = [];
     }
@@ -42,8 +43,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                     let r = 0;
                     for (let i = 0; i < options.orderBy.Segments.length; i++) {
                         let seg = options.orderBy.Segments[i];
-                        let left = a[seg.column.defs.key];
-                        let right = b[seg.column.defs.key];
+                        let left = a[seg.column.key];
+                        let right = b[seg.column.key];
                         if (left > right)
                             r = 1;
                         else if (left < right)
@@ -69,10 +70,9 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         return r;
     }
     private idMatches(id: any): (item: any) => boolean {
-        let f = this.entity.columns.idColumn.isEqualTo(id);
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
-            f.__applyToConsumer(x);
+            x.isEqualTo(this.entity.idColumn,id)
             return x.ok;
         };
     }

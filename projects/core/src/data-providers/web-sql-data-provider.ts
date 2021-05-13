@@ -1,13 +1,13 @@
-import { DataProvider, EntityDataProvider, __RowsOfDataForTesting } from "../data-interfaces";
+import {  __RowsOfDataForTesting } from "../data-interfaces";
 import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 
 import { Column } from "../column";
 import { Entity } from "../entity";
-import { DateTimeColumn } from "../columns/datetime-column";
-import { DateColumn } from "../columns/date-column";
-import { BoolColumn, NumberColumn } from "../columns/number-column";
-import { ValueListColumn } from "../columns/value-list-column";
+
+import { ValueListColumn } from "../column";
+import { EntityDefs } from "../remult3";
+import { columnDefs } from "../column-interfaces";
 
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
@@ -21,36 +21,36 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: Entity<any>) {
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefs) {
         let r = <WebSqlBridgeToSQLQueryResult>await command.execute(insertStatementString);
         return r.r.insertId;
     }
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
-    async entityIsUsedForTheFirstTime(entity: Entity) {
+    async entityIsUsedForTheFirstTime(entity: EntityDefs) {
         await this.createTable(entity);
     }
 
-    async dropTable(entity: Entity) {
-        await this.createCommand().execute('drop  table if exists ' + entity.defs.dbName);
+    async dropTable(entity: EntityDefs) {
+        await this.createCommand().execute('drop  table if exists ' + entity.dbName);
     }
-    async createTable(entity: Entity<any>) {
+    async createTable(entity: EntityDefs<any>) {
         let result = '';
-        for (const x of entity.columns) {
-            if (!x.defs.dbReadOnly) {
+        for (const x of entity.columns._items) {
+            if (!x.dbReadOnly) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
                 result += this.addColumnSqlSyntax(x);
-                if (x == entity.columns.idColumn) {
+                if (x.key == entity.idColumn.key) {
                     result += ' primary key';
-                    if (entity.__options.dbAutoIncrementId)
+                    if (entity.dbAutoIncrementId)
                         result += " autoincrement";
                 }
             }
         }
-        await this.createCommand().execute('create table if not exists ' + entity.defs.dbName + ' (' + result + '\r\n)');
+        await this.createCommand().execute('create table if not exists ' + entity.dbName + ' (' + result + '\r\n)');
     }
 
     createCommand(): SqlCommand {
@@ -61,19 +61,19 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         throw new Error("Method not implemented.");
     }
 
-    private addColumnSqlSyntax(x: Column) {
-        let result = x.defs.dbName;
-        if (x instanceof DateTimeColumn)
+    private addColumnSqlSyntax(x: columnDefs) {
+        let result = x.dbName;
+        if (x.type == Date)
             result += " integer";
-        else if (x instanceof DateColumn)
-            result += " integer";
-        else if (x instanceof BoolColumn)
+        else if (x.type == Boolean)
             result += " integer default 0 not null";
-        else if (x instanceof NumberColumn) {
-            if (x.__numOfDecimalDigits == 0)
+        else if (x.type == Number) {
+            if (x.dbType == "decimal")
+                result += ' real default 0 not null';
+            else if (!x.dbType)
                 result += " integer default 0 not null";
             else
-                result += ' real default 0 not null';
+                x.dbType + ' default 0 not null';
         } else if (x instanceof ValueListColumn) {
             result += ' integer default 0 not null';
         }

@@ -6,14 +6,14 @@ import { fitAsync, itAsync } from './testHelper.spec';
 import { Categories } from './testModel/models';
 
 import { iterateConfig, ServerContext } from '../context';
-import { Column, Context, createAfterFilter, createAUniqueSort, Entity } from '../..';
+import { Column, Context, createAfterFilter, createAUniqueSort, Entity, NumberColumn } from '../..';
 import { TestBed } from '@angular/core/testing';
 import { EntityOrderBy, EntityWhere, extractSort } from '../data-interfaces';
-import { StringColumn } from '../columns/string-column';
-import { CompoundIdColumn } from '../columns/compound-id-column';
+
+
 
 import { fitWithDataProvider, itWithDataProvider } from './basicRowFunctionality.spec';
-import { NumberColumn } from '../columns/number-column';
+
 
 
 describe("custom id column", () => {

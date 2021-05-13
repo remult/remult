@@ -34,11 +34,6 @@ export * from './src/columns/storage/datetime-storage';
 export * from './src/columns/storage/default-storage';
 export * from './src/columns/value-list-column';
 export * from './src/columns/compound-id-column';
-export * from './src/columns/date-column';
-export * from './src/columns/datetime-column';
-export * from './src/columns/number-column';
-export * from './src/columns/string-column';
-export * from './src/columns/object-column';
 
 export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 

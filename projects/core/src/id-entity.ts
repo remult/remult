@@ -3,9 +3,9 @@ import { v4 as uuid } from 'uuid';
 
 
 import { ColumnSettings } from './column-interfaces';
-import { Column } from './column';
+import { Column, StringColumn } from './column';
 import { Entity, EntityOptions } from './entity';
-import { StringColumn } from './columns/string-column';
+
 import { EntityProvider } from './data-interfaces';
 
 

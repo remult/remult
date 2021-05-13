@@ -1,8 +1,9 @@
 import { itAsync, Done } from './testHelper.spec';
 import { ServerContext, toPromise } from '../context';
-import { NumberColumn } from '../columns/number-column';
+
 import { Entity } from '../entity';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+import { NumberColumn } from '../column';
 
 describe("test exception", () => {
     itAsync("test save exception", async () => {

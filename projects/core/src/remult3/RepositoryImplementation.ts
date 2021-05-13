@@ -1,10 +1,7 @@
 
 import { columnDefs, ColumnSettings, dbLoader, jsonLoader } from "../column-interfaces";
-import { DateColumn } from "../columns/date-column";
-import { BoolColumn, NumberColumn } from "../columns/number-column";
-import { StringColumn } from "../columns/string-column";
 import { Entity as oldEntity, EntityOptions } from "../entity";
-import { Column as oldColumn, makeTitle, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
+import { BoolColumn, Column as oldColumn, columnBridgeToDefs, DateTimeColumn, makeTitle, NumberColumn, StringColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
 import { allEntities, Context, IterateOptions as oldIterateOptions, SpecificEntityHelper } from "../context";
 import * as old from '../data-interfaces';
@@ -13,7 +10,7 @@ import { Sort, SortSegment } from "../sort";
 import { extractWhere, FilterSerializer, packToRawWhere } from "../filter/filter-consumer-bridge-to-url-builder";
 import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
-import { DateTimeColumn } from "../columns/datetime-column";
+
 import { RowEvents } from "../__EntityValueProvider";
 import { ObjectColumn } from "../columns/object-column";
 
@@ -24,11 +21,11 @@ export class RepositoryImplementation<T> implements Repository<T>{
     private _lookup = new Lookup(this);
     constructor(private entity: NewEntity<T>, private context: Context) {
         this._info = createOldEntity(entity);
-
+        this.defs = new myEntityDefs(this._info.createOldEntity());
         //@ts-ignore
         this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
     }
-    defs = new myEntityDefs(this);
+    defs: EntityDefs;
 
     _getApiSettings(): DataApiSettings<T> {
         return this._helper.create()._getEntityApiSettings(this.context);
@@ -274,21 +271,36 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 }
 
-class myEntityDefs<T> implements EntityDefs<T>{
-    constructor(private parent: RepositoryImplementation<T>) {
+export class myEntityDefs<T> implements EntityDefs<T>{
+
+    constructor(private entity: oldEntity) {
 
     }
+    dbAutoIncrementId = this.entity.__options.dbAutoIncrementId;;
+    get idColumn(): columnDefs<any> { return new columnBridgeToDefs(this.entity.columns.idColumn); };
     get name(): string {
-        return this.parent._helper.create().defs.name;
+        return this.entity.defs.name;
     }
     get dbName(): string {
-        return this.parent._helper.create().defs.dbName;
+        return this.entity.defs.dbName;
     }
+    private _columns: columnDefsOf<T>;
     get columns(): columnDefsOf<T> {
-        return this.parent.getRowHelper(this.parent.create()).columns;
+        if (!this._columns) {
+            let r = {
+                find: (c: column<any, T>) => r[c.key],
+                _items: []
+            };
+            for (const c of this.entity.columns) {
+                r._items.push(r[c.defs.key] = new columnBridgeToDefs(c));
+            }
+
+            this._columns = r as unknown as entityOf<T>;
+        }
+        return this._columns;
     }
     get caption() {
-        return this.parent._helper.create().defs.caption;
+        return this.entity.defs.caption;
     }
 }
 
@@ -420,6 +432,10 @@ export class columnBridge<T, ET> implements column<T, ET>{
     constructor(private col: oldColumn, private item: any, public rowHelper: rowHelper<ET>) {
 
     }
+    type: any;
+    dbType?: string;
+    get dbReadOnly(): boolean { return this.col.defs.dbReadOnly };
+    get isVirtual(): boolean { return this.col.defs.__isVirtual() };
     jsonLoader: jsonLoader<any> = { fromJson: x => this.col.fromRawValue(x), toJson: x => this.col.toRawValue(x) };
     dbLoader: dbLoader<any> = this.col.__getStorage();
     get dbName(): string {
@@ -462,7 +478,11 @@ class EntityFullInfo<T> {
             dbName: x.settings.dbName,
             inputType: x.settings.inputType,
             jsonLoader: x.settings.jsonLoader,
-            key: x.settings.key
+            key: x.settings.key,
+            dbReadOnly: x.settings.dbReadOnly,
+            isVirtual: !!x.settings.serverExpression,
+            type: x.settings.type,
+            dbType: x.settings.dbType
         }));
     }
     createOldEntity() {
@@ -514,7 +534,7 @@ class sortHelper implements TheSort {
     }
     __toSegment(): SortSegment {
         return {
-            column: this.col,
+            column: new columnBridgeToDefs(this.col),
             descending: this._descending
         }
     }
@@ -528,7 +548,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
     startsWith(val: any): Filter {
         return new Filter(add => add.startsWith(this.col, val));
     }
-    
+
     contains(val: string): Filter {
         return new Filter(add => add.containsCaseInsensitive(this.col, val));
 
@@ -572,18 +592,7 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
     if (!settings) {
         settings = {};
     }
-    if (!settings.dbLoader) {
-        settings.dbLoader = {
-            fromDb: x => x,
-            toDb: x => x
-        }
-    }
-    if (!settings.jsonLoader) {
-        settings.jsonLoader = {
-            fromJson: x => x,
-            toJson: x => x
-        }
-    }
+
 
     return (target, key) => {
         if (!settings.key) {
@@ -604,6 +613,32 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
         let type = settings.type;
         if (!type)
             type = Reflect.getMetadata("design:type", target, key);
+        if (!settings.dbLoader) {
+            settings.dbLoader = {
+                fromDb: x => x,
+                toDb: x => x
+            }
+        }
+        if (!settings.jsonLoader) {
+            if (settings.type == Boolean) {
+                settings.jsonLoader = {
+                    //@ts-ignore
+                    fromJson: value => {
+                        if (typeof value === "boolean")
+                            return value;
+                        if (value !== undefined) {
+                            return value.toString().trim().toLowerCase() == 'true';
+                        }
+                        return undefined;
+                    },
+                    toJson: x => x
+                }
+            } else
+                settings.jsonLoader = {
+                    fromJson: x => x,
+                    toJson: x => x
+                }
+        }
         names.push({
             key,
             settings,

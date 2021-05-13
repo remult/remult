@@ -2,8 +2,9 @@ import { fitAsync, itAsync } from './testHelper.spec';
 import { ServerContext } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { NumberColumn } from '../columns/number-column';
+
 import { EntityBase, Entity, Column } from '../remult3';
+import { NumberColumn } from '../column';
 
 
 

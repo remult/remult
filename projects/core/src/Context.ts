@@ -1,14 +1,15 @@
 
 import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest, DataApiSettings } from "./data-api";
-import { Column, columnBridgeToDefs, __isGreaterThan, __isLessThan } from "./column";
+import { Column, columnBridgeToDefs, CompoundIdColumn, __isGreaterThan, __isLessThan } from "./column";
 import { Entity } from "./entity";
 import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
 import { Action } from './server-action';
-import { RestDataProvider,  RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { CompoundIdColumn } from "./columns/compound-id-column";
+import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+
 import { NewEntity, Repository } from "./remult3";
-import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
+import { myEntityDefs, RepositoryImplementation } from "./remult3/RepositoryImplementation";
+import { columnDefs } from "./column-interfaces";
 
 
 
@@ -259,7 +260,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
         if (!this.___edp) {
             //@ts-ignore
             this.___edp = {};
-            this.___edp = this.dataSource.getEntityDataProvider(this.entity);
+            this.___edp = this.dataSource.getEntityDataProvider(new myEntityDefs(this.entity));
         }
         return this.___edp;
     }
@@ -468,7 +469,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                     opts.where = x => undefined;
                 }
                 if (!opts.orderBy)
-                    opts.orderBy = x => x.columns.idColumn;
+                    opts.orderBy = x =>[ {column:new columnBridgeToDefs(x.columns.idColumn)}];
                 opts.orderBy = createAUniqueSort(opts.orderBy, cont.entity);
                 let pageSize = iterateConfig.pageSize;
 
@@ -651,7 +652,7 @@ export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
     }
     let columnsToAdd: Column[] = [];
     for (const c of criticalColumns) {
-        if (!s.Segments.find(x => x.column.defs.key == c.defs.key)) {
+        if (!s.Segments.find(x => x.column.key == c.defs.key)) {
             columnsToAdd.push(c);
         }
 
@@ -661,7 +662,7 @@ export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
     return (e: Entity) => {
         let s = extractSort(orderBy(e));
         for (const c of columnsToAdd) {
-            s.Segments.push({ column: e.columns.find(c) });
+            s.Segments.push({ column: new columnBridgeToDefs(e.columns.find(c)) });
         }
         return s;
     }
@@ -670,22 +671,22 @@ export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity):
     let values = new Map<string, any>();
 
     for (const s of extractSort(orderBy(lastRow)).Segments) {
-        values.set(s.column.defs.key, s.column.value);
+        values.set(s.column.key, lastRow.columns.find(s.column.key).value);
     }
     return x => {
         let r: Filter = undefined;
-        let equalToColumn: Column[] = [];
+        let equalToColumn: columnDefs[] = [];
         for (const s of extractSort(orderBy(x)).Segments) {
             let f: Filter;
             for (const c of equalToColumn) {
-                f = new AndFilter(f, c.isEqualTo(values.get(c.defs.key)))
+                f = new AndFilter(f, new Filter(x => x.isEqualTo(c, values.get(c.key))));
             }
             equalToColumn.push(s.column);
             if (s.descending) {
-                f = new AndFilter(f, __isLessThan(new columnBridgeToDefs(s.column), values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isLessThan(s.column, values.get(s.column.key)));
             }
             else
-                f = new AndFilter(f, __isGreaterThan(new columnBridgeToDefs(s.column), values.get(s.column.defs.key)));
+                f = new AndFilter(f, __isGreaterThan(s.column, values.get(s.column.key)));
             r = new OrFilter(r, f);
         }
         return r;

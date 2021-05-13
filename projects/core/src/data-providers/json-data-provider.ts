@@ -2,6 +2,8 @@ import { Entity } from '../entity';
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from '../data-interfaces';
 import { Filter } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from './array-entity-data-provider';
+import { EntityDefs } from '../remult3';
+
 
 export interface JsonEntityStorage {
   getItem(entityDbName: string): string;
@@ -13,7 +15,7 @@ export class JsonDataProvider implements DataProvider {
   constructor(private storage: JsonEntityStorage) {
 
   }
-  getEntityDataProvider(entity: Entity): EntityDataProvider {
+  getEntityDataProvider(entity: EntityDefs): EntityDataProvider {
     return new JsonEntityDataProvider(entity, this.storage);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -23,16 +25,16 @@ export class JsonDataProvider implements DataProvider {
 
 class JsonEntityDataProvider implements EntityDataProvider {
 
-  constructor(private entity: Entity, private helper: JsonEntityStorage) {
+  constructor(private entity: EntityDefs, private helper: JsonEntityStorage) {
 
   }
   async loadEntityData(what: (dp: EntityDataProvider, save: () => void) => any): Promise<any> {
     let data = [];
-    let s = this.helper.getItem(this.entity.defs.dbName);
+    let s = this.helper.getItem(this.entity.dbName);
     if (s)
       data = JSON.parse(s);
     let dp = new ArrayEntityDataProvider(this.entity, data);
-    return what(dp, () => this.helper.setItem(this.entity.defs.dbName, JSON.stringify(data, undefined, 2)));
+    return what(dp, () => this.helper.setItem(this.entity.dbName, JSON.stringify(data, undefined, 2)));
   }
   p: Promise<any> = Promise.resolve();
   find(options?: EntityDataProviderFindOptions): Promise<any[]> {

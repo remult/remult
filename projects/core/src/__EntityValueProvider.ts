@@ -1,5 +1,5 @@
 
-import { CompoundIdColumn } from "./columns/compound-id-column";
+import { CompoundIdColumn } from './column';
 import { EntityDataProvider, EntityProvider } from './data-interfaces';
 import { Entity } from './entity';
 export class __EntityValueProvider implements ColumnValueProvider {

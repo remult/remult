@@ -9,8 +9,8 @@ import { iterateConfig } from '../context';
 import {  Context, createAfterFilter, createAUniqueSort } from '../..';
 import { TestBed } from '@angular/core/testing';
 import { EntityOrderBy, EntityWhere, extractSort } from '../data-interfaces';
-import { StringColumn } from '../columns/string-column';
-import { CompoundIdColumn } from '../columns/compound-id-column';
+
+
 
 import { GridSettings } from '@remult/angular';
 import { Categories as newCategories } from './remult-3-entities';

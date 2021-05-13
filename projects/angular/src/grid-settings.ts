@@ -358,7 +358,7 @@ export class GridSettings<rowType>  {
 
     let done = false;
     if (this._currentOrderBy && this._currentOrderBy.Segments.length > 0) {
-      if (this._currentOrderBy.Segments[0].column.defs.key == column.key) {
+      if (this._currentOrderBy.Segments[0].column.key == column.key) {
         this._currentOrderBy.Segments[0].descending = !this._currentOrderBy.Segments[0].descending;
         done = true;
       }
@@ -373,7 +373,7 @@ export class GridSettings<rowType>  {
     if (!column)
       return false;
     return this._currentOrderBy.Segments.length > 0 &&
-      this._currentOrderBy.Segments[0].column.defs.key == column.key &&
+      this._currentOrderBy.Segments[0].column.key == column.key &&
       !this._currentOrderBy.Segments[0].descending;
   }
   sortedDescending(column: columnDefs) {
@@ -382,7 +382,7 @@ export class GridSettings<rowType>  {
     if (!column)
       return false;
     return this._currentOrderBy.Segments.length > 0 &&
-      this._currentOrderBy.Segments[0].column.defs.key == column.key &&
+      this._currentOrderBy.Segments[0].column.key == column.key &&
       !!this._currentOrderBy.Segments[0].descending;
   }
 

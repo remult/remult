@@ -5,8 +5,7 @@ import { JsonDataProvider } from '../data-providers/json-data-provider';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { IdEntity } from '../id-entity';
-import { BoolColumn, NumberColumn } from '../columns/number-column';
-import { StringColumn } from '../columns/string-column';
+
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
 import { Categories as newCategories } from './remult-3-entities';
@@ -23,12 +22,12 @@ describe("test json database", () => {
         }
     }
     itAsync("test raw basics", async () => {
-        let e = context.for_old(Categories).create();
+        let e = context.for(newCategories);
         let o: string;
         let p = new JsonDataProvider({
             getItem: () => o,
             setItem: (k, v) => o = v
-        }).getEntityDataProvider(e);
+        }).getEntityDataProvider(e.defs);
         await Promise.all([p.insert("noam"), p.insert("yael"), p.insert("yoni")]);
         expect(o).toBe(JSON.stringify(["noam", "yael", "yoni"], undefined, 2));
 

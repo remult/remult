@@ -1,8 +1,8 @@
 import { Entity } from "../entity";
-import { Column } from "../column";
+import { Column, DateTimeColumn, StringColumn } from "../column";
 
-import { DateTimeColumn } from "../columns/datetime-column";
-import { StringColumn } from "../columns/string-column";
+
+
 
 import { AndFilter, Filter } from './filter-interfaces';
 import { ObjectColumn } from "../columns/object-column";

@@ -426,6 +426,7 @@ export class EntityQueueStorage implements QueueStorage {
 
 }
 
+
 export class JobsInQueueEntity extends IdEntity {
   userId = new StringColumn();
   url = new StringColumn();

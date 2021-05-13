@@ -2,10 +2,11 @@ import { Column } from './column';
 import { Entity } from './entity';
 import { Sort, SortSegment } from './sort';
 import { AndFilter, Filter } from './filter/filter-interfaces';
+import { EntityDefs } from './remult3';
 
 
 export interface DataProvider {
-  getEntityDataProvider(entity: Entity): EntityDataProvider;
+  getEntityDataProvider(entity: EntityDefs): EntityDataProvider;
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
 }
 
@@ -68,14 +69,10 @@ export function extractSort(sort: any): Sort {
 
   if (sort instanceof Sort)
     return sort;
-  if (sort instanceof Column)
-    return new Sort({ column: sort });
   if (sort instanceof Array) {
     let r = new Sort();
     sort.forEach(i => {
-      if (i instanceof Column)
-        r.Segments.push({ column: i });
-      else r.Segments.push(i);
+      r.Segments.push(i);
     });
     return r;
   }
@@ -118,8 +115,8 @@ export interface __RowsOfDataForTesting {
 export function translateEntityWhere<entityType extends Entity>(where: EntityWhere<entityType>, entity: entityType): Filter {
   if (Array.isArray(where)) {
     return new AndFilter(...where.map(x => {
-      if (x===undefined)
-      return undefined;
+      if (x === undefined)
+        return undefined;
       let r = x(entity);
       if (Array.isArray(r))
         return new AndFilter(...r);
@@ -127,7 +124,7 @@ export function translateEntityWhere<entityType extends Entity>(where: EntityWhe
     }));
 
   }
-  else if (typeof where ==='function') {
+  else if (typeof where === 'function') {
     let r = where(entity);
     if (Array.isArray(r))
       return new AndFilter(...r);
@@ -139,27 +136,27 @@ export function translateEntityWhere<entityType extends Entity>(where: EntityWhe
 export function updateEntityBasedOnWhere<lookupIdType, T extends Entity<lookupIdType>>(where: EntityWhere<T>, r: T) {
   let w = translateEntityWhere(where, r);
   if (w) {
-      w.__applyToConsumer({
-          containsCaseInsensitive: () => { },
-          isDifferentFrom: () => { },
-          isEqualTo: (col, val) => {
-              r[col.key] = val;
-          },
-          isGreaterOrEqualTo: () => { },
-          isGreaterThan: () => { },
-          isIn: () => { },
-          isLessOrEqualTo: () => { },
-          isLessThan: () => { },
-          isNotNull: () => { },
-          isNull: () => { },
-          startsWith: () => { },
-          or: () => { }
-      });
+    w.__applyToConsumer({
+      containsCaseInsensitive: () => { },
+      isDifferentFrom: () => { },
+      isEqualTo: (col, val) => {
+        r[col.key] = val;
+      },
+      isGreaterOrEqualTo: () => { },
+      isGreaterThan: () => { },
+      isIn: () => { },
+      isLessOrEqualTo: () => { },
+      isLessThan: () => { },
+      isNotNull: () => { },
+      isNull: () => { },
+      startsWith: () => { },
+      or: () => { }
+    });
   }
 }
 export interface ErrorInfo {
   message?: string;
   modelState?: { [key: string]: string };
   stack?: string;
-  exception?:any;
+  exception?: any;
 }

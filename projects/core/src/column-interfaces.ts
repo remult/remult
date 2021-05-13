@@ -2,7 +2,7 @@ import { Allowed } from './context';
 import { Column } from './column';
 
 import { Entity } from './entity';
-import { ValueListColumn } from './columns/value-list-column';
+
 import { column } from './remult3';
 
 
@@ -36,16 +36,21 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     displayValue?: () => string;
     type?: any;
     dbLoader?: dbLoader<valueType>;
-    jsonLoader?:jsonLoader<valueType>;
+    jsonLoader?: jsonLoader<valueType>;
+    dbType?: string;
 
 }
-export interface columnDefs<T=any> {
-    key: string;
-    caption: string;
-    inputType: string;
-    dbName: string;
-    dbLoader:dbLoader<T>;
-    jsonLoader:jsonLoader<T>;
+export interface columnDefs<T = any> {
+    readonly dbReadOnly: boolean;
+    readonly isVirtual: boolean;
+    readonly key: string;
+    readonly caption: string;
+    readonly inputType: string;
+    readonly dbName: string;
+    readonly dbLoader: dbLoader<T>;
+    readonly jsonLoader: jsonLoader<T>;
+    readonly type: any;
+    readonly dbType?: string;
 }
 export declare type delmeColumnValidatorHelper<T, ET> = (col: Column<T>, validate: ColumnValidator<T, ET>) => Promise<void>;
 export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType, entityType>, entity: entityType) => void | Promise<void>;

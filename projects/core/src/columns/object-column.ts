@@ -1,8 +1,8 @@
 import { Filter } from "../filter/filter-interfaces";
-import { Column, columnBridgeToDefs } from "../column";
+import { Column, columnBridgeToDefs, StringColumn } from "../column";
 import { dbLoader } from "../column-interfaces";
 import { columnBridge } from "../remult3";
-import { StringColumn } from "./string-column";
+
 
 export class ObjectColumn<T> extends Column<T>{
     __getStorage() {

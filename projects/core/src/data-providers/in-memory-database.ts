@@ -3,9 +3,10 @@ import { Column } from '../column';
 import {  DataProvider, EntityDataProvider, EntityDataProviderFindOptions,  __RowsOfDataForTesting } from '../data-interfaces';
 
 import { Entity } from '../entity';
-import { StringColumn } from '../columns/string-column';
+
 import { FilterConsumer } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from './array-entity-data-provider';
+import { EntityDefs } from '../remult3';
 
 
 
@@ -14,8 +15,8 @@ export class InMemoryDataProvider implements DataProvider, __RowsOfDataForTestin
     throw new Error("Method not implemented.");
   }
   rows: any = {};
-  public getEntityDataProvider(entity:Entity): EntityDataProvider {
-    let name = entity.defs.name;
+  public getEntityDataProvider(entity:EntityDefs): EntityDataProvider {
+    let name = entity.name;
     if (!this.rows[name])
       this.rows[name] = [];
     return new ArrayEntityDataProvider(entity, this.rows[name]);

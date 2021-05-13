@@ -3,12 +3,12 @@ import {   createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 import { Entity } from '../../entity';
-import { NumberColumn } from '../../columns/number-column';
-import { StringColumn } from '../../columns/string-column';
+
 import { StatusColumn, Categories } from '../testModel/models';
 import { Context } from '../../context';
 import { Categories as newCategories } from '../remult-3-entities';
 import { Column, Entity as EntityDecorator, EntityBase } from '../../remult3';
+import { NumberColumn } from "../../..";
 
 
 

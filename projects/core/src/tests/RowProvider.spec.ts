@@ -7,18 +7,15 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Categories, Status, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
+import { OneToMany, ValueListColumn, ValueListTypeInfo } from '../column';
 import { Sort } from '../sort';
 
-import { NumberColumn } from '../columns/number-column';
 import { DataAreaSettings } from '../../../angular/src/data-area-settings';
 import { FilterHelper } from '../filter/filter-helper';
 import { Column, columnBridgeToDefs } from '../column';
-import { DateTimeColumn } from '../columns/datetime-column';
-import { DateColumn } from '../columns/date-column';
 import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { CharDateStorage } from '../columns/storage/char-date-storage';
-import { StringColumn } from '../columns/string-column';
+
 import { Entity } from '../entity';
 import { FindOptions, entityOrderByToSort } from '../data-interfaces';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
@@ -28,6 +25,8 @@ import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf } from '../remult3/RepositoryImplementation';
+import { DateColumn, DateTimeColumn, NumberColumn, SqlDatabase, StringColumn, WebSqlDataProvider } from '../..';
+import { EntityDefs, Repository } from '../remult3';
 
 
 
@@ -77,6 +76,49 @@ export async function createDataOld(doInsert: (insert: (id: number, name: string
 
   });
   return context.for_old(entity);
+}
+export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper: {
+  context: Context,
+  createData: (doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>,
+    entity?: {
+      new(): CategoriesForTesting
+    }) => Promise<Repository<T>>
+}) => Promise<any>) {
+  let webSql = new WebSqlDataProvider('test');
+  var sql = new SqlDatabase(webSql);
+  for (const r of await (await sql.execute("select name from sqlite_master where type='table'")).rows) {
+    switch (r.name) {
+      case "__WebKitDatabaseInfoTable__":
+        break;
+      default:
+        await sql.execute("drop table " + r.name);
+    }
+  }
+
+  for (const db of [new InMemoryDataProvider(), sql]) {
+    let context = new ServerContext(db);
+    await doTest({
+      context, createData: async (doInsert, entity) => {
+        if (!entity)
+          entity = newCategories;
+        let rep = context.for(entity) as Repository<T>;
+        if (doInsert)
+          await doInsert(async (id, name, description, status) => {
+
+            let c = rep.create();
+            c.id = id;
+            c.categoryName = name;
+            c.description = description;
+            if (status)
+              c.status = status;
+            await rep.save(c);
+
+          });
+        return rep;
+      }
+    });
+  }
+
 }
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting
@@ -345,15 +387,18 @@ describe("test row provider", () => {
 
 
   itAsync("test  delete", async () => {
+    
+    await testAllDbs(async ({ createData }) => {
+      let c = await createData(async insert => await insert(5, 'noam'));
 
-    let c = await createData(async insert => await insert(5, 'noam'));
+      let rows = await c.find();
+      expect(rows.length).toBe(1);
+      expect(rows[0].id).toBe(5);
+      await rows[0]._.delete();
+      rows = await c.find();
+      expect(rows.length).toBe(0);
+    })
 
-    let rows = await c.find();
-    expect(rows.length).toBe(1);
-    expect(rows[0].id).toBe(5);
-    await rows[0]._.delete();
-    rows = await c.find();
-    expect(rows.length).toBe(0);
 
   });
   itAsync("test update", async () => {
@@ -838,27 +883,27 @@ describe("test row provider", () => {
 
   });
   if (false)
-  itAsync("column drop down 1", async () => {
-    let c = await createData(async insert => {
-      await insert(1, 'noam');
-      await insert(2, 'yael');
+    itAsync("column drop down 1", async () => {
+      let c = await createData(async insert => {
+        await insert(1, 'noam');
+        await insert(2, 'yael');
+      });
+      let c1 = c.create();
+      let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+      let cs = { column: c1._.columns.id, valueList: getValueList(c) } as DataControlSettings<newCategories>
+      await cc.add(cs);
+
+      let xx = cs.valueList as ValueListItem[];
+      expect(xx.length).toBe(2);
+      expect(xx[0].id).toBe(1);
+      expect(xx[1].id).toBe(2);
+      expect(xx[0].caption).toBe('noam');
+      expect(xx[1].caption).toBe('yael');
+      var c2 = c.create();
+      c2.id = 1;
+      expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
+
     });
-    let c1 = c.create();
-    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1._.columns.id, valueList: getValueList(c) } as DataControlSettings<newCategories>
-    await cc.add(cs);
-
-    let xx = cs.valueList as ValueListItem[];
-    expect(xx.length).toBe(2);
-    expect(xx[0].id).toBe(1);
-    expect(xx[1].id).toBe(2);
-    expect(xx[0].caption).toBe('noam');
-    expect(xx[1].caption).toBe('yael');
-    var c2 = c.create();
-    c2.id = 1;
-    expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
-
-  });
   // it("get value function works", () => {
   //   let a = new NumberColumn();
   //   a.value = 5;
@@ -947,55 +992,55 @@ describe("column collection", () => {
   let ctx = new Context();
   ctx.setDataProvider(new InMemoryDataProvider());
   if (false)
-  itAsync("uses a saparate column", async () => {
-    let type = class extends newCategories {
-      categoryName: string;
-    }
-    EntityDecorator({ name: 'asdf' })(type);
-    ColumnDecorator({
-      allowApiUpdate: false
-    })(type.prototype, "categoryName");
-    let c = ctx.for(type);
+    itAsync("uses a saparate column", async () => {
+      let type = class extends newCategories {
+        categoryName: string;
+      }
+      EntityDecorator({ name: 'asdf' })(type);
+      ColumnDecorator({
+        allowApiUpdate: false
+      })(type.prototype, "categoryName");
+      let c = ctx.for(type);
 
 
-    var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
-    await cc.add(c.defs.columns.categoryName);
-    expect(cc.items[0] === c.defs.columns.categoryName).toBe(false);
-    expect(cc.items[0] === cc.items[0].column).toBe(false);
-    expect(cc.items[0].caption == c.defs.columns.categoryName.caption).toBe(true);
-    expect(cc.items[0].readOnly).toBe(true);
+      var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
+      await cc.add(c.defs.columns.categoryName);
+      expect(cc.items[0] === c.defs.columns.categoryName).toBe(false);
+      expect(cc.items[0] === cc.items[0].column).toBe(false);
+      expect(cc.items[0].caption == c.defs.columns.categoryName.caption).toBe(true);
+      expect(cc.items[0].readOnly).toBe(true);
 
-  })
+    })
 
   if (false)
-  itAsync("works ok with filter", async () => {
-    let c = ctx.for(newCategories);
-    var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true);
-    await cc.add(c.defs.columns.id);
-    cc.filterHelper.filterColumn(cc.items[0].column, false, false);
-    expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
+    itAsync("works ok with filter", async () => {
+      let c = ctx.for(newCategories);
+      var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true);
+      await cc.add(c.defs.columns.id);
+      cc.filterHelper.filterColumn(cc.items[0].column, false, false);
+      expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
 
-  });
+    });
 });
 describe("grid settings ",
   () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
     if (false)
-    it("sort is displayed right", () => {
-      let s = ctx.for(newCategories);
+      it("sort is displayed right", () => {
+        let s = ctx.for(newCategories);
 
 
-      let gs = new GridSettings(s);
-      expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
-      expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
-      gs.sort(s.defs.columns.id);
-      expect(gs.sortedAscending(s.defs.columns.id)).toBe(true);
-      expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
-      gs.sort(s.defs.columns.id);
-      expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
-      expect(gs.sortedDescending(s.defs.columns.id)).toBe(true);
-    });
+        let gs = new GridSettings(s);
+        expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
+        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
+        gs.sort(s.defs.columns.id);
+        expect(gs.sortedAscending(s.defs.columns.id)).toBe(true);
+        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
+        gs.sort(s.defs.columns.id);
+        expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
+        expect(gs.sortedDescending(s.defs.columns.id)).toBe(true);
+      });
     if (false)
       it("sort is displayed right on start", () => {
         let s = ctx.for(newCategories);
@@ -1067,66 +1112,66 @@ describe("grid settings ",
   });
 
 describe("order by api", () => {
-  it("works with sort", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => new Sort({ column: c.id }) };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(1);
-    expect(s.Segments[0].column).toBe(c.id);
+  // it("works with sort", () => {
+  //   let c = new Categories();
+  //   let opt: FindOptions<Categories> = { orderBy: c => new Sort({ column: c.id }) };
+  //   let s = entityOrderByToSort(c, opt.orderBy);
+  //   expect(s.Segments.length).toBe(1);
+  //   expect(s.Segments[0].column).toBe(c.id);
 
 
-  });
-  it("works with columns", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => c.id };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(1);
-    expect(s.Segments[0].column).toBe(c.id);
-  });
+  // });
+  // it("works with columns", () => {
+  //   let c = new Categories();
+  //   let opt: FindOptions<Categories> = { orderBy: c => c.id };
+  //   let s = entityOrderByToSort(c, opt.orderBy);
+  //   expect(s.Segments.length).toBe(1);
+  //   expect(s.Segments[0].column).toBe(c.id);
+  // });
 
-  it("works with columns array", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(2);
-    expect(s.Segments[0].column).toBe(c.id);
-    expect(s.Segments[1].column).toBe(c.categoryName);
-  });
-  it("works with segment array", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(2);
-    expect(s.Segments[0].column).toBe(c.id);
-    expect(s.Segments[1].column).toBe(c.categoryName);
-  });
-  it("works with mixed column segment array", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(2);
-    expect(s.Segments[0].column).toBe(c.id);
-    expect(s.Segments[1].column).toBe(c.categoryName);
-  });
-  itAsync("test several sort options", async () => {
-    let c = await createData(async i => {
-      await i(1, 'z');
-      await i(2, 'y');
-    });
+  // it("works with columns array", () => {
+  //   let c = new Categories();
+  //   let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
+  //   let s = entityOrderByToSort(c, opt.orderBy);
+  //   expect(s.Segments.length).toBe(2);
+  //   expect(s.Segments[0].column).toBe(c.id);
+  //   expect(s.Segments[1].column).toBe(c.categoryName);
+  // });
+  // it("works with segment array", () => {
+  //   let c = new Categories();
+  //   let opt: FindOptions<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
+  //   let s = entityOrderByToSort(c, opt.orderBy);
+  //   expect(s.Segments.length).toBe(2);
+  //   expect(s.Segments[0].column).toBe(c.id);
+  //   expect(s.Segments[1].column).toBe(c.categoryName);
+  // });
+  // it("works with mixed column segment array", () => {
+  //   let c = new Categories();
+  //   let opt: FindOptions<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
+  //   let s = entityOrderByToSort(c, opt.orderBy);
+  //   expect(s.Segments.length).toBe(2);
+  //   expect(s.Segments[0].column).toBe(c.id);
+  //   expect(s.Segments[1].column).toBe(c.categoryName);
+  // });
+  // itAsync("test several sort options", async () => {
+  //   let c = await createData(async i => {
+  //     await i(1, 'z');
+  //     await i(2, 'y');
+  //   });
 
-    let r = await c.find({ orderBy: c => c.categoryName });
-    expect(r.length).toBe(2);
-    expect(r[0].id).toBe(2);
+  //   let r = await c.find({ orderBy: c => c.categoryName });
+  //   expect(r.length).toBe(2);
+  //   expect(r[0].id).toBe(2);
 
-    r = await c.find({ orderBy: c => [c.categoryName] });
-    expect(r.length).toBe(2);
-    expect(r[0].id).toBe(2);
+  //   r = await c.find({ orderBy: c => [c.categoryName] });
+  //   expect(r.length).toBe(2);
+  //   expect(r[0].id).toBe(2);
 
-    r = await c.find({ orderBy: c => c.categoryName.descending });
-    expect(r.length).toBe(2);
-    expect(r[0].id).toBe(1);
+  //   r = await c.find({ orderBy: c => c.categoryName.descending });
+  //   expect(r.length).toBe(2);
+  //   expect(r[0].id).toBe(1);
 
-  });
+  // });
 });
 describe("test area", () => {
   // it("works without entity", () => {
@@ -1371,7 +1416,7 @@ describe("test ", () => {
 });
 
 class myDp extends ArrayEntityDataProvider {
-  constructor(entity: Entity) {
+  constructor(entity: EntityDefs) {
     super(entity, []);
   }
   public update(id: any, data: any): Promise<any> {

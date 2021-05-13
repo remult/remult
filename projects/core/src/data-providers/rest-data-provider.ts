@@ -5,14 +5,15 @@ import { Entity } from '../entity';
 import { FilterSerializer, packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { Filter } from '../filter/filter-interfaces';
+import { EntityDefs } from '../remult3';
 
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
   }
-  public getEntityDataProvider(entity: Entity): EntityDataProvider {
-    return new RestEntityDataProvider(this.url + '/' + entity.defs.name, this.http);
+  public getEntityDataProvider(entity: EntityDefs): EntityDataProvider {
+    return new RestEntityDataProvider(this.url + '/' + entity.name, this.http);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
@@ -57,7 +58,7 @@ class RestEntityDataProvider implements EntityDataProvider {
             sort += ", ";
             order += ", ";
           }
-          sort += c.column.defs.key;
+          sort += c.column.key;
           order += c.descending ? "desc" : "asc";
 
         });

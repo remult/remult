@@ -3,11 +3,10 @@ import { createDataOld, CategoriesForTestingOld, createData } from '../RowProvid
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 
-import { NumberColumn } from '../../columns/number-column';
-import { StringColumn } from '../../columns/string-column';
+
 import { StatusColumn } from '../testModel/models';
 import { Context } from '../../context';
-import { ValueListColumn } from '../../columns/value-list-column';
+
 import { Categories } from "../remult-3-entities";
 import { Entity } from "../../remult3";
 

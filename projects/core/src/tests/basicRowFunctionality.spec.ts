@@ -13,9 +13,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
 
 
-import { NumberColumn, BoolColumn } from '../columns/number-column';
-import { StringColumn } from '../columns/string-column';
-import { CompoundIdColumn } from '../columns/compound-id-column';
+
 
 import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { DataList } from '../dataList';
@@ -26,7 +24,7 @@ import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccessful } from '../data-providers/rest-data-provider';
 import { OrFilter } from '../filter/filter-interfaces';
 import { Categories as newCategories } from './remult-3-entities';
-import { DateTimeColumn } from '@remult/core';
+import { BoolColumn, DateTimeColumn, NumberColumn, StringColumn } from '@remult/core';
 import { Column, Entity, EntityBase } from '../remult3';
 
 
