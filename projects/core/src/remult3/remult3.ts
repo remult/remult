@@ -259,6 +259,7 @@ export interface IteratableResult<T> {
     first(): Promise<T>;
     count(): Promise<number>;
     forEach(what: (item: T) => Promise<any>): Promise<number>;
+    //@ts-ignore
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<T>>;
     };

@@ -62,7 +62,7 @@ export class DataGrid2Component implements OnChanges {
     this.tempDragColumn = x;
 
   }
-  dragOver(x: Column, event: any) {
+  dragOver(x: DataControlSettings, event: any) {
     event.preventDefault();
   }
   onDrop(x: DataControlSettings) {
@@ -131,7 +131,7 @@ export class DataGrid2Component implements OnChanges {
   rowButtons: RowButton<any>[] = [];
   gridButtons: GridButton[] = [];
   keys: string[] = [];
-  private addButton(b: RowButton<Entity>) {
+  private addButton(b: RowButton<any>) {
     if (!b.click)
       b.click = (r) => { };
     if (!b.visible)

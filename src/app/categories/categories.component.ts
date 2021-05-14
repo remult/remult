@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GridSettings } from '@remult/angular';
 import { Context } from '@remult/core';
-import { Categories } from './categories';
 
 @Component({
   selector: 'app-categories',

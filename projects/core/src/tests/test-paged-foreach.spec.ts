@@ -8,7 +8,7 @@ import { Categories } from './testModel/models';
 import { iterateConfig } from '../context';
 import {  Context, createAfterFilter, createAUniqueSort } from '../..';
 import { TestBed } from '@angular/core/testing';
-import { EntityOrderBy, EntityWhere, extractSort } from '../data-interfaces';
+import {  extractSort } from '../data-interfaces';
 
 
 

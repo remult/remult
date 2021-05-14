@@ -3,7 +3,7 @@ import { Column } from './column';
 
 import { Entity } from './entity';
 
-import { column } from './remult3';
+import { column, columnDefsOf } from './remult3';
 
 
 
@@ -16,6 +16,10 @@ export interface jsonLoader<valueType> {
     toJson(val: valueType): any;
     fromJson(val: any): valueType;
 }
+export interface inputLoader<valueType> {
+    toInput(val: valueType): string;
+    fromInput(val: string): valueType;
+}
 
 
 
@@ -24,19 +28,20 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     includeInApi?: Allowed;
     allowApiUpdate?: Allowed;
     caption?: string;
-    defaultValue?: ValueOrExpression<valueType>;
+    defaultValue?: (entity: entityType) => valueType | Promise<valueType>;
     validate?: ColumnValidator<valueType, entityType> | ColumnValidator<valueType, entityType>[];
     valueChange?: () => void;
     inputType?: string;
     dbName?: string;
-    sqlExpression?: ValueOrExpression<string>;
+    sqlExpression?: string | ((entity: columnDefsOf<entityType>) => string);
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     allowNull?: boolean;
-    displayValue?: (value:valueType,entity:entityType) => string;
+    displayValue?: (value: valueType, entity: entityType) => string;
     type?: any;
     dbLoader?: dbLoader<valueType>;
     jsonLoader?: jsonLoader<valueType>;
+    inputLoader?: inputLoader<valueType>;
     dbType?: string;
 
 }
@@ -49,7 +54,9 @@ export interface columnDefs<T = any> {
     readonly dbName: string;
     readonly dbLoader: dbLoader<T>;
     readonly jsonLoader: jsonLoader<T>;
+    readonly inputLoader: inputLoader<T>;
     readonly type: any;
+    readonly allowNull: boolean;
     readonly dbType?: string;
 }
 export declare type delmeColumnValidatorHelper<T, ET> = (col: Column<T>, validate: ColumnValidator<T, ET>) => Promise<void>;

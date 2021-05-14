@@ -7,7 +7,7 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Categories, Status, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
 
 import { Context, ServerContext } from '../context';
-import { OneToMany, ValueListColumn, ValueListTypeInfo } from '../column';
+import { DateColumn, DateTimeColumn, NumberColumn, OneToMany, StringColumn, ValueListColumn, ValueListTypeInfo } from '../column';
 import { Sort } from '../sort';
 
 import { DataAreaSettings } from '../../../angular/src/data-area-settings';
@@ -17,7 +17,7 @@ import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { CharDateStorage } from '../columns/storage/char-date-storage';
 
 import { Entity } from '../entity';
-import { FindOptions, entityOrderByToSort } from '../data-interfaces';
+
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
 import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
@@ -25,7 +25,7 @@ import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf } from '../remult3/RepositoryImplementation';
-import { DateColumn, DateTimeColumn, NumberColumn, SqlDatabase, StringColumn, WebSqlDataProvider } from '../..';
+import {  SqlDatabase,  WebSqlDataProvider } from '../..';
 import { EntityDefs, Repository } from '../remult3';
 
 
@@ -87,7 +87,7 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
 }) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
   var sql = new SqlDatabase(webSql);
-  SqlDatabase.LogToConsole = true;
+
   for (const r of await (await sql.execute("select name from sqlite_master where type='table'")).rows) {
     switch (r.name) {
       case "__WebKitDatabaseInfoTable__":
@@ -99,10 +99,13 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
 
   for (const db of [
     new InMemoryDataProvider()
-    //, 
-    //sql
+//       , 
+  //  sql
   ]) {
+    if (!db)
+      throw new Error("you forget to set a db for the test");
     let context = new ServerContext(db);
+    
     let createData = async (doInsert, entity?) => {
       if (!entity)
         entity = newCategories;
@@ -111,6 +114,7 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
         await doInsert(async (id, name, description, status) => {
 
           let c = rep.create();
+
           c.id = id;
           c.categoryName = name;
           c.description = description;
@@ -660,7 +664,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string
     };
-    EntityDecorator({ name: 'asdfa' ,extends:newCategories })(type);
+    EntityDecorator({ name: 'asdfa', extends: newCategories })(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");

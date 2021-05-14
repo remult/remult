@@ -207,7 +207,7 @@ export class ColumnCollection<rowType = any> {
 
   }
 
-  _getError(col: DataControlSettings, r: Entity) {
+  _getError(col: DataControlSettings, r: any) {
     if (!col.column)
       return undefined;
     return this.__getColumn(col, r).error;

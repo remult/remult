@@ -3,7 +3,7 @@
  */
 
 
-//export * from './src/remult3';
+export * from './src/remult3';
 export * from './src/data-interfaces';//V
 export * from './src/sql-command';//V
 export * from './src/column-interfaces'; // revisit input type
@@ -24,8 +24,8 @@ export * from './src/id-entity';
 export * from './src/sort';//V
 
 
-export * from './src/entity';
-export * from './src/column';
+//export * from './src/entity';
+//export * from './src/column';
 
 export * from './src/columns/storage/bool-storage';
 export * from './src/columns/storage/char-date-storage';

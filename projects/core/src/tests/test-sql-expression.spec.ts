@@ -21,10 +21,10 @@ describe("test sql database", async () => {
         let x = context.for(testSqlExpression).create();
         x.code = 3;
         await x._.save();
-        expect (x.code).toBe(3);
-        expect(x.testExpression).toBe(15,"after save");
+        expect(x.code).toBe(3);
+        expect(x.testExpression).toBe(15, "after save");
         x = await context.for(testSqlExpression).findFirst();
-        
+
         expect(x.testExpression).toBe(15);
     });
 
@@ -37,10 +37,10 @@ describe("test sql database", async () => {
 class testSqlExpression extends EntityBase {
     @Column()
     code: number;
-    @Column(
+    @Column<testSqlExpression>(
         {
-            sqlExpression: () => {
-                return 'code * 5';
+            sqlExpression: (x) => {
+                return x.code.dbName + ' * 5';
             }
         }
     )

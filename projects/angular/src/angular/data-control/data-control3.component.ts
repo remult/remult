@@ -3,7 +3,7 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import { columnDefs,  Entity, StringColumn, ValueListItem } from '@remult/core';
+import { columnDefs,  Entity,  ValueListItem } from '@remult/core';
 
 import { ColumnCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
@@ -24,7 +24,7 @@ export class DataControl3Component {
   @Input() rightToLeft = false;
 
   theId: any;
-  @Input() record: Entity;
+  @Input() record: any;
 
   @Input() notReadonly: false;
   @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined);
@@ -52,8 +52,7 @@ export class DataControl3Component {
     return this.settings.__dataControlStyle(this.map);
   }
   _getColumn() {
-    if (!this.map.column)
-      return new StringColumn();
+
     return this.settings.__getColumn(this.map, this.record);
 
   }

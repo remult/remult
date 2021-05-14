@@ -1,4 +1,4 @@
-import { Column, columnDefs, ColumnSettings, Entity, ValueListColumn, ValueListItem, ValueOrEntityExpression } from "@remult/core";
+import { Column, columnDefs, ColumnSettings, Entity, ValueListItem, ValueOrEntityExpression } from "@remult/core";
 import { column, getEntityOf } from "../../core/src/remult3";
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | column<any, any>;
@@ -25,7 +25,7 @@ export interface DataControlSettings<entityType = any> {
 }
 
 
-export function extend<T extends Column>(col: T): {
+export function extend<T extends columnDefs>(col: T): {
     dataControl(set: (settings: DataControlSettings) => void): T;
 } {
     return {
@@ -119,10 +119,11 @@ export function __getDataControlSettings(col: columnDefs): DataControlSettings {
         let r = {};
         col[configDataControlField](r);
         return r;
-    } if (col instanceof ValueListColumn) {
+    }
+    /*if (col instanceof ValueListColumn) {
         col[configDataControlField] = (x: DataControlSettings) => {
             x.valueList = col.getOptions();
         };
-    }
+    }*/
     return undefined;
 }

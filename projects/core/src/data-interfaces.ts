@@ -33,8 +33,8 @@ export interface RestDataProviderHttpProvider {
 }
 
 export interface EntityProvider<T extends Entity> {
-  find(options?: FindOptions<T>): Promise<T[]>
-  count(where?: EntityWhere<T>): Promise<number>;
+  find(options?: FindOptionsOld<T>): Promise<T[]>
+  count(where?: EntityWhereOld<T>): Promise<number>;
   create(): T;
 
 }
@@ -44,13 +44,13 @@ export interface EntityProvider<T extends Entity> {
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType extends Entity> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
+export declare type EntityWhereOld<entityType extends Entity> = EntityWhereItemOld<entityType> | EntityWhereItemOld<entityType>[];
 /**Used to filter the desired result set
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
 
-export declare type EntityWhereItem<entityType extends Entity> = ((entityType: entityType) => (Filter | Filter[]));
+export declare type EntityWhereItemOld<entityType extends Entity> = ((entityType: entityType) => (Filter | Filter[]));
 /** Determines the order of rows returned by the query.
  * @example
  * await this.context.for(Products).find({ orderBy: p => p.name })
@@ -59,9 +59,9 @@ export declare type EntityWhereItem<entityType extends Entity> = ((entityType: e
  * @example
  * await this.context.for(Products).find({ orderBy: p => [{ column: p.price, descending: true }, p.name])
  */
-export declare type EntityOrderBy<entityType extends Entity> = ((entityType: entityType) => Sort) | ((entityType: entityType) => (Column)) | ((entityType: entityType) => (Column | SortSegment)[]);
+export declare type EntityOrderByOld<entityType extends Entity> = ((entityType: entityType) => Sort) | ((entityType: entityType) => (Column)) | ((entityType: entityType) => (Column | SortSegment)[]);
 
-export function entityOrderByToSort<T2, T extends Entity<T2>>(entity: T, orderBy: EntityOrderBy<T>): Sort {
+export function entityOrderByToSort<T2, T extends Entity<T2>>(entity: T, orderBy: EntityOrderByOld<T>): Sort {
   return extractSort(orderBy(entity));
 
 }
@@ -78,17 +78,17 @@ export function extractSort(sort: any): Sort {
   }
 }
 
-export interface FindOptions<entityType extends Entity> {
+export interface FindOptionsOld<entityType extends Entity> {
   /** filters the data
    * @example
    * where p => p.price.isGreaterOrEqualTo(5)
    * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
    */
-  where?: EntityWhere<entityType>;
+  where?: EntityWhereOld<entityType>;
   /** Determines the order in which the result will be sorted in
    * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
    */
-  orderBy?: EntityOrderBy<entityType>;
+  orderBy?: EntityOrderByOld<entityType>;
   /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
    * @example
    * this.products = await this.context.for(Products).find({
@@ -112,7 +112,7 @@ export interface FindOptions<entityType extends Entity> {
 export interface __RowsOfDataForTesting {
   rows: any;
 }
-export function translateEntityWhere<entityType extends Entity>(where: EntityWhere<entityType>, entity: entityType): Filter {
+export function translateEntityWhere<entityType extends Entity>(where: EntityWhereOld<entityType>, entity: entityType): Filter {
   if (Array.isArray(where)) {
     return new AndFilter(...where.map(x => {
       if (x === undefined)
@@ -133,7 +133,7 @@ export function translateEntityWhere<entityType extends Entity>(where: EntityWhe
 
 }
 
-export function updateEntityBasedOnWhere<lookupIdType, T extends Entity<lookupIdType>>(where: EntityWhere<T>, r: T) {
+export function updateEntityBasedOnWhere<lookupIdType, T extends Entity<lookupIdType>>(where: EntityWhereOld<T>, r: T) {
   let w = translateEntityWhere(where, r);
   if (w) {
     w.__applyToConsumer({

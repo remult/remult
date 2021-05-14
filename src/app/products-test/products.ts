@@ -1,5 +1,5 @@
 import { extend } from '@remult/angular';
-import { IdEntity, StringColumn, EntityClass, Context, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn, ServerFunction } from '@remult/core';
+import { IdEntity,  EntityClass, Context,  ServerMethod, ServerController,  ServerFunction } from '@remult/core';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 @Entity({
@@ -24,15 +24,5 @@ export class Products extends EntityBase {
     await this._.save();
   }
 }
-
-
-export class bColumn extends StringColumn {
-  constructor() {
-    super()
-    extend(this).dataControl(s => s.valueList = ['c', 'd']);
-  }
-}
-
-
 
 

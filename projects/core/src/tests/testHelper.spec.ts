@@ -1,4 +1,4 @@
-
+jasmine.DEFAULT_TIMEOUT_INTERVAL=999999;
 
 export function itAsync(name: string, runAsync: () => Promise<any>) {
   it(name, (done: DoneFn) => {

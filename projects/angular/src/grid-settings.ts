@@ -543,10 +543,3 @@ export interface GridButton {
   icon?: string;
   cssClass?: (string | (() => string));
 }
-
-function isNewRow(r: Entity) {
-  if (r) {
-    r.isNew();
-  }
-  return false;
-}

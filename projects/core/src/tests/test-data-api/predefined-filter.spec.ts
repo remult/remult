@@ -8,7 +8,7 @@ import { StatusColumn, Categories } from '../testModel/models';
 import { Context } from '../../context';
 import { Categories as newCategories } from '../remult-3-entities';
 import { Column, Entity as EntityDecorator, EntityBase } from '../../remult3';
-import { NumberColumn } from "../../..";
+
 
 
 
@@ -161,7 +161,6 @@ describe("data api", () => {
     });
     expect((await c.iterate(x => x.id.isEqualTo(1)).first()).categoryName).toBe('noam');
     expect((await c.findId(1)).categoryName).toBe('noam');
-    expect((await c.findId(new NumberColumn({ defaultValue: 1 }))).categoryName).toBe('noam');
   });
 
 });

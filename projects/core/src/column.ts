@@ -1,5 +1,5 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { columnDefs, ColumnSettings, dbLoader, delmeColumnValidatorHelper, jsonLoader, ValueListItem, valueOrExpressionToValue } from './column-interfaces';
+import { columnDefs, ColumnSettings, dbLoader, delmeColumnValidatorHelper, inputLoader, jsonLoader, ValueListItem, valueOrExpressionToValue } from './column-interfaces';
 
 
 
@@ -22,9 +22,9 @@ import { DateTimeDateStorage } from './columns/storage/datetime-date-storage';
 export class Column<dataType = any>  {
   //@internal
   __setDefaultForNewRow() {
-    if (this.__settings.defaultValue) {
-      this.value = valueOrExpressionToValue(this.__settings.defaultValue);
-    }
+    // if (this.__settings.defaultValue) {
+    //   this.value = valueOrExpressionToValue(this.__settings.defaultValue);
+    // }
   }
   //@internal
   async __calcServerExpression(entity: any) {
@@ -152,9 +152,9 @@ export class Column<dataType = any>  {
   }
   get displayValue() {
     if (this.value) {
-      if (this.__settings.displayValue&&false)
-        
-      return this.value.toString();
+      if (this.__settings.displayValue && false)
+
+        return this.value.toString();
     }
     return '';
   }
@@ -253,9 +253,9 @@ export class ColumnDefs {
     return this._entity();
   }
   get dbName(): string {
-    if (this.settings.sqlExpression) {
-      return valueOrExpressionToValue(this.settings.sqlExpression);
-    }
+    // if (this.settings.sqlExpression) {
+    //   return valueOrExpressionToValue(this.settings.sqlExpression);
+    // }
     if (this.settings.dbName)
       return this.settings.dbName;
     return this.key;
@@ -341,10 +341,16 @@ export class columnBridgeToDefs implements columnDefs {
   constructor(private col: Column) {
 
   }
+  inputLoader: inputLoader<any> = {
+    fromInput: x => this.jsonLoader.fromJson(x),
+    toInput: x => this.jsonLoader.toJson(x)
+  }
+  allowNull = this.col.defs.allowNull;
+  dbType?: string;
   get type(): any {
-    if (this.col instanceof  StringColumn)
+    if (this.col instanceof StringColumn)
       return String;
-    if (this.col instanceof  NumberColumn)
+    if (this.col instanceof NumberColumn)
       return Number;
     if (this.col instanceof DateColumn)
       return Date;
@@ -445,7 +451,7 @@ export class BoolColumn extends Column<boolean>{
 }
 export class DateColumn extends ComparableColumn<Date>{
   constructor(settings?: ColumnSettings<Date>) {
-    super({ inputType: 'date', displayValue: () => this.value.toLocaleDateString(undefined,{timeZone:'UTC'}), ...settings });
+    super({ inputType: 'date', displayValue: () => this.value.toLocaleDateString(undefined, { timeZone: 'UTC' }), ...settings });
   }
   getDayOfWeek() {
     return new Date(this.value).getDay();
@@ -471,7 +477,7 @@ export class DateColumn extends ComparableColumn<Date>{
     var d = val as Date;
     if (!d)
       return '';
-    return d.toISOString().substring(0,10);
+    return d.toISOString().substring(0, 10);
     let month = addZeros(d.getUTCMonth() + 1),
       day = addZeros(d.getUTCDate()),
       year = d.getUTCFullYear();
@@ -490,7 +496,7 @@ function addZeros(number: number, stringLength: number = 2) {
 
 export class DateTimeColumn extends ComparableColumn<Date>{
   constructor(settings?: ColumnSettings<Date>) {
-    super({ displayValue: () => this.value.toLocaleString(),...settings });
+    super({ displayValue: () => this.value.toLocaleString(), ...settings });
   }
   getDayOfWeek() {
     return this.value.getDay();
@@ -528,9 +534,9 @@ export class DateTimeColumn extends ComparableColumn<Date>{
 export class CompoundIdColumn extends Column<string>
 {
   columns: Column[];
-  constructor( ...columns: Column[]) {
+  constructor(...columns: Column[]) {
     super({
-      serverExpression:()=>this.getId()
+      serverExpression: () => this.getId()
     });
     this.columns = columns;
   }
@@ -549,7 +555,7 @@ export class CompoundIdColumn extends Column<string>
       return result.__applyToConsumer(add);
     });
   }
-  private getId(){
+  private getId() {
     let r = "";
     this.columns.forEach(c => {
       if (r.length > 0)
@@ -656,11 +662,11 @@ const typeCache = new Map<any, ValueListTypeInfo<any>>();
 
 
 export class ManyToOne<T>{
-  constructor(private repository: Repository< T>,
+  constructor(private repository: Repository<T>,
     private where: EntityWhere<T>
   ) { }
   exists() {
-    return !this.repository.getRowHelper( this.item).isNew();
+    return !this.repository.getRowHelper(this.item).isNew();
   }
   get item(): T {
     return this.repository.lookup(this.where);

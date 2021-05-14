@@ -1,5 +1,5 @@
 
-import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere, RestDataProviderHttpProvider } from "./data-interfaces";
+import { DataProvider, FindOptionsOld as FindOptionsOld, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderByOld, EntityWhereOld, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest, DataApiSettings } from "./data-api";
 import { Column, columnBridgeToDefs, CompoundIdColumn, __isGreaterThan, __isLessThan } from "./column";
 import { Entity } from "./entity";
@@ -310,7 +310,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
     * @see
     * For all the different options see [FindOptions](ref_findoptions)
     */
-    async find(options?: FindOptions<T>) {
+    async find(options?: FindOptionsOld<T>) {
         let r = await this._edp.find(this.translateOptions(options));
         return Promise.all(r.map(async i => {
             let r = this._factory(false);
@@ -322,19 +322,19 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
      * @example:
      * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7))
      */
-    async findFirst(options?: EntityWhere<T> | IterateOptions<T>) {
+    async findFirst(options?: EntityWhereOld<T> | IterateOptionsOld<T>) {
         return this.iterate(options).first();
     }
     /** returns a single entity based on a filter, if it doesn't not exist, it is created with the default values set by the `isEqualTo` filters that were used
     * @example:
     * let p = await this.context.for(Products).findOrCreate(p => p.id.isEqualTo(7))
     */
-    async findOrCreate(options?: EntityWhere<T> | IterateOptions<T>) {
+    async findOrCreate(options?: EntityWhereOld<T> | IterateOptionsOld<T>) {
         let r = await this.iterate(options).first();
         if (!r) {
             r = this.create();
             if (options) {
-                let opts: IterateOptions<T> = {};
+                let opts: IterateOptionsOld<T> = {};
                 if (options) {
                     if (typeof options === 'function')
                         opts.where = <any>options;
@@ -364,13 +364,13 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
      * @example
      * let count = await this.context.for(Products).count(p => p.price.isGreaterOrEqualTo(5))
     */
-    async count(where?: EntityWhere<T>) {
+    async count(where?: EntityWhereOld<T>) {
         return await this._edp.count(where ? translateEntityWhere(where, this.entity) : undefined);
     }
 
 
 
-    private translateOptions(options: FindOptions<T>) {
+    private translateOptions(options: FindOptionsOld<T>) {
 
         let getOptions: EntityDataProviderFindOptions = {};
         if (!options) {
@@ -409,9 +409,9 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
      * }
     */
 
-    iterate(options?: EntityWhere<T> | IterateOptions<T>) {
+    iterate(options?: EntityWhereOld<T> | IterateOptionsOld<T>) {
 
-        let opts: IterateOptions<T> = {};
+        let opts: IterateOptionsOld<T> = {};
         if (options) {
             if (typeof options === 'function')
                 opts.where = <any>options;
@@ -478,7 +478,7 @@ export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> 
                 let items: T[];
 
                 let itStrategy: (() => Promise<IteratorResult<T>>);
-                let nextPageFilter: EntityWhere<T> = x => undefined;;
+                let nextPageFilter: EntityWhereOld<T> = x => undefined;;
 
                 let j = 0;
 
@@ -630,9 +630,9 @@ export declare type AngularComponent = { new(...args: any[]): any };
 export interface RoleChecker {
     isAllowed(roles: Allowed): boolean;
 }
-export interface IterateOptions<entityType extends Entity> {
-    where?: EntityWhere<entityType>;
-    orderBy?: EntityOrderBy<entityType>;
+export interface IterateOptionsOld<entityType extends Entity> {
+    where?: EntityWhereOld<entityType>;
+    orderBy?: EntityOrderByOld<entityType>;
     progress?: { progress: (progress: number) => void };
 }
 
@@ -644,7 +644,7 @@ export interface IterateToArrayOptions {
 export const iterateConfig = {
     pageSize: 200
 };
-export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
+export function createAUniqueSort(orderBy: EntityOrderByOld<any>, entity: Entity) {
     let s = extractSort(orderBy(entity));
     let criticalColumns = [entity.columns.idColumn];
     if (entity.columns.idColumn instanceof CompoundIdColumn) {
@@ -667,7 +667,7 @@ export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
         return s;
     }
 }
-export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity): EntityWhere<any> {
+export function createAfterFilter(orderBy: EntityOrderByOld<any>, lastRow: Entity): EntityWhereOld<any> {
     let values = new Map<string, any>();
 
     for (const s of extractSort(orderBy(lastRow)).Segments) {

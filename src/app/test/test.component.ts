@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { DateColumn, BoolColumn, Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress, NumberColumn, EntityClass, ColumnDefs } from '@remult/core';
-import { StringColumn } from '@remult/core';
+import {  Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress,   } from '@remult/core';
+
 import { DataAreaSettings } from '@remult/angular';
 import { Products } from '../products-test/products';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
@@ -54,7 +54,6 @@ export class TestComponent {
 @Entity<Tasks>({
   name: 'tasks',
   allowApiCRUD: true,
-  allowApiUpdate:(c,r)=>r.title=="1",
   saving:t=>{
     t.context.user.id
   }

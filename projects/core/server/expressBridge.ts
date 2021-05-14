@@ -1,6 +1,6 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '../';
+import { DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, SpecificEntityHelper } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -9,6 +9,7 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
+import { Column, Entity, Repository } from '../src/remult3';
 
 
 
@@ -361,7 +362,7 @@ interface QueueStorage {
 }
 let test = 0;
 export class EntityQueueStorage implements QueueStorage {
-  constructor(private context: SpecificEntityHelper<string, JobsInQueueEntity>) {
+  constructor(private context: Repository<JobsInQueueEntity>) {
 
   }
   sync: Promise<any> = Promise.resolve();
@@ -373,29 +374,29 @@ export class EntityQueueStorage implements QueueStorage {
     let q = await this.context.findId(queuedJobId);
     let lastProgress: Date = undefined;
     return {
-      userId: q.userId.value,
+      userId: q.userId,
       info: {
-        done: q.done.value,
-        error: q.error.value ? JSON.parse(q.result.value) : undefined,
-        result: q.done.value && !q.error.value ? JSON.parse(q.result.value) : undefined,
-        progress: q.progress.value
+        done: q.done,
+        error: q.error ? JSON.parse(q.result) : undefined,
+        result: q.done && !q.error ? JSON.parse(q.result) : undefined,
+        progress: q.progress
       },
       setErrorResult: async (error: any) => {
         await this.sync;
-        q.error.value = true;
-        q.done.value = true;
-        q.result.value = JSON.stringify(error);
-        q.doneTime.value = new Date();
-        q.progress.value = 1;
-        await this.doSync(() => q.save());
+        q.error = true;
+        q.done = true;
+        q.result = JSON.stringify(error);
+        q.doneTime = new Date();
+        q.progress = 1;
+        await this.doSync(() => q._.save());
       },
       setResult: async (result: any) => {
         await this.sync;
-        q.done.value = true;
-        q.result.value = JSON.stringify(result);
-        q.doneTime.value = new Date();
+        q.done = true;
+        q.result = JSON.stringify(result);
+        q.doneTime = new Date();
 
-        await this.doSync(() => q.save());
+        await this.doSync(() => q._.save());
 
       },
       setProgress: async (progress: number) => {
@@ -406,8 +407,8 @@ export class EntityQueueStorage implements QueueStorage {
           return;
         lastProgress = new Date();
         await this.sync;
-        q.progress.value = progress;
-        await this.doSync(() => q.save());
+        q.progress = progress;
+        await this.doSync(() => q._.save());
 
       }
     };
@@ -416,31 +417,37 @@ export class EntityQueueStorage implements QueueStorage {
 
   async createJob(url: string, userId: string): Promise<string> {
     let q = this.context.create();
-    q.userId.value = userId;
-    q.submitTime.value = new Date();
-    q.url.value = url;
-    await q.save();
-    return q.id.value;
+    q.userId = userId;
+    q.submitTime = new Date();
+    q.url = url;
+    await q._.save();
+    return q.id;
   }
 
 
 }
 
 
+@Entity({
+  name: 'jobsInQueue',
+  allowApiRead: false
+})
 export class JobsInQueueEntity extends IdEntity {
-  userId = new StringColumn();
-  url = new StringColumn();
-  submitTime = new DateTimeColumn();
-  doneTime = new DateTimeColumn();
-  result = new StringColumn();
-  done = new BoolColumn();
-  error = new BoolColumn();
-  progress = new NumberColumn({ decimalDigits: 3 });
-  constructor() {
-    super({
-      name: 'jobsInQueue',
-      allowApiRead: false
-    });
-  }
+  @Column()
+  userId: string;
+  @Column()
+  url: string;
+  @Column()
+  submitTime: Date;
+  @Column()
+  doneTime: Date;
+  @Column()
+  result: string;
+  @Column()
+  done: boolean;
+  @Column()
+  error: boolean;
+  @Column({ dbType: 'decimal' })
+  progress: number;
 }
 

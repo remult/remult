@@ -1,15 +1,11 @@
 import {  __RowsOfDataForTesting } from "../data-interfaces";
 import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
-
-import { Column } from "../column";
-import { Entity } from "../entity";
-
 import { ValueListColumn } from "../column";
 import { EntityDefs } from "../remult3";
 import { columnDefs } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
-
+//SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
         [tableName: string]: any;
@@ -19,6 +15,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     db: Database;
 
     constructor(private databaseName: string) {
+
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }

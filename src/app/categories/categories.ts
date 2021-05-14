@@ -1,13 +1,10 @@
-import { IdEntity, StringColumn, EntityClass } from '@remult/core';
+import { Column, Entity, IdEntity } from '@remult/core';
 
-@EntityClass
+@Entity({
+    name: "Categories",
+    allowApiCRUD: true,
+})
 export class Categories extends IdEntity {
-    name = new StringColumn();
-    constructor() {
-        super({
-            name: "Categories",
-            allowApiCRUD:true,
-            allowApiRead:true
-        });
-    }
-} 
+    @Column()
+    name: string;
+}

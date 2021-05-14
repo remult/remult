@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, Route, ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
-import { Context, ServerFunction, StringColumn, UserInfo } from '@remult/core';
+import { Context, ServerFunction,  UserInfo } from '@remult/core';
 
 
 import { openDialog, RouteHelperService } from '@remult/angular';

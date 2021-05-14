@@ -6,13 +6,15 @@ import { fitAsync, itAsync } from './testHelper.spec';
 import { Categories } from './testModel/models';
 
 import { iterateConfig, ServerContext } from '../context';
-import { Column, Context, createAfterFilter, createAUniqueSort, Entity, NumberColumn } from '../..';
+
 import { TestBed } from '@angular/core/testing';
-import { EntityOrderBy, EntityWhere, extractSort } from '../data-interfaces';
+
 
 
 
 import { fitWithDataProvider, itWithDataProvider } from './basicRowFunctionality.spec';
+import { NumberColumn } from '../column';
+import { Entity } from '../entity';
 
 
 
