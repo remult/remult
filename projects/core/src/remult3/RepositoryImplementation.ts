@@ -1,9 +1,9 @@
 
 import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
-import {  EntityOptions } from "../entity";
+import { EntityOptions } from "../entity";
 import { BoolColumn, Column as oldColumn, columnBridgeToDefs, ColumnDefs, CompoundIdColumn, DateTimeColumn, makeTitle, NumberColumn, StringColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
-import { allEntities, Allowed, Context, EntityAllowed, iterateConfig,  IterateToArrayOptions } from "../context";
+import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -859,7 +859,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
     name: string;
     dbName: string;
     caption: string;
-   
+
     createFilterOf(): filterOf<T> {
         let r = {};
         for (const c of this.columns._items) {
@@ -936,9 +936,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
 
 
 
-export function Column<T = any, colType = any>(settings?: ColumnSettings<colType, T> & {
-    allowApiUpdate1?: ((x: entityOf<T>) => boolean),
-}) {
+export function Column<T = any, colType = any>(settings?: ColumnSettings<colType, T>) {
     if (!settings) {
         settings = {};
     }
@@ -1027,19 +1025,7 @@ interface columnInfo {
     settings: ColumnSettings,
     type: any
 }
-export function Entity<T>(options: EntityOptions<T> & {
-    allowApiCRUD1?: (context: Context, entity: T) => boolean,
-    allowApiUpdate1?: (context: Context, entity: T) => boolean,
-    allowApiDelete1?: (context: Context, entity: T) => boolean,
-    saving1?: (entity: T, context: Context) => Promise<any>,
-    validating1?: (entity: T) => Promise<any>,
-
-    apiDataFilter1?: EntityWhere<T>,
-
-
-
-}) {
-
+export function Entity<T>(options: EntityOptions<T>) {
     return target => {
         if (!options.name || options.name == '')
             options.name = target.constructor.name;
