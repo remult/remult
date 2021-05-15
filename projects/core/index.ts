@@ -33,7 +33,6 @@ export * from './src/columns/storage/datetime-date-storage';
 export * from './src/columns/storage/datetime-storage';
 export * from './src/columns/storage/default-storage';
 export * from './src/columns/value-list-column';
-export * from './src/columns/compound-id-column';
 
 export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 

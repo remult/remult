@@ -1,8 +1,7 @@
 
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
-import { Entity } from '../entity';
-import { FilterSerializer, packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
+import {  packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { Filter } from '../filter/filter-interfaces';
 import { EntityDefs } from '../remult3';

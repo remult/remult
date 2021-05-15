@@ -1,4 +1,3 @@
-import { Entity } from '../entity';
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from '../data-interfaces';
 import { Filter } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from './array-entity-data-provider';

@@ -1,8 +1,8 @@
 
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from "../data-interfaces";
 import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
-import { Column, CompoundIdColumn } from "../column";
-import { Entity } from "../entity";
+import { CompoundIdColumn } from "../column";
+
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
