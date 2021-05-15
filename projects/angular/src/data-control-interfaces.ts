@@ -1,4 +1,4 @@
-import { Column, columnDefs, ColumnSettings, Entity, ValueListItem, ValueOrEntityExpression } from "@remult/core";
+import { Column, columnDefs, ColumnSettings, Entity, ValueListItem } from "@remult/core";
 import { column, getEntityOf } from "../../core/src/remult3";
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | column<any, any>;
@@ -127,3 +127,4 @@ export function __getDataControlSettings(col: columnDefs): DataControlSettings {
     }*/
     return undefined;
 }
+export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);

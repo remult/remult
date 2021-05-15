@@ -1,5 +1,5 @@
 import { itAsync, Done, fitAsync } from "../testHelper.spec";
-import { createDataOld, CategoriesForTestingOld, createData } from '../RowProvider.spec';
+import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 

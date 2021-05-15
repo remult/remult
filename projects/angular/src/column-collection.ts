@@ -1,6 +1,6 @@
-import { columnDefs, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
+import { columnDefs, Entity, FilterHelper, IdEntity, ValueListItem } from "@remult/core";
 import { column,  EntityDefs, getEntityOf } from "../../core/src/remult3";
-import { DataControlInfo, DataControlSettings, decorateDataSettings } from "./data-control-interfaces";
+import { DataControlInfo, DataControlSettings, decorateDataSettings, ValueOrEntityExpression } from "./data-control-interfaces";
 
 
 
@@ -274,5 +274,14 @@ export class ColumnCollection<rowType = any> {
     this._initColumnsArrays();
     return this.nonGridColumns;
   }
+}
+
+
+export function valueOrEntityExpressionToValue<T, entityType >(f: ValueOrEntityExpression<T, entityType>, e: entityType): T {
+  if (typeof f === 'function') {
+      let x = f as any;
+      return x(e);
+  }
+  return <T>f;
 }
 

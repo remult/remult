@@ -11,7 +11,7 @@ import { DataApiRequest, DataApiResponse } from './data-api';
 
 import { SqlDatabase } from './data-providers/sql-database';
 import { Column, getColumnsFromObject } from './column';
-import { AddModelStateToError, Entity, __getValidationError } from './entity';
+import { AddModelStateToError,  __getValidationError } from './entity';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
@@ -252,7 +252,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
                     if (!controllerOptions.key) {
-                        controllerOptions.key = c.for_old(constructor).create().defs.name + "_methods";
+                        controllerOptions.key = c.for(constructor).defs.name + "_methods";
                     }
 
 
@@ -274,15 +274,17 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 context.setDataProvider(ds);
                                 prepareArgs(types, d.args, context, ds, res);
                                 if (allEntities.includes(constructor)) {
-
-                                    let y: Entity;
+                                    let repo = context.for(constructor);
+                                    let y: any;
                                     if (d.rowInfo.isNewRow) {
-                                        y = context.for_old(constructor)._updateEntityBasedOnApi(context.for_old(constructor).create(), d.rowInfo.data);
+                                        y = repo.create();
+                                        let rowHelper = repo.getRowHelper(y);
+                                        rowHelper._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
                                     else {
-                                        let rows = await context.for_old(constructor).find({
+                                        let rows = await repo.find({
                                             where: x => {
-                                                let where: Filter = x.columns.idColumn.isEqualTo(d.rowInfo.id);
+                                                let where: Filter = repo.getIdFilter(d.rowInfo.id);
                                                 if (this.options && this.options.get && this.options.get.where)
                                                     where = new AndFilter(where, this.options.get.where(x));
                                                 return where;
@@ -291,7 +293,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         if (rows.length != 1)
                                             throw new Error("not found or too many matches");
                                         y = rows[0];
-                                        context.for_old(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
+                                        repo.getRowHelper(y)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
 
                                     await y.__validateEntity(undefined, () => { throw new Error("Validation on server method not yet implemented") });
@@ -339,7 +341,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
             if (!actionInfo.runningOnServer) {
                 let self = this;
                 args = args.map(x => x !== undefined ? x : customUndefined);
-                if (self instanceof Entity) {
+                if (false/*self instanceof Entity*/) {
                     await self.__validateEntity(undefined, () => { throw new Error("validation on server method not implemented yet") });
                     let classOptions = mh.classes.get(self.constructor);
                     if (!classOptions.key) {

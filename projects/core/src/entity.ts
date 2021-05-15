@@ -40,46 +40,7 @@ export class Entity<idType = any> {
 
 
 
-  //@internal 
-  _getEntityApiSettings<T>(r: Context): DataApiSettings<T> {
-
-    let options = this.__options;
-    if (options.allowApiCRUD !== undefined) {
-      if (options.allowApiDelete === undefined)
-        options.allowApiDelete = options.allowApiCRUD;
-      if (options.allowApiInsert === undefined)
-        options.allowApiInsert = options.allowApiCRUD;
-      if (options.allowApiUpdate === undefined)
-        options.allowApiUpdate = options.allowApiCRUD;
-      if (options.allowApiRead === undefined)
-        options.allowApiRead = options.allowApiCRUD;
-    }
-    let checkAllowed = (x: EntityAllowed<any>, entity: any) => {
-      if (Array.isArray(x)) {
-        {
-          for (const item of x) {
-            if (checkAllowed(item, entity))
-              return true;
-          }
-        }
-      }
-      else if (typeof (x) === "function") {
-        return x(r, entity)
-      } else return r.isAllowed(x as Allowed);
-    }
-    return {
-      name: options.name,
-      allowRead: r.isAllowed(options.allowApiRead),
-      allowUpdate: (e) => checkAllowed(options.allowApiUpdate, e),
-      allowDelete: (e) => checkAllowed(options.allowApiDelete, e),
-      allowInsert: (e) => checkAllowed(options.allowApiInsert, e),
-      requireId: r.isAllowed(options.apiRequireId),
-      get: {
-        where: options.apiDataFilter
-      }
-    }
-
-  }
+  
 
   __options: EntityOptions;
   //@internal

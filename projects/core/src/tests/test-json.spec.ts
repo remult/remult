@@ -1,6 +1,6 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { ServerContext } from '../context';
-import { Categories } from './testModel/models';
+
 import { JsonDataProvider } from '../data-providers/json-data-provider';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
@@ -49,23 +49,7 @@ describe("test json database", () => {
         expect(cats[0].id).toBe(1);
         expect(cats[0].categoryName).toBe("noam1");
     });
-    itAsync("test basics", async () => {
-        await deleteAll();
-        expect(await context.for_old(Categories).count()).toBe(0);
-        let promisis = [];
-        for (let index = 1; index < 4; index++) {
-            let c = context.for_old(Categories).create();
-            c.id.value = index;
-            c.categoryName.value = "noam" + index;
-            promisis.push(c.save());
-        }
-        await Promise.all(promisis);
-        expect(await context.for_old(Categories).count()).toBe(3, 'count');
-        let cats = await context.for_old(Categories).find();
-        expect(cats.length).toBe(3);
-        expect(cats[0].id.value).toBe(1);
-        expect(cats[0].categoryName.value).toBe("noam1");
-    });
+   
 });
 @Entity({ name: 'tasks' })
 class tasks extends EntityBase {

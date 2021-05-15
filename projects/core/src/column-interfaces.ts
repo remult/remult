@@ -1,8 +1,6 @@
 import { Allowed } from './context';
 import { Column } from './column';
 
-import { Entity } from './entity';
-
 import { column, columnDefsOf } from './remult3';
 
 
@@ -63,19 +61,12 @@ export declare type delmeColumnValidatorHelper<T, ET> = (col: Column<T>, validat
 export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType, entityType>, entity: entityType) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
-export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);
+
 
 export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
     if (typeof f === 'function') {
         let x = f as any;
         return x();
-    }
-    return <T>f;
-}
-export function valueOrEntityExpressionToValue<T, entityType extends Entity>(f: ValueOrEntityExpression<T, entityType>, e: entityType): T {
-    if (typeof f === 'function') {
-        let x = f as any;
-        return x(e);
     }
     return <T>f;
 }

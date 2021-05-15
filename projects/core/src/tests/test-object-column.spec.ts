@@ -2,10 +2,10 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
-import { Categories } from './testModel/models';
+
 
 import { ObjectColumn } from '../columns/object-column';
-import { Entity } from '../entity';
+
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { NumberColumn } from '../column';
 
@@ -59,15 +59,15 @@ describe("test object column",  () => {
 
 });
 
-class ObjectColumnTest extends Entity {
-    id = new NumberColumn();
-    col = new ObjectColumn<person>();
-    constructor() {
-        super({
-            name: 'objectColumnTest'
-        })
-    }
-}
+// class ObjectColumnTest extends Entity {
+//     id = new NumberColumn();
+//     col = new ObjectColumn<person>();
+//     constructor() {
+//         super({
+//             name: 'objectColumnTest'
+//         })
+//     }
+// }
 
 interface person {
     firstName: string;

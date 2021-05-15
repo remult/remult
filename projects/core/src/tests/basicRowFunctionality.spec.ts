@@ -1,14 +1,14 @@
 
 
-import { createData, createDataOld, testAllDbs } from './RowProvider.spec';
+import { createData, testAllDbs } from './RowProvider.spec';
 import { DataApi, DataApiError, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './testHelper.spec';
 
-import { Categories, Status } from './testModel/models';
+import {  Status } from './testModel/models';
 
-import { Context, Role, Allowed, EntityClass, ServerContext } from '../context';
+import { Context, Role, Allowed,  ServerContext } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
 
@@ -102,8 +102,8 @@ describe('Test basic row functionality', () => {
 
   });
   it("finds its id column", () => {
-    let c = new Context().for_old(Categories).create();
-    expect(c.columns.idColumn.defs.key).toBe("id");
+    let c = new Context().for(newCategories);
+    expect(c.defs.idColumn.key).toBe("id");
 
   });
   it("object assign works", () => {
@@ -473,7 +473,7 @@ describe("data api", () => {
         d.ok();
       };
       entityWithValidations.savingRowCount = 0;
-      await api.post(t, { name: 'noam honig' });
+      await api.post(t, { name: 'noam honig', myId: 1 });
       expect(entityWithValidations.savingRowCount).toBe(1);
       d.test();
     })
@@ -1494,8 +1494,8 @@ describe("data api", () => {
   });
 
   it("columnsAreOk", () => {
-    let c = new Context().for_old(Categories).create();
-    expect(c.columns.toArray().length).toBe(6);
+    let c = new Context().for(newCategories).create();
+    expect(c._.columns._items.length).toBe(6);
 
   });
 
@@ -1748,19 +1748,8 @@ describe("test data list", () => {
     var co = new StringColumn({ dbName: 'test' });
     expect(co.defs.dbName).toBe('test');
   });
+
   
-  it("dbname of entity string works", () => {
-    var e = new Categories({
-      name: 'testName',
-      dbName: 'test'
-    });
-    expect(e.defs.dbName).toBe('test');
-  });
-  // it("dbname of entity can use column names", () => {
-
-
-  //   expect(new ServerContext().for(EntityWithLateBoundDbName).defs.getDbName()).toBe('(select CategoryID)');
-  // });
 
   itAsync("delete fails nicely", async () => {
 

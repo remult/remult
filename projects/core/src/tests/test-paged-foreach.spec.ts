@@ -1,19 +1,8 @@
 
 
-import { createData, createDataOld } from './RowProvider.spec';
+import { createData, } from './RowProvider.spec';
 import { fitAsync, itAsync } from './testHelper.spec';
-
-import { Categories } from './testModel/models';
-
 import { iterateConfig } from '../context';
-import {  Context, createAfterFilter, createAUniqueSort } from '../..';
-import { TestBed } from '@angular/core/testing';
-import {  extractSort } from '../data-interfaces';
-
-
-
-import { GridSettings } from '@remult/angular';
-import { Categories as newCategories } from './remult-3-entities';
 import { Entity, EntityBase,Column, CompoundId } from '../remult3';
 
 

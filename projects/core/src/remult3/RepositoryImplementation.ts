@@ -1,9 +1,9 @@
 
 import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
-import { Entity as oldEntity, EntityOptions } from "../entity";
+import {  EntityOptions } from "../entity";
 import { BoolColumn, Column as oldColumn, columnBridgeToDefs, ColumnDefs, CompoundIdColumn, DateTimeColumn, makeTitle, NumberColumn, StringColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
-import { allEntities, Allowed, Context, iterateConfig, IterateOptionsOld as oldIterateOptions, IterateToArrayOptions, SpecificEntityHelper } from "../context";
+import { allEntities, Allowed, Context, EntityAllowed, iterateConfig,  IterateToArrayOptions } from "../context";
 import * as old from '../data-interfaces';
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -56,7 +56,6 @@ export class RepositoryImplementation<T> implements Repository<T>{
             return sort.Segments.map(s => ({ __toSegment: () => s, descending: undefined }));
         }
     }
-    _helper: SpecificEntityHelper<any, oldEntity<any>>;
     private _info: EntityFullInfo<T>;
     private _lookup = new Lookup(this);
     private __edp: EntityDataProvider;
@@ -65,22 +64,52 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
     constructor(private entity: NewEntity<T>, private context: Context, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity);
-
-        //@ts-ignore
-        this._helper = context.for_old<any, oldEntity>((...args: any[]) => this._info.createOldEntity());
     }
     get defs(): EntityDefs { return this._info };
 
     _getApiSettings(): DataApiSettings<T> {
-        return this._helper.create()._getEntityApiSettings(this.context);
+        let options = this._info.entityInfo;
+        if (options.allowApiCRUD !== undefined) {
+            if (options.allowApiDelete === undefined)
+                options.allowApiDelete = options.allowApiCRUD;
+            if (options.allowApiInsert === undefined)
+                options.allowApiInsert = options.allowApiCRUD;
+            if (options.allowApiUpdate === undefined)
+                options.allowApiUpdate = options.allowApiCRUD;
+            if (options.allowApiRead === undefined)
+                options.allowApiRead = options.allowApiCRUD;
+        }
+        let checkAllowed = (x: EntityAllowed<any>, entity: any) => {
+            if (Array.isArray(x)) {
+                {
+                    for (const item of x) {
+                        if (checkAllowed(item, entity))
+                            return true;
+                    }
+                }
+            }
+            else if (typeof (x) === "function") {
+                return x(this.context, entity)
+            } else return this.context.isAllowed(x as Allowed);
+        }
+        return {
+            name: options.name,
+            allowRead: this.context.isAllowed(options.allowApiRead),
+            allowUpdate: (e) => checkAllowed(options.allowApiUpdate, e),
+            allowDelete: (e) => checkAllowed(options.allowApiDelete, e),
+            allowInsert: (e) => checkAllowed(options.allowApiInsert, e),
+            requireId: this.context.isAllowed(options.apiRequireId),
+            get: {
+                where: options.apiDataFilter
+            }
+        }
     }
 
     isIdColumn(col: columnDefs<any>): boolean {
-        let old = this._helper.create();
-        return old.columns.idColumn.defs.key == col.key;
+        return col.key == this.defs.idColumn.key;
     }
     getIdFilter(id: any): Filter {
-        return this._helper.create().columns.idColumn.isEqualTo(id);
+        return new Filter(x => x.isEqualTo(this.defs.idColumn, id));
     }
 
 
@@ -258,17 +287,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return result;
 
     }
-    private async mapOldEntityToResult(r: oldEntity<any>) {
-        if (!r)
-            return undefined;
-        let x = new this.entity(this.context);
-        let helper = new EntityOfImpl(r, this._info, x, this.context, this, this._helper)
-        x[entityMember] = helper;
-        await helper.updateEntityBasedOnOldEntity();
-        if (x instanceof EntityBase)
-            x._ = x[entityMember];
-        return x;
-    }
+
     private async mapRawDataToResult(r: any) {
         if (!r)
             return undefined;
@@ -303,8 +322,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
     createIdInFilter(items: T[]): Filter {
-        let idColumn = this._helper.create().columns.idColumn;
-        return idColumn.isIn(items.map(i => this.getRowHelper(i).columns[idColumn.defs.key].value));
+        let idColumn = this.defs.idColumn;
+        return new Filter(x => x.isIn(idColumn, items.map(i => this.getRowHelper(i).columns[idColumn.key].value)))
+
     }
     translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort {
         if (!orderBy)
@@ -383,38 +403,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 }
 
-export class myEntityDefs<T> implements EntityDefs<T>{
 
-    constructor(private entity: oldEntity) {
-
-    }
-    dbAutoIncrementId = this.entity.__options.dbAutoIncrementId;;
-    get idColumn(): columnDefs<any> { return new columnBridgeToDefs(this.entity.columns.idColumn); };
-    get name(): string {
-        return this.entity.defs.name;
-    }
-    get dbName(): string {
-        return this.entity.defs.dbName;
-    }
-    private _columns: columnDefsOf<T>;
-    get columns(): columnDefsOf<T> {
-        if (!this._columns) {
-            let r = {
-                find: (c: column<any, T>) => r[c.key],
-                _items: []
-            };
-            for (const c of this.entity.columns) {
-                r._items.push(r[c.defs.key] = new columnBridgeToDefs(c));
-            }
-
-            this._columns = r as unknown as entityOf<T>;
-        }
-        return this._columns;
-    }
-    get caption() {
-        return this.entity.defs.caption;
-    }
-}
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
@@ -750,110 +739,7 @@ class columnImpl<T> implements column<any, T> {
 
 
 }
-class EntityOfImpl<T> implements rowHelper<T>{
-    constructor(private oldEntity: oldEntity, private info: EntityFullInfo<T>, private entity: T, private context: Context, public repository: Repository<T>, private helper: SpecificEntityHelper<any, oldEntity<any>>) {
 
-    }
-    get validationError() {
-        return this.oldEntity.validationError;
-    }
-    set validationError(val: string) {
-        this.oldEntity.validationError = val;
-    }
-
-    register(listener: RowEvents) {
-        this.oldEntity.__entityData.register(listener);
-    }
-    _updateEntityBasedOnApi(body: any) {
-        this.helper._updateEntityBasedOnApi(this.oldEntity, body);
-        this.updateEntityBasedOnOldEntity();
-    }
-
-    wasDeleted(): boolean {
-        return this.oldEntity.__entityData._deleted;
-    }
-    isValid(): boolean {
-        return this.oldEntity.isValid();
-
-    }
-    undoChanges() {
-        this.oldEntity.undoChanges();
-        this.updateOldEntityBasedOnEntity();
-    }
-    async reload(): Promise<void> {
-        let r = await this.oldEntity.reload();
-        await this.updateEntityBasedOnOldEntity();
-
-    }
-    toApiPojo() {
-        this.updateOldEntityBasedOnEntity();
-
-        let r = {};
-        for (const c of this.oldEntity.columns) {
-
-            c.__addToPojo(r, this.context)
-        }
-        return r;
-
-
-    }
-    async updateEntityBasedOnOldEntity() {
-        this.justUpdateEntityBasedOnOldEntity();
-        await this.oldEntity.__entityData.initServerExpressions(this.entity);
-        this.justUpdateEntityBasedOnOldEntity();
-
-
-    }
-
-    private _columns: entityOf<T>;
-    justUpdateEntityBasedOnOldEntity() {
-        for (const col of this.info.columns._items) {
-            this.entity[col.key] = this.oldEntity.columns.find(col.key).value;
-        }
-    }
-
-    get columns(): entityOf<T> {
-        if (!this._columns) {
-            let r = {
-                find: (c: column<any, T>) => r[c.key],
-                _items: []
-            };
-            for (const c of this.info.columns._items) {
-                r._items.push(r[c.key] = new columnBridge(this.oldEntity.columns.find(c.key), this.entity, this));
-            }
-
-            this._columns = r as unknown as entityOf<T>;
-        }
-        return this._columns;
-    }
-    async save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any) {
-        this.updateOldEntityBasedOnEntity();
-        await this.oldEntity.save(!afterValidationBeforeSaving ? undefined : async x => {
-            afterValidationBeforeSaving(this.entity)
-        }, async (c, validate) => {
-            validate(this.columns[c.defs.key], this.entity);
-        }, this.entity);
-        await this.updateEntityBasedOnOldEntity();
-        return this.entity;
-
-    }
-    private updateOldEntityBasedOnEntity() {
-        for (const col of this.info.columns._items) {
-            this.oldEntity.columns.find(col.key).value = this.entity[col.key];
-        }
-    }
-
-    delete() {
-        return this.oldEntity.delete(this.entity);
-    }
-    isNew() {
-        return this.oldEntity.isNew();
-    }
-    wasChanged() {
-        this.updateOldEntityBasedOnEntity();
-        return this.oldEntity.wasChanged();
-    }
-}
 export class columnBridge<T, ET> implements column<T, ET>{
     constructor(private col: oldColumn, private item: any, public rowHelper: rowHelper<ET>) {
 
@@ -973,31 +859,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
     name: string;
     dbName: string;
     caption: string;
-    createOldEntity() {
-        let x = new oldEntity(this.entityInfo);
-
-        let firstCol: oldColumn;
-        for (const col of this.columnsInfo) {
-            let c: oldColumn;
-            if (col.type == String)
-                c = new StringColumn(col.settings);
-            else if (col.type == Boolean)
-                c = new BoolColumn(col.settings);
-            else if (col.type == Number)
-                c = new NumberColumn(col.settings);
-            else if (col.type == Date)
-                c = new DateTimeColumn(col.settings);
-            else
-                c = new oldColumn(col.settings);
-            x.__applyColumn(c);
-            if (firstCol)
-                firstCol = c;
-        }
-        if (!x.__idColumn) {
-            x.__idColumn = firstCol;
-        }
-        return x;
-    }
+   
     createFilterOf(): filterOf<T> {
         let r = {};
         for (const c of this.columns._items) {

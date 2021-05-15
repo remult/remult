@@ -1,32 +1,6 @@
 
-import { DataProvider } from "../../data-interfaces";
+import {ValueListColumn } from "../../column";
 
-import { EntityClass, Context } from "../../context";
-import { Entity, EntityOptions } from "../../entity";
-
-import { NumberColumn, StringColumn, ValueListColumn } from "../../column";
-
-@EntityClass
-export class Categories extends Entity {
-  id = new NumberColumn({ dbName: 'CategoryID' });
-  categoryName = new StringColumn();
-  description = new StringColumn();
-  categoryNameLength = new NumberColumn({
-    serverExpression: () => this.categoryName.value ? this.categoryName.value.length : undefined
-  });
-  categoryNameLengthAsync = new NumberColumn({
-    serverExpression: () => Promise.resolve(this.categoryName.value ? this.categoryName.value.length : undefined)
-  });
-  status = new StatusColumn();
-  constructor(settings?: EntityOptions | string) {
-    super(settings && !(settings instanceof Context) ? settings : {
-      name: undefined,
-
-      allowApiCRUD: true
-    });
-
-  }
-}
 
 
 export class Status {

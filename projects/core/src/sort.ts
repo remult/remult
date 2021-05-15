@@ -1,6 +1,6 @@
 import { Column } from "./column";
 import { columnDefs } from "./column-interfaces";
-import { Entity } from "./entity";
+
 import { EntityDefs } from "./remult3";
 
 export class Sort {

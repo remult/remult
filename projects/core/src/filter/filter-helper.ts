@@ -1,4 +1,4 @@
-import { Entity } from "../entity";
+
 import { Column, DateTimeColumn, StringColumn } from "../column";
 
 

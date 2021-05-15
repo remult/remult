@@ -2,9 +2,9 @@ import { itAsync, Done, fitAsync } from "../testHelper.spec";
 import {   createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
-import { Entity } from '../../entity';
 
-import { StatusColumn, Categories } from '../testModel/models';
+
+import { StatusColumn } from '../testModel/models';
 import { Context } from '../../context';
 import { Categories as newCategories } from '../remult-3-entities';
 import { Column, Entity as EntityDecorator, EntityBase } from '../../remult3';
