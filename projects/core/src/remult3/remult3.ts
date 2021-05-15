@@ -87,6 +87,12 @@ export type entityOf<Type> = {
     find(col: columnDefs): column<any, Type>,
     readonly _items: column<any, Type>[],
     idColumn: column<any, Type>
+    // [Symbol.iterator]() {
+    //     return this.__columns[Symbol.iterator]();
+    //   }
+    //   toArray() {
+    //     return [...this.__columns];
+    //   }
 
 }
 export type columnDefsOf<Type> = {
@@ -118,7 +124,7 @@ export interface column<T, entityType> extends columnDefs {
     displayValue: string;
     value: T;
     originalValue: T;
-    inputValue:string;
+    inputValue: string;
     wasChanged(): boolean;
     rowHelper: rowHelper<entityType>
 }
@@ -211,9 +217,24 @@ export interface FindOptions<T> {
     __customFindData?: any;
 
 }
+/** Determines the order of rows returned by the query.
+ * @example
+ * await this.context.for(Products).find({ orderBy: p => p.name })
+ * @example
+ * await this.context.for(Products).find({ orderBy: p => [p.price, p.name])
+ * @example
+ * await this.context.for(Products).find({ orderBy: p => [{ column: p.price, descending: true }, p.name])
+ */
 export declare type EntityOrderBy<T> = (entity: sortOf<T>) => TheSort[] | TheSort;
+/**Used to filter the desired result set
+ * @example
+ * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
+ */
 export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]));
-
+/**Used to filter the desired result set
+ * @example
+ * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
+ */
 export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
 
 

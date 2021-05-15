@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action,  columnDefs,  Entity, ValueListItem, EntityProvider } from '@remult/core';
+import { actionInfo, Context,   columnDefs,   ValueListItem} from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';

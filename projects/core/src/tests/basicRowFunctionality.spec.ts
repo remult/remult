@@ -392,7 +392,7 @@ describe("data api", () => {
     amount.__valueProvider = {
       getValue: (a, b) => '15',
       getOriginalValue: () => '15',
-      getEntity: () => undefined,
+      
       setValue: (a, b) => { }
     };
     total.value += amount.value;

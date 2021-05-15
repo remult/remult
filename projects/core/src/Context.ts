@@ -2,7 +2,7 @@
 import { DataProvider,     RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
 import { __isGreaterThan, __isLessThan } from "./column";
-import { Entity } from "./entity";
+
 
 import { Action } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
@@ -211,10 +211,7 @@ export class ServerContext extends Context {
     }
 }
 
-export interface EntityType<T = any> {
-    new(...args: any[]): Entity<T>;
-}
-export const allEntities: EntityType<any>[] = [];
+export const allEntities: NewEntity<any>[] = [];
 export interface ControllerOptions {
     key: string,
     allowed: Allowed

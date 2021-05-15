@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, ServerController, ServerMethod, Entity, EntityClass, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, ServerController, ServerMethod, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, GridSettings, openDialog } from '@remult/angular';

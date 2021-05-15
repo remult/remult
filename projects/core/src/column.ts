@@ -1,5 +1,5 @@
-import { Allowed, Context, RoleChecker } from './context';
-import { columnDefs, ColumnSettings, dbLoader, delmeColumnValidatorHelper, inputLoader, jsonLoader, ValueListItem, valueOrExpressionToValue } from './column-interfaces';
+import { Allowed,  RoleChecker } from './context';
+import { columnDefs, ColumnSettings,  delmeColumnValidatorHelper, inputLoader, jsonLoader, ValueListItem } from './column-interfaces';
 
 
 
@@ -7,7 +7,7 @@ import { columnDefs, ColumnSettings, dbLoader, delmeColumnValidatorHelper, input
 import { DefaultStorage } from './columns/storage/default-storage';
 import { AndFilter, Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
-import { Entity } from './entity';
+
 
 
 
@@ -59,7 +59,7 @@ export class Column<dataType = any>  {
 
   get defs() {
     if (!this.__defs)
-      this.__defs = new ColumnDefs(this.__settings, () => this.__valueProvider.getEntity());
+      this.__defs = new ColumnDefs(this.__settings);
     return this.__defs;
   }
 
@@ -197,9 +197,7 @@ export class Column<dataType = any>  {
 }
 
 class dummyColumnStorage implements ColumnValueProvider {
-  getEntity(): Entity<any> {
-    return undefined;
-  }
+ 
 
   private _val: string;
   private _wasSet = false;
@@ -222,7 +220,7 @@ class dummyColumnStorage implements ColumnValueProvider {
   }
 }
 export class ColumnDefs {
-  constructor(private settings: ColumnSettings, private _entity: () => Entity) {
+  constructor(private settings: ColumnSettings) {
 
   }
   get caption(): string {
@@ -249,9 +247,7 @@ export class ColumnDefs {
   set key(v: string) {
     this.settings.key = v;
   }
-  get entity(): Entity {
-    return this._entity();
-  }
+
   get dbName(): string {
     // if (this.settings.sqlExpression) {
     //   return valueOrExpressionToValue(this.settings.sqlExpression);
