@@ -16,7 +16,7 @@ import { UrlBuilder } from '../url-builder';
 import { FilterSerializer } from '../filter/filter-consumer-bridge-to-url-builder';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
-import { addFilterToUrlAndReturnTrueIfSuccessful } from '../data-providers/rest-data-provider';
+import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../data-providers/rest-data-provider';
 import { OrFilter } from '../filter/filter-interfaces';
 import { Categories as newCategories } from './remult-3-entities';
 
@@ -1739,7 +1739,7 @@ describe("test data list", () => {
     await rl.items[1]._.delete();
     expect(rl.items.length).toBe(2);
   });
- 
+
 
 
   itAsync("delete fails nicely", async () => {
@@ -1805,6 +1805,71 @@ describe("test number negative", () => {
 
   // });
 
+});
+
+describe("test rest data provider translates data correctly", () => {
+  itAsync("get works", async () => {
+    let type = class extends EntityBase {
+      a: number;
+      b: Date;
+    };
+    Entity({ key: 'x' })(type);
+    Column({ type: Number })(type.prototype, 'a');
+    Column({ type: Date })(type.prototype, 'b');
+
+    let c = new Context().for(type);
+    let z = new RestDataProvider("", {
+      delete: undefined,
+      get: async () => {
+        return [
+          {
+            a: 1,
+            b: "2021-05-16T08:32:19.905Z"
+          }
+        ]
+      },
+      post: undefined,
+      put: undefined
+    });
+    let x = z.getEntityDataProvider(c.defs);
+    let r = await x.find();
+    expect(r.length).toBe(1);
+    expect(r[0].a).toBe(1);
+    expect(r[0].b.valueOf()).toBe(new Date("2021-05-16T08:32:19.905Z").valueOf());
+    expect(r[0].b instanceof Date).toBe(true);
+  })
+  itAsync("put works", async () => {
+    let type = class extends EntityBase {
+      a: number;
+      b: Date;
+    };
+    Entity({ key: 'x' })(type);
+    Column({ type: Number })(type.prototype, 'a');
+    Column({ type: Date })(type.prototype, 'b');
+
+    let c = new Context().for(type);
+    let done = new Done();
+    let z = new RestDataProvider("", {
+      delete: undefined,
+      get: undefined,
+      post: async (x, data) => {
+        done.ok();
+        expect(data.a).toBe(1);
+        expect(data.b).toBe("2021-05-16T08:32:19.905Z");
+        return data;
+      },
+      put: undefined
+    });
+    let x = z.getEntityDataProvider(c.defs);
+    let r = await x.insert({
+      a: 1,
+      b: new Date("2021-05-16T08:32:19.905Z")
+    });
+    expect(r.a).toBe(1);
+    expect(r.b instanceof Date).toBe(true);
+    expect(r.b.toISOString()).toBe("2021-05-16T08:32:19.905Z");
+    done.test();
+  })
 });
 describe("check allowedDataType", () => {
   let c = new Context();

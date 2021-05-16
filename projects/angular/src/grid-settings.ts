@@ -1,5 +1,5 @@
-import { AndFilter, columnDefs, DataList,  FilterHelper, Sort } from "@remult/core";
-import {  columnDefsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "../../core/src/remult3";
+import { AndFilter, columnDefs, DataList, FilterHelper, Sort } from "@remult/core";
+import { columnDefsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "../../core/src/remult3";
 import { ColumnCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
@@ -25,8 +25,7 @@ export class GridSettings<rowType>  {
 
     if (settings) {
 
-      if (settings.columnSettings)
-      {
+      if (settings.columnSettings) {
         let x = settings.columnSettings(repository.defs.columns);
         this.columns.add(...x);
       }
@@ -215,7 +214,10 @@ export class GridSettings<rowType>  {
   currentRowAsRestListItemRow() {
     if (!this.currentRow)
       return undefined;
-    return getEntityOf(this.currentRow);
+    this.getRowHelper(this.currentRow);
+  }
+  getRowHelper(item: rowType) {
+    return this.repository.getRowHelper(item);
   }
   cancelCurrentRowChanges() {
     if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow())
@@ -364,7 +366,7 @@ export class GridSettings<rowType>  {
       }
     } if (!done)
       throw new Error("need to fix order by ");
-//      this._currentOrderBy = new Sort({ column: column });
+    //      this._currentOrderBy = new Sort({ column: column });
     this.reloadData();
   }
   sortedAscending(column: columnDefs) {

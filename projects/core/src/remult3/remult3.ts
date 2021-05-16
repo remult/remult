@@ -1,3 +1,4 @@
+
 import { columnDefs } from "../column-interfaces";
 import { IterateToArrayOptions } from "../context";
 import { Filter } from "../filter/filter-interfaces";
@@ -8,6 +9,8 @@ import { RowEvents } from "../__EntityValueProvider";
 
 /*
 ## Should work
+[] replace entitydefs.name = key.
+[] rename allow api crud
 [] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
 [] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
 [] original data should reflect the values after server expressions
@@ -30,6 +33,8 @@ import { RowEvents } from "../__EntityValueProvider";
 [] fix extends to be smarter
 [] "test object column"
 [] "order by api"
+[] review repository api - and consider moving stuff to defs
+
 
 ## Server Controller
 [] rebuild validation model for ServerMethod
@@ -44,6 +49,7 @@ import { RowEvents } from "../__EntityValueProvider";
 
 ## compound id column
 [] "compound id"
+[] reconsider the IdColumn member - might make sense to remove it
 
 ## review with Yoni
 [] "negative decimal" - inputValue

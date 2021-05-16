@@ -1,10 +1,11 @@
 import { extend } from '@remult/angular';
-import { IdEntity,     ServerMethod } from '@remult/core';
+import { IdEntity, ServerMethod } from '@remult/core';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 @Entity({
   key: "Products",
   allowApiCRUD: true,
+  extends: IdEntity
 })
 
 export class Products extends IdEntity {

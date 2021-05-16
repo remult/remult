@@ -53,7 +53,7 @@ export class ColumnCollection<rowType = any> {
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
       let col = c as columnDefs;
-      if (!x.column && col.key && col.caption && col.dbName && col.inputType) {
+      if (!x.column && col.key && col.caption && col.dbName ) {
         x = {
           column: c,
         }

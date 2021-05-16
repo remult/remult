@@ -32,7 +32,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                 }
                 equalToColumn.push(s.column);
                 if (s.descending) {
-                    f = new AndFilter(f,new Filter(x => x.isLessThan(s.column, values.get(s.column.key))));
+                    f = new AndFilter(f, new Filter(x => x.isLessThan(s.column, values.get(s.column.key))));
                 }
                 else
                     f = new AndFilter(f, new Filter(x => x.isGreaterThan(s.column, values.get(s.column.key))));
@@ -946,6 +946,8 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
         }
         if (!x.inputLoader)
             x.inputLoader = NumberInputLoader;
+        if (!x.inputType)
+            x.inputType = 'number';
     }
     if (settings.type == Date) {
         let x = settings as unknown as ColumnSettings<Date>;

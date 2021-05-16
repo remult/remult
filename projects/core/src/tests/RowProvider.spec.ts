@@ -2,14 +2,14 @@ import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader, ValueLis
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
-import { Status,  TestStatus } from './testModel/models';
+import { Status, TestStatus } from './testModel/models';
 import { Context, ServerContext } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../filter/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
+import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '../../../angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
@@ -189,7 +189,7 @@ describe("grid filter stuff", () => {
       execute: () => { throw "rr" }
     });
 
-    x.containsCaseInsensitive( new mockColumnDefs("col"), "no'am");
+    x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
     expect(x.where).toBe(" where lower (col) like lower ('%no''am%')");
   });
   it("filter with contains", () => {
@@ -197,7 +197,7 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     });
-    
+
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
     expect(x.where).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
@@ -1341,6 +1341,17 @@ describe("context", () => {
 
 
 });
+describe("test grid basics", () => {
+  itAsync("basically works", async () => {
+      let c =await  insertFourRows();
+      let gs = new GridSettings(c);
+      await gs.reloadData();
+      expect(gs.columns.items.length).toBe(6);
+      expect (gs.columns._getColDisplayValue(gs.columns.items[0],gs.items[0])).toBe("1");
+      
+
+  });
+});
 
 @EntityDecorator<TestCategories1>({ key: '123' })
 class TestCategories1 extends newCategories {
@@ -1388,8 +1399,8 @@ class valueList {
   constructor(public id?: string, public caption?: string) { }
 }
 
-class mockColumnDefs implements columnDefs{
-  constructor(public dbName:string){
+class mockColumnDefs implements columnDefs {
+  constructor(public dbName: string) {
 
   }
   readonly dbReadOnly: boolean;
@@ -1397,8 +1408,8 @@ class mockColumnDefs implements columnDefs{
   readonly key: string;
   readonly caption: string;
   readonly inputType: string;
-  
-  readonly dbLoader: dbLoader<any>={toDb:x=>x,fromDb:x=>x};
+
+  readonly dbLoader: dbLoader<any> = { toDb: x => x, fromDb: x => x };
   readonly jsonLoader: jsonLoader<any>;
   readonly inputLoader: inputLoader<any>;
   readonly type: any;

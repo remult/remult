@@ -109,7 +109,7 @@ export class DataGrid2Component implements OnChanges {
   getButtonText(b: RowButton<any>, row: any) {
     if (!b.textInMenu)
       return b.name;
-    if (typeof b.textInMenu ==="function") {
+    if (typeof b.textInMenu === "function") {
       if (!row)
         return '';
       //@ts-ignore
@@ -163,14 +163,15 @@ export class DataGrid2Component implements OnChanges {
 
 
   showSaveAllButton() {
-    return this.settings.items.find(x => x.wasChanged())
+    return this.settings.items.find(x => this.settings.getRowHelper(x).wasChanged())
   }
   saveAllText() {
-    return this.rightToLeft ? ('שמור ' + this.settings.items.filter(x => x.wasChanged()).length + ' שורות') :
-      ('save ' + this.settings.items.filter(x => x.wasChanged()).length + ' rows');
+    return this.rightToLeft ? ('שמור ' + this.settings.items.filter(x => this.settings.getRowHelper(x).wasChanged()).length + ' שורות') :
+      ('save ' + this.settings.items.filter(x => this.settings.getRowHelper(x).wasChanged()).length + ' rows');
   }
   async saveAllClick() {
-    await Promise.all(this.settings.items.filter(x => x.wasChanged()).map(x => x.save()));
+    await Promise.all(this.settings.items.filter(x => this.settings.getRowHelper(x).wasChanged()).map(x =>
+      this.settings.getRowHelper(x).save()));
   }
 
   ngOnChanges(): void {
@@ -201,7 +202,7 @@ export class DataGrid2Component implements OnChanges {
         name: "",
         icon: 'check',
         cssClass: "glyphicon glyphicon-ok btn-success",
-        visible: r => r.wasChanged(),
+        visible: r => this.settings.getRowHelper(r).wasChanged(),
         showInLine: true,
         textInMenu: () => this.rightToLeft ? 'שמור' : 'save',
         click: r => {
@@ -213,12 +214,12 @@ export class DataGrid2Component implements OnChanges {
         name: "",
         icon: 'cancel',
         cssClass: "btn btn-danger glyphicon glyphicon-ban-circle",
-        visible: r => r.wasChanged(),
+        visible: r => this.settings.getRowHelper(r).wasChanged(),
         showInLine: true,
         textInMenu: () => this.rightToLeft ? 'בטל שינוים' : 'cancel',
 
         click: r => {
-          r.undoChanges();
+          this.settings.getRowHelper(r).undoChanges()
         }
       });
 
@@ -228,7 +229,7 @@ export class DataGrid2Component implements OnChanges {
       this.addButton({
         name: '',
         visible: (r) => {
-          return r && !r.isNew();
+          return r && !this.settings.getRowHelper(r).isNew();
         }
         , icon: 'delete',
         showInLine: true,
@@ -239,7 +240,7 @@ export class DataGrid2Component implements OnChanges {
             if (!await this.settings.settings.confirmDelete(r))
               return;
           }
-          r.delete({});
+          this.settings.getRowHelper(r).delete();
 
         },
 

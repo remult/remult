@@ -1,7 +1,7 @@
 
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
-import {  packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
+import { packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { Filter } from '../filter/filter-interfaces';
 import { EntityDefs } from '../remult3';
@@ -12,7 +12,7 @@ export class RestDataProvider implements DataProvider {
 
   }
   public getEntityDataProvider(entity: EntityDefs): EntityDataProvider {
-    return new RestEntityDataProvider(this.url + '/' + entity.name, this.http);
+    return new RestEntityDataProvider(this.url + '/' + entity.name, this.http, entity);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
@@ -20,8 +20,22 @@ export class RestDataProvider implements DataProvider {
 }
 class RestEntityDataProvider implements EntityDataProvider {
 
-  constructor(private url: string, private http: RestDataProviderHttpProvider) {
+  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityDefs) {
 
+  }
+  translateFromJson(row: any) {
+    let result = {};
+    for (const col of this.entity.columns._items) {
+      result[col.key] = col.jsonLoader.fromJson(row[col.key]);
+    }
+    return result;
+  }
+  translateToJson(row: any) {
+    let result = {};
+    for (const col of this.entity.columns._items) {
+      result[col.key] = col.jsonLoader.toJson(row[col.key]);
+    }
+    return result;
   }
 
   public async count(where: Filter): Promise<number> {
@@ -73,14 +87,14 @@ class RestEntityDataProvider implements EntityDataProvider {
     }
     if (filterObject) {
       url.add("__action", "get");
-      return this.http.post(url.url, filterObject);
+      return this.http.post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
     }
     else
-      return this.http.get(url.url);
+      return this.http.get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
   }
 
   public update(id: any, data: any): Promise<any> {
-    return this.http.put(this.url + '/' + encodeURIComponent(id), data);
+    return this.http.put(this.url + '/' + encodeURIComponent(id), this.translateToJson(data)).then(y => this.translateFromJson(y));
 
   }
 
@@ -89,7 +103,7 @@ class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public insert(data: any): Promise<any> {
-    return this.http.post(this.url, data);
+    return this.http.post(this.url, this.translateToJson( data)).then(y => this.translateFromJson(y));
   }
 }
 function JsonContent(add: (name: string, value: string) => void) {
