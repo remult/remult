@@ -7,47 +7,64 @@ import { RowEvents } from "../__EntityValueProvider";
 
 
 /*
+## Should work
 [] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
 [] think of id entity.
 [] rename `name` to `key` in Entity Settings
-[] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
 [] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
 [] original data should reflect the values after server expressions
-[] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
 [] use helmet instead of force https
 [] fix timeout by using a repeat mechanism in context.
 [] replace method not allowed with forbidden - when something is not allowed
 [] add reflect metadata to dependencies
+[] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
+[] "dbname of entity can use column names"
+[] test-paged-foreach
+[] "bool column doesn't need contains, isin and is not in"
+[] "apiRequireId"
+[] "test make sort unique" - both tests
+
+## TODO
+[] test default value set in the pojo itself: a=0;
+[] completed = false; didn't serialize as false to json
+[] fix extends to be smarter
+[] "test object column"
+[] "order by api"
+
+## Server Controller
 [] rebuild validation model for ServerMethod
-[] consider the setting decimal digits, instead might be useful to determine db storage
-[] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
-[] chose error instead of validationError
+
+## closed list column
 [] "Closed List  column"
 [] "test value list type"
 [] value list "works with automatic id"
-[] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
-[] fix grid filter on string to be contains if not force equals - and same for object
-[] fix allowApiCrud
-    [] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
-[] "dbname of entity can use column names"
-[] "compound id"
-[] test default value set in the pojo itself: a=0;
-[] "test object column"
-[] test-paged-foreach
-[] "negative decimal" - inputValue
-[] "test column value change"
-[] "Number is always a number"
-[] "test number is always number"
-[] "order by api"
-[] "bool column doesn't need contains, isin and is not in"
 []"getArray works with filter and in with closed list columns"
 []"getArray works with filter and multiple values with closed list columns"
-[] "apiRequireId"
-[] test number is always a number - settings value with any string, and then doing math options for it.
+
+## compound id column
+[] "compound id"
+
+## review with Yoni
+[] "negative decimal" - inputValue
+[] "Number is always a number"
+    [] "test number is always number"
+    [] test number is always a number - settings value with any string, and then doing math options for it.
+[] consider the setting decimal digits, instead might be useful to determine db storage - replaced with db type
+[] validationError is now called error
+
+## consider if needed
+
+[] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
+[] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
+[] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
+
+## remult angular
+[] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
+[] fix grid filter on string to be contains if not force equals - and same for object
+[] "test column value change"
 [] change the getValue - to  displayValue
 [] change the input type to support code+value, displayValueOnly
-[] "test make sort unique" - both tests
 []"test filter works with user filter"
 []"test filter works with selected rows"
 []"test select rows in page is not select all"
@@ -59,16 +76,24 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "column drop down 1"
 [] "works ok with filter"
 [] "uses a saparate column"
-[] completed = false; didn't serialize as false to json
-[] remult angular:
-    [] redesign extend 
-    [] fix ignore id in id Entity
-    [] fix sort method on grid settings
-    [] fix getColumnsFromObject and it's usages
-    [] data area with local columns "get value function works"
-        [] "test consolidate"
-        [] "works without entity"
-        [] "get value function works"
+[] redesign extend 
+[] fix ignore id in id Entity
+[] fix sort method on grid settings
+[] fix getColumnsFromObject and it's usages
+[] data area with local columns "get value function works"
+    [] "test consolidate"
+    [] "works without entity"
+    [] "get value function works"
+
+
+
+
+
+
+
+
+
+
 */
 
 
