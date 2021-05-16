@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {  Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress,   } from '@remult/core';
+import { Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress, IdEntity, } from '@remult/core';
 
 import { DataAreaSettings } from '@remult/angular';
 import { Products } from '../products-test/products';
@@ -52,13 +52,14 @@ export class TestComponent {
 }
 
 @Entity<Tasks>({
-  name: 'tasks',
+  extends: IdEntity,
+  key: 'tasks',
   allowApiCRUD: true,
-  saving:t=>{
+  saving: t => {
     t.context.user.id
   }
 })
-class Tasks extends EntityBase {
+class Tasks extends IdEntity {
   @Column<Tasks, string>({
     validate: (col, row) => {
       if (col.value.length < 3)
@@ -70,7 +71,7 @@ class Tasks extends EntityBase {
   })
   title = '';
   @Column()
-  completed :boolean;
+  completed: boolean;
   constructor(private context: Context) {
     super();
   }

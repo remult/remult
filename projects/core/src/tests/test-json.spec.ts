@@ -51,7 +51,7 @@ describe("test json database", () => {
     });
    
 });
-@Entity({ name: 'tasks' })
+@Entity({ key: 'tasks' })
 class tasks extends EntityBase {
     @Column()
     id: number;

@@ -33,7 +33,7 @@ describe("test sql database", async () => {
 
 
 
-@Entity({ name: 'testSqlExpression' })
+@Entity({ key: 'testSqlExpression' })
 class testSqlExpression extends EntityBase {
     @Column()
     code: number;

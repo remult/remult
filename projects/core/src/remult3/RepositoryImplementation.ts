@@ -91,7 +91,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
             } else return this.context.isAllowed(x as Allowed);
         }
         return {
-            name: options.name,
+            name: options.key,
             allowRead: this.context.isAllowed(options.allowApiRead),
             allowUpdate: (e) => checkAllowed(options.allowApiUpdate, e),
             allowDelete: (e) => checkAllowed(options.allowApiDelete, e),
@@ -796,7 +796,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
         this.columns = r as unknown as entityOf<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
-        this.name = entityInfo.name;
+        this.name = entityInfo.key;
         this.caption = entityInfo.caption;
         if (typeof entityInfo.dbName === "string")
             this.dbName = entityInfo.dbName;
@@ -994,10 +994,10 @@ interface columnInfo {
 }
 export function Entity<T>(options: EntityOptions<T>) {
     return target => {
-        if (!options.name || options.name == '')
-            options.name = target.constructor.name;
+        if (!options.key || options.key == '')
+            options.key = target.constructor.name;
         if (!options.dbName)
-            options.dbName = options.name;
+            options.dbName = options.key;
         allEntities.push(target);
         Reflect.defineMetadata(entityInfo, options, target);
         return target;

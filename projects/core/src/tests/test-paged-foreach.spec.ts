@@ -241,7 +241,7 @@ describe("test paged foreach ", async () => {
 })
 
 @Entity<theTable>({
-    name:'',
+    key:'',
     id:t=>new CompoundId(t.a,t.b)
 })
 class theTable extends EntityBase{

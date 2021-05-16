@@ -429,7 +429,7 @@ export class EntityQueueStorage implements QueueStorage {
 
 
 @Entity({
-  name: 'jobsInQueue',
+  key: 'jobsInQueue',
   allowApiRead: false
 })
 export class JobsInQueueEntity extends IdEntity {

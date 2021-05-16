@@ -35,7 +35,7 @@ describe("test exception", () => {
         let type = class extends EntityBase{
             id:string;
         }
-        Entity({name:'test'})(type);
+        Entity({key:'test'})(type);
         Column()(type.prototype,"id");
         var x = c.for(type).create();
         try {

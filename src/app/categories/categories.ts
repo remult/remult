@@ -1,7 +1,7 @@
 import { Column, Entity, IdEntity } from '@remult/core';
 
 @Entity({
-    name: "Categories",
+    key: "Categories",
     allowApiCRUD: true,
 })
 export class Categories extends IdEntity {

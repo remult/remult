@@ -488,7 +488,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string;
     };
-    EntityDecorator({ name: '', extends: newCategories })(type);
+    EntityDecorator({ key: '', extends: newCategories })(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: (col, entity) =>
         Validators.required(col, entity, "m")
@@ -512,7 +512,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string;
     };
-    EntityDecorator({ name: '' })(type);
+    EntityDecorator({ key: '' })(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: (col, entity) => {
         if (!entity.a || entity.a.length == 0)
@@ -538,7 +538,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string
     };
-    EntityDecorator({ name: '' })(type);
+    EntityDecorator({ key: '' })(type);
     ColumnDecorator({
       validate: Validators.required.withMessage("m")
     })(type.prototype, "a");
@@ -560,7 +560,7 @@ describe("test row provider", () => {
       let type = class extends newCategories {
         a: string
       };
-      EntityDecorator({ name: 'categories', extends: newCategories })(type);
+      EntityDecorator({ key: 'categories', extends: newCategories })(type);
       ColumnDecorator<typeof type.prototype, string>({
         validate: async (col, en) => {
           if (en._.isNew() || en.a != en._.columns.a.originalValue) {
@@ -595,7 +595,7 @@ describe("test row provider", () => {
       let type = class extends newCategories {
         a: string
       };
-      EntityDecorator({ name: 'sdfgds', extends: newCategories })(type);
+      EntityDecorator({ key: 'sdfgds', extends: newCategories })(type);
       ColumnDecorator<typeof type.prototype, string>({
         validate: Validators.unique
       })(type.prototype, "a");
@@ -624,7 +624,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string
     };
-    EntityDecorator({ name: 'asdfa', extends: newCategories })(type);
+    EntityDecorator({ key: 'asdfa', extends: newCategories })(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
@@ -666,7 +666,7 @@ describe("test row provider", () => {
     }
     let orderOfOperation = '';
     EntityDecorator({
-      name: 'asdf',
+      key: 'asdf',
       saving: () => orderOfOperation += "EntityOnSavingRow,",
       validation: r => orderOfOperation += "EntityValidate,",
       extends: newCategories
@@ -976,7 +976,7 @@ describe("column collection", () => {
       let type = class extends newCategories {
         categoryName: string;
       }
-      EntityDecorator({ name: 'asdf' })(type);
+      EntityDecorator({ key: 'asdf' })(type);
       ColumnDecorator({
         allowApiUpdate: false
       })(type.prototype, "categoryName");
@@ -1342,7 +1342,7 @@ describe("context", () => {
 
 });
 
-@EntityDecorator<TestCategories1>({ name: '123' })
+@EntityDecorator<TestCategories1>({ key: '123' })
 class TestCategories1 extends newCategories {
   @ColumnDecorator({
     validate: Validators.required

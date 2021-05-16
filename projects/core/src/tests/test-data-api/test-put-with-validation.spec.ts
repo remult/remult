@@ -52,7 +52,7 @@ describe("data api", () => {
 });
 
 @Entity<CategoriesForThisTest>({
-    name: undefined,
+    key: undefined,
     allowApiUpdate: true,
     allowApiInsert: true,
     extends:Categories,

@@ -2,7 +2,7 @@ import { EntityBase, Column, Entity } from "../remult3";
 import { Status } from "./testModel/models";
 
 @Entity({
-    name: 'Products'
+    key: 'Products'
 })
 export class Products {
     @Column()
@@ -24,7 +24,7 @@ export interface CategoriesForTesting extends EntityBase {
     status: Status;
 }
 @Entity({
-    name: 'Categories',
+    key: 'Categories',
     allowApiCRUD: true
 })
 export class Categories extends EntityBase {

@@ -195,7 +195,7 @@ describe('Test basic row functionality', () => {
   // });
 
 });
-@Entity({ name: 'myTestEntity' })
+@Entity({ key: 'myTestEntity' })
 class myTestEntity extends EntityBase {
   @Column()
   id: number;
@@ -689,7 +689,7 @@ describe("data api", () => {
 
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      name: '',
+      key: '',
       defaultOrderBy: x => x.categoryName,
       extends: newCategories
     })(type);
@@ -712,7 +712,7 @@ describe("data api", () => {
     let happend = false;
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      name: undefined,
+      key: undefined,
       extends: newCategories,
       allowApiDelete: true,
       deleted: () => happend = true,
@@ -745,7 +745,7 @@ describe("data api", () => {
 
     }
     Entity<typeof type.prototype>({
-      name: undefined,
+      key: undefined,
       allowApiDelete: true,
       extends: newCategories,
       deleted: () => happend = true,
@@ -776,7 +776,7 @@ describe("data api", () => {
 
     };
     Entity<typeof type.prototype>({
-      name: undefined,
+      key: undefined,
       extends: newCategories,
       allowApiDelete: true,
       deleted: () => happend = true,
@@ -805,7 +805,7 @@ describe("data api", () => {
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
       extends: newCategories,
-      name: undefined,
+      key: undefined,
       allowApiDelete: true,
       deleted: (t) => {
         happend = true;
@@ -837,7 +837,7 @@ describe("data api", () => {
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
       extends: newCategories,
-      name: undefined,
+      key: undefined,
       allowApiUpdate: true,
       saving: t => {
         count++;
@@ -868,7 +868,7 @@ describe("data api", () => {
       let type = class extends newCategories { };
       Entity<typeof type.prototype>({
         extends: newCategories,
-        name: undefined,
+        key: undefined,
         allowApiUpdate: true,
         saving: () => count++
       })(type);
@@ -903,7 +903,7 @@ describe("data api", () => {
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
       extends: newCategories,
-      name: undefined,
+      key: undefined,
       allowApiUpdate: true,
       saving: () => count++,
       saved: (t) => {
@@ -941,7 +941,7 @@ describe("data api", () => {
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
       extends: newCategories,
-      name: undefined,
+      key: undefined,
       allowApiUpdate: true,
       allowApiInsert: true,
 
@@ -988,7 +988,7 @@ describe("data api", () => {
     }
     Entity<typeof type.prototype>({
       extends: newCategories,
-      name: 'testE',
+      key: 'testE',
       allowApiUpdate: true,
       saving: (row, cancel) => {
         if (startTest) {
@@ -1039,7 +1039,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Column({ includeInApi: false })(type.prototype, "categoryName");
-    Entity({ name: '', extends: newCategories })(type);
+    Entity({ key: '', extends: newCategories })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
     var api = new DataApi(c);
@@ -1096,7 +1096,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Column({ allowApiUpdate: false })(type.prototype, "categoryName");
-    Entity({ name: '', allowApiUpdate: true, extends: newCategories })(type);
+    Entity({ key: '', allowApiUpdate: true, extends: newCategories })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
     var api = new DataApi(c);
@@ -1135,7 +1135,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Column({ includeInApi: false })(type.prototype, "categoryName");
-    Entity({ name: '', allowApiUpdate: true, extends: newCategories })(type);
+    Entity({ key: '', allowApiUpdate: true, extends: newCategories })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
 
@@ -1159,7 +1159,7 @@ describe("data api", () => {
     let type = class extends newCategories { };
     Entity<newCategories>({
       extends: newCategories,
-      name: '',
+      key: '',
       allowApiInsert: true,
       saving: (x) => x.description.length + 1
     })(type);
@@ -1278,7 +1278,7 @@ describe("data api", () => {
 
       };
       Entity({
-        name: '',
+        key: '',
         extends: newCategories,
         allowApiDelete: false
       })(type);
@@ -1303,7 +1303,7 @@ describe("data api", () => {
 
       };
       Entity({
-        name: '',
+        key: '',
         extends: newCategories,
         apiRequireId: true
       })(type);
@@ -1358,7 +1358,7 @@ describe("data api", () => {
 
     };
     Entity<typeof type.prototype>({
-      name: '',
+      key: '',
       extends: newCategories,
       allowApiDelete: (c, t) => {
         return t.id == 1;
@@ -1389,7 +1389,7 @@ describe("data api", () => {
 
     };
     Entity<typeof type.prototype>({
-      name: '',
+      key: '',
       extends: newCategories,
       allowApiUpdate: (c, t) => {
         return t.id == 1;
@@ -1425,7 +1425,7 @@ describe("data api", () => {
 
     };
     Entity<typeof type.prototype>({
-      name: '',
+      key: '',
       extends: newCategories,
       allowApiInsert: (c, t) => {
         return t.categoryName == 'ok';
@@ -1571,7 +1571,7 @@ describe("column validation", () => {
       c3: Date
     }
     Entity({
-      name: 't1',
+      key: 't1',
       dbAutoIncrementId: true
     })(type);
     Column({ type: Number })(type.prototype, "id");
@@ -1602,7 +1602,7 @@ describe("test web sql identity", () => {
 
     }
     Entity({
-      name: 't1',
+      key: 't1',
       dbAutoIncrementId: true
     })(type);
     Column({ type: Number })(type.prototype, "id");
@@ -1860,7 +1860,7 @@ describe("check allowedDataType", () => {
   });
 
 });
-@Entity<CompoundIdEntity>({ name: 'compountIdEntity', id: x => new CompoundId(x.a, x.b) })
+@Entity<CompoundIdEntity>({ key: 'compountIdEntity', id: x => new CompoundId(x.a, x.b) })
 class CompoundIdEntity extends EntityBase {
   @Column()
   a: number;
@@ -1871,7 +1871,7 @@ class CompoundIdEntity extends EntityBase {
   id = {};
 }
 @Entity<entityWithValidations>({
-  name: '',
+  key: '',
   allowApiCRUD: true,
   saving: async (t) => {
     if (!t.name || t.name.length < 3)
@@ -1900,7 +1900,7 @@ export class entityWithValidations extends EntityBase {
     super();
   }
 }
-@Entity({ name: '', allowApiUpdate: true })
+@Entity({ key: '', allowApiUpdate: true })
 export class entityWithValidationsOnColumn extends EntityBase {
   @Column()
   myId: number;
@@ -1914,7 +1914,7 @@ export class entityWithValidationsOnColumn extends EntityBase {
 
 }
 @Entity<entityWithValidationsOnEntityEvent>({
-  name: '',
+  key: '',
   validation: (t => {
     if (!t.name || t.name.length < 3)
       t._.columns.name.error = 'invalid';
@@ -1927,7 +1927,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
   name: string;
 }
 @Entity<EntityWithLateBoundDbName>({
-  name: 'stam',
+  key: 'stam',
   dbName: t => '(select ' + t.id.dbName + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {

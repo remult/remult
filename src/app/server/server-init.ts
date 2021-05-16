@@ -36,13 +36,7 @@ export async function serverInit() {
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
-    if (false)
-        console.log({
-            bp: b.prototype,
-            columnsA: columnsOfType.get(a.prototype),
-            columnsB: columnsOfType.get(b.prototype),
-
-        })
+  
 
 
     return r;
@@ -50,16 +44,3 @@ export async function serverInit() {
 }
 
 
-
-@Entity({ name: 'a' })
-class a {
-    @Column()
-    a: string;
-    @Column()
-    a1: string;
-}
-@Entity({ name: 'b' })
-class b extends a {
-    @Column()
-    b: string;
-}

@@ -3,11 +3,11 @@ import { IdEntity,     ServerMethod } from '@remult/core';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 @Entity({
-  name: "Products",
+  key: "Products",
   allowApiCRUD: true,
 })
 
-export class Products extends EntityBase {
+export class Products extends IdEntity {
   @Column()
   name = '';
   @Column()

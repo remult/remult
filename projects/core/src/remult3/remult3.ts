@@ -9,8 +9,6 @@ import { RowEvents } from "../__EntityValueProvider";
 /*
 ## Should work
 [] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
-[] think of id entity.
-[] rename `name` to `key` in Entity Settings
 [] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
 [] original data should reflect the values after server expressions
 [] use helmet instead of force https
@@ -23,6 +21,8 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "bool column doesn't need contains, isin and is not in"
 [] "apiRequireId"
 [] "test make sort unique" - both tests
+[V] think of id entity.
+[V] rename `name` to `key` in Entity Settings
 
 ## TODO
 [] test default value set in the pojo itself: a=0;

@@ -11,7 +11,7 @@ describe("custom id column", () => {
             a: number;
             b: number;
         }
-        Entity({ name: 'custom' })(type);
+        Entity({ key: 'custom' })(type);
         Column()(type.prototype, 'a');
         Column()(type.prototype, 'b');
         let c = context.for(type);
@@ -33,7 +33,7 @@ describe("custom id column", () => {
             a: number;
             id: number;
         }
-        Entity({ name: 'custom2' })(type);
+        Entity({ key: 'custom2' })(type);
         Column({ type: Number })(type.prototype, 'a');
         Column({ type: Number })(type.prototype, 'id');
         let c = context.for(type);

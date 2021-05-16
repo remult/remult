@@ -67,7 +67,7 @@ describe("test server expression value", async () => {
 
 });
 
-@Entity({ name: 'testServerExpression' })
+@Entity({ key: 'testServerExpression' })
 class testServerExpression extends EntityBase {
     static testVal = 1;
     static testVal2 = 10;
