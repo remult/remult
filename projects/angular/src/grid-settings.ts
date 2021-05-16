@@ -29,14 +29,14 @@ export class GridSettings<rowType>  {
         let x = settings.columnSettings(repository.defs.columns);
         this.columns.add(...x);
       }
-      if (settings.allowCRUD !== undefined) {
+      if (settings.allowCrud !== undefined) {
 
         if (settings.allowUpdate === undefined)
-          settings.allowUpdate = settings.allowCRUD;
+          settings.allowUpdate = settings.allowCrud;
         if (settings.allowDelete === undefined)
-          settings.allowDelete = settings.allowCRUD;
+          settings.allowDelete = settings.allowCrud;
         if (settings.allowInsert === undefined)
-          settings.allowInsert = settings.allowCRUD;
+          settings.allowInsert = settings.allowCrud;
       }
       if (settings.allowUpdate)
         this.allowUpdate = true;
@@ -476,7 +476,7 @@ export interface IDataSettings<rowType> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
-  allowCRUD?: boolean,
+  allowCrud?: boolean,
   showDataArea?: boolean,
   showPagination?: boolean,
   showFilter?: boolean,

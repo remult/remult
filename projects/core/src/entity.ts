@@ -35,7 +35,7 @@ export interface EntityOptions<T = any> {
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiInsert?: EntityAllowed<T>;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
-  allowApiCRUD?: Allowed;
+  allowApiCrud?: Allowed;
 
   /** A filter that determines which rows can be queries using the api.
    * @example

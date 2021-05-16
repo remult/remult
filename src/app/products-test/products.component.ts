@@ -23,7 +23,11 @@ export class ProductsComponent implements OnInit {
 
   constructor(private context: Context) { }
   products = new GridSettings(this.context.for(Products), {
-    allowCRUD:true
+    allowCrud: true,
+    columnSettings: p => [
+      p.name,
+      { column: p.name,width:'300' }
+    ]
   });
 
 

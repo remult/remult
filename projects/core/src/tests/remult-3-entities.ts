@@ -25,7 +25,7 @@ export interface CategoriesForTesting extends EntityBase {
 }
 @Entity({
     key: 'Categories',
-    allowApiCRUD: true
+    allowApiCrud: true
 })
 export class Categories extends EntityBase {
     @Column({

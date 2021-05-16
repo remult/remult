@@ -8,7 +8,7 @@ export class InMemoryDataProvider implements DataProvider, __RowsOfDataForTestin
   }
   rows: any = {};
   public getEntityDataProvider(entity:EntityDefs): EntityDataProvider {
-    let name = entity.name;
+    let name = entity.key;
     if (!this.rows[name])
       this.rows[name] = [];
     return new ArrayEntityDataProvider(entity, this.rows[name]);

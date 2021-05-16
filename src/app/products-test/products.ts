@@ -4,7 +4,7 @@ import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 @Entity({
   key: "Products",
-  allowApiCRUD: true,
+  allowApiCrud: true,
   extends: IdEntity
 })
 

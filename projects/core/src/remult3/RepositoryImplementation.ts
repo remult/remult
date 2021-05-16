@@ -67,15 +67,15 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     _getApiSettings(): DataApiSettings<T> {
         let options = this._info.entityInfo;
-        if (options.allowApiCRUD !== undefined) {
+        if (options.allowApiCrud !== undefined) {
             if (options.allowApiDelete === undefined)
-                options.allowApiDelete = options.allowApiCRUD;
+                options.allowApiDelete = options.allowApiCrud;
             if (options.allowApiInsert === undefined)
-                options.allowApiInsert = options.allowApiCRUD;
+                options.allowApiInsert = options.allowApiCrud;
             if (options.allowApiUpdate === undefined)
-                options.allowApiUpdate = options.allowApiCRUD;
+                options.allowApiUpdate = options.allowApiCrud;
             if (options.allowApiRead === undefined)
-                options.allowApiRead = options.allowApiCRUD;
+                options.allowApiRead = options.allowApiCrud;
         }
         let checkAllowed = (x: EntityAllowed<any>, entity: any) => {
             if (Array.isArray(x)) {
@@ -796,7 +796,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
         this.columns = r as unknown as entityOf<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
-        this.name = entityInfo.key;
+        this.key = entityInfo.key;
         this.caption = entityInfo.caption;
         if (typeof entityInfo.dbName === "string")
             this.dbName = entityInfo.dbName;
@@ -817,7 +817,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
     columns: columnDefsOf<T>;
 
 
-    name: string;
+    key: string;
     dbName: string;
     caption: string;
 

@@ -252,7 +252,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
                     if (!controllerOptions.key) {
-                        controllerOptions.key = c.for(constructor).defs.name + "_methods";
+                        controllerOptions.key = c.for(constructor).defs.key + "_methods";
                     }
 
 

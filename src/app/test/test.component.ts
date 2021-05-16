@@ -54,7 +54,7 @@ export class TestComponent {
 @Entity<Tasks>({
   extends: IdEntity,
   key: 'tasks',
-  allowApiCRUD: true,
+  allowApiCrud: true,
   saving: t => {
     t.context.user.id
   }

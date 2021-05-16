@@ -340,7 +340,7 @@ describe("grid filter stuff", () => {
 describe("test row provider", () => {
   it("auto name", () => {
     var cat = new Context().for(newCategories).create();
-    expect(cat._.repository.defs.name).toBe('Categories');
+    expect(cat._.repository.defs.key).toBe('Categories');
   });
   itAsync("Insert", async () => {
     await testAllDbs(async ({ createData }) => {

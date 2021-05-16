@@ -9,8 +9,7 @@ import { RowEvents } from "../__EntityValueProvider";
 
 /*
 ## Should work
-[] replace entitydefs.name = key.
-[] rename allow api crud
+
 [] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
 [] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
 [] original data should reflect the values after server expressions
@@ -26,6 +25,8 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "test make sort unique" - both tests
 [V] think of id entity.
 [V] rename `name` to `key` in Entity Settings
+[V] replace entitydefs.name = key.
+[V] rename allow api crud
 
 ## TODO
 [] test default value set in the pojo itself: a=0;
@@ -173,7 +174,7 @@ export interface EntityDefs<T = any> {
     dbAutoIncrementId: boolean;
     idColumn: columnDefs<any>;
 
-    readonly name: string,
+    readonly key: string,
     readonly dbName: string,
     readonly columns: columnDefsOf<T>,
     readonly caption: string
