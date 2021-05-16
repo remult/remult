@@ -3,7 +3,7 @@ import { ServerContext, toPromise } from '../context';
 
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { NumberColumn } from '../column';
+
 import { Column, Entity, EntityBase } from '../remult3';
 
 describe("test exception", () => {

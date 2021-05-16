@@ -1,22 +1,11 @@
-import { ColumnSettings, ValueListItem } from '../column-interfaces';
-
+import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
-
-import {  Status, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
-
+import { Status,  TestStatus } from './testModel/models';
 import { Context, ServerContext } from '../context';
-import { DateColumn, DateTimeColumn, NumberColumn, OneToMany, StringColumn, ValueListColumn, ValueListTypeInfo } from '../column';
-import { Sort } from '../sort';
-
-import { DataAreaSettings } from '../../../angular/src/data-area-settings';
+import { OneToMany } from '../column';
 import { FilterHelper } from '../filter/filter-helper';
-import { Column, columnBridgeToDefs } from '../column';
-import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
-import { CharDateStorage } from '../columns/storage/char-date-storage';
-
-
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
@@ -24,19 +13,16 @@ import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettin
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf } from '../remult3/RepositoryImplementation';
-import {  SqlDatabase,  WebSqlDataProvider } from '../..';
+import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings } from '../remult3/RepositoryImplementation';
+import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityDefs, Repository } from '../remult3';
+import { CharDateLoader, DateDisplayValue, DateOnlyJsonLoader, DateOnlyDateDbLoader, DateTimeJsonLoader } from '../columns/loaders';
 
 
 
 
 
-export class LanguageColumn extends ValueListColumn<Language> {
-  constructor() {
-    super(Language, { caption: 'שפה' });
-  }
-}
+
 
 export class Language {
   static Hebrew = new Language(0, 'עברית');
@@ -74,13 +60,13 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
 
   for (const db of [
     new InMemoryDataProvider()
-       , 
+    ,
     sql
   ]) {
     if (!db)
       throw new Error("you forget to set a db for the test");
     let context = new ServerContext(db);
-    
+
     let createData = async (doInsert, entity?) => {
       if (!entity)
         entity = newCategories;
@@ -202,8 +188,8 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     });
-    var col = new StringColumn({ dbName: 'col' });
-    x.containsCaseInsensitive(new columnBridgeToDefs(col), "no'am");
+
+    x.containsCaseInsensitive( new mockColumnDefs("col"), "no'am");
     expect(x.where).toBe(" where lower (col) like lower ('%no''am%')");
   });
   it("filter with contains", () => {
@@ -211,8 +197,8 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     });
-    var col = new StringColumn({ dbName: 'col' });
-    x.containsCaseInsensitive(new columnBridgeToDefs(col), "no'a'm");
+    
+    x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
     expect(x.where).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
   it("filter with start with", () => {
@@ -220,8 +206,7 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "?",
       execute: () => { throw "rr" }
     });
-    var col = new StringColumn({ dbName: 'col' });
-    x.startsWith(new columnBridgeToDefs(col), "no'am");
+    x.startsWith(new mockColumnDefs("col"), "no'am");
     expect(x.where).toBe(" where col like ?");
   });
   if (false)
@@ -321,35 +306,35 @@ describe("grid filter stuff", () => {
   });
 });
 
-describe("Closed List  column", () => {
+// describe("Closed List  column", () => {
 
-  it("Basic Operations", () => {
-    let x = new LanguageColumn();
-    x.rawValue = 0;
-    expect(x.value).toBe(Language.Hebrew);
-    x.value = Language.Russian;
-    expect(x.rawValue).toBe(10);
+//   it("Basic Operations", () => {
+//     let x = new LanguageColumn();
+//     x.rawValue = 0;
+//     expect(x.value).toBe(Language.Hebrew);
+//     x.value = Language.Russian;
+//     expect(x.rawValue).toBe(10);
 
-    expect(x.getOptions().length).toBe(3);
-  });
-  it("loads and saved from Pojo correctly", () => {
-    let x = new LanguageColumn();
-    x.defs.key = 'abc';
-    x.value = Language.Russian;
-    let y: any = {};
-    x.__addToPojo(y);
-    expect(y[x.defs.key]).toBe(10);
-    x.value = Language.Hebrew;
-    expect(x.value).toBe(Language.Hebrew);
-    x.__loadFromPojo({ 'abc': 10 });
-    expect(x.value).toBe(Language.Russian);
+//     expect(x.getOptions().length).toBe(3);
+//   });
+//   it("loads and saved from Pojo correctly", () => {
+//     let x = new LanguageColumn();
+//     x.defs.key = 'abc';
+//     x.value = Language.Russian;
+//     let y: any = {};
+//     x.__addToPojo(y);
+//     expect(y[x.defs.key]).toBe(10);
+//     x.value = Language.Hebrew;
+//     expect(x.value).toBe(Language.Hebrew);
+//     x.__loadFromPojo({ 'abc': 10 });
+//     expect(x.value).toBe(Language.Russian);
 
-  });
-  it("test auto caption", () => {
-    let val = ValueListTypeInfo.get(valueList);
-    expect(valueList.firstName.caption).toBe('First Name');
-  });
-});
+//   });
+//   it("test auto caption", () => {
+//     let val = ValueListTypeInfo.get(valueList);
+//     expect(valueList.firstName.caption).toBe('First Name');
+//   });
+// });
 
 
 describe("test row provider", () => {
@@ -768,7 +753,7 @@ describe("test row provider", () => {
         return c.find(options)
       }
     });
-    var nc = new NumberColumn();
+    var nc = { value: undefined };
     nc.value = undefined;
     expect(nc.value).toBe(undefined);
     await l.whenGet(c => c.id.isEqualTo(nc.value));
@@ -782,7 +767,7 @@ describe("test row provider", () => {
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.for(newCategories);
-    var nc = new NumberColumn();
+    var nc = { value: undefined };
     nc.value = 1;
     let r = c.lookup(x => x.id.isEqualTo(nc.value));
     expect(getEntityOf(r).isNew()).toBe(true);
@@ -1206,80 +1191,72 @@ describe("test area", () => {
 });
 
 */
-describe("test column value change", () => {
-  it("should fire", () => {
-    let d = new Done();
-    let x = new NumberColumn({
-      valueChange: () => d.ok()
-    });
-    x.value++;
-    d.test();
-  });
-  it("should fire 2", () => {
-    let d = new Done();
-    let x = new NumberColumn({ valueChange: () => d.ok() });
+// describe("test column value change", () => {
+//   it("should fire", () => {
+//     let d = new Done();
+//     let x = new NumberColumn({
+//       valueChange: () => d.ok()
+//     });
+//     x.value++;
+//     d.test();
+//   });
+//   it("should fire 2", () => {
+//     let d = new Done();
+//     let x = new NumberColumn({ valueChange: () => d.ok() });
 
-    x.value++;
-    d.test();
-  });
-});
-describe("test number column", () => {
-  it("Number is always a number", () => {
-    let x = new NumberColumn();
-    var z: any = '123';
-    x.value = z;
-    x.value += 1;
-    expect(x.value).toBe(124);
-  });
-});
+//     x.value++;
+//     d.test();
+//   });
+// });
+// describe("test number column", () => {
+//   it("Number is always a number", () => {
+//     let x = new NumberColumn();
+//     var z: any = '123';
+//     x.value = z;
+//     x.value += 1;
+//     expect(x.value).toBe(124);
+//   });
+// });
 
 describe("test datetime column", () => {
   it("stores well", () => {
-    var x = new DateTimeColumn();
-    x.value = new Date(1976, 11, 16, 8, 55, 31, 65)
-    //expect(x.rawValue).toBe('1976-12-16T06:55:31.065Z',"compare to string"); only relevant to il timezone
-
-
-    expect(x.value.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
+    let col = decorateColumnSettings<Date>({ type: Date });
+    let val = col.jsonLoader.fromJson(col.jsonLoader.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
+    expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
-    var x = new DateTimeColumn();
-    x.value = undefined;
-    expect(x.value).toBe(undefined);
-    expect(x.rawValue).toBe('');
+    let col = decorateColumnSettings<Date>({ type: Date });
+    expect(col.jsonLoader.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
-    var x = new DateColumn();
-    x.rawValue = '';
-    expect(x.displayValue).toBe('');
+
+    expect(DateDisplayValue(DateOnlyJsonLoader.fromJson(''))).toBe('');
   });
   it("displays null date well 1", () => {
-    var x = new DateColumn();
-    x.value = null;
-    expect(DateColumn.dateToString(null)).toBe('');
-    expect(DateTimeColumn.dateToString(null)).toBe('');
-    expect(x.displayValue).toBe('');
+
+    expect(DateOnlyJsonLoader.toJson(null)).toBe('');
+    expect(DateTimeJsonLoader.toJson(null)).toBe('');
+    expect(DateDisplayValue(null)).toBe('');
   });
   it("displays empty date well empty", () => {
-    var x = new DateColumn();
-    x.rawValue = '0000-00-00';
-    expect(x.displayValue).toBe('');
+    expect(DateDisplayValue(DateOnlyJsonLoader.fromJson('0000-00-00'))).toBe('');
   });
   it("date works", () => {
-    var x = new DateColumn();
 
-    x.value = new Date('1976-06-16');
-    expect(x.rawValue).toBe('1976-06-16');
-    //expect(x.value.toISOString()).toBe(new Date('1976-06-16').toISOString());// incorrect due to time differences, tested in bahamas
-    //expect(x.value.toDateString()).toBe(new Date('1976-06-16').toDateString());
-    //  expect(x.dateValue.getHours()).toBe(0);
+    expect(DateOnlyJsonLoader.toJson(new Date('1976-06-16'))).toBe('1976-06-16');
+
   });
   it("date Storage works 1", () => {
-    var x = new DateTimeDateStorage();
 
-    expect(x.toDb('1976-06-16').toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
-    expect(x.toDb('1976-06-16').getDate()).toBe(16);
-    let toDb = x.toDb('2021-04-26');
+    let col = decorateColumnSettings<Date>({
+      type: Date,
+      dbLoader: DateOnlyDateDbLoader,
+      jsonLoader: DateOnlyJsonLoader
+    });
+    expect(col.dbLoader.toDb(col.jsonLoader.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
+    expect(col.dbLoader.toDb(col.jsonLoader.fromJson('1976-06-16')).getDate()).toBe(16);
+
+    let toDb = col.dbLoader.toDb(col.jsonLoader.fromJson('2021-04-26'));
     if (toDb.getTimezoneOffset() < 0)
       expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-25');
     else
@@ -1291,49 +1268,31 @@ describe("test datetime column", () => {
 
 });
 describe("Test char date storage", () => {
-  let x = new CharDateStorage();
+  let j = DateOnlyJsonLoader;
+
+  let x = CharDateLoader;
   it("from db", () => {
-    expect(x.fromDb('19760616')).toBe('1976-06-16');
+    expect(j.toJson(x.fromDb('19760616'))).toBe('1976-06-16');
   });
   it("to db", () => {
-    expect(x.toDb('1976-06-16')).toBe('19760616');
+    expect(x.toDb(j.fromJson('1976-06-16'))).toBe('19760616');
   });
 });
-describe("test parameter priority", () => {
-  it("a", () => {
-    let t = new testMyColumn();
-    expect(t.allowApiUpdate).toBe(false);
-    t = new testMyColumn({ allowApiUpdate: true });
-    expect(t.allowApiUpdate).toBe(false);
 
-  });
-  it("b", () => {
-    let s = new AnotherTest();
-    expect(s.defs.caption).toBe('default');
-  });
-  it("c", () => {
-    let s = new AnotherTest({ caption: 'test' });
-    expect(s.defs.caption).toBe('test');
-  });
-  it("d", () => {
-    let s = new AnotherTest({ caption: 'test' });
-    expect(s.defs.caption).toBe('test');
-  });
-});
 describe("value list column without id and caption", () => {
-  it("works with automatic id", () => {
-    let col = new TestStatusColumn();
-    col.value = TestStatus.open;
-    expect(col.value).toBe(TestStatus.open);
-    expect(col.rawValue).toBe('open');
-    col.value = TestStatus.closed;
-    expect(col.rawValue).toBe('cc');
-    let options = col.getOptions();
-    expect(options.length).toBe(3);
-    expect(options[2].caption).toBe('hh');
-    expect(options[2].id).toBe('hold');
+  // it("works with automatic id", () => {
+  //   let col = new TestStatusColumn();
+  //   col.value = TestStatus.open;
+  //   expect(col.value).toBe(TestStatus.open);
+  //   expect(col.rawValue).toBe('open');
+  //   col.value = TestStatus.closed;
+  //   expect(col.rawValue).toBe('cc');
+  //   let options = col.getOptions();
+  //   expect(options.length).toBe(3);
+  //   expect(options[2].caption).toBe('hh');
+  //   expect(options[2].id).toBe('hold');
 
-  })
+  // })
 })
 describe("relation", () => {
   itAsync("should get values", async () => {
@@ -1421,16 +1380,7 @@ class myDp extends ArrayEntityDataProvider {
 
 
 
-class testMyColumn extends StringColumn {
-  allowApiUpdate = false;
-}
-class AnotherTest extends StringColumn {
-  constructor(x?: ColumnSettings<string>) {
-    super(x);
-    if (!this.defs.caption)
-      this.defs.caption = 'default';
-  }
-}
+
 
 class valueList {
   static firstName = new valueList();
@@ -1438,3 +1388,20 @@ class valueList {
   constructor(public id?: string, public caption?: string) { }
 }
 
+class mockColumnDefs implements columnDefs{
+  constructor(public dbName:string){
+
+  }
+  readonly dbReadOnly: boolean;
+  readonly isVirtual: boolean;
+  readonly key: string;
+  readonly caption: string;
+  readonly inputType: string;
+  
+  readonly dbLoader: dbLoader<any>={toDb:x=>x,fromDb:x=>x};
+  readonly jsonLoader: jsonLoader<any>;
+  readonly inputLoader: inputLoader<any>;
+  readonly type: any;
+  readonly allowNull: boolean;
+  readonly dbType?: string;
+}

@@ -10,8 +10,8 @@ import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntitie
 import { DataApiRequest, DataApiResponse } from './data-api';
 
 import { SqlDatabase } from './data-providers/sql-database';
-import { Column, getColumnsFromObject } from './column';
-import { AddModelStateToError,  __getValidationError } from './entity';
+import { getColumnsFromObject } from './column';
+
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
@@ -305,7 +305,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                     } catch (err) {
                                         if (typeof err === 'string')
                                             err = { message: err };
-                                        AddModelStateToError(err, [...y.columns]);
+                                       // AddModelStateToError(err, [...y.columns]);
                                         throw err;
                                     }
                                 }
@@ -389,8 +389,8 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                         if (s) {
                             Object.keys(s).forEach(k => {
                                 let c = self[k];
-                                if (c instanceof Column)
-                                    c.validationError = s[k];
+                                // if (c instanceof Column)
+                                //     c.validationError = s[k];
                             });
                         }
                         throw e;
@@ -413,11 +413,11 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 async function validateObject(y: any) {
     let cols = getColumnsFromObject(y);
-    cols.forEach(x => x.__clearErrors());
-    await Promise.all(cols.map(x => x.__performValidation(() => { throw new Error("validation on server action not yet implemented"); })));
-    if (cols.find(x => !!x.validationError)) {
-        throw __getValidationError(cols);
-    }
+    // cols.forEach(x => x.__clearErrors());
+    // await Promise.all(cols.map(x => x.__performValidation(() => { throw new Error("validation on server action not yet implemented"); })));
+    // if (cols.find(x => !!x.validationError)) {
+    //     throw __getValidationError(cols);
+    // }
 }
 
 export function controllerAllowed(controller: any, context: Context) {
@@ -471,3 +471,11 @@ function prepareArgs(types: any[], args: any[], context: ServerContext, ds: Data
             }
         }
 }
+
+function AddModelStateToError(err: any, arg1: any[]) {
+    throw new Error('Function not implemented.');
+}
+function __getValidationError(cols: any[]) {
+    throw new Error('Function not implemented.');
+}
+

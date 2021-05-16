@@ -1,5 +1,4 @@
 import {  Allowed, EntityAllowed } from "./context";
-import { Column } from "./column";
 
 import { columnDefs } from './column-interfaces';
 import {  EntityOrderBy, EntityWhereItem, NewEntity,  columnDefsOf } from "./remult3";
@@ -86,27 +85,5 @@ export interface EntityOptions<T = any> {
   validation?: (e: T) => Promise<any> | any;
 
   dbAutoIncrementId?: boolean;
-}
-
-
-
-export function __getValidationError(columns: Column[], message?: string) {
-  let result: any = { message: message };
-  AddModelStateToError(result, columns);
-  return result;
-
-
-}
-export function AddModelStateToError(result: any, columns: Column[]) {
-  columns.forEach(c => {
-    if (c.validationError) {
-      if (!result.modelState)
-        result.modelState = {};
-      result.modelState[c.defs.key] = c.validationError;
-      if (!result.message) {
-        result.message = c.defs.caption + ":" + c.validationError;
-      }
-    }
-  });
 }
 

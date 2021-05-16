@@ -1,5 +1,4 @@
-import { Column } from "../column";
-import { columnDefs, dbLoader } from "../column-interfaces";
+import { columnDefs } from "../column-interfaces";
 import { IterateToArrayOptions } from "../context";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -23,6 +22,11 @@ import { RowEvents } from "../__EntityValueProvider";
 [] consider the setting decimal digits, instead might be useful to determine db storage
 [] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 [] chose error instead of validationError
+[] "Closed List  column"
+[] "test value list type"
+[] value list "works with automatic id"
+[] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
+[] fix grid filter on string to be contains if not force equals - and same for object
 [] fix allowApiCrud
     [] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
@@ -31,11 +35,16 @@ import { RowEvents } from "../__EntityValueProvider";
 [] test default value set in the pojo itself: a=0;
 [] "test object column"
 [] test-paged-foreach
+[] "negative decimal" - inputValue
+[] "test column value change"
+[] "Number is always a number"
+[] "test number is always number"
 [] "order by api"
 [] "bool column doesn't need contains, isin and is not in"
 []"getArray works with filter and in with closed list columns"
 []"getArray works with filter and multiple values with closed list columns"
 [] "apiRequireId"
+[] test number is always a number - settings value with any string, and then doing math options for it.
 [] change the getValue - to  displayValue
 [] change the input type to support code+value, displayValueOnly
 [] "test make sort unique" - both tests

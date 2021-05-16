@@ -1,8 +1,5 @@
-import { Column } from "./column";
+
 import { columnDefs } from "./column-interfaces";
-
-import { EntityDefs } from "./remult3";
-
 export class Sort {
   constructor(...segments: SortSegment[]) {
     this.Segments = segments;

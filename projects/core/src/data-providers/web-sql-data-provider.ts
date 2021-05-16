@@ -1,7 +1,7 @@
 import {  __RowsOfDataForTesting } from "../data-interfaces";
 import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
-import { ValueListColumn } from "../column";
+
 import { EntityDefs } from "../remult3";
 import { columnDefs } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
@@ -75,8 +75,6 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 result += " integer default 0 not null";
             else
                 x.dbType + ' default 0 not null';
-        } else if (x instanceof ValueListColumn) {
-            result += ' integer default 0 not null';
         }
         else
             result += " text default '' not null ";

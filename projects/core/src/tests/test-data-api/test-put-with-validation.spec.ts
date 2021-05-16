@@ -1,17 +1,10 @@
-import { itAsync, Done, fitAsync } from "../testHelper.spec";
+import { itAsync, Done } from "../testHelper.spec";
 import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
-
-
-import { StatusColumn } from '../testModel/models';
 import { Context } from '../../context';
-
 import { Categories } from "../remult-3-entities";
 import { Entity } from "../../remult3";
-
-
-
 
 describe("data api", () => {
     let context = new Context();
@@ -51,10 +44,10 @@ describe("data api", () => {
         d.test();
         expect((await c.find()).length).toBe(0);
     });
-    it("test value list type",()=>{
-        let x = new StatusColumn();
-        expect(x.info.isNumeric).toBe(true);
-    });
+    // it("test value list type",()=>{
+    //     let x = new StatusColumn();
+    //     expect(x.info.isNumeric).toBe(true);
+    // });
 
 });
 

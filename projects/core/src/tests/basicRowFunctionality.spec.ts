@@ -6,16 +6,11 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './testHelper.spec';
 
-import {  Status } from './testModel/models';
+import { Status } from './testModel/models';
 
-import { Context, Role, Allowed,  ServerContext } from '../context';
+import { Context, Role, Allowed, ServerContext } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
-
-
-
-
-import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
 import { DataList } from '../dataList';
 import { UrlBuilder } from '../url-builder';
 import { FilterSerializer } from '../filter/filter-consumer-bridge-to-url-builder';
@@ -25,8 +20,9 @@ import { addFilterToUrlAndReturnTrueIfSuccessful } from '../data-providers/rest-
 import { OrFilter } from '../filter/filter-interfaces';
 import { Categories as newCategories } from './remult-3-entities';
 
-import { Column, CompoundId, Entity, EntityBase } from '../remult3';
-import { BoolColumn, NumberColumn, StringColumn } from '../column';
+import { Column, CompoundId, decorateColumnSettings, Entity, EntityBase } from '../remult3';
+
+import { DateOnlyJsonLoader } from '../columns/loaders';
 
 
 export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
@@ -385,20 +381,20 @@ describe("data api", () => {
 
 
   });
-  itAsync("test number is always number", async () => {
-    let amount = new NumberColumn();
-    let total = new NumberColumn();
-    total.value = 10;
-    amount.__valueProvider = {
-      getValue: (a, b) => '15',
-      getOriginalValue: () => '15',
-      
-      setValue: (a, b) => { }
-    };
-    total.value += amount.value;
-    expect(total.value).toBe(25);
+  // itAsync("test number is always number", async () => {
+  //   let amount = new NumberColumn();
+  //   let total = new NumberColumn();
+  //   total.value = 10;
+  //   amount.__valueProvider = {
+  //     getValue: (a, b) => '15',
+  //     getOriginalValue: () => '15',
 
-  });
+  //     setValue: (a, b) => { }
+  //   };
+  //   total.value += amount.value;
+  //   expect(total.value).toBe(25);
+
+  // });
 
 
 
@@ -1743,13 +1739,8 @@ describe("test data list", () => {
     await rl.items[1]._.delete();
     expect(rl.items.length).toBe(2);
   });
-  it("dbname string works", () => {
-    let i = 0;
-    var co = new StringColumn({ dbName: 'test' });
-    expect(co.defs.dbName).toBe('test');
-  });
+ 
 
-  
 
   itAsync("delete fails nicely", async () => {
 
@@ -1777,9 +1768,9 @@ describe("test data list", () => {
 });
 describe("test date storage", () => {
   it("works", () => {
-    var s = new DateTimeDateStorage();
+
     let val = "1976-06-16";
-    var d: Date = s.toDb(val);
+    var d: Date = DateOnlyJsonLoader.fromJson(val);
     expect(d.getFullYear()).toBe(1976);
     expect(d.getMonth()).toBe(5);
     expect(d.getDate()).toBe(16);
@@ -1788,40 +1779,31 @@ describe("test date storage", () => {
 });
 describe("test bool value", () => {
   it("should work", () => {
-    let bc = new BoolColumn();
-    bc.defs.key = 'x';
-    bc.__loadFromPojo({ 'x': true });
-    expect(bc.value).toBe(true);
-    bc.__loadFromPojo({ 'x': false });
-    expect(bc.value).toBe(false);
+    let col = decorateColumnSettings<Boolean>({ type: Boolean });
+    expect(col.jsonLoader.fromJson(true)).toBe(true);
+    expect(col.jsonLoader.fromJson(false)).toBe(false);
   });
 });
 
 describe("test number negative", () => {
   it("negative", () => {
-    let nc = new NumberColumn();
-    nc.inputValue = '-';
-    expect(nc.value).toBe(0);
-    expect(nc.inputValue).toBe('-');
-    nc.value = 1;
-    expect(nc.inputValue).toBe('1');
+    let nc = decorateColumnSettings<number>({ type: Number });
+    expect(nc.inputLoader.toInput(nc.inputLoader.fromInput("-"))).toBe("-");
   });
   it("negative2", () => {
-    let nc = new NumberColumn();
-    nc.inputValue = '2-1';
-    expect(nc.value).toBe(0);
-    expect(nc.inputValue).toBe('0');
+    let nc = decorateColumnSettings<number>({ type: Number });;
+    expect(nc.inputLoader.fromInput('2-1')).toBe(0);
   });
-  it("negative decimal", () => {
-    let nc = new NumberColumn();
-    nc.inputValue = '-0.00';
-    expect(nc.value).toBe(0);
-    expect(nc.inputValue).toBe('-0.00');
-    nc.inputValue = '-0.001';
-    expect(nc.value).toBe(-0.001);
-    expect(nc.inputValue).toBe('-0.001');
+  // it("negative decimal", () => {
+  //   let nc = new NumberColumn();
+  //   nc.inputValue = '-0.00';
+  //   expect(nc.value).toBe(0);
+  //   expect(nc.inputValue).toBe('-0.00');
+  //   nc.inputValue = '-0.001';
+  //   expect(nc.value).toBe(-0.001);
+  //   expect(nc.inputValue).toBe('-0.001');
 
-  });
+  // });
 
 });
 describe("check allowedDataType", () => {

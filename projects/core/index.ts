@@ -13,7 +13,7 @@ export * from './src/data-providers/array-entity-data-provider';//V
 export * from './src/data-providers/web-sql-data-provider';//V
 export * from './src/data-providers/sql-database';//V
 export * from './src/data-providers/json-data-provider';//V
-//export * from './src/cookieBasedJwt'; breaks angular
+
 export * from './src/data-api';
 export * from './src/dataList';
 export * from './src/lookup';
@@ -24,10 +24,10 @@ export * from './src/id-entity';
 export * from './src/sort';
 
 
-export * from './src/columns/storage/bool-storage';
-export * from './src/columns/storage/char-date-storage';
-export * from './src/columns/storage/datetime-date-storage';
-export * from './src/columns/storage/datetime-storage';
+
+
+
+
 export * from './src/columns/storage/default-storage';
 
 

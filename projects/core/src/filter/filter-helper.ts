@@ -1,11 +1,5 @@
 
-import { Column, DateTimeColumn, StringColumn } from "../column";
-
-
-
-
 import { AndFilter, Filter } from './filter-interfaces';
-import { ObjectColumn } from "../columns/object-column";
 import {  FindOptions, Repository } from "../remult3";
 import { columnDefs } from "../column-interfaces";
 
@@ -40,29 +34,29 @@ export class FilterHelper<rowType > {
       let val = this.filterRow.columns.find(c).value;
       //@ts-ignore
       let f: Filter = c.isEqualTo(val);
-      if (c instanceof StringColumn) {
-        let fe = this.forceEqual;
-        if (fe.indexOf(c) < 0)
-          f = c.contains(val);
-        if (val === undefined || val == '')
-          f = c.isEqualTo('');
-      }
-      if (c instanceof ObjectColumn) {
-        let fe = this.forceEqual;
-        if (fe.indexOf(c) < 0)
-          f = c.contains(val);
-        if (val === undefined || val == '')
-          f = c.isEqualTo('');
-      }
-      if (c instanceof DateTimeColumn) {
-        if (val) {
-          let v = <Date>val;
-          v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
+      // if (c instanceof StringColumn) {
+      //   let fe = this.forceEqual;
+      //   if (fe.indexOf(c) < 0)
+      //     f = c.contains(val);
+      //   if (val === undefined || val == '')
+      //     f = c.isEqualTo('');
+      // }
+      // if (c instanceof ObjectColumn) {
+      //   let fe = this.forceEqual;
+      //   if (fe.indexOf(c) < 0)
+      //     f = c.contains(val);
+      //   if (val === undefined || val == '')
+      //     f = c.isEqualTo('');
+      // }
+      // if (c instanceof DateTimeColumn) {
+      //   if (val) {
+      //     let v = <Date>val;
+      //     v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
 
-          f = c.isGreaterOrEqualTo(v).and(c.isLessThan((new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
+      //     f = c.isGreaterOrEqualTo(v).and(c.isLessThan((new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
 
-        }
-      }
+      //   }
+      // }
 
       if (opt.where) {
         let x = opt.where;

@@ -1,4 +1,3 @@
-import {  __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from "../column";
 import { FilterConsumer, Filter } from './filter-interfaces';
 import { AndFilter, OrFilter } from './filter-interfaces';
 import { columnDefs } from "../column-interfaces";
@@ -92,11 +91,11 @@ export function extractWhere(columns: columnDefs[], filterInfo: {
           let theVal = val;
           if (jsonArray) {
             let arr: [];
-            if (typeof val ==='string')
+            if (typeof val === 'string')
               arr = JSON.parse(val);
             else
               arr = val;
-            theVal = arr.map(x => col.jsonLoader.fromJson (x));
+            theVal = arr.map(x => col.jsonLoader.fromJson(x));
           } else {
             theVal = col.jsonLoader.fromJson(theVal);
           }
@@ -119,10 +118,10 @@ export function extractWhere(columns: columnDefs[], filterInfo: {
     }
     let c = new filterHelper(col);
     addFilter('', val => c.isEqualTo(val));
-    addFilter('_gt', val => __isGreaterThan(col, val));
-    addFilter('_gte', val => __isGreaterOrEqualTo(col, val));
-    addFilter('_lt', val => __isLessThan(col, val));
-    addFilter('_lte', val => __isLessOrEqualTo(col, val));
+    addFilter('_gt', val => c.isGreaterThan(val));
+    addFilter('_gte', val => c.isGreaterOrEqualTo(val));
+    addFilter('_lt', val => c.isLessThan(val));
+    addFilter('_lte', val => c.isLessOrEqualTo(val));
     addFilter('_ne', val => c.isDifferentFrom(val));
     addFilter('_in', val => c.isIn(val), true);
     addFilter('_null', val => {
@@ -137,12 +136,12 @@ export function extractWhere(columns: columnDefs[], filterInfo: {
       }
     });
     addFilter('_contains', val => {
-      
-        return c.contains(val);
-      
+
+      return c.contains(val);
+
     });
     addFilter('_st', val => {
-        return c.startsWith(val);
+      return c.startsWith(val);
     });
   });
   let val = filterInfo.get('OR');

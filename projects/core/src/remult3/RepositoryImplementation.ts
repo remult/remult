@@ -1,20 +1,18 @@
 
 import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
 import { EntityOptions } from "../entity";
-import { BoolColumn, Column as oldColumn, columnBridgeToDefs, ColumnDefs, CompoundIdColumn, DateTimeColumn, makeTitle, NumberColumn, StringColumn, __isGreaterOrEqualTo, __isGreaterThan, __isLessOrEqualTo, __isLessThan } from '../column';
+import { CompoundIdColumn, makeTitle } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions } from "../context";
-import * as old from '../data-interfaces';
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
-import { extractWhere, FilterSerializer, packToRawWhere } from "../filter/filter-consumer-bridge-to-url-builder";
+import { extractWhere, packToRawWhere } from "../filter/filter-consumer-bridge-to-url-builder";
 import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
-
 import { RowEvents } from "../__EntityValueProvider";
-import { ObjectColumn } from "../columns/object-column";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { isFunction } from "util";
+import { BoolDbLoader, BoolJsonLoader, DateTimeJsonLoader, NumberDbLoader, NumberInputLoader } from "../columns/loaders";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -34,10 +32,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
                 }
                 equalToColumn.push(s.column);
                 if (s.descending) {
-                    f = new AndFilter(f, __isLessThan(s.column, values.get(s.column.key)));
+                    f = new AndFilter(f,new Filter(x => x.isLessThan(s.column, values.get(s.column.key))));
                 }
                 else
-                    f = new AndFilter(f, __isGreaterThan(s.column, values.get(s.column.key)));
+                    f = new AndFilter(f, new Filter(x => x.isGreaterThan(s.column, values.get(s.column.key))));
                 r = new OrFilter(r, f);
             }
             return r;
@@ -740,43 +738,6 @@ class columnImpl<T> implements column<any, T> {
 
 }
 
-export class columnBridge<T, ET> implements column<T, ET>{
-    constructor(private col: oldColumn, private item: any, public rowHelper: rowHelper<ET>) {
-
-    }
-    allowNull = this.col.defs.allowNull;
-    type: any;
-    dbType?: string;
-    get dbReadOnly(): boolean { return this.col.defs.dbReadOnly };
-    get isVirtual(): boolean { return this.col.defs.__isVirtual() };
-    jsonLoader: jsonLoader<any> = { fromJson: x => this.col.fromRawValue(x), toJson: x => this.col.toRawValue(x) };
-    dbLoader: dbLoader<any> = this.col.__getStorage();
-    get dbName(): string {
-        return this.col.defs.dbName;
-    }
-    inputLoader: inputLoader<any> = {
-        fromInput: x => this.jsonLoader.fromJson(x),
-        toInput: x => this.jsonLoader.toJson(x)
-    }
-
-    get caption(): string { return this.col.defs.caption }
-    get inputType(): string { return this.col.defs.inputType }
-    get error(): string { return this.col.validationError }
-    set error(val: string) { this.col.validationError = val; }
-    get displayValue(): string { return this.col.displayValue };
-    get inputValue(): string { return this.col.inputValue };
-    set inputValue(val: string) {
-        this.col.inputValue = val
-        this.item[this.col.defs.key] = this.col.value;
-    };
-    get value(): any { return this.item[this.col.defs.key] };
-    get originalValue(): any { return this.col.originalValue };
-    get key(): string { return this.col.defs.key };
-    wasChanged(): boolean {
-        return this.col.wasChanged();
-    }
-
-}
 export function getEntityOf<T>(item: T): rowHelper<T> {
     let x = item[entityMember];
     if (!x)
@@ -904,10 +865,10 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
 
     }
     isLessThan(val: any): Filter {
-        return __isLessThan(this.col, val);
+        return new Filter(add => add.isLessThan(this.col, val));
     }
     isGreaterOrEqualTo(val: any): Filter {
-        return __isGreaterOrEqualTo(this.col, val);
+        return new Filter(add => add.isGreaterOrEqualTo(this.col, val));
     }
     isNotIn(values: any[]): Filter {
         return new Filter(add => {
@@ -920,10 +881,10 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
         return new Filter(add => add.isDifferentFrom(this.col, val));
     }
     isLessOrEqualTo(val: any): Filter {
-        return __isLessOrEqualTo(this.col, val);
+        return new Filter(add => add.isLessOrEqualTo(this.col, val));
     }
     isGreaterThan(val: any): Filter {
-        return __isGreaterThan(this.col, val);
+        return new Filter(add => add.isGreaterThan(this.col, val));
     }
     isEqualTo(val: any): Filter {
         return new Filter(add => add.isEqualTo(this.col, val));
@@ -964,52 +925,7 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
             settings.type = type;
         }
 
-        if (!settings.dbLoader) {
-            if (settings.type == Number) {
-                settings.dbLoader = {
-                    //@ts-ignore
-                    fromDb: value => {
-                        if (value !== undefined)
-                            return +value;
-                        return undefined;
-                    },
-                    toDb: value => value
-
-                }
-            } else
-                settings.dbLoader = {
-                    fromDb: x => x,
-                    toDb: x => x
-                }
-        }
-        if (!settings.inputLoader) {
-            settings.inputLoader = {
-                fromInput: x => settings.jsonLoader.fromJson(x),
-                toInput: x => settings.jsonLoader.toJson(x)
-            }
-        }
-        if (!settings.jsonLoader) {
-            if (settings.type == Boolean) {
-                settings.jsonLoader = {
-                    //@ts-ignore
-                    fromJson: value => {
-                        if (typeof value === "boolean")
-                            return value;
-                        if (value !== undefined) {
-                            return value.toString().trim().toLowerCase() == 'true';
-                        }
-                        return undefined;
-                    },
-                    toJson: x => x
-                }
-            }
-
-            else
-                settings.jsonLoader = {
-                    fromJson: x => x,
-                    toJson: x => x
-                }
-        }
+        decorateColumnSettings(settings);
         names.push({
             key,
             settings,
@@ -1018,6 +934,57 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
 
     }
 
+
+
+}
+export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
+
+    if (settings.type == Number) {
+        let x = settings as unknown as ColumnSettings<Number>;
+        if (!x.dbLoader) {
+            x.dbLoader = NumberDbLoader;
+        }
+        if (!x.inputLoader)
+            x.inputLoader = NumberInputLoader;
+    }
+    if (settings.type == Date) {
+        let x = settings as unknown as ColumnSettings<Date>;
+        if (!settings.jsonLoader) {
+            x.jsonLoader = DateTimeJsonLoader;
+        }
+        if (!x.displayValue) {
+            x.displayValue = x => {
+                if (!x)
+                    return '';
+                return x.toLocaleString();
+            }
+        }
+    }
+
+    if (settings.type == Boolean) {
+        let x = settings as unknown as ColumnSettings<Boolean>;
+        if (!x.jsonLoader)
+            x.jsonLoader = BoolJsonLoader;
+        if (!x.dbLoader)
+            x.dbLoader = BoolDbLoader;
+    }
+
+    if (!settings.dbLoader)
+        settings.dbLoader = {
+            fromDb: x => x,
+            toDb: x => x
+        };
+    if (!settings.jsonLoader)
+        settings.jsonLoader = {
+            fromJson: x => x,
+            toJson: x => x
+        };
+    if (!settings.inputLoader)
+        settings.inputLoader = {
+            fromInput: x => settings.jsonLoader.fromJson(x),
+            toInput: x => settings.jsonLoader.toJson(x)
+        };
+    return settings;
 }
 
 interface columnInfo {

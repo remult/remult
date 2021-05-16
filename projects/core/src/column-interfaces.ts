@@ -1,6 +1,4 @@
 import { Allowed } from './context';
-import { Column } from './column';
-
 import { column, columnDefsOf } from './remult3';
 
 
@@ -57,7 +55,6 @@ export interface columnDefs<T = any> {
     readonly allowNull: boolean;
     readonly dbType?: string;
 }
-export declare type delmeColumnValidatorHelper<T, ET> = (col: Column<T>, validate: ColumnValidator<T, ET>) => Promise<void>;
 export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType, entityType>, entity: entityType) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);

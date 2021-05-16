@@ -1,11 +1,6 @@
-
 import { SqlCommand } from "../sql-command";
-import { Column } from "../column";
-
 import { Filter, FilterConsumer } from './filter-interfaces';
 import { columnDefs } from "../column-interfaces";
-
-
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
   private _addWhere = true;

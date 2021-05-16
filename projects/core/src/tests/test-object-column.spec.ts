@@ -4,10 +4,10 @@ import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 
 
-import { ObjectColumn } from '../columns/object-column';
+
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { NumberColumn } from '../column';
+
 
 describe("test object column",  () => {
     var wsql = new WebSqlDataProvider("test");
