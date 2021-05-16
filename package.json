@@ -10,7 +10,7 @@
     "e2e": "ng e2e",
     "app-server-watch": "tsc -p tsconfig.server.json --watch",
     "build": "npm run core-build && npm run remult-angular-build && npm run server-postgres-build",
-    "core-build": "tsc -p projects/core/tsconfig.json && copyfiles -u 2 projects/core/package.json dist/core",
+    "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/core",
     "server-postgres-build": "tsc -p projects/server-postgres/tsconfig.json && copyfiles -u 2 projects/server-postgres/package.json dist/server-postgres",
     "publish": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd angular && npm publish  --access public --tag pre-release && cd.. && cd server-postgres &&  npm publish  --access public --tag pre-release",
     "release": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  && cd server-postgres &&  npm publish  --access public",
