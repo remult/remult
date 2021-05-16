@@ -26,7 +26,7 @@ export class TestComponent {
   tasks: Tasks[];
   async loadTasks() {
     this.tasks = await this.context.for(Tasks).find({
-      where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
+      where: task => this.hideCompleted ? task.completed.isDifferentFrom(true) : undefined,
       orderBy: task => task.completed
     });
   }
@@ -70,7 +70,7 @@ class Tasks extends EntityBase {
   })
   title = '';
   @Column()
-  completed = false;
+  completed :boolean;
   constructor(private context: Context) {
     super();
   }
