@@ -137,18 +137,18 @@ export class PostgresSchemaBuilder {
     private addColumnSqlSyntax(x: columnDefs) {
         let result = x.dbName;
         if (x.dbType) {
-            if (x.type == Number && x.dbType == "decimal")
+            if (x.dataType == Number && x.dbType == "decimal")
                 result += " numeric" + (x.allowNull ? "" : " default 0 not null");
             else
                 result += " " + x.dbType;
         }
-        else if (x.type == Date)
+        else if (x.dataType == Date)
             result += " timestamp";
         // else if (x instanceof DateColumn)
         //     result += " date";
-        else if (x.type == Boolean)
+        else if (x.dataType == Boolean)
             result += " boolean" + (x.allowNull ? "" : " default false not null");
-        else if (x.type == Number) {
+        else if (x.dataType == Number) {
             result += " int" + (x.allowNull ? "" : " default 0 not null");
         }
         //  else if (x instanceof ValueListColumn) {

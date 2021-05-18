@@ -12,7 +12,7 @@ import { DataApiSettings } from "../data-api";
 import { RowEvents } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { isFunction } from "util";
-import { BoolDbLoader, BoolJsonLoader, DateTimeJsonLoader, NumberDbLoader, NumberInputLoader } from "../columns/loaders";
+import { BoolDbLoader, BoolJsonLoader, DateOnlyInputLoader, DateTimeJsonLoader, NumberDbLoader, NumberInputLoader } from "../columns/loaders";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -722,7 +722,7 @@ class columnImpl<T> implements column<any, T> {
     get dbName(): string { return this.defs.dbName };
     dbLoader: dbLoader<any> = this.defs.dbLoader;
     jsonLoader: jsonLoader<any> = this.defs.jsonLoader;
-    type: any = this.defs.type;
+    dataType: any = this.defs.dataType;
     dbType: string = this.defs.dbType;
 
     async __performValidation() {
@@ -779,7 +779,7 @@ class columnDefsImpl implements columnDefs {
     key = this.colInfo.settings.key;
     dbReadOnly = this.colInfo.settings.dbReadOnly;
     isVirtual: boolean;
-    type = this.colInfo.settings.dataType;
+    dataType = this.colInfo.settings.dataType;
     dbType = this.colInfo.settings.dbType;
 }
 class EntityFullInfo<T> implements EntityDefs<T> {
@@ -968,6 +968,13 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
                 return x.toLocaleString();
             }
         }
+        if (!x.inputType) {
+            x.inputType = 'date';
+        }
+        if (!x.inputLoader && x.inputType == "date") {
+            x.inputLoader = DateOnlyInputLoader;
+        }
+
     }
 
     if (settings.dataType == Boolean) {
@@ -1033,7 +1040,7 @@ export class CompoundId implements columnDefs<string>{
     dbName: string;
     dbLoader: dbLoader<string>;
     jsonLoader: jsonLoader<string>;
-    type: any;
+    dataType: any;
     dbType: string;
 
 }

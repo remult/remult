@@ -42,37 +42,37 @@ export class FilterSerializer implements FilterConsumer {
     this.add(col.key + "_null", false);
   }
   isIn(col: columnDefs, val: any[]): void {
-    this.add(col.key + "_in", val);
+    this.add(col.key + "_in",val.map(x=>col.jsonLoader.toJson(x)));
   }
 
   public isEqualTo(col: columnDefs, val: any): void {
-    this.add(col.key, val);
+    this.add(col.key, col.jsonLoader.toJson(val));
   }
 
   public isDifferentFrom(col: columnDefs, val: any): void {
-    this.add(col.key + '_ne', val);
+    this.add(col.key + '_ne', col.jsonLoader.toJson(val));
   }
 
   public isGreaterOrEqualTo(col: columnDefs, val: any): void {
-    this.add(col.key + '_gte', val);
+    this.add(col.key + '_gte', col.jsonLoader.toJson(val));
   }
 
   public isGreaterThan(col: columnDefs, val: any): void {
-    this.add(col.key + '_gt', val);
+    this.add(col.key + '_gt', col.jsonLoader.toJson(val));
   }
 
   public isLessOrEqualTo(col: columnDefs, val: any): void {
-    this.add(col.key + '_lte', val);
+    this.add(col.key + '_lte', col.jsonLoader.toJson(val));
   }
 
   public isLessThan(col: columnDefs, val: any): void {
-    this.add(col.key + '_lt', val);
+    this.add(col.key + '_lt', col.jsonLoader.toJson(val));
   }
   public containsCaseInsensitive(col: columnDefs, val: any): void {
-    this.add(col.key + "_contains", val);
+    this.add(col.key + "_contains", col.jsonLoader.toJson(val));
   }
   public startsWith(col: columnDefs, val: any): void {
-    this.add(col.key + "_st", val);
+    this.add(col.key + "_st", col.jsonLoader.toJson(val));
   }
 }
 

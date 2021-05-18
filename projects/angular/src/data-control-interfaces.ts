@@ -10,9 +10,9 @@ export interface DataControlSettings<entityType = any, colType = any> {
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType,val: column<colType, entityType>) => boolean;
+    visible?: (row: entityType, val: column<colType, entityType>) => boolean;
 
-    click?: (row: entityType,val: column<colType, entityType>) => void;
+    click?: (row: entityType, val: column<colType, entityType>) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
 
@@ -142,7 +142,7 @@ export function __getDataControlSettings(col: columnDefs): DataControlSettings {
 }
 export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);
 
-export function DataControl(settings: DataControlSettings) {
+export function DataControl<entityType = any, colType = any>(settings: DataControlSettings<entityType, colType>) {
     return (target, key) => {
         Reflect.defineMetadata(configDataControlField, settings, target, key);
     }

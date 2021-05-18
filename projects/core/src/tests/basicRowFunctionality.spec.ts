@@ -1848,6 +1848,19 @@ describe("test rest data provider translates data correctly", () => {
     Column({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
+    let r = c.packWhere(x=>x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
+    expect(r.b).toBe("2021-05-16T08:32:19.905Z");
+  })
+  itAsync("put works", async () => {
+    let type = class extends EntityBase {
+      a: number;
+      b: Date;
+    };
+    Entity({ key: 'x' })(type);
+    Column({ dataType: Number })(type.prototype, 'a');
+    Column({ dataType: Date })(type.prototype, 'b');
+
+    let c = new Context().for(type);
     let done = new Done();
     let z = new RestDataProvider("", {
       delete: undefined,

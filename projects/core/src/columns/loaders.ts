@@ -35,8 +35,14 @@ export const DateTimeJsonLoader: jsonLoader<Date> = {
     toJson: (val: Date) => {
         if (!val)
             return '';
-        var d = val as Date;
-        return d.toISOString();
+        if (val instanceof Date) {
+            return val.toISOString();
+        }
+        else {
+            console.log("ToJsonError", val);
+            throw new Error("Expected date but got val");
+        }
+
     },
     fromJson: (val: string) => {
         if (val == undefined)
@@ -97,7 +103,7 @@ export const NumberInputLoader: inputLoader<number> = {
         let r = +x;
         if (!x)
             return undefined;
-        
+
         if (x.trim() == '-')
             return -0.00000001;
         if (isNaN(r))
@@ -109,4 +115,9 @@ export const NumberInputLoader: inputLoader<number> = {
             return "-";
         return x.toString();
     }
+}
+
+export const DateOnlyInputLoader: inputLoader<Date> = {
+    fromInput: x => DateOnlyJsonLoader.fromJson(x),
+    toInput: x => DateOnlyJsonLoader.toJson(x)
 }

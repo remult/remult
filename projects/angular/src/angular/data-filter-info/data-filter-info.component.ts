@@ -25,6 +25,9 @@ export class DataFilterInfoComponent {
     getCurrentFilterValue(col: columnDefs) {
         this.settings.initOrigList();
         let m = this.settings.origList.find(x => x.column == col);
+        if (this.settings.filterHelper.filterRow[col.key] instanceof Date){
+            return this.settings.filterHelper.filterRow[col.key].toLocaleDateString();
+        }
         return this.settings.columns._getColDisplayValue(m, this.settings.filterHelper.filterRow);
     }
     cancelAddFilter() {

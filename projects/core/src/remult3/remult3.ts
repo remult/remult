@@ -61,6 +61,7 @@ import { RowEvents } from "../__EntityValueProvider";
     [] test number is always a number - settings value with any string, and then doing math options for it.
 [] consider the setting decimal digits, instead might be useful to determine db storage - replaced with db type
 [] validationError is now called error
+[] the inconsistenacy beyween Date and DateTime - in our naming and also with input management
 
 ## consider if needed
 
@@ -69,11 +70,9 @@ import { RowEvents } from "../__EntityValueProvider";
 [] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 
 ## remult angular
-[] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
-[] fix grid filter on string to be contains if not force equals - and same for object
+[V] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
+[V] fix grid filter on string to be contains if not force equals - and same for object
 [] "test column value change"
-[] change the getValue - to  displayValue
-[] change the input type to support code+value, displayValueOnly
 []"test filter works with user filter"
 []"test filter works with selected rows"
 []"test select rows in page is not select all"
@@ -85,7 +84,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "column drop down 1"
 [] "works ok with filter"
 [] "uses a saparate column"
-[] redesign extend 
+[V] redesign extend 
 [] fix ignore id in id Entity
 [] fix sort method on grid settings
 [] fix getColumnsFromObject and it's usages
@@ -93,6 +92,11 @@ import { RowEvents } from "../__EntityValueProvider";
     [] "test consolidate"
     [] "works without entity"
     [] "get value function works"
+
+## remult angular future
+[] change the getValue - to  displayValue
+[] change the input type to support code+value, displayValueOnly
+
 
 
 

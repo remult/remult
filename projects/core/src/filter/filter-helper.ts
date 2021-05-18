@@ -1,13 +1,13 @@
 
 import { AndFilter, Filter } from './filter-interfaces';
-import {  FindOptions, Repository } from "../remult3";
+import { comparableFilterItem, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "../remult3";
 import { columnDefs } from "../column-interfaces";
 
-export class FilterHelper<rowType > {
+export class FilterHelper<rowType> {
   filterRow: rowType;
   filterColumns: columnDefs[] = [];
   forceEqual: columnDefs[] = [];
-  constructor(private reloadData: () => void,private repository:Repository<rowType>) {
+  constructor(private reloadData: () => void, private repository: Repository<rowType>) {
 
   }
   isFiltered(column: columnDefs) {
@@ -31,9 +31,24 @@ export class FilterHelper<rowType > {
     this.filterColumns.forEach(c => {
 
       //@ts-ignore
-      let val = this.filterRow.columns.find(c).value;
+      let val = this.filterRow[c.key];
+      let w: EntityWhereItem<rowType> = item => {
+        let itemForFilter: comparableFilterItem<any> & supportsContains<any> = item[c.key];
+        let f: Filter = itemForFilter.isEqualTo(val);
+        if (c.dataType == String && !this.forceEqual.find(x => c.key == x.key))
+          f = itemForFilter.contains(val);
+        else if (c.dataType == Date) {
+          if (val) {
+            let v = <Date>val;
+            v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
+
+            f = itemForFilter.isGreaterOrEqualTo(v).and(itemForFilter.isLessThan((new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
+          }
+        }
+        return f;
+
+      }
       //@ts-ignore
-      let f: Filter = c.isEqualTo(val);
       // if (c instanceof StringColumn) {
       //   let fe = this.forceEqual;
       //   if (fe.indexOf(c) < 0)
@@ -60,9 +75,9 @@ export class FilterHelper<rowType > {
 
       if (opt.where) {
         let x = opt.where;
-        opt.where = r => new AndFilter(this.repository.translateWhereToFilter(x), f);
+        opt.where = r => new AndFilter(this.repository.translateWhereToFilter(x), this.repository.translateWhereToFilter(w));
       }
-      else opt.where = r => f;
+      else opt.where = r => this.repository.translateWhereToFilter(w);
     });
   }
 }

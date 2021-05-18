@@ -3,5 +3,5 @@
 <span *ngIf="settings.columns.filterHelper.filterColumns.length>0">: </span>
 <span *ngFor="let map of settings.columns.filterHelper.filterColumns ; let i = index">
     <span *ngIf="i>0"> <span *ngIf="!rightToLeft">and</span><span *ngIf="rightToLeft">וגם</span> </span>
-    <span (click)="editFilter(map)" class="link"> {{map.defs.caption}} = "{{this.getCurrentFilterValue(map)}}"</span>
+    <span (click)="editFilter(map)" class="link"> {{map.caption}} = "{{this.getCurrentFilterValue(map)}}"</span>
 </span>

@@ -10,8 +10,12 @@ import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 export class Products extends IdEntity {
   @Column()
-  @DataControl({ caption: 'the caption' })
-  name = '';
+  @DataControl<Products, string>({
+    caption: 'the caption',
+    getValue: (x, y) => x.name.length,
+    click: (x) => alert(x.name)
+  })
+  name: string = '';
   @Column()
   price = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
   @Column() // should be Date

@@ -869,7 +869,7 @@ describe("test row provider", () => {
         await insert(2, 'yael');
       });
       let c1 = c.create();
-      let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+      let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true,()=>undefined);
       let cs = { column: c1._.columns.id, valueList: getValueList(c) } as DataControlSettings<newCategories>
       await cc.add(cs);
 
@@ -983,7 +983,7 @@ describe("column collection", () => {
       let c = ctx.for(type);
 
 
-      var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
+      var cc = new ColumnCollection(() => c, () => false, undefined, () => true,()=>undefined);
       await cc.add(c.defs.columns.categoryName);
       expect(cc.items[0] === c.defs.columns.categoryName).toBe(false);
       expect(cc.items[0] === cc.items[0].column).toBe(false);
@@ -1414,7 +1414,7 @@ class mockColumnDefs implements columnDefs {
   readonly dbLoader: dbLoader<any> = { toDb: x => x, fromDb: x => x };
   readonly jsonLoader: jsonLoader<any>;
   readonly inputLoader: inputLoader<any>;
-  readonly type: any;
+  readonly dataType: any;
   readonly allowNull: boolean;
   readonly dbType: string;
 }

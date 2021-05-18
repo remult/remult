@@ -51,7 +51,7 @@ export interface columnDefs<T = any> {
     readonly dbLoader: dbLoader<T>;
     readonly jsonLoader: jsonLoader<T>;
     readonly inputLoader: inputLoader<T>;
-    readonly type: any;
+    readonly dataType: any;
     readonly allowNull: boolean;
     readonly dbType: string;
     readonly target: NewEntity<any>;

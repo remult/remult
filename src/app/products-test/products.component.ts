@@ -26,7 +26,7 @@ export class ProductsComponent implements OnInit {
     allowCrud: true,
     columnSettings: p => [
       p.name,
-      { column: p.name,width:'300' }
+      p.availableFrom1
     ]
   });
 
