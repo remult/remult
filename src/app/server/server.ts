@@ -8,7 +8,7 @@ import '../app.module';
 import { serverInit } from './server-init';
 
 
-import { preparePostgresQueueStorage } from '@remult/server-postgres';
+import { preparePostgresQueueStorage } from '@remult/core/postgres';
 
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';

@@ -18,6 +18,9 @@ export class CustomModuleLoader {
                 case "@remult/core/server":
                     request = request = process.cwd() + root + '/core/server';
                     break;
+                case "@remult/core/postgres":
+                    request = request = process.cwd() + root + '/core/postgres';
+                    break;
                 case "@remult/server-postgres":
                     request = request = process.cwd() + root + '/server-postgres';
                     break;
@@ -28,4 +31,4 @@ export class CustomModuleLoader {
             return (<any>customModuleLoader)._originalResolveFilename(request, parent, isMain);
         }
     }
-}; 
+};

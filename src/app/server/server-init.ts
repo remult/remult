@@ -2,7 +2,7 @@ import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
+import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/core/postgres';
 import * as passwordHash from 'password-hash';
 
 import '../app.module';

@@ -1,5 +1,5 @@
-import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, SqlDatabase, SqlCommand, SqlResult, allEntities, SqlImplementation, EntityDefs, columnDefs } from '@remult/core';
-import { JobsInQueueEntity, EntityQueueStorage, ExpressBridge } from '@remult/core/server';
+import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, SqlDatabase, SqlCommand, SqlResult, allEntities, SqlImplementation, EntityDefs, columnDefs } from '../';
+import { JobsInQueueEntity, EntityQueueStorage, ExpressBridge } from '../server';
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
