@@ -34,8 +34,8 @@ describe("custom id column", () => {
             id: number;
         }
         Entity({ key: 'custom2' })(type);
-        Column({ type: Number })(type.prototype, 'a');
-        Column({ type: Number })(type.prototype, 'id');
+        Column({ dataType: Number })(type.prototype, 'a');
+        Column({ dataType: Number })(type.prototype, 'id');
         let c = context.for(type);
         let r = c.create();
         r.a = 1;

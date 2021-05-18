@@ -1574,9 +1574,9 @@ describe("column validation", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    Column({ type: Number })(type.prototype, "id");
+    Column({ dataType: Number })(type.prototype, "id");
     Column()(type.prototype, "name");
-    Column({ type: Date })(type.prototype, "c3");
+    Column({ dataType: Date })(type.prototype, "c3");
 
     let f = c.for(type);
     let d = new Date(2020, 1, 2, 3, 4, 5, 6);
@@ -1605,7 +1605,7 @@ describe("test web sql identity", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    Column({ type: Number })(type.prototype, "id");
+    Column({ dataType: Number })(type.prototype, "id");
     Column()(type.prototype, "name");
 
 
@@ -1779,7 +1779,7 @@ describe("test date storage", () => {
 });
 describe("test bool value", () => {
   it("should work", () => {
-    let col = decorateColumnSettings<Boolean>({ type: Boolean });
+    let col = decorateColumnSettings<Boolean>({ dataType: Boolean });
     expect(col.jsonLoader.fromJson(true)).toBe(true);
     expect(col.jsonLoader.fromJson(false)).toBe(false);
   });
@@ -1787,11 +1787,11 @@ describe("test bool value", () => {
 
 describe("test number negative", () => {
   it("negative", () => {
-    let nc = decorateColumnSettings<number>({ type: Number });
+    let nc = decorateColumnSettings<number>({ dataType: Number });
     expect(nc.inputLoader.toInput(nc.inputLoader.fromInput("-"))).toBe("-");
   });
   it("negative2", () => {
-    let nc = decorateColumnSettings<number>({ type: Number });;
+    let nc = decorateColumnSettings<number>({ dataType: Number });;
     expect(nc.inputLoader.fromInput('2-1')).toBe(0);
   });
   // it("negative decimal", () => {
@@ -1814,8 +1814,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Column({ type: Number })(type.prototype, 'a');
-    Column({ type: Date })(type.prototype, 'b');
+    Column({ dataType: Number })(type.prototype, 'a');
+    Column({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let z = new RestDataProvider("", {
@@ -1844,8 +1844,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Column({ type: Number })(type.prototype, 'a');
-    Column({ type: Date })(type.prototype, 'b');
+    Column({ dataType: Number })(type.prototype, 'a');
+    Column({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let done = new Done();

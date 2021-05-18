@@ -17,7 +17,9 @@ import { DataControlSettings } from '../../data-control-interfaces';
 })
 export class DataArea2Component implements OnChanges {
 
-  @Input() settings: DataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true), lines: undefined };
+  @Input() settings: DataAreaSettings = {
+    columns: new ColumnCollection(() => undefined, () => false, undefined, () => true, () => undefined), lines: undefined
+  };
   @Input() object: any;
 
   ngOnChanges(): void {

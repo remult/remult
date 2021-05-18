@@ -2,17 +2,17 @@ import { Column, columnDefs, ColumnSettings, Entity, ValueListItem } from "@remu
 import { column, getEntityOf } from "../../core/src/remult3";
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | column<any, any>;
-export interface DataControlSettings<entityType = any> {
+export interface DataControlSettings<entityType = any, colType = any> {
 
     column?: columnDefs;
-    getValue?: (row: entityType) => any;
+    getValue?: (row: entityType, val: column<colType, entityType>) => any;
     readOnly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType) => boolean;
+    visible?: (row: entityType,val: column<colType, entityType>) => boolean;
 
-    click?: (row: entityType) => void;
+    click?: (row: entityType,val: column<colType, entityType>) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
 
@@ -52,22 +52,33 @@ export function extend<T extends columnDefs>(col: T): {
 export const configDataControlField = Symbol('configDataControlField');
 
 export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
+    let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);
+    if (settingsOnColumnLevel) {
+        for (const key in settingsOnColumnLevel) {
+            if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
+                const element = settingsOnColumnLevel[key];
+                if (!x[key])
+                    x[key] = element;
+            }
+        }
+        x = Object.assign({}, settingsOnColumnLevel, x);
+    }
     if (!x.caption && col.caption)
         x.caption = col.caption;
     if (!x.inputType && col.inputType)
         x.inputType = col.inputType;
-    let settings: ColumnSettings = col["__settings"];
-    if (settings)
-        if (x.readOnly == undefined) {
-            if (settings.sqlExpression)
-                x.readOnly = true;
-            else
 
-                if (typeof settings.allowApiUpdate === 'boolean')
-                    x.readOnly = !settings.allowApiUpdate;
+    if (x.readOnly == undefined) {
+        if (col.dbReadOnly)
+            x.readOnly = true;
+        else
+
+            if (typeof col.allowApiUpdate === 'boolean')
+                x.readOnly = !col.allowApiUpdate;
 
 
-        }
+    }
+    /*
 
 
     col[__displayResult] = __getDataControlSettings(col);
@@ -110,16 +121,18 @@ export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
                 }
             }
         }
-    }
+    }*/
 }
 const __displayResult = Symbol("__displayResult");
 
 export function __getDataControlSettings(col: columnDefs): DataControlSettings {
-    if (col[configDataControlField]) {
-        let r = {};
-        col[configDataControlField](r);
-        return r;
-    }
+    let settings = Reflect.getMetadata(configDataControlField, col.target, col.key);
+
+    // if (col[configDataControlField]) {
+    //     let r = {};
+    //     col[configDataControlField](r);
+    //     return r;
+    // }
     /*if (col instanceof ValueListColumn) {
         col[configDataControlField] = (x: DataControlSettings) => {
             x.valueList = col.getOptions();
@@ -128,3 +141,9 @@ export function __getDataControlSettings(col: columnDefs): DataControlSettings {
     return undefined;
 }
 export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);
+
+export function DataControl(settings: DataControlSettings) {
+    return (target, key) => {
+        Reflect.defineMetadata(configDataControlField, settings, target, key);
+    }
+}

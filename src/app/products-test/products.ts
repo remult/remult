@@ -1,4 +1,4 @@
-import { extend } from '@remult/angular';
+import { DataControl, extend } from '@remult/angular';
 import { IdEntity, ServerMethod } from '@remult/core';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
@@ -10,6 +10,7 @@ import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 export class Products extends IdEntity {
   @Column()
+  @DataControl({ caption: 'the caption' })
   name = '';
   @Column()
   price = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);

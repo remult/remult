@@ -1,11 +1,11 @@
 import { columnDefs, Entity, FilterHelper, IdEntity, ValueListItem } from "@remult/core";
-import { column,  EntityDefs, getEntityOf } from "../../core/src/remult3";
+import { column, EntityDefs, getEntityOf } from "../../core/src/remult3";
 import { DataControlInfo, DataControlSettings, decorateDataSettings, ValueOrEntityExpression } from "./data-control-interfaces";
 
 
 
 export class ColumnCollection<rowType = any> {
-  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean) {
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private getRowColumn: (row: rowType, col: columnDefs) => column<any, any>) {
 
 
   }
@@ -27,7 +27,7 @@ export class ColumnCollection<rowType = any> {
   __visible(col: DataControlSettings, row: any) {
     if (col.visible === undefined)
       return true;
-    return col.visible(row);
+    return col.visible(row, this.getRowColumn(row, col.column));
   }
 
   __dataControlStyle(map: DataControlSettings): string {
@@ -53,7 +53,7 @@ export class ColumnCollection<rowType = any> {
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
       let col = c as columnDefs;
-      if (!x.column && col.key && col.caption && col.dbName ) {
+      if (!x.column && col.key && col.caption && col.dbName) {
         x = {
           column: c,
         }
@@ -163,14 +163,14 @@ export class ColumnCollection<rowType = any> {
     return true;
   }
   _click(col: DataControlSettings, row: any) {
-    col.click(row);
+    col.click(row, this.getRowColumn(row, col.column));
   }
 
   _getColDisplayValue(col: DataControlSettings, row: rowType) {
     let r;
     if (col.getValue) {
 
-      r = col.getValue(row)
+      r = col.getValue(row,this.getRowColumn(row, col.column))
       if (r.value)
         r = r.value;
 
@@ -277,10 +277,10 @@ export class ColumnCollection<rowType = any> {
 }
 
 
-export function valueOrEntityExpressionToValue<T, entityType >(f: ValueOrEntityExpression<T, entityType>, e: entityType): T {
+export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityExpression<T, entityType>, e: entityType): T {
   if (typeof f === 'function') {
-      let x = f as any;
-      return x(e);
+    let x = f as any;
+    return x(e);
   }
   return <T>f;
 }

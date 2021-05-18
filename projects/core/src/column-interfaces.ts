@@ -1,5 +1,5 @@
 import { Allowed } from './context';
-import { column, columnDefsOf } from './remult3';
+import { column, columnDefsOf, NewEntity } from './remult3';
 
 
 
@@ -34,7 +34,8 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     dbReadOnly?: boolean;
     allowNull?: boolean;
     displayValue?: (value: valueType, entity: entityType) => string;
-    type?: any;
+    dataType?: any;
+    target?: NewEntity<entityType>;
     dbLoader?: dbLoader<valueType>;
     jsonLoader?: jsonLoader<valueType>;
     inputLoader?: inputLoader<valueType>;
@@ -53,8 +54,12 @@ export interface columnDefs<T = any> {
     readonly inputLoader: inputLoader<T>;
     readonly type: any;
     readonly allowNull: boolean;
-    readonly dbType?: string;
+    readonly dbType: string;
+    readonly target: NewEntity<any>;
+    readonly allowApiUpdate: Allowed;
+
 }
+
 export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType, entityType>, entity: entityType) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);

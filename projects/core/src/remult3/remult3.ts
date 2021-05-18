@@ -23,10 +23,12 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "bool column doesn't need contains, isin and is not in"
 [] "apiRequireId"
 [] "test make sort unique" - both tests
+[] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
 [V] think of id entity.
 [V] rename `name` to `key` in Entity Settings
 [V] replace entitydefs.name = key.
 [V] rename allow api crud
+
 
 ## TODO
 [] test default value set in the pojo itself: a=0;

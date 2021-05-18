@@ -14,7 +14,7 @@ export class DataAreaSettings<rowType =any>
   lines: DataControlSettings[][] = [];
   constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?:columnDefsOf<rowType>) {
     if (columns == undefined) {
-      columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true);
+      columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true,()=>undefined);
       columns.numOfColumnsInGrid = 0;
       this.columns = columns;
     }

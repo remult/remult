@@ -27,7 +27,7 @@ export class DataControl3Component {
   @Input() record: any;
 
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined);
+  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined,()=>undefined);
   showDescription() {
 
     return (this.map.column) && this.map.getValue || !this._getEditable();

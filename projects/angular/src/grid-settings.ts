@@ -16,7 +16,7 @@ export class GridSettings<rowType>  {
       this.filterHelper.filterRow = <rowType>repository.create();
     }
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false)
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).columns.find(b))
 
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
@@ -157,7 +157,7 @@ export class GridSettings<rowType>  {
   noam: string;
 
   addArea(settings: IDataAreaSettings<rowType>) {
-    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false);
+    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).columns.find(b));
     col.numOfColumnsInGrid = 0;
 
     return new DataAreaSettings<rowType>(settings, col, this.repository.defs.columns);

@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
-import { Context, ServerContext } from '../context';
+import { Allowed, Context, ServerContext } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../filter/filter-helper';
 
@@ -15,7 +15,7 @@ import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
-import { EntityDefs, Repository } from '../remult3';
+import { EntityDefs, NewEntity, Repository } from '../remult3';
 import { CharDateLoader, DateDisplayValue, DateOnlyJsonLoader, DateOnlyDateDbLoader, DateTimeJsonLoader } from '../columns/loaders';
 
 
@@ -1220,12 +1220,12 @@ describe("test area", () => {
 
 describe("test datetime column", () => {
   it("stores well", () => {
-    let col = decorateColumnSettings<Date>({ type: Date });
+    let col = decorateColumnSettings<Date>({ dataType: Date });
     let val = col.jsonLoader.fromJson(col.jsonLoader.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
     expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
-    let col = decorateColumnSettings<Date>({ type: Date });
+    let col = decorateColumnSettings<Date>({ dataType: Date });
     expect(col.jsonLoader.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
@@ -1249,7 +1249,7 @@ describe("test datetime column", () => {
   it("date Storage works 1", () => {
 
     let col = decorateColumnSettings<Date>({
-      type: Date,
+      dataType: Date,
       dbLoader: DateOnlyDateDbLoader,
       jsonLoader: DateOnlyJsonLoader
     });
@@ -1403,6 +1403,8 @@ class mockColumnDefs implements columnDefs {
   constructor(public dbName: string) {
 
   }
+  target: NewEntity<any>;
+  allowApiUpdate: Allowed;
   readonly dbReadOnly: boolean;
   readonly isVirtual: boolean;
   readonly key: string;
@@ -1414,5 +1416,5 @@ class mockColumnDefs implements columnDefs {
   readonly inputLoader: inputLoader<any>;
   readonly type: any;
   readonly allowNull: boolean;
-  readonly dbType?: string;
+  readonly dbType: string;
 }

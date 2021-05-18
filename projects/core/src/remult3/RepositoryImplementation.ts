@@ -682,6 +682,8 @@ class columnImpl<T> implements column<any, T> {
     constructor(private settings: ColumnSettings, private defs: columnDefs, private entity: any, private helper: rowHelperImplementation<T>) {
 
     }
+    target: NewEntity<any> = this.settings.target;
+    allowApiUpdate: Allowed = this.settings.allowApiUpdate;
     allowNull = this.defs.allowNull;
     inputType: string = this.settings.inputType;
     inputLoader = this.settings.inputLoader;
@@ -721,7 +723,7 @@ class columnImpl<T> implements column<any, T> {
     dbLoader: dbLoader<any> = this.defs.dbLoader;
     jsonLoader: jsonLoader<any> = this.defs.jsonLoader;
     type: any = this.defs.type;
-    dbType?: string = this.defs.dbType;
+    dbType: string = this.defs.dbType;
 
     async __performValidation() {
         let x = typeof (this.settings.validate);
@@ -754,6 +756,9 @@ class columnDefsImpl implements columnDefs {
             this.dbReadOnly = true;
 
     }
+    target: NewEntity<any> = this.colInfo.settings.target;
+    allowApiUpdate: Allowed = this.colInfo.settings.allowNull;
+
     inputLoader = this.colInfo.settings.inputLoader;
     allowNull = !!this.colInfo.settings.allowNull;
 
@@ -774,7 +779,7 @@ class columnDefsImpl implements columnDefs {
     key = this.colInfo.settings.key;
     dbReadOnly = this.colInfo.settings.dbReadOnly;
     isVirtual: boolean;
-    type = this.colInfo.settings.type;
+    type = this.colInfo.settings.dataType;
     dbType = this.colInfo.settings.dbType;
 }
 class EntityFullInfo<T> implements EntityDefs<T> {
@@ -919,11 +924,13 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
             columnsOfType.set(target, names)
         }
 
-        let type = settings.type;
+        let type = settings.dataType;
         if (!type) {
             type = Reflect.getMetadata("design:type", target, key);
-            settings.type = type;
+            settings.dataType = type;
         }
+        if (!settings.target)
+            settings.target = target;
 
         decorateColumnSettings(settings);
         names.push({
@@ -939,7 +946,7 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
 }
 export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
 
-    if (settings.type == Number) {
+    if (settings.dataType == Number) {
         let x = settings as unknown as ColumnSettings<Number>;
         if (!x.dbLoader) {
             x.dbLoader = NumberDbLoader;
@@ -949,7 +956,7 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
         if (!x.inputType)
             x.inputType = 'number';
     }
-    if (settings.type == Date) {
+    if (settings.dataType == Date) {
         let x = settings as unknown as ColumnSettings<Date>;
         if (!settings.jsonLoader) {
             x.jsonLoader = DateTimeJsonLoader;
@@ -963,7 +970,7 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
         }
     }
 
-    if (settings.type == Boolean) {
+    if (settings.dataType == Boolean) {
         let x = settings as unknown as ColumnSettings<Boolean>;
         if (!x.jsonLoader)
             x.jsonLoader = BoolJsonLoader;
@@ -1014,6 +1021,8 @@ export class CompoundId implements columnDefs<string>{
         if (false)
             console.log(columns);
     }
+    target: NewEntity<any>;
+    allowApiUpdate: Allowed;
     inputLoader: inputLoader<string>;
     allowNull: boolean;
     dbReadOnly: boolean;
@@ -1025,6 +1034,6 @@ export class CompoundId implements columnDefs<string>{
     dbLoader: dbLoader<string>;
     jsonLoader: jsonLoader<string>;
     type: any;
-    dbType?: string;
+    dbType: string;
 
 }
