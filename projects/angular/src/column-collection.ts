@@ -1,5 +1,5 @@
-import { columnDefs, Entity, FilterHelper, IdEntity, ValueListItem } from "@remult/core";
-import { column, EntityDefs, getEntityOf } from "../../core/src/remult3";
+import { columnDefs, column, EntityDefs, getEntityOf, FilterHelper, IdEntity, ValueListItem } from "@remult/core";
+
 import { DataControlInfo, DataControlSettings, decorateDataSettings, ValueOrEntityExpression } from "./data-control-interfaces";
 
 

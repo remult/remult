@@ -1,5 +1,5 @@
-import { Entity } from "@remult/core";
-import { columnDefsOf } from "../../core/src/remult3";
+import { columnDefsOf } from "@remult/core";
+
 import { ColumnCollection } from "./column-collection";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 

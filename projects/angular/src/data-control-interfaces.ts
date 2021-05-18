@@ -1,5 +1,5 @@
-import { Column, columnDefs, ColumnSettings, Entity, ValueListItem } from "@remult/core";
-import { column, getEntityOf } from "../../core/src/remult3";
+import { column, columnDefs, ColumnSettings, Entity, ValueListItem } from "@remult/core";
+
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | column<any, any>;
 export interface DataControlSettings<entityType = any, colType = any> {

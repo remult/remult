@@ -29,7 +29,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
-import { Repository,EntityOrderBy, EntityWhere, EntityDefs } from '../../../core/src/remult3';
+import { Repository,EntityOrderBy, EntityWhere, EntityDefs } from '@remult/core';
 
 
 

@@ -1,5 +1,5 @@
-import { AndFilter, columnDefs, DataList, FilterHelper, Sort } from "@remult/core";
-import { columnDefsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "../../core/src/remult3";
+import { AndFilter, columnDefs, DataList, FilterHelper, Sort,columnDefsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
+
 import { ColumnCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
