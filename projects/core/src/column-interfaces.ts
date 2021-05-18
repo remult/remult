@@ -26,7 +26,6 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     caption?: string;
     defaultValue?: (entity: entityType) => valueType | Promise<valueType>;
     validate?: ColumnValidator<valueType, entityType> | ColumnValidator<valueType, entityType>[];
-    valueChange?: () => void;
     inputType?: string;
     dbName?: string;
     sqlExpression?: string | ((entity: columnDefsOf<entityType>) => string);

@@ -12,9 +12,9 @@
     "build": "npm run core-build && npm run remult-angular-build ",
     "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/core",
     
-    "publish": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd angular && npm publish  --access public --tag pre-release && cd.. ",
-    "release": " npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
-    "patch-versions": "cd projects/core && npm version patch && cd.. && cd projects/angular && npm version patch && cd..",
+    "publish": "npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd angular && npm publish  --access public --tag pre-release && cd.. ",
+    "release": "npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
+    "patch-versions": "cd projects/core && npm version patch && cd.. && cd angular && npm version patch && cd..",
     "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run",
     "build-server-watch": "tsc -p tsconfig.server.json --watch",
     "server:dev-run": "node dist-server/src/app/server/server.js",

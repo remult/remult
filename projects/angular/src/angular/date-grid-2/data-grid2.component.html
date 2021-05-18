@@ -106,7 +106,7 @@
 
       {{rightToLeft?'שורות בדף': 'lines per page'}}
       <select class="form-control" style="width:80px;display:inline-block" [(ngModel)]="settings.rowsPerPage"
-        (change)="settings.getRecords()">
+        (change)="settings.reloadData()">
         <option *ngFor="let r of settings.rowsPerPageOptions" value="{{r}}">{{r}}</option>
       </select>
     </div>
