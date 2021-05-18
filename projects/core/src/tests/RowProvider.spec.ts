@@ -995,7 +995,7 @@ describe("column collection", () => {
   if (false)
     itAsync("works ok with filter", async () => {
       let c = ctx.for(newCategories);
-      var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true);
+      var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true,()=>undefined);
       await cc.add(c.defs.columns.id);
       cc.filterHelper.filterColumn(cc.items[0].column, false, false);
       expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
