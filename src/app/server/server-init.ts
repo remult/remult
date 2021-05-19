@@ -37,24 +37,33 @@ export async function serverInit() {
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
-
-
+    let x = new myClass();
+    console.log({
+        classTarget, columnTarget, x: x.constructor, myClass,
+        same: classTarget === myClass 
+    });
     return r;
 
 }
+let classTarget, columnTarget;
 
 
 function classDecorator() {
-    return target => target;
+    return target => classTarget = target;
 }
 function columnDecorator() {
     return (target, key) => {
-
+        columnTarget = target.constructor;
     }
 }
 
+class baseClass {
+    constructor() {
+
+    }
+}
 @classDecorator()
-class myClass {
+class myClass extends baseClass {
     @columnDecorator()
     a: string;
 }

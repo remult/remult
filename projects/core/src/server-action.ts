@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityOf, rowHelperImplementation, __getControllerDefs } from './remult3';
+import { getEntityOf, rowHelperImplementation, getControllerDefs } from './remult3';
 
 
 
@@ -298,7 +298,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 }
                                 else {
                                     let y = new constructor(context, ds);
-                                    let defs = __getControllerDefs(target, y, context);
+                                    let defs = getControllerDefs( y, context);
                                     defs._updateEntityBasedOnApi(d.columns);
 
                                     await defs.__validateEntity();
@@ -361,7 +361,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                 }
 
                 else {
-                    let defs = __getControllerDefs(target, self, undefined);
+                    let defs = getControllerDefs(self, undefined);
                     try {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{

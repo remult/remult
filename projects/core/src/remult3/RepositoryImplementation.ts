@@ -408,16 +408,16 @@ const entityMember = Symbol("entityMember");
 
 export const columnsOfType = new Map<any, columnInfo[]>();
 export function createOldEntity<T>(entity: NewEntity<T>) {
-    let r: columnInfo[] = columnsOfType.get(entity.prototype);
+    let r: columnInfo[] = columnsOfType.get(entity);
     if (!r)
-        columnsOfType.set(entity.prototype, r = []);
+        columnsOfType.set(entity, r = []);
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
     if (!info)
         throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity()?")
     if (info.extends) {
 
-        r.unshift(...columnsOfType.get(info.extends.prototype).filter(x => !r.find(y => y.key == x.key)));
+        r.unshift(...columnsOfType.get(info.extends).filter(x => !r.find(y => y.key == x.key)));
         info.extends = undefined;
     }
 
@@ -701,20 +701,18 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
 }
 const controllerColumns = Symbol("controllerColumns");
-export function __getControllerDefs(type: any, controller: any, context: Context): controllerDefsImpl<any> {
+export function getControllerDefs(controller: any, context: Context): controllerDefsImpl<any> {
 
     let result = controller[controllerColumns] as controllerDefsImpl<any>;
     if (!result) {
-        let columnSettings: columnInfo[] = columnsOfType.get(type);
+        let columnSettings: columnInfo[] = columnsOfType.get(controller.constructor);
         if (!columnSettings)
-            columnsOfType.set(controller.prototype, columnSettings = []);
+            columnsOfType.set(controller.constructor, columnSettings = []);
             controller[controllerColumns] = result = new controllerDefsImpl(columnSettings, controller, context);
     }
     return result;
 }
-export function getControllerDefs<T>(controller: T): controllerDefs<T> {
-    return controller[controllerColumns] as controllerDefs<T>;
-}
+
 export interface controllerDefs<T = any> {
     readonly columns: entityOf<T>,
 }
@@ -988,10 +986,10 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
         if (!settings.dbName)
             settings.dbName = settings.key;
 
-        let names: columnInfo[] = columnsOfType.get(target);
+        let names: columnInfo[] = columnsOfType.get(target.constructor);
         if (!names) {
             names = [];
-            columnsOfType.set(target, names)
+            columnsOfType.set(target.constructor, names)
         }
 
         let type = settings.dataType;
@@ -1081,7 +1079,7 @@ interface columnInfo {
 export function Entity<T>(options: EntityOptions<T>) {
     return target => {
         if (!options.key || options.key == '')
-            options.key = target.constructor.name;
+            options.key = target.name;
         if (!options.dbName)
             options.dbName = options.key;
         allEntities.push(target);
