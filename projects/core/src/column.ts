@@ -7,28 +7,7 @@ import { ColumnValueProvider } from './__EntityValueProvider';
 import { EntityWhere, FindOptions, Repository } from './remult3';
 
 
-export function getColumnsFromObject(controller: any) {
-  let __columns: columnDefs[] = controller.__columns;;
-  if (!__columns) {
 
-    __columns = [];
-    controller.__columns = __columns;
-    for (const key in controller) {
-      if (Object.prototype.hasOwnProperty.call(controller, key)) {
-        const element = controller[key];
-        if (false){//element instanceof columnDefs) {
-          if (!element.defs.key)
-            element.defs.key = key;
-          if (!element.defs.caption)
-            element.defs.caption = makeTitle(element.defs.key);
-          __columns.push(element);
-        }
-
-      }
-    }
-  }
-  return __columns;
-}
 export function makeTitle(name: string) {
 
   // insert a space before all caps

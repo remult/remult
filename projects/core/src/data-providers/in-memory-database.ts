@@ -4,7 +4,7 @@ import { EntityDefs } from '../remult3';
 
 export class InMemoryDataProvider implements DataProvider, __RowsOfDataForTesting {
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
-    throw new Error("Method not implemented.");
+    await action(this);
   }
   rows: any = {};
   public getEntityDataProvider(entity:EntityDefs): EntityDataProvider {

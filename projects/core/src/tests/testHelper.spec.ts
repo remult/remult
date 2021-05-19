@@ -1,4 +1,12 @@
-jasmine.DEFAULT_TIMEOUT_INTERVAL=999999;
+import { Context } from "../context";
+import { DataApiRequest, DataApiResponse } from "../data-api";
+import { InMemoryDataProvider } from "../data-providers/in-memory-database";
+import { Action, actionInfo, serverActionField } from "../server-action";
+import { TestDataApiResponse } from "./basicRowFunctionality.spec";
+
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 999999;
+
+
 
 export function itAsync(name: string, runAsync: () => Promise<any>) {
   it(name, (done: DoneFn) => {
@@ -67,3 +75,42 @@ export class Done {
 
 }
 
+Action.provider = {
+  delete: undefined,
+  get: undefined,
+  post: async (urlreq, data) => {
+    return await new Promise((res, r) => {
+      let found = false;
+      //   if (false)
+      actionInfo.allActions.forEach(action => {
+
+        action[serverActionField].dataProvider = () => new InMemoryDataProvider();
+
+        action[serverActionField].
+          __register(
+            (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => {
+              if (Context.apiBaseUrl + '/' + url == urlreq) {
+                found = true;
+                let t = new TestDataApiResponse();
+                t.success = data =>
+                  res(data);
+                t.error= data => r(data);
+                what(data, {
+                  get: x => {
+                    ;
+                    return undefined;
+                  }, clientIp: '', user: undefined, getHeader: x => ""
+                  , getBaseUrl: () => ''
+                }, t);
+              }
+            }
+          )
+      })
+      if (!found) {
+        r("did not find " + urlreq);
+      }
+    });
+
+  },
+  put: undefined
+}

@@ -4,7 +4,7 @@ import * as express from 'express';
 import * as cors from 'cors';
 import { initExpress } from '@remult/core/server';
 import * as fs from 'fs';
-import '../app.module';
+//import '../app.module';
 import { serverInit } from './server-init';
 
 

@@ -24,10 +24,12 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "apiRequireId"
 [] "test make sort unique" - both tests
 [] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
+[] prevent jobsInQueue to register as an api entity - it's not one
 [V] think of id entity.
 [V] rename `name` to `key` in Entity Settings
 [V] replace entitydefs.name = key.
 [V] rename allow api crud
+
 
 
 ## TODO
@@ -37,6 +39,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] "test object column"
 [] "order by api"
 [] review repository api - and consider moving stuff to defs
+
 
 
 ## Server Controller

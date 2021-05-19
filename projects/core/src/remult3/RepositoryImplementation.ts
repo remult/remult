@@ -423,192 +423,24 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
 
     return new EntityFullInfo<T>(r, info);
 }
-class rowHelperImplementation<T> implements rowHelper<T>{
 
-
-    constructor(private info: EntityFullInfo<T>, private entity: T, public repository: Repository<T>, private edp: EntityDataProvider, private context: Context, private _isNew: boolean) {
-        if (_isNew) {
-            for (const col of info.columnsInfo) {
-                if (col.settings.defaultValue) {
-                    if (typeof col.settings.defaultValue === "function") {
-                        entity[col.key] = col.settings.defaultValue(entity);
-                    }
-                    else if (!entity[col.key])
-                        entity[col.key] = col.settings.defaultValue;
-                }
-            }
-        }
-    }
+class rowHelperBase<T>
+{
     validationError: string;
-    private _wasDeleted = false;
+    constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
 
-    listeners: RowEvents[];
-    register(listener: RowEvents) {
-        if (!this.listeners)
-            this.listeners = []
-        this.listeners.push(listener);
-    }
-
-    _updateEntityBasedOnApi(body: any) {
-        for (const col of this.info.columnsInfo) {
-            if (body[col.key])
-                if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                    if (col.settings.allowApiUpdate === undefined || this.context.isAllowed(col.settings.allowApiUpdate)) {
-                        this.entity[col.key] = col.settings.jsonLoader.fromJson(body[col.key]);
-                    }
-
-                }
-        }
-
-    }
-
-    wasDeleted(): boolean {
-        return this._wasDeleted;
-    }
-    isValid(): boolean {
-        return !!!this.validationError && this.errors == undefined;
-
-    }
-    undoChanges() {
-        this.loadDataFrom(this.originalValues);
-        this.__clearErrors();
-    }
-    async reload(): Promise<void> {
-        return this.edp.find({ where: this.repository.getIdFilter(this.id) }).then(async newData => {
-            await this.loadDataFrom(newData[0]);
-        });
-    }
-    toApiPojo() {
-        let result: any = {};
-        for (const col of this.info.columnsInfo) {
-            if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                result[col.key] = col.settings.jsonLoader.toJson(this.entity[col.key]);
-            }
-        }
-        return result;
-    }
-
-    private _columns: entityOf<T>;
-
-    get columns(): entityOf<T> {
-        if (!this._columns) {
-            let r = {
-                find: (c: column<any, T>) => r[c.key],
-                _items: []
-            };
-            for (const c of this.info.columnsInfo) {
-                r._items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.entity, this));
-            }
-
-            this._columns = r as unknown as entityOf<T>;
-        }
-        return this._columns;
-
-    }
-    async __validateEntity(afterValidationBeforeSaving: (row: T) => Promise<any> | any) {
-        this.__clearErrors();
-
-        for (const c of this.info.columnsInfo) {
-            if (c.settings.validate) {
-                let col = new columnImpl(c.settings, this.info.columns[c.key], this.entity, this);
-                await col.__performValidation();
-            }
-        }
-
-        if (this.info.entityInfo.validation)
-            await this.info.entityInfo.validation(this.entity);
-        if (afterValidationBeforeSaving)
-            await afterValidationBeforeSaving(this.entity);
-        this.__assertValidity();
-    }
-    async save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T> {
-        await this.__validateEntity(afterValidationBeforeSaving);
-        let doNotSave = false;
-        if (this.info.entityInfo.saving) {
-            this.info.entityInfo.saving(this.entity, () => doNotSave = true);
-        }
-
-        this.__assertValidity();
-
-        let d = this.copyDataToObject();
-        if (this.info.idColumn instanceof CompoundIdColumn)
-            d.id = undefined;
-        let updatedRow: any;
-        try {
-            if (this.isNew()) {
-                updatedRow = await this.edp.insert(d);
-            }
-            else {
-                if (doNotSave) {
-                    updatedRow = (await this.edp.find({ where: this.repository.getIdFilter(this.id) }))[0];
-                }
-                else
-                    updatedRow = await this.edp.update(this.id, d);
-            }
-            await this.loadDataFrom(updatedRow);
-            if (this.info.entityInfo.saved)
-                await this.info.entityInfo.saved(this.entity);
-            if (this.listeners)
-                this.listeners.forEach(x => {
-                    if (x.rowSaved)
-                        x.rowSaved(true);
-                });
-            this.saveOriginalData();
-            this._isNew = false;
-            return this.entity;
-        }
-        catch (err) {
-            await this.catchSaveErrors(err);
-        }
-
-    }
-
-    private copyDataToObject() {
-        let d: any = {};
-        for (const col of this.info.columns._items) {
-            d[col.key] = this.entity[col.key];
-        }
-        return d;
-    }
-    originalValues: any = {};
-    saveOriginalData() {
-        this.originalValues = this.copyDataToObject();
-    }
-
-
-
-    async delete() {
-        this.__clearErrors();
-        if (this.info.entityInfo.deleting)
-            await this.info.entityInfo.deleting(this.entity);
-        this.__assertValidity();
-
-        try {
-            await this.edp.delete(this.id);
-            if (this.info.entityInfo.deleted)
-                await this.info.entityInfo.deleted(this.entity);
-            if (this.listeners) {
-                for (const l of this.listeners) {
-                    if (l.rowDeleted)
-                        l.rowDeleted();
-                }
-            }
-            this._wasDeleted = true;
-        } catch (err) {
-            await this.catchSaveErrors(err);
-        }
     }
     errors: { [key: string]: string };
-    private __assertValidity() {
+    protected __assertValidity() {
         if (!this.isValid()) {
             let error: ErrorInfo = {
                 modelState: Object.assign({}, this.errors),
                 message: this.validationError
             }
             if (!error.message) {
-                for (const col of this.info.columns._items) {
+                for (const col of this.columnsInfo) {
                     if (this.errors[col.key]) {
-                        error.message = col.caption + ": " + this.errors[col.key];
+                        error.message = col.settings.caption + ": " + this.errors[col.key];
                     }
                 }
 
@@ -646,9 +478,187 @@ class rowHelperImplementation<T> implements rowHelper<T>{
         this.errors = undefined;
         this.validationError = undefined;
     }
+    isValid(): boolean {
+        return !!!this.validationError && this.errors == undefined;
+
+    }
+    protected copyDataToObject() {
+        let d: any = {};
+        for (const col of this.columnsInfo) {
+            d[col.key] = this.instance[col.key];
+        }
+        return d;
+    }
+    originalValues: any = {};
+    saveOriginalData() {
+        this.originalValues = this.copyDataToObject();
+    }
+    async __validateEntity(afterValidationBeforeSaving?: (row: T) => Promise<any> | any) {
+        this.__clearErrors();
+
+        await this.__performColumnAndEntityValidations();
+        if (afterValidationBeforeSaving)
+            await afterValidationBeforeSaving(this.instance);
+        this.__assertValidity();
+    }
+    async __performColumnAndEntityValidations() {
+
+    }
+    toApiPojo() {
+        let result: any = {};
+        for (const col of this.columnsInfo) {
+            if (!this.context || col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
+                result[col.key] = col.settings.jsonLoader.toJson(this.instance[col.key]);
+            }
+        }
+        return result;
+    }
+
+    _updateEntityBasedOnApi(body: any) {
+        for (const col of this.columnsInfo) {
+            if (body[col.key])
+                if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
+                    if (!this.context || col.settings.allowApiUpdate === undefined || this.context.isAllowed(col.settings.allowApiUpdate)) {
+                        this.instance[col.key] = col.settings.jsonLoader.fromJson(body[col.key]);
+                    }
+
+                }
+        }
+
+    }
+}
+class rowHelperImplementation<T> extends rowHelperBase<T> implements rowHelper<T> {
+
+
+    constructor(private info: EntityFullInfo<T>, instance: T, public repository: Repository<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
+        super(info.columnsInfo, instance, context);
+        if (_isNew) {
+            for (const col of info.columnsInfo) {
+                if (col.settings.defaultValue) {
+                    if (typeof col.settings.defaultValue === "function") {
+                        instance[col.key] = col.settings.defaultValue(instance);
+                    }
+                    else if (!instance[col.key])
+                        instance[col.key] = col.settings.defaultValue;
+                }
+            }
+        }
+    }
+
+    private _wasDeleted = false;
+
+    listeners: RowEvents[];
+    register(listener: RowEvents) {
+        if (!this.listeners)
+            this.listeners = []
+        this.listeners.push(listener);
+    }
+
+
+
+    wasDeleted(): boolean {
+        return this._wasDeleted;
+    }
+
+    undoChanges() {
+        this.loadDataFrom(this.originalValues);
+        this.__clearErrors();
+    }
+    async reload(): Promise<void> {
+        return this.edp.find({ where: this.repository.getIdFilter(this.id) }).then(async newData => {
+            await this.loadDataFrom(newData[0]);
+        });
+    }
+
+    private _columns: entityOf<T>;
+
+    get columns(): entityOf<T> {
+        if (!this._columns) {
+            let r = {
+                find: (c: column<any, T>) => r[c.key],
+                _items: []
+            };
+            for (const c of this.info.columnsInfo) {
+                r._items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this));
+            }
+
+            this._columns = r as unknown as entityOf<T>;
+        }
+        return this._columns;
+
+    }
+
+    async save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T> {
+        await this.__validateEntity(afterValidationBeforeSaving);
+        let doNotSave = false;
+        if (this.info.entityInfo.saving) {
+            this.info.entityInfo.saving(this.instance, () => doNotSave = true);
+        }
+
+        this.__assertValidity();
+
+        let d = this.copyDataToObject();
+        if (this.info.idColumn instanceof CompoundIdColumn)
+            d.id = undefined;
+        let updatedRow: any;
+        try {
+            if (this.isNew()) {
+                updatedRow = await this.edp.insert(d);
+            }
+            else {
+                if (doNotSave) {
+                    updatedRow = (await this.edp.find({ where: this.repository.getIdFilter(this.id) }))[0];
+                }
+                else
+                    updatedRow = await this.edp.update(this.id, d);
+            }
+            await this.loadDataFrom(updatedRow);
+            if (this.info.entityInfo.saved)
+                await this.info.entityInfo.saved(this.instance);
+            if (this.listeners)
+                this.listeners.forEach(x => {
+                    if (x.rowSaved)
+                        x.rowSaved(true);
+                });
+            this.saveOriginalData();
+            this._isNew = false;
+            return this.instance;
+        }
+        catch (err) {
+            await this.catchSaveErrors(err);
+        }
+
+    }
+
+
+
+
+
+    async delete() {
+        this.__clearErrors();
+        if (this.info.entityInfo.deleting)
+            await this.info.entityInfo.deleting(this.instance);
+        this.__assertValidity();
+
+        try {
+            await this.edp.delete(this.id);
+            if (this.info.entityInfo.deleted)
+                await this.info.entityInfo.deleted(this.instance);
+            if (this.listeners) {
+                for (const l of this.listeners) {
+                    if (l.rowDeleted)
+                        l.rowDeleted();
+                }
+            }
+            this._wasDeleted = true;
+        } catch (err) {
+            await this.catchSaveErrors(err);
+        }
+    }
+
     async loadDataFrom(data: any) {
         for (const col of this.info.columns._items) {
-            this.entity[col.key] = data[col.key];
+            this.instance[col.key] = data[col.key];
         }
         await this.calcServerExpression();
         if (this.repository.defs.idColumn instanceof CompoundIdColumn) {
@@ -662,7 +672,7 @@ class rowHelperImplementation<T> implements rowHelper<T>{
         if (this.context.onServer)
             for (const col of this.info.columnsInfo) {
                 if (col.settings.serverExpression) {
-                    this.entity[col.key] = await col.settings.serverExpression(this.entity);
+                    this.instance[col.key] = await col.settings.serverExpression(this.instance);
                 }
             }
     }
@@ -672,14 +682,74 @@ class rowHelperImplementation<T> implements rowHelper<T>{
     }
     wasChanged(): boolean {
         for (const col of this.info.columns._items) {
-            if (this.entity[col.key] != this.originalValues[col.key])
+            if (this.instance[col.key] != this.originalValues[col.key])
                 return true;
         }
         return false;
     }
+
+    async __performColumnAndEntityValidations() {
+        for (const c of this.columnsInfo) {
+            if (c.settings.validate) {
+                let col = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this);
+                await col.__performValidation();
+            }
+        }
+
+        if (this.info.entityInfo.validation)
+            await this.info.entityInfo.validation(this.instance);
+    }
+}
+const controllerColumns = Symbol("controllerColumns");
+export function __getControllerDefs(type: any, controller: any, context: Context): controllerDefsImpl<any> {
+
+    let result = controller[controllerColumns] as controllerDefsImpl<any>;
+    if (!result) {
+        let columnSettings: columnInfo[] = columnsOfType.get(type);
+        if (!columnSettings)
+            columnsOfType.set(controller.prototype, columnSettings = []);
+            controller[controllerColumns] = result = new controllerDefsImpl(columnSettings, controller, context);
+    }
+    return result;
+}
+export function getControllerDefs<T>(controller: T): controllerDefs<T> {
+    return controller[controllerColumns] as controllerDefs<T>;
+}
+export interface controllerDefs<T = any> {
+    readonly columns: entityOf<T>,
+}
+export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements controllerDefs<T> {
+    constructor(columnsInfo: columnInfo[], instance: any, context: Context) {
+        super(columnsInfo, instance, context);
+
+
+        let r = {
+            find: (c: column<any, T>) => r[c.key],
+            _items: []
+        };
+
+        for (const col of columnsInfo) {
+            r._items.push(r[col.key] = new columnImpl<any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
+        }
+
+        this.columns = r as unknown as entityOf<T>;
+
+
+    }
+    async __performColumnAndEntityValidations() {
+        for (const col of this.columns._items) {
+            if (col instanceof columnImpl) {
+                await col.__performValidation();
+            }
+        }
+    }
+    errors: { [key: string]: string; };
+    originalValues: any;
+    columns: entityOf<T>;
+
 }
 class columnImpl<T> implements column<any, T> {
-    constructor(private settings: ColumnSettings, private defs: columnDefs, private entity: any, private helper: rowHelperImplementation<T>) {
+    constructor(private settings: ColumnSettings, private defs: columnDefs, private entity: any, private helper: rowHelper<T>, private rowBase: rowHelperBase<T>) {
 
     }
     target: NewEntity<any> = this.settings.target;
@@ -688,14 +758,14 @@ class columnImpl<T> implements column<any, T> {
     inputType: string = this.settings.inputType;
     inputLoader = this.settings.inputLoader;
     get error(): string {
-        if (!this.helper.errors)
+        if (!this.rowBase.errors)
             return undefined;
-        return this.helper.errors[this.key];
+        return this.rowBase.errors[this.key];
     }
     set error(error: string) {
-        if (!this.helper.errors)
-            this.helper.errors = {};
-        this.helper.errors[this.key] = error;
+        if (!this.rowBase.errors)
+            this.rowBase.errors = {};
+        this.rowBase.errors[this.key] = error;
     }
     get displayValue(): string {
         if (this.value != undefined) {
@@ -708,7 +778,7 @@ class columnImpl<T> implements column<any, T> {
     };
     get value() { return this.entity[this.key] };
     set value(value: any) { this.entity[this.key] = value };
-    get originalValue(): any { return this.helper.originalValues[this.key] };
+    get originalValue(): any { return this.rowBase.originalValues[this.key] };
     get inputValue(): string { return this.settings.inputLoader.toInput(this.value); }
     set inputValue(val: string) { this.value = this.settings.inputLoader.fromInput(val); };
     wasChanged(): boolean {

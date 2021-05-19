@@ -1,10 +1,10 @@
 
-import { DataProvider,     RestDataProviderHttpProvider } from "./data-interfaces";
+import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
 import { Action } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { NewEntity, Repository } from "./remult3";
-import {  RepositoryImplementation } from "./remult3/RepositoryImplementation";
+import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 
 export interface HttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
@@ -71,7 +71,8 @@ export class Context {
             provider = new RestDataProviderHttpProviderUsingFetch();
         }
         this._dataSource = new RestDataProvider(Context.apiBaseUrl, provider);
-        Action.provider = provider;
+        if (!Action.provider)
+            Action.provider = provider;
     }
 
     getCookie(name: string) {
@@ -149,7 +150,7 @@ export class Context {
     public for<T>(entity: NewEntity<T>): Repository<T> {
         let r = this.repCache.get(entity);
         if (!r) {
-            this.repCache.set(entity, r = new RepositoryImplementation(entity, this,this._dataSource));
+            this.repCache.set(entity, r = new RepositoryImplementation(entity, this, this._dataSource));
         }
         return r;
 

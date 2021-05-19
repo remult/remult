@@ -10,11 +10,12 @@ import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntitie
 import { DataApiRequest, DataApiResponse } from './data-api';
 
 import { SqlDatabase } from './data-providers/sql-database';
-import { getColumnsFromObject } from './column';
+
 
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
+import { __getControllerDefs } from './remult3';
 
 
 
@@ -193,24 +194,7 @@ interface serverMethodOutArgs {
 
 
 
-function packColumns(self: any) {
-    let columns = self.columns;
-    if (!columns)
-        columns = getColumnsFromObject(self);
-    let packedColumns = {};
-    for (const c of columns) {
-        packedColumns[c.defs.key] = c.rawValue;
-    }
-    return packedColumns;
-}
-function unpackColumns(self: any, data: any) {
-    let columns = self.columns;
-    if (!columns)
-        columns = getColumnsFromObject(self);
-    for (const c of columns) {
-        c.rawValue = data[c.defs.key];
-    }
-}
+
 
 
 
@@ -305,24 +289,23 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                     } catch (err) {
                                         if (typeof err === 'string')
                                             err = { message: err };
-                                       // AddModelStateToError(err, [...y.columns]);
+                                        // AddModelStateToError(err, [...y.columns]);
                                         throw err;
                                     }
                                 }
                                 else {
                                     let y = new constructor(context, ds);
-                                    unpackColumns(y, d.columns);
-                                    await validateObject(y);
+                                    let defs = __getControllerDefs(target,y, context);
+                                    defs._updateEntityBasedOnApi(d.columns);
+
+                                    await defs.__validateEntity();
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
-                                            columns: packColumns(y)
+                                            columns: await defs.toApiPojo()
                                         };
                                     } catch (err) {
-                                        if (typeof err === 'string')
-                                            err = { message: err };
-                                        AddModelStateToError(err, getColumnsFromObject(y));
-                                        throw err;
+                                        throw defs.catchSaveErrors(err);
                                     }
                                 }
 
@@ -368,32 +351,22 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                 }
 
                 else {
+                    let defs = __getControllerDefs(target,self, undefined);
                     try {
-                        await validateObject(self);
+                        await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
                             async execute(a, b): Promise<serverMethodOutArgs> {
                                 throw ('should get here');
                             }
                         }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false).run({
                             args,
-                            columns: packColumns(self)
+                            columns: defs.toApiPojo()
                         }));
-                        unpackColumns(self, r.columns);
+                        defs._updateEntityBasedOnApi(r.columns);
                         return r.result;
                     }
                     catch (e) {
-                        console.error(e);
-                        let s = e.ModelState;
-                        if (!s && e.error)
-                            s = e.error.modelState;
-                        if (s) {
-                            Object.keys(s).forEach(k => {
-                                let c = self[k];
-                                // if (c instanceof Column)
-                                //     c.validationError = s[k];
-                            });
-                        }
-                        throw e;
+                        throw defs.catchSaveErrors(e);
                     }
                 }
             }
@@ -411,14 +384,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
 
-async function validateObject(y: any) {
-    let cols = getColumnsFromObject(y);
-    // cols.forEach(x => x.__clearErrors());
-    // await Promise.all(cols.map(x => x.__performValidation(() => { throw new Error("validation on server action not yet implemented"); })));
-    // if (cols.find(x => !!x.validationError)) {
-    //     throw __getValidationError(cols);
-    // }
-}
+
 
 export function controllerAllowed(controller: any, context: Context) {
     let x = classOptions.get(controller.constructor);

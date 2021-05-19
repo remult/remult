@@ -1,13 +1,14 @@
-import '../app.module';
+//import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
 import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/core/postgres';
 import * as passwordHash from 'password-hash';
 
-import '../app.module';
-import { SqlDatabase } from '@remult/core';
-import { Column, Entity, entityInfo, columnsOfType } from '../../../projects/core/src/remult3';
+//import '../app.module';
+import { ServerController, SqlDatabase } from '@remult/core';
+import { Column, Entity, entityInfo, columnsOfType, getControllerDefs } from '../../../projects/core/src/remult3';
+
 
 
 
@@ -36,11 +37,22 @@ export async function serverInit() {
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
-  
 
-
+    
     return r;
 
 }
 
 
+@ServerController({ allowed: true, key: 'asdf' })
+class c {
+
+    @Column()
+    a: string;
+}
+@Entity({key:'asdf'})
+class e{
+    @Column()
+    a: string;
+    
+}

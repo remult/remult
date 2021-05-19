@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, ServerController, ServerMethod, IdEntity, OrFilter, ServerProgress, iterateConfig } from '@remult/core';
+import { Context, ServerFunction, SqlDatabase, ServerController, ServerMethod, IdEntity, OrFilter, ServerProgress, iterateConfig, Column } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, GridSettings, openDialog } from '@remult/angular';
@@ -22,17 +22,13 @@ export class ProductsComponent implements OnInit {
 
 
   constructor(private context: Context) { }
-  products = new GridSettings(this.context.for(Products), {
-    allowCrud: true,
-    columnSettings: p => [
-      p.name,
-      p.availableFrom1
-    ]
-  });
+
 
 
   async ngOnInit() {
-
+    let x = new test();
+    x.a = 'noam';
+    await x.doIt();
 
 
   }
@@ -41,3 +37,13 @@ export class ProductsComponent implements OnInit {
 
 }
 
+
+@ServerController({ allowed: true, key: 'test' })
+export class test {
+  @Column()
+  a: string;
+  @ServerMethod()
+  async doIt() {
+    console.log('hello ' + this.a);
+  }
+}
