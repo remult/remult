@@ -38,21 +38,23 @@ export async function serverInit() {
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
 
-    
+
     return r;
 
 }
 
 
-@ServerController({ allowed: true, key: 'asdf' })
-class c {
-
-    @Column()
-    a: string;
+function classDecorator() {
+    return target => target;
 }
-@Entity({key:'asdf'})
-class e{
-    @Column()
+function columnDecorator() {
+    return (target, key) => {
+
+    }
+}
+
+@classDecorator()
+class myClass {
+    @columnDecorator()
     a: string;
-    
 }

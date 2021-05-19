@@ -24,6 +24,7 @@ export interface EntityOptions<T = any> {
   dbName?: string | ((entity: columnDefsOf<T>) => string);
   /**A human readable name for the entity */
   caption?: string;
+  includeInApi?:boolean;
   /**
    * Determines if this Entity is available for get requests using Rest Api 
    * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
