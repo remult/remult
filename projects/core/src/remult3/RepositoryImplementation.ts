@@ -3,7 +3,7 @@ import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader } from ".
 import { EntityOptions } from "../entity";
 import { CompoundIdColumn, makeTitle } from '../column';
 import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
-import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions } from "../context";
+import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 import { extractWhere, packToRawWhere } from "../filter/filter-consumer-bridge-to-url-builder";
@@ -527,7 +527,7 @@ class rowHelperBase<T>
 
     }
 }
-class rowHelperImplementation<T> extends rowHelperBase<T> implements rowHelper<T> {
+export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowHelper<T> {
 
 
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: Repository<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
@@ -1085,6 +1085,7 @@ export function Entity<T>(options: EntityOptions<T>) {
         if (!options.dbName)
             options.dbName = options.key;
         allEntities.push(target);
+        setControllerSettings(target, { allowed: false, key: undefined })
         Reflect.defineMetadata(entityInfo, options, target);
         return target;
     }

@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { __getControllerDefs } from './remult3';
+import { getEntityOf, rowHelperImplementation, __getControllerDefs } from './remult3';
 
 
 
@@ -260,6 +260,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 if (allEntities.includes(constructor)) {
                                     let repo = context.for(constructor);
                                     let y: any;
+
                                     if (d.rowInfo.isNewRow) {
                                         y = repo.create();
                                         let rowHelper = repo.getRowHelper(y);
@@ -279,23 +280,25 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         y = rows[0];
                                         repo.getRowHelper(y)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
-
-                                    await y.__validateEntity(undefined, () => { throw new Error("Validation on server method not yet implemented") });
+                                    let defs = getEntityOf(y) as rowHelperImplementation<any>;
+                                    await defs.__validateEntity();
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
-                                            rowInfo: y.__entityData.getPackedRowInfo()
+                                            rowInfo: {
+                                                data: await defs.toApiPojo(),
+                                                isNewRow: defs.isNew(),
+                                                wasChanged: defs.wasChanged(),
+                                                id: defs.columns.find(defs.repository.defs.idColumn).originalValue
+                                            }
                                         };
                                     } catch (err) {
-                                        if (typeof err === 'string')
-                                            err = { message: err };
-                                        // AddModelStateToError(err, [...y.columns]);
-                                        throw err;
+                                        throw defs.catchSaveErrors(err);
                                     }
                                 }
                                 else {
                                     let y = new constructor(context, ds);
-                                    let defs = __getControllerDefs(target,y, context);
+                                    let defs = __getControllerDefs(target, y, context);
                                     defs._updateEntityBasedOnApi(d.columns);
 
                                     await defs.__validateEntity();
@@ -324,11 +327,13 @@ export function ServerMethod(options?: ServerFunctionOptions) {
             if (!actionInfo.runningOnServer) {
                 let self = this;
                 args = args.map(x => x !== undefined ? x : customUndefined);
-                if (false/*self instanceof Entity*/) {
-                    await self.__validateEntity(undefined, () => { throw new Error("validation on server method not implemented yet") });
+
+                if (allEntities.includes(target.constructor)) {
+                    let defs = getEntityOf(self) as rowHelperImplementation<any>;
+                    await defs.__validateEntity();
                     let classOptions = mh.classes.get(self.constructor);
                     if (!classOptions.key) {
-                        classOptions.key = self.defs.name + "_methods";
+                        classOptions.key = defs.repository.defs.key + "_methods";
                     }
                     try {
 
@@ -338,20 +343,25 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                             }
                         }(classOptions.key + "/" + key, options ? options.queue : false).run({
                             args,
-                            rowInfo: self.__entityData.getPackedRowInfo()
+                            rowInfo: {
+                                data: await defs.toApiPojo(),
+                                isNewRow: defs.isNew(),
+                                wasChanged: defs.wasChanged(),
+                                id: defs.columns.find(defs.repository.defs.idColumn).originalValue
+                            }
 
                         }));
-                        await self.__entityData.updateBasedOnPackedRowInfo(r.rowInfo, this);
+                        await defs._updateEntityBasedOnApi(r.rowInfo.data);
                         return r.result;
                     }
                     catch (err) {
-                        self.catchSaveErrors(err);
+                        defs.catchSaveErrors(err);
                         throw err;
                     }
                 }
 
                 else {
-                    let defs = __getControllerDefs(target,self, undefined);
+                    let defs = __getControllerDefs(target, self, undefined);
                     try {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{

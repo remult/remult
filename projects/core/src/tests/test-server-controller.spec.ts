@@ -1,13 +1,7 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
-import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Context, ServerContext } from '../context';
-import { SqlDatabase } from '../data-providers/sql-database';
-import { Categories } from './remult-3-entities';
-import { Action, actionInfo, serverActionField, ServerController, ServerFunction, ServerMethod } from '../server-action';
+import { Context } from '../context';
+import {  ServerController, ServerFunction, ServerMethod } from '../server-action';
 import { Column, getControllerDefs } from '../remult3';
-import { DataApiRequest, DataApiResponse } from '../data-api';
-import { TestDataApiResponse } from './basicRowFunctionality.spec';
-import { InMemoryDataProvider } from '../..';
 
 @ServerController({ allowed: true, key: '1' })
 class testBasics {
@@ -27,7 +21,7 @@ class testBasics {
     })
     a: string;
     @ServerMethod()
-    doIt() {
+    async doIt() {
         let result = 'hello ' + this.a;
         this.a = 'yael';
         return {
