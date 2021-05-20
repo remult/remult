@@ -15,7 +15,7 @@ export class DataApi<T=any> {
 
   async get(response: DataApiResponse, id: any) {
     if (this.options.allowRead == false) {
-      response.methodNotAllowed();
+      response.forbidden();
       return;
     }
     await this.doOnId(response, id, async row => response.success(this.repository.getRowHelper(row).toApiPojo()));
@@ -31,7 +31,7 @@ export class DataApi<T=any> {
 
   async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     if (this.options.allowRead == false) {
-      response.methodNotAllowed();
+      response.forbidden();
       return;
     }
     try {
@@ -63,7 +63,7 @@ export class DataApi<T=any> {
           });
         }
         if (!hasId) {
-          response.methodNotAllowed();
+          response.forbidden();
           return
         }
       }
@@ -147,7 +147,7 @@ export class DataApi<T=any> {
     await this.doOnId(response, id, async row => {
       this.repository.getRowHelper(row)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings(row).allowUpdate(row)) {
-        response.methodNotAllowed();
+        response.forbidden();
         return;
       }
       await this.repository.getRowHelper(row).save();
@@ -161,7 +161,7 @@ export class DataApi<T=any> {
     await this.doOnId(response, id, async row => {
 
       if (!this._getApiSettings(row).allowDelete(row)) {
-        response.methodNotAllowed();
+        response.forbidden();
         return;
       }
       await this.repository.getRowHelper(row).delete();
@@ -176,7 +176,7 @@ export class DataApi<T=any> {
       let newr = this.repository.create();
       this.repository.getRowHelper(newr)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings(newr).allowInsert(newr)) {
-        response.methodNotAllowed();
+        response.forbidden();
         return;
       }
 
@@ -205,7 +205,6 @@ export interface DataApiResponse {
   created(data: any): void;
   notFound(): void;
   error(data: DataApiError): void;
-  methodNotAllowed(): void;
   forbidden(): void;
   progress(progress: number): void;
 

@@ -84,9 +84,7 @@ export class TestDataApiResponse implements DataApiResponse {
   error(data: DataApiError) {
     fail('error: ' + data + " " + JSON.stringify(data));
   }
-  methodNotAllowed() {
-    fail('methodNotAllowed api result');
-  }
+  
 }
 
 
@@ -1291,7 +1289,7 @@ describe("data api", () => {
       var api = new DataApi(c);
       let t = new TestDataApiResponse();
       let d = new Done();
-      t.methodNotAllowed = () => {
+      t.forbidden = () => {
         d.ok();
       };
       await api.delete(t, 2);
@@ -1316,7 +1314,7 @@ describe("data api", () => {
       var api = new DataApi(c);
       let t = new TestDataApiResponse();
       let d = new Done();
-      t.methodNotAllowed = () => {
+      t.forbidden = () => {
         d.ok();
       };
       await api.getArray(t, {
@@ -1373,7 +1371,7 @@ describe("data api", () => {
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.methodNotAllowed = () => {
+    t.forbidden = () => {
       d.ok();
     };
     await api.delete(t, 2);
@@ -1403,7 +1401,7 @@ describe("data api", () => {
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.methodNotAllowed = () => {
+    t.forbidden = () => {
       d.ok();
     };
     await api.put(t, 2,
@@ -1440,7 +1438,7 @@ describe("data api", () => {
     var api = new DataApi(c);
     let t = new TestDataApiResponse();
     let d = new Done();
-    t.methodNotAllowed = () => {
+    t.forbidden = () => {
       d.ok();
     };
     await api.post(t,

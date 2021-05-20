@@ -23,6 +23,7 @@ describe("test sql database", async () => {
         await x._.save();
         expect(x.code).toBe(3);
         expect(x.testExpression).toBe(15, "after save");
+        expect(x._.columns.testExpression.originalValue).toBe(15, "after save");
         x = await context.for(testSqlExpression).findFirst();
 
         expect(x.testExpression).toBe(15);
