@@ -77,7 +77,8 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
       "extends": "./tsconfig.json",
       "compilerOptions": {
          "outDir": "./dist/server",
-         "module": "commonjs"
+         "module": "commonjs",
+         "emitDecoratorMetadata": true
       },
       "include": [
          "src/server/*.ts"
