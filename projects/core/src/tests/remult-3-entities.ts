@@ -1,4 +1,3 @@
-import { GridSettings } from "../../../angular";
 import { EntityBase, Column, Entity, Repository } from "../remult3";
 import { Status } from "./testModel/models";
 
