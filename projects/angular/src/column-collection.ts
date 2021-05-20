@@ -1,11 +1,11 @@
-import { columnDefs, column, EntityDefs, getEntityOf, FilterHelper, IdEntity, ValueListItem } from "@remult/core";
+import { columnDefs, column, EntityDefs, getEntityOf, FilterHelper, IdEntity, ValueListItem, rowHelper, dbLoader, jsonLoader, inputLoader, NewEntity, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, ValueOrEntityExpression } from "./data-control-interfaces";
 
 
 
 export class ColumnCollection<rowType = any> {
-  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private getRowColumn: (row: rowType, col: columnDefs) => column<any, any>) {
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: columnDefs) => column<any, any>) {
 
 
   }
@@ -27,7 +27,19 @@ export class ColumnCollection<rowType = any> {
   __visible(col: DataControlSettings, row: any) {
     if (col.visible === undefined)
       return true;
-    return col.visible(row, this.getRowColumn(row, col.column));
+    return this.getRowColumn({col, row}, (c, row) => col.visible(row, c));
+  }
+  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: column<any, any>, row: any) => T) {
+    let column: column<any, any>;
+    let row = args.row;
+    if (this._getRowColumn) {
+      column = this._getRowColumn(row, args.col.column);
+    }
+    if (!column)
+      column = args.col.column as column<any, any>;
+    if (!row)
+      row = column.entity;
+    return what(column, row);
   }
 
   __dataControlStyle(map: DataControlSettings): string {
@@ -163,14 +175,15 @@ export class ColumnCollection<rowType = any> {
     return true;
   }
   _click(col: DataControlSettings, row: any) {
-    col.click(row, this.getRowColumn(row, col.column));
+    this.getRowColumn({col, row}, (c, r) => { col.click(r, c) });
+
   }
 
   _getColDisplayValue(col: DataControlSettings, row: rowType) {
     let r;
     if (col.getValue) {
 
-      r = col.getValue(row,this.getRowColumn(row, col.column))
+      r = this.getRowColumn({row, col}, (c, r) => col.getValue(r, c));
       if (r.value)
         r = r.value;
 
@@ -285,3 +298,65 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
   return <T>f;
 }
 
+
+export class InputControl<T> implements column<T, any> {
+  constructor(private defaultValue: T, private settings: ColumnSettings<T, any> & DataControlSettings & { valueChange?: () => void }) {
+    if (!settings.caption)
+      settings.caption = 'caption';
+    if (!settings.key)
+      settings.key = settings.caption;
+    if (!settings.dbName)
+      settings.dbName = settings.key;
+
+    decorateColumnSettings(settings);
+    this.inputType = settings.inputType;
+    this._value = defaultValue;
+    this.originalValue = defaultValue;
+    this.caption = settings.caption;
+    this.dbLoader = settings.dbLoader;
+    this.jsonLoader = settings.jsonLoader;
+    this.inputLoader = settings.inputLoader;
+    this.dataType = settings.dataType;
+    this.key = settings.key;
+    this.dbName = settings.dbName;
+
+
+
+
+  }
+  _value: T;
+  inputType: string;
+  error: string;
+  get displayValue() {
+    return this.settings.displayValue(this.value, undefined);
+  }
+  get value(): T { return this._value; }
+  set value(val: T) {
+    this.value = val;
+    if (this.settings.valueChange)
+      this.settings.valueChange()
+  };
+  originalValue: T;
+  get inputValue(): string { return this.settings.inputLoader.toInput(this.value); }
+  set inputValue(val: string) { this.value = this.settings.inputLoader.fromInput(val); };
+  wasChanged(): boolean {
+    return this.originalValue != this.value;
+  }
+  rowHelper: rowHelper<any>;
+  entity: any;
+  dbReadOnly: boolean;
+  isVirtual: boolean;
+  key: string;
+  caption: string;
+  dbName: string;
+  dbLoader: dbLoader<any>;
+  jsonLoader: jsonLoader<any>;
+  inputLoader: inputLoader<any>;
+  dataType: any;
+  allowNull: boolean;
+  dbType: string;
+  target: NewEntity<any>;
+  allowApiUpdate: Allowed;
+
+
+}

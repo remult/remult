@@ -176,7 +176,8 @@ export interface column<T, entityType> extends columnDefs {
     originalValue: T;
     inputValue: string;
     wasChanged(): boolean;
-    rowHelper: rowHelper<entityType>
+    rowHelper: rowHelper<entityType>;
+    entity: entityType;
 }
 
 export interface EntityDefs<T = any> {

@@ -701,14 +701,16 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
 }
 const controllerColumns = Symbol("controllerColumns");
-export function getControllerDefs(controller: any, context: Context): controllerDefsImpl<any> {
+export function getControllerDefs<T>(controller: T, context?: Context): controllerDefsImpl<T> {
 
     let result = controller[controllerColumns] as controllerDefsImpl<any>;
+    if (!result)
+        result = controller[entityMember] ;
     if (!result) {
         let columnSettings: columnInfo[] = columnsOfType.get(controller.constructor);
         if (!columnSettings)
             columnsOfType.set(controller.constructor, columnSettings = []);
-            controller[controllerColumns] = result = new controllerDefsImpl(columnSettings, controller, context);
+        controller[controllerColumns] = result = new controllerDefsImpl(columnSettings, controller, context);
     }
     return result;
 }
@@ -727,7 +729,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
         };
 
         for (const col of columnsInfo) {
-            r._items.push(r[col.key] = new columnImpl<any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
+            r._items.push(r[col.key] = new columnImpl<any,any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
         }
 
         this.columns = r as unknown as entityOf<T>;
@@ -746,8 +748,8 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
     columns: entityOf<T>;
 
 }
-class columnImpl<T> implements column<any, T> {
-    constructor(private settings: ColumnSettings, private defs: columnDefs, private entity: any, private helper: rowHelper<T>, private rowBase: rowHelperBase<T>) {
+export class columnImpl<colType,rowType> implements column<colType, rowType> {
+    constructor(private settings: ColumnSettings, private defs: columnDefs, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
     target: NewEntity<any> = this.settings.target;
@@ -816,7 +818,7 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 
 }
 
-class columnDefsImpl implements columnDefs {
+export class columnDefsImpl implements columnDefs {
     constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>) {
         if (colInfo.settings.serverExpression)
             this.isVirtual = true;

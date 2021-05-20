@@ -1,11 +1,11 @@
-//import '../app.module';
+import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
 import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/core/postgres';
 import * as passwordHash from 'password-hash';
 
-//import '../app.module';
+
 import { ServerController, SqlDatabase } from '@remult/core';
 import { Column, Entity, entityInfo, columnsOfType, getControllerDefs } from '../../../projects/core/src/remult3';
 
@@ -37,11 +37,7 @@ export async function serverInit() {
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
-    let x = new myClass();
-    console.log({
-        classTarget, columnTarget, x: x.constructor, myClass,
-        same: classTarget === myClass 
-    });
+    
     return r;
 
 }

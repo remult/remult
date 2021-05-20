@@ -52,7 +52,10 @@ export function extend<T extends columnDefs>(col: T): {
 export const configDataControlField = Symbol('configDataControlField');
 
 export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
-    let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);
+
+    let settingsOnColumnLevel;
+    if (col.target)
+        settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);
     if (settingsOnColumnLevel) {
         for (const key in settingsOnColumnLevel) {
             if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
@@ -78,6 +81,7 @@ export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
 
 
     }
+
     /*
 
 

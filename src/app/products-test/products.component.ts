@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ServerFunction, SqlDatabase, ServerController, ServerMethod, IdEntity, OrFilter, ServerProgress, iterateConfig, Column } from '@remult/core';
+import { Context, ColumnSettings, SqlDatabase, ServerController, ServerMethod, IdEntity, OrFilter, ServerProgress, iterateConfig, Column, getControllerDefs, column, Allowed, dbLoader, inputLoader, jsonLoader, NewEntity, rowHelper, columnImpl, columnDefsImpl, decorateColumnSettings } from '@remult/core';
 
 import { Products } from './products';
-import { DialogConfig, GridSettings, openDialog } from '@remult/angular';
+import { DialogConfig, GridSettings, InputControl, openDialog } from '@remult/angular';
+import { DataAreaSettings, DataControl } from '@remult/angular';
+import { DataControlSettings } from '../../../dist/angular';
+
+
 
 
 
@@ -19,31 +23,36 @@ import { DialogConfig, GridSettings, openDialog } from '@remult/angular';
 
 })
 export class ProductsComponent implements OnInit {
-
-
-  constructor(private context: Context) { }
-
-
-
-  async ngOnInit() {
-    let x = new test();
-    x.a = 'noam';
-    await x.doIt();
-
-
-  }
-
-
-
-}
-
-
-@ServerController({ allowed: true, key: 'test' })
-export class test {
+  _ = getControllerDefs(this);
   @Column()
-  a: string;
-  @ServerMethod()
-  async doIt() {
-    console.log('hello ' + this.a);
+  @DataControl<ProductsComponent>({
+    caption: 'bla bla',
+    click: (x) => {
+      alert(x.a);
+    }
+  })
+  a: string = '';
+  name = new InputControl<string>("noam", { caption: 'name' });
+  area = new DataAreaSettings({
+    columnSettings: () => {
+      let r = [this.name]
+      console.log(r);
+      return r;
+    }
+  });
+  p: Products;
+  constructor(private context: Context) { }
+  async ngOnInit() {
+    this.p = await this.context.for(Products).findFirst();
+
+
   }
+
+
+
 }
+
+
+
+
+

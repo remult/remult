@@ -7,7 +7,7 @@ export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProvi
     let errors = '';
     //add Api Entries
     allEntities.forEach(e => {
-        if (!createOldEntity(e).entityInfo.includeInApi === false)
+        if (!(createOldEntity(e).entityInfo.includeInApi === false))
             area.add(r => {
                 let c = new ServerContext();
                 c.setReq(r);

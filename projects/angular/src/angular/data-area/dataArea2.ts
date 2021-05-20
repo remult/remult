@@ -2,6 +2,7 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
+import { getControllerDefs } from '../../../../core';
 
 import { ColumnCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';
@@ -23,14 +24,13 @@ export class DataArea2Component implements OnChanges {
   @Input() object: any;
 
   ngOnChanges(): void {
+    if (this.object) {
+      this.settings = new DataAreaSettings({
+        columnSettings: () => getControllerDefs(this.object).columns._items
+      });
+    }
     if (this.settings && this.settings.columns) {
-      if (this.object) {
-        //@ts-ignore
-        this.settings = new DataAreaSettings({
-          //@ts-ignore
-          columnSettings: () => getColumnsFromObject(this.object)
-        });
-      }
+
 
       this.settings.columns.onColListChange(() => this.lastCols = undefined);
       let areaSettings = this.settings as DataAreaSettings;
