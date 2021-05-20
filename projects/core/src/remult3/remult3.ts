@@ -11,7 +11,7 @@ import { RowEvents } from "../__EntityValueProvider";
 ## Should work
 
 [V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
-[] "dbname of entity can use column names"
+[v] "dbname of entity can use column names"
 [] test-paged-foreach
 [] "bool column doesn't need contains, isin and is not in"
 [] "apiRequireId"

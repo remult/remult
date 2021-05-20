@@ -18,7 +18,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../data-providers/rest-data-provider';
 import { OrFilter } from '../filter/filter-interfaces';
-import { Categories as newCategories } from './remult-3-entities';
+import { Categories, Categories as newCategories } from './remult-3-entities';
 
 import { Column, CompoundId, decorateColumnSettings, Entity, EntityBase } from '../remult3';
 
@@ -1738,7 +1738,21 @@ describe("test data list", () => {
     await rl.items[1]._.delete();
     expect(rl.items.length).toBe(2);
   });
-
+  
+ 
+  it("dbname of entity string works", () => {
+    let type = class extends Categories{
+      
+    }
+    Entity({key:'testName',dbName:'test'})(type);
+    let r = new Context().for(type);
+    expect(r.defs.dbName).toBe('test');
+  });
+  it("dbname of entity can use column names", () => {
+    
+    let r = new Context().for(EntityWithLateBoundDbName);
+    expect(r.defs.dbName).toBe('(select CategoryID)');
+  });
 
 
   itAsync("delete fails nicely", async () => {
