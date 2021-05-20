@@ -454,7 +454,8 @@ describe("test row provider", () => {
     expect(rows[2].id).toBe(3);
     expect(rows[3].id).toBe(4);
 
-    rows = await c.find({ orderBy: c => c.categoryName.descending });
+    rows = await c.find({ orderBy: c =>
+       c.categoryName.descending() });
     expect(rows[0].id).toBe(2);
     expect(rows[1].id).toBe(4);
     expect(rows[2].id).toBe(1);

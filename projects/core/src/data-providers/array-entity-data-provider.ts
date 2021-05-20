@@ -47,7 +47,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                         else if (left < right)
                             r = -1;
                         if (r != 0) {
-                            if (seg.descending)
+                            if (seg.isDescending)
                                 r *= -1;
                             return r;
                         }

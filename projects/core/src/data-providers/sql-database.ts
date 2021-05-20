@@ -168,7 +168,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
             select += ', ';
 
           select += c.column.dbName;
-          if (c.descending)
+          if (c.isDescending)
             select += ' desc';
         });
 

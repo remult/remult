@@ -72,7 +72,7 @@ class RestEntityDataProvider implements EntityDataProvider {
             order += ", ";
           }
           sort += c.column.key;
-          order += c.descending ? "desc" : "asc";
+          order += c.isDescending ? "desc" : "asc";
 
         });
         url.add('_sort', sort);

@@ -8,12 +8,12 @@ export class Sort {
   reverse() {
     let r = new Sort();
     for (const s of this.Segments) {
-      r.Segments.push({ column: s.column, descending: !s.descending });
+      r.Segments.push({ column: s.column, isDescending: !s.isDescending });
     }
     return r;
   }
 }
 export interface SortSegment {
   column: columnDefs,
-  descending?: boolean
+  isDescending?: boolean
 }

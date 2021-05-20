@@ -2,7 +2,7 @@
 import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdColumn, makeTitle } from '../column';
-import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, IdDefs, idOf, NewEntity, Repository, sortOf, TheSort, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
+import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions,  NewEntity, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -31,7 +31,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                     f = new AndFilter(f, new Filter(x => x.isEqualTo(c, values.get(c.key))));
                 }
                 equalToColumn.push(s.column);
-                if (s.descending) {
+                if (s.isDescending) {
                     f = new AndFilter(f, new Filter(x => x.isLessThan(s.column, values.get(s.column.key))));
                 }
                 else
@@ -45,13 +45,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!orderBy)
             orderBy = this._info.entityInfo.defaultOrderBy;
         if (!orderBy)
-            orderBy = x => ({ __toSegment: () => ({ column: this._info.idColumn }), descending: undefined })
+            orderBy = x =>  ({ column: this._info.idColumn })
         return x => {
             let sort = this.translateOrderByToSort(orderBy);
             if (!sort.Segments.find(x => x.column == this.defs.idColumn)) {
                 sort.Segments.push({ column: this.defs.idColumn });
             }
-            return sort.Segments.map(s => ({ __toSegment: () => s, descending: undefined }));
+            return sort.Segments;
         }
     }
     private _info: EntityFullInfo<T>;
@@ -331,9 +331,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
         let resultOrder = orderBy(entity);//
         let sort: Sort;
         if (Array.isArray(resultOrder))
-            sort = new Sort(...resultOrder.map(r => r.__toSegment()));
+            sort = new Sort(...resultOrder);
         else
-            sort = new Sort(resultOrder.__toSegment());
+            sort = new Sort(resultOrder);
         return sort;
 
     }
@@ -911,22 +911,14 @@ class EntityFullInfo<T> implements EntityDefs<T> {
         return r as sortOf<T>;
     }
 }
-class sortHelper implements TheSort {
-    constructor(private col: columnDefs, private _descending = false) {
+class sortHelper implements SortSegment {
+    constructor(public column: columnDefs, public  isDescending = false) {
 
     }
-    get descending(): TheSort {
-        return new sortHelper(this.col, !this._descending);
+    descending(): SortSegment {
+        return new sortHelper(this.column, !this.isDescending);
     }
-    __toSegment(): SortSegment {
-        return {
-            column: this.col,
-            descending: this._descending
-        }
-    }
-
-
-}
+  }
 export class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
     constructor(private col: columnDefs) {
 

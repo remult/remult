@@ -1970,7 +1970,7 @@ class CompoundIdEntity extends EntityBase {
 
     if (t._.isNew() && (!t.myId || t.myId == 0)) {
       let e = await t.context.for(entityWithValidations).find({
-        orderBy: x => x.myId.descending,
+        orderBy: x => x.myId.descending(),
         limit: 1
       });
 

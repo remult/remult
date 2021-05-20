@@ -2,8 +2,11 @@
 
 import { createData, } from './RowProvider.spec';
 import { fitAsync, itAsync } from './testHelper.spec';
-import { iterateConfig } from '../context';
-import { Entity, EntityBase,Column, CompoundId } from '../remult3';
+import { Context, iterateConfig } from '../context';
+import { Entity, EntityBase,Column, CompoundId, EntityOrderBy } from '../remult3';
+import { Categories } from './remult-3-entities';
+import { columnDefs } from '../column-interfaces';
+import { GridSettings } from '../../../angular';
 
 
 describe("test paged foreach ", async () => {
@@ -70,7 +73,7 @@ describe("test paged foreach ", async () => {
         });
         let i = 0;
         for await (const x of c.iterate({
-            orderBy: x => x.categoryName.descending
+            orderBy: x => x.categoryName.descending()
         })) {
             expect(x.id).toBe([3, 2, 4, 1, 5][i++])
         }
@@ -108,33 +111,18 @@ describe("test paged foreach ", async () => {
         }
         expect(i).toBe(5);
     });
-    // itAsync("test make sort unique", async () => {
-    //     let context = new Context();
-    //     let e = context.for_old(Categories).create();
-    //     function test(orderBy: EntityOrderBy<Categories>, ...sort: Column[]) {
-    //         let s = extractSort(createAUniqueSort(orderBy, e)(e));
-    //         expect(s.Segments.map(x => x.column)).toEqual(sort);
-    //     }
-    //     test(x => x.id, e.id);
-    //     test(x => x.categoryName, e.categoryName, e.id);
-    // });
-    // itAsync("test make sort unique", async () => {
-    //     let context = new Context();
-    //     let e = context.for(newCategories).create();
-    //     var gs = new GridSettings(context.for(newCategories), { orderBy: p => p.categoryName });
-    //   //  e.id.defs.caption = 'id from e';
-    //   //  e.categoryName.defs.caption = 'category name from e';
-
-    //     function test(orderBy: EntityOrderBy<Categories>, ...sort: Column[]) {
-    //         let s = extractSort(createAUniqueSort(orderBy, e)(e));
-    //         expect(s.Segments.map(x => x.column.defs.caption)).toEqual(sort.map(x => x.defs.caption));
-    //     }
-    //     test(e => {
-    //         let r = gs.getFilterWithSelectedRows().orderBy(e);
-    //         return extractSort(r);
-    //     }, e.categoryName, e.id);
-    // });
-    // itAsync("unique sort and  compound index", async () => {
+    itAsync("test make sort unique", async () => {
+        let context = new Context();
+        let e = context.for(Categories);
+        function test(orderBy: EntityOrderBy<Categories>, ...sort: columnDefs[]) {
+            let s = e.translateOrderByToSort(e.createAUniqueSort(orderBy));
+            expect(s.Segments.map(x => x.column)).toEqual(sort);
+        }
+        test(x => x.id, e.defs.columns.id);
+        test(x => x.categoryName, e.defs.columns.categoryName, e.defs.columns.id);
+    });
+  
+    // itAsync("unique sort and  compound id", async () => {
     //     let context = new Context();
       
     //     let e = context.for(theTable).create();
@@ -147,7 +135,7 @@ describe("test paged foreach ", async () => {
     //     test(e, x => x.b, e.b, e.c);
     //     test(e, x => x.c, e.c, e.b);
     // });
-    // itAsync("create rows after filter", async () => {
+    // itAsync("create rows after filter compound id", async () => {
     //     let context = new Context();
     //     let theTable = class EntityBase {
     //         a: string;

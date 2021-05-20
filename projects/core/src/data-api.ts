@@ -1,10 +1,11 @@
-import {  EntityOptions } from './entity';
+import { EntityOptions } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
 import { UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FindOptions, Repository, TheSort } from './remult3';
+import { FindOptions, Repository } from './remult3';
+import { SortSegment } from './sort';
 
-export class DataApi<T=any> {
+export class DataApi<T = any> {
   getRoute() {
     return this.options.name;
   }
@@ -48,8 +49,8 @@ export class DataApi<T=any> {
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {
-                 if (this.repository.isIdColumn(col))
-                   hasId = true;
+              if (this.repository.isIdColumn(col))
+                hasId = true;
             },
             isGreaterOrEqualTo: () => { },
             isGreaterThan: () => { },
@@ -78,9 +79,9 @@ export class DataApi<T=any> {
           findOptions.orderBy = x => {
 
             return sort.split(',').map((name, i) => {
-              let r: TheSort = x[name];
+              let r: SortSegment = x[name];
               if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
-                return r.descending;
+                return { column: r.column, isDescending: true };
               return r;
             });
 
@@ -124,7 +125,7 @@ export class DataApi<T=any> {
 
       await this.repository.find({
         where: x => {
-          let where: Filter =this.repository.getIdFilter(id) ;
+          let where: Filter = this.repository.getIdFilter(id);
           if (this.options && this.options.get && this.options.get.where)
             where = new AndFilter(where, this.repository.translateWhereToFilter(this.options.get.where));
           return where;
@@ -154,7 +155,7 @@ export class DataApi<T=any> {
       response.success(this.repository.getRowHelper(row).toApiPojo());
     });
   }
-  private _getApiSettings(row: T):DataApiSettings<T>{
+  private _getApiSettings(row: T): DataApiSettings<T> {
     return this.repository._getApiSettings();
   }
   async delete(response: DataApiResponse, id: any) {
@@ -189,9 +190,9 @@ export class DataApi<T=any> {
 
 }
 export interface DataApiSettings<rowType> {
-  allowUpdate: (row:rowType) => boolean,
-  allowInsert: (row:rowType) => boolean,
-  allowDelete: (row:rowType) => boolean,
+  allowUpdate: (row: rowType) => boolean,
+  allowInsert: (row: rowType) => boolean,
+  allowDelete: (row: rowType) => boolean,
   requireId: boolean,
   name?: string,
   allowRead?: boolean,

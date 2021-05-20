@@ -32,6 +32,7 @@ export class ProductsComponent implements OnInit {
     }
   })
   a: string = '';
+  
   name = new InputControl<string>("noam", { caption: 'name' });
   area = new DataAreaSettings({
     columnSettings: () => {

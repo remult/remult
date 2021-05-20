@@ -12,11 +12,12 @@ import { RowEvents } from "../__EntityValueProvider";
 
 [V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [V] "dbname of entity can use column names"
-[] test-paged-foreach
-[] "bool column doesn't need contains, isin and is not in"
-[V] "apiRequireId"
-[] "test make sort unique" - both tests
+[V] test-paged-foreach
+[] fix validate to have the same parameter order as other things
+[] fix _items, to go away.
+[V] "test make sort unique" - both tests
 [] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
+[V] "apiRequireId"
 [V] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
 [V] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
 [V] original data should reflect the values after server expressions
@@ -29,6 +30,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] rename allow api crud
 [] use helmet instead of force https
 [] fix timeout by using a repeat mechanism in context.
+[] "bool column doesn't need contains, isin and is not in"
 
 
 
@@ -155,11 +157,7 @@ export type columnDefsOf<Type> = {
 
 
 export type sortOf<Type> = {
-    [Properties in keyof Type]: TheSort
-}
-export interface TheSort {
-    descending: TheSort;
-    __toSegment(): SortSegment;
+    [Properties in keyof Type]: SortSegment&{descending():SortSegment}
 }
 export type idOf<Type> = {
     [Properties in keyof Type]: IdDefs
@@ -195,7 +193,7 @@ export interface Repository<T> {
     createIdInFilter(items: T[]): Filter;
     _getApiSettings(): import("../data-api").DataApiSettings<T>;
     defs: EntityDefs<T>;
-
+    createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T>;
 
 
     find(options?: FindOptions<T>): Promise<T[]>;
@@ -276,7 +274,7 @@ export interface FindOptions<T> {
  * @example
  * await this.context.for(Products).find({ orderBy: p => [{ column: p.price, descending: true }, p.name])
  */
-export declare type EntityOrderBy<T> = (entity: sortOf<T>) => TheSort[] | TheSort;
+export declare type EntityOrderBy<T> = (entity: sortOf<T>) => SortSegment[] | SortSegment;
 /**Used to filter the desired result set
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
