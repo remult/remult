@@ -11,10 +11,10 @@ import { RowEvents } from "../__EntityValueProvider";
 ## Should work
 
 [V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
-[v] "dbname of entity can use column names"
+[V] "dbname of entity can use column names"
 [] test-paged-foreach
 [] "bool column doesn't need contains, isin and is not in"
-[] "apiRequireId"
+[V] "apiRequireId"
 [] "test make sort unique" - both tests
 [] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
 [V] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"

@@ -1266,7 +1266,7 @@ describe("data api", () => {
     }
     Entity({ allowApiCrud: false, allowApiRead: true, key: 'a' })(type);
     expect(sc.for(type)._getApiSettings().allowRead).toBe(true);
-    
+
   });
 
 
@@ -1296,62 +1296,62 @@ describe("data api", () => {
     await api.delete(t, 2);
     d.test();
   });
-  if (false)
-    itAsync("apiRequireId", async () => {
-      let type = class extends newCategories {
 
-      };
-      Entity({
-        key: '',
-        extends: newCategories,
-        apiRequireId: true
-      })(type);
-      let c = await createData(async i => {
-        await i(1, 'noam', 'a');
-        await i(2, 'yael', 'b');
-        await i(3, 'yoni', 'a');
-      }, type);
+  itAsync("apiRequireId", async () => {
+    let type = class extends newCategories {
 
-      var api = new DataApi(c);
-      let t = new TestDataApiResponse();
-      let d = new Done();
-      t.forbidden = () => {
-        d.ok();
-      };
-      await api.getArray(t, {
-        get: x => {
-          if (x == "categoryName")
-            return "a";
-          return undefined;
-        }, clientIp: '', user: undefined, getHeader: x => ""
-        , getBaseUrl: () => ''
-      });
-      d.test();
+    };
+    Entity({
+      key: '',
+      extends: newCategories,
+      apiRequireId: true
+    })(type);
+    let c = await createData(async i => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, type);
 
-      t = new TestDataApiResponse();
-      d = new Done();
-      t.success = () => {
-        d.ok();
-      };
-      await api.getArray(t, {
-        get: x => {
-          if (x == "id")
-            return "1";
-          return undefined;
-        }, clientIp: '', user: undefined, getHeader: x => ""
-        , getBaseUrl: () => ''
-      });
-      d.test();
-
-      t = new TestDataApiResponse();
-      d = new Done();
-      t.success = () => {
-        d.ok();
-      };
-      await api.get(t, 1);
-      d.test();
-
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.forbidden = () => {
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "categoryName")
+          return "a";
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
     });
+    d.test();
+
+    t = new TestDataApiResponse();
+    d = new Done();
+    t.success = () => {
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "id")
+          return "1";
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    });
+    d.test();
+
+    t = new TestDataApiResponse();
+    d = new Done();
+    t.success = () => {
+      d.ok();
+    };
+    await api.get(t, 1);
+    d.test();
+
+  });
   itAsync("delete id  not Allowed for specific row", async () => {
     let type = class extends newCategories {
 
@@ -1738,18 +1738,18 @@ describe("test data list", () => {
     await rl.items[1]._.delete();
     expect(rl.items.length).toBe(2);
   });
-  
- 
+
+
   it("dbname of entity string works", () => {
-    let type = class extends Categories{
-      
+    let type = class extends Categories {
+
     }
-    Entity({key:'testName',dbName:'test'})(type);
+    Entity({ key: 'testName', dbName: 'test' })(type);
     let r = new Context().for(type);
     expect(r.defs.dbName).toBe('test');
   });
   it("dbname of entity can use column names", () => {
-    
+
     let r = new Context().for(EntityWithLateBoundDbName);
     expect(r.defs.dbName).toBe('(select CategoryID)');
   });
