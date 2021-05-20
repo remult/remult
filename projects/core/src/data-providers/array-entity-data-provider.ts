@@ -1,11 +1,11 @@
 import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { Filter, FilterConsumer } from '../filter/filter-interfaces';
-import { columnDefs } from '../column-interfaces';
-import { EntityDefs } from '../remult3';
+import { ColumnDefinitions } from '../column-interfaces';
+import { EntityDefinitions } from '../remult3';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    constructor(private entity: EntityDefs, private rows?: any[]) {
+    constructor(private entity: EntityDefinitions, private rows?: any[]) {
         if (!rows)
             rows = [];
     }
@@ -147,15 +147,15 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
         this.ok = false;
     }
-    isNull(col: columnDefs): void {
+    isNull(col: ColumnDefinitions): void {
         if (this.row[col.key] != null)
             this.ok = false;
     }
-    isNotNull(col: columnDefs): void {
+    isNotNull(col: ColumnDefinitions): void {
         if (this.row[col.key] == null)
             this.ok = false;
     }
-    isIn(col: columnDefs, val: any[]): void {
+    isIn(col: ColumnDefinitions, val: any[]): void {
 
         for (const v of val) {
             if (this.row[col.key] == col.jsonLoader.toJson(v)) {
@@ -164,38 +164,38 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
         this.ok = false;
     }
-    public isEqualTo(col: columnDefs, val: any): void {
+    public isEqualTo(col: ColumnDefinitions, val: any): void {
 
         if (this.row[col.key] != col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
-    public isDifferentFrom(col: columnDefs, val: any): void {
+    public isDifferentFrom(col: ColumnDefinitions, val: any): void {
         if (this.row[col.key] == col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
-    public isGreaterOrEqualTo(col: columnDefs, val: any): void {
+    public isGreaterOrEqualTo(col: ColumnDefinitions, val: any): void {
         if (this.row[col.key] < col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
-    public isGreaterThan(col: columnDefs, val: any): void {
+    public isGreaterThan(col: ColumnDefinitions, val: any): void {
 
         if (this.row[col.key] <= col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
-    public isLessOrEqualTo(col: columnDefs, val: any): void {
+    public isLessOrEqualTo(col: ColumnDefinitions, val: any): void {
         if (this.row[col.key] > col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
-    public isLessThan(col: columnDefs, val: any): void {
+    public isLessThan(col: ColumnDefinitions, val: any): void {
         if (this.row[col.key] >= col.jsonLoader.toJson(val))
             this.ok = false;
     }
-    public containsCaseInsensitive(col: columnDefs, val: any): void {
+    public containsCaseInsensitive(col: ColumnDefinitions, val: any): void {
         let v = this.row[col.key];
         if (!v) {
             this.ok = false;
@@ -208,7 +208,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
-    public startsWith(col: columnDefs, val: any): void {
+    public startsWith(col: ColumnDefinitions, val: any): void {
         let v = this.row[col.key];
         if (!v) {
             this.ok = false;

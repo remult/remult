@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, ColumnSettings, SqlDatabase, ServerController, ServerMethod, IdEntity, OrFilter, ServerProgress, iterateConfig, Column, getControllerDefs, column, Allowed, dbLoader, inputLoader, jsonLoader, NewEntity, rowHelper, columnImpl, columnDefsImpl, decorateColumnSettings } from '@remult/core';
+import { Context, ColumnSettings, SqlDatabase, ServerController, ServerMethod, IdEntity, OrFilter, ServerProgress, iterateConfig, Column, getControllerDefs, EntityColumn, Allowed, dbLoader, inputLoader, jsonLoader, ClassType, rowHelper, columnImpl, columnDefsImpl, decorateColumnSettings, ColumnDefinitionsOf, EntityColumns } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, GridSettings, InputControl, openDialog } from '@remult/angular';
@@ -32,7 +32,7 @@ export class ProductsComponent implements OnInit {
     }
   })
   a: string = '';
-  
+
   name = new InputControl<string>("noam", { caption: 'name' });
   area = new DataAreaSettings({
     columnSettings: () => {
@@ -41,10 +41,17 @@ export class ProductsComponent implements OnInit {
       return r;
     }
   });
-  p: Products;
+  cols<T>(x: T): EntityColumns<T> {
+    return undefined;
+  }
+  p: Products = undefined;
+  z = this.p._.columns;
   constructor(private context: Context) { }
   async ngOnInit() {
-    this.p = await this.context.for(Products).findFirst();
+    await this.context.for(Products).find(
+      {
+
+      });
 
 
   }

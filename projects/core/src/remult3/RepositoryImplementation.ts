@@ -1,8 +1,8 @@
 
-import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
+import { ColumnDefinitions, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdColumn, makeTitle } from '../column';
-import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, NewEntity, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
+import { EntityDefinitions, filterOptions, EntityColumn, EntityColumns, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, ColumnDefinitionsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -24,7 +24,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
         return x => {
             let r: Filter = undefined;
-            let equalToColumn: columnDefs[] = [];
+            let equalToColumn: ColumnDefinitions[] = [];
             for (const s of this.translateOrderByToSort(orderBy).Segments) {
                 let f: Filter;
                 for (const c of equalToColumn) {
@@ -60,10 +60,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.defs);
     }
-    constructor(private entity: NewEntity<T>, private context: Context, private dataProvider: DataProvider) {
+    constructor(private entity: ClassType<T>, private context: Context, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity);
     }
-    get defs(): EntityDefs { return this._info };
+    get defs(): EntityDefinitions { return this._info };
 
     _getApiSettings(): DataApiSettings<T> {
         let options = this._info.entityInfo;
@@ -91,7 +91,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
 
-    isIdColumn(col: columnDefs<any>): boolean {
+    isIdColumn(col: ColumnDefinitions<any>): boolean {
         return col.key == this.defs.idColumn.key;
     }
     getIdFilter(id: any): Filter {
@@ -328,11 +328,11 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     translateWhereToFilter(where: EntityWhere<T>): Filter {
         let entity = this._info.createFilterOf();
-        if (this._info.entityInfo.fixedWhereFilter) {
+        if (this._info.entityInfo.fixedFilter) {
             if (Array.isArray(where))
-                where.push(this._info.entityInfo.fixedWhereFilter);
+                where.push(this._info.entityInfo.fixedFilter);
             else
-                where = [where, this._info.entityInfo.fixedWhereFilter];
+                where = [where, this._info.entityInfo.fixedFilter];
         }
         if (Array.isArray(where)) {
             return new AndFilter(...where.map(x => {
@@ -395,7 +395,7 @@ export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
 
 export const columnsOfType = new Map<any, columnInfo[]>();
-export function createOldEntity<T>(entity: NewEntity<T>) {
+export function createOldEntity<T>(entity: ClassType<T>) {
     let r: columnInfo[] = columnsOfType.get(entity);
     if (!r)
         columnsOfType.set(entity, r = []);
@@ -422,16 +422,16 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
 
 class rowHelperBase<T>
 {
-    validationError: string;
+    error: string;
     constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
 
     }
     errors: { [key: string]: string };
     protected __assertValidity() {
-        if (!this.isValid()) {
+        if (!this.hasErrors()) {
             let error: ErrorInfo = {
                 modelState: Object.assign({}, this.errors),
-                message: this.validationError
+                message: this.error
             }
             if (!error.message) {
                 for (const col of this.columnsInfo) {
@@ -457,10 +457,10 @@ class rowHelperBase<T>
         }
 
         if (e.message)
-            this.validationError = e.message;
+            this.error = e.message;
         else if (e.Message)
-            this.validationError = e.Message;
-        else this.validationError = e;
+            this.error = e.Message;
+        else this.error = e;
         let s = e.modelState;
         if (!s)
             s = e.ModelState;
@@ -472,10 +472,10 @@ class rowHelperBase<T>
     }
     __clearErrors() {
         this.errors = undefined;
-        this.validationError = undefined;
+        this.error = undefined;
     }
-    isValid(): boolean {
-        return !!!this.validationError && this.errors == undefined;
+    hasErrors(): boolean {
+        return !!!this.error && this.errors == undefined;
 
     }
     protected copyDataToObject() {
@@ -566,20 +566,20 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         });
     }
 
-    private _columns: entityOf<T>;
+    private _columns: EntityColumns<T>;
 
-    get columns(): entityOf<T> {
+    get columns(): EntityColumns<T> {
         if (!this._columns) {
             let _items = [];
             let r = {
-                find: (c: column<any, T>) => r[c.key],
+                find: (c: EntityColumn<any, T>) => r[c.key],
                 [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
                 _items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this));
             }
 
-            this._columns = r as unknown as entityOf<T>;
+            this._columns = r as unknown as EntityColumns<T>;
         }
         return this._columns;
 
@@ -713,7 +713,7 @@ export function getControllerDefs<T>(controller: T, context?: Context): controll
 }
 
 export interface controllerDefs<T = any> {
-    readonly columns: entityOf<T>,
+    readonly columns: EntityColumns<T>,
 }
 export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements controllerDefs<T> {
     constructor(columnsInfo: columnInfo[], instance: any, context: Context) {
@@ -722,7 +722,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
 
         let _items = [];
         let r = {
-            find: (c: column<any, T>) => r[c.key],
+            find: (c: EntityColumn<any, T>) => r[c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
@@ -730,7 +730,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
             _items.push(r[col.key] = new columnImpl<any, any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
         }
 
-        this.columns = r as unknown as entityOf<T>;
+        this.columns = r as unknown as EntityColumns<T>;
 
 
     }
@@ -743,14 +743,14 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
     }
     errors: { [key: string]: string; };
     originalValues: any;
-    columns: entityOf<T>;
+    columns: EntityColumns<T>;
 
 }
-export class columnImpl<colType, rowType> implements column<colType, rowType> {
-    constructor(private settings: ColumnSettings, private defs: columnDefs, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
+export class columnImpl<colType, rowType> implements EntityColumn<colType, rowType> {
+    constructor(private settings: ColumnSettings, private defs: ColumnDefinitions, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
-    target: NewEntity<any> = this.settings.target;
+    target: ClassType<any> = this.settings.target;
     readonly: boolean = this.defs.readonly;
     allowNull = this.defs.allowNull;
     inputType: string = this.settings.inputType;
@@ -784,7 +784,7 @@ export class columnImpl<colType, rowType> implements column<colType, rowType> {
     }
     rowHelper: rowHelper<any> = this.helper;
     dbReadOnly: boolean = this.defs.dbReadOnly;
-    isVirtual: boolean = this.defs.isVirtual;
+    isServerExpression: boolean = this.defs.isServerExpression;
     key: string = this.defs.key;
     caption: string = this.defs.caption;
     get dbName(): string { return this.defs.dbName };
@@ -816,17 +816,17 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 
 }
 
-export class columnDefsImpl implements columnDefs {
+export class columnDefsImpl implements ColumnDefinitions {
     constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>) {
         if (colInfo.settings.serverExpression)
-            this.isVirtual = true;
+            this.isServerExpression = true;
         if (colInfo.settings.sqlExpression)
             this.dbReadOnly = true;
         if (typeof (this.colInfo.settings.allowApiUpdate) === "boolean")
             this.readonly = this.colInfo.settings.allowApiUpdate;
 
     }
-    target: NewEntity<any> = this.colInfo.settings.target;
+    target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
     inputLoader = this.colInfo.settings.inputLoader;
@@ -848,11 +848,11 @@ export class columnDefsImpl implements columnDefs {
     jsonLoader = this.colInfo.settings.jsonLoader;
     key = this.colInfo.settings.key;
     dbReadOnly = this.colInfo.settings.dbReadOnly;
-    isVirtual: boolean;
+    isServerExpression: boolean;
     dataType = this.colInfo.settings.dataType;
     dbType = this.colInfo.settings.dbType;
 }
-class EntityFullInfo<T> implements EntityDefs<T> {
+class EntityFullInfo<T> implements EntityDefinitions<T> {
 
 
 
@@ -861,7 +861,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
 
         let _items = [];
         let r = {
-            find: (c: column<any, T>) => r[c.key],
+            find: (c: EntityColumn<any, T>) => r[c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
@@ -869,7 +869,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
             _items.push(r[x.key] = new columnDefsImpl(x, this));
         }
 
-        this.columns = r as unknown as entityOf<T>;
+        this.columns = r as unknown as EntityColumns<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;
@@ -889,8 +889,8 @@ class EntityFullInfo<T> implements EntityDefs<T> {
     }
 
     dbAutoIncrementId: boolean;
-    idColumn: columnDefs<any>;
-    columns: columnDefsOf<T>;
+    idColumn: ColumnDefinitions<any>;
+    columns: ColumnDefinitionsOf<T>;
 
 
     key: string;
@@ -913,7 +913,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
     }
 }
 class sortHelper implements SortSegment {
-    constructor(public column: columnDefs, public isDescending = false) {
+    constructor(public column: ColumnDefinitions, public isDescending = false) {
 
     }
     descending(): SortSegment {
@@ -921,7 +921,7 @@ class sortHelper implements SortSegment {
     }
 }
 export class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
-    constructor(private col: columnDefs) {
+    constructor(private col: ColumnDefinitions) {
 
     }
     startsWith(val: any): Filter {
@@ -1115,17 +1115,17 @@ export function Entity<T>(options: EntityOptions<T>) {
 
 
 
-export class CompoundId implements columnDefs<string>{
-    constructor(...columns: columnDefs[]) {
+export class CompoundId implements ColumnDefinitions<string>{
+    constructor(...columns: ColumnDefinitions[]) {
         if (false)
             console.log(columns);
     }
-    target: NewEntity<any>;
+    target: ClassType<any>;
     readonly: true;
     inputLoader: inputLoader<string>;
     allowNull: boolean;
     dbReadOnly: boolean;
-    isVirtual: boolean;
+    isServerExpression: boolean;
     key: string;
     caption: string;
     inputType: string;

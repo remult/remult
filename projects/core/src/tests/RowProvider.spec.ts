@@ -1,4 +1,4 @@
-import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader, ValueListItem } from '../column-interfaces';
+import { ColumnDefinitions, ColumnSettings, dbLoader, inputLoader, jsonLoader, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
@@ -15,7 +15,7 @@ import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Column, StorableClass } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
-import { EntityBase, EntityDefs, NewEntity, Repository } from '../remult3';
+import { EntityBase, EntityDefinitions, ClassType, Repository } from '../remult3';
 import { CharDateLoader, DateDisplayValue, DateOnlyJsonLoader, DateOnlyDateDbLoader, DateTimeJsonLoader } from '../columns/loaders';
 
 
@@ -1430,7 +1430,7 @@ describe("test ", () => {
 });
 
 class myDp extends ArrayEntityDataProvider {
-  constructor(entity: EntityDefs) {
+  constructor(entity: EntityDefinitions) {
     super(entity, []);
   }
   public update(id: any, data: any): Promise<any> {
@@ -1443,14 +1443,14 @@ class myDp extends ArrayEntityDataProvider {
 
 
 
-class mockColumnDefs implements columnDefs {
+class mockColumnDefs implements ColumnDefinitions {
   constructor(public dbName: string) {
 
   }
-  target: NewEntity<any>;
+  target: ClassType<any>;
   readonly: boolean;
   readonly dbReadOnly: boolean;
-  readonly isVirtual: boolean;
+  readonly isServerExpression: boolean;
   readonly key: string;
   readonly caption: string;
   readonly inputType: string;

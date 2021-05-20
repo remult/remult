@@ -1,13 +1,13 @@
 import {  Allowed, EntityAllowed } from "./context";
 
-import { columnDefs } from './column-interfaces';
-import {  EntityOrderBy, EntityWhereItem, NewEntity,  columnDefsOf } from "./remult3";
+import { ColumnDefinitions } from './column-interfaces';
+import {  EntityOrderBy, EntityWhereItem, ClassType,  ColumnDefinitionsOf } from "./remult3";
 
 
 
 export interface EntityOptions<T = any> {
 
-  id?: (entity: columnDefsOf<T>) => columnDefs,
+  id?: (entity: ColumnDefinitionsOf<T>) => ColumnDefinitions,
   
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
@@ -21,7 +21,7 @@ export interface EntityOptions<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: columnDefsOf<T>) => string);
+  dbName?: string | ((entity: ColumnDefinitionsOf<T>) => string);
   /**A human readable name for the entity */
   caption?: string;
   includeInApi?:boolean;
@@ -51,7 +51,7 @@ export interface EntityOptions<T = any> {
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  fixedWhereFilter?: EntityWhereItem<T>;
+  fixedFilter?: EntityWhereItem<T>;
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: () => this.name

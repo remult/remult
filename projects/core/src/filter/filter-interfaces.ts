@@ -1,4 +1,4 @@
-import { columnDefs } from "../column-interfaces";
+import { ColumnDefinitions } from "../column-interfaces";
 
 
 export class Filter {
@@ -19,17 +19,17 @@ export class Filter {
 }
 export interface FilterConsumer {
     or(orElements: Filter[]);
-    isEqualTo(col: columnDefs, val: any): void;
-    isDifferentFrom(col: columnDefs, val: any): void;
-    isNull(col: columnDefs): void;
-    isNotNull(col: columnDefs): void;
-    isGreaterOrEqualTo(col: columnDefs, val: any): void;
-    isGreaterThan(col: columnDefs, val: any): void;
-    isLessOrEqualTo(col: columnDefs, val: any): void;
-    isLessThan(col: columnDefs, val: any): void;
-    containsCaseInsensitive(col: columnDefs, val: any): void;
-    startsWith(col: columnDefs, val: any): void;
-    isIn(col: columnDefs, val: any[]): void;
+    isEqualTo(col: ColumnDefinitions, val: any): void;
+    isDifferentFrom(col: ColumnDefinitions, val: any): void;
+    isNull(col: ColumnDefinitions): void;
+    isNotNull(col: ColumnDefinitions): void;
+    isGreaterOrEqualTo(col: ColumnDefinitions, val: any): void;
+    isGreaterThan(col: ColumnDefinitions, val: any): void;
+    isLessOrEqualTo(col: ColumnDefinitions, val: any): void;
+    isLessThan(col: ColumnDefinitions, val: any): void;
+    containsCaseInsensitive(col: ColumnDefinitions, val: any): void;
+    startsWith(col: ColumnDefinitions, val: any): void;
+    isIn(col: ColumnDefinitions, val: any[]): void;
 }
 
 

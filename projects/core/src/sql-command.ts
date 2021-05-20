@@ -1,11 +1,11 @@
-import { EntityDefs } from './remult3';
+import { EntityDefinitions } from './remult3';
 
 export interface SqlImplementation {
-    insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefs<any>):Promise<any>;
+    insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefinitions<any>):Promise<any>;
     getLimitSqlSyntax(limit: number, offset: number);
     createCommand(): SqlCommand;
     transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;
-    entityIsUsedForTheFirstTime(entity:EntityDefs):Promise<void>;
+    entityIsUsedForTheFirstTime(entity:EntityDefinitions):Promise<void>;
 }
 
 

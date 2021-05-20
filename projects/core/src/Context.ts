@@ -3,7 +3,7 @@ import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
 import { Action } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { NewEntity, Repository } from "./remult3";
+import { ClassType, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 
 export interface HttpProvider {
@@ -146,8 +146,8 @@ export class Context {
 
         return false;
     }
-    repCache = new Map<NewEntity<any>, Repository<any>>();
-    public for<T>(entity: NewEntity<T>): Repository<T> {
+    repCache = new Map<ClassType<any>, Repository<any>>();
+    public for<T>(entity: ClassType<T>): Repository<T> {
         let r = this.repCache.get(entity);
         if (!r) {
             this.repCache.set(entity, r = new RepositoryImplementation(entity, this, this._dataSource));
@@ -204,7 +204,7 @@ export class ServerContext extends Context {
     }
 }
 
-export const allEntities: NewEntity<any>[] = [];
+export const allEntities: ClassType<any>[] = [];
 export interface ControllerOptions {
     key: string,
     allowed: Allowed

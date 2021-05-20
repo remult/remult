@@ -1,19 +1,19 @@
 
 import { AndFilter, Filter } from './filter-interfaces';
 import { comparableFilterItem, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "../remult3";
-import { columnDefs } from "../column-interfaces";
+import { ColumnDefinitions } from "../column-interfaces";
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
-  filterColumns: columnDefs[] = [];
-  forceEqual: columnDefs[] = [];
+  filterColumns: ColumnDefinitions[] = [];
+  forceEqual: ColumnDefinitions[] = [];
   constructor(private reloadData: () => void, private repository: Repository<rowType>) {
 
   }
-  isFiltered(column: columnDefs) {
+  isFiltered(column: ColumnDefinitions) {
     return this.filterColumns.indexOf(column) >= 0;
   }
-  filterColumn(column: columnDefs, clearFilter: boolean, forceEqual: boolean) {
+  filterColumn(column: ColumnDefinitions, clearFilter: boolean, forceEqual: boolean) {
     if (!column)
       return;
     if (clearFilter) {

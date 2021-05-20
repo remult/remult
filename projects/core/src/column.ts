@@ -1,5 +1,5 @@
 import { Allowed, RoleChecker } from './context';
-import { columnDefs, ColumnSettings, inputLoader, jsonLoader, ValueListItem } from './column-interfaces';
+import { ColumnDefinitions, ColumnSettings, inputLoader, jsonLoader, ValueListItem } from './column-interfaces';
 import { DefaultStorage } from './columns/storage/default-storage';
 import { AndFilter, Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
@@ -22,15 +22,15 @@ export function makeTitle(name: string) {
 
 
 export class CompoundIdColumn {
-  columns: columnDefs[];
-  constructor(...columns: columnDefs[]) {
+  columns: ColumnDefinitions[];
+  constructor(...columns: ColumnDefinitions[]) {
     // super({
     //   serverExpression: () => this.getId()
     // });
     this.columns = columns;
   }
   __isVirtual() { return true; }
-  isEqualTo(value: columnDefs<string> | string): Filter {
+  isEqualTo(value: ColumnDefinitions<string> | string): Filter {
     return new Filter(add => {
       // let val = this.__getVal(value);
       // let id = val.split(',');
@@ -97,7 +97,7 @@ export function ValueList<T extends ValueListItem>(type: classWithNew<T>, settin
       dataType: type,
       jsonLoader: {
         fromJson: x => info.byId(x),
-        toJson: x => x? x.id:undefined
+        toJson: x => x ? x.id : undefined
       }
 
     },

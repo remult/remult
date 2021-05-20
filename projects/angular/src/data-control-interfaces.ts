@@ -1,18 +1,18 @@
-import { column, columnDefs, ColumnSettings, Entity, ValueListItem } from "@remult/core";
+import { EntityColumn, ColumnDefinitions, ColumnSettings, Entity, ValueListItem } from "@remult/core";
 
 
-export type DataControlInfo<rowType> = DataControlSettings<rowType> | column<any, any>;
+export type DataControlInfo<rowType> = DataControlSettings<rowType> | EntityColumn<any, any>;
 export interface DataControlSettings<entityType = any, colType = any> {
 
-    column?: columnDefs;
-    getValue?: (row: entityType, val: column<colType, entityType>) => any;
+    column?: ColumnDefinitions;
+    getValue?: (row: entityType, val: EntityColumn<colType, entityType>) => any;
     readOnly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType, val: column<colType, entityType>) => boolean;
+    visible?: (row: entityType, val: EntityColumn<colType, entityType>) => boolean;
 
-    click?: (row: entityType, val: column<colType, entityType>) => void;
+    click?: (row: entityType, val: EntityColumn<colType, entityType>) => void;
     allowClick?: (row: entityType) => boolean;
     clickIcon?: string;
 
@@ -25,7 +25,7 @@ export interface DataControlSettings<entityType = any, colType = any> {
 }
 
 
-export function extend<T extends columnDefs>(col: T): {
+export function extend<T extends ColumnDefinitions>(col: T): {
     dataControl(set: (settings: DataControlSettings) => void): T;
 } {
     return {
@@ -51,7 +51,7 @@ export function extend<T extends columnDefs>(col: T): {
 
 export const configDataControlField = Symbol('configDataControlField');
 
-export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
+export function decorateDataSettings(col: ColumnDefinitions, x: DataControlSettings) {
 
     let settingsOnColumnLevel;
     if (col.target)
@@ -129,7 +129,7 @@ export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
 }
 const __displayResult = Symbol("__displayResult");
 
-export function __getDataControlSettings(col: columnDefs): DataControlSettings {
+export function __getDataControlSettings(col: ColumnDefinitions): DataControlSettings {
     let settings = Reflect.getMetadata(configDataControlField, col.target, col.key);
 
     // if (col[configDataControlField]) {

@@ -1,10 +1,10 @@
 import { Sort } from './sort';
 import { Filter } from './filter/filter-interfaces';
-import { EntityDefs } from './remult3';
+import { EntityDefinitions } from './remult3';
 
 
 export interface DataProvider {
-  getEntityDataProvider(entity: EntityDefs): EntityDataProvider;
+  getEntityDataProvider(entity: EntityDefinitions): EntityDataProvider;
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
 }
 

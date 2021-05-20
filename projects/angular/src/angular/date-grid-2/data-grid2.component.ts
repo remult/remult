@@ -3,7 +3,7 @@ import { Component, OnChanges, Input, ViewChild } from '@angular/core';
 
 
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
-import { Column, columnDefs, Context, Entity } from '@remult/core';
+import { Column, ColumnDefinitions, Context, Entity } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
 
@@ -88,7 +88,7 @@ export class DataGrid2Component implements OnChanges {
 
   @Input() records: any;
   @Input() settings: GridSettings<any>;
-  isFiltered(c: columnDefs) {
+  isFiltered(c: ColumnDefinitions) {
     return this.settings.columns.filterHelper.isFiltered(c);
   }
   //@ts-ignore

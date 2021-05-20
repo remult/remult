@@ -168,7 +168,7 @@ describe("data api", () => {
 @EntityDecorator<stam1>({
   key: 'categories',
   
-  fixedWhereFilter: (c) => {
+  fixedFilter: (c) => {
     return c.description.isEqualTo('b')
   }
 })

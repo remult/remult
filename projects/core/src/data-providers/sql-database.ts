@@ -6,8 +6,8 @@ import { CompoundIdColumn } from "../column";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityDefs } from "../remult3";
-import { columnDefs } from "../column-interfaces";
+import { EntityDefinitions } from "../remult3";
+import { ColumnDefinitions } from "../column-interfaces";
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
@@ -17,7 +17,7 @@ export class SqlDatabase implements DataProvider {
   async execute(sql: string) {
     return await this.createCommand().execute(sql);
   }
-  getEntityDataProvider(entity: EntityDefs): EntityDataProvider {
+  getEntityDataProvider(entity: EntityDefinitions): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async () => {
       if (this.createdEntities.indexOf(entity.dbName) < 0) {
@@ -100,7 +100,7 @@ class LogSQLCommand implements SqlCommand {
 
 class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity: EntityDefs, private sql: SqlDatabase, private iAmUsed: () => Promise<void>, private strategy: SqlImplementation) {
+  constructor(private entity: EntityDefinitions, private sql: SqlDatabase, private iAmUsed: () => Promise<void>, private strategy: SqlImplementation) {
 
 
   }
@@ -125,9 +125,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     await this.iAmUsed();
     let select = 'select ';
-    let colKeys: columnDefs[] = [];
+    let colKeys: ColumnDefinitions[] = [];
     for (const x of this.entity.columns) {
-      if (x.isVirtual) {
+      if (x.isServerExpression) {
 
       }
       else {

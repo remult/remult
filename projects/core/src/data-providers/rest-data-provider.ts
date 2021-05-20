@@ -4,14 +4,14 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 import { packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
 import { UrlBuilder } from '../url-builder';
 import { Filter } from '../filter/filter-interfaces';
-import { EntityDefs } from '../remult3';
+import { EntityDefinitions } from '../remult3';
 
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
   }
-  public getEntityDataProvider(entity: EntityDefs): EntityDataProvider {
+  public getEntityDataProvider(entity: EntityDefinitions): EntityDataProvider {
     return new RestEntityDataProvider(this.url + '/' + entity.key, this.http, entity);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -20,7 +20,7 @@ export class RestDataProvider implements DataProvider {
 }
 class RestEntityDataProvider implements EntityDataProvider {
 
-  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityDefs) {
+  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityDefinitions) {
 
   }
   translateFromJson(row: any) {

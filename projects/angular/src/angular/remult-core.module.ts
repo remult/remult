@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context,   columnDefs,   ValueListItem} from '@remult/core';
+import { actionInfo, Context,   ColumnDefinitions,   ValueListItem} from '@remult/core';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -29,7 +29,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
-import { Repository,EntityOrderBy, EntityWhere, EntityDefs } from '@remult/core';
+import { Repository,EntityOrderBy, EntityWhere, EntityDefinitions } from '@remult/core';
 
 
 
@@ -102,8 +102,8 @@ export async function openDialog<T, C>(component: { new(...args: any[]): C; }, s
 /** returns an array of values that can be used in the value list property of a data control object */
 
 export async function getValueList<T >(repository:Repository<T>, args?: {
-  idColumn?: (e: EntityDefs<T>) => columnDefs,
-  captionColumn?: (e: EntityDefs<T>) => columnDefs,
+  idColumn?: (e: EntityDefinitions<T>) => ColumnDefinitions,
+  captionColumn?: (e: EntityDefinitions<T>) => ColumnDefinitions,
   orderBy?: EntityOrderBy<T>,
   where?: EntityWhere<T>
 }): Promise<ValueListItem[]> {

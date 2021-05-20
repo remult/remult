@@ -3,7 +3,7 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import { columnDefs,  Entity,  ValueListItem } from '@remult/core';
+import { ColumnDefinitions,  Entity,  ValueListItem } from '@remult/core';
 
 import { ColumnCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
@@ -15,7 +15,7 @@ import { DataControlSettings, decorateDataSettings } from '../../data-control-in
 })
 export class DataControl3Component {
   @Input() map: DataControlSettings;
-  @Input() set column(value: columnDefs) {
+  @Input() set column(value: ColumnDefinitions) {
     this.map = {
       column: value
     };

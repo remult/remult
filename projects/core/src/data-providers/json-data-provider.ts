@@ -1,7 +1,7 @@
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from '../data-interfaces';
 import { Filter } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from './array-entity-data-provider';
-import { EntityDefs } from '../remult3';
+import { EntityDefinitions } from '../remult3';
 
 
 export interface JsonEntityStorage {
@@ -14,7 +14,7 @@ export class JsonDataProvider implements DataProvider {
   constructor(private storage: JsonEntityStorage) {
 
   }
-  getEntityDataProvider(entity: EntityDefs): EntityDataProvider {
+  getEntityDataProvider(entity: EntityDefinitions): EntityDataProvider {
     return new JsonEntityDataProvider(entity, this.storage);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -24,7 +24,7 @@ export class JsonDataProvider implements DataProvider {
 
 class JsonEntityDataProvider implements EntityDataProvider {
 
-  constructor(private entity: EntityDefs, private helper: JsonEntityStorage) {
+  constructor(private entity: EntityDefinitions, private helper: JsonEntityStorage) {
 
   }
   async loadEntityData(what: (dp: EntityDataProvider, save: () => void) => any): Promise<any> {

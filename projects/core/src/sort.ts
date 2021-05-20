@@ -1,5 +1,5 @@
 
-import { columnDefs } from "./column-interfaces";
+import { ColumnDefinitions } from "./column-interfaces";
 export class Sort {
   constructor(...segments: SortSegment[]) {
     this.Segments = segments;
@@ -14,6 +14,6 @@ export class Sort {
   }
 }
 export interface SortSegment {
-  column: columnDefs,
+  column: ColumnDefinitions,
   isDescending?: boolean
 }

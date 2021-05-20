@@ -1,5 +1,5 @@
 
-import { columnDefs } from "../column-interfaces";
+import { ColumnDefinitions } from "../column-interfaces";
 import { IterateToArrayOptions } from "../context";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -9,7 +9,10 @@ import { RowEvents } from "../__EntityValueProvider";
 
 /*
 ## Should work
-
+[] adapt value converter
+[] remove readonly from columnDefs - and hijack it in Remult Angular
+[] make value list return a converter + benefits (Getoptions etc...)
+[] separate column and defs - defs will be property of column
 [V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [V] "dbname of entity can use column names"
 [V] test-paged-foreach
@@ -36,7 +39,6 @@ import { RowEvents } from "../__EntityValueProvider";
 
 ## TODO
 
-[] reconsider idColumn - maybe internalize it.
 [] "test object column"
 [] review repository api - and consider moving stuff to defs
 [V] fix extends to be smarter
@@ -70,6 +72,15 @@ import { RowEvents } from "../__EntityValueProvider";
 [] consider the setting decimal digits, instead might be useful to determine db storage - replaced with db type
 [] validationError is now called error
 [] the inconsistenacy beyween Date and DateTime - in our naming and also with input management
+[] rename context to remult
+[] consider DbAutoIncrement to decorator
+[] reconsider idColumn - maybe internalize it.
+[] rowHelper naming
+[] reconsider Item and Entity.
+[] ColumnDefinitions vs ColumnOptions and same for entity
+[] apiDataFilter
+[] fixedFilter
+
 
 ## consider if needed
 
@@ -119,9 +130,7 @@ import { RowEvents } from "../__EntityValueProvider";
 
 
 export interface rowHelper<T> {
-    register(listener: RowEvents);
-    _updateEntityBasedOnApi(body: any);
-    isValid(): boolean;
+    hasErrors(): boolean;
     undoChanges();
     save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T>;
     reload(): Promise<void>;
@@ -129,28 +138,32 @@ export interface rowHelper<T> {
     isNew(): boolean;
     wasChanged(): boolean;
     wasDeleted(): boolean;
-    toApiPojo(): any;
-    columns: entityOf<T>;
+    columns: EntityColumns<T>;
 
     repository: Repository<T>;
-    validationError: string;
+    error: string;
+
+    toApiPojo(): any;
+    register(listener: RowEvents);
+    _updateEntityBasedOnApi(body: any);
+
 
 }
-export type entityOf<Type> = {
-    [Properties in keyof Type]: column<Type[Properties], Type>
+export type EntityColumns<Type> = {
+    [Properties in keyof Type]: EntityColumn<Type[Properties], Type>
 } & {
-    find(col: columnDefs): column<any, Type>,
-    [Symbol.iterator]: () => IterableIterator<column<any, Type>>,
-    idColumn: column<any, Type>
-    
+    find(col: ColumnDefinitions): EntityColumn<any, Type>,
+    [Symbol.iterator]: () => IterableIterator<EntityColumn<any, Type>>,
+    idColumn: EntityColumn<any, Type>
+
 
 }
-export type columnDefsOf<Type> = {
-    [Properties in keyof Type]: columnDefs
+export type ColumnDefinitionsOf<Type> = {
+    [Properties in keyof Type]: ColumnDefinitions
 } & {
-    find(col: columnDefs): columnDefs,
-    [Symbol.iterator]: () => IterableIterator<columnDefs>,
-    idColumn: columnDefs
+    find(col: ColumnDefinitions): ColumnDefinitions,
+    [Symbol.iterator]: () => IterableIterator<ColumnDefinitions>,
+    idColumn: ColumnDefinitions
 }
 
 
@@ -164,7 +177,7 @@ export interface IdDefs {
 
 }
 
-export interface column<T, entityType> extends columnDefs {
+export interface EntityColumn<T, entityType> extends ColumnDefinitions {
     inputType: string;
     error: string;
     displayValue: string;
@@ -176,26 +189,27 @@ export interface column<T, entityType> extends columnDefs {
     entity: entityType;
 }
 
-export interface EntityDefs<T = any> {
-    dbAutoIncrementId: boolean;
-    idColumn: columnDefs<any>;
+export interface EntityDefinitions<T = any> {
+    readonly dbAutoIncrementId: boolean;
+    readonly idColumn: ColumnDefinitions<any>;
 
     readonly key: string,
     readonly dbName: string,
-    readonly columns: columnDefsOf<T>,
+    readonly columns: ColumnDefinitionsOf<T>,
     readonly caption: string
 
 }
 export interface Repository<T> {
-    
-    defs: EntityDefs<T>;
-    
+
+    defs: EntityDefinitions<T>;
+
 
 
     find(options?: FindOptions<T>): Promise<T[]>;
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T>;
     count(where?: EntityWhere<T>): Promise<number>;
     findFirst(where?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
+    findId(id: any): Promise<T>;
     findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
     /**
  * Used to get non critical values from the Entity.
@@ -216,17 +230,19 @@ export interface Repository<T> {
   */
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
     create(): T;
-    findId(id: any): Promise<T>;
-    
+
+
     getRowHelper(item: T): rowHelper<T>;
     //candidate to be removed 
     save(entity: T): Promise<T>;
     delete(entity: T): Promise<void>;
-    
-    
+
+
     //candidate For Defs
     getIdFilter(id: any): Filter;
-    isIdColumn(col: columnDefs): boolean;
+    isIdColumn(col: ColumnDefinitions): boolean;
+    createIdInFilter(items: T[]): Filter;
+
     translateWhereToFilter(where: EntityWhere<T>): Filter;
     packWhere(where: EntityWhere<T>): any;
     unpackWhere(packed: any): Filter;
@@ -235,7 +251,7 @@ export interface Repository<T> {
     }): Filter;
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
     translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort;
-    createIdInFilter(items: T[]): Filter;
+
     _getApiSettings(): import("../data-api").DataApiSettings<T>;
     createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T>;
 
@@ -294,6 +310,7 @@ export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | Enti
 
 export class EntityBase {
     _: rowHelper<this>;
+    get $() { return this._.columns }
 }
 
 export interface filterOptions<x> {
@@ -321,7 +338,7 @@ export type filterOf<Type> = {
     supportsContains<Type[Properties]>
 }
 
-export type NewEntity<T> = { new(...args: any[]): T };
+export type ClassType<T> = { new(...args: any[]): T };
 
 export interface IterateOptions<entityType> {
     where?: EntityWhere<entityType>;

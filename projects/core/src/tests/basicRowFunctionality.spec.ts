@@ -1544,19 +1544,19 @@ describe("rest call use url get or fallback to post", () => {
 describe("column validation", () => {
   it("validation clears on reset", () => {
     let c = new Context().for(newCategories).create();
-    expect(c._.isValid()).toBe(true);
+    expect(c._.hasErrors()).toBe(true);
     c._.columns.id.error = "x";
     expect(c._.columns.id.error).toBe("x");
-    expect(c._.isValid()).toBe(false);
+    expect(c._.hasErrors()).toBe(false);
     c._.undoChanges();
     expect(c._.columns.id.error).toBe(undefined);
-    expect(c._.isValid()).toBe(true);
+    expect(c._.hasErrors()).toBe(true);
   });
   it("validation clears on change", () => {
     let c = new Context().for(newCategories).create();
-    expect(c._.isValid()).toBe(true);
+    expect(c._.hasErrors()).toBe(true);
     c._.columns.id.error = "x";
-    expect(c._.isValid()).toBe(false);
+    expect(c._.hasErrors()).toBe(false);
     expect(c._.columns.id.error).toBe("x");
     c.id = 1;
     //expect(c._.isValid()).toBe(true);
@@ -1777,7 +1777,7 @@ describe("test data list", () => {
     }
     catch (err) {
       expect(rl.items.length).toBe(3);
-      expect(rl.items[1]._.validationError).toBe("error");
+      expect(rl.items[1]._.error).toBe("error");
     }
   });
 

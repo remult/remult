@@ -1,4 +1,4 @@
-import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, SqlDatabase, SqlCommand, SqlResult, allEntities, SqlImplementation, EntityDefs, columnDefs } from '../';
+import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, SqlDatabase, SqlCommand, SqlResult, allEntities, SqlImplementation, EntityDefinitions, ColumnDefinitions } from '../';
 import { JobsInQueueEntity, EntityQueueStorage, ExpressBridge } from '../server';
 import { Pool, QueryResult } from 'pg';
 
@@ -13,7 +13,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
-    async entityIsUsedForTheFirstTime(entity: EntityDefs): Promise<void> {
+    async entityIsUsedForTheFirstTime(entity: EntityDefinitions): Promise<void> {
 
     }
     getLimitSqlSyntax(limit: number, offset: number) {
@@ -25,7 +25,7 @@ export class PostgresDataProvider implements SqlImplementation {
     }
     constructor(private pool: PostgresPool) {
     }
-    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefs) {
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefinitions) {
         let r = await command.execute(insertStatementString);
         r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.dbName + "','" + entity.columns.idColumn.dbName + "'));");
         return +r.rows[0].currval;
@@ -106,7 +106,7 @@ export class PostgresSchemaBuilder {
             }
         }
     }
-    async createIfNotExist(e: EntityDefs): Promise<void> {
+    async createIfNotExist(e: EntityDefinitions): Promise<void> {
         var c = this.pool.createCommand();
         await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken(e.dbName.toLowerCase()) + this.additionalWhere).then(async r => {
 
@@ -134,7 +134,7 @@ export class PostgresSchemaBuilder {
             }
         });
     }
-    private addColumnSqlSyntax(x: columnDefs) {
+    private addColumnSqlSyntax(x: ColumnDefinitions) {
         let result = x.dbName;
         if (x.dbType) {
             if (x.dataType == Number && x.dbType == "decimal")
@@ -162,7 +162,7 @@ export class PostgresSchemaBuilder {
         return result;
     }
 
-    async addColumnIfNotExist<T extends EntityDefs>(e: T, c: ((e: T) => columnDefs)) {
+    async addColumnIfNotExist<T extends EntityDefinitions>(e: T, c: ((e: T) => ColumnDefinitions)) {
         if (c(e).dbReadOnly)
             return;
         try {
@@ -182,7 +182,7 @@ export class PostgresSchemaBuilder {
             console.log(err);
         }
     }
-    async verifyAllColumns<T extends EntityDefs>(e: T) {
+    async verifyAllColumns<T extends EntityDefinitions>(e: T) {
         try {
             let cmd = this.pool.createCommand();
 

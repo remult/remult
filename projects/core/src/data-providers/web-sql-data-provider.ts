@@ -2,8 +2,8 @@ import {  __RowsOfDataForTesting } from "../data-interfaces";
 import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 
-import { EntityDefs } from "../remult3";
-import { columnDefs } from "../column-interfaces";
+import { EntityDefinitions } from "../remult3";
+import { ColumnDefinitions } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
@@ -19,21 +19,21 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefs) {
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefinitions) {
         let r = <WebSqlBridgeToSQLQueryResult>await command.execute(insertStatementString);
         return r.r.insertId;
     }
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
-    async entityIsUsedForTheFirstTime(entity: EntityDefs) {
+    async entityIsUsedForTheFirstTime(entity: EntityDefinitions) {
         await this.createTable(entity);
     }
 
-    async dropTable(entity: EntityDefs) {
+    async dropTable(entity: EntityDefinitions) {
         await this.createCommand().execute('drop  table if exists ' + entity.dbName);
     }
-    async createTable(entity: EntityDefs<any>) {
+    async createTable(entity: EntityDefinitions<any>) {
         let result = '';
         for (const x of entity.columns) {
             if (!x.dbReadOnly) {
@@ -62,7 +62,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         throw new Error("Method not implemented.");
     }
 
-    private addColumnSqlSyntax(x: columnDefs) {
+    private addColumnSqlSyntax(x: ColumnDefinitions) {
         let result = x.dbName;
         if (x.dataType == Date)
             result += " integer";

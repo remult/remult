@@ -1,15 +1,15 @@
-import { column } from "./remult3";
+import { EntityColumn } from "./remult3";
 
 export class Validators {
-    static required = Object.assign((entity: any, col: column<string, any>, message = 'Should not be empty') => {
+    static required = Object.assign((entity: any, col: EntityColumn<string, any>, message = 'Should not be empty') => {
         if (!col.value || col.value.trim().length == 0)
             col.error = message;
     }, {
         withMessage: (message: string) => {
-            return (entity: any, col: column<string, any>) => Validators.required(entity, col, message)
+            return (entity: any, col: EntityColumn<string, any>) => Validators.required(entity, col, message)
         }
     });
-    static unique = Object.assign(async (entity: any, col: column<any, any>, message = 'already exists') => {
+    static unique = Object.assign(async (entity: any, col: EntityColumn<any, any>, message = 'already exists') => {
         if (!col.rowHelper)
             throw "unique validation may only work on columns that are attached to an entity";
 
@@ -20,7 +20,7 @@ export class Validators {
         }
     }, {
         withMessage: (message: string) => {
-            return (entity, col: column<any, any>) => Validators.unique(entity, col, message)
+            return (entity, col: EntityColumn<any, any>) => Validators.unique(entity, col, message)
         }
     });
 }

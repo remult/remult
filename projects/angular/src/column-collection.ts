@@ -1,11 +1,11 @@
-import { columnDefs, column, EntityDefs, getEntityOf, FilterHelper, IdEntity, ValueListItem, rowHelper, dbLoader, jsonLoader, inputLoader, NewEntity, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, FilterHelper, IdEntity, ValueListItem, rowHelper, dbLoader, jsonLoader, inputLoader, ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, ValueOrEntityExpression } from "./data-control-interfaces";
 
 
 
 export class ColumnCollection<rowType = any> {
-  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: columnDefs) => column<any, any>) {
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: ColumnDefinitions) => EntityColumn<any, any>) {
 
 
   }
@@ -14,11 +14,11 @@ export class ColumnCollection<rowType = any> {
 
   }
   __getColumn(map: DataControlSettings, record: any) {
-    let result: column<any, any>;
+    let result: EntityColumn<any, any>;
     if (record)
       result = getEntityOf(record).columns.find(map.column);
     if (!result)
-      result = map.column as column<any, any>;
+      result = map.column as EntityColumn<any, any>;
     return result;
   }
 
@@ -29,14 +29,14 @@ export class ColumnCollection<rowType = any> {
       return true;
     return this.getRowColumn({col, row}, (c, row) => col.visible(row, c));
   }
-  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: column<any, any>, row: any) => T) {
-    let column: column<any, any>;
+  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityColumn<any, any>, row: any) => T) {
+    let column: EntityColumn<any, any>;
     let row = args.row;
     if (this._getRowColumn) {
       column = this._getRowColumn(row, args.col.column);
     }
     if (!column)
-      column = args.col.column as column<any, any>;
+      column = args.col.column as EntityColumn<any, any>;
     if (!row)
       row = column.entity;
     return what(column, row);
@@ -64,7 +64,7 @@ export class ColumnCollection<rowType = any> {
         continue;
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
-      let col = c as columnDefs;
+      let col = c as ColumnDefinitions;
       if (!x.column && col.key && col.caption && col.dbName) {
         x = {
           column: c,
@@ -225,11 +225,11 @@ export class ColumnCollection<rowType = any> {
       return undefined;
     return this.__getColumn(col, r).error;
   }
-  autoGenerateColumnsBasedOnData(defs: EntityDefs<any>) {
+  autoGenerateColumnsBasedOnData(defs: EntityDefinitions<any>) {
     if (this.items.length == 0) {
 
       if (defs) {
-        let ignoreCol: columnDefs = undefined;
+        let ignoreCol: ColumnDefinitions = undefined;
         //   if (r instanceof IdEntity)
         //    ignoreCol = r.id;
         for (const c of defs.columns) {
@@ -299,7 +299,7 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 }
 
 
-export class InputControl<T> implements column<T, any> {
+export class InputControl<T> implements EntityColumn<T, any> {
   constructor(private defaultValue: T, private settings: ColumnSettings<T, any> & DataControlSettings & { valueChange?: () => void }) {
     if (!settings.caption)
       settings.caption = 'caption';
@@ -345,7 +345,7 @@ export class InputControl<T> implements column<T, any> {
   rowHelper: rowHelper<any>;
   entity: any;
   dbReadOnly: boolean;
-  isVirtual: boolean;
+  isServerExpression: boolean;
   key: string;
   caption: string;
   dbName: string;
@@ -355,7 +355,7 @@ export class InputControl<T> implements column<T, any> {
   dataType: any;
   allowNull: boolean;
   dbType: string;
-  target: NewEntity<any>;
+  target: ClassType<any>;
   readonly: boolean;
 
 

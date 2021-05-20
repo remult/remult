@@ -5,7 +5,7 @@ import { fitAsync, itAsync } from './testHelper.spec';
 import { Context, iterateConfig } from '../context';
 import { Entity, EntityBase,Column, CompoundId, EntityOrderBy } from '../remult3';
 import { Categories } from './remult-3-entities';
-import { columnDefs } from '../column-interfaces';
+import { ColumnDefinitions } from '../column-interfaces';
 import { GridSettings } from '../../../angular';
 
 
@@ -114,7 +114,7 @@ describe("test paged foreach ", async () => {
     itAsync("test make sort unique", async () => {
         let context = new Context();
         let e = context.for(Categories);
-        function test(orderBy: EntityOrderBy<Categories>, ...sort: columnDefs[]) {
+        function test(orderBy: EntityOrderBy<Categories>, ...sort: ColumnDefinitions[]) {
             let s = e.translateOrderByToSort(e.createAUniqueSort(orderBy));
             expect(s.Segments.map(x => x.column)).toEqual(sort);
         }

@@ -1,4 +1,4 @@
-import { AndFilter, columnDefs, DataList, FilterHelper, Sort,columnDefsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
+import { AndFilter, ColumnDefinitions, DataList, FilterHelper, Sort,ColumnDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
 
 import { ColumnCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
@@ -356,7 +356,7 @@ export class GridSettings<rowType>  {
   }
 
   _currentOrderBy: Sort;
-  sort(column: columnDefs) {
+  sort(column: ColumnDefinitions) {
 
     let done = false;
     if (this._currentOrderBy && this._currentOrderBy.Segments.length > 0) {
@@ -369,7 +369,7 @@ export class GridSettings<rowType>  {
     //      this._currentOrderBy = new Sort({ column: column });
     this.reloadData();
   }
-  sortedAscending(column: columnDefs) {
+  sortedAscending(column: ColumnDefinitions) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
@@ -378,7 +378,7 @@ export class GridSettings<rowType>  {
       this._currentOrderBy.Segments[0].column.key == column.key &&
       !this._currentOrderBy.Segments[0].isDescending;
   }
-  sortedDescending(column: columnDefs) {
+  sortedDescending(column: ColumnDefinitions) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
@@ -480,7 +480,7 @@ export interface IDataSettings<rowType> {
   allowSelection?: boolean,
   confirmDelete?: (r: rowType) => Promise<boolean>;
 
-  columnSettings?: (row: columnDefsOf<rowType>) => DataControlInfo<rowType>[],
+  columnSettings?: (row: ColumnDefinitionsOf<rowType>) => DataControlInfo<rowType>[],
   areas?: { [areaKey: string]: DataControlInfo<rowType>[] },
 
   rowCssClass?: (row: rowType) => string;

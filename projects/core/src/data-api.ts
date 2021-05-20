@@ -90,7 +90,7 @@ export class DataApi<T = any> {
         }
         let limit = +request.get("_limit");
         if (!limit)
-          limit = 25;
+          limit = 200;
         findOptions.limit = limit;
         findOptions.page = +request.get("_page");
 
