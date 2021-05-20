@@ -712,7 +712,7 @@ describe("data api", () => {
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
       key: undefined,
-      extends: newCategories,
+      
       allowApiDelete: true,
       deleted: () => happend = true,
       deleting: (t) => {
@@ -776,7 +776,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: undefined,
-      extends: newCategories,
+      
       allowApiDelete: true,
       deleted: () => happend = true,
       deleting: () => {
@@ -939,7 +939,7 @@ describe("data api", () => {
 
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      extends: newCategories,
+      
       key: undefined,
       allowApiUpdate: true,
       allowApiInsert: true,
@@ -1038,7 +1038,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Column({ includeInApi: false })(type.prototype, "categoryName");
-    Entity({ key: '', extends: newCategories })(type);
+    Entity({ key: '' })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
     var api = new DataApi(c);
@@ -1095,7 +1095,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Column({ allowApiUpdate: false })(type.prototype, "categoryName");
-    Entity({ key: '', allowApiUpdate: true, extends: newCategories })(type);
+    Entity({ key: '', allowApiUpdate: true })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
     var api = new DataApi(c);

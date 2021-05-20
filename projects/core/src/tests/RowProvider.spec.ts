@@ -608,7 +608,7 @@ describe("test row provider", () => {
       let type = class extends newCategories {
         a: string
       };
-      EntityDecorator({ key: 'categories', extends: newCategories })(type);
+      EntityDecorator({ key: 'categories' })(type);
       ColumnDecorator<typeof type.prototype, string>({
         validate: async (en, col) => {
           if (en._.isNew() || en.a != en._.columns.a.originalValue) {
