@@ -45,7 +45,7 @@ describe("custom id column", () => {
         r.a = 2;
         r.id = 6;
         await r._.save();
-        expect(r._.repository.defs.idColumn.key).toBe(r._.columns.id.key);
+        expect(r._.repository.defs.idColumn.key).toBe(r._.columns.id.defs.key);
         expect((await c.findId(6)).a).toBe(2);
 
 

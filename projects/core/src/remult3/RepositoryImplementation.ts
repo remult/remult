@@ -572,7 +572,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         if (!this._columns) {
             let _items = [];
             let r = {
-                find: (c: EntityColumn<any, T>) => r[c.key],
+                find: (c: ColumnDefinitions< T>) => r[c.key],
                 [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
@@ -722,7 +722,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
 
         let _items = [];
         let r = {
-            find: (c: EntityColumn<any, T>) => r[c.key],
+            find: (c: EntityColumn<any, T>) => r[c.defs.key],
             [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
@@ -747,12 +747,12 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
 
 }
 export class columnImpl<colType, rowType> implements EntityColumn<colType, rowType> {
-    constructor(private settings: ColumnSettings, private defs: ColumnDefinitions, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
+    constructor(private settings: ColumnSettings, public defs: ColumnDefinitions, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
     target: ClassType<any> = this.settings.target;
-    readonly: boolean = this.defs.readonly;
-    allowNull = this.defs.allowNull;
+    
+    
     inputType: string = this.settings.inputType;
     inputLoader = this.settings.inputLoader;
     get error(): string {
@@ -861,7 +861,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
         let _items = [];
         let r = {
-            find: (c: EntityColumn<any, T>) => r[c.key],
+            find: (c: ColumnDefinitions<any>) => r[c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
@@ -869,7 +869,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
             _items.push(r[x.key] = new columnDefsImpl(x, this));
         }
 
-        this.columns = r as unknown as EntityColumns<T>;
+        this.columns = r as unknown as ColumnDefinitionsOf<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;

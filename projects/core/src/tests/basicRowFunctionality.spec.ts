@@ -146,7 +146,7 @@ describe('Test basic row functionality', () => {
     let y = new Context().for(newCategories).create();
     x.categoryName = 'noam';
     y.categoryName = 'yael';
-    expect(y._.columns.find(x._.columns.categoryName).value).toBe('yael');
+    expect(y._.columns.find(x._.columns.categoryName.defs).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
     let ctx = new Context().for(newCategories);
@@ -1194,7 +1194,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.columns.categoryName.key + '_contains')
+        if (x == c.create()._.columns.categoryName.defs.key + '_contains')
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1220,7 +1220,7 @@ describe("data api", () => {
       };
       await api.getArray(t, {
         get: x => {
-          if (x == c.create()._.columns.categoryName.key + '_st')
+          if (x == c.create()._.columns.categoryName.defs.key + '_st')
             return "y";
           return undefined;
         }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1245,7 +1245,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.columns.description.key)
+        if (x == c.create()._.columns.description.defs.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""

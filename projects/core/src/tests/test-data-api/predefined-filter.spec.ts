@@ -144,7 +144,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.columns.description.key)
+        if (x == c.create()._.columns.description.defs.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""

@@ -1,7 +1,8 @@
 
 import { AndFilter, Filter } from './filter-interfaces';
-import { comparableFilterItem, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "../remult3";
+import { comparableFilterItem, EntityColumn, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "../remult3";
 import { ColumnDefinitions } from "../column-interfaces";
+import { getColumnDefinition } from '../../../angular';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
@@ -10,10 +11,12 @@ export class FilterHelper<rowType> {
   constructor(private reloadData: () => void, private repository: Repository<rowType>) {
 
   }
-  isFiltered(column: ColumnDefinitions) {
-    return this.filterColumns.indexOf(column) >= 0;
+  isFiltered(columnInput: ColumnDefinitions | EntityColumn<any, any>) {
+
+    return this.filterColumns.indexOf(getColumnDefinition(columnInput)) >= 0;
   }
-  filterColumn(column: ColumnDefinitions, clearFilter: boolean, forceEqual: boolean) {
+  filterColumn(columnInput: ColumnDefinitions | EntityColumn<any, any>, clearFilter: boolean, forceEqual: boolean) {
+    let column = getColumnDefinition(columnInput);
     if (!column)
       return;
     if (clearFilter) {

@@ -1,6 +1,6 @@
 import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, FilterHelper, IdEntity, ValueListItem, rowHelper, dbLoader, jsonLoader, inputLoader, ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
 
-import { DataControlInfo, DataControlSettings, decorateDataSettings, ValueOrEntityExpression } from "./data-control-interfaces";
+import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 
 
 
@@ -16,9 +16,9 @@ export class ColumnCollection<rowType = any> {
   __getColumn(map: DataControlSettings, record: any) {
     let result: EntityColumn<any, any>;
     if (record)
-      result = getEntityOf(record).columns.find(map.column);
+      result = getEntityOf(record).columns.find(getColumnDefinition(map.column));
     if (!result)
-      result = map.column as EntityColumn<any, any>;
+      result = map.column as unknown as EntityColumn<any, any>;
     return result;
   }
 
@@ -27,16 +27,16 @@ export class ColumnCollection<rowType = any> {
   __visible(col: DataControlSettings, row: any) {
     if (col.visible === undefined)
       return true;
-    return this.getRowColumn({col, row}, (c, row) => col.visible(row, c));
+    return this.getRowColumn({ col, row }, (c, row) => col.visible(row, c));
   }
   getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityColumn<any, any>, row: any) => T) {
     let column: EntityColumn<any, any>;
     let row = args.row;
     if (this._getRowColumn) {
-      column = this._getRowColumn(row, args.col.column);
+      column = this._getRowColumn(row, getColumnDefinition(args.col.column));
     }
     if (!column)
-      column = args.col.column as EntityColumn<any, any>;
+      column = args.col.column as unknown as EntityColumn<any, any>;
     if (!row)
       row = column.entity;
     return what(column, row);
@@ -175,7 +175,7 @@ export class ColumnCollection<rowType = any> {
     return true;
   }
   _click(col: DataControlSettings, row: any) {
-    this.getRowColumn({col, row}, (c, r) => { col.click(r, c) });
+    this.getRowColumn({ col, row }, (c, r) => { col.click(r, c) });
 
   }
 
@@ -183,7 +183,7 @@ export class ColumnCollection<rowType = any> {
     let r;
     if (col.getValue) {
 
-      r = this.getRowColumn({row, col}, (c, r) => col.getValue(r, c));
+      r = this.getRowColumn({ row, col }, (c, r) => col.getValue(r, c));
       if (r.value)
         r = r.value;
 
@@ -312,18 +312,30 @@ export class InputControl<T> implements EntityColumn<T, any> {
     this.inputType = settings.inputType;
     this._value = defaultValue;
     this.originalValue = defaultValue;
-    this.caption = settings.caption;
-    this.dbLoader = settings.dbLoader;
-    this.jsonLoader = settings.jsonLoader;
-    this.inputLoader = settings.inputLoader;
-    this.dataType = settings.dataType;
-    this.key = settings.key;
-    this.dbName = settings.dbName;
+    this.defs = {
 
+      allowNull: settings.allowNull,
+      caption: settings.caption,
+
+      dbLoader: settings.dbLoader,
+      jsonLoader: settings.jsonLoader,
+      inputLoader: settings.inputLoader,
+      dataType: settings.dataType,
+      key: settings.key,
+      dbName: settings.dbName,
+      dbReadOnly: false,
+      dbType: settings.dbType,
+      inputType: settings.inputType,
+      isServerExpression: false,
+      readonly: false,
+      target: undefined
+
+    }
 
 
 
   }
+  defs: ColumnDefinitions<any>;
   _value: T;
   inputType: string;
   error: string;
@@ -344,19 +356,7 @@ export class InputControl<T> implements EntityColumn<T, any> {
   }
   rowHelper: rowHelper<any>;
   entity: any;
-  dbReadOnly: boolean;
-  isServerExpression: boolean;
-  key: string;
-  caption: string;
-  dbName: string;
-  dbLoader: dbLoader<any>;
-  jsonLoader: jsonLoader<any>;
-  inputLoader: inputLoader<any>;
-  dataType: any;
-  allowNull: boolean;
-  dbType: string;
-  target: ClassType<any>;
-  readonly: boolean;
+
 
 
 }

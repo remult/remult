@@ -46,7 +46,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
 }
 export interface ColumnDefinitions<T = any> {
     readonly key: string;
-    readonly target: ClassType<any>;
+    readonly target: ClassType<T>;
     readonly dataType: any;
 
     readonly caption: string;

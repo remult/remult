@@ -918,7 +918,7 @@ describe("test row provider", () => {
       });
       let c1 = c.create();
       let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
-      let cs = { column: c1._.columns.id, valueList: getValueList(c) } as DataControlSettings<newCategories>
+      let cs = { column: c1._.columns.id.defs, valueList: getValueList(c) } as DataControlSettings<newCategories>
       await cc.add(cs);
 
       let xx = cs.valueList as ValueListItem[];

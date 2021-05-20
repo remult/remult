@@ -107,6 +107,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] fix ignore id in id Entity
 [] fix sort method on grid settings
 [] fix getColumnsFromObject and it's usages
+[] make sure that column will be readonly if allowApiUpdateIsFalse
 [] data area with local columns "get value function works"
     [] "test consolidate"
     [] "works without entity"
@@ -177,7 +178,7 @@ export interface IdDefs {
 
 }
 
-export interface EntityColumn<T, entityType> extends ColumnDefinitions {
+export interface EntityColumn<T, entityType> {
     inputType: string;
     error: string;
     displayValue: string;
@@ -187,6 +188,7 @@ export interface EntityColumn<T, entityType> extends ColumnDefinitions {
     wasChanged(): boolean;
     rowHelper: rowHelper<entityType>;
     entity: entityType;
+    defs: ColumnDefinitions<entityType>
 }
 
 export interface EntityDefinitions<T = any> {

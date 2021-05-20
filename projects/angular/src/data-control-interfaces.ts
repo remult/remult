@@ -4,7 +4,7 @@ import { EntityColumn, ColumnDefinitions, ColumnSettings, Entity, ValueListItem 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | EntityColumn<any, any>;
 export interface DataControlSettings<entityType = any, colType = any> {
 
-    column?: ColumnDefinitions;
+    column?: ColumnDefinitions | EntityColumn<any, any>;
     getValue?: (row: entityType, val: EntityColumn<colType, entityType>) => any;
     readOnly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
@@ -51,7 +51,17 @@ export function extend<T extends ColumnDefinitions>(col: T): {
 
 export const configDataControlField = Symbol('configDataControlField');
 
-export function decorateDataSettings(col: ColumnDefinitions, x: DataControlSettings) {
+export function getColumnDefinition(col: ColumnDefinitions | EntityColumn<any, any>) {
+    let r = col as ColumnDefinitions;
+    let c = col as EntityColumn<any, any>;
+    if (c.defs)
+        r = c.defs;
+    return r;
+
+}
+export function decorateDataSettings(colInput: ColumnDefinitions | EntityColumn<any, any>, x: DataControlSettings) {
+
+    let col = getColumnDefinition(colInput);
 
     let settingsOnColumnLevel;
     if (col.target)

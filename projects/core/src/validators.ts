@@ -15,7 +15,7 @@ export class Validators {
 
 
         if (col.rowHelper.isNew() || col.wasChanged()) {
-            if (await col.rowHelper.repository.count(e => e[col.key].isEqualTo(col.value)))
+            if (await col.rowHelper.repository.count(e => e[col.defs.key].isEqualTo(col.value)))
                 col.error = message;
         }
     }, {
