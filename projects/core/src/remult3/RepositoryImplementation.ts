@@ -403,12 +403,19 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
     if (!info)
         throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity()?")
-    
-    if (info.extends) {
 
-        r.unshift(...columnsOfType.get(info.extends).filter(x => !r.find(y => y.key == x.key)));
-        info.extends = undefined;
+
+    let base = Object.getPrototypeOf(entity);
+    while (base != null) {
+
+        let baseCols = columnsOfType.get(base);
+        if (baseCols) {
+            r.unshift(...baseCols.filter(x => !r.find(y => y.key == x.key)));
+        }
+        base = Object.getPrototypeOf(base);
     }
+
+
 
     return new EntityFullInfo<T>(r, info);
 }
@@ -1050,6 +1057,12 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
         }
         if (!x.inputLoader && x.inputType == "date") {
             x.inputLoader = DateOnlyInputLoader;
+        }
+        if (!x.dbLoader) {
+            x.dbLoader = {
+                fromDb: x => x,
+                toDb: x => x
+            }
         }
 
     }

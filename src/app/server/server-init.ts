@@ -40,10 +40,6 @@ export async function serverInit() {
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
 
-
-    let m = new myEntity();
-    let x = getControllerDefs(m);
-    console.log(x.columns.a.dataType);
     return r;
 
 }
@@ -76,10 +72,5 @@ export class Language {
 }
 
 
-class myEntity {
-    @Column()
-    @columnDecorator()
-    a: Language = Language.Hebrew;
-}
 
 

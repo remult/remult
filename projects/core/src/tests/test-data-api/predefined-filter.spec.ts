@@ -167,7 +167,7 @@ describe("data api", () => {
 
 @EntityDecorator<stam1>({
   key: 'categories',
-  extends: newCategories,
+  
   fixedWhereFilter: (c) => {
     return c.description.isEqualTo('b')
   }
@@ -197,7 +197,7 @@ describe("", () => {
   allowApiDelete: true,
   apiDataFilter: (x) => {
     return x.description.isEqualTo('b')
-  },
-  extends: newCategories
+  }
+  
 })
 class CategoriesForThisTest extends newCategories { }

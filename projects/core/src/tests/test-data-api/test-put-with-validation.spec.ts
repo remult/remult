@@ -129,7 +129,7 @@ describe("data api", () => {
     key: undefined,
     allowApiUpdate: true,
     allowApiInsert: true,
-    extends: Categories,
+    
     saving: (t) => {
         if (t.categoryName.indexOf('1') >= 0)
             t._.columns.categoryName.error = 'invalid'

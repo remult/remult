@@ -35,13 +35,14 @@ import { RowEvents } from "../__EntityValueProvider";
 
 
 ## TODO
-[] test default value set in the pojo itself: a=0;
-[] completed = false; didn't serialize as false to json
-[] fix extends to be smarter
+
 [] reconsider idColumn - maybe internalize it.
 [] "test object column"
-[] "order by api"
 [] review repository api - and consider moving stuff to defs
+[V] fix extends to be smarter
+[V] "order by api"
+[X] test default value set in the pojo itself: a=0;
+[X] completed = false; didn't serialize as false to json
 
 
 
@@ -186,11 +187,9 @@ export interface EntityDefs<T = any> {
 
 }
 export interface Repository<T> {
-    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort;
-    createIdInFilter(items: T[]): Filter;
-    _getApiSettings(): import("../data-api").DataApiSettings<T>;
+    
     defs: EntityDefs<T>;
-    createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T>;
+    
 
 
     find(options?: FindOptions<T>): Promise<T[]>;
@@ -218,19 +217,27 @@ export interface Repository<T> {
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
     create(): T;
     findId(id: any): Promise<T>;
+    
+    getRowHelper(item: T): rowHelper<T>;
+    //candidate to be removed 
     save(entity: T): Promise<T>;
     delete(entity: T): Promise<void>;
-
-    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
+    
+    
+    //candidate For Defs
+    getIdFilter(id: any): Filter;
+    isIdColumn(col: columnDefs): boolean;
+    translateWhereToFilter(where: EntityWhere<T>): Filter;
     packWhere(where: EntityWhere<T>): any;
     unpackWhere(packed: any): Filter;
     extractWhere(filterInfo: {
         get: (key: string) => any;
     }): Filter;
-    getRowHelper(item: T): rowHelper<T>;
-    translateWhereToFilter(where: EntityWhere<T>): Filter;
-    isIdColumn(col: columnDefs): boolean;
-    getIdFilter(id: any): Filter;
+    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
+    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort;
+    createIdInFilter(items: T[]): Filter;
+    _getApiSettings(): import("../data-api").DataApiSettings<T>;
+    createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T>;
 
 }
 export interface FindOptions<T> {

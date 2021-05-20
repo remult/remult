@@ -52,7 +52,7 @@ export class TestComponent {
 }
 
 @Entity<Tasks>({
-  extends: IdEntity,
+  
   key: 'tasks',
   allowApiCrud: true,
   saving: t => {

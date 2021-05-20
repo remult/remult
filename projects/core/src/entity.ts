@@ -8,7 +8,7 @@ import {  EntityOrderBy, EntityWhereItem, NewEntity,  columnDefsOf } from "./rem
 export interface EntityOptions<T = any> {
 
   id?: (entity: columnDefsOf<T>) => columnDefs,
-  extends?: NewEntity<any>;
+  
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
  */

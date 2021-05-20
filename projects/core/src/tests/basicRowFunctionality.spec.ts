@@ -690,7 +690,7 @@ describe("data api", () => {
     Entity<typeof type.prototype>({
       key: '',
       defaultOrderBy: x => x.categoryName,
-      extends: newCategories
+      
     })(type);
     await testAllDbs(async ({ createData }) => {
       let c = await createData(async insert => {
@@ -746,7 +746,7 @@ describe("data api", () => {
     Entity<typeof type.prototype>({
       key: undefined,
       allowApiDelete: true,
-      extends: newCategories,
+      
       deleted: () => happend = true,
       deleting: () => {
         deleting.ok();
@@ -803,7 +803,7 @@ describe("data api", () => {
     let happend = false;
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      extends: newCategories,
+      
       key: undefined,
       allowApiDelete: true,
       deleted: (t) => {
@@ -835,7 +835,7 @@ describe("data api", () => {
     let count = 0;
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      extends: newCategories,
+      
       key: undefined,
       allowApiUpdate: true,
       saving: t => {
@@ -866,7 +866,7 @@ describe("data api", () => {
       let count = 0;
       let type = class extends newCategories { };
       Entity<typeof type.prototype>({
-        extends: newCategories,
+        
         key: undefined,
         allowApiUpdate: true,
         saving: () => count++
@@ -901,7 +901,7 @@ describe("data api", () => {
     let savedWorked = new Done();
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      extends: newCategories,
+      
       key: undefined,
       allowApiUpdate: true,
       saving: () => count++,
@@ -986,7 +986,7 @@ describe("data api", () => {
 
     }
     Entity<typeof type.prototype>({
-      extends: newCategories,
+      
       key: 'testE',
       allowApiUpdate: true,
       saving: (row, cancel) => {
@@ -1134,7 +1134,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Column({ includeInApi: false })(type.prototype, "categoryName");
-    Entity({ key: '', allowApiUpdate: true, extends: newCategories })(type);
+    Entity({ key: '', allowApiUpdate: true })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
 
@@ -1157,7 +1157,7 @@ describe("data api", () => {
   itAsync("post with syntax error fails well", async () => {
     let type = class extends newCategories { };
     Entity<newCategories>({
-      extends: newCategories,
+      
       key: '',
       allowApiInsert: true,
       saving: (x) => x.description.length + 1
@@ -1281,7 +1281,7 @@ describe("data api", () => {
     };
     Entity({
       key: '',
-      extends: newCategories,
+      
       allowApiDelete: false
     })(type);
     let c = await createData(async i => {
@@ -1306,7 +1306,7 @@ describe("data api", () => {
     };
     Entity({
       key: '',
-      extends: newCategories,
+      
       apiRequireId: true
     })(type);
     let c = await createData(async i => {
@@ -1361,7 +1361,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: '',
-      extends: newCategories,
+      
       allowApiDelete: (c, t) => {
         return t.id == 1;
       }
@@ -1392,7 +1392,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: '',
-      extends: newCategories,
+      
       allowApiUpdate: (c, t) => {
         return t.id == 1;
       }
@@ -1428,7 +1428,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: '',
-      extends: newCategories,
+      
       allowApiInsert: (c, t) => {
         return t.categoryName == 'ok';
       }
