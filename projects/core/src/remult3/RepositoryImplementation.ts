@@ -758,12 +758,12 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     get error(): string {
         if (!this.rowBase.errors)
             return undefined;
-        return this.rowBase.errors[this.key];
+        return this.rowBase.errors[this.defs.key];
     }
     set error(error: string) {
         if (!this.rowBase.errors)
             this.rowBase.errors = {};
-        this.rowBase.errors[this.key] = error;
+        this.rowBase.errors[this.defs.key] = error;
     }
     get displayValue(): string {
         if (this.value != undefined) {
@@ -774,24 +774,16 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
         }
         return "";
     };
-    get value() { return this.entity[this.key] };
-    set value(value: any) { this.entity[this.key] = value };
-    get originalValue(): any { return this.rowBase.originalValues[this.key] };
+    get value() { return this.entity[this.defs.key] };
+    set value(value: any) { this.entity[this.defs.key] = value };
+    get originalValue(): any { return this.rowBase.originalValues[this.defs.key] };
     get inputValue(): string { return this.settings.inputLoader.toInput(this.value); }
     set inputValue(val: string) { this.value = this.settings.inputLoader.fromInput(val); };
     wasChanged(): boolean {
         return this.originalValue != this.value;
     }
     rowHelper: rowHelper<any> = this.helper;
-    dbReadOnly: boolean = this.defs.dbReadOnly;
-    isServerExpression: boolean = this.defs.isServerExpression;
-    key: string = this.defs.key;
-    caption: string = this.defs.caption;
-    get dbName(): string { return this.defs.dbName };
-    dbLoader: dbLoader<any> = this.defs.dbLoader;
-    jsonLoader: jsonLoader<any> = this.defs.jsonLoader;
-    dataType: any = this.defs.dataType;
-    dbType: string = this.defs.dbType;
+    
 
     async __performValidation() {
         let x = typeof (this.settings.validate);
