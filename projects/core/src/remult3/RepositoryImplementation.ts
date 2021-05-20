@@ -403,6 +403,7 @@ export function createOldEntity<T>(entity: NewEntity<T>) {
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
     if (!info)
         throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity()?")
+    
     if (info.extends) {
 
         r.unshift(...columnsOfType.get(info.extends).filter(x => !r.find(y => y.key == x.key)));
