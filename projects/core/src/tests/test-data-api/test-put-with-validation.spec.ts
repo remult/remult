@@ -78,6 +78,43 @@ describe("data api", () => {
         expect(x[0].val).toBe('noam');
 
     });
+    itAsync("allow column update based on specific value", async () => {
+
+        let type = class extends EntityBase {
+            id: number;
+            val: string;
+        }
+        Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
+        Column({ dataType: Number })(type.prototype, 'id');
+        Column<typeof type.prototype, string>({
+            dataType: String,
+            allowApiUpdate: (c, x) => x.val != "yael"
+        })(type.prototype, 'val');
+        let context = new ServerContext();
+        context.setDataProvider(new InMemoryDataProvider());
+        let c = context.for(type);
+
+        var api = new DataApi(c);
+        let t = new TestDataApiResponse();
+        t.success = () => { };
+        t.created = () => { };
+        let d = new Done();
+        await api.post(t, {
+            id: 1,
+            val: 'noam'
+        });
+        await api.put(t, 1, {
+            val: 'yael'
+        });
+        var x = await c.find({ where: c => c.id.isEqualTo(1) });
+        expect(x[0].val).toBe('yael');
+        await api.put(t, 1, {
+            val: 'yoni'
+        });
+        var x = await c.find({ where: c => c.id.isEqualTo(1) });
+        expect(x[0].val).toBe('yael');
+
+    });
 
     // it("test value list type",()=>{
     //     let x = new StatusColumn();
