@@ -59,17 +59,28 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         }
         if (rows)
             return rows.map(i => {
-                return this.map(i);
+                return this.translateFromJson(i);
             });
     }
-    map(i: any): any {
-        let r = JSON.parse(JSON.stringify(i));
-        return r;
+    translateFromJson(row: any) {
+        let result = {};
+        for (const col of this.entity.columns) {
+            result[col.key] = col.jsonLoader.fromJson(row[col.key]);
+        }
+        return result;
     }
+    translateToJson(row: any) {
+        let result = {};
+        for (const col of this.entity.columns) {
+            result[col.key] = col.jsonLoader.toJson(row[col.key]);
+        }
+        return result;
+    }
+
     private idMatches(id: any): (item: any) => boolean {
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
-            x.isEqualTo(this.entity.idColumn,id)
+            x.isEqualTo(this.entity.idColumn, id)
             return x.ok;
         };
     }
@@ -77,8 +88,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         let idMatches = this.idMatches(id);
         for (let i = 0; i < this.rows.length; i++) {
             if (idMatches(this.rows[i])) {
-                this.rows[i] = Object.assign({}, this.rows[i], data);
-                return Promise.resolve(this.map(this.rows[i]));
+                this.rows[i] = Object.assign({}, this.rows[i], this.translateToJson(data));
+                return Promise.resolve(this.translateFromJson(this.rows[i]));
             }
         }
         throw new Error("couldn't find id to update: " + id);
@@ -99,8 +110,9 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                 if (data.id == i.id)
                     throw Error("id already exists");
             });
-        this.rows.push(JSON.parse(JSON.stringify(data)));
-        return Promise.resolve(JSON.parse(JSON.stringify(data)));
+        let j = this.translateToJson(data);
+        this.rows.push(j);
+        return Promise.resolve(this.translateFromJson(j));
     }
 }
 function pageArray(rows: any[], options?: EntityDataProviderFindOptions) {
@@ -146,7 +158,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     isIn(col: columnDefs, val: any[]): void {
 
         for (const v of val) {
-            if (this.row[col.key] == v) {
+            if (this.row[col.key] == col.jsonLoader.toJson(v)) {
                 return;
             }
         }
@@ -154,33 +166,33 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     }
     public isEqualTo(col: columnDefs, val: any): void {
 
-        if (this.row[col.key] != val)
+        if (this.row[col.key] != col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
     public isDifferentFrom(col: columnDefs, val: any): void {
-        if (this.row[col.key] == val)
+        if (this.row[col.key] == col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
     public isGreaterOrEqualTo(col: columnDefs, val: any): void {
-        if (this.row[col.key] < val)
+        if (this.row[col.key] < col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
     public isGreaterThan(col: columnDefs, val: any): void {
 
-        if (this.row[col.key] <= val)
+        if (this.row[col.key] <= col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
     public isLessOrEqualTo(col: columnDefs, val: any): void {
-        if (this.row[col.key] > val)
+        if (this.row[col.key] > col.jsonLoader.toJson(val))
             this.ok = false;
     }
 
     public isLessThan(col: columnDefs, val: any): void {
-        if (this.row[col.key] >= val)
+        if (this.row[col.key] >= col.jsonLoader.toJson(val))
             this.ok = false;
     }
     public containsCaseInsensitive(col: columnDefs, val: any): void {
@@ -192,7 +204,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
         let s = '' + v;
         if (val)
-            val = val.toString().toLowerCase();
+            val = col.jsonLoader.toJson(val).toString().toLowerCase();
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
@@ -204,7 +216,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
 
         let s = '' + v;
-        if (s.indexOf(val) != 0)
+        if (s.indexOf(col.jsonLoader.toJson(val)) != 0)
             this.ok = false;
     }
 }

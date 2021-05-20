@@ -1,4 +1,7 @@
+import { ValueList } from "../../column";
+import { StorableClass } from "../../remult3";
 
+@StorableClass(ValueList(Status))
 export class Status {
   static open = new Status(0, "open");
   static closed = new Status(1, "closed");

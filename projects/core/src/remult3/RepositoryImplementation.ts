@@ -956,6 +956,18 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
 }
 
 
+export function StorableClass<T = any>(settings?: ColumnSettings<T, any>) {
+    return target => {
+        if (!settings) {
+            settings = {};
+        }
+        if (!settings.dataType)
+            settings.dataType = target;
+        Reflect.defineMetadata(storableMember, settings, target);
+        return target;
+    }
+
+}
 
 export function Column<T = any, colType = any>(settings?: ColumnSettings<colType, T>) {
     if (!settings) {
@@ -987,7 +999,7 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
         if (!settings.target)
             settings.target = target;
 
-        decorateColumnSettings(settings);
+        settings = decorateColumnSettings(settings);
         names.push({
             key,
             settings,
@@ -999,8 +1011,17 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
 
 
 }
+const storableMember = Symbol("storableMember");
 export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
-
+    if (settings.dataType) {
+        let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.dataType);
+        if (settingsOnTypeLevel) {
+            settings = {
+                ...settingsOnTypeLevel,
+                ...settings
+            }
+        }
+    }
     if (settings.dataType == Number) {
         let x = settings as unknown as ColumnSettings<Number>;
         if (!x.dbLoader) {

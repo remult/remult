@@ -554,33 +554,58 @@ describe("data api", () => {
     });
     d.test();
   });
-  if (false)
-    itAsync("getArray works with filter and multiple values with closed list columns", async () => {
-      let c = await createData(async (i) => {
-        await i(1, 'noam', undefined, Status.open);
-        await i(2, 'yael', undefined, Status.closed);
-        await i(3, 'yoni', undefined, Status.hold);
-      });
-      var api = new DataApi(c);
-      let t = new TestDataApiResponse();
-      let d = new Done();
-      t.success = data => {
-        expect(data.length).toBe(1);
-        expect(data[0].id).toBe(2);
-        d.ok();
-      };
-      await api.getArray(t, {
-        get: x => {
-          if (x == "status_ne")
-            return ["0", "2"];
-          return undefined;
-        }, clientIp: '', user: undefined, getHeader: x => ""
-        , getBaseUrl: () => ''
-      });
-      d.test();
+  itAsync("getArray works with filter and multiple values with closed list columns", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', undefined, Status.open);
+      await i(2, 'yael', undefined, Status.closed);
+      await i(3, 'yoni', undefined, Status.hold);
     });
-  if (false)
-    itAsync("getArray works with filter and in with closed list columns", async () => {
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+      expect(data[0].id).toBe(2);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "status_ne")
+          return ["0", "2"];
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    });
+    d.test();
+  });
+
+  itAsync("getArray works with filter and in with closed list columns", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', undefined, Status.open);
+      await i(2, 'yael', undefined, Status.closed);
+      await i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "status_in")
+          return '[1, 2]';
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    });
+    d.test();
+  });
+  itAsync("get array works with filter in body", async () => {
+    await testAllDbs(async ({ createData }) => {
       let c = await createData(async (i) => {
         await i(1, 'noam', undefined, Status.open);
         await i(2, 'yael', undefined, Status.closed);
@@ -597,92 +622,68 @@ describe("data api", () => {
       };
       await api.getArray(t, {
         get: x => {
-          if (x == "status_in")
-            return '[1, 2]';
           return undefined;
         }, clientIp: '', user: undefined, getHeader: x => ""
         , getBaseUrl: () => ''
+      }, {
+        status_in: '[1, 2]'
       });
       d.test();
     });
-  // fitAsync("get array works with filter in body", async () => {
-  //   let c = await createData(async (i) => {
-  //     await i(1, 'noam', undefined, Status.open);
-  //     await i(2, 'yael', undefined, Status.closed);
-  //     await i(3, 'yoni', undefined, Status.hold);
-  //   });
-  //   var api = new DataApi(c);
-  //   let t = new TestDataApiResponse();
-  //   let d = new Done();
-  //   t.success = data => {
-  //     expect(data.length).toBe(2);
-  //     expect(data[0].id).toBe(2);
-  //     expect(data[1].id).toBe(3);
-  //     d.ok();
-  //   };
-  //   await api.getArray(t, {
-  //     get: x => {
-  //       return undefined;
-  //     }, clientIp: '', user: undefined, getHeader: x => ""
-  //     , getBaseUrl: () => ''
-  //   }, {
-  //     status_in: '[1, 2]'
-  //   });
-  //   d.test();
-  // });
-  // itAsync("get array works with filter in body and in array statement", async () => {
-  //   let c = await createData(async (i) => {
-  //     await i(1, 'noam', undefined, Status.open);
-  //     await i(2, 'yael', undefined, Status.closed);
-  //     await i(3, 'yoni', undefined, Status.hold);
-  //   });
-  //   var api = new DataApi(c);
-  //   let t = new TestDataApiResponse();
-  //   let d = new Done();
-  //   t.success = data => {
-  //     expect(data.length).toBe(2);
-  //     expect(data[0].id).toBe(2);
-  //     expect(data[1].id).toBe(3);
-  //     d.ok();
-  //   };
-  //   await api.getArray(t, {
-  //     get: x => {
-  //       return undefined;
-  //     }, clientIp: '', user: undefined, getHeader: x => ""
-  //     , getBaseUrl: () => ''
-  //   }, {
-  //     status_in: [1, 2]
-  //   });
-  //   d.test();
-  // });
-  // itAsync("get array works with filter in body and or statement", async () => {
-  //   let c = await createData(async (i) => {
-  //     await i(1, 'noam', undefined, Status.open);
-  //     await i(2, 'yael', undefined, Status.closed);
-  //     await i(3, 'yoni', undefined, Status.hold);
-  //   });
-  //   var api = new DataApi(c);
-  //   let t = new TestDataApiResponse();
-  //   let d = new Done();
-  //   t.success = data => {
-  //     expect(data.length).toBe(2);
-  //     expect(data[0].id).toBe(2);
-  //     expect(data[1].id).toBe(3);
-  //     d.ok();
-  //   };
-  //   await api.getArray(t, {
-  //     get: x => {
-  //       return undefined;
-  //     }, clientIp: '', user: undefined, getHeader: x => ""
-  //     , getBaseUrl: () => ''
-  //   }, {
-  //     OR: [
-  //       { status: 1 },
-  //       { status: 2 }
-  //     ]
-  //   });
-  //   d.test();
-  // });
+  });
+  itAsync("get array works with filter in body and in array statement", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', undefined, Status.open);
+      await i(2, 'yael', undefined, Status.closed);
+      await i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    }, {
+      status_in: [1, 2]
+    });
+    d.test();
+  });
+  itAsync("get array works with filter in body and or statement", async () => {
+    let c = await createData(async (i) => {
+      await i(1, 'noam', undefined, Status.open);
+      await i(2, 'yael', undefined, Status.closed);
+      await i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(2);
+      expect(data[1].id).toBe(3);
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }, clientIp: '', user: undefined, getHeader: x => ""
+      , getBaseUrl: () => ''
+    }, {
+      OR: [
+        { status: 1 },
+        { status: 2 }
+      ]
+    });
+    d.test();
+  });
   itAsync("entity order by works", async () => {
 
     let type = class extends newCategories { };
@@ -1202,29 +1203,31 @@ describe("data api", () => {
     d.test();
   });
   itAsync("getArray works with filter startsWith", async () => {
-    let c = await createData(async (i) => {
-      await i(1, 'noam');
-      await i(2, 'yael');
-      await i(3, 'yoni');
-    });
-    var api = new DataApi(c);
-    let t = new TestDataApiResponse();
-    let d = new Done();
-    t.success = data => {
-      expect(data.length).toBe(2);
-      expect(data[0].id).toBe(2);
-      expect(data[1].id).toBe(3);
-      d.ok();
-    };
-    await api.getArray(t, {
-      get: x => {
-        if (x == c.create()._.columns.categoryName.key + '_st')
-          return "y";
-        return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
-    });
-    d.test();
+    await testAllDbs(async ({ createData }) => {
+      let c = await createData(async (i) => {
+        await i(1, 'noam');
+        await i(2, 'yael');
+        await i(3, 'yoni');
+      });
+      var api = new DataApi(c);
+      let t = new TestDataApiResponse();
+      let d = new Done();
+      t.success = data => {
+        expect(data.length).toBe(2);
+        expect(data[0].id).toBe(2);
+        expect(data[1].id).toBe(3);
+        d.ok();
+      };
+      await api.getArray(t, {
+        get: x => {
+          if (x == c.create()._.columns.categoryName.key + '_st')
+            return "y";
+          return undefined;
+        }, clientIp: '', user: undefined, getHeader: x => ""
+        , getBaseUrl: () => ''
+      });
+      d.test();
+    })
   });
   itAsync("getArray works with predefined filter", async () => {
     let c = await createData(async (i) => {

@@ -49,12 +49,12 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] rebuild validation model for ServerMethod
 
 ## closed list column
-[] "Closed List  column"
-[] "test value list type"
-[] value list "works with automatic id"
-[] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
-[]"getArray works with filter and in with closed list columns"
-[]"getArray works with filter and multiple values with closed list columns"
+[V] "Closed List  column"
+[V] "test value list type"
+[V] value list "works with automatic id"
+[V] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
+[V]"getArray works with filter and in with closed list columns"
+[V]"getArray works with filter and multiple values with closed list columns"
 
 ## compound id column
 [] "compound id"

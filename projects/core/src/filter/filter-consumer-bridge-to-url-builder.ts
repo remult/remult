@@ -42,7 +42,7 @@ export class FilterSerializer implements FilterConsumer {
     this.add(col.key + "_null", false);
   }
   isIn(col: columnDefs, val: any[]): void {
-    this.add(col.key + "_in",val.map(x=>col.jsonLoader.toJson(x)));
+    this.add(col.key + "_in", val.map(x => col.jsonLoader.toJson(x)));
   }
 
   public isEqualTo(col: columnDefs, val: any): void {
@@ -123,7 +123,8 @@ export function extractWhere(columns: columnDefs[], filterInfo: {
     addFilter('_lt', val => c.isLessThan(val));
     addFilter('_lte', val => c.isLessOrEqualTo(val));
     addFilter('_ne', val => c.isDifferentFrom(val));
-    addFilter('_in', val => c.isIn(val), true);
+    addFilter('_in', val =>
+      c.isIn(val), true);
     addFilter('_null', val => {
       val = val.toString().trim().toLowerCase();
       switch (val) {

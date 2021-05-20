@@ -32,7 +32,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
   isIn(col: columnDefs, val: any[]): void {
     if (val && val.length > 0)
-      this.addToWhere(col.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(x)).join(",") + ")");
+      this.addToWhere(col.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.dbLoader.toDb( x))).join(",") + ")");
     else
       this.addToWhere('1 = 0 /*isIn with no values*/');
   }

@@ -13,7 +13,7 @@ import { Column, Entity, EntityBase } from '../remult3';
 
 
 describe("test json database", () => {
-    let db = new JsonDataProvider(localStorage); 
+    let db = new JsonDataProvider(localStorage);
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {
@@ -21,17 +21,7 @@ describe("test json database", () => {
             await c._.delete();
         }
     }
-    itAsync("test raw basics", async () => {
-        let e = context.for(newCategories);
-        let o: string;
-        let p = new JsonDataProvider({
-            getItem: () => o,
-            setItem: (k, v) => o = v
-        }).getEntityDataProvider(e.defs);
-        await Promise.all([p.insert("noam"), p.insert("yael"), p.insert("yoni")]);
-        expect(o).toBe(JSON.stringify(["noam", "yael", "yoni"], undefined, 2));
-
-    });
+  
     itAsync("test basics", async () => {
         await deleteAll();
         expect(await context.for(newCategories).count()).toBe(0);
@@ -49,7 +39,7 @@ describe("test json database", () => {
         expect(cats[0].id).toBe(1);
         expect(cats[0].categoryName).toBe("noam1");
     });
-   
+
 });
 @Entity({ key: 'tasks' })
 class tasks extends EntityBase {

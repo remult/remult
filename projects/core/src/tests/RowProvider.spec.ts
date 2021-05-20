@@ -9,13 +9,13 @@ import { FilterHelper } from '../filter/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '../../../angular';
+import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, InputControl, __getDataControlSettings } from '../../../angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Column, StorableClass } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
-import { EntityDefs, NewEntity, Repository } from '../remult3';
+import { EntityBase, EntityDefs, NewEntity, Repository } from '../remult3';
 import { CharDateLoader, DateDisplayValue, DateOnlyJsonLoader, DateOnlyDateDbLoader, DateTimeJsonLoader } from '../columns/loaders';
 
 
@@ -317,12 +317,69 @@ describe("Closed List  column", () => {
 
     expect(ValueListInfo.get(Language).getOptions().length).toBe(3);
   });
- 
+
   it("test auto caption", () => {
     let val = ValueListInfo.get(valueList);
     expect(valueList.firstName.caption).toBe('First Name');
   });
+  itAsync("test with entity", async () => {
+    let c = new ServerContext(new InMemoryDataProvider())
+      .for(entityWithValueList);
+    let e = c.create();
+    e.id = 1;
+    expect(e.l).toBe(Language.Hebrew);
+    e.l = Language.Russian;
+    await e._.save();
+    e = await c.findFirst();
+    expect(e.l).toBe(Language.Russian);
+    expect(e._.toApiPojo().l).toBe(10);
+  })
+  itAsync("test with entity and data defined on type", async () => {
+    let c = new ServerContext(new InMemoryDataProvider())
+      .for(entityWithValueList);
+    let e = c.create();
+    e.id = 1;
+    expect(c.defs.columns.v.dataType).toBe(valueList);
+    expect(c.defs.columns.v.jsonLoader.fromJson('listName'))
+      .toBe(valueList.listName);
+    expect(c.defs.columns.id.dataType).toBe(Number);
+    expect(e.v).toBe(valueList.firstName);
+
+    e.v = valueList.listName;
+    await e._.save();
+    e = await c.findFirst();
+    expect(e.v).toBe(valueList.listName);
+    expect(e._.toApiPojo().v).toBe('listName');
+  })
 });
+
+export function fColumn<T = any, colType = any>(settings?: ColumnSettings<colType, T>) {
+  let c = Column(settings);
+  return (target, key) => {
+    debugger;
+    return c(target, key);
+  }
+
+}
+@StorableClass(ValueList(valueList))
+class valueList {
+  static firstName = new valueList();
+  static listName = new valueList();
+  constructor(public id?: string, public caption?: string) { }
+}
+
+@Entity({ key: 'entity with value list' })
+class entityWithValueList extends EntityBase {
+  @Column()
+  id: number = 0;
+  @Column(ValueList(Language))
+  l: Language = Language.Hebrew;
+  @Column()
+  v: valueList = valueList.firstName;
+
+}
+
+
 
 
 describe("test row provider", () => {
@@ -1271,19 +1328,20 @@ describe("Test char date storage", () => {
 });
 
 describe("value list column without id and caption", () => {
-  // it("works with automatic id", () => {
-  //   let col = new TestStatusColumn();
-  //   col.value = TestStatus.open;
-  //   expect(col.value).toBe(TestStatus.open);
-  //   expect(col.rawValue).toBe('open');
-  //   col.value = TestStatus.closed;
-  //   expect(col.rawValue).toBe('cc');
-  //   let options = col.getOptions();
-  //   expect(options.length).toBe(3);
-  //   expect(options[2].caption).toBe('hh');
-  //   expect(options[2].id).toBe('hold');
+  it("works with automatic id", () => {
+    let col = new InputControl<TestStatus>(TestStatus.open, ValueList(TestStatus));
 
-  // })
+    col.value = TestStatus.open;
+    expect(col.value).toBe(TestStatus.open);
+    expect(col.inputValue).toBe('open');
+    col.value = TestStatus.closed;
+    expect(col.inputValue).toBe('cc');
+    let options =ValueListInfo.get(TestStatus).getOptions();
+    expect(options.length).toBe(3);
+    expect(options[2].caption).toBe('hh');
+    expect(options[2].id).toBe('hold');
+
+  })
 })
 describe("relation", () => {
   itAsync("should get values", async () => {
@@ -1384,11 +1442,6 @@ class myDp extends ArrayEntityDataProvider {
 
 
 
-class valueList {
-  static firstName = new valueList();
-  static listName = new valueList();
-  constructor(public id?: string, public caption?: string) { }
-}
 
 class mockColumnDefs implements columnDefs {
   constructor(public dbName: string) {

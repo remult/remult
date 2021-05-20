@@ -332,7 +332,7 @@ export class InputControl<T> implements column<T, any> {
   }
   get value(): T { return this._value; }
   set value(val: T) {
-    this.value = val;
+    this._value = val;
     if (this.settings.valueChange)
       this.settings.valueChange()
   };

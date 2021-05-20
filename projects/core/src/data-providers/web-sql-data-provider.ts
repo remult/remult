@@ -5,7 +5,7 @@ import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 import { EntityDefs } from "../remult3";
 import { columnDefs } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
-//SqlDatabase.LogToConsole = true;
+SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
         [tableName: string]: any;

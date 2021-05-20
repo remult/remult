@@ -94,9 +94,10 @@ export function ValueList<T extends ValueListItem>(type: classWithNew<T>, settin
   return {
     ...{
       dbType: info.isNumeric ? 'int' : undefined,
+      dataType: type,
       jsonLoader: {
         fromJson: x => info.byId(x),
-        toJson: x => x.id
+        toJson: x => x? x.id:undefined
       }
 
     },

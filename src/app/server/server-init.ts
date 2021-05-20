@@ -6,9 +6,9 @@ import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/core/postgr
 import * as passwordHash from 'password-hash';
 
 
-import { ServerController, SqlDatabase } from '@remult/core';
-import { Column, Entity, entityInfo, columnsOfType, getControllerDefs } from '../../../projects/core/src/remult3';
-import { ValueListInfo } from '../../../projects/core/src/column';
+import { ServerContext, ServerController, SqlDatabase } from '@remult/core';
+import { Column, Entity, entityInfo, columnsOfType, getControllerDefs, StorableClass } from '../../../projects/core/src/remult3';
+import { ValueList, ValueListInfo } from '../../../projects/core/src/column';
 import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 
 
@@ -40,14 +40,10 @@ export async function serverInit() {
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
 
-    console.log({
-        classTarget, columnTarget, type,
-        const:type.constructor,
-        prot:type.prototype,
-        getPro:Object.getPrototypeOf(type),
-        
-    })
-    console.dir(type);
+
+    let m = new myEntity();
+    let x = getControllerDefs(m);
+    console.log(x.columns.a.dataType);
     return r;
 
 }
@@ -67,6 +63,7 @@ function columnDecorator() {
 }
 
 @classDecorator()
+@StorableClass(ValueList(Language))
 export class Language {
     static Hebrew = new Language(0, 'עברית');
     static Russian = new Language(10, 'רוסית');
@@ -80,6 +77,9 @@ export class Language {
 
 
 class myEntity {
+    @Column()
     @columnDecorator()
-    a:Language= Language.Hebrew;
+    a: Language = Language.Hebrew;
 }
+
+
