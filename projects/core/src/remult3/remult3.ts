@@ -10,25 +10,25 @@ import { RowEvents } from "../__EntityValueProvider";
 /*
 ## Should work
 
-[V] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
-[V] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
-[V] original data should reflect the values after server expressions
-[] use helmet instead of force https
-[] fix timeout by using a repeat mechanism in context.
-[V] replace method not allowed with forbidden - when something is not allowed
-[V] add reflect metadata to dependencies
-[] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
+[V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [] "dbname of entity can use column names"
 [] test-paged-foreach
 [] "bool column doesn't need contains, isin and is not in"
 [] "apiRequireId"
 [] "test make sort unique" - both tests
 [] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
-[] prevent jobsInQueue to register as an api entity - it's not one
+[V] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
+[V] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
+[V] original data should reflect the values after server expressions
+[V] replace method not allowed with forbidden - when something is not allowed
+[V] add reflect metadata to dependencies
+[V] prevent jobsInQueue to register as an api entity - it's not one
 [V] think of id entity.
 [V] rename `name` to `key` in Entity Settings
 [V] replace entitydefs.name = key.
 [V] rename allow api crud
+[] use helmet instead of force https
+[] fix timeout by using a repeat mechanism in context.
 
 
 
