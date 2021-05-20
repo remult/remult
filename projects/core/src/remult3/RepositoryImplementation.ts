@@ -2,7 +2,7 @@
 import { columnDefs, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdColumn, makeTitle } from '../column';
-import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions,  NewEntity, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
+import { EntityDefs, filterOptions, column, entityOf, EntityWhere, filterOf, FindOptions, NewEntity, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, columnDefsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -45,7 +45,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!orderBy)
             orderBy = this._info.entityInfo.defaultOrderBy;
         if (!orderBy)
-            orderBy = x =>  ({ column: this._info.idColumn })
+            orderBy = x => ({ column: this._info.idColumn })
         return x => {
             let sort = this.translateOrderByToSort(orderBy);
             if (!sort.Segments.find(x => x.column == this.defs.idColumn)) {
@@ -705,7 +705,7 @@ export function getControllerDefs<T>(controller: T, context?: Context): controll
 
     let result = controller[controllerColumns] as controllerDefsImpl<any>;
     if (!result)
-        result = controller[entityMember] ;
+        result = controller[entityMember];
     if (!result) {
         let columnSettings: columnInfo[] = columnsOfType.get(controller.constructor);
         if (!columnSettings)
@@ -729,7 +729,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
         };
 
         for (const col of columnsInfo) {
-            r._items.push(r[col.key] = new columnImpl<any,any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
+            r._items.push(r[col.key] = new columnImpl<any, any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
         }
 
         this.columns = r as unknown as entityOf<T>;
@@ -748,7 +748,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
     columns: entityOf<T>;
 
 }
-export class columnImpl<colType,rowType> implements column<colType, rowType> {
+export class columnImpl<colType, rowType> implements column<colType, rowType> {
     constructor(private settings: ColumnSettings, private defs: columnDefs, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
@@ -770,7 +770,7 @@ export class columnImpl<colType,rowType> implements column<colType, rowType> {
     get displayValue(): string {
         if (this.value != undefined) {
             if (this.settings.displayValue)
-                return this.settings.displayValue(this.value, this.entity);
+                return this.settings.displayValue(this.entity, this.value);
             else
                 return this.value.toString();
         }
@@ -799,10 +799,10 @@ export class columnImpl<colType,rowType> implements column<colType, rowType> {
         let x = typeof (this.settings.validate);
         if (Array.isArray(this.settings.validate)) {
             for (const v of this.settings.validate) {
-                await v(this, this.entity);
+                await v(this.entity, this);
             }
         } else if (typeof this.settings.validate === 'function')
-            await this.settings.validate(this, this.entity);
+            await this.settings.validate(this.entity, this);
     }
 
 
@@ -912,13 +912,13 @@ class EntityFullInfo<T> implements EntityDefs<T> {
     }
 }
 class sortHelper implements SortSegment {
-    constructor(public column: columnDefs, public  isDescending = false) {
+    constructor(public column: columnDefs, public isDescending = false) {
 
     }
     descending(): SortSegment {
         return new sortHelper(this.column, !this.isDescending);
     }
-  }
+}
 export class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
     constructor(private col: columnDefs) {
 
@@ -1024,10 +1024,10 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
             x.jsonLoader = DateTimeJsonLoader;
         }
         if (!x.displayValue) {
-            x.displayValue = x => {
-                if (!x)
+            x.displayValue = (entity, val) => {
+                if (!val)
                     return '';
-                return x.toLocaleString();
+                return val.toLocaleString();
             }
         }
         if (!x.inputType) {

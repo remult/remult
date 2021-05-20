@@ -454,8 +454,10 @@ describe("test row provider", () => {
     expect(rows[2].id).toBe(3);
     expect(rows[3].id).toBe(4);
 
-    rows = await c.find({ orderBy: c =>
-       c.categoryName.descending() });
+    rows = await c.find({
+      orderBy: c =>
+        c.categoryName.descending()
+    });
     expect(rows[0].id).toBe(2);
     expect(rows[1].id).toBe(4);
     expect(rows[2].id).toBe(1);
@@ -491,8 +493,8 @@ describe("test row provider", () => {
     };
     EntityDecorator({ key: '', extends: newCategories })(type);
     ColumnDecorator<typeof type.prototype, string>({
-      validate: (col, entity) =>
-        Validators.required(col, entity, "m")
+      validate: (entity, col) =>
+        Validators.required(entity,col, "m")
     })(type.prototype, "a");
     var c = context.for(type);
     var cat = c.create();
@@ -515,7 +517,7 @@ describe("test row provider", () => {
     };
     EntityDecorator({ key: '' })(type);
     ColumnDecorator<typeof type.prototype, string>({
-      validate: (col, entity) => {
+      validate: (entity, col) => {
         if (!entity.a || entity.a.length == 0)
           col.error = "m";
       }
@@ -563,7 +565,7 @@ describe("test row provider", () => {
       };
       EntityDecorator({ key: 'categories', extends: newCategories })(type);
       ColumnDecorator<typeof type.prototype, string>({
-        validate: async (col, en) => {
+        validate: async (en, col) => {
           if (en._.isNew() || en.a != en._.columns.a.originalValue) {
             if (await c.count(f => f.a.isEqualTo(en.a)))
               en._.columns.a.error = 'already exists';
@@ -870,7 +872,7 @@ describe("test row provider", () => {
         await insert(2, 'yael');
       });
       let c1 = c.create();
-      let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true,()=>undefined);
+      let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
       let cs = { column: c1._.columns.id, valueList: getValueList(c) } as DataControlSettings<newCategories>
       await cc.add(cs);
 
@@ -984,7 +986,7 @@ describe("column collection", () => {
       let c = ctx.for(type);
 
 
-      var cc = new ColumnCollection(() => c, () => false, undefined, () => true,()=>undefined);
+      var cc = new ColumnCollection(() => c, () => false, undefined, () => true, () => undefined);
       await cc.add(c.defs.columns.categoryName);
       expect(cc.items[0] === c.defs.columns.categoryName).toBe(false);
       expect(cc.items[0] === cc.items[0].column).toBe(false);
@@ -996,7 +998,7 @@ describe("column collection", () => {
   if (false)
     itAsync("works ok with filter", async () => {
       let c = ctx.for(newCategories);
-      var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true,()=>undefined);
+      var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
       await cc.add(c.defs.columns.id);
       cc.filterHelper.filterColumn(cc.items[0].column, false, false);
       expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
@@ -1344,12 +1346,12 @@ describe("context", () => {
 });
 describe("test grid basics", () => {
   itAsync("basically works", async () => {
-      let c =await  insertFourRows();
-      let gs = new GridSettings(c);
-      await gs.reloadData();
-      expect(gs.columns.items.length).toBe(6);
-      expect (gs.columns._getColDisplayValue(gs.columns.items[0],gs.items[0])).toBe("1");
-      
+    let c = await insertFourRows();
+    let gs = new GridSettings(c);
+    await gs.reloadData();
+    expect(gs.columns.items.length).toBe(6);
+    expect(gs.columns._getColDisplayValue(gs.columns.items[0], gs.items[0])).toBe("1");
+
 
   });
 });

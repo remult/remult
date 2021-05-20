@@ -9,7 +9,7 @@ class testServerMethodOnEntity extends EntityBase {
         super();
     }
     @Column<testServerMethodOnEntity, string>({
-        validate: (x, y) => {
+        validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";
             }
@@ -52,7 +52,7 @@ describe("test Server method in entity", () => {
     itAsync("test server method on Entity", async () => {
         let x = c.for(testServerMethodOnEntity).create();
         x.a = 'Noam';
-        expect( await x.doItAgain()).toBe("Noam");
+        expect(await x.doItAgain()).toBe("Noam");
 
     });
     itAsync("test validation method", async () => {

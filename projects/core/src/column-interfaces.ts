@@ -32,7 +32,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     allowNull?: boolean;
-    displayValue?: (value: valueType, entity: entityType) => string;
+    displayValue?: (entity: entityType, value: valueType) => string;
     dataType?: any;
     target?: NewEntity<entityType>;
     dbLoader?: dbLoader<valueType>;
@@ -59,7 +59,7 @@ export interface columnDefs<T = any> {
 
 }
 
-export declare type ColumnValidator<valueType = any, entityType = any> = (col: column<valueType, entityType>, entity: entityType) => void | Promise<void>;
+export declare type ColumnValidator<valueType = any, entityType = any> = (entity: entityType, col: column<valueType, entityType>) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 

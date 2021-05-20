@@ -1,6 +1,6 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Context } from '../context';
-import {  ServerController, ServerFunction, ServerMethod } from '../server-action';
+import { ServerController, ServerFunction, ServerMethod } from '../server-action';
 import { Column, getControllerDefs } from '../remult3';
 
 @ServerController({ allowed: true, key: '1' })
@@ -10,7 +10,7 @@ class testBasics {
     }
     static test: string;
     @Column<testBasics, string>({
-        validate: (x, y) => {
+        validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";
             }

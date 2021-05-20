@@ -1996,7 +1996,7 @@ export class entityWithValidationsOnColumn extends EntityBase {
   @Column()
   myId: number;
   @Column<entityWithValidations, string>({
-    validate: (c, t) => {
+    validate: (t, c) => {
       if (!t.name || t.name.length < 3)
         c.error = 'invalid on column';
     }

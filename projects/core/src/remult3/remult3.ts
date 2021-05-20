@@ -13,7 +13,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [V] "dbname of entity can use column names"
 [V] test-paged-foreach
-[] fix validate to have the same parameter order as other things
+[V] fix validate to have the same parameter order as other things
 [] fix _items, to go away.
 [V] "test make sort unique" - both tests
 [] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
