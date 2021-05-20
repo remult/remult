@@ -126,7 +126,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     await this.iAmUsed();
     let select = 'select ';
     let colKeys: columnDefs[] = [];
-    for (const x of this.entity.columns._items) {
+    for (const x of this.entity.columns) {
       if (x.isVirtual) {
 
       }
@@ -208,7 +208,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let resultFilter = new Filter(f => f.isEqualTo(this.entity.idColumn, id));
     if (data.id != undefined)
       resultFilter = new Filter(f => f.isEqualTo(this.entity.idColumn, data.id));
-    for (const x of this.entity.columns._items) {
+    for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
       } if (x.dbReadOnly) { }
@@ -250,7 +250,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let vals = '';
     let added = false;
     let resultFilter = new Filter(x => x.isEqualTo(this.entity.idColumn, data[this.entity.idColumn.key]));
-    for (const x of this.entity.columns._items) {
+    for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }

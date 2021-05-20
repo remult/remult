@@ -14,7 +14,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] "dbname of entity can use column names"
 [V] test-paged-foreach
 [V] fix validate to have the same parameter order as other things
-[] fix _items, to go away.
+[V] fix _items, to go away.
 [V] "test make sort unique" - both tests
 [V] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
 [V] "apiRequireId"
@@ -38,6 +38,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] test default value set in the pojo itself: a=0;
 [] completed = false; didn't serialize as false to json
 [] fix extends to be smarter
+[] reconsider idColumn - maybe internalize it.
 [] "test object column"
 [] "order by api"
 [] review repository api - and consider moving stuff to defs
@@ -138,27 +139,22 @@ export type entityOf<Type> = {
     [Properties in keyof Type]: column<Type[Properties], Type>
 } & {
     find(col: columnDefs): column<any, Type>,
-    readonly _items: column<any, Type>[],
+    [Symbol.iterator]: () => IterableIterator<column<any, Type>>,
     idColumn: column<any, Type>
-    // [Symbol.iterator]() {
-    //     return this.__columns[Symbol.iterator]();
-    //   }
-    //   toArray() {
-    //     return [...this.__columns];
-    //   }
+    
 
 }
 export type columnDefsOf<Type> = {
     [Properties in keyof Type]: columnDefs
 } & {
     find(col: columnDefs): columnDefs,
-    readonly _items: columnDefs[],
+    [Symbol.iterator]: () => IterableIterator<columnDefs>,
     idColumn: columnDefs
 }
 
 
 export type sortOf<Type> = {
-    [Properties in keyof Type]: SortSegment&{descending():SortSegment}
+    [Properties in keyof Type]: SortSegment & { descending(): SortSegment }
 }
 export type idOf<Type> = {
     [Properties in keyof Type]: IdDefs

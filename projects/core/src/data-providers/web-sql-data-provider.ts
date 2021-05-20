@@ -35,7 +35,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     }
     async createTable(entity: EntityDefs<any>) {
         let result = '';
-        for (const x of entity.columns._items) {
+        for (const x of entity.columns) {
             if (!x.dbReadOnly) {
                 if (result.length != 0)
                     result += ',';

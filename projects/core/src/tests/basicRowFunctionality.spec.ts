@@ -1490,7 +1490,7 @@ describe("data api", () => {
 
   it("columnsAreOk", () => {
     let c = new Context().for(newCategories).create();
-    expect(c._.columns._items.length).toBe(6);
+    expect([...c._.columns].length).toBe(6);
 
   });
 

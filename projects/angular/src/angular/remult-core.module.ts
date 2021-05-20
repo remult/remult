@@ -115,7 +115,7 @@ export async function getValueList<T >(repository:Repository<T>, args?: {
   }
   if (!args.captionColumn) {
     let idCol = args.idColumn(repository.defs);
-    for (const keyInItem of repository.defs.columns._items) {
+    for (const keyInItem of repository.defs.columns) {
       if (keyInItem != idCol) {
         args.captionColumn = x => x.columns.find(keyInItem);
         break;

@@ -232,7 +232,7 @@ export class ColumnCollection<rowType = any> {
         let ignoreCol: columnDefs = undefined;
         //   if (r instanceof IdEntity)
         //    ignoreCol = r.id;
-        for (const c of defs.columns._items) {
+        for (const c of defs.columns) {
           if (c != ignoreCol)
             this.add(c);
         }

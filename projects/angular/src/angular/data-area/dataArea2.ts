@@ -26,7 +26,7 @@ export class DataArea2Component implements OnChanges {
   ngOnChanges(): void {
     if (this.object) {
       this.settings = new DataAreaSettings({
-        columnSettings: () => getControllerDefs(this.object).columns._items
+        columnSettings: () => [...getControllerDefs(this.object).columns]
       });
     }
     if (this.settings && this.settings.columns) {

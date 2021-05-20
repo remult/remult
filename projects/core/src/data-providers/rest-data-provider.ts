@@ -25,14 +25,14 @@ class RestEntityDataProvider implements EntityDataProvider {
   }
   translateFromJson(row: any) {
     let result = {};
-    for (const col of this.entity.columns._items) {
+    for (const col of this.entity.columns) {
       result[col.key] = col.jsonLoader.fromJson(row[col.key]);
     }
     return result;
   }
   translateToJson(row: any) {
     let result = {};
-    for (const col of this.entity.columns._items) {
+    for (const col of this.entity.columns) {
       result[col.key] = col.jsonLoader.toJson(row[col.key]);
     }
     return result;

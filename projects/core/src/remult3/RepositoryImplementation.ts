@@ -385,7 +385,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     }
     extractWhere(filterInfo: { get: (key: string) => any; }): Filter {
-        return extractWhere(this.defs.columns._items, filterInfo);
+        return extractWhere([...this.defs.columns], filterInfo);
     }
 }
 
@@ -562,12 +562,13 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
     get columns(): entityOf<T> {
         if (!this._columns) {
+            let _items = [];
             let r = {
                 find: (c: column<any, T>) => r[c.key],
-                _items: []
+                [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
-                r._items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this));
+                _items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this));
             }
 
             this._columns = r as unknown as entityOf<T>;
@@ -645,7 +646,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
 
     async loadDataFrom(data: any) {
-        for (const col of this.info.columns._items) {
+        for (const col of this.info.columns) {
             this.instance[col.key] = data[col.key];
         }
         await this.calcServerExpression();
@@ -669,7 +670,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         return this._isNew;
     }
     wasChanged(): boolean {
-        for (const col of this.info.columns._items) {
+        for (const col of this.info.columns) {
             if (this.instance[col.key] != this.originalValues[col.key])
                 return true;
         }
@@ -711,13 +712,14 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
         super(columnsInfo, instance, context);
 
 
+        let _items = [];
         let r = {
             find: (c: column<any, T>) => r[c.key],
-            _items: []
+            [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
         for (const col of columnsInfo) {
-            r._items.push(r[col.key] = new columnImpl<any, any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
+            _items.push(r[col.key] = new columnImpl<any, any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
         }
 
         this.columns = r as unknown as entityOf<T>;
@@ -725,7 +727,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
 
     }
     async __performColumnAndEntityValidations() {
-        for (const col of this.columns._items) {
+        for (const col of this.columns) {
             if (col instanceof columnImpl) {
                 await col.__performValidation();
             }
@@ -849,13 +851,14 @@ class EntityFullInfo<T> implements EntityDefs<T> {
     constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions) {
 
 
+        let _items = [];
         let r = {
             find: (c: column<any, T>) => r[c.key],
-            _items: []
+            [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
         for (const x of columnsInfo) {
-            r._items.push(r[x.key] = new columnDefsImpl(x, this));
+            _items.push(r[x.key] = new columnDefsImpl(x, this));
         }
 
         this.columns = r as unknown as entityOf<T>;
@@ -873,7 +876,7 @@ class EntityFullInfo<T> implements EntityDefs<T> {
             if (this.columns["id"])
                 this.idColumn = this.columns["id"];
             else
-                this.idColumn = this.columns._items[0];
+                this.idColumn = [...this.columns][0];
         }
     }
 
@@ -888,14 +891,14 @@ class EntityFullInfo<T> implements EntityDefs<T> {
 
     createFilterOf(): filterOf<T> {
         let r = {};
-        for (const c of this.columns._items) {
+        for (const c of this.columns) {
             r[c.key] = new filterHelper(c);
         }
         return r as filterOf<T>;
     }
     createSortOf(): sortOf<T> {
         let r = {};
-        for (const c of this.columns._items) {
+        for (const c of this.columns) {
             r[c.key] = new sortHelper(c);
         }
         return r as sortOf<T>;

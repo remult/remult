@@ -45,6 +45,7 @@ describe("test Server Controller basics", () => {
         expect(r.result).toBe('hello noam');
     });
     itAsync("test server method", async () => {
+        
         let x = new testBasics(new Context());
         x.a = 'Noam';
         let r = await x.doIt();
