@@ -16,7 +16,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] fix validate to have the same parameter order as other things
 [] fix _items, to go away.
 [V] "test make sort unique" - both tests
-[] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
+[V] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
 [V] "apiRequireId"
 [V] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
 [V] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
@@ -60,6 +60,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] reconsider the IdColumn member - might make sense to remove it
 
 ## review with Yoni
+[] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
 [] "negative decimal" - inputValue
 [] "Number is always a number"
     [] "test number is always number"
