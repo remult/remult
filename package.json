@@ -11,7 +11,6 @@
     "app-server-watch": "tsc -p tsconfig.server.json --watch",
     "build": "npm run core-build && npm run remult-angular-build ",
     "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/core",
-    
     "publish": "npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag pre-release && cd.. && cd angular && npm publish  --access public --tag pre-release && cd.. ",
     "release": "npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
     "patch-versions": "cd projects/core && npm version patch && cd.. && cd angular && npm version patch && cd..",
@@ -61,6 +60,7 @@
     "mssql": "^4.2.3",
     "password-hash": "^1.2.2",
     "pg": "^7.6.1",
+    "reflect-metadata": "^0.1.13",
     "rxjs": "~6.3.3",
     "uuid": "^3.3.2",
     "vuepress-plugin-code-copy": "^1.0.6",

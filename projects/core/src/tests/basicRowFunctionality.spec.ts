@@ -84,7 +84,7 @@ export class TestDataApiResponse implements DataApiResponse {
   error(data: DataApiError) {
     fail('error: ' + data + " " + JSON.stringify(data));
   }
-  
+
 }
 
 
@@ -1250,51 +1250,52 @@ describe("data api", () => {
     });
     d.test();
   });
-  if (false)
-    // itAsync("allow api read depends also on api crud", async () => {
-    //   let sc = new ServerContext();
-    //   expect(sc.for_old(class extends Entity {
-    //     constructor() {
-    //       super({ name: 'a', allowApiCRUD: false })
-    //     }
-    //   })._getApiSettings().allowRead).toBe(false);
-    // });
-    // itAsync("allow api read depends also on api crud", async () => {
-    //   let sc = new ServerContext();
-    //   expect(sc.for_old(class extends Entity {
-    //     constructor() {
-    //       super({ name: 'a', allowApiCRUD: false, allowApiRead: true })
-    //     }
-    //   })._getApiSettings().allowRead).toBe(true);
-    //});
+
+  itAsync("allow api read depends also on api crud", async () => {
+    let sc = new ServerContext();
+    let type = class extends EntityBase {
+
+    }
+    Entity({ allowApiCrud: false, key: 'a' })(type);
+    expect(sc.for(type)._getApiSettings().allowRead).toBe(false);
+  });
+  itAsync("allow api read depends also on api crud", async () => {
+    let sc = new ServerContext();
+    let type = class extends EntityBase {
+
+    }
+    Entity({ allowApiCrud: false, allowApiRead: true, key: 'a' })(type);
+    expect(sc.for(type)._getApiSettings().allowRead).toBe(true);
+    
+  });
 
 
 
 
-    itAsync("delete id  not Allowed", async () => {
-      let type = class extends newCategories {
+  itAsync("delete id  not Allowed", async () => {
+    let type = class extends newCategories {
 
-      };
-      Entity({
-        key: '',
-        extends: newCategories,
-        allowApiDelete: false
-      })(type);
-      let c = await createData(async i => {
-        await i(1, 'noam', 'a');
-        await i(2, 'yael', 'b');
-        await i(3, 'yoni', 'a');
-      }, type);
+    };
+    Entity({
+      key: '',
+      extends: newCategories,
+      allowApiDelete: false
+    })(type);
+    let c = await createData(async i => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, type);
 
-      var api = new DataApi(c);
-      let t = new TestDataApiResponse();
-      let d = new Done();
-      t.forbidden = () => {
-        d.ok();
-      };
-      await api.delete(t, 2);
-      d.test();
-    });
+    var api = new DataApi(c);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.forbidden = () => {
+      d.ok();
+    };
+    await api.delete(t, 2);
+    d.test();
+  });
   if (false)
     itAsync("apiRequireId", async () => {
       let type = class extends newCategories {
@@ -1846,7 +1847,7 @@ describe("test rest data provider translates data correctly", () => {
     Column({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
-    let r = c.packWhere(x=>x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
+    let r = c.packWhere(x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
   itAsync("put works", async () => {
