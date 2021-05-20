@@ -1,10 +1,11 @@
-import { itAsync, Done } from "../testHelper.spec";
+import { itAsync, Done, fitAsync } from "../testHelper.spec";
 import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
-import { Context } from '../../context';
+import { Context, ServerContext } from '../../context';
 import { Categories } from "../remult-3-entities";
-import { Entity } from "../../remult3";
+import { Column, Entity, EntityBase } from "../../remult3";
+import { InMemoryDataProvider } from "../../..";
 
 describe("data api", () => {
     let context = new Context();
@@ -44,6 +45,40 @@ describe("data api", () => {
         d.test();
         expect((await c.find()).length).toBe(0);
     });
+    itAsync("allow column update based on new row only", async () => {
+
+        let type = class extends EntityBase {
+            id: number;
+            val: string;
+        }
+        Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
+        Column({ dataType: Number })(type.prototype, 'id');
+        Column<EntityBase, string>({
+            dataType: String,
+            allowApiUpdate: (c, x) => x._.isNew()
+        })(type.prototype, 'val');
+        let context = new ServerContext();
+        context.setDataProvider(new InMemoryDataProvider());
+        let c = context.for(type);
+
+        var api = new DataApi(c);
+        let t = new TestDataApiResponse();
+        t.success = () => { };
+        t.created = () => { };
+        let d = new Done();
+        await api.post(t, {
+            id: 1,
+            val: 'noam'
+        });
+        await api.put(t, 1, {
+            val: 'yael'
+        });
+
+        var x = await c.find({ where: c => c.id.isEqualTo(1) });
+        expect(x[0].val).toBe('noam');
+
+    });
+
     // it("test value list type",()=>{
     //     let x = new StatusColumn();
     //     expect(x.info.isNumeric).toBe(true);
@@ -55,15 +90,15 @@ describe("data api", () => {
     key: undefined,
     allowApiUpdate: true,
     allowApiInsert: true,
-    extends:Categories,
+    extends: Categories,
     saving: (t) => {
         if (t.categoryName.indexOf('1') >= 0)
             t._.columns.categoryName.error = 'invalid'
     }
 })
 class CategoriesForThisTest extends Categories {
-    
-   
+
+
 
 
 }

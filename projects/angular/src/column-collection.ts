@@ -356,7 +356,7 @@ export class InputControl<T> implements column<T, any> {
   allowNull: boolean;
   dbType: string;
   target: NewEntity<any>;
-  allowApiUpdate: Allowed;
+  readonly: boolean;
 
 
 }

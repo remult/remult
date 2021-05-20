@@ -1,4 +1,5 @@
-import { EntityBase, Column, Entity } from "../remult3";
+import { GridSettings } from "../../../angular";
+import { EntityBase, Column, Entity, Repository } from "../remult3";
 import { Status } from "./testModel/models";
 
 @Entity({
@@ -23,6 +24,8 @@ export interface CategoriesForTesting extends EntityBase {
     description: string;
     status: Status;
 }
+let r :Repository<CategoriesForTesting>;
+
 @Entity({
     key: 'Categories',
     allowApiCrud: true

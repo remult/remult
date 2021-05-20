@@ -77,25 +77,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
             if (options.allowApiRead === undefined)
                 options.allowApiRead = options.allowApiCrud;
         }
-        let checkAllowed = (x: EntityAllowed<any>, entity: any) => {
-            if (Array.isArray(x)) {
-                {
-                    for (const item of x) {
-                        if (checkAllowed(item, entity))
-                            return true;
-                    }
-                }
-            }
-            else if (typeof (x) === "function") {
-                return x(this.context, entity)
-            } else return this.context.isAllowed(x as Allowed);
-        }
+
         return {
             name: options.key,
             allowRead: this.context.isAllowed(options.allowApiRead),
-            allowUpdate: (e) => checkAllowed(options.allowApiUpdate, e),
-            allowDelete: (e) => checkAllowed(options.allowApiDelete, e),
-            allowInsert: (e) => checkAllowed(options.allowApiInsert, e),
+            allowUpdate: (e) => checkEntityAllowed(this.context, options.allowApiUpdate, e),
+            allowDelete: (e) => checkEntityAllowed(this.context, options.allowApiDelete, e),
+            allowInsert: (e) => checkEntityAllowed(this.context, options.allowApiInsert, e),
             requireId: this.context.isAllowed(options.apiRequireId),
             get: {
                 where: options.apiDataFilter
@@ -518,7 +506,7 @@ class rowHelperBase<T>
         for (const col of this.columnsInfo) {
             if (body[col.key])
                 if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                    if (!this.context || col.settings.allowApiUpdate === undefined || this.context.isAllowed(col.settings.allowApiUpdate)) {
+                    if (!this.context || col.settings.allowApiUpdate === undefined || checkEntityAllowed(this.context, col.settings.allowApiUpdate, this.instance)) {
                         this.instance[col.key] = col.settings.jsonLoader.fromJson(body[col.key]);
                     }
 
@@ -753,7 +741,7 @@ export class columnImpl<colType, rowType> implements column<colType, rowType> {
 
     }
     target: NewEntity<any> = this.settings.target;
-    allowApiUpdate: Allowed = this.settings.allowApiUpdate;
+    readonly: boolean = this.defs.readonly;
     allowNull = this.defs.allowNull;
     inputType: string = this.settings.inputType;
     inputLoader = this.settings.inputLoader;
@@ -824,10 +812,12 @@ export class columnDefsImpl implements columnDefs {
             this.isVirtual = true;
         if (colInfo.settings.sqlExpression)
             this.dbReadOnly = true;
+        if (typeof (this.colInfo.settings.allowApiUpdate) === "boolean")
+            this.readonly = this.colInfo.settings.allowApiUpdate;
 
     }
     target: NewEntity<any> = this.colInfo.settings.target;
-    allowApiUpdate: Allowed = this.colInfo.settings.allowNull;
+    readonly: boolean;
 
     inputLoader = this.colInfo.settings.inputLoader;
     allowNull = !!this.colInfo.settings.allowNull;
@@ -1092,7 +1082,7 @@ export class CompoundId implements columnDefs<string>{
             console.log(columns);
     }
     target: NewEntity<any>;
-    allowApiUpdate: Allowed;
+    readonly: true;
     inputLoader: inputLoader<string>;
     allowNull: boolean;
     dbReadOnly: boolean;
@@ -1106,4 +1096,17 @@ export class CompoundId implements columnDefs<string>{
     dataType: any;
     dbType: string;
 
+}
+function checkEntityAllowed(context: Context, x: EntityAllowed<any>, entity: any) {
+    if (Array.isArray(x)) {
+        {
+            for (const item of x) {
+                if (checkEntityAllowed(context, item, entity))
+                    return true;
+            }
+        }
+    }
+    else if (typeof (x) === "function") {
+        return x(context, entity)
+    } else return context.isAllowed(x as Allowed);
 }

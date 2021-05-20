@@ -1,4 +1,4 @@
-import { Allowed } from './context';
+import { Allowed, EntityAllowed } from './context';
 import { column, columnDefsOf, NewEntity } from './remult3';
 
 
@@ -22,7 +22,7 @@ export interface inputLoader<valueType> {
 export interface ColumnSettings<valueType = any, entityType = any> {
     key?: string;
     includeInApi?: Allowed;
-    allowApiUpdate?: Allowed;
+    allowApiUpdate?: EntityAllowed<entityType>;
     caption?: string;
     defaultValue?: (entity: entityType) => valueType | Promise<valueType>;
     validate?: ColumnValidator<valueType, entityType> | ColumnValidator<valueType, entityType>[];
@@ -55,7 +55,7 @@ export interface columnDefs<T = any> {
     readonly allowNull: boolean;
     readonly dbType: string;
     readonly target: NewEntity<any>;
-    readonly allowApiUpdate: Allowed;
+    readonly readonly: boolean;
 
 }
 

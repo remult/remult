@@ -76,8 +76,8 @@ export function decorateDataSettings(col: columnDefs, x: DataControlSettings) {
             x.readOnly = true;
         else
 
-            if (typeof col.allowApiUpdate === 'boolean')
-                x.readOnly = !col.allowApiUpdate;
+            if (typeof col.readonly === 'boolean')
+                x.readOnly = !col.readonly;
 
 
     }

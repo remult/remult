@@ -1407,7 +1407,7 @@ class mockColumnDefs implements columnDefs {
 
   }
   target: NewEntity<any>;
-  allowApiUpdate: Allowed;
+  readonly: boolean;
   readonly dbReadOnly: boolean;
   readonly isVirtual: boolean;
   readonly key: string;
