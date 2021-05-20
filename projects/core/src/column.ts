@@ -1,5 +1,5 @@
 import { Allowed, RoleChecker } from './context';
-import { columnDefs, ColumnSettings,  inputLoader, jsonLoader, ValueListItem } from './column-interfaces';
+import { columnDefs, ColumnSettings, inputLoader, jsonLoader, ValueListItem } from './column-interfaces';
 import { DefaultStorage } from './columns/storage/default-storage';
 import { AndFilter, Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
@@ -21,8 +21,7 @@ export function makeTitle(name: string) {
 
 
 
-export class CompoundIdColumn 
-{
+export class CompoundIdColumn {
   columns: columnDefs[];
   constructor(...columns: columnDefs[]) {
     // super({
@@ -90,12 +89,25 @@ export class CompoundIdColumn
 
 
 export declare type classWithNew<T> = { new(...args: any[]): T; };
+export function ValueList<T extends ValueListItem>(type: classWithNew<T>, settings?: ColumnSettings<T>): ColumnSettings<T> {
+  let info = ValueListInfo.get(type);
+  return {
+    ...{
+      dbType: info.isNumeric ? 'int' : undefined,
+      jsonLoader: {
+        fromJson: x => info.byId(x),
+        toJson: x => x.id
+      }
 
-export class ValueListTypeInfo<T extends ValueListItem>{
-  static get<T extends ValueListItem>(type: classWithNew<T>): ValueListTypeInfo<T> {
+    },
+    ...settings
+  }
+}
+export class ValueListInfo<T extends ValueListItem>{
+  static get<T extends ValueListItem>(type: classWithNew<T>): ValueListInfo<T> {
     let r = typeCache.get(type);
     if (!r)
-      r = new ValueListTypeInfo(type);
+      r = new ValueListInfo(type);
     typeCache.set(type, r);
     return r;
   }
@@ -126,7 +138,8 @@ export class ValueListTypeInfo<T extends ValueListItem>{
     return this.byIdMap.get(key);
   }
 }
-const typeCache = new Map<any, ValueListTypeInfo<any>>();
+const typeCache = new Map<any, ValueListInfo<any>>();
+
 
 
 export class ManyToOne<T>{

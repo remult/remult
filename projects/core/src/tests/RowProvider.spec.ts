@@ -4,7 +4,7 @@ import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-pro
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Allowed, Context, ServerContext } from '../context';
-import { OneToMany } from '../column';
+import { OneToMany, ValueList, ValueListInfo } from '../column';
 import { FilterHelper } from '../filter/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
@@ -306,35 +306,23 @@ describe("grid filter stuff", () => {
   });
 });
 
-// describe("Closed List  column", () => {
+describe("Closed List  column", () => {
 
-//   it("Basic Operations", () => {
-//     let x = new LanguageColumn();
-//     x.rawValue = 0;
-//     expect(x.value).toBe(Language.Hebrew);
-//     x.value = Language.Russian;
-//     expect(x.rawValue).toBe(10);
+  it("Basic Operations", () => {
+    let x = ValueList(Language);
 
-//     expect(x.getOptions().length).toBe(3);
-//   });
-//   it("loads and saved from Pojo correctly", () => {
-//     let x = new LanguageColumn();
-//     x.defs.key = 'abc';
-//     x.value = Language.Russian;
-//     let y: any = {};
-//     x.__addToPojo(y);
-//     expect(y[x.defs.key]).toBe(10);
-//     x.value = Language.Hebrew;
-//     expect(x.value).toBe(Language.Hebrew);
-//     x.__loadFromPojo({ 'abc': 10 });
-//     expect(x.value).toBe(Language.Russian);
 
-//   });
-//   it("test auto caption", () => {
-//     let val = ValueListTypeInfo.get(valueList);
-//     expect(valueList.firstName.caption).toBe('First Name');
-//   });
-// });
+    expect(x.jsonLoader.fromJson(0)).toBe(Language.Hebrew);
+    expect(x.jsonLoader.toJson(Language.Russian)).toBe(10);
+
+    expect(ValueListInfo.get(Language).getOptions().length).toBe(3);
+  });
+ 
+  it("test auto caption", () => {
+    let val = ValueListInfo.get(valueList);
+    expect(valueList.firstName.caption).toBe('First Name');
+  });
+});
 
 
 describe("test row provider", () => {
@@ -494,7 +482,7 @@ describe("test row provider", () => {
     EntityDecorator({ key: '', extends: newCategories })(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: (entity, col) =>
-        Validators.required(entity,col, "m")
+        Validators.required(entity, col, "m")
     })(type.prototype, "a");
     var c = context.for(type);
     var cat = c.create();

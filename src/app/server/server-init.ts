@@ -8,6 +8,8 @@ import * as passwordHash from 'password-hash';
 
 import { ServerController, SqlDatabase } from '@remult/core';
 import { Column, Entity, entityInfo, columnsOfType, getControllerDefs } from '../../../projects/core/src/remult3';
+import { ValueListInfo } from '../../../projects/core/src/column';
+import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 
 
 
@@ -37,11 +39,20 @@ export async function serverInit() {
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
     //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
-    
+
+    console.log({
+        classTarget, columnTarget, type,
+        const:type.constructor,
+        prot:type.prototype,
+        getPro:Object.getPrototypeOf(type),
+        
+    })
+    console.dir(type);
     return r;
 
 }
 let classTarget, columnTarget;
+let type;
 
 
 function classDecorator() {
@@ -50,16 +61,25 @@ function classDecorator() {
 function columnDecorator() {
     return (target, key) => {
         columnTarget = target.constructor;
-    }
-}
-
-class baseClass {
-    constructor() {
+        type = Reflect.getMetadata("design:type", target, key);
 
     }
 }
+
 @classDecorator()
-class myClass extends baseClass {
+export class Language {
+    static Hebrew = new Language(0, 'עברית');
+    static Russian = new Language(10, 'רוסית');
+    static Amharit = new Language(20, 'אמהרית');
+    constructor(public id: number,
+        public caption: string) {
+
+    }
+
+}
+
+
+class myEntity {
     @columnDecorator()
-    a: string;
+    a:Language= Language.Hebrew;
 }

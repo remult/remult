@@ -112,7 +112,7 @@ export class PostgresSchemaBuilder {
 
             if (r.rows.length == 0) {
                 let result = '';
-                for (const x of e.columns._items) {
+                for (const x of e.columns) {
                     if (!x.dbReadOnly) {
                         if (result.length != 0)
                             result += ',';
@@ -191,7 +191,7 @@ export class PostgresSchemaBuilder {
         FROM information_schema.columns 
         WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
-            for (const col of e.columns._items) {
+            for (const col of e.columns) {
                 if (!col.dbReadOnly)
                     if (!cols.includes(col.dbName.toLocaleLowerCase())) {
                         let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(col)}`;

@@ -1040,15 +1040,16 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
             x.dbLoader = BoolDbLoader;
     }
 
-    if (!settings.dbLoader)
-        settings.dbLoader = {
-            fromDb: x => x,
-            toDb: x => x
-        };
+
     if (!settings.jsonLoader)
         settings.jsonLoader = {
             fromJson: x => x,
             toJson: x => x
+        };
+    if (!settings.dbLoader)
+        settings.dbLoader = {
+            fromDb: x => settings.jsonLoader.fromJson(x),
+            toDb: x => settings.jsonLoader.toJson(x)
         };
     if (!settings.inputLoader)
         settings.inputLoader = {

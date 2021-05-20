@@ -2,7 +2,7 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
-import { getControllerDefs } from '../../../../core';
+import { getControllerDefs } from '@remult/core';
 
 import { ColumnCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';

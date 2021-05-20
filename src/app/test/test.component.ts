@@ -61,7 +61,7 @@ export class TestComponent {
 })
 class Tasks extends IdEntity {
   @Column<Tasks, string>({
-    validate: (col, row) => {
+    validate: (row, col) => {
       if (col.value.length < 3)
         col.error = "is too short";
       if (row.title.length < 3)
