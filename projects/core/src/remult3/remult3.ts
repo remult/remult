@@ -15,8 +15,8 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] original data should reflect the values after server expressions
 [] use helmet instead of force https
 [] fix timeout by using a repeat mechanism in context.
-[] replace method not allowed with forbidden - when something is not allowed
-[] add reflect metadata to dependencies
+[V] replace method not allowed with forbidden - when something is not allowed
+[V] add reflect metadata to dependencies
 [] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [] "dbname of entity can use column names"
 [] test-paged-foreach
@@ -43,7 +43,7 @@ import { RowEvents } from "../__EntityValueProvider";
 
 
 ## Server Controller
-[] rebuild validation model for ServerMethod
+[V] rebuild validation model for ServerMethod
 
 ## closed list column
 [] "Closed List  column"
