@@ -84,10 +84,9 @@ export function decorateDataSettings(colInput: ColumnDefinitions | EntityColumn<
     if (x.readOnly == undefined) {
         if (col.dbReadOnly)
             x.readOnly = true;
-        else
 
-            if (typeof col.readonly === 'boolean')
-                x.readOnly = !col.readonly;
+        /*if (typeof col.readonly === 'boolean')
+            x.readOnly = !col.readonly;*/
 
 
     }

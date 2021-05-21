@@ -1,10 +1,11 @@
 import { Allowed, RoleChecker } from './context';
-import { ColumnDefinitions, ColumnSettings, inputLoader, jsonLoader, ValueListItem } from './column-interfaces';
-import { DefaultStorage } from './columns/storage/default-storage';
+import { ColumnDefinitions, ColumnSettings, ValueConverter, ValueListItem } from './column-interfaces';
+
 import { AndFilter, Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
 
-import { EntityWhere, FindOptions, Repository } from './remult3';
+import { ClassType, EntityWhere, FindOptions, Repository } from './remult3';
+
 
 
 
@@ -88,24 +89,60 @@ export class CompoundIdColumn {
 }
 
 
-export declare type classWithNew<T> = { new(...args: any[]): T; };
-export function ValueList<T extends ValueListItem>(type: classWithNew<T>, settings?: ColumnSettings<T>): ColumnSettings<T> {
-  let info = ValueListInfo.get(type);
-  return {
-    ...{
-      dbType: info.isNumeric ? 'int' : undefined,
-      dataType: type,
-      jsonLoader: {
-        fromJson: x => info.byId(x),
-        toJson: x => x ? x.id : undefined
-      }
 
-    },
-    ...settings
+
+
+export class ValueListValueConverter<T extends ValueListItem>{
+  private info = ValueListInfo.get(this.type);
+  constructor(private type: ClassType<T>) {
+    if (this.info.isNumeric) {
+      this.columnTypeInDb = 'int';
+    }
+  }
+  fromJson(val: any): T {
+    return this.byId(val);
+  }
+  toJson(val: T) {
+    if (!val)
+      return undefined;
+    return val.id;
+  }
+  fromDb(val: any): T {
+    return this.fromJson(val);
+  }
+  toDb(val: T) {
+    return this.toJson(val);
+  }
+  toInput(val: T, inputType: string): string {
+    return this.toJson(val);
+  }
+  fromInput(val: string, inputType: string): T {
+    return this.fromJson(val);
+  }
+  displayValue?(val: T): string {
+    if (!val)
+      return '';
+    return val.caption;
+  }
+  columnTypeInDb?: string;
+  inputType?: string;
+  getOptions() {
+    return this.info.getOptions();
+  }
+  byId(key: any) {
+    if (key === undefined)
+      return undefined;
+    if (this.info.isNumeric)
+      key = +key;
+
+    return this.info.byId(key);
   }
 }
-export class ValueListInfo<T extends ValueListItem>{
-  static get<T extends ValueListItem>(type: classWithNew<T>): ValueListInfo<T> {
+
+
+
+class ValueListInfo<T extends ValueListItem> {
+  static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
     let r = typeCache.get(type);
     if (!r)
       r = new ValueListInfo(type);
@@ -130,6 +167,7 @@ export class ValueListInfo<T extends ValueListItem>{
       }
     }
   }
+
   getOptions() {
     return this.values;
   }

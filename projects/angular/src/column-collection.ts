@@ -1,4 +1,4 @@
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, FilterHelper, IdEntity, ValueListItem, rowHelper, dbLoader, jsonLoader, inputLoader, ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, FilterHelper, IdEntity, ValueListItem, rowHelper,  ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 
@@ -317,17 +317,14 @@ export class InputControl<T> implements EntityColumn<T, any> {
       allowNull: settings.allowNull,
       caption: settings.caption,
 
-      dbLoader: settings.dbLoader,
-      jsonLoader: settings.jsonLoader,
-      inputLoader: settings.inputLoader,
+      valueConverter: settings.valueConverter,
       dataType: settings.dataType,
       key: settings.key,
       dbName: settings.dbName,
       dbReadOnly: false,
-      dbType: settings.dbType,
       inputType: settings.inputType,
       isServerExpression: false,
-      readonly: false,
+      
       target: undefined
 
     }
@@ -349,8 +346,8 @@ export class InputControl<T> implements EntityColumn<T, any> {
       this.settings.valueChange()
   };
   originalValue: T;
-  get inputValue(): string { return this.settings.inputLoader.toInput(this.value); }
-  set inputValue(val: string) { this.value = this.settings.inputLoader.fromInput(val); };
+  get inputValue(): string { return this.settings.valueConverter.toInput(this.value,this.inputType); }
+  set inputValue(val: string) { this.value = this.settings.valueConverter.fromInput(val,this.inputType); };
   wasChanged(): boolean {
     return this.originalValue != this.value;
   }

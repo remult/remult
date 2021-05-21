@@ -6,8 +6,9 @@ import { Context, ServerContext } from '../../context';
 import { Categories } from "../remult-3-entities";
 import { Column, Entity, EntityBase } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
-import { ValueListInfo } from "../../column";
+
 import { Status } from "../testModel/models";
+import { ValueListValueConverter } from "../../column";
 
 describe("data api", () => {
     let context = new Context();
@@ -119,8 +120,8 @@ describe("data api", () => {
     });
 
      it("test value list type",()=>{
-         let x = ValueListInfo.get(Status);
-         expect(x.isNumeric).toBe(true);
+         let x = new ValueListValueConverter(Status);
+         expect(x.columnTypeInDb).toBe("int");
      });
 
 });

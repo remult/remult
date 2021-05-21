@@ -4,18 +4,7 @@ import { EntityColumn, ColumnDefinitionsOf, ClassType } from './remult3';
 
 
 
-export interface dbLoader<valueType> {
-    toDb(val: valueType): any;
-    fromDb(val: any): valueType;
-}
-export interface jsonLoader<valueType> {
-    toJson(val: valueType): any;
-    fromJson(val: any): valueType;
-}
-export interface inputLoader<valueType> {
-    toInput(val: valueType): string;
-    fromInput(val: string): valueType;
-}
+
 
 
 
@@ -24,7 +13,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     target?: ClassType<entityType>;
     dataType?: any;
 
-    
+
     caption?: string;
     displayValue?: (entity: entityType, value: valueType) => string;
     defaultValue?: (entity: entityType) => valueType | Promise<valueType>;
@@ -36,11 +25,8 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     sqlExpression?: string | ((entity: ColumnDefinitionsOf<entityType>) => string);
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
-    dbLoader?: dbLoader<valueType>;
-    jsonLoader?: jsonLoader<valueType>;
-    inputLoader?: inputLoader<valueType>;
-    dbType?: string;
-    
+    valueConverter?: ValueConverter<valueType>;
+
     includeInApi?: Allowed;
     allowApiUpdate?: EntityAllowed<entityType>;
 }
@@ -52,32 +38,25 @@ export interface ColumnDefinitions<T = any> {
     readonly caption: string;
     readonly inputType: string;
     readonly allowNull: boolean;
-    
-    
+
+
     readonly isServerExpression: boolean;
     readonly dbReadOnly: boolean;
     readonly dbName: string;
-    
-    readonly dbLoader: dbLoader<T>;
-    readonly jsonLoader: jsonLoader<T>;
-    readonly inputLoader: inputLoader<T>;
-    readonly dbType: string;
-    
-    
-    
-    
-    readonly readonly: boolean;//to be removed
+    readonly valueConverter: ValueConverter<T>;
 
 }
-export interface ValueConverter<T>{
-    fromJson(val:any):T
-    toJson(val:T):any;
-    fromDb(val:any):T
-    toDb(val:T):any;
-    readonly columnTypeInDb:string;
-    toInput(val:T,inputType:string):string;
-    fromInput(val:T,inputType:string):string;
-    
+export interface ValueConverter<T> {
+    fromJson(val: any): T;
+    toJson(val: T): any;
+    fromDb(val: any): T
+    toDb(val: T): any;
+    toInput(val: T, inputType: string): string;
+    fromInput(val: string, inputType: string): T;
+    displayValue?(val: T): string;
+    readonly columnTypeInDb?: string;
+    readonly inputType?: string;
+
 
 }
 

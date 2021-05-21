@@ -10,6 +10,7 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 import { Column, Entity, Repository } from '../src/remult3';
+import { DecimalValueConverter } from '../src/columns/loaders';
 
 
 
@@ -245,7 +246,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   public success(data: any): void {
     this.r.json(data);
   }
-  
+
   public created(data: any): void {
     this.r.statusCode = 201;
     this.r.json(data);
@@ -428,7 +429,7 @@ export class EntityQueueStorage implements QueueStorage {
 
 @Entity({
   key: 'jobsInQueue',
-  includeInApi:false
+  includeInApi: false
 })
 export class JobsInQueueEntity extends IdEntity {
   @Column()
@@ -445,7 +446,7 @@ export class JobsInQueueEntity extends IdEntity {
   done: boolean;
   @Column()
   error: boolean;
-  @Column({ dbType: 'decimal' })
+  @Column({ valueConverter: DecimalValueConverter })
   progress: number;
 }
 

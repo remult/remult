@@ -1,7 +1,7 @@
-import { ValueList } from "../../column";
-import { StorableClass as Storable } from "../../remult3";
+import { ValueListValueConverter } from "../../column";
+import { Storable as Storable } from "../../remult3";
 
-@Storable(ValueList(Status))
+@Storable({ valueConverter: new ValueListValueConverter(Status) })
 export class Status {
   static open = new Status(0, "open");
   static closed = new Status(1, "closed");

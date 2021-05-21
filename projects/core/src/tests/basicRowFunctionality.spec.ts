@@ -21,8 +21,9 @@ import { OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories } from './remult-3-entities';
 
 import { Column, CompoundId, decorateColumnSettings, Entity, EntityBase } from '../remult3';
+import { DateOnlyValueConverter } from '../columns/loaders';
 
-import { DateOnlyJsonLoader } from '../columns/loaders';
+
 
 
 export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
@@ -690,7 +691,7 @@ describe("data api", () => {
     Entity<typeof type.prototype>({
       key: '',
       defaultOrderBy: x => x.categoryName,
-      
+
     })(type);
     await testAllDbs(async ({ createData }) => {
       let c = await createData(async insert => {
@@ -712,7 +713,7 @@ describe("data api", () => {
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
       key: undefined,
-      
+
       allowApiDelete: true,
       deleted: () => happend = true,
       deleting: (t) => {
@@ -746,7 +747,7 @@ describe("data api", () => {
     Entity<typeof type.prototype>({
       key: undefined,
       allowApiDelete: true,
-      
+
       deleted: () => happend = true,
       deleting: () => {
         deleting.ok();
@@ -776,7 +777,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: undefined,
-      
+
       allowApiDelete: true,
       deleted: () => happend = true,
       deleting: () => {
@@ -803,7 +804,7 @@ describe("data api", () => {
     let happend = false;
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      
+
       key: undefined,
       allowApiDelete: true,
       deleted: (t) => {
@@ -835,7 +836,7 @@ describe("data api", () => {
     let count = 0;
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      
+
       key: undefined,
       allowApiUpdate: true,
       saving: t => {
@@ -866,7 +867,7 @@ describe("data api", () => {
       let count = 0;
       let type = class extends newCategories { };
       Entity<typeof type.prototype>({
-        
+
         key: undefined,
         allowApiUpdate: true,
         saving: () => count++
@@ -901,7 +902,7 @@ describe("data api", () => {
     let savedWorked = new Done();
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      
+
       key: undefined,
       allowApiUpdate: true,
       saving: () => count++,
@@ -939,7 +940,7 @@ describe("data api", () => {
 
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
-      
+
       key: undefined,
       allowApiUpdate: true,
       allowApiInsert: true,
@@ -986,7 +987,7 @@ describe("data api", () => {
 
     }
     Entity<typeof type.prototype>({
-      
+
       key: 'testE',
       allowApiUpdate: true,
       saving: (row, cancel) => {
@@ -1157,7 +1158,7 @@ describe("data api", () => {
   itAsync("post with syntax error fails well", async () => {
     let type = class extends newCategories { };
     Entity<newCategories>({
-      
+
       key: '',
       allowApiInsert: true,
       saving: (x) => x.description.length + 1
@@ -1281,7 +1282,7 @@ describe("data api", () => {
     };
     Entity({
       key: '',
-      
+
       allowApiDelete: false
     })(type);
     let c = await createData(async i => {
@@ -1306,7 +1307,7 @@ describe("data api", () => {
     };
     Entity({
       key: '',
-      
+
       apiRequireId: true
     })(type);
     let c = await createData(async i => {
@@ -1361,7 +1362,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: '',
-      
+
       allowApiDelete: (c, t) => {
         return t.id == 1;
       }
@@ -1392,7 +1393,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: '',
-      
+
       allowApiUpdate: (c, t) => {
         return t.id == 1;
       }
@@ -1428,7 +1429,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>({
       key: '',
-      
+
       allowApiInsert: (c, t) => {
         return t.categoryName == 'ok';
       }
@@ -1786,7 +1787,7 @@ describe("test date storage", () => {
   it("works", () => {
 
     let val = "1976-06-16";
-    var d: Date = DateOnlyJsonLoader.fromJson(val);
+    var d: Date = DateOnlyValueConverter.fromJson(val);
     expect(d.getFullYear()).toBe(1976);
     expect(d.getMonth()).toBe(5);
     expect(d.getDate()).toBe(16);
@@ -1796,19 +1797,19 @@ describe("test date storage", () => {
 describe("test bool value", () => {
   it("should work", () => {
     let col = decorateColumnSettings<Boolean>({ dataType: Boolean });
-    expect(col.jsonLoader.fromJson(true)).toBe(true);
-    expect(col.jsonLoader.fromJson(false)).toBe(false);
+    expect(col.valueConverter.fromJson(true)).toBe(true);
+    expect(col.valueConverter.fromJson(false)).toBe(false);
   });
 });
 
 describe("test number negative", () => {
   it("negative", () => {
     let nc = decorateColumnSettings<number>({ dataType: Number });
-    expect(nc.inputLoader.toInput(nc.inputLoader.fromInput("-"))).toBe("-");
+    expect(nc.valueConverter.toInput(nc.valueConverter.fromInput("-",''),'')).toBe("-");
   });
   it("negative2", () => {
     let nc = decorateColumnSettings<number>({ dataType: Number });;
-    expect(nc.inputLoader.fromInput('2-1')).toBe(0);
+    expect(nc.valueConverter.fromInput('2-1','')).toBe(0);
   });
   // it("negative decimal", () => {
   //   let nc = new NumberColumn();

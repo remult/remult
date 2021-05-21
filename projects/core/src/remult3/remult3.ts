@@ -9,10 +9,11 @@ import { RowEvents } from "../__EntityValueProvider";
 
 /*
 ## Should work
-[] adapt value converter
-[] remove readonly from columnDefs - and hijack it in Remult Angular
-[] make value list return a converter + benefits (Getoptions etc...)
-[] separate column and defs - defs will be property of column
+[V] adapt value converter
+[V] add display value to value converter
+[V] remove readonly from columnDefs - and hijack it in Remult Angular
+[V] make value list return a converter + benefits (Getoptions etc...)
+[V] separate column and defs - defs will be property of column
 [V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
 [V] "dbname of entity can use column names"
 [V] test-paged-foreach
@@ -80,6 +81,8 @@ import { RowEvents } from "../__EntityValueProvider";
 [] ColumnDefinitions vs ColumnOptions and same for entity
 [] apiDataFilter
 [] fixedFilter
+[] consider a column that is saved to more than one column in the db
+[] included display value and input type also in value converter - ias it is relevant to date only, and also value list
 
 
 ## consider if needed
@@ -356,4 +359,11 @@ export interface IteratableResult<T> {
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<T>>;
     };
+}
+
+export class InputTypes {
+    static number = 'number';
+    static date = 'date';
+    static checkbox = 'checkbox';
+
 }

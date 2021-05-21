@@ -32,7 +32,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
   isIn(col: ColumnDefinitions, val: any[]): void {
     if (val && val.length > 0)
-      this.addToWhere(col.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.dbLoader.toDb( x))).join(",") + ")");
+      this.addToWhere(col.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb( x))).join(",") + ")");
     else
       this.addToWhere('1 = 0 /*isIn with no values*/');
   }
@@ -62,7 +62,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.add(col, val + '%', 'like');
   }
   private add(col: ColumnDefinitions, val: any, operator: string) {
-    let x = col.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.dbLoader.toDb(val));
+    let x = col.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val));
     this.addToWhere(x);
 
   }

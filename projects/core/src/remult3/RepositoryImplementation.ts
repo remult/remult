@@ -1,5 +1,5 @@
 
-import { ColumnDefinitions, ColumnSettings, dbLoader, inputLoader, jsonLoader } from "../column-interfaces";
+import { ColumnDefinitions, ColumnSettings, ValueConverter } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdColumn, makeTitle } from '../column';
 import { EntityDefinitions, filterOptions, EntityColumn, EntityColumns, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, ColumnDefinitionsOf, supportsContains } from "./remult3";
@@ -12,7 +12,7 @@ import { DataApiSettings } from "../data-api";
 import { RowEvents } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { isFunction } from "util";
-import { BoolDbLoader, BoolJsonLoader, DateOnlyInputLoader, DateTimeJsonLoader, NumberDbLoader, NumberInputLoader } from "../columns/loaders";
+import { BoolValueConverter, DateValueConverter, DefaultValueConverter, IntValueConverter } from "../columns/loaders";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -504,7 +504,7 @@ class rowHelperBase<T>
         let result: any = {};
         for (const col of this.columnsInfo) {
             if (!this.context || col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                result[col.key] = col.settings.jsonLoader.toJson(this.instance[col.key]);
+                result[col.key] = col.settings.valueConverter.toJson(this.instance[col.key]);
             }
         }
         return result;
@@ -515,7 +515,7 @@ class rowHelperBase<T>
             if (body[col.key])
                 if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
                     if (!this.context || col.settings.allowApiUpdate === undefined || checkEntityAllowed(this.context, col.settings.allowApiUpdate, this.instance)) {
-                        this.instance[col.key] = col.settings.jsonLoader.fromJson(body[col.key]);
+                        this.instance[col.key] = col.settings.valueConverter.fromJson(body[col.key]);
                     }
 
                 }
@@ -572,7 +572,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         if (!this._columns) {
             let _items = [];
             let r = {
-                find: (c: ColumnDefinitions< T>) => r[c.key],
+                find: (c: ColumnDefinitions<T>) => r[c.key],
                 [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
@@ -751,10 +751,10 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
 
     }
     target: ClassType<any> = this.settings.target;
-    
-    
+
+
     inputType: string = this.settings.inputType;
-    inputLoader = this.settings.inputLoader;
+    valueConverter = this.settings.valueConverter;
     get error(): string {
         if (!this.rowBase.errors)
             return undefined;
@@ -777,13 +777,13 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     get value() { return this.entity[this.defs.key] };
     set value(value: any) { this.entity[this.defs.key] = value };
     get originalValue(): any { return this.rowBase.originalValues[this.defs.key] };
-    get inputValue(): string { return this.settings.inputLoader.toInput(this.value); }
-    set inputValue(val: string) { this.value = this.settings.inputLoader.fromInput(val); };
+    get inputValue(): string { return this.settings.valueConverter.toInput(this.value, this.settings.inputType); }
+    set inputValue(val: string) { this.value = this.valueConverter.fromInput(val, this.settings.inputType); };
     wasChanged(): boolean {
         return this.originalValue != this.value;
     }
     rowHelper: rowHelper<any> = this.helper;
-    
+
 
     async __performValidation() {
         let x = typeof (this.settings.validate);
@@ -821,11 +821,10 @@ export class columnDefsImpl implements ColumnDefinitions {
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
-    inputLoader = this.colInfo.settings.inputLoader;
+    valueConverter = this.colInfo.settings.valueConverter;
     allowNull = !!this.colInfo.settings.allowNull;
 
     caption = this.colInfo.settings.caption;
-    dbLoader = this.colInfo.settings.dbLoader;
     get dbName() {
         if (this.colInfo.settings.sqlExpression) {
             if (typeof this.colInfo.settings.sqlExpression === "function") {
@@ -837,12 +836,10 @@ export class columnDefsImpl implements ColumnDefinitions {
 
     }
     inputType = this.colInfo.settings.inputType;
-    jsonLoader = this.colInfo.settings.jsonLoader;
     key = this.colInfo.settings.key;
     dbReadOnly = this.colInfo.settings.dbReadOnly;
     isServerExpression: boolean;
     dataType = this.colInfo.settings.dataType;
-    dbType = this.colInfo.settings.dbType;
 }
 class EntityFullInfo<T> implements EntityDefinitions<T> {
 
@@ -956,7 +953,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
 }
 
 
-export function StorableClass<T = any>(settings?: ColumnSettings<T, any>) {
+export function Storable<T = any>(settings?: ColumnSettings<T, any>) {
     return target => {
         if (!settings) {
             settings = {};
@@ -1024,65 +1021,35 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
     }
     if (settings.dataType == Number) {
         let x = settings as unknown as ColumnSettings<Number>;
-        if (!x.dbLoader) {
-            x.dbLoader = NumberDbLoader;
-        }
-        if (!x.inputLoader)
-            x.inputLoader = NumberInputLoader;
-        if (!x.inputType)
-            x.inputType = 'number';
+        if (!settings.valueConverter)
+            x.valueConverter = IntValueConverter;
     }
     if (settings.dataType == Date) {
         let x = settings as unknown as ColumnSettings<Date>;
-        if (!settings.jsonLoader) {
-            x.jsonLoader = DateTimeJsonLoader;
+        if (!settings.valueConverter) {
+            x.valueConverter = DateValueConverter;
         }
-        if (!x.displayValue) {
-            x.displayValue = (entity, val) => {
-                if (!val)
-                    return '';
-                return val.toLocaleString();
-            }
-        }
-        if (!x.inputType) {
-            x.inputType = 'date';
-        }
-        if (!x.inputLoader && x.inputType == "date") {
-            x.inputLoader = DateOnlyInputLoader;
-        }
-        if (!x.dbLoader) {
-            x.dbLoader = {
-                fromDb: x => x,
-                toDb: x => x
-            }
-        }
-
     }
 
     if (settings.dataType == Boolean) {
         let x = settings as unknown as ColumnSettings<Boolean>;
-        if (!x.jsonLoader)
-            x.jsonLoader = BoolJsonLoader;
-        if (!x.dbLoader)
-            x.dbLoader = BoolDbLoader;
+        if (!x.valueConverter)
+            x.valueConverter = BoolValueConverter;
+
     }
+    if (!settings.valueConverter) {
+        settings.valueConverter = DefaultValueConverter;
+    }
+    if (!settings.inputType)
+        settings.inputType = settings.valueConverter.inputType;
+    if (!settings.displayValue)
+        if (settings.valueConverter.displayValue)
+            settings.displayValue = (e, x) => settings.valueConverter.displayValue(x);
+        else
+            settings.displayValue = (e, x) => x ? x.toString() : ''
 
 
-    if (!settings.jsonLoader)
-        settings.jsonLoader = {
-            fromJson: x => x,
-            toJson: x => x
-        };
-    if (!settings.dbLoader)
-        settings.dbLoader = {
-            fromDb: x => settings.jsonLoader.fromJson(x),
-            toDb: x => settings.jsonLoader.toJson(x)
-        };
-    if (!settings.inputLoader)
-        settings.inputLoader = {
-            fromInput: x => settings.jsonLoader.fromJson(x),
-            toInput: x => settings.jsonLoader.toJson(x)
-        };
+
     return settings;
 }
 
@@ -1112,9 +1079,10 @@ export class CompoundId implements ColumnDefinitions<string>{
         if (false)
             console.log(columns);
     }
+    valueConverter: ValueConverter<string>;
     target: ClassType<any>;
     readonly: true;
-    inputLoader: inputLoader<string>;
+
     allowNull: boolean;
     dbReadOnly: boolean;
     isServerExpression: boolean;
@@ -1122,10 +1090,9 @@ export class CompoundId implements ColumnDefinitions<string>{
     caption: string;
     inputType: string;
     dbName: string;
-    dbLoader: dbLoader<string>;
-    jsonLoader: jsonLoader<string>;
+
     dataType: any;
-    dbType: string;
+
 
 }
 function checkEntityAllowed(context: Context, x: EntityAllowed<any>, entity: any) {

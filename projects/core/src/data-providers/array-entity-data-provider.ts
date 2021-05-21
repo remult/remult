@@ -65,14 +65,14 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     translateFromJson(row: any) {
         let result = {};
         for (const col of this.entity.columns) {
-            result[col.key] = col.jsonLoader.fromJson(row[col.key]);
+            result[col.key] = col.valueConverter.fromJson(row[col.key]);
         }
         return result;
     }
     translateToJson(row: any) {
         let result = {};
         for (const col of this.entity.columns) {
-            result[col.key] = col.jsonLoader.toJson(row[col.key]);
+            result[col.key] = col.valueConverter.toJson(row[col.key]);
         }
         return result;
     }
@@ -158,7 +158,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     isIn(col: ColumnDefinitions, val: any[]): void {
 
         for (const v of val) {
-            if (this.row[col.key] == col.jsonLoader.toJson(v)) {
+            if (this.row[col.key] == col.valueConverter.toJson(v)) {
                 return;
             }
         }
@@ -166,33 +166,33 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     }
     public isEqualTo(col: ColumnDefinitions, val: any): void {
 
-        if (this.row[col.key] != col.jsonLoader.toJson(val))
+        if (this.row[col.key] != col.valueConverter.toJson(val))
             this.ok = false;
     }
 
     public isDifferentFrom(col: ColumnDefinitions, val: any): void {
-        if (this.row[col.key] == col.jsonLoader.toJson(val))
+        if (this.row[col.key] == col.valueConverter.toJson(val))
             this.ok = false;
     }
 
     public isGreaterOrEqualTo(col: ColumnDefinitions, val: any): void {
-        if (this.row[col.key] < col.jsonLoader.toJson(val))
+        if (this.row[col.key] < col.valueConverter.toJson(val))
             this.ok = false;
     }
 
     public isGreaterThan(col: ColumnDefinitions, val: any): void {
 
-        if (this.row[col.key] <= col.jsonLoader.toJson(val))
+        if (this.row[col.key] <= col.valueConverter.toJson(val))
             this.ok = false;
     }
 
     public isLessOrEqualTo(col: ColumnDefinitions, val: any): void {
-        if (this.row[col.key] > col.jsonLoader.toJson(val))
+        if (this.row[col.key] > col.valueConverter.toJson(val))
             this.ok = false;
     }
 
     public isLessThan(col: ColumnDefinitions, val: any): void {
-        if (this.row[col.key] >= col.jsonLoader.toJson(val))
+        if (this.row[col.key] >= col.valueConverter.toJson(val))
             this.ok = false;
     }
     public containsCaseInsensitive(col: ColumnDefinitions, val: any): void {
@@ -204,7 +204,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
         let s = '' + v;
         if (val)
-            val = col.jsonLoader.toJson(val).toString().toLowerCase();
+            val = col.valueConverter.toJson(val).toString().toLowerCase();
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
@@ -216,7 +216,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
 
         let s = '' + v;
-        if (s.indexOf(col.jsonLoader.toJson(val)) != 0)
+        if (s.indexOf(col.valueConverter.toJson(val)) != 0)
             this.ok = false;
     }
 }

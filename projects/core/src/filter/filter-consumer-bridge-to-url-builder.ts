@@ -42,37 +42,37 @@ export class FilterSerializer implements FilterConsumer {
     this.add(col.key + "_null", false);
   }
   isIn(col: ColumnDefinitions, val: any[]): void {
-    this.add(col.key + "_in", val.map(x => col.jsonLoader.toJson(x)));
+    this.add(col.key + "_in", val.map(x => col.valueConverter.toJson(x)));
   }
 
   public isEqualTo(col: ColumnDefinitions, val: any): void {
-    this.add(col.key, col.jsonLoader.toJson(val));
+    this.add(col.key, col.valueConverter.toJson(val));
   }
 
   public isDifferentFrom(col: ColumnDefinitions, val: any): void {
-    this.add(col.key + '_ne', col.jsonLoader.toJson(val));
+    this.add(col.key + '_ne', col.valueConverter.toJson(val));
   }
 
   public isGreaterOrEqualTo(col: ColumnDefinitions, val: any): void {
-    this.add(col.key + '_gte', col.jsonLoader.toJson(val));
+    this.add(col.key + '_gte', col.valueConverter.toJson(val));
   }
 
   public isGreaterThan(col: ColumnDefinitions, val: any): void {
-    this.add(col.key + '_gt', col.jsonLoader.toJson(val));
+    this.add(col.key + '_gt', col.valueConverter.toJson(val));
   }
 
   public isLessOrEqualTo(col: ColumnDefinitions, val: any): void {
-    this.add(col.key + '_lte', col.jsonLoader.toJson(val));
+    this.add(col.key + '_lte', col.valueConverter.toJson(val));
   }
 
   public isLessThan(col: ColumnDefinitions, val: any): void {
-    this.add(col.key + '_lt', col.jsonLoader.toJson(val));
+    this.add(col.key + '_lt', col.valueConverter.toJson(val));
   }
   public containsCaseInsensitive(col: ColumnDefinitions, val: any): void {
-    this.add(col.key + "_contains", col.jsonLoader.toJson(val));
+    this.add(col.key + "_contains", col.valueConverter.toJson(val));
   }
   public startsWith(col: ColumnDefinitions, val: any): void {
-    this.add(col.key + "_st", col.jsonLoader.toJson(val));
+    this.add(col.key + "_st", col.valueConverter.toJson(val));
   }
 }
 
@@ -95,9 +95,9 @@ export function extractWhere(columns: ColumnDefinitions[], filterInfo: {
               arr = JSON.parse(val);
             else
               arr = val;
-            theVal = arr.map(x => col.jsonLoader.fromJson(x));
+            theVal = arr.map(x => col.valueConverter.fromJson(x));
           } else {
-            theVal = col.jsonLoader.fromJson(theVal);
+            theVal = col.valueConverter.fromJson(theVal);
           }
           let f = theFilter(theVal);
           if (f) {

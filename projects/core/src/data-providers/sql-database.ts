@@ -190,7 +190,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         let result: any = {};
         for (let index = 0; index < colKeys.length; index++) {
           const col = colKeys[index];
-          result[col.key] = col.dbLoader.fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
+          result[col.key] = col.valueConverter.fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
         }
         return result;
       });
@@ -213,7 +213,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         resultFilter = x.resultIdFilter(id, data);
       } if (x.dbReadOnly) { }
       else {
-        let v = x.dbLoader.toDb(data[x.key]);
+        let v = x.valueConverter.toDb(data[x.key]);
         if (v != undefined) {
           if (!added)
             added = true;
@@ -257,7 +257,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       if (x.dbReadOnly) { }
 
       else {
-        let v = x.dbLoader.toDb(data[x.key]);
+        let v = x.valueConverter.toDb(data[x.key]);
         if (v != undefined) {
           if (!added)
             added = true;

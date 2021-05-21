@@ -136,11 +136,11 @@ export class PostgresSchemaBuilder {
     }
     private addColumnSqlSyntax(x: ColumnDefinitions) {
         let result = x.dbName;
-        if (x.dbType) {
-            if (x.dataType == Number && x.dbType == "decimal")
+        if (x.valueConverter.columnTypeInDb) {
+            if (x.dataType == Number && x.valueConverter.columnTypeInDb == "decimal")
                 result += " numeric" + (x.allowNull ? "" : " default 0 not null");
             else
-                result += " " + x.dbType;
+                result += " " + x.valueConverter.columnTypeInDb;
         }
         else if (x.dataType == Date)
             result += " timestamp";

@@ -7,8 +7,8 @@ import * as passwordHash from 'password-hash';
 
 
 import { ServerContext, ServerController, SqlDatabase } from '@remult/core';
-import { Column, Entity, entityInfo, columnsOfType, getControllerDefs, StorableClass } from '../../../projects/core/src/remult3';
-import { ValueList, ValueListInfo } from '../../../projects/core/src/column';
+import { Column, Entity, entityInfo, columnsOfType, getControllerDefs, Storable } from '../../../projects/core/src/remult3';
+import { ValueListValueConverter } from '../../../projects/core/src/column';
 import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 
 
@@ -59,7 +59,7 @@ function columnDecorator() {
 }
 
 @classDecorator()
-@StorableClass(ValueList(Language))
+@Storable(ValueListValueConverter(Language))
 export class Language {
     static Hebrew = new Language(0, 'עברית');
     static Russian = new Language(10, 'רוסית');

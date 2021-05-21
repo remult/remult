@@ -1,10 +1,10 @@
-import { ColumnDefinitions, ColumnSettings, dbLoader, inputLoader, jsonLoader, ValueListItem } from '../column-interfaces';
+import { ColumnDefinitions, ColumnSettings, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Allowed, Context, ServerContext } from '../context';
-import { OneToMany, ValueList, ValueListInfo } from '../column';
+import { OneToMany, ValueListValueConverter as ValueListValueConverter } from '../column';
 import { FilterHelper } from '../filter/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
@@ -13,10 +13,11 @@ import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettin
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Column, StorableClass } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Column, Storable } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository } from '../remult3';
-import { CharDateLoader, DateDisplayValue, DateOnlyJsonLoader, DateOnlyDateDbLoader, DateTimeJsonLoader } from '../columns/loaders';
+import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter } from '../columns/loaders';
+
 
 
 
@@ -309,17 +310,17 @@ describe("grid filter stuff", () => {
 describe("Closed List  column", () => {
 
   it("Basic Operations", () => {
-    let x = ValueList(Language);
+    let x = new ValueListValueConverter(Language);
 
 
-    expect(x.jsonLoader.fromJson(0)).toBe(Language.Hebrew);
-    expect(x.jsonLoader.toJson(Language.Russian)).toBe(10);
+    expect(x.fromJson(0)).toBe(Language.Hebrew);
+    expect(x.toJson(Language.Russian)).toBe(10);
 
-    expect(ValueListInfo.get(Language).getOptions().length).toBe(3);
+    expect(new ValueListValueConverter(Language).getOptions().length).toBe(3);
   });
 
   it("test auto caption", () => {
-    let val = ValueListInfo.get(valueList);
+    let val = new ValueListValueConverter(valueList);
     expect(valueList.firstName.caption).toBe('First Name');
   });
   itAsync("test with entity", async () => {
@@ -340,7 +341,7 @@ describe("Closed List  column", () => {
     let e = c.create();
     e.id = 1;
     expect(c.defs.columns.v.dataType).toBe(valueList);
-    expect(c.defs.columns.v.jsonLoader.fromJson('listName'))
+    expect(c.defs.columns.v.valueConverter.fromJson('listName'))
       .toBe(valueList.listName);
     expect(c.defs.columns.id.dataType).toBe(Number);
     expect(e.v).toBe(valueList.firstName);
@@ -361,7 +362,7 @@ export function fColumn<T = any, colType = any>(settings?: ColumnSettings<colTyp
   }
 
 }
-@StorableClass(ValueList(valueList))
+@Storable({ valueConverter: new ValueListValueConverter(valueList) })
 class valueList {
   static firstName = new valueList();
   static listName = new valueList();
@@ -372,7 +373,7 @@ class valueList {
 class entityWithValueList extends EntityBase {
   @Column()
   id: number = 0;
-  @Column(ValueList(Language))
+  @Column({ valueConverter: new ValueListValueConverter(Language) })
   l: Language = Language.Hebrew;
   @Column()
   v: valueList = valueList.firstName;
@@ -536,7 +537,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string;
     };
-    EntityDecorator({ key: ''  })(type);
+    EntityDecorator({ key: '' })(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: (entity, col) =>
         Validators.required(entity, col, "m")
@@ -717,7 +718,7 @@ describe("test row provider", () => {
       key: 'asdf',
       saving: () => orderOfOperation += "EntityOnSavingRow,",
       validation: r => orderOfOperation += "EntityValidate,",
-      
+
     })(type);
     ColumnDecorator({
       validate: () => { orderOfOperation += "ColumnValidate," }
@@ -1269,42 +1270,41 @@ describe("test area", () => {
 describe("test datetime column", () => {
   it("stores well", () => {
     let col = decorateColumnSettings<Date>({ dataType: Date });
-    let val = col.jsonLoader.fromJson(col.jsonLoader.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
+    let val = col.valueConverter.fromJson(col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
     expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
     let col = decorateColumnSettings<Date>({ dataType: Date });
-    expect(col.jsonLoader.toJson(undefined)).toBe('');
+    expect(col.valueConverter.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
 
-    expect(DateDisplayValue(DateOnlyJsonLoader.fromJson(''))).toBe('');
+    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson(''))).toBe('');
   });
   it("displays null date well 1", () => {
 
-    expect(DateOnlyJsonLoader.toJson(null)).toBe('');
-    expect(DateTimeJsonLoader.toJson(null)).toBe('');
-    expect(DateDisplayValue(null)).toBe('');
+    expect(DateOnlyValueConverter.toJson(null)).toBe('');
+    expect(DateOnlyValueConverter.toJson(null)).toBe('');
+    expect(DateOnlyValueConverter.displayValue(null)).toBe('');
   });
   it("displays empty date well empty", () => {
-    expect(DateDisplayValue(DateOnlyJsonLoader.fromJson('0000-00-00'))).toBe('');
+    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson('0000-00-00'))).toBe('');
   });
   it("date works", () => {
 
-    expect(DateOnlyJsonLoader.toJson(new Date('1976-06-16'))).toBe('1976-06-16');
+    expect(DateOnlyValueConverter.toJson(new Date('1976-06-16'))).toBe('1976-06-16');
 
   });
   it("date Storage works 1", () => {
 
     let col = decorateColumnSettings<Date>({
       dataType: Date,
-      dbLoader: DateOnlyDateDbLoader,
-      jsonLoader: DateOnlyJsonLoader
+      valueConverter: DateOnlyValueConverter
     });
-    expect(col.dbLoader.toDb(col.jsonLoader.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
-    expect(col.dbLoader.toDb(col.jsonLoader.fromJson('1976-06-16')).getDate()).toBe(16);
+    expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
+    expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
 
-    let toDb = col.dbLoader.toDb(col.jsonLoader.fromJson('2021-04-26'));
+    let toDb = col.valueConverter.toDb(col.valueConverter.fromJson('2021-04-26'));
     if (toDb.getTimezoneOffset() < 0)
       expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-25');
     else
@@ -1316,27 +1316,29 @@ describe("test datetime column", () => {
 
 });
 describe("Test char date storage", () => {
-  let j = DateOnlyJsonLoader;
 
-  let x = CharDateLoader;
+
+  let x = CharDateValueConverter;
   it("from db", () => {
-    expect(j.toJson(x.fromDb('19760616'))).toBe('1976-06-16');
+    expect(x.toJson(x.fromDb('19760616'))).toBe('1976-06-16');
   });
   it("to db", () => {
-    expect(x.toDb(j.fromJson('1976-06-16'))).toBe('19760616');
+    expect(x.toDb(x.fromJson('1976-06-16'))).toBe('19760616');
   });
 });
 
 describe("value list column without id and caption", () => {
   it("works with automatic id", () => {
-    let col = new InputControl<TestStatus>(TestStatus.open, ValueList(TestStatus));
+    let col = new InputControl<TestStatus>(TestStatus.open, {
+      valueConverter: new ValueListValueConverter(TestStatus)
+    });
 
     col.value = TestStatus.open;
     expect(col.value).toBe(TestStatus.open);
     expect(col.inputValue).toBe('open');
     col.value = TestStatus.closed;
     expect(col.inputValue).toBe('cc');
-    let options =ValueListInfo.get(TestStatus).getOptions();
+    let options = new ValueListValueConverter(TestStatus).getOptions();
     expect(options.length).toBe(3);
     expect(options[2].caption).toBe('hh');
     expect(options[2].id).toBe('hold');
@@ -1447,6 +1449,7 @@ class mockColumnDefs implements ColumnDefinitions {
   constructor(public dbName: string) {
 
   }
+  valueConverter: ValueConverter<any> = DefaultValueConverter;
   target: ClassType<any>;
   readonly: boolean;
   readonly dbReadOnly: boolean;
@@ -1455,9 +1458,7 @@ class mockColumnDefs implements ColumnDefinitions {
   readonly caption: string;
   readonly inputType: string;
 
-  readonly dbLoader: dbLoader<any> = { toDb: x => x, fromDb: x => x };
-  readonly jsonLoader: jsonLoader<any>;
-  readonly inputLoader: inputLoader<any>;
+
   readonly dataType: any;
   readonly allowNull: boolean;
   readonly dbType: string;
