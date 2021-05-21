@@ -1,6 +1,7 @@
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, FilterHelper, IdEntity, ValueListItem, rowHelper,  ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf,  IdEntity, ValueListItem, rowHelper,  ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
+import { FilterHelper } from "./filter-helper";
 
 
 

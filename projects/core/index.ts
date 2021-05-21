@@ -36,7 +36,7 @@ export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 
 export * from './src/filter/filter-consumer-bridge-to-sql-request';
 export * from './src/filter/filter-consumer-bridge-to-url-builder';
-export * from './src/filter/filter-helper';
+
 export * from './src/url-builder';
 export * from './src/validators';
 

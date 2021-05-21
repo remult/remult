@@ -1,8 +1,8 @@
 
-import { AndFilter, Filter } from './filter-interfaces';
-import { comparableFilterItem, EntityColumn, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "../remult3";
-import { ColumnDefinitions } from "../column-interfaces";
-import { getColumnDefinition } from '../../../angular';
+import { AndFilter, Filter } from '@remult/core';
+import { comparableFilterItem, EntityColumn, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "@remult/core";
+import { ColumnDefinitions } from "@remult/core";
+import { getColumnDefinition } from '..';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;

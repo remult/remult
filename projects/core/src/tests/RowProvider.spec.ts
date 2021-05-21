@@ -5,7 +5,7 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Allowed, Context, ServerContext } from '../context';
 import { OneToMany, ValueListValueConverter as ValueListValueConverter } from '../column';
-import { FilterHelper } from '../filter/filter-helper';
+import { FilterHelper } from '../../../angular/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
