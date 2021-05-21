@@ -5,6 +5,7 @@ import { Products } from './products';
 import { DialogConfig, GridSettings, InputControl, openDialog } from '@remult/angular';
 import { DataAreaSettings, DataControl } from '@remult/angular';
 import { DataControlSettings } from '../../../dist/angular';
+import { Users } from '../../../projects/angular/schematics/hello/files/src/app/users/users';
 
 
 
@@ -23,35 +24,15 @@ import { DataControlSettings } from '../../../dist/angular';
 
 })
 export class ProductsComponent implements OnInit {
-  _ = getControllerDefs(this);
-  @Column()
-  @DataControl<ProductsComponent>({
-    caption: 'bla bla',
-    click: (x) => {
-      alert(x.a);
-    }
-  })
-  a: string = '';
 
-  name = new InputControl<string>("noam", { caption: 'name' });
-  area = new DataAreaSettings({
-    columnSettings: () => {
-      let r = [this.name]
-      console.log(r);
-      return r;
-    }
-  });
-  cols<T>(x: T): EntityColumns<T> {
-    return undefined;
-  }
-  p: Products = undefined;
-  z = this.p._.columns;
+  
+
   constructor(private context: Context) { }
   async ngOnInit() {
-    await this.context.for(Products).find(
-      {
+    let u =await  this.context.for(Users).findFirst();
+    u.admin = true;
+    await u._.save();
 
-      });
 
 
   }

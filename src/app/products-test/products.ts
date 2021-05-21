@@ -1,11 +1,15 @@
 import { DataControl, extend } from '@remult/angular';
-import { IdEntity, ServerMethod } from '@remult/core';
+import { Filter, IdEntity, ServerMethod } from '@remult/core';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 @Entity({
   key: "Products",
   allowApiCrud: true,
-  
+  apiDataFilter: (e, c) => {
+    console.log({ e, c });
+    return new Filter();
+  }
+
 })
 
 export class Products extends IdEntity {

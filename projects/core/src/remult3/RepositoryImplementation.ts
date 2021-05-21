@@ -86,7 +86,12 @@ export class RepositoryImplementation<T> implements Repository<T>{
             allowInsert: (e) => checkEntityAllowed(this.context, options.allowApiInsert, e),
             requireId: this.context.isAllowed(options.apiRequireId),
             get: {
-                where: options.apiDataFilter
+                where: x => {
+                    if (options.apiDataFilter) {
+                        return options.apiDataFilter(x, this.context);
+                    }
+                    return undefined;
+                }
             }
         }
     }
@@ -402,7 +407,7 @@ export function createOldEntity<T>(entity: ClassType<T>) {
 
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
     if (!info)
-        throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity()?")
+        throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?")
 
 
     let base = Object.getPrototypeOf(entity);
@@ -512,7 +517,7 @@ class rowHelperBase<T>
 
     _updateEntityBasedOnApi(body: any) {
         for (const col of this.columnsInfo) {
-            if (body[col.key])
+            if (body[col.key]!==undefined)
                 if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
                     if (!this.context || col.settings.allowApiUpdate === undefined || checkEntityAllowed(this.context, col.settings.allowApiUpdate, this.instance)) {
                         this.instance[col.key] = col.settings.valueConverter.fromJson(body[col.key]);
@@ -589,7 +594,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         await this.__validateEntity(afterValidationBeforeSaving);
         let doNotSave = false;
         if (this.info.entityInfo.saving) {
-            this.info.entityInfo.saving(this.instance, () => doNotSave = true);
+             await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
         }
 
         this.__assertValidity();

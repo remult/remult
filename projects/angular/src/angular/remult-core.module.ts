@@ -90,6 +90,7 @@ export async function openDialog<T, C>(component: { new(...args: any[]): C; }, s
   if (ref.beforeClosed)
     r = await ref.beforeClosed().toPromise();
   else
+    //@ts-ignore
     r = await ref.beforeClose().toPromise();
 
 

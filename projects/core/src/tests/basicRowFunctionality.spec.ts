@@ -1800,16 +1800,62 @@ describe("test bool value", () => {
     expect(col.valueConverter.fromJson(true)).toBe(true);
     expect(col.valueConverter.fromJson(false)).toBe(false);
   });
+  itAsync("saves correctoly to db", async () => {
+    await testAllDbs(async ({ context }) => {
+      let type = class extends EntityBase {
+        id: number;
+        ok: Boolean = false;
+      }
+      Entity({ key: 'asdf' })(type);
+      Column({
+        dataType: Number
+      })(type.prototype, 'id');
+      Column({ dataType: Boolean })(type.prototype, "ok");
+      let r = context.for(type).create();
+      r.id = 1;
+      r.ok = true;
+      await r._.save();
+      expect(r.ok).toBe(true);
+      r.ok = false;
+      await r._.save();
+      expect(r.ok).toBe(false);
+    });
+  });
+  itAsync("saves correctly to db", async () => {
+    await testAllDbs(async ({ context }) => {
+      let type = class extends EntityBase {
+        id: number;
+        ok: Boolean = false;
+      }
+      Entity<typeof type.prototype>({
+        key: 'asdf', saving: (x) => {
+          x.ok = true;
+        }
+      })(type);
+      Column({
+        dataType: Number
+      })(type.prototype, 'id');
+      Column({ dataType: Boolean })(type.prototype, "ok");
+      let r = context.for(type).create();
+      r.id = 1;
+      expect(r.ok).toBe(false);
+      await r._.save();
+      expect(r.ok).toBe(true);
+      
+    });
+  });
+
+
 });
 
 describe("test number negative", () => {
   it("negative", () => {
     let nc = decorateColumnSettings<number>({ dataType: Number });
-    expect(nc.valueConverter.toInput(nc.valueConverter.fromInput("-",''),'')).toBe("-");
+    expect(nc.valueConverter.toInput(nc.valueConverter.fromInput("-", ''), '')).toBe("-");
   });
   it("negative2", () => {
     let nc = decorateColumnSettings<number>({ dataType: Number });;
-    expect(nc.valueConverter.fromInput('2-1','')).toBe(0);
+    expect(nc.valueConverter.fromInput('2-1', '')).toBe(0);
   });
   // it("negative decimal", () => {
   //   let nc = new NumberColumn();

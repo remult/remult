@@ -91,6 +91,7 @@ export const CharDateValueConverter: ValueConverter<Date> = {
 
 export const BoolValueConverter: ValueConverter<Boolean> = {
     toDb: (val: boolean) => val,
+    inputType:'checkbox',
     fromDb: (value: any) => {
         return BoolValueConverter.fromJson(value);
     },

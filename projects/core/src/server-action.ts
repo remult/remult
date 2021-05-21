@@ -24,6 +24,7 @@ interface inArgs {
 }
 interface result {
     data: any;
+
 }
 export abstract class Action<inParam, outParam>{
     constructor(private actionUrl: string, private queue: boolean) {
@@ -447,11 +448,3 @@ function prepareArgs(types: any[], args: any[], context: ServerContext, ds: Data
             }
         }
 }
-
-function AddModelStateToError(err: any, arg1: any[]) {
-    throw new Error('Function not implemented.');
-}
-function __getValidationError(cols: any[]) {
-    throw new Error('Function not implemented.');
-}
-

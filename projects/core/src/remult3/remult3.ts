@@ -365,5 +365,6 @@ export class InputTypes {
     static number = 'number';
     static date = 'date';
     static checkbox = 'checkbox';
+    static password = 'password';
 
 }

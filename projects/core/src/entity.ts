@@ -1,7 +1,8 @@
-import {  Allowed, EntityAllowed } from "./context";
+import {  Allowed, Context, EntityAllowed } from "./context";
 
 import { ColumnDefinitions } from './column-interfaces';
-import {  EntityOrderBy, EntityWhereItem, ClassType,  ColumnDefinitionsOf } from "./remult3";
+import {  EntityOrderBy, EntityWhereItem, ClassType,  ColumnDefinitionsOf, filterOf } from "./remult3";
+import { Filter } from "./filter/filter-interfaces";
 
 
 
@@ -45,7 +46,7 @@ export interface EntityOptions<T = any> {
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */
-  apiDataFilter?: EntityWhereItem<T>;
+  apiDataFilter?: ((entityType: filterOf<T>,context:Context) => (Filter | Filter[]));
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example

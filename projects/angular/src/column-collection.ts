@@ -1,4 +1,4 @@
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf,  IdEntity, ValueListItem, rowHelper,  ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -66,7 +66,8 @@ export class ColumnCollection<rowType = any> {
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
       let col = c as ColumnDefinitions;
-      if (!x.column && col.key && col.caption && col.dbName) {
+      let ecol = c as EntityColumn<any, any>;
+      if (!x.column && col.valueConverter || ecol.defs) {
         x = {
           column: c,
         }
@@ -325,7 +326,7 @@ export class InputControl<T> implements EntityColumn<T, any> {
       dbReadOnly: false,
       inputType: settings.inputType,
       isServerExpression: false,
-      
+
       target: undefined
 
     }
@@ -347,8 +348,8 @@ export class InputControl<T> implements EntityColumn<T, any> {
       this.settings.valueChange()
   };
   originalValue: T;
-  get inputValue(): string { return this.settings.valueConverter.toInput(this.value,this.inputType); }
-  set inputValue(val: string) { this.value = this.settings.valueConverter.fromInput(val,this.inputType); };
+  get inputValue(): string { return this.settings.valueConverter.toInput(this.value, this.inputType); }
+  set inputValue(val: string) { this.value = this.settings.valueConverter.fromInput(val, this.inputType); };
   wasChanged(): boolean {
     return this.originalValue != this.value;
   }

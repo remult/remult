@@ -1,7 +1,10 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
-import { Context } from '../context';
+import { Context, ServerContext } from '../context';
 import { ServerMethod } from '../server-action';
 import { Column, Entity, EntityBase, getControllerDefs, getEntityOf } from '../remult3';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+import { DataApi } from '../data-api';
+import { TestDataApiResponse } from './basicRowFunctionality.spec';
 
 @Entity({ key: 'testServerMethodOnEntity' })
 class testServerMethodOnEntity extends EntityBase {
@@ -38,6 +41,37 @@ class testServerMethodOnEntity extends EntityBase {
     }
 
 
+}
+
+@Entity<testBoolCreate123>({
+    key: 'testBoolCreate123',
+    allowApiCrud: true,
+    saving: async t => {
+        if (t.context.onServer&&t._.isNew()) {
+
+            await t.context.for(testBoolCreate123).count();
+            await new Promise((res, rej) => setTimeout(() => {
+                res({})
+            }, 20));
+            t.ok123 = true;
+        }
+
+    }
+})
+class testBoolCreate123 extends EntityBase {
+    @Column()
+    id: number;
+    @Column({})
+    ok123: Boolean = false;
+    @ServerMethod({ allowed: true })
+    async testIt() {
+        console.log("in testit");
+        await this._.save();
+
+    }
+    constructor(private context: Context) {
+        super();
+    }
 }
 describe("test Server method in entity", () => {
     let c = new Context();
@@ -89,4 +123,27 @@ describe("test Server method in entity", () => {
 
 
     });
+    itAsync("saves correctly to db", async () => {
+
+        let context = new ServerContext();
+        context.setDataProvider(new InMemoryDataProvider());
+        let r = context.for(testBoolCreate123);
+        let dataApi = new DataApi(r);
+        let t = new TestDataApiResponse();
+        t.created = x => {
+            expect(x.ok123).toBe(true);
+        }
+
+        await dataApi.post(t, { id: 1, ok123: false })
+        t.success = x => {
+            expect(x.ok123).toBe(false);
+        }
+        await dataApi.put(t, 1, { ok123: false })
+
+
+
+    });
 });
+
+
+

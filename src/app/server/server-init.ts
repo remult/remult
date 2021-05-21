@@ -58,19 +58,3 @@ function columnDecorator() {
     }
 }
 
-@classDecorator()
-@Storable(ValueListValueConverter(Language))
-export class Language {
-    static Hebrew = new Language(0, 'עברית');
-    static Russian = new Language(10, 'רוסית');
-    static Amharit = new Language(20, 'אמהרית');
-    constructor(public id: number,
-        public caption: string) {
-
-    }
-
-}
-
-
-
-
