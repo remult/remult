@@ -40,7 +40,7 @@ export class DataControl3Component {
     if (this.map.allowClick === undefined) {
       return true;
     }
-    return this.map.allowClick(this.record);
+    return this.settings.allowClick(this.map, this.record);
   }
   getClickIcon() {
     if (this.map.clickIcon)

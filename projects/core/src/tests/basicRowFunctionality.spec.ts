@@ -1797,8 +1797,8 @@ describe("test date storage", () => {
 describe("test bool value", () => {
   it("should work", () => {
     let col = decorateColumnSettings<Boolean>({ dataType: Boolean });
-    expect(col.valueConverter.fromJson(true)).toBe(true);
-    expect(col.valueConverter.fromJson(false)).toBe(false);
+    expect(col.valueConverter(undefined).fromJson(true)).toBe(true);
+    expect(col.valueConverter(undefined).fromJson(false)).toBe(false);
   });
   itAsync("saves correctoly to db", async () => {
     await testAllDbs(async ({ context }) => {
@@ -1851,11 +1851,11 @@ describe("test bool value", () => {
 describe("test number negative", () => {
   it("negative", () => {
     let nc = decorateColumnSettings<number>({ dataType: Number });
-    expect(nc.valueConverter.toInput(nc.valueConverter.fromInput("-", ''), '')).toBe("-");
+    expect(nc.valueConverter(undefined).toInput(nc.valueConverter(undefined).fromInput("-", ''), '')).toBe("-");
   });
   it("negative2", () => {
     let nc = decorateColumnSettings<number>({ dataType: Number });;
-    expect(nc.valueConverter.fromInput('2-1', '')).toBe(0);
+    expect(nc.valueConverter(undefined).fromInput('2-1', '')).toBe(0);
   });
   // it("negative decimal", () => {
   //   let nc = new NumberColumn();

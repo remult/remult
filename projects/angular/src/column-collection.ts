@@ -1,4 +1,4 @@
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, decorateColumnSettings, ColumnSettings } from "@remult/core";
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, decorateColumnSettings, ColumnSettings, Context } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -6,6 +6,7 @@ import { FilterHelper } from "./filter-helper";
 
 
 export class ColumnCollection<rowType = any> {
+
   constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: ColumnDefinitions) => EntityColumn<any, any>) {
 
 
@@ -30,10 +31,20 @@ export class ColumnCollection<rowType = any> {
       return true;
     return this.getRowColumn({ col, row }, (c, row) => col.visible(row, c));
   }
+  allowClick(col: DataControlSettings<any, any>, row: any) {
+    if (!col.click)
+      return false;
+    if (!this._getEditable(col, row))
+      return false;
+    if (col.allowClick === undefined) {
+      return true;
+    }
+    return this.getRowColumn({ col, row }, (c, row) => col.allowClick(row, c));
+  }
   getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityColumn<any, any>, row: any) => T) {
     let column: EntityColumn<any, any>;
     let row = args.row;
-    if (this._getRowColumn) {
+    if (this._getRowColumn && args.col.column) {
       column = this._getRowColumn(row, getColumnDefinition(args.col.column));
     }
     if (!column)
@@ -186,8 +197,7 @@ export class ColumnCollection<rowType = any> {
     if (col.getValue) {
 
       r = this.getRowColumn({ row, col }, (c, r) => col.getValue(r, c));
-      if (r.value)
-        r = r.value;
+
 
 
 
@@ -302,7 +312,10 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 
 
 export class InputControl<T> implements EntityColumn<T, any> {
-  constructor(private defaultValue: T, private settings: ColumnSettings<T, any> & DataControlSettings & { valueChange?: () => void }) {
+  constructor(private defaultValue: T,
+    private settings: ColumnSettings<T, any>
+      & DataControlSettings
+      & { valueChange?: () => void, context?: Context }) {
     if (!settings.caption)
       settings.caption = 'caption';
     if (!settings.key)
@@ -319,7 +332,7 @@ export class InputControl<T> implements EntityColumn<T, any> {
       allowNull: settings.allowNull,
       caption: settings.caption,
 
-      valueConverter: settings.valueConverter,
+      valueConverter: settings.valueConverter(this.settings.context),
       dataType: settings.dataType,
       key: settings.key,
       dbName: settings.dbName,
@@ -348,8 +361,8 @@ export class InputControl<T> implements EntityColumn<T, any> {
       this.settings.valueChange()
   };
   originalValue: T;
-  get inputValue(): string { return this.settings.valueConverter.toInput(this.value, this.inputType); }
-  set inputValue(val: string) { this.value = this.settings.valueConverter.fromInput(val, this.inputType); };
+  get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.inputType); }
+  set inputValue(val: string) { this.value = this.defs.valueConverter.fromInput(val, this.inputType); };
   wasChanged(): boolean {
     return this.originalValue != this.value;
   }

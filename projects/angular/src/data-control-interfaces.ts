@@ -13,10 +13,10 @@ export interface DataControlSettings<entityType = any, colType = any> {
     visible?: (row: entityType, val: EntityColumn<colType, entityType>) => boolean;
 
     click?: (row: entityType, val: EntityColumn<colType, entityType>) => void;
-    allowClick?: (row: entityType) => boolean;
+    allowClick?: (row: entityType, val: EntityColumn<colType, entityType>) => boolean;
     clickIcon?: string;
 
-    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | (() => Promise<ValueListItem[]>);
+    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>);
     inputType?: string; //used: password,date,tel,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     forceEqualFilter?: boolean;
@@ -52,6 +52,8 @@ export function extend<T extends ColumnDefinitions>(col: T): {
 export const configDataControlField = Symbol('configDataControlField');
 
 export function getColumnDefinition(col: ColumnDefinitions | EntityColumn<any, any>) {
+    if (!col)
+        return undefined;
     let r = col as ColumnDefinitions;
     let c = col as EntityColumn<any, any>;
     if (c.defs)
@@ -155,8 +157,11 @@ export function __getDataControlSettings(col: ColumnDefinitions): DataControlSet
 }
 export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);
 
+
 export function DataControl<entityType = any, colType = any>(settings: DataControlSettings<entityType, colType>) {
-    return (target, key) => {
+    return (target, key?) => {
         Reflect.defineMetadata(configDataControlField, settings, target, key);
+        if (key === undefined)
+            return target;
     }
 }

@@ -6,7 +6,7 @@ import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
   key: "Products",
   allowApiCrud: true,
   apiDataFilter: (e, c) => {
-    console.log({ e, c });
+    
     return new Filter();
   }
 

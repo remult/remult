@@ -61,7 +61,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.defs);
     }
     constructor(private entity: ClassType<T>, private context: Context, private dataProvider: DataProvider) {
-        this._info = createOldEntity(entity);
+        this._info = createOldEntity(entity, context);
+    }
+    lookupId(id: any): T {
+        return this.lookup(() => this.getIdFilter(id));
+    }
+    lookupIdAsync(id: any): Promise<T> {
+        return this.lookupIdAsync(() => this.getIdFilter(id));
     }
     get defs(): EntityDefinitions { return this._info };
 
@@ -398,16 +404,20 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
+export function getEntityOptions<T>(entity: ClassType<T>) {
+    let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
+    if (!info)
+        throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?")
 
+    return info;
+}
 export const columnsOfType = new Map<any, columnInfo[]>();
-export function createOldEntity<T>(entity: ClassType<T>) {
+export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
     let r: columnInfo[] = columnsOfType.get(entity);
     if (!r)
         columnsOfType.set(entity, r = []);
 
-    let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
-    if (!info)
-        throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?")
+    let info = getEntityOptions(entity);
 
 
     let base = Object.getPrototypeOf(entity);
@@ -422,7 +432,7 @@ export function createOldEntity<T>(entity: ClassType<T>) {
 
 
 
-    return new EntityFullInfo<T>(r, info);
+    return new EntityFullInfo<T>(r, info, context);
 }
 
 class rowHelperBase<T>
@@ -509,7 +519,7 @@ class rowHelperBase<T>
         let result: any = {};
         for (const col of this.columnsInfo) {
             if (!this.context || col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                result[col.key] = col.settings.valueConverter.toJson(this.instance[col.key]);
+                result[col.key] = col.settings.valueConverter(this.context).toJson(this.instance[col.key]);
             }
         }
         return result;
@@ -517,10 +527,10 @@ class rowHelperBase<T>
 
     _updateEntityBasedOnApi(body: any) {
         for (const col of this.columnsInfo) {
-            if (body[col.key]!==undefined)
+            if (body[col.key] !== undefined)
                 if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
                     if (!this.context || col.settings.allowApiUpdate === undefined || checkEntityAllowed(this.context, col.settings.allowApiUpdate, this.instance)) {
-                        this.instance[col.key] = col.settings.valueConverter.fromJson(body[col.key]);
+                        this.instance[col.key] = col.settings.valueConverter(this.context).fromJson(body[col.key]);
                     }
 
                 }
@@ -594,7 +604,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         await this.__validateEntity(afterValidationBeforeSaving);
         let doNotSave = false;
         if (this.info.entityInfo.saving) {
-             await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
+            await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
         }
 
         this.__assertValidity();
@@ -732,7 +742,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
         };
 
         for (const col of columnsInfo) {
-            _items.push(r[col.key] = new columnImpl<any, any>(col.settings, new columnDefsImpl(col, undefined), instance, undefined, this));
+            _items.push(r[col.key] = new columnImpl<any, any>(col.settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
         }
 
         this.columns = r as unknown as EntityColumns<T>;
@@ -759,7 +769,7 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
 
 
     inputType: string = this.settings.inputType;
-    valueConverter = this.settings.valueConverter;
+
     get error(): string {
         if (!this.rowBase.errors)
             return undefined;
@@ -774,6 +784,8 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
         if (this.value != undefined) {
             if (this.settings.displayValue)
                 return this.settings.displayValue(this.entity, this.value);
+            else if (this.defs.valueConverter.displayValue)
+                return this.defs.valueConverter.displayValue(this.value);
             else
                 return this.value.toString();
         }
@@ -782,8 +794,8 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     get value() { return this.entity[this.defs.key] };
     set value(value: any) { this.entity[this.defs.key] = value };
     get originalValue(): any { return this.rowBase.originalValues[this.defs.key] };
-    get inputValue(): string { return this.settings.valueConverter.toInput(this.value, this.settings.inputType); }
-    set inputValue(val: string) { this.value = this.valueConverter.fromInput(val, this.settings.inputType); };
+    get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.settings.inputType); }
+    set inputValue(val: string) { this.value = this.defs.valueConverter.fromInput(val, this.settings.inputType); };
     wasChanged(): boolean {
         return this.originalValue != this.value;
     }
@@ -814,26 +826,29 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 }
 
 export class columnDefsImpl implements ColumnDefinitions {
-    constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>) {
+    constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>, private context: Context) {
         if (colInfo.settings.serverExpression)
             this.isServerExpression = true;
         if (colInfo.settings.sqlExpression)
             this.dbReadOnly = true;
         if (typeof (this.colInfo.settings.allowApiUpdate) === "boolean")
             this.readonly = this.colInfo.settings.allowApiUpdate;
+        if (!this.inputType)
+            this.inputType = this.valueConverter.inputType;
+
 
     }
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
-    valueConverter = this.colInfo.settings.valueConverter;
+    valueConverter = this.colInfo.settings.valueConverter(this.context);
     allowNull = !!this.colInfo.settings.allowNull;
 
     caption = this.colInfo.settings.caption;
     get dbName() {
         if (this.colInfo.settings.sqlExpression) {
             if (typeof this.colInfo.settings.sqlExpression === "function") {
-                return this.colInfo.settings.sqlExpression(this.entityDefs.columns);
+                return this.colInfo.settings.sqlExpression(this.entityDefs, this.context);
             } else
                 return this.colInfo.settings.sqlExpression;
         }
@@ -850,7 +865,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
 
 
-    constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions) {
+    constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions, private context: Context) {
 
 
         let _items = [];
@@ -860,7 +875,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
         };
 
         for (const x of columnsInfo) {
-            _items.push(r[x.key] = new columnDefsImpl(x, this));
+            _items.push(r[x.key] = new columnDefsImpl(x, this, context));
         }
 
         this.columns = r as unknown as ColumnDefinitionsOf<T>;
@@ -871,7 +886,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
         if (typeof entityInfo.dbName === "string")
             this.dbName = entityInfo.dbName;
         else if (typeof entityInfo.dbName === "function")
-            this.dbName = entityInfo.dbName(this.columns);
+            this.dbName = entityInfo.dbName(this.columns, context);
         if (entityInfo.id) {
             this.idColumn = entityInfo.id(this.columns)
         } else {
@@ -1027,31 +1042,25 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
     if (settings.dataType == Number) {
         let x = settings as unknown as ColumnSettings<Number>;
         if (!settings.valueConverter)
-            x.valueConverter = IntValueConverter;
+            x.valueConverter = () => IntValueConverter;
     }
     if (settings.dataType == Date) {
         let x = settings as unknown as ColumnSettings<Date>;
         if (!settings.valueConverter) {
-            x.valueConverter = DateValueConverter;
+            x.valueConverter = () => DateValueConverter;
         }
     }
 
     if (settings.dataType == Boolean) {
         let x = settings as unknown as ColumnSettings<Boolean>;
         if (!x.valueConverter)
-            x.valueConverter = BoolValueConverter;
+            x.valueConverter = () => BoolValueConverter;
 
     }
     if (!settings.valueConverter) {
-        settings.valueConverter = DefaultValueConverter;
+        settings.valueConverter = () => DefaultValueConverter;
     }
-    if (!settings.inputType)
-        settings.inputType = settings.valueConverter.inputType;
-    if (!settings.displayValue)
-        if (settings.valueConverter.displayValue)
-            settings.displayValue = (e, x) => settings.valueConverter.displayValue(x);
-        else
-            settings.displayValue = (e, x) => x ? x.toString() : ''
+
 
 
 

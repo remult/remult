@@ -41,7 +41,7 @@ class testSqlExpression extends EntityBase {
     @Column<testSqlExpression>(
         {
             sqlExpression: (x) => {
-                return x.code.dbName + ' * 5';
+                return x.columns.code.dbName + ' * 5';
             }
         }
     )

@@ -9,6 +9,7 @@ import { RowEvents } from "../__EntityValueProvider";
 
 /*
 ## Should work
+[] when added DataControl decorator for category id - lost caption
 [V] adapt value converter
 [V] add display value to value converter
 [V] remove readonly from columnDefs - and hijack it in Remult Angular
@@ -83,6 +84,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] fixedFilter
 [] consider a column that is saved to more than one column in the db
 [] included display value and input type also in value converter - ias it is relevant to date only, and also value list
+[] i make errors with the order of the generic parameters, entity, column and vice versa
 
 
 ## consider if needed
@@ -167,7 +169,8 @@ export type ColumnDefinitionsOf<Type> = {
 } & {
     find(col: ColumnDefinitions): ColumnDefinitions,
     [Symbol.iterator]: () => IterableIterator<ColumnDefinitions>,
-    idColumn: ColumnDefinitions
+    idColumn: ColumnDefinitions,
+    createFilterOf(): filterOf<Type>
 }
 
 
@@ -181,7 +184,7 @@ export interface IdDefs {
 
 }
 
-export interface EntityColumn<T, entityType> {
+export interface EntityColumn<T, entityType = any> {
     inputType: string;
     error: string;
     displayValue: string;
@@ -201,7 +204,8 @@ export interface EntityDefinitions<T = any> {
     readonly key: string,
     readonly dbName: string,
     readonly columns: ColumnDefinitionsOf<T>,
-    readonly caption: string
+    readonly caption: string;
+
 
 }
 export interface Repository<T> {
@@ -229,11 +233,13 @@ export interface Repository<T> {
 * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
  */
     lookup(filter: EntityWhere<T>): T;
+    lookupId(id: any): T;
     /** returns a single row and caches the result for each future call
   * @example
   * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
   */
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
+    lookupIdAsync(id: any): Promise<T>;
     create(): T;
 
 
@@ -366,5 +372,7 @@ export class InputTypes {
     static date = 'date';
     static checkbox = 'checkbox';
     static password = 'password';
-
+    static email = 'email';
+    static tel = 'tel';
+    static time = "time";
 }

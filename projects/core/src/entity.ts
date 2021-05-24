@@ -22,7 +22,7 @@ export interface EntityOptions<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: ColumnDefinitionsOf<T>) => string);
+  dbName?: string | ((entity: ColumnDefinitionsOf<T>,context:Context) => string);
   /**A human readable name for the entity */
   caption?: string;
   includeInApi?:boolean;

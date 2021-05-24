@@ -51,6 +51,7 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
             return undefined;
         return new Date(Date.parse(value));
     },
+    inputType:InputTypes.date,
     toDb: (val: Date) => {
 
         if (!val)

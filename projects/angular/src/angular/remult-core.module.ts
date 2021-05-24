@@ -112,7 +112,7 @@ export async function getValueList<T >(repository:Repository<T>, args?: {
     args = {};
   }
   if (!args.idColumn) {
-    args.idColumn = x => x.columns.idColumn;
+    args.idColumn = x => x.idColumn;
   }
   if (!args.captionColumn) {
     let idCol = args.idColumn(repository.defs);
@@ -123,7 +123,7 @@ export async function getValueList<T >(repository:Repository<T>, args?: {
       }
     }
   }
-  return (await repository.find({
+  let r =  (await repository.find({
     where: args.where,
     orderBy: args.orderBy,
     limit: 1000
@@ -133,4 +133,6 @@ export async function getValueList<T >(repository:Repository<T>, args?: {
       caption: repository.getRowHelper(x).columns.find(args.captionColumn(repository.defs)).value,
     }
   });
+  return r;
+
 }

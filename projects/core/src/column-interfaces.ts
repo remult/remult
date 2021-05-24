@@ -1,5 +1,5 @@
-import { Allowed, EntityAllowed } from './context';
-import { EntityColumn, ColumnDefinitionsOf, ClassType } from './remult3';
+import { Allowed, Context, EntityAllowed } from './context';
+import { EntityColumn, ColumnDefinitionsOf, ClassType, EntityDefinitions } from './remult3';
 
 
 
@@ -22,10 +22,10 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     allowNull?: boolean;
 
     dbName?: string;
-    sqlExpression?: string | ((entity: ColumnDefinitionsOf<entityType>) => string);
+    sqlExpression?: string | ((entity: EntityDefinitions<entityType>, context: Context) => string);
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
-    valueConverter?: ValueConverter<valueType>;
+    valueConverter?: (context: Context) => ValueConverter<valueType>;
 
     includeInApi?: Allowed;
     allowApiUpdate?: EntityAllowed<entityType>;

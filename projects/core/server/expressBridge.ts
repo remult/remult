@@ -446,7 +446,7 @@ export class JobsInQueueEntity extends IdEntity {
   done: boolean;
   @Column()
   error: boolean;
-  @Column({ valueConverter: DecimalValueConverter })
+  @Column({ valueConverter:()=> DecimalValueConverter })
   progress: number;
 }
 

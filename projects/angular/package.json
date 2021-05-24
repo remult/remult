@@ -1,7 +1,7 @@
 {
   "name": "@remult/angular",
   "schematics": "./schematics/collection.json",
-  "version": "3.0.2",
+  "version": "3.0.5",
   "description": "an angular module for remult",
   "license": "MIT",
   "author": {
