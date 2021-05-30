@@ -338,8 +338,8 @@ export class InputControl<T> implements EntityColumn<T, any> {
 
       allowNull: settings.allowNull,
       caption: settings.caption,
-      evilOriginalSettings:settings,
-      valueConverter: settings.valueConverter(this.settings.context),
+      evilOriginalSettings: settings,
+      valueConverter: settings.valueConverter ? settings.valueConverter(this.settings.context) : undefined,
       dataType: settings.dataType,
       key: settings.key,
       dbName: settings.dbName,
@@ -359,7 +359,7 @@ export class InputControl<T> implements EntityColumn<T, any> {
     caption: this.settings.caption,
     evilOriginalSettings: this.settings,
 
-    valueConverter: this.settings.valueConverter(this.settings.context),
+    valueConverter: undefined,
     dataType: this.settings.dataType,
     key: this.settings.key,
     dbName: this.settings.dbName,

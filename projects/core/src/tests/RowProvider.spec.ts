@@ -1473,6 +1473,7 @@ class mockColumnDefs implements ColumnDefinitions {
   constructor(public dbName: string) {
 
   }
+  evilOriginalSettings: ColumnSettings<any, any>;
   valueConverter: ValueConverter<any> = DefaultValueConverter;
   target: ClassType<any>;
   readonly: boolean;
