@@ -1,6 +1,7 @@
 
 import { ColumnDefinitions } from "../column-interfaces";
 import { IterateToArrayOptions } from "../context";
+import { EntityOptions } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 import { RowEvents } from "../__EntityValueProvider";
@@ -85,6 +86,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] consider a column that is saved to more than one column in the db
 [] included display value and input type also in value converter - ias it is relevant to date only, and also value list
 [] i make errors with the order of the generic parameters, entity, column and vice versa
+[] reconsider all the where stuff - just searh references for AndFilter to see the problem
 
 
 ## consider if needed
@@ -158,7 +160,7 @@ export interface rowHelper<T> {
 export type EntityColumns<Type> = {
     [Properties in keyof Type]: EntityColumn<Type[Properties], Type>
 } & {
-    find(col: ColumnDefinitions): EntityColumn<any, Type>,
+    find(col: ColumnDefinitions | string): EntityColumn<any, Type>,
     [Symbol.iterator]: () => IterableIterator<EntityColumn<any, Type>>,
     idColumn: EntityColumn<any, Type>
 
@@ -167,7 +169,7 @@ export type EntityColumns<Type> = {
 export type ColumnDefinitionsOf<Type> = {
     [Properties in keyof Type]: ColumnDefinitions
 } & {
-    find(col: ColumnDefinitions): ColumnDefinitions,
+    find(col: ColumnDefinitions | string): ColumnDefinitions,
     [Symbol.iterator]: () => IterableIterator<ColumnDefinitions>,
     idColumn: ColumnDefinitions,
     createFilterOf(): filterOf<Type>
@@ -205,10 +207,12 @@ export interface EntityDefinitions<T = any> {
     readonly dbName: string,
     readonly columns: ColumnDefinitionsOf<T>,
     readonly caption: string;
+    readonly evilOriginalSettings: EntityOptions
 
 
 }
 export interface Repository<T> {
+    fromPojo(x: any): any;
 
     defs: EntityDefinitions<T>;
 
@@ -321,6 +325,10 @@ export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | Enti
 
 export class EntityBase {
     _: rowHelper<this>;
+    save() { return this._.save(); }
+    delete() { return this.delete(); }
+    isNew() { return this._.isNew(); }
+    wasChanged() { return this._.wasChanged(); }
     get $() { return this._.columns }
 }
 

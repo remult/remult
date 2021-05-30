@@ -82,9 +82,10 @@ export class ExpressBridge {
   private firstArea: SiteArea;
 
   addArea(
-    rootUrl: string
+    rootUrl: string,
+    isUserValidForArea?: (origReq: DataApiRequest) => boolean
   ) {
-    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints);
+    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints, isUserValidForArea);
     if (!this.firstArea) {
       this.firstArea = r;
 
@@ -103,7 +104,8 @@ export class SiteArea {
     private bridge: ExpressBridge,
     private app: express.Express,
     private rootUrl: string,
-    private logApiEndpoints: boolean) {
+    private logApiEndpoints: boolean,
+    private isUserValidForArea: (origReq: DataApiRequest) => boolean) {
 
 
   }
@@ -159,6 +161,9 @@ export class SiteArea {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
       myReq.user = await this.bridge.getUserFromRequest(req);
+      if (this.isUserValidForArea)
+        if (!this.isUserValidForArea(myReq))
+          myReq.user = null;
       what(myReq, myRes, req);
     }
   };
@@ -446,7 +451,7 @@ export class JobsInQueueEntity extends IdEntity {
   done: boolean;
   @Column()
   error: boolean;
-  @Column({ valueConverter:()=> DecimalValueConverter })
+  @Column({ valueConverter: () => DecimalValueConverter })
   progress: number;
 }
 

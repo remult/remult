@@ -63,6 +63,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
     constructor(private entity: ClassType<T>, private context: Context, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity, context);
     }
+    fromPojo(x: any) {
+        throw new Error("Method not implemented.");
+    }
     lookupId(id: any): T {
         return this.lookup(() => this.getIdFilter(id));
     }
@@ -547,7 +550,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             for (const col of info.columnsInfo) {
                 if (col.settings.defaultValue) {
                     if (typeof col.settings.defaultValue === "function") {
-                        instance[col.key] = col.settings.defaultValue(instance);
+                        instance[col.key] = col.settings.defaultValue(instance, context);
                     }
                     else if (!instance[col.key])
                         instance[col.key] = col.settings.defaultValue;
@@ -593,6 +596,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             for (const c of this.info.columnsInfo) {
                 _items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this));
             }
+            r["idColumn"] = r.find(this.info.idColumn);
 
             this._columns = r as unknown as EntityColumns<T>;
         }
@@ -694,7 +698,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
     wasChanged(): boolean {
         for (const col of this.info.columns) {
-            if (this.instance[col.key] != this.originalValues[col.key])
+            if (col.valueConverter.toJson(this.instance[col.key]) != col.valueConverter.toJson(this.originalValues[col.key]))
                 return true;
         }
         return false;
@@ -797,7 +801,7 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.settings.inputType); }
     set inputValue(val: string) { this.value = this.defs.valueConverter.fromInput(val, this.settings.inputType); };
     wasChanged(): boolean {
-        return this.originalValue != this.value;
+        return this.defs.valueConverter.toJson(this.originalValue) != this.defs.valueConverter.toJson(this.value);
     }
     rowHelper: rowHelper<any> = this.helper;
 
@@ -838,6 +842,7 @@ export class columnDefsImpl implements ColumnDefinitions {
 
 
     }
+    evilOriginalSettings: ColumnSettings<any, any>=this.colInfo.settings;
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
@@ -863,7 +868,7 @@ export class columnDefsImpl implements ColumnDefinitions {
 }
 class EntityFullInfo<T> implements EntityDefinitions<T> {
 
-
+    evilOriginalSettings = this.entityInfo;
 
     constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions, private context: Context) {
 
@@ -871,7 +876,8 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
         let _items = [];
         let r = {
             find: (c: ColumnDefinitions<any>) => r[c.key],
-            [Symbol.iterator]: () => _items[Symbol.iterator]()
+            [Symbol.iterator]: () => _items[Symbol.iterator](),
+            createFilterOf: () => this.createFilterOf()
         };
 
         for (const x of columnsInfo) {
@@ -1076,6 +1082,16 @@ export function Entity<T>(options: EntityOptions<T>) {
     return target => {
         if (!options.key || options.key == '')
             options.key = target.name;
+        let base = Object.getPrototypeOf(target);
+        if (base) {
+            let opt = Reflect.getMetadata(entityInfo, target);
+            if (opt) {
+                options = {
+                    ...opt,
+                    ...options
+                }
+            }
+        }
         if (!options.dbName)
             options.dbName = options.key;
         allEntities.push(target);
@@ -1093,6 +1109,7 @@ export class CompoundId implements ColumnDefinitions<string>{
         if (false)
             console.log(columns);
     }
+    evilOriginalSettings: ColumnSettings<any, any>;
     valueConverter: ValueConverter<string>;
     target: ClassType<any>;
     readonly: true;

@@ -4,6 +4,7 @@ import { Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress, Id
 import { DataAreaSettings } from '@remult/angular';
 import { Products } from '../products-test/products';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
+import { StringColumn } from '../../../dist-server/projects/core/src/core/columns/string-column';
 
 
 @Component({
@@ -52,7 +53,6 @@ export class TestComponent {
 }
 
 @Entity<Tasks>({
-  
   key: 'tasks',
   allowApiCrud: true,
   saving: t => {
@@ -60,6 +60,7 @@ export class TestComponent {
   }
 })
 class Tasks extends IdEntity {
+
   @Column<Tasks, string>({
     validate: (row, col) => {
       if (col.value.length < 3)
@@ -67,12 +68,14 @@ class Tasks extends IdEntity {
       if (row.title.length < 3)
         row._.columns.title.error = "is too short";
     },
-
   })
   title = '';
+
   @Column()
   completed: boolean;
   constructor(private context: Context) {
     super();
   }
 }
+
+

@@ -6,12 +6,9 @@ import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
   key: "Products",
   allowApiCrud: true,
   apiDataFilter: (e, c) => {
-    
     return new Filter();
   }
-
 })
-
 export class Products extends IdEntity {
   @Column()
   @DataControl<Products, string>({

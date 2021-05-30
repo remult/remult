@@ -20,8 +20,8 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../da
 import { OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories } from './remult-3-entities';
 
-import { Column, CompoundId, decorateColumnSettings, Entity, EntityBase } from '../remult3';
-import { DateOnlyValueConverter } from '../columns/loaders';
+import { Column, CompoundId, decorateColumnSettings, Entity, EntityBase, Storable } from '../remult3';
+import { DateOnlyValueConverter, StoreAsStringValueConverter } from '../columns/loaders';
 
 
 
@@ -88,6 +88,35 @@ export class TestDataApiResponse implements DataApiResponse {
 
 }
 
+@Storable<Phone>({ valueConverter: () => new StoreAsStringValueConverter(x => x.thePhone, x => new Phone(x)) })
+class Phone {
+  constructor(private thePhone) {
+
+  }
+}
+@Entity({ key: '' })
+class tableWithPhone extends EntityBase {
+  @Column()
+  id: number;
+  @Column()
+  phone: Phone;
+}
+describe("test object column stored as string", () => {
+  itAsync("was changed should work correctly",async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+    let repo = context.for(tableWithPhone);
+    let r = repo.create();
+    r.id=1;
+    r.phone = new Phone("123");
+    await r.save();
+    r.phone = new Phone("123");
+    expect(r.$.phone.wasChanged()).toBe(false);
+    expect(r._.wasChanged()).toBe(false);
+
+    
+  });
+});
+
 
 
 
@@ -99,6 +128,9 @@ describe('Test basic row functionality', () => {
   it("finds its id column", () => {
     let c = new Context().for(newCategories);
     expect(c.defs.idColumn.key).toBe("id");
+    let n = c.create();
+    n.id = 5;
+    expect(n.$.idColumn.value).toBe(5);
 
   });
   it("object assign works", () => {
@@ -1841,7 +1873,7 @@ describe("test bool value", () => {
       expect(r.ok).toBe(false);
       await r._.save();
       expect(r.ok).toBe(true);
-      
+
     });
   });
 

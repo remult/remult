@@ -109,7 +109,7 @@ export const BoolValueConverter: ValueConverter<Boolean> = {
     toInput: x => BoolValueConverter.toJson(x)
 }
 
-export const IntValueConverter: ValueConverter<Number> =
+export const IntValueConverter: ValueConverter<number> =
 {
 
     fromDb: value => {
@@ -151,3 +151,26 @@ export const DefaultValueConverter:ValueConverter<any>={
             fromInput: x => DefaultValueConverter.fromJson(x),
             toInput: x => DefaultValueConverter.toJson(x)
 }
+export class StoreAsStringValueConverter<T> implements ValueConverter<T>{
+    constructor(public toJson: (x: T) => string, public fromJson: (x: string) => T) {
+  
+    }
+    fromDb(val: any): T {
+      return this.fromJson(val);
+    }
+    toDb(val: T) {
+      return this.toJson(val);
+    }
+    toInput(val: T, inputType: string): string {
+      return this.toJson(val);
+    }
+    fromInput(val: string, inputType: string): T {
+      return this.fromJson(val);
+    }
+    displayValue?(val: T): string {
+      return this.toJson(val);
+    }
+    columnTypeInDb?: string;
+    inputType?: string;
+  
+  }

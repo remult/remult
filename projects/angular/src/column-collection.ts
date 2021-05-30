@@ -1,4 +1,4 @@
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, decorateColumnSettings, ColumnSettings, Context } from "@remult/core";
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, decorateColumnSettings, ColumnSettings, Context, valueOrExpressionToValue } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -312,10 +312,14 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 
 
 export class InputControl<T> implements EntityColumn<T, any> {
-  constructor(private defaultValue: T,
+  constructor(
     private settings: ColumnSettings<T, any>
       & DataControlSettings
-      & { valueChange?: () => void, context?: Context }) {
+      & {
+        valueChange?: () => void,
+
+        context?: Context
+      }) {
     if (!settings.caption)
       settings.caption = 'caption';
     if (!settings.key)
@@ -325,13 +329,16 @@ export class InputControl<T> implements EntityColumn<T, any> {
 
     decorateColumnSettings(settings);
     this.inputType = settings.inputType;
-    this._value = defaultValue;
-    this.originalValue = defaultValue;
+    if (settings.defaultValue) {
+      this._value = settings.defaultValue(undefined, undefined) as unknown as T
+    }
+    this._value = settings.defaultValue as unknown as T;
+    this.originalValue = this._value;
     this.defs = {
 
       allowNull: settings.allowNull,
       caption: settings.caption,
-
+      evilOriginalSettings:settings,
       valueConverter: settings.valueConverter(this.settings.context),
       dataType: settings.dataType,
       key: settings.key,
@@ -347,7 +354,21 @@ export class InputControl<T> implements EntityColumn<T, any> {
 
 
   }
-  defs: ColumnDefinitions<any>;
+  defs = {
+    allowNull: this.settings.allowNull,
+    caption: this.settings.caption,
+    evilOriginalSettings: this.settings,
+
+    valueConverter: this.settings.valueConverter(this.settings.context),
+    dataType: this.settings.dataType,
+    key: this.settings.key,
+    dbName: this.settings.dbName,
+    dbReadOnly: false,
+    inputType: this.settings.inputType,
+    isServerExpression: false,
+
+    target: undefined
+  };
   _value: T;
   inputType: string;
   error: string;

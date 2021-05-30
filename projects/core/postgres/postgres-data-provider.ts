@@ -113,7 +113,7 @@ export class PostgresSchemaBuilder {
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of e.columns) {
-                    if (!x.dbReadOnly) {
+                    if (!x.dbReadOnly&&!x.isServerExpression) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
@@ -163,7 +163,7 @@ export class PostgresSchemaBuilder {
     }
 
     async addColumnIfNotExist<T extends EntityDefinitions>(e: T, c: ((e: T) => ColumnDefinitions)) {
-        if (c(e).dbReadOnly)
+        if (c(e).dbReadOnly||c(e).isServerExpression)
             return;
         try {
             let cmd = this.pool.createCommand();
@@ -192,7 +192,7 @@ export class PostgresSchemaBuilder {
         WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
             for (const col of e.columns) {
-                if (!col.dbReadOnly)
+                if (!col.dbReadOnly&&!col.isServerExpression)
                     if (!cols.includes(col.dbName.toLocaleLowerCase())) {
                         let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(col)}`;
                         console.log(sql);

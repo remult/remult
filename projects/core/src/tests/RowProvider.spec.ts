@@ -17,6 +17,7 @@ import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, deco
 import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter } from '../columns/loaders';
+import { EntityOptions } from '../entity';
 
 
 
@@ -1140,6 +1141,28 @@ describe("grid settings ",
     });
   });
 
+@Entity({ key: 'typeA', dbName: 'dbnameA' })
+class typeA extends EntityBase {
+
+}
+@Entity({ key: 'typeB' })
+class typeB extends typeA {
+
+}
+describe("decorator inheritance", () => {
+  it("entity extends", () => {
+    
+    let c = new ServerContext();
+    let defsA = c.for(typeA).defs;
+    expect(defsA.key).toBe('typeA');
+    expect(defsA.dbName).toBe('dbnameA');
+    let defsB = c.for(typeB).defs;
+    expect(defsB.key).toBe("typeB");
+    expect(defsB.dbName).toBe("dbnameA");;
+
+  });
+
+});
 describe("order by api", () => {
   // it("works with sort", () => {
   //   let c = new Categories();
@@ -1329,8 +1352,9 @@ describe("Test char date storage", () => {
 
 describe("value list column without id and caption", () => {
   it("works with automatic id", () => {
-    let col = new InputControl<TestStatus>(TestStatus.open, {
-      valueConverter: () => new ValueListValueConverter(TestStatus)
+    let col = new InputControl<TestStatus>({
+      valueConverter: () => new ValueListValueConverter(TestStatus),
+      defaultValue: () => TestStatus.open
     });
 
     col.value = TestStatus.open;
