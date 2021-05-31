@@ -70,7 +70,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return this.lookup(() => this.getIdFilter(id));
     }
     lookupIdAsync(id: any): Promise<T> {
-        return this.lookupIdAsync(() => this.getIdFilter(id));
+        return this.lookupAsync(() => this.getIdFilter(id));
     }
     get defs(): EntityDefinitions { return this._info };
 
@@ -842,7 +842,7 @@ export class columnDefsImpl implements ColumnDefinitions {
 
 
     }
-    evilOriginalSettings: ColumnSettings<any, any>=this.colInfo.settings;
+    evilOriginalSettings: ColumnSettings<any, any> = this.colInfo.settings;
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
@@ -851,12 +851,15 @@ export class columnDefsImpl implements ColumnDefinitions {
 
     caption = this.colInfo.settings.caption;
     get dbName() {
+        let result;
         if (this.colInfo.settings.sqlExpression) {
             if (typeof this.colInfo.settings.sqlExpression === "function") {
-                return this.colInfo.settings.sqlExpression(this.entityDefs, this.context);
+                result = this.colInfo.settings.sqlExpression(this.entityDefs, this.context);
             } else
-                return this.colInfo.settings.sqlExpression;
+                result = this.colInfo.settings.sqlExpression;
         }
+        if (result)
+            return result;
         return this.colInfo.settings.dbName;
 
     }

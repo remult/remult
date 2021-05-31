@@ -211,7 +211,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     for (const x of this.entity.columns) {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(id, data);
-      } if (x.dbReadOnly) { }
+      } if (x.dbReadOnly||x.isServerExpression) { }
       else {
         let v = x.valueConverter.toDb(data[x.key]);
         if (v != undefined) {
@@ -254,7 +254,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       if (x instanceof CompoundIdColumn) {
         resultFilter = x.resultIdFilter(undefined, data);
       }
-      if (x.dbReadOnly) { }
+      if (x.dbReadOnly||x.isServerExpression) { }
 
       else {
         let v = x.valueConverter.toDb(data[x.key]);

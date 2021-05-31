@@ -51,7 +51,7 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
             return undefined;
         return new Date(Date.parse(value));
     },
-    inputType:InputTypes.date,
+    inputType: InputTypes.date,
     toDb: (val: Date) => {
 
         if (!val)
@@ -92,7 +92,7 @@ export const CharDateValueConverter: ValueConverter<Date> = {
 
 export const BoolValueConverter: ValueConverter<Boolean> = {
     toDb: (val: boolean) => val,
-    inputType:'checkbox',
+    inputType: 'checkbox',
     fromDb: (value: any) => {
         return BoolValueConverter.fromJson(value);
     },
@@ -143,34 +143,42 @@ export const DecimalValueConverter: ValueConverter<Number> =
     ...IntValueConverter,
     columnTypeInDb: 'decimal'
 }
-export const DefaultValueConverter:ValueConverter<any>={
+export const DefaultValueConverter: ValueConverter<any> = {
     fromJson: x => x,
-            toJson: x => x,
-            fromDb: x => DefaultValueConverter.fromJson(x),
-            toDb: x => DefaultValueConverter.toJson(x),
-            fromInput: x => DefaultValueConverter.fromJson(x),
-            toInput: x => DefaultValueConverter.toJson(x)
+    toJson: x => x,
+    fromDb: x => DefaultValueConverter.fromJson(x),
+    toDb: x => DefaultValueConverter.toJson(x),
+    fromInput: x => DefaultValueConverter.fromJson(x),
+    toInput: x => DefaultValueConverter.toJson(x)
 }
 export class StoreAsStringValueConverter<T> implements ValueConverter<T>{
-    constructor(public toJson: (x: T) => string, public fromJson: (x: string) => T) {
-  
+    constructor(public _toJson: (x: T) => string, public _fromJson: (x: string) => T) {
+
+    }
+    fromJson(val: any): T {
+        return this._fromJson(val);
+    }
+    toJson(val: T) {
+        if (val === undefined)
+            return undefined;
+        return this._toJson(val);
     }
     fromDb(val: any): T {
-      return this.fromJson(val);
+        return this.fromJson(val);
     }
     toDb(val: T) {
-      return this.toJson(val);
+        return this.toJson(val);
     }
     toInput(val: T, inputType: string): string {
-      return this.toJson(val);
+        return this.toJson(val);
     }
     fromInput(val: string, inputType: string): T {
-      return this.fromJson(val);
+        return this.fromJson(val);
     }
     displayValue?(val: T): string {
-      return this.toJson(val);
+        return this.toJson(val);
     }
     columnTypeInDb?: string;
     inputType?: string;
-  
-  }
+
+}

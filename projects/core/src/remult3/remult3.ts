@@ -326,7 +326,7 @@ export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | Enti
 export class EntityBase {
     _: rowHelper<this>;
     save() { return this._.save(); }
-    delete() { return this.delete(); }
+    delete() { return this._.delete(); }
     isNew() { return this._.isNew(); }
     wasChanged() { return this._.wasChanged(); }
     get $() { return this._.columns }
