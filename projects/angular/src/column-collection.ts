@@ -1,3 +1,4 @@
+import { ValueConverter } from "@angular/compiler/src/render3/view/template";
 import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, decorateColumnSettings, ColumnSettings, Context, valueOrExpressionToValue } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
@@ -7,7 +8,7 @@ import { FilterHelper } from "./filter-helper";
 
 export class ColumnCollection<rowType = any> {
 
-  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: ColumnDefinitions) => EntityColumn<any, any>) {
+  constructor( public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: ColumnDefinitions) => EntityColumn<any, any>) {
 
 
   }
@@ -327,19 +328,20 @@ export class InputControl<T> implements EntityColumn<T, any> {
     if (!settings.dbName)
       settings.dbName = settings.key;
 
-    decorateColumnSettings(settings);
+    this.settings = settings = decorateColumnSettings(settings);
     this.inputType = settings.inputType;
     if (settings.defaultValue) {
       this._value = settings.defaultValue(undefined, undefined) as unknown as T
     }
     this._value = settings.defaultValue as unknown as T;
     this.originalValue = this._value;
+    let valueConverter = settings.valueConverter ? settings.valueConverter(this.settings.context) : undefined;
     this.defs = {
 
       allowNull: settings.allowNull,
       caption: settings.caption,
       evilOriginalSettings: settings,
-      valueConverter: settings.valueConverter ? settings.valueConverter(this.settings.context) : undefined,
+      valueConverter: valueConverter,
       dataType: settings.dataType,
       key: settings.key,
       dbName: settings.dbName,
@@ -350,8 +352,10 @@ export class InputControl<T> implements EntityColumn<T, any> {
       target: undefined
 
     }
-
-
+    if (this.defs.valueConverter)
+      if (!this.defs.inputType) {
+        this.defs.inputType = valueConverter.inputType;
+      }
 
   }
   defs = {

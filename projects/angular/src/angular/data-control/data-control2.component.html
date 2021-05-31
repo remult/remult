@@ -1,8 +1,8 @@
 <div class="data-control2">
-    <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="!showCheckbox()"
+    <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="!showCheckbox()&&_getColumn()"
         class="full-width-form-field dense-form-field">
         <mat-label>{{map.caption}}</mat-label>
-        <div style="display:flex;" *ngIf="showTextBox()">
+        <div style="display:flex;" *ngIf="showTextBox()&&_getColumn()">
             <input #theId matInput [(ngModel)]="_getColumn().inputValue" type="{{settings._getColDataType(map)}}"
                 (ngModelChange)="settings._colValueChanged(map,record)" [errorStateMatcher]="ngErrorStateMatches"
                 [ngStyle]="getStyle()" />
