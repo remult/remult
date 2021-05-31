@@ -964,6 +964,8 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
         });
     }
     isDifferentFrom(val: any) {
+        if (val === null && this.col.allowNull)
+            return new Filter(add => add.isNotNull(this.col));
         return new Filter(add => add.isDifferentFrom(this.col, val));
     }
     isLessOrEqualTo(val: any): Filter {
@@ -973,6 +975,8 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
         return new Filter(add => add.isGreaterThan(this.col, val));
     }
     isEqualTo(val: any): Filter {
+        if (val === null && this.col.allowNull)
+            return new Filter(add => add.isNull(this.col));
         return new Filter(add => add.isEqualTo(this.col, val));
     }
     isIn(val: any[]): Filter {

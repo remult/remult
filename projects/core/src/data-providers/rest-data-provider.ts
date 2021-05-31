@@ -68,8 +68,8 @@ class RestEntityDataProvider implements EntityDataProvider {
         let order = '';
         options.orderBy.Segments.forEach(c => {
           if (sort.length > 0) {
-            sort += ", ";
-            order += ", ";
+            sort += ",";
+            order += ",";
           }
           sort += c.column.key;
           order += c.isDescending ? "desc" : "asc";

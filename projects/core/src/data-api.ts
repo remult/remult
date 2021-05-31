@@ -73,19 +73,7 @@ export class DataApi<T = any> {
         let sort = <string>request.get("_sort");
         if (sort != undefined) {
           let dir = request.get('_order');
-          let dirItems: string[] = [];
-          if (dir)
-            dirItems = dir.split(',');
-          findOptions.orderBy = x => {
-
-            return sort.split(',').map((name, i) => {
-              let r: SortSegment = x[name];
-              if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
-                return { column: r.column, isDescending: true };
-              return r;
-            });
-
-          }
+          findOptions.orderBy = determineSort(sort, dir);
 
         }
         let limit = +request.get("_limit");
@@ -224,3 +212,18 @@ export interface DataApiRequest {
   user: UserInfo;
   clientIp: string;
 }
+export function determineSort(sortUrlParm: string, dirUrlParam: string) {
+  let dirItems: string[] = [];
+  if (dirUrlParam)
+    dirItems = dirUrlParam.split(',');
+  return x => {
+    return sortUrlParm.split(',').map((name, i) => {
+      let r: SortSegment = x[name.trim()];
+      if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
+        return { column: r.column, isDescending: true };
+      return r;
+    });
+
+  };
+}
+
