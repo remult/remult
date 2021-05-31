@@ -9,13 +9,13 @@ import { FilterHelper } from '../../../angular/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, InputControl, __getDataControlSettings } from '../../../angular';
+import { ColumnCollection, DataAreaSettings, DataControlSettings, extend, getValueList, GridSettings, InputControl, __getDataControlSettings } from '../../../angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
-import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
+import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Column, Storable } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
-import { EntityBase, EntityDefinitions, ClassType, Repository } from '../remult3';
+import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter } from '../columns/loaders';
 import { EntityOptions } from '../entity';
 
@@ -1164,105 +1164,60 @@ describe("decorator inheritance", () => {
 
 });
 describe("order by api", () => {
-  // it("works with sort", () => {
-  //   let c = new Categories();
-  //   let opt: FindOptions<Categories> = { orderBy: c => new Sort({ column: c.id }) };
-  //   let s = entityOrderByToSort(c, opt.orderBy);
-  //   expect(s.Segments.length).toBe(1);
-  //   expect(s.Segments[0].column).toBe(c.id);
+  it("works with sort", () => {
+    let c = new ServerContext().for(Categories);
+    let opt: FindOptions<Categories> = { orderBy: c =>  c.id  };
+    let s = c.translateOrderByToSort( opt.orderBy);
+    expect(s.Segments.length).toBe(1);
+    expect(s.Segments[0].column.key).toBe(c.defs.columns.id.key);
 
 
-  // });
-  // it("works with columns", () => {
-  //   let c = new Categories();
-  //   let opt: FindOptions<Categories> = { orderBy: c => c.id };
-  //   let s = entityOrderByToSort(c, opt.orderBy);
-  //   expect(s.Segments.length).toBe(1);
-  //   expect(s.Segments[0].column).toBe(c.id);
-  // });
+  });
 
-  // it("works with columns array", () => {
-  //   let c = new Categories();
-  //   let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
-  //   let s = entityOrderByToSort(c, opt.orderBy);
-  //   expect(s.Segments.length).toBe(2);
-  //   expect(s.Segments[0].column).toBe(c.id);
-  //   expect(s.Segments[1].column).toBe(c.categoryName);
-  // });
-  // it("works with segment array", () => {
-  //   let c = new Categories();
-  //   let opt: FindOptions<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
-  //   let s = entityOrderByToSort(c, opt.orderBy);
-  //   expect(s.Segments.length).toBe(2);
-  //   expect(s.Segments[0].column).toBe(c.id);
-  //   expect(s.Segments[1].column).toBe(c.categoryName);
-  // });
-  // it("works with mixed column segment array", () => {
-  //   let c = new Categories();
-  //   let opt: FindOptions<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
-  //   let s = entityOrderByToSort(c, opt.orderBy);
-  //   expect(s.Segments.length).toBe(2);
-  //   expect(s.Segments[0].column).toBe(c.id);
-  //   expect(s.Segments[1].column).toBe(c.categoryName);
-  // });
-  // itAsync("test several sort options", async () => {
-  //   let c = await createData(async i => {
-  //     await i(1, 'z');
-  //     await i(2, 'y');
-  //   });
 
-  //   let r = await c.find({ orderBy: c => c.categoryName });
-  //   expect(r.length).toBe(2);
-  //   expect(r[0].id).toBe(2);
+  it("works with columns array", () => {
+    let c = new ServerContext().for(Categories);
+    let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
+    let s = c.translateOrderByToSort( opt.orderBy);
+    expect(s.Segments.length).toBe(2);
+    expect(s.Segments[0].column).toBe(c.defs.columns.id);
+    expect(s.Segments[1].column).toBe(c.defs.columns.categoryName);
+  });
 
-  //   r = await c.find({ orderBy: c => [c.categoryName] });
-  //   expect(r.length).toBe(2);
-  //   expect(r[0].id).toBe(2);
 
-  //   r = await c.find({ orderBy: c => c.categoryName.descending });
-  //   expect(r.length).toBe(2);
-  //   expect(r[0].id).toBe(1);
-
-  // });
-});
-describe("test area", () => {
-  // it("works without entity", () => {
-  //   let n = new NumberColumn();
-  //   n.value = 5;
-  //   let area = new DataAreaSettings({ columnSettings: () => [n] });
-  //   expect(area.columns.items.length).toBe(1);
-  //   expect(area.columns.__showArea()).toBe(true);
-  //   expect(area.columns.getNonGridColumns().length).toBe(1);
-  // });
-});
-/*describe("test Grid Settings", () => {  remember to copy to data area tests
-  it("works well with many columns", () => {
-
-    let x = new GridSettings(new Categories(), {
-      columnSettings: x => [
-        { caption: 'a', getValue: r => '' },
-        { caption: 'b', getValue: r => '' },
-        { caption: 'c', getValue: r => '' },
-        { caption: 'd', getValue: r => '' },
-        { caption: 'e', getValue: r => '' },
-        { caption: 'f', getValue: r => '' },
-        { caption: 'g', getValue: r => '' },
-        { caption: 'h', getValue: r => '' },
-      ]
+  itAsync("test several sort options", async () => {
+    let c = await createData(async i => {
+      await i(1, 'z');
+      await i(2, 'y');
     });
-    expect(x.columns.getGridColumns().length).toBe(5);
-    expect(x.columns.getNonGridColumns().length).toBe(3);
-    let area = new DataAreaCompnent();
-    area.settings = x;
-    area.columns = 2;
-    expect(area.theColumns().length).toBe(2);
-    expect(area.theColumns()[0].length).toBe(2);
-    expect(area.theColumns()[1].length).toBe(1);
+
+    let r = await c.find({ orderBy: c => c.categoryName });
+    expect(r.length).toBe(2);
+    expect(r[0].id).toBe(2);
+
+    r = await c.find({ orderBy: c => [c.categoryName] });
+    expect(r.length).toBe(2);
+    expect(r[0].id).toBe(2);
+
+    r = await c.find({ orderBy: c => c.categoryName.descending() });
+    expect(r.length).toBe(2);
+    expect(r[0].id).toBe(1);
 
   });
 });
+describe("test area", () => {
+  it("works without entity", () => {
+    let n = new InputControl<number>({
+      dataType:Number
+    });
+    n.value = 5;
+    let area = new DataAreaSettings({ columnSettings: () => [n] });
+    expect(area.columns.items.length).toBe(1);
+    expect(area.columns.__showArea()).toBe(true);
+    expect(area.columns.getNonGridColumns().length).toBe(1);
+  });
+});
 
-*/
 // describe("test column value change", () => {
 //   it("should fire", () => {
 //     let d = new Done();

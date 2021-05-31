@@ -182,3 +182,34 @@ export class StoreAsStringValueConverter<T> implements ValueConverter<T>{
     inputType?: string;
 
 }
+export class JsonValueLoader<T> implements ValueConverter<T>{
+
+    fromJson(val: any): T {
+        return val;
+    }
+    toJson(val: T) {
+        return val;
+    }
+    fromDb(val: any): T {
+        if (val !== undefined)
+            return JSON.parse(val);
+        return undefined;
+    }
+    toDb(val: T) {
+        if (val !== undefined)
+            return JSON.stringify(val);
+        return undefined;
+    }
+    toInput(val: T, inputType: string): string {
+        return this.toDb(val);
+    }
+    fromInput(val: string, inputType: string): T {
+        return this.fromDb(val);
+    }
+    displayValue?(val: T): string {
+        return this.toDb(val);
+    }
+    columnTypeInDb?: string;
+    inputType?: string;
+
+}
