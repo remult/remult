@@ -4,15 +4,15 @@ import { Context, iterateConfig, Column, getControllerDefs, EntityColumns, Entit
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputControl, openDialog } from '@remult/angular';
 import { DataAreaSettings, DataControl } from '@remult/angular';
-import { DataControlSettings } from '../../../dist/angular';
-import { Users } from '../../../projects/angular/schematics/hello/files/src/app/users/users';
 
 
 
 
 
 
-Context.apiBaseUrl = '/dataApi'
+
+
+//Context.apiBaseUrl = '/dataApi'
 
 @Component({
   selector: 'app-products',
@@ -28,7 +28,7 @@ export class ProductsComponent implements OnInit {
 
 
   constructor(private context: Context) { }
-  products = new GridSettings(this.context.for(Orders), {
+  products = new GridSettings<Orders>(this.context.for(Orders), {
     allowCrud: true,
     columnSettings: orders => [
       {

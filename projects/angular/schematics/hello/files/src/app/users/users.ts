@@ -73,6 +73,6 @@ export class Users extends IdEntity {
 export class PasswordControl extends InputControl<string>
 {
     constructor(settings?: ColumnSettings) {
-        super('', { ...settings, caption: 'password', inputType: InputTypes.password });
+        super({ ...settings, caption: 'password', inputType: InputTypes.password });
     }
 }

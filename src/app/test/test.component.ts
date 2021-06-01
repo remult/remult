@@ -4,7 +4,7 @@ import { Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress, Id
 import { DataAreaSettings } from '@remult/angular';
 import { Products } from '../products-test/products';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
-import { StringColumn } from '../../../dist-server/projects/core/src/core/columns/string-column';
+
 
 
 @Component({
