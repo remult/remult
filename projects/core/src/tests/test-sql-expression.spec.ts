@@ -7,7 +7,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Column, Entity, EntityBase } from '../remult3';
 
-describe("test sql database", async () => {
+describe("test sql database",  () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
     let context = new ServerContext();
     context.setDataProvider(db);
@@ -16,7 +16,7 @@ describe("test sql database", async () => {
             await c._.delete();
         }
     }
-    await itAsync("test basics", async () => {
+    itAsync("test basics", async () => {
         await deleteAll();
         let x = context.for(testSqlExpression).create();
         x.code = 3;
