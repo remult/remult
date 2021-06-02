@@ -58,7 +58,7 @@ export function initExpress(app: express.Express,
   let apiArea = result.addArea('/' + Context.apiBaseUrl);
 
 
-  
+
   if (!options.disableAutoApi) {
     registerActionsOnServer(apiArea);
     registerEntitiesOnServer(apiArea);
@@ -149,11 +149,11 @@ export class SiteArea {
       }));
     this.app.route(myRoute + '/:id')
       //@ts-ignore
-      .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))
+      .get(this.process(async (c, req, res, orig) => api(c).get(res, orig.params.id)))
       //@ts-ignore
-      .put(this.process(async (req, res, orig) => api(req).put(res, orig.params.id, orig.body)))
+      .put(this.process(async (c, req, res, orig) => api(c).put(res, orig.params.id, orig.body)))
       //@ts-ignore
-      .delete(this.process(async (req, res, orig) => api(req).delete(res, orig.params.id)));
+      .delete(this.process(async (c, req, res, orig) => api(c).delete(res, orig.params.id)));
 
 
   }

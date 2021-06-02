@@ -120,9 +120,9 @@ export class Context {
     get userChange() {
         return this._userChangeEvent.dispatcher;
     }
-    setUser(info: UserInfo) {
+    async setUser(info: UserInfo) {
         this._user = info;
-        this._userChangeEvent.fire();
+        await this._userChangeEvent.fire();
     }
     static apiBaseUrl = 'api';
 
@@ -289,20 +289,20 @@ export const iterateConfig = {
 
 
 export interface EventDispatcher {
-    observe(what: () => any): UnObserve;
+    observe(what: () => any | Promise<any>): Promise<UnObserve>;
 }
 export declare type UnObserve = () => void;
 export class EventSource {
     listeners: (() => {})[] = []
-    fire() {
+    async fire() {
         for (const l of this.listeners) {
-            l();
+            await l();
         }
     }
     dispatcher: EventDispatcher = {
-        observe: (what) => {
+        observe: async (what) => {
             this.listeners.push(what);
-            what();
+            await what();
             return () => {
                 this.listeners = this.listeners.filter(x => x != what);
             }
