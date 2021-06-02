@@ -1,10 +1,11 @@
-import { Allowed, RoleChecker } from './context';
+import { Allowed, Context, RoleChecker } from './context';
 import { ColumnDefinitions, ColumnSettings, ValueConverter, ValueListItem } from './column-interfaces';
 
 import { AndFilter, Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
 
 import { ClassType, EntityWhere, FindOptions, Repository } from './remult3';
+import { StoreAsStringValueConverter } from './columns/loaders';
 
 
 
@@ -179,6 +180,41 @@ class ValueListInfo<T extends ValueListItem> {
 }
 const typeCache = new Map<any, ValueListInfo<any>>();
 
+export function lookupConverter<T>(type: ClassType<T>) {
+  return (c: Context) => {
+    return new StoreAsStringValueConverter<LookupColumn<T>>(
+      x => x.id.toString(), x => new LookupColumn<T>(c.for(type), x))
+  }
+}
+export class LookupColumn<T> {
+  waitLoadOf(id: any) {
+    if (id === undefined || id === null)
+      return null;
+    return this.repository.getCachedByIdAsync(id);
+  }
+  get(id: any): any {
+    if (id === undefined || id === null)
+      return null;
+    return this.repository.getCachedById(id);
+  }
+  set(item: T) {
+    this.repository.addToCache(item);
+    this.id = item["id"];
+  }
+
+  constructor(private repository: Repository<T>, public id: string
+  ) { }
+  exists() {
+    return !this.repository.getRowHelper(this.item).isNew();
+  }
+  get item(): T {
+
+    return this.get(this.id);
+  }
+  async waitLoad() {
+    return this.waitLoadOf(this.id);
+  }
+}
 
 
 export class ManyToOne<T>{

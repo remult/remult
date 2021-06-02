@@ -358,6 +358,9 @@ export class InputControl<T> implements EntityColumn<T, any> {
       }
 
   }
+  load(): Promise<T> {
+    throw new Error("Method not implemented.");
+  }
   defs = {
     allowNull: this.settings.allowNull,
     caption: this.settings.caption,

@@ -154,6 +154,7 @@ export interface rowHelper<T> {
     toApiPojo(): any;
     register(listener: RowEvents);
     _updateEntityBasedOnApi(body: any);
+    
 
 
 }
@@ -196,7 +197,8 @@ export interface EntityColumn<T, entityType = any> {
     wasChanged(): boolean;
     rowHelper: rowHelper<entityType>;
     entity: entityType;
-    defs: ColumnDefinitions<entityType>
+    defs: ColumnDefinitions<entityType>;
+    load():Promise<T>;
 }
 
 export interface EntityDefinitions<T = any> {
@@ -245,6 +247,10 @@ export interface Repository<T> {
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
     lookupIdAsync(id: any): Promise<T>;
     create(): T;
+
+    getCachedById(id:any):T;
+    getCachedByIdAsync(id:any):Promise<T>;
+    addToCache(item:T);
 
 
     getRowHelper(item: T): rowHelper<T>;

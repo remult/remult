@@ -1,7 +1,7 @@
 
 import { ColumnDefinitions, ColumnSettings, ValueConverter } from "../column-interfaces";
 import { EntityOptions } from "../entity";
-import { CompoundIdColumn, makeTitle } from '../column';
+import { CompoundIdColumn, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
 import { EntityDefinitions, filterOptions, EntityColumn, EntityColumns, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, ColumnDefinitionsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
@@ -62,6 +62,39 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
     constructor(private entity: ClassType<T>, private context: Context, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity, context);
+    }
+    idCache = new Map<any, any>();
+    getCachedById(id: any): T {
+        this.getCachedByIdAsync(id);
+        let r = this.idCache.get(id);
+        if (r instanceof Promise)
+            return undefined;
+        return r;
+    }
+    async getCachedByIdAsync(id: any): Promise<T> {
+
+        let r = this.idCache.get(id);
+        if (r instanceof Promise)
+            return await r;
+        if (this.idCache.has(id)) {
+            return r;
+        }
+        this.idCache.set(id, undefined);
+        let row = this.findId(id).then(row => {
+            if (row === undefined) {
+                r = null;
+            }
+            else
+                r = row;
+            this.idCache.set(id, r);
+            return r;
+        });
+        this.idCache.set(id, row);
+        return await row;
+    }
+    addToCache(item: T) {
+        if (item)
+            this.idCache.set(this.getRowHelper(item).columns.idColumn.value, item);
     }
     fromPojo(x: any) {
         throw new Error("Method not implemented.");
@@ -407,9 +440,14 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
-export function getEntityOptions<T>(entity: ClassType<T>) {
+export function getEntityOptions<T>(entity: ClassType<T>, throwError = true) {
+    if (entity === undefined)
+        if (throwError) {
+            throw new Error("Undefined is not an entity :)")
+        }
+        else return undefined;
     let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
-    if (!info)
+    if (!info && throwError)
         throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?")
 
     return info;
@@ -443,6 +481,10 @@ class rowHelperBase<T>
     error: string;
     constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
 
+    }
+    lookups = new Map<string, LookupColumn<any>>();
+    async waitLoad() {
+        await Promise.all([...this.lookups.values()].map(x => x.waitLoad()));
     }
     errors: { [key: string]: string };
     protected __assertValidity() {
@@ -499,7 +541,11 @@ class rowHelperBase<T>
     protected copyDataToObject() {
         let d: any = {};
         for (const col of this.columnsInfo) {
-            d[col.key] = this.instance[col.key];
+            let lu = this.lookups.get(col.key);
+            if (lu)
+                d[col.key] = lu.id;
+            else
+                d[col.key] = this.instance[col.key];
         }
         return d;
     }
@@ -544,10 +590,26 @@ class rowHelperBase<T>
 export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowHelper<T> {
 
 
+
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: Repository<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
         super(info.columnsInfo, instance, context);
+        for (const col of info.columnsInfo) {
+            let ei = getEntityOptions(col.settings.dataType, false);
+
+            if (ei) {
+                let lookup = new LookupColumn(context.for(col.settings.dataType), undefined);
+                this.lookups.set(col.key, lookup);
+                Object.defineProperty(instance, col.key, {
+                    get: () =>
+                        lookup.item,
+                    set: (val) =>
+                        lookup.set(val),
+                });
+            }
+        }
         if (_isNew) {
             for (const col of info.columnsInfo) {
+
                 if (col.settings.defaultValue) {
                     if (typeof col.settings.defaultValue === "function") {
                         instance[col.key] = col.settings.defaultValue(instance, context);
@@ -555,6 +617,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
                     else if (!instance[col.key])
                         instance[col.key] = col.settings.defaultValue;
                 }
+
             }
         }
     }
@@ -674,7 +737,11 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
     async loadDataFrom(data: any) {
         for (const col of this.info.columns) {
-            this.instance[col.key] = data[col.key];
+            let lu = this.lookups.get(col.key);
+            if (lu)
+                lu.id = data[col.key];
+            else
+                this.instance[col.key] = data[col.key];
         }
         await this.calcServerExpression();
         if (this.repository.defs.idColumn instanceof CompoundIdColumn) {
@@ -698,7 +765,12 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
     wasChanged(): boolean {
         for (const col of this.info.columns) {
-            if (col.valueConverter.toJson(this.instance[col.key]) != col.valueConverter.toJson(this.originalValues[col.key]))
+            let val = this.instance[col.key];
+            let lu = this.lookups.get(col.key);
+            if (lu) {
+                val = lu.id;
+            }
+            if (col.valueConverter.toJson(val) != col.valueConverter.toJson(this.originalValues[col.key]))
                 return true;
         }
         return false;
@@ -769,6 +841,16 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     constructor(private settings: ColumnSettings, public defs: ColumnDefinitions, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
+    async load(): Promise<colType> {
+        let lu = this.rowBase.lookups.get(this.defs.key);
+        if (lu) {
+            if (this.wasChanged()) {
+                await lu.waitLoadOf(this.rawOriginalValue());
+            }
+            return await lu.waitLoad();
+        }
+        return this.value;
+    }
     target: ClassType<any> = this.settings.target;
 
 
@@ -797,11 +879,25 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     };
     get value() { return this.entity[this.defs.key] };
     set value(value: any) { this.entity[this.defs.key] = value };
-    get originalValue(): any { return this.rowBase.originalValues[this.defs.key] };
+    get originalValue(): any {
+        let lu = this.rowBase.lookups.get(this.defs.key);
+        if (lu)
+            return lu.get(this.rawOriginalValue());
+        return this.rowBase.originalValues[this.defs.key];
+    };
+    private rawOriginalValue(): any {
+        return this.rowBase.originalValues[this.defs.key];
+    }
+
     get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.settings.inputType); }
     set inputValue(val: string) { this.value = this.defs.valueConverter.fromInput(val, this.settings.inputType); };
     wasChanged(): boolean {
-        return this.defs.valueConverter.toJson(this.originalValue) != this.defs.valueConverter.toJson(this.value);
+        let val = this.value;
+        let lu = this.rowBase.lookups.get(this.defs.key);
+        if (lu) {
+            val = lu.id;
+        }
+        return this.defs.valueConverter.toJson(this.rowBase.originalValues[this.defs.key]) != this.defs.valueConverter.toJson(val);
     }
     rowHelper: rowHelper<any> = this.helper;
 
@@ -942,6 +1038,15 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
     constructor(private col: ColumnDefinitions) {
 
     }
+    processVal(val: any) {
+        let ei = getEntityOptions(this.col.dataType, false);
+        if (ei) {
+            if (!val)
+                return null;
+            return val.id;
+        }
+        return val;
+    }
     startsWith(val: any): Filter {
         return new Filter(add => add.startsWith(this.col, val));
     }
@@ -964,6 +1069,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
         });
     }
     isDifferentFrom(val: any) {
+        val = this.processVal(val);
         if (val === null && this.col.allowNull)
             return new Filter(add => add.isNotNull(this.col));
         return new Filter(add => add.isDifferentFrom(this.col, val));
@@ -975,11 +1081,13 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
         return new Filter(add => add.isGreaterThan(this.col, val));
     }
     isEqualTo(val: any): Filter {
+        val = this.processVal(val);
         if (val === null && this.col.allowNull)
             return new Filter(add => add.isNull(this.col));
         return new Filter(add => add.isEqualTo(this.col, val));
     }
     isIn(val: any[]): Filter {
+        val = val.map(x => this.processVal(x));
         return new Filter(add => add.isIn(this.col, val));
     }
 
