@@ -3,6 +3,8 @@
  */
 
 
+
+
 export * from './src/remult3';
 export * from './src/data-interfaces';//V
 export * from './src/sql-command';//V
@@ -25,6 +27,7 @@ export * from './src/sort';
 export * from './src/columns/loaders';
 
 
+export { ManyToOne, OneToMany } from './src/column';
 
 
 

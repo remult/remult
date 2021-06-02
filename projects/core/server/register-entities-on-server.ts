@@ -3,15 +3,12 @@ import { allEntities, ServerContext, DataApi, DataProviderFactoryBuilder } from 
 import { createOldEntity, getEntityOptions } from "../src/remult3";
 
 
-export function registerEntitiesOnServer(area: SiteArea, dataProvider: DataProviderFactoryBuilder) {
+export function registerEntitiesOnServer(area: SiteArea) {
     let errors = '';
     //add Api Entries
     allEntities.forEach(e => {
         if (!(getEntityOptions(e).includeInApi === false))
-            area.add(r => {
-                let c = new ServerContext();
-                c.setReq(r);
-                c.setDataProvider((dataProvider)(c));
+            area.add(c => {
                 return new DataApi(c.for(e));
             });
 

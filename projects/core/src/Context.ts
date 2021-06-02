@@ -51,9 +51,19 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
         throw result;
     });
 }
+export class keyFor<T>{
 
+}
 
 export class Context {
+    map = new Map<any, any>();
+    set<T>(key: keyFor<T>, value: T) {
+        this.map.set(key, value);
+    }
+
+    get<T>(key: keyFor<T>): T {
+        return this.map.get(key);
+    }
     clearAllCache(): any {
         this.repCache.clear();
     }

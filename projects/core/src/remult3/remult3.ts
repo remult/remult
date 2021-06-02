@@ -87,6 +87,8 @@ import { RowEvents } from "../__EntityValueProvider";
 [] included display value and input type also in value converter - ias it is relevant to date only, and also value list
 [] i make errors with the order of the generic parameters, entity, column and vice versa
 [] reconsider all the where stuff - just searh references for AndFilter to see the problem
+[] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
+[] consider the case when initing context, and cashing rows between requests, you might get a save to a context of a request two hours ago.
 
 
 ## consider if needed
@@ -239,13 +241,13 @@ export interface Repository<T> {
 * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
  */
     lookup(filter: EntityWhere<T>): T;
-    lookupId(id: any): T;
+    
     /** returns a single row and caches the result for each future call
   * @example
   * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
   */
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
-    lookupIdAsync(id: any): Promise<T>;
+    
     create(): T;
 
     getCachedById(id:any):T;

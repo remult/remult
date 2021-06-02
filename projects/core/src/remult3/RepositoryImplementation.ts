@@ -99,12 +99,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     fromPojo(x: any) {
         throw new Error("Method not implemented.");
     }
-    lookupId(id: any): T {
-        return this.lookup(() => this.getIdFilter(id));
-    }
-    lookupIdAsync(id: any): Promise<T> {
-        return this.lookupAsync(() => this.getIdFilter(id));
-    }
+    
     get defs(): EntityDefinitions { return this._info };
 
     _getApiSettings(): DataApiSettings<T> {

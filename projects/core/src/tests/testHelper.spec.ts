@@ -1,4 +1,4 @@
-import { Context } from "../context";
+import { Context, ServerContext } from "../context";
 import { DataApiRequest, DataApiResponse } from "../data-api";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Action, actionInfo, serverActionField } from "../server-action";
@@ -84,24 +84,25 @@ Action.provider = {
       //   if (false)
       actionInfo.allActions.forEach(action => {
 
-        action[serverActionField].dataProvider = () => new InMemoryDataProvider();
-
         action[serverActionField].
           __register(
-            (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => {
+            (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => {
               if (Context.apiBaseUrl + '/' + url == urlreq) {
                 found = true;
                 let t = new TestDataApiResponse();
                 t.success = data =>
                   res(data);
-                t.error= data => r(data);
-                what(data, {
+                t.error = data => r(data);
+                let context = new ServerContext(new InMemoryDataProvider());
+                context.setReq({
                   get: x => {
                     ;
                     return undefined;
                   }, clientIp: '', user: undefined, getHeader: x => ""
                   , getBaseUrl: () => ''
-                }, t);
+                });
+
+                what(data, context, t);
               }
             }
           )

@@ -227,7 +227,7 @@ export class ManyToOne<T>{
   get item(): T {
     return this.repository.lookup(this.where);
   }
-  async waitLoad() {
+  async load() {
     return this.repository.lookupAsync(this.where);
   }
 }
@@ -243,10 +243,10 @@ export class OneToMany<T>{
   private _items: T[];
   private _currentPromise: Promise<T[]>;
   get items() {
-    this.waitLoad();
+    this.load();
     return this._items;
   }
-  async waitLoad() {
+  async load() {
     if (this._currentPromise != null)
       return this._currentPromise;
     if (this._items === undefined)
@@ -259,7 +259,7 @@ export class OneToMany<T>{
   }
   async reload() {
     this._currentPromise = undefined;
-    return this.waitLoad();
+    return this.load();
   }
   private async find(): Promise<T[]> {
     return this.provider.find(this.settings)

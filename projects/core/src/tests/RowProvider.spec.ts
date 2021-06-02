@@ -1331,7 +1331,7 @@ describe("relation", () => {
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
-    let rows = await r.waitLoad();
+    let rows = await r.load();
     expect(rows.length).toBe(2);
     let n = r.create();
     expect(n.description).toBe("x");
@@ -1343,7 +1343,7 @@ describe("relation", () => {
     });
     let arr = r.items;
     expect(arr.length).toBe(0);
-    await r.waitLoad();
+    await r.load();
     expect(arr.length).toBe(2);
 
   });

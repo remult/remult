@@ -69,9 +69,9 @@ export abstract class Action<inParam, outParam>{
 
 
     }
-    protected abstract execute(info: inParam, req: DataApiRequest, res: DataApiResponse): Promise<outParam>;
+    protected abstract execute(info: inParam, req: ServerContext, res: DataApiResponse): Promise<outParam>;
 
-    __register(reg: (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
+    __register(reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) {
         reg(this.actionUrl, this.queue, async (d, req, res) => {
 
             try {
@@ -92,13 +92,10 @@ export class myServerAction extends Action<inArgs, result>
     constructor(name: string, private types: any[], private options: ServerFunctionOptions, private originalMethod: (args: any[]) => any) {
         super(name, options.queue)
     }
-    dataProvider: DataProviderFactoryBuilder;
-    protected async execute(info: inArgs, req: DataApiRequest, res: DataApiResponse): Promise<result> {
+    
+    protected async execute(info: inArgs, context: ServerContext, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
-        let context = new ServerContext();
-        context.setReq(req);
-
-        let ds = this.dataProvider(context);
+        let ds = context._dataSource;
         await ds.transaction(async ds => {
             context.setDataProvider(ds);
             if (!context.isAllowed(this.options.allowed))
@@ -228,8 +225,8 @@ export function ServerMethod(options?: ServerFunctionOptions) {
         x.methods.push(mh);
         var originalMethod = descriptor.value;
         let serverAction = {
-            dataProvider: undefined as DataProviderFactoryBuilder,
-            __register(reg: (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
+            
+            __register(reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) {
 
                 let c = new ServerContext();
                 for (const constructor of mh.classes.keys()) {
@@ -249,9 +246,9 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                             allowed = options.allowed;
 
                         try {
-                            let context = new ServerContext();
-                            context.setReq(req);
-                            let ds = serverAction.dataProvider(context);
+                            let context = req;
+                            
+                            let ds = context._dataSource;
                             if (!context.isAllowed(allowed))
                                 throw 'not allowed';
                             let r: serverMethodOutArgs;
