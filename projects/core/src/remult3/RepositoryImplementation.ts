@@ -99,7 +99,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     fromPojo(x: any) {
         throw new Error("Method not implemented.");
     }
-    
+
     get defs(): EntityDefinitions { return this._info };
 
     _getApiSettings(): DataApiSettings<T> {
@@ -563,7 +563,11 @@ class rowHelperBase<T>
         let result: any = {};
         for (const col of this.columnsInfo) {
             if (!this.context || col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                result[col.key] = col.settings.valueConverter(this.context).toJson(this.instance[col.key]);
+                let val = this.instance[col.key];
+                let lu = this.lookups.get(col.key);
+                if (lu)
+                    val = lu.id;
+                result[col.key] = col.settings.valueConverter(this.context).toJson(val);
             }
         }
         return result;
@@ -1108,13 +1112,11 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
     }
 
 
-    return (target, key) => {
+    return (target, key,c?) => {
         if (!settings.key) {
             settings.key = key;
         }
-        if (!settings.caption) {
-            settings.caption = makeTitle(settings.key);
-        }
+        
         if (!settings.dbName)
             settings.dbName = settings.key;
 
@@ -1154,6 +1156,9 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
                 ...settings
             }
         }
+    }
+    if (!settings.caption) {
+        settings.caption = makeTitle(settings.key);
     }
     if (settings.dataType == Number) {
         let x = settings as unknown as ColumnSettings<Number>;

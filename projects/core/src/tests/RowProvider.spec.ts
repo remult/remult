@@ -18,6 +18,7 @@ import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter } from '../columns/loaders';
 import { EntityOptions } from '../entity';
+import { async } from '@angular/core/testing';
 
 
 
@@ -172,7 +173,7 @@ describe("grid filter stuff", () => {
   if (false)
     itAsync("test filter works with user filter", async () => {
       let c = await insertFourRows();
-      let ds = new GridSettings(c, {
+      let ds = new GridSettings<CategoriesForTesting>(c, {
         orderBy: c => c.id,
         where: c => c.categoryName.contains('a'),
         rowsInPage: 2
@@ -214,7 +215,7 @@ describe("grid filter stuff", () => {
   if (false)
     itAsync("test filter works with selected rows", async () => {
       let c = await insertFourRows();
-      let ds = new GridSettings(c, {
+      let ds = new GridSettings<CategoriesForTesting>(c, {
         orderBy: c => c.id,
         rowsInPage: 3
       });
@@ -247,10 +248,10 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
     expect(await c.count(w)).toBe(4);
   });
-  it("test context change event", () => {
+  it("test context change event", async(async () => {
     let d = new Done();
     let c = new Context();
-    let r = c.userChange.observe(() => d.ok());
+    let r = await c.userChange.observe(() => d.ok());
     d.test("first fire");
     d = new Done();
     c.setUser({
@@ -268,7 +269,7 @@ describe("grid filter stuff", () => {
     });
     expect(d.happened).toBe(false, "should not have fired because unsubscribe has happened");
 
-  });
+  }));
   if (false)
     itAsync("test select rows in page is not select all", async () => {
       let c = await insertFourRows();
@@ -522,7 +523,7 @@ describe("test row provider", () => {
   });
   itAsync("test grid update", async () => {
     let c = await insertFourRows();
-    let ds = new GridSettings(c, {
+    let ds = new GridSettings<CategoriesForTesting>(c, {
       orderBy: c => c.id
     });
     await ds.reloadData();
@@ -731,7 +732,7 @@ describe("test row provider", () => {
     await newC._.save();;
 
 
-    let ds = new GridSettings(c, {
+    let ds = new GridSettings<CategoriesForTesting>(c, {
       saving: r => orderOfOperation += "GridOnSavingRow,",
       validation: r => orderOfOperation += "GridValidate,",
       orderBy: c => c.id
@@ -1099,7 +1100,7 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = new GridSettings(c, { rowsInPage: 2 });
+      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2 });
       await ds.reloadData();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id).toBe(1);
@@ -1125,7 +1126,7 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = new GridSettings(c, { rowsInPage: 2, where: c => c.categoryName.isEqualTo('b') });
+      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: c => c.categoryName.isEqualTo('b') });
       await ds.reloadData();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id).toBe(2);
@@ -1151,7 +1152,7 @@ class typeB extends typeA {
 }
 describe("decorator inheritance", () => {
   it("entity extends", () => {
-    
+
     let c = new ServerContext();
     let defsA = c.for(typeA).defs;
     expect(defsA.key).toBe('typeA');
@@ -1166,8 +1167,8 @@ describe("decorator inheritance", () => {
 describe("order by api", () => {
   it("works with sort", () => {
     let c = new ServerContext().for(Categories);
-    let opt: FindOptions<Categories> = { orderBy: c =>  c.id  };
-    let s = c.translateOrderByToSort( opt.orderBy);
+    let opt: FindOptions<Categories> = { orderBy: c => c.id };
+    let s = c.translateOrderByToSort(opt.orderBy);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].column.key).toBe(c.defs.columns.id.key);
 
@@ -1178,7 +1179,7 @@ describe("order by api", () => {
   it("works with columns array", () => {
     let c = new ServerContext().for(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
-    let s = c.translateOrderByToSort( opt.orderBy);
+    let s = c.translateOrderByToSort(opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].column).toBe(c.defs.columns.id);
     expect(s.Segments[1].column).toBe(c.defs.columns.categoryName);
@@ -1208,7 +1209,7 @@ describe("order by api", () => {
 describe("test area", () => {
   it("works without entity", () => {
     let n = new InputControl<number>({
-      dataType:Number
+      dataType: Number
     });
     n.value = 5;
     let area = new DataAreaSettings({ columnSettings: () => [n] });

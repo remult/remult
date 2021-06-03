@@ -2,7 +2,7 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
-import { getControllerDefs } from '@remult/core';
+import { Context, getControllerDefs } from '@remult/core';
 
 import { ColumnCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';
@@ -17,6 +17,9 @@ import { DataControlSettings } from '../../data-control-interfaces';
 
 })
 export class DataArea2Component implements OnChanges {
+  constructor(private context: Context) {
+
+  }
 
   @Input() settings: DataAreaSettings = {
     columns: new ColumnCollection(() => undefined, () => false, undefined, () => true, () => undefined), lines: undefined
@@ -30,6 +33,7 @@ export class DataArea2Component implements OnChanges {
       });
     }
     if (this.settings && this.settings.columns) {
+      this.settings.columns.setContext(this.context);
 
 
       this.settings.columns.onColListChange(() => this.lastCols = undefined);

@@ -64,22 +64,34 @@ export function getColumnDefinition(col: ColumnDefinitions | EntityColumn<any, a
 export function decorateDataSettings(colInput: ColumnDefinitions | EntityColumn<any, any>, x: DataControlSettings) {
 
     let col = getColumnDefinition(colInput);
-
-    let settingsOnColumnLevel;
-    if (col.target)
-        settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);
-    if (settingsOnColumnLevel) {
-        for (const key in settingsOnColumnLevel) {
-            if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
-                const element = settingsOnColumnLevel[key];
-                if (!x[key])
-                    x[key] = element;
+    if (col.target) {
+        let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);
+        if (settingsOnColumnLevel) {
+            for (const key in settingsOnColumnLevel) {
+                if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
+                    const element = settingsOnColumnLevel[key];
+                    if (!x[key])
+                        x[key] = element;
+                }
             }
         }
-        x = Object.assign({}, settingsOnColumnLevel, x);
     }
+    if (col.dataType) {
+        let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.dataType);
+        if (settingsOnColumnLevel) {
+            for (const key in settingsOnColumnLevel) {
+                if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
+                    const element = settingsOnColumnLevel[key];
+                    if (!x[key])
+                        x[key] = element;
+                }
+            }
+        }
+    }
+
     if (!x.caption && col.caption)
         x.caption = col.caption;
+
     if (!x.inputType && col.inputType)
         x.inputType = col.inputType;
 
@@ -87,56 +99,9 @@ export function decorateDataSettings(colInput: ColumnDefinitions | EntityColumn<
         if (col.dbReadOnly)
             x.readOnly = true;
 
-        /*if (typeof col.readonly === 'boolean')
-            x.readOnly = !col.readonly;*/
-
-
+        if (typeof col.evilOriginalSettings.allowApiUpdate === 'boolean')
+            x.readOnly = !col.evilOriginalSettings.allowApiUpdate;
     }
-
-    /*
-
-
-    col[__displayResult] = __getDataControlSettings(col);
-    if (col[__displayResult]) {
-        if (!x.getValue && col[__displayResult].getValue) {
-            x.getValue = e => {
-                let c: columnDefs = col;
-                if (e)
-                    c = getEntityOf(e).columns.find(c) as columnDefs;
-                if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(c);
-                return c[__displayResult].getValue(e);
-            };
-        }
-        if (!x.click && col[__displayResult].click) {
-            x.click = e => {
-                let c: columnDefs = col;
-                if (e)
-                    c = getEntityOf(e).columns.find(c) as columnDefs;
-                if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(c);
-                c[__displayResult].click(e);
-            };
-        }
-        if (!x.allowClick && col[__displayResult].allowClick) {
-            x.allowClick = e => {
-                let c: columnDefs = col;
-                if (e)
-                    c = getEntityOf(e).columns.find(c) as columnDefs;
-                if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(c);
-                return c[__displayResult].allowClick(e);
-            };
-        }
-        for (const key in col[__displayResult]) {
-            if (col[__displayResult].hasOwnProperty(key)) {
-                const val = col[__displayResult][key];
-                if (val !== undefined && x[key] === undefined) {
-                    x[key] = val;
-                }
-            }
-        }
-    }*/
 }
 const __displayResult = Symbol("__displayResult");
 

@@ -189,6 +189,7 @@ export class DataGrid2Component implements OnChanges {
         await this.saveAllClick();
       }
     });
+    this.settings.columns.setContext(this.context);
     if (this.settings.settings.gridButtons) {
       this.gridButtons.push(...this.settings.settings.gridButtons.map(x => {
         if (!x.visible)
@@ -225,6 +226,7 @@ export class DataGrid2Component implements OnChanges {
 
 
     }
+
     if (this.settings.allowDelete)
       this.addButton({
         name: '',
@@ -232,8 +234,8 @@ export class DataGrid2Component implements OnChanges {
           return r && !this.settings.getRowHelper(r).isNew();
         }
         , icon: 'delete',
-        showInLine: true,
-        textInMenu: () => this.rightToLeft ? 'מחק' : 'delete',
+ //       showInLine: true,
+        textInMenu: () => this.rightToLeft ? 'מחק' : 'Delete',
         click: async r => {
           if (this.settings.settings.confirmDelete) {
 

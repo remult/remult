@@ -89,6 +89,9 @@ import { RowEvents } from "../__EntityValueProvider";
 [] reconsider all the where stuff - just searh references for AndFilter to see the problem
 [] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
 [] consider the case when initing context, and cashing rows between requests, you might get a save to a context of a request two hours ago.
+[] make where awaitable
+[] custom context 
+[] reconsider the custom filter with the FD
 
 
 ## consider if needed

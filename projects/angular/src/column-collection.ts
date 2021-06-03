@@ -8,7 +8,7 @@ import { FilterHelper } from "./filter-helper";
 
 export class ColumnCollection<rowType = any> {
 
-  constructor( public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: ColumnDefinitions) => EntityColumn<any, any>) {
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: ColumnDefinitions) => EntityColumn<any, any>) {
 
 
   }
@@ -103,6 +103,14 @@ export class ColumnCollection<rowType = any> {
     await Promise.all(promises);
     return Promise.resolve();
   }
+  private doWhenWeHaveContext: ((c: Context) => Promise<any>)[] = [];
+  private context: Context;
+  setContext(context: Context) {
+    this.context = context;
+    for (const what of this.doWhenWeHaveContext) {
+      what(context);
+    }
+  }
   async buildDropDown(s: DataControlSettings) {
     if (s.valueList) {
       let orig = s.valueList;
@@ -123,7 +131,13 @@ export class ColumnCollection<rowType = any> {
         }
       }
       else if (typeof orig === "function") {
-        result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
+        let theFunc = orig as ((context: Context) => Promise<ValueListItem[]>);
+        if (this.context) {
+          result.push(...(await (theFunc)(this.context)));
+        }
+        else
+          this.doWhenWeHaveContext.push(async context => result.push(...(await (theFunc)(context))));
+
       }
       else {
         result.push(...(await (orig as (Promise<ValueListItem[]>))));

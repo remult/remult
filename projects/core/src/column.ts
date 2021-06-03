@@ -198,8 +198,13 @@ export class LookupColumn<T> {
     return this.repository.getCachedById(id);
   }
   set(item: T) {
-    this.repository.addToCache(item);
-    this.id = item["id"];
+    if (item) {
+      this.repository.addToCache(item);
+      this.id = item["id"];
+    }
+    else {
+      this.id = undefined;
+    }
   }
 
   constructor(private repository: Repository<T>, public id: string
