@@ -339,8 +339,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
 
-    create(): T {
+    create(item?: Partial<T>): T {
         let r = new this.entity(this.context);
+        if (item)
+            Object.assign(r, item);
         let z = this.getRowHelper(r);
 
         return r;
@@ -578,7 +580,11 @@ class rowHelperBase<T>
             if (body[col.key] !== undefined)
                 if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
                     if (!this.context || col.settings.allowApiUpdate === undefined || checkEntityAllowed(this.context, col.settings.allowApiUpdate, this.instance)) {
-                        this.instance[col.key] = col.settings.valueConverter(this.context).fromJson(body[col.key]);
+                        let lu = this.lookups.get(col.key);
+                        if (lu)
+                            lu.id = body[col.key];
+                        else
+                            this.instance[col.key] = col.settings.valueConverter(this.context).fromJson(body[col.key]);
                     }
 
                 }
@@ -598,12 +604,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             if (ei) {
                 let lookup = new LookupColumn(context.for(col.settings.dataType), undefined);
                 this.lookups.set(col.key, lookup);
+                let val = instance[col.key];
                 Object.defineProperty(instance, col.key, {
                     get: () =>
                         lookup.item,
                     set: (val) =>
                         lookup.set(val),
                 });
+                instance[col.key] = val;
             }
         }
         if (_isNew) {
@@ -888,8 +896,20 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
         return this.rowBase.originalValues[this.defs.key];
     }
 
-    get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.settings.inputType); }
-    set inputValue(val: string) { this.value = this.defs.valueConverter.fromInput(val, this.settings.inputType); };
+    get inputValue(): string {
+        let lu = this.rowBase.lookups.get(this.defs.key);
+        if (lu)
+            return lu.id ? lu.id.toString() : null;
+        return this.defs.valueConverter.toInput(this.value, this.settings.inputType);
+    }
+    set inputValue(val: string) {
+        let lu = this.rowBase.lookups.get(this.defs.key);
+        if (lu) {
+            lu.setId(val);
+        }
+        else
+            this.value = this.defs.valueConverter.fromInput(val, this.settings.inputType);
+    };
     wasChanged(): boolean {
         let val = this.value;
         let lu = this.rowBase.lookups.get(this.defs.key);
@@ -1112,11 +1132,11 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
     }
 
 
-    return (target, key,c?) => {
+    return (target, key, c?) => {
         if (!settings.key) {
             settings.key = key;
         }
-        
+
         if (!settings.dbName)
             settings.dbName = settings.key;
 
@@ -1157,7 +1177,7 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
             }
         }
     }
-    if (!settings.caption) {
+    if (!settings.caption && settings.key) {
         settings.caption = makeTitle(settings.key);
     }
     if (settings.dataType == Number) {

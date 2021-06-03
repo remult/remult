@@ -251,7 +251,7 @@ export interface Repository<T> {
   */
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
     
-    create(): T;
+    create(item?:Partial<T>): T;
 
     getCachedById(id:any):T;
     getCachedByIdAsync(id:any):Promise<T>;

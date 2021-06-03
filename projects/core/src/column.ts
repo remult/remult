@@ -187,6 +187,11 @@ export function lookupConverter<T>(type: ClassType<T>) {
   }
 }
 export class LookupColumn<T> {
+  setId(val: any) {
+    if (this.repository.defs.idColumn.dataType == Number)
+      val = +val;
+    this.id = val;
+  }
   waitLoadOf(id: any) {
     if (id === undefined || id === null)
       return null;
