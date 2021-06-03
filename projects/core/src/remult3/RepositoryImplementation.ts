@@ -899,7 +899,7 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     get inputValue(): string {
         let lu = this.rowBase.lookups.get(this.defs.key);
         if (lu)
-            return lu.id ? lu.id.toString() : null;
+            return lu.id!=undefined ? lu.id.toString() : null;
         return this.defs.valueConverter.toInput(this.value, this.settings.inputType);
     }
     set inputValue(val: string) {
