@@ -45,7 +45,7 @@ export class ColumnCollection<rowType = any> {
   getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityColumn<any, any>, row: any) => T) {
     let column: EntityColumn<any, any>;
     let row = args.row;
-    if (this._getRowColumn && args.col.column) {
+    if (this._getRowColumn && args.col.column && row) {
       column = this._getRowColumn(row, getColumnDefinition(args.col.column));
     }
     if (!column)
