@@ -279,7 +279,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
     getRowHelper(entity: T): rowHelper<T> {
         let x = entity[entityMember];
         if (!x) {
-            x = entity[entityMember] = new rowHelperImplementation(this._info, entity, this, this.edp, this.context, true);
+            x = new rowHelperImplementation(this._info, entity, this, this.edp, this.context, true);
+            Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.log
+                get: () => x
+            })
 
         }
         return x;
@@ -322,8 +325,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
         await helper.loadDataFrom(r);
         helper.saveOriginalData();
 
-        x[entityMember] = helper;
-
+        Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.log
+            get: () => helper
+        })
         return x;
     }
 
@@ -486,6 +490,7 @@ class rowHelperBase<T>
                         lookup.item,
                     set: (val) =>
                         lookup.set(val),
+                    enumerable: true
                 });
                 instance[col.key] = val;
             }
