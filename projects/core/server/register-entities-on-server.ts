@@ -1,6 +1,8 @@
 import { SiteArea } from "./expressBridge";
-import { allEntities, ServerContext, DataApi, DataProviderFactoryBuilder } from "../";
+import { ServerContext,  DataProviderFactoryBuilder } from "../";
 import { createOldEntity, getEntityOptions } from "../src/remult3";
+import { allEntities } from "../src/context";
+import { DataApi } from "../src/data-api";
 
 
 export function registerEntitiesOnServer(area: SiteArea) {

@@ -1,4 +1,5 @@
-import {  DataProvider, EntityDataProvider,   __RowsOfDataForTesting } from '../data-interfaces';
+import {  DataProvider, EntityDataProvider } from '../data-interfaces';
+import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { ArrayEntityDataProvider } from './array-entity-data-provider';
 import { EntityDefinitions } from '../remult3';
 

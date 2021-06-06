@@ -1,8 +1,10 @@
-import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, SqlDatabase, SqlCommand, SqlResult, allEntities, SqlImplementation, EntityDefinitions, ColumnDefinitions } from '../';
-import { JobsInQueueEntity, EntityQueueStorage, ExpressBridge } from '../server';
+import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, SqlDatabase, SqlCommand, SqlResult,  SqlImplementation, EntityDefinitions, ColumnDefinitions } from '../';
+import {  ExpressBridge } from '../server';
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
+import { allEntities } from '../src/context';
+import { EntityQueueStorage, JobsInQueueEntity } from '../server/expressBridge';
 
 
 export interface PostgresPool extends PostgresCommandSource {

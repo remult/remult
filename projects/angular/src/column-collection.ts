@@ -1,8 +1,9 @@
 import { ValueConverter } from "@angular/compiler/src/render3/view/template";
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, decorateColumnSettings, ColumnSettings, Context, valueOrExpressionToValue } from "@remult/core";
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, ColumnSettings, Context, valueOrExpressionToValue } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
+import { decorateColumnSettings } from '@remult/core/src/remult3';
 
 
 

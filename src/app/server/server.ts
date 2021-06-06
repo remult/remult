@@ -15,6 +15,10 @@ import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
 import { Filter, filterOf, ServerContext } from '../../../projects/core';
 import { Products } from '../products-test/products';
+import {
+    ClassType, ErrorInfo
+
+} from '@remult/core'
 
 
 
@@ -58,7 +62,7 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
 
 
-  
+
 
 
     app.listen(port);

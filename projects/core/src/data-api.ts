@@ -4,6 +4,7 @@ import { UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FindOptions, Repository } from './remult3';
 import { SortSegment } from './sort';
+import { ErrorInfo } from './data-interfaces';
 
 export class DataApi<T = any> {
   getRoute() {
@@ -193,7 +194,7 @@ export interface DataApiResponse {
   deleted(): void;
   created(data: any): void;
   notFound(): void;
-  error(data: DataApiError): void;
+  error(data: ErrorInfo): void;
   forbidden(): void;
   progress(progress: number): void;
 
@@ -201,10 +202,7 @@ export interface DataApiResponse {
 
 
 
-export interface DataApiError {
-  message: string;
-  stack?: string;
-}
+
 export interface DataApiRequest {
   getBaseUrl(): string;
   get(key: string): any;
@@ -229,7 +227,7 @@ export function determineSort(sortUrlParm: string, dirUrlParam: string) {
 
 
 
-export function serializeError(data: DataApiError) {
+export function serializeError(data: ErrorInfo) {
   if (data instanceof TypeError) {
     data = { message: data.message, stack: data.stack };
   }

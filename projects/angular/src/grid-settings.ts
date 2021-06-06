@@ -1,4 +1,5 @@
-import { AndFilter, ColumnDefinitions, DataList,  Sort,ColumnDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
+import { AndFilter, ColumnDefinitions,   Sort,ColumnDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
+import { DataList } from "./angular/dataList";
 
 import { ColumnCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";

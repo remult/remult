@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, iterateConfig, Column, getControllerDefs, EntityColumns, Entity, EntityBase, DateOnlyValueConverter } from '@remult/core';
+import { Context,  Column, getControllerDefs, EntityColumns, Entity, EntityBase, DateOnlyValueConverter } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputControl, openDialog } from '@remult/angular';

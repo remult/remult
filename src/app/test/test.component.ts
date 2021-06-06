@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, iterateConfig, ServerFunction, SqlDatabase, ServerProgress, IdEntity, } from '@remult/core';
+import { Context,  ServerFunction, SqlDatabase, ServerProgress, IdEntity } from '@remult/core';
 
-import { DataAreaSettings } from '@remult/angular';
-import { Products } from '../products-test/products';
 import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 

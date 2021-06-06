@@ -10,8 +10,9 @@ import { Status } from './testModel/models';
 
 import { Context, Role, Allowed, ServerContext } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { DataProvider, __RowsOfDataForTesting } from '../data-interfaces';
-import { DataList } from '../dataList';
+import { DataProvider } from '../data-interfaces';
+import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
+import { DataList } from '../../../angular/src/angular/dataList';
 import { UrlBuilder } from '../url-builder';
 import { FilterSerializer } from '../filter/filter-consumer-bridge-to-url-builder';
 import { SqlDatabase } from '../data-providers/sql-database';

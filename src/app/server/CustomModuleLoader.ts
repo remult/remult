@@ -12,6 +12,7 @@ export class CustomModuleLoader {
                 case "@remult/core":
                     request = request = process.cwd() + root + '/core';
                     break;
+
                 case "@remult/angular":
                     request = request = process.cwd() + root + '/angular';
                     break;
@@ -21,8 +22,14 @@ export class CustomModuleLoader {
                 case "@remult/core/postgres":
                     request = request = process.cwd() + root + '/core/postgres';
                     break;
-                case "@remult/server-postgres":
-                    request = request = process.cwd() + root + '/server-postgres';
+                case "@remult/core/src/context":
+                    request = request = process.cwd() + root + '/core/src/context';
+                    break;
+                case "@remult/core/src/remult3":
+                    request = request = process.cwd() + root + '/core/src/remult3';
+                    break;
+                case "@remult/core/src/server-action":
+                    request = request = process.cwd() + root + '/core/src/server-action';
                     break;
             }
 

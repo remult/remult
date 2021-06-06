@@ -1,6 +1,6 @@
 
 
-import { DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, serializeError } from '../';
+import {   UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext,  InMemoryDataProvider, IdEntity } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -11,6 +11,9 @@ import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 import { Column, Entity, Repository } from '../src/remult3';
 import { DecimalValueConverter } from '../src/columns/loaders';
+import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
+import { ErrorInfo } from '../src/data-interfaces';
+import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 
 
 
@@ -271,7 +274,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     this.r.sendStatus(404);
   }
 
-  public error(data: DataApiError): void {
+  public error(data: ErrorInfo): void {
 
     data = serializeError(data);
     this.r.status(400).json(data);
@@ -355,7 +358,7 @@ class InMemoryQueueStorage implements QueueStorage {
 
 }
 
-interface QueueStorage {
+export interface QueueStorage {
   createJob(url: string, userId: string): Promise<string>;
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>;
 

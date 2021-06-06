@@ -46,11 +46,6 @@ export function extractSort(sort: any): Sort {
 }
 
 
-export interface __RowsOfDataForTesting {
-  rows: any;
-}
-
-
 export interface ErrorInfo {
   message?: string;
   modelState?: { [key: string]: string };

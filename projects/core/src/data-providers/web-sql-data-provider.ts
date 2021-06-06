@@ -1,4 +1,4 @@
-import {  __RowsOfDataForTesting } from "../data-interfaces";
+import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 

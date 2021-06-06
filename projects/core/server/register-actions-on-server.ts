@@ -1,5 +1,5 @@
 import { SiteArea } from "./expressBridge";
-import { myServerAction, serverActionField, actionInfo, DataProviderFactoryBuilder, DataApiResponse, DataApiRequest, Action, queuedJobInfoResponse, jobWasQueuedResult, DataApi } from '../';
+import { myServerAction, serverActionField, actionInfo } from '../src/server-action';
 
 export function registerActionsOnServer(area: SiteArea) {
     var addAction = (a: any) => {
