@@ -328,29 +328,41 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 
 
 export class InputControl<T> implements EntityColumn<T, any> {
+  private settings: ColumnSettings;
+  private dataControl: DataControlSettings;
   constructor(
-    private settings: ColumnSettings<T, any>
+    settings: ColumnSettings<T, any>
       & DataControlSettings
       & {
-        valueChange?: () => void,
+
 
         context?: Context
       }) {
-    if (!settings.caption)
-      settings.caption = 'caption';
-    if (!settings.key)
-      settings.key = settings.caption;
+
     if (!settings.dbName)
       settings.dbName = settings.key;
 
-    this.settings = settings = decorateColumnSettings(settings);
+    this.settings = decorateColumnSettings(settings);
+    this.dataControl = settings;
+    if (settings.caption)
+      if (typeof settings.caption === "function")
+        settings.caption = settings.caption(settings.context);
+    if (!settings.caption)
+      settings.caption = 'caption';
+
+    if (!settings.key)
+      settings.key = settings.caption;
     this.inputType = settings.inputType;
     if (settings.defaultValue) {
       this._value = settings.defaultValue(undefined, undefined) as unknown as T
     }
     this._value = settings.defaultValue as unknown as T;
     this.originalValue = this._value;
-    let valueConverter = settings.valueConverter ? settings.valueConverter(this.settings.context) : undefined;
+    let valueConverter = settings.valueConverter ? settings.valueConverter(settings.context) : undefined;
+    if (this.defs.valueConverter)
+      if (!settings.inputType) {
+        settings.inputType = valueConverter.inputType;
+      }
     this.defs = {
 
       allowNull: settings.allowNull,
@@ -367,30 +379,13 @@ export class InputControl<T> implements EntityColumn<T, any> {
       target: undefined
 
     }
-    if (this.defs.valueConverter)
-      if (!this.defs.inputType) {
-        this.defs.inputType = valueConverter.inputType;
-      }
+
 
   }
   load(): Promise<T> {
     throw new Error("Method not implemented.");
   }
-  defs = {
-    allowNull: this.settings.allowNull,
-    caption: this.settings.caption,
-    evilOriginalSettings: this.settings,
-
-    valueConverter: undefined,
-    dataType: this.settings.dataType,
-    key: this.settings.key,
-    dbName: this.settings.dbName,
-    dbReadOnly: false,
-    inputType: this.settings.inputType,
-    isServerExpression: false,
-
-    target: undefined
-  };
+  defs: ColumnDefinitions;
   _value: T;
   inputType: string;
   error: string;
@@ -400,8 +395,8 @@ export class InputControl<T> implements EntityColumn<T, any> {
   get value(): T { return this._value; }
   set value(val: T) {
     this._value = val;
-    if (this.settings.valueChange)
-      this.settings.valueChange()
+    if (this.dataControl.valueChange)
+      this.dataControl.valueChange(undefined, this)
   };
   originalValue: T;
   get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.inputType); }

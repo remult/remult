@@ -14,9 +14,9 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     dataType?: any;
 
 
-    caption?: string;
+    caption?: string | ((context: Context) => string);
     displayValue?: (entity: entityType, value: valueType) => string;
-    defaultValue?: (entity: entityType,context:Context) => valueType | Promise<valueType>;
+    defaultValue?: (entity: entityType, context: Context) => valueType | Promise<valueType>;
     validate?: ColumnValidator<valueType, entityType> | ColumnValidator<valueType, entityType>[];
     inputType?: string;
     allowNull?: boolean;
@@ -44,7 +44,7 @@ export interface ColumnDefinitions<T = any> {
     readonly dbReadOnly: boolean;
     readonly dbName: string;
     readonly valueConverter: ValueConverter<T>;
-    readonly evilOriginalSettings:ColumnSettings;
+    readonly evilOriginalSettings: ColumnSettings;
 
 }
 export interface ValueConverter<T> {

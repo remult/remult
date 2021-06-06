@@ -35,6 +35,18 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] rename `name` to `key` in Entity Settings
 [V] replace entitydefs.name = key.
 [V] rename allow api crud
+[] value converter no longer lambda
+[] caption - lambda
+[] storable to field Type
+[] value list field Type
+[] upgrade to angular 9 and ts 3.7
+
+
+[] column to field
+[] decimal field
+[] date only field
+[] test dateonly field decorator  on function parameter
+
 [] use helmet instead of force https
 [] fix timeout by using a repeat mechanism in context.
 [] "bool column doesn't need contains, isin and is not in"

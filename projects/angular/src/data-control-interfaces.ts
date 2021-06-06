@@ -13,6 +13,7 @@ export interface DataControlSettings<entityType = any, colType = any> {
     visible?: (row: entityType, val: EntityColumn<colType, entityType>) => boolean;
 
     click?: (row: entityType, val: EntityColumn<colType, entityType>) => void;
+    valueChange?: (row: entityType, val: EntityColumn<colType, entityType>) => void;
     allowClick?: (row: entityType, val: EntityColumn<colType, entityType>) => boolean;
     clickIcon?: string;
 

@@ -15,7 +15,7 @@ describe("test where stuff", () => {
         done();
     });
 
-    fitAsync("test basics", async () => {
+    itAsync("test basics", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };

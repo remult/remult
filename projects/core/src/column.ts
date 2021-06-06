@@ -93,7 +93,7 @@ export class CompoundIdColumn {
 
 
 
-export class ValueListValueConverter<T extends ValueListItem>{
+export class ValueListValueConverter<T extends ValueListItem> implements ValueConverter<T>{
   private info = ValueListInfo.get(this.type);
   constructor(private type: ClassType<T>) {
     if (this.info.isNumeric) {

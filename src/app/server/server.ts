@@ -13,7 +13,7 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Filter, filterOf, ServerContext } from '../../../projects/core';
+import { Column, Filter, filterOf, ServerContext, ServerFunction } from '../../../projects/core';
 import { Products } from '../products-test/products';
 import {
     ClassType, ErrorInfo
@@ -61,7 +61,9 @@ serverInit().then(async (dataSource) => {
 
     let port = process.env.PORT || 3001;
 
-
+    // let result = new returnType();
+    // result.products.push(new ProductInfo, { Basket: undefined, quantity: 1 });
+    // console.log(result.products);
 
 
 
@@ -69,6 +71,53 @@ serverInit().then(async (dataSource) => {
 
 
 });
+
+
+
+
+
+
+// class myClass {
+//     @ServerFunction({ allowed: true,returnType:new ArrayOf(Products) })
+//     static myFunction(a: number,
+//         @Column({dataType:ArrayOf(Products)})
+//         myArray:Products): returnType {
+//         let result = new returnType();
+//         result.products.push({ Basket: undefined, quantity: 1, asdfsa: 3 })
+//         return undefined;
+//     }
+// }
+
+// export class ArrayOf<T>{
+//     constructor(T: ClassType<T>) {
+
+//     }
+// }
+
+
+// class returnType {
+
+//     @Column({})
+//     products: ProductInfo[] = [];
+// }
+
+class ProductInfo {
+    @Column()
+    Basket: Products;
+    @Column()
+    quantity: number;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

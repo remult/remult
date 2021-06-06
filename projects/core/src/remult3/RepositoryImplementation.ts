@@ -470,8 +470,11 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
     }
 
 
-
-    return new EntityFullInfo<T>(r, info, context);
+    return new EntityFullInfo<T>(r.map(x => ({
+        key: x.key,
+        type: x.type,
+        settings: decorateColumnSettings(x.settings)
+    })), info, context);
 }
 
 class rowHelperBase<T>
@@ -964,6 +967,13 @@ export class columnDefsImpl implements ColumnDefinitions {
             this.readonly = this.colInfo.settings.allowApiUpdate;
         if (!this.inputType)
             this.inputType = this.valueConverter.inputType;
+        if (typeof (colInfo.settings.caption) === "function") {
+            if (context)
+                this.caption = colInfo.settings.caption(context);
+        }
+        else
+            this.caption = colInfo.settings.caption;
+
 
 
     }
@@ -974,7 +984,7 @@ export class columnDefsImpl implements ColumnDefinitions {
     valueConverter = this.colInfo.settings.valueConverter(this.context);
     allowNull = !!this.colInfo.settings.allowNull;
 
-    caption = this.colInfo.settings.caption;
+    caption: string;
     get dbName() {
         let result;
         if (this.colInfo.settings.sqlExpression) {
@@ -1164,12 +1174,16 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
         if (!settings.target)
             settings.target = target;
 
-        settings = decorateColumnSettings(settings);
-        names.push({
-            key,
-            settings,
-            type
-        });
+        let set = names.find(x => x.key == key);
+        if (!set)
+            names.push({
+                key,
+                settings,
+                type
+            });
+        else {
+            Object.assign(set.settings, settings);
+        }
 
     }
 
