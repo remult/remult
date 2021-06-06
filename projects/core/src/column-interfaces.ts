@@ -25,7 +25,7 @@ export interface FieldSettings<valueType = any, entityType = any> {
     sqlExpression?: string | ((entity: EntityDefinitions<entityType>, context: Context) => string);
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
-    valueConverter?: (context: Context) => ValueConverter<valueType>;
+    valueConverter?: ValueConverter<valueType>;
 
     includeInApi?: Allowed;
     allowApiUpdate?: EntityAllowed<entityType>;

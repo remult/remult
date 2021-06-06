@@ -4,6 +4,7 @@ import { Context,   Field, getControllerDefs,  Entity, EntityBase, DateOnlyValue
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputControl, openDialog } from '@remult/angular';
 import { DataAreaSettings, DataControl } from '@remult/angular';
+import { DateOnlyField } from '../../../projects/core/src/remult3';
 
 
 
@@ -97,11 +98,11 @@ export class Orders extends EntityBase {
   customerID: string;
   @Field()
   employeeID: number;
-  @Field({ valueConverter: () => DateOnlyValueConverter })
+  @DateOnlyField()
   orderDate: Date;
-  @Field({ valueConverter: () => DateOnlyValueConverter })
+  @DateOnlyField()
   requiredDate: Date;
-  @Field({ valueConverter: () => DateOnlyValueConverter })
+  @DateOnlyField()
   shippedDate: Date;
   @Field()
   shipVia: number;

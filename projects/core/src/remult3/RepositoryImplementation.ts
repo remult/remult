@@ -1,7 +1,7 @@
 
 import { FieldDefinitions, FieldSettings, ValueConverter } from "../column-interfaces";
 import { EntitySettings } from "../entity";
-import {  CompoundIdField, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
+import { CompoundIdField, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
 import { EntityDefinitions, filterOptions, EntityField, EntityFields, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, FieldDefinitionsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
@@ -12,7 +12,7 @@ import { DataApiSettings } from "../data-api";
 import { RowEvents } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { isFunction } from "util";
-import { BoolValueConverter, DateValueConverter, DefaultValueConverter, IntValueConverter } from "../columns/loaders";
+import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter } from "../columns/loaders";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -593,7 +593,7 @@ class rowHelperBase<T>
                         }
                     }
                 }
-                result[col.key] = col.settings.valueConverter(this.context).toJson(val);
+                result[col.key] = col.settings.valueConverter.toJson(val);
             }
         }
         return result;
@@ -608,7 +608,7 @@ class rowHelperBase<T>
                         if (lu)
                             lu.id = body[col.key];
                         else
-                            this.instance[col.key] = col.settings.valueConverter(this.context).fromJson(body[col.key]);
+                            this.instance[col.key] = col.settings.valueConverter.fromJson(body[col.key]);
                     }
 
                 }
@@ -986,7 +986,7 @@ export class columnDefsImpl implements FieldDefinitions {
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
-    valueConverter = this.colInfo.settings.valueConverter(this.context);
+    valueConverter = this.colInfo.settings.valueConverter;
     allowNull = !!this.colInfo.settings.allowNull;
 
     caption: string;
@@ -1150,6 +1150,24 @@ export function FieldType<T = any>(settings?: FieldSettings<T, any>) {
     }
 
 }
+export function DateOnlyField<T = any>(settings?: FieldSettings<Date, T>) {
+    return Field({
+        valueConverter: DateOnlyValueConverter
+        , ...settings
+    })
+}
+export function DecimalField<T = any>(settings?: FieldSettings<Number, T>) {
+    return Field({
+        valueConverter: DecimalValueConverter
+        , ...settings
+    })
+}
+export function ValueListFieldType<T = any, colType = any>(type: ClassType<colType>, settings?: FieldSettings<colType, T>) {
+    return FieldType<colType>({
+        valueConverter: new ValueListValueConverter(type)
+        , ...settings
+    })
+}
 
 export function Field<T = any, colType = any>(settings?: FieldSettings<colType, T>) {
     if (!settings) {
@@ -1212,23 +1230,23 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     if (settings.dataType == Number) {
         let x = settings as unknown as FieldSettings<Number>;
         if (!settings.valueConverter)
-            x.valueConverter = () => IntValueConverter;
+            x.valueConverter = IntValueConverter;
     }
     if (settings.dataType == Date) {
         let x = settings as unknown as FieldSettings<Date>;
         if (!settings.valueConverter) {
-            x.valueConverter = () => DateValueConverter;
+            x.valueConverter = DateValueConverter;
         }
     }
 
     if (settings.dataType == Boolean) {
         let x = settings as unknown as FieldSettings<Boolean>;
         if (!x.valueConverter)
-            x.valueConverter = () => BoolValueConverter;
+            x.valueConverter = BoolValueConverter;
 
     }
     if (!settings.valueConverter) {
-        settings.valueConverter = () => DefaultValueConverter;
+        settings.valueConverter = DefaultValueConverter;
     }
 
 

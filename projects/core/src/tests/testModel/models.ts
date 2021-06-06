@@ -1,7 +1,7 @@
 import { ValueListValueConverter } from "../../column";
-import { FieldType as FieldType } from "../../remult3";
+import { FieldType as FieldType, ValueListFieldType } from "../../remult3";
 
-@FieldType({ valueConverter:()=> new ValueListValueConverter(Status) })
+@ValueListFieldType(Status)
 export class Status {
   static open = new Status(0, "open");
   static closed = new Status(1, "closed");

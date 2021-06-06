@@ -13,7 +13,7 @@ import { ColumnCollection, DataAreaSettings, DataControlSettings, extend, getVal
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Field, FieldType } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter } from '../columns/loaders';
@@ -364,7 +364,7 @@ export function fColumn<T = any, colType = any>(settings?: FieldSettings<colType
   }
 
 }
-@FieldType({ valueConverter: () => new ValueListValueConverter(valueList) })
+@ValueListFieldType(valueList)
 class valueList {
   static firstName = new valueList();
   static listName = new valueList();
@@ -375,7 +375,7 @@ class valueList {
 class entityWithValueList extends EntityBase {
   @Field()
   id: number = 0;
-  @Field({ valueConverter: () => new ValueListValueConverter(Language) })
+  @Field({ valueConverter: new ValueListValueConverter(Language) })
   l: Language = Language.Hebrew;
   @Field()
   v: valueList = valueList.firstName;
@@ -1249,12 +1249,12 @@ describe("test area", () => {
 describe("test datetime column", () => {
   it("stores well", () => {
     let col = decorateColumnSettings<Date>({ dataType: Date });
-    let val = col.valueConverter(undefined).fromJson(col.valueConverter(undefined).toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
+    let val = col.valueConverter.fromJson(col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
     expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
     let col = decorateColumnSettings<Date>({ dataType: Date });
-    expect(col.valueConverter(undefined).toJson(undefined)).toBe('');
+    expect(col.valueConverter.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
 
@@ -1278,12 +1278,12 @@ describe("test datetime column", () => {
 
     let col = decorateColumnSettings<Date>({
       dataType: Date,
-      valueConverter: () => DateOnlyValueConverter
+      valueConverter: DateOnlyValueConverter
     });
-    expect(col.valueConverter(undefined).toDb(col.valueConverter(undefined).fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
-    expect(col.valueConverter(undefined).toDb(col.valueConverter(undefined).fromJson('1976-06-16')).getDate()).toBe(16);
+    expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
+    expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
 
-    let toDb = col.valueConverter(undefined).toDb(col.valueConverter(undefined).fromJson('2021-04-26'));
+    let toDb = col.valueConverter.toDb(col.valueConverter.fromJson('2021-04-26'));
     if (toDb.getTimezoneOffset() < 0)
       expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-25');
     else
@@ -1309,7 +1309,7 @@ describe("Test char date storage", () => {
 describe("value list column without id and caption", () => {
   it("works with automatic id", () => {
     let col = new InputControl<TestStatus>({
-      valueConverter: () => new ValueListValueConverter(TestStatus),
+      valueConverter: new ValueListValueConverter(TestStatus),
       defaultValue: () => TestStatus.open
     });
 

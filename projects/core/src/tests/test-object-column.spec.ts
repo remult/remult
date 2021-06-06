@@ -66,7 +66,7 @@ class ObjectColumnTest extends EntityBase {
     @Field()
     id: number;
     @Field({
-        valueConverter: () => new JsonValueLoader()
+        valueConverter:  new JsonValueLoader()
     })
     col: person;
 }

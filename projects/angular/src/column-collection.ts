@@ -358,7 +358,7 @@ export class InputControl<T> implements EntityField<T, any> {
     }
     this._value = settings.defaultValue as unknown as T;
     this.originalValue = this._value;
-    let valueConverter = this.settings.valueConverter ? this.settings.valueConverter(settings.context) : undefined;
+    let valueConverter = this.settings.valueConverter ? this.settings.valueConverter : undefined;
     if (valueConverter)
       if (!settings.inputType) {
         settings.inputType = valueConverter.inputType;
