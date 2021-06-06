@@ -2,7 +2,7 @@
 import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { openDialog } from '../remult-core.module';
-import { ColumnDefinitions, Context } from '@remult/core';
+import { FieldDefinitions, Context } from '@remult/core';
 import { GridSettings } from '../../grid-settings';
 import { DataControlSettings } from '../../data-control-interfaces';
 
@@ -22,7 +22,7 @@ export class DataFilterInfoComponent {
 
     @Input() settings: GridSettings<any>;
     filterColumnToAdd: DataControlSettings;
-    getCurrentFilterValue(col: ColumnDefinitions) {
+    getCurrentFilterValue(col: FieldDefinitions) {
         this.settings.initOrigList();
         let m = this.settings.origList.find(x => x.column == col);
         if (this.settings.filterHelper.filterRow[col.key] instanceof Date){
@@ -42,7 +42,7 @@ export class DataFilterInfoComponent {
     showFilterButton = false;
     showAddFilter = false;
     editFilterVisible = false;
-    showEditFilter(col: ColumnDefinitions) {
+    showEditFilter(col: FieldDefinitions) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
         this.editFilterVisible = true;
         this.showAddFilter = false;
@@ -70,7 +70,7 @@ export class DataFilterInfoComponent {
         this.showAddFilter = true;
         this.filterColumnToAdd = undefined;
     }
-    public async editFilter(col: ColumnDefinitions) {
+    public async editFilter(col: FieldDefinitions) {
         this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
         await openDialog(FilterDialogComponent, x => x.info = this);
     }

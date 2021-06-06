@@ -1,20 +1,20 @@
-import { EntityColumn, ColumnDefinitions, ColumnSettings, Entity, ValueListItem } from "@remult/core";
+import {  EntityField,  FieldDefinitions,  Entity, ValueListItem } from "@remult/core";
 
 
-export type DataControlInfo<rowType> = DataControlSettings<rowType> | EntityColumn<any, any>;
+export type DataControlInfo<rowType> = DataControlSettings<rowType> | EntityField<any, any>;
 export interface DataControlSettings<entityType = any, colType = any> {
 
-    column?: ColumnDefinitions | EntityColumn<any, any>;
-    getValue?: (row: entityType, val: EntityColumn<colType, entityType>) => any;
+    column?: FieldDefinitions | EntityField<any, any>;
+    getValue?: (row: entityType, val: EntityField<colType, entityType>) => any;
     readOnly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType, val: EntityColumn<colType, entityType>) => boolean;
+    visible?: (row: entityType, val: EntityField<colType, entityType>) => boolean;
 
-    click?: (row: entityType, val: EntityColumn<colType, entityType>) => void;
-    valueChange?: (row: entityType, val: EntityColumn<colType, entityType>) => void;
-    allowClick?: (row: entityType, val: EntityColumn<colType, entityType>) => boolean;
+    click?: (row: entityType, val: EntityField<colType, entityType>) => void;
+    valueChange?: (row: entityType, val: EntityField<colType, entityType>) => void;
+    allowClick?: (row: entityType, val: EntityField<colType, entityType>) => boolean;
     clickIcon?: string;
 
     valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>);
@@ -26,7 +26,7 @@ export interface DataControlSettings<entityType = any, colType = any> {
 }
 
 
-export function extend<T extends ColumnDefinitions>(col: T): {
+export function extend<T extends FieldDefinitions>(col: T): {
     dataControl(set: (settings: DataControlSettings) => void): T;
 } {
     return {
@@ -52,17 +52,17 @@ export function extend<T extends ColumnDefinitions>(col: T): {
 
 export const configDataControlField = Symbol('configDataControlField');
 
-export function getColumnDefinition(col: ColumnDefinitions | EntityColumn<any, any>) {
+export function getColumnDefinition(col: FieldDefinitions | EntityField<any, any>) {
     if (!col)
         return undefined;
-    let r = col as ColumnDefinitions;
-    let c = col as EntityColumn<any, any>;
+    let r = col as FieldDefinitions;
+    let c = col as EntityField<any, any>;
     if (c.defs)
         r = c.defs;
     return r;
 
 }
-export function decorateDataSettings(colInput: ColumnDefinitions | EntityColumn<any, any>, x: DataControlSettings) {
+export function decorateDataSettings(colInput: FieldDefinitions | EntityField<any, any>, x: DataControlSettings) {
 
     let col = getColumnDefinition(colInput);
     if (col.target) {
@@ -106,7 +106,7 @@ export function decorateDataSettings(colInput: ColumnDefinitions | EntityColumn<
 }
 const __displayResult = Symbol("__displayResult");
 
-export function __getDataControlSettings(col: ColumnDefinitions): DataControlSettings {
+export function __getDataControlSettings(col: FieldDefinitions): DataControlSettings {
     let settings = Reflect.getMetadata(configDataControlField, col.target, col.key);
 
     // if (col[configDataControlField]) {

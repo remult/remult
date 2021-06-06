@@ -1,7 +1,7 @@
 
 
 import { createData, testAllDbs } from './RowProvider.spec';
-import { DataApi, DataApiError, DataApiResponse } from '../data-api';
+import { DataApi,  DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './testHelper.spec';
@@ -21,7 +21,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../da
 import { OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories } from './remult-3-entities';
 
-import { Column, CompoundId, decorateColumnSettings, Entity, EntityBase, Storable } from '../remult3';
+import { Field, CompoundId, decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
 import { DateOnlyValueConverter, StoreAsStringValueConverter } from '../columns/loaders';
 
 
@@ -83,13 +83,13 @@ export class TestDataApiResponse implements DataApiResponse {
   notFound(): void {
     fail('not found');
   }
-  error(data: DataApiError) {
+  error(data) {
     fail('error: ' + data + " " + JSON.stringify(data));
   }
 
 }
 
-@Storable<Phone>({ valueConverter: () => new StoreAsStringValueConverter(x => x.thePhone, x => new Phone(x)) })
+@FieldType<Phone>({ valueConverter: () => new StoreAsStringValueConverter(x => x.thePhone, x => new Phone(x)) })
 class Phone {
   constructor(private thePhone) {
 
@@ -97,9 +97,9 @@ class Phone {
 }
 @Entity({ key: '' })
 class tableWithPhone extends EntityBase {
-  @Column()
+  @Field()
   id: number;
-  @Column()
+  @Field()
   phone: Phone;
 }
 describe("test object column stored as string", () => {
@@ -128,10 +128,10 @@ describe('Test basic row functionality', () => {
   });
   it("finds its id column", () => {
     let c = new Context().for(newCategories);
-    expect(c.defs.idColumn.key).toBe("id");
+    expect(c.defs.idField.key).toBe("id");
     let n = c.create();
     n.id = 5;
-    expect(n.$.idColumn.value).toBe(5);
+    expect(n.$.idField.value).toBe(5);
 
   });
   it("object assign works", () => {
@@ -145,13 +145,13 @@ describe('Test basic row functionality', () => {
   itAsync("Original values update correctly", async () => {
     let c = await (await createData(async insert => await insert(1, 'noam'))).findFirst();
     expect(c.categoryName).toBe('noam');
-    expect(c._.columns.categoryName.originalValue).toBe('noam');
+    expect(c._.fields.categoryName.originalValue).toBe('noam');
     c.categoryName = 'yael';
     expect(c.categoryName).toBe('yael');
-    expect(c._.columns.categoryName.originalValue).toBe('noam');
+    expect(c._.fields.categoryName.originalValue).toBe('noam');
     await c._.save();
     expect(c.categoryName).toBe('yael');
-    expect(c._.columns.categoryName.originalValue).toBe('yael');
+    expect(c._.fields.categoryName.originalValue).toBe('yael');
 
   });
   itAsync("Find or Create", async () => {
@@ -180,7 +180,7 @@ describe('Test basic row functionality', () => {
     let y = new Context().for(newCategories).create();
     x.categoryName = 'noam';
     y.categoryName = 'yael';
-    expect(y._.columns.find(x._.columns.categoryName.defs).value).toBe('yael');
+    expect(y._.fields.find(x._.fields.categoryName.defs).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
     let ctx = new Context().for(newCategories);
@@ -229,9 +229,9 @@ describe('Test basic row functionality', () => {
 });
 @Entity({ key: 'myTestEntity' })
 class myTestEntity extends EntityBase {
-  @Column()
+  @Field()
   id: number;
-  @Column({ key: 'name' })
+  @Field({ key: 'name' })
   name1: string;
 }
 
@@ -751,7 +751,7 @@ describe("data api", () => {
       deleted: () => happend = true,
       deleting: (t) => {
         deleting.ok();
-        t._.columns.categoryName.error = 'err';
+        t._.fields.categoryName.error = 'err';
       }
     })(type);
     let c = await createData(async insert => await insert(1, 'noam'),
@@ -875,7 +875,7 @@ describe("data api", () => {
       saving: t => {
         count++;
         if (t.categoryName.includes('1'))
-          t._.columns.categoryName.error = 'err';
+          t._.fields.categoryName.error = 'err';
       }
     })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
@@ -943,7 +943,7 @@ describe("data api", () => {
         if (!startTest)
           return;
         savedWorked.ok();
-        expect(t._.columns.categoryName.originalValue).toBe('noam');
+        expect(t._.fields.categoryName.originalValue).toBe('noam');
         expect(t.categoryName).toBe('noam 1');
       }
     })(type);
@@ -981,7 +981,7 @@ describe("data api", () => {
       saved: (t) => {
         savedWorked.ok();
         expect(t._.isNew()).toBe(true);
-        expect(t._.columns.categoryName.originalValue).toBe(undefined);
+        expect(t._.fields.categoryName.originalValue).toBe(undefined);
         expect(t.categoryName).toBe('noam 1');
       }
     })(type);
@@ -1071,7 +1071,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    Column({ includeInApi: false })(type.prototype, "categoryName");
+    Field({ includeInApi: false })(type.prototype, "categoryName");
     Entity({ key: '' })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -1128,7 +1128,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    Column({ allowApiUpdate: false })(type.prototype, "categoryName");
+    Field({ allowApiUpdate: false })(type.prototype, "categoryName");
     Entity({ key: '', allowApiUpdate: true })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -1167,7 +1167,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    Column({ includeInApi: false })(type.prototype, "categoryName");
+    Field({ includeInApi: false })(type.prototype, "categoryName");
     Entity({ key: '', allowApiUpdate: true })(type);
     let c = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -1228,7 +1228,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.columns.categoryName.defs.key + '_contains')
+        if (x == c.create()._.fields.categoryName.defs.key + '_contains')
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1254,7 +1254,7 @@ describe("data api", () => {
       };
       await api.getArray(t, {
         get: x => {
-          if (x == c.create()._.columns.categoryName.defs.key + '_st')
+          if (x == c.create()._.fields.categoryName.defs.key + '_st')
             return "y";
           return undefined;
         }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1279,7 +1279,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.columns.description.defs.key)
+        if (x == c.create()._.fields.description.defs.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1527,7 +1527,7 @@ describe("data api", () => {
 
   it("columnsAreOk", () => {
     let c = new Context().for(newCategories).create();
-    expect([...c._.columns].length).toBe(6);
+    expect([...c._.fields].length).toBe(6);
 
   });
 
@@ -1579,19 +1579,19 @@ describe("column validation", () => {
   it("validation clears on reset", () => {
     let c = new Context().for(newCategories).create();
     expect(c._.hasErrors()).toBe(true);
-    c._.columns.id.error = "x";
-    expect(c._.columns.id.error).toBe("x");
+    c._.fields.id.error = "x";
+    expect(c._.fields.id.error).toBe("x");
     expect(c._.hasErrors()).toBe(false);
     c._.undoChanges();
-    expect(c._.columns.id.error).toBe(undefined);
+    expect(c._.fields.id.error).toBe(undefined);
     expect(c._.hasErrors()).toBe(true);
   });
   it("validation clears on change", () => {
     let c = new Context().for(newCategories).create();
     expect(c._.hasErrors()).toBe(true);
-    c._.columns.id.error = "x";
+    c._.fields.id.error = "x";
     expect(c._.hasErrors()).toBe(false);
-    expect(c._.columns.id.error).toBe("x");
+    expect(c._.fields.id.error).toBe("x");
     c.id = 1;
     //expect(c._.isValid()).toBe(true);
     //expect(c._.columns.id.error).toBe(undefined);
@@ -1610,9 +1610,9 @@ describe("column validation", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    Column({ dataType: Number })(type.prototype, "id");
-    Column()(type.prototype, "name");
-    Column({ dataType: Date })(type.prototype, "c3");
+    Field({ dataType: Number })(type.prototype, "id");
+    Field()(type.prototype, "name");
+    Field({ dataType: Date })(type.prototype, "c3");
 
     let f = c.for(type);
     let d = new Date(2020, 1, 2, 3, 4, 5, 6);
@@ -1641,8 +1641,8 @@ describe("test web sql identity", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    Column({ dataType: Number })(type.prototype, "id");
-    Column()(type.prototype, "name");
+    Field({ dataType: Number })(type.prototype, "id");
+    Field()(type.prototype, "name");
 
 
     let f = c.for(type);
@@ -1708,7 +1708,7 @@ describe("compound id", () => {
     var r = await c.find();
     expect(r[0].c).toBe(111);
     r[0].c = 55;
-    expect(r[0]._.columns.c.originalValue).toBe(111);
+    expect(r[0]._.fields.c.originalValue).toBe(111);
     let saved = await r[0]._.save();
 
     expect(r[0].c).toBe(55);
@@ -1840,10 +1840,10 @@ describe("test bool value", () => {
         ok: Boolean = false;
       }
       Entity({ key: 'asdf' })(type);
-      Column({
+      Field({
         dataType: Number
       })(type.prototype, 'id');
-      Column({ dataType: Boolean })(type.prototype, "ok");
+      Field({ dataType: Boolean })(type.prototype, "ok");
       let r = context.for(type).create();
       r.id = 1;
       r.ok = true;
@@ -1865,10 +1865,10 @@ describe("test bool value", () => {
           x.ok = true;
         }
       })(type);
-      Column({
+      Field({
         dataType: Number
       })(type.prototype, 'id');
-      Column({ dataType: Boolean })(type.prototype, "ok");
+      Field({ dataType: Boolean })(type.prototype, "ok");
       let r = context.for(type).create();
       r.id = 1;
       expect(r.ok).toBe(false);
@@ -1910,8 +1910,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Column({ dataType: Number })(type.prototype, 'a');
-    Column({ dataType: Date })(type.prototype, 'b');
+    Field({ dataType: Number })(type.prototype, 'a');
+    Field({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let z = new RestDataProvider("", {
@@ -1940,8 +1940,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Column({ dataType: Number })(type.prototype, 'a');
-    Column({ dataType: Date })(type.prototype, 'b');
+    Field({ dataType: Number })(type.prototype, 'a');
+    Field({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let r = c.packWhere(x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
@@ -1953,8 +1953,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Column({ dataType: Number })(type.prototype, 'a');
-    Column({ dataType: Date })(type.prototype, 'b');
+    Field({ dataType: Number })(type.prototype, 'a');
+    Field({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let done = new Done();
@@ -2040,11 +2040,11 @@ describe("check allowedDataType", () => {
 });
 @Entity<CompoundIdEntity>({ key: 'compountIdEntity', id: x => new CompoundId(x.a, x.b) })
 class CompoundIdEntity extends EntityBase {
-  @Column()
+  @Field()
   a: number;
-  @Column()
+  @Field()
   b: number;
-  @Column()
+  @Field()
   c: number;
   id = {};
 }
@@ -2053,7 +2053,7 @@ class CompoundIdEntity extends EntityBase {
   allowApiCrud: true,
   saving: async (t) => {
     if (!t.name || t.name.length < 3)
-      t._.columns.name.error = 'invalid';
+      t._.fields.name.error = 'invalid';
 
     if (t._.isNew() && (!t.myId || t.myId == 0)) {
       let e = await t.context.for(entityWithValidations).find({
@@ -2069,9 +2069,9 @@ class CompoundIdEntity extends EntityBase {
   }
 })
 export class entityWithValidations extends EntityBase {
-  @Column()
+  @Field()
   myId: number;
-  @Column()
+  @Field()
   name: string;
   static savingRowCount = 0;
   constructor(private context: Context) {
@@ -2080,9 +2080,9 @@ export class entityWithValidations extends EntityBase {
 }
 @Entity({ key: '', allowApiUpdate: true })
 export class entityWithValidationsOnColumn extends EntityBase {
-  @Column()
+  @Field()
   myId: number;
-  @Column<entityWithValidations, string>({
+  @Field<entityWithValidations, string>({
     validate: (t, c) => {
       if (!t.name || t.name.length < 3)
         c.error = 'invalid on column';
@@ -2095,13 +2095,13 @@ export class entityWithValidationsOnColumn extends EntityBase {
   key: '',
   validation: (t => {
     if (!t.name || t.name.length < 3)
-      t._.columns.name.error = 'invalid';
+      t._.fields.name.error = 'invalid';
   })
 })
 export class entityWithValidationsOnEntityEvent extends EntityBase {
-  @Column()
+  @Field()
   myId: number;
-  @Column()
+  @Field()
   name: string;
 }
 @Entity<EntityWithLateBoundDbName>({
@@ -2109,7 +2109,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
   dbName: t => '(select ' + t.id.dbName + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
-  @Column({ dbName: 'CategoryID' })
+  @Field({ dbName: 'CategoryID' })
   id: number;
 
 }

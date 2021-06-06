@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { Context,   ColumnDefinitions,   ValueListItem} from '@remult/core';
+import { Context,    FieldDefinitions,   ValueListItem} from '@remult/core';
 import {actionInfo} from '@remult/core/src/server-action';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
@@ -104,8 +104,8 @@ export async function openDialog<T, C>(component: { new(...args: any[]): C; }, s
 /** returns an array of values that can be used in the value list property of a data control object */
 
 export async function getValueList<T >(repository:Repository<T>, args?: {
-  idColumn?: (e: EntityDefinitions<T>) => ColumnDefinitions,
-  captionColumn?: (e: EntityDefinitions<T>) => ColumnDefinitions,
+  idColumn?: (e: EntityDefinitions<T>) => FieldDefinitions,
+  captionColumn?: (e: EntityDefinitions<T>) => FieldDefinitions,
   orderBy?: EntityOrderBy<T>,
   where?: EntityWhere<T>
 }): Promise<ValueListItem[]> {
@@ -113,13 +113,13 @@ export async function getValueList<T >(repository:Repository<T>, args?: {
     args = {};
   }
   if (!args.idColumn) {
-    args.idColumn = x => x.idColumn;
+    args.idColumn = x => x.idField;
   }
   if (!args.captionColumn) {
     let idCol = args.idColumn(repository.defs);
-    for (const keyInItem of repository.defs.columns) {
+    for (const keyInItem of repository.defs.fields) {
       if (keyInItem != idCol) {
-        args.captionColumn = x => x.columns.find(keyInItem);
+        args.captionColumn = x => x.fields.find(keyInItem);
         break;
       }
     }
@@ -130,8 +130,8 @@ export async function getValueList<T >(repository:Repository<T>, args?: {
     limit: 1000
   })).map(x => {
     return {
-      id:repository.getRowHelper(x).columns.find(args.idColumn(repository.defs)).value,
-      caption: repository.getRowHelper(x).columns.find(args.captionColumn(repository.defs)).value,
+      id:repository.getRowHelper(x).fields.find(args.idColumn(repository.defs)).value,
+      caption: repository.getRowHelper(x).fields.find(args.captionColumn(repository.defs)).value,
     }
   });
   return r;

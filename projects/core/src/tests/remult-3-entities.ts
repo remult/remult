@@ -1,19 +1,19 @@
-import { EntityBase, Column, Entity, Repository } from "../remult3";
+import { EntityBase, Field, Entity, Repository } from "../remult3";
 import { Status } from "./testModel/models";
 
 @Entity({
     key: 'Products'
 })
 export class Products {
-    @Column()
+    @Field()
     id: number;
-    @Column()
+    @Field()
     name: string;
-    @Column()
+    @Field()
     price: number;
-    @Column()
+    @Field()
     archived: boolean;
-    @Column()
+    @Field()
     availableFrom: Date;
 }
 
@@ -30,22 +30,22 @@ let r :Repository<CategoriesForTesting>;
     allowApiCrud: true
 })
 export class Categories extends EntityBase {
-    @Column({
+    @Field({
         dbName: 'CategoryID'
     })
     id: number = 0;
-    @Column()
+    @Field()
     categoryName: string;
-    @Column()
+    @Field()
     description: string;
-    @Column<Categories, Number>({
+    @Field<Categories, Number>({
         serverExpression: c => c.categoryName ? c.categoryName.length : undefined
     })
     categoryNameLength: number;
-    @Column<Categories, number>({
+    @Field<Categories, number>({
         serverExpression: (c) => Promise.resolve(c.categoryName ? c.categoryName.length : undefined)
     })
     categoryNameLengthAsync: number;
-    @Column()
+    @Field()
     status: Status;
 }

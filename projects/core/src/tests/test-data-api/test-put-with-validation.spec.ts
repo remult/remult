@@ -4,7 +4,7 @@ import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 import { Context, ServerContext } from '../../context';
 import { Categories } from "../remult-3-entities";
-import { Column, Entity, EntityBase } from "../../remult3";
+import { Field, Entity, EntityBase } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
@@ -55,8 +55,8 @@ describe("data api", () => {
             val: string;
         }
         Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
-        Column({ dataType: Number })(type.prototype, 'id');
-        Column<EntityBase, string>({
+        Field({ dataType: Number })(type.prototype, 'id');
+        Field<EntityBase, string>({
             dataType: String,
             allowApiUpdate: (c, x) => x._.isNew()
         })(type.prototype, 'val');
@@ -88,8 +88,8 @@ describe("data api", () => {
             val: string;
         }
         Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
-        Column({ dataType: Number })(type.prototype, 'id');
-        Column<typeof type.prototype, string>({
+        Field({ dataType: Number })(type.prototype, 'id');
+        Field<typeof type.prototype, string>({
             dataType: String,
             allowApiUpdate: (c, x) => x.val != "yael"
         })(type.prototype, 'val');
@@ -121,7 +121,7 @@ describe("data api", () => {
 
      it("test value list type",()=>{
          let x = new ValueListValueConverter(Status);
-         expect(x.columnTypeInDb).toBe("int");
+         expect(x.fieldTypeInDb).toBe("int");
      });
 
 });
@@ -133,7 +133,7 @@ describe("data api", () => {
     
     saving: (t) => {
         if (t.categoryName.indexOf('1') >= 0)
-            t._.columns.categoryName.error = 'invalid'
+            t._.fields.categoryName.error = 'invalid'
     }
 })
 class CategoriesForThisTest extends Categories {

@@ -1,7 +1,7 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
 import { ServerMethod } from '../server-action';
-import { Column, Entity, EntityBase, getControllerDefs, getEntityOf } from '../remult3';
+import { Field, Entity, EntityBase, getControllerDefs, getEntityOf } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
@@ -11,7 +11,7 @@ class testServerMethodOnEntity extends EntityBase {
     constructor(private context: Context) {
         super();
     }
-    @Column<testServerMethodOnEntity, string>({
+    @Field<testServerMethodOnEntity, string>({
         validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";
@@ -59,9 +59,9 @@ class testServerMethodOnEntity extends EntityBase {
     }
 })
 class testBoolCreate123 extends EntityBase {
-    @Column()
+    @Field()
     id: number;
-    @Column({})
+    @Field({})
     ok123: Boolean = false;
     @ServerMethod({ allowed: true })
     async testIt() {
@@ -100,7 +100,7 @@ describe("test Server method in entity", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on client");
-            expect(getEntityOf(x).columns.a.error).toBe("error on client");
+            expect(getEntityOf(x).fields.a.error).toBe("error on client");
         }
         expect(happened).toBe(false);
 
@@ -117,7 +117,7 @@ describe("test Server method in entity", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on server");
-            expect(getEntityOf(x).columns.a.error).toBe("error on server");
+            expect(getEntityOf(x).fields.a.error).toBe("error on server");
         }
         expect(happened).toBe(false);
 

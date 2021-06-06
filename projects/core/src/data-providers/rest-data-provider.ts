@@ -25,14 +25,14 @@ class RestEntityDataProvider implements EntityDataProvider {
   }
   translateFromJson(row: any) {
     let result = {};
-    for (const col of this.entity.columns) {
+    for (const col of this.entity.fields) {
       result[col.key] = col.valueConverter.fromJson(row[col.key]);
     }
     return result;
   }
   translateToJson(row: any) {
     let result = {};
-    for (const col of this.entity.columns) {
+    for (const col of this.entity.fields) {
       result[col.key] = col.valueConverter.toJson(row[col.key]);
     }
     return result;
@@ -71,7 +71,7 @@ class RestEntityDataProvider implements EntityDataProvider {
             sort += ",";
             order += ",";
           }
-          sort += c.column.key;
+          sort += c.field.key;
           order += c.isDescending ? "desc" : "asc";
 
         });

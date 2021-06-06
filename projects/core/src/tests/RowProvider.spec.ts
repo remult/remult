@@ -1,4 +1,4 @@
-import { ColumnDefinitions, ColumnSettings, ValueConverter, ValueListItem } from '../column-interfaces';
+import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
@@ -13,11 +13,11 @@ import { ColumnCollection, DataAreaSettings, DataControlSettings, extend, getVal
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Column as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Column, Storable } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Field, FieldType } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter } from '../columns/loaders';
-import { EntityOptions } from '../entity';
+import { EntitySettings } from '../entity';
 import { async } from '@angular/core/testing';
 
 
@@ -180,7 +180,7 @@ describe("grid filter stuff", () => {
       });
       await ds.reloadData();
       ds.filterHelper.filterRow.description = 'y';
-      ds.filterHelper.filterColumn(ds.filterHelper.filterRow._.columns.description, false, false);
+      ds.filterHelper.filterColumn(ds.filterHelper.filterRow._.fields.description, false, false);
       let w = ds.getFilterWithSelectedRows().where;
 
       expect(await c.count(w)).toBe(1);
@@ -342,10 +342,10 @@ describe("Closed List  column", () => {
       .for(entityWithValueList);
     let e = c.create();
     e.id = 1;
-    expect(c.defs.columns.v.dataType).toBe(valueList);
-    expect(c.defs.columns.v.valueConverter.fromJson('listName'))
+    expect(c.defs.fields.v.dataType).toBe(valueList);
+    expect(c.defs.fields.v.valueConverter.fromJson('listName'))
       .toBe(valueList.listName);
-    expect(c.defs.columns.id.dataType).toBe(Number);
+    expect(c.defs.fields.id.dataType).toBe(Number);
     expect(e.v).toBe(valueList.firstName);
 
     e.v = valueList.listName;
@@ -356,15 +356,15 @@ describe("Closed List  column", () => {
   })
 });
 
-export function fColumn<T = any, colType = any>(settings?: ColumnSettings<colType, T>) {
-  let c = Column(settings);
+export function fColumn<T = any, colType = any>(settings?: FieldSettings<colType, T>) {
+  let c = Field(settings);
   return (target, key) => {
     debugger;
     return c(target, key);
   }
 
 }
-@Storable({ valueConverter: () => new ValueListValueConverter(valueList) })
+@FieldType({ valueConverter: () => new ValueListValueConverter(valueList) })
 class valueList {
   static firstName = new valueList();
   static listName = new valueList();
@@ -373,11 +373,11 @@ class valueList {
 
 @Entity({ key: 'entity with value list' })
 class entityWithValueList extends EntityBase {
-  @Column()
+  @Field()
   id: number = 0;
-  @Column({ valueConverter: () => new ValueListValueConverter(Language) })
+  @Field({ valueConverter: () => new ValueListValueConverter(Language) })
   l: Language = Language.Hebrew;
-  @Column()
+  @Field()
   v: valueList = valueList.firstName;
 
 }
@@ -553,7 +553,7 @@ describe("test row provider", () => {
       saved = true;
     }
     catch (err) {
-      expect(cat._.columns.a.error).toEqual("m");
+      expect(cat._.fields.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
 
@@ -579,7 +579,7 @@ describe("test row provider", () => {
       saved = true;
     }
     catch (err) {
-      expect(cat._.columns.a.error).toEqual("m");
+      expect(cat._.fields.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
 
@@ -602,7 +602,7 @@ describe("test row provider", () => {
       saved = true;
     }
     catch (err) {
-      expect(cat._.columns.a.error).toEqual("m");
+      expect(cat._.fields.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
   });
@@ -614,9 +614,9 @@ describe("test row provider", () => {
       EntityDecorator({ key: 'categories' })(type);
       ColumnDecorator<typeof type.prototype, string>({
         validate: async (en, col) => {
-          if (en._.isNew() || en.a != en._.columns.a.originalValue) {
+          if (en._.isNew() || en.a != en._.fields.a.originalValue) {
             if (await c.count(f => f.a.isEqualTo(en.a)))
-              en._.columns.a.error = 'already exists';
+              en._.fields.a.error = 'already exists';
           }
         }
       })(type.prototype, "a");
@@ -635,7 +635,7 @@ describe("test row provider", () => {
         saved = true;
       }
       catch (err) {
-        expect(cat._.columns.a.error).toEqual("already exists");
+        expect(cat._.fields.a.error).toEqual("already exists");
       }
       expect(saved).toBe(false);
     });
@@ -664,7 +664,7 @@ describe("test row provider", () => {
         saved = true;
       }
       catch (err) {
-        expect(cat._.columns.a.error).toEqual("already exists");
+        expect(cat._.fields.a.error).toEqual("already exists");
       }
       expect(saved).toBe(false);
     });
@@ -688,7 +688,7 @@ describe("test row provider", () => {
       saved = true;
     }
     catch {
-      expect(cat._.columns.a.error).toEqual("Should not be empty");
+      expect(cat._.fields.a.error).toEqual("Should not be empty");
       cat.a = '12';
       await cat._.save();
     }
@@ -702,7 +702,7 @@ describe("test row provider", () => {
       saved = true;
     }
     catch (err) {
-      expect(cat._.columns.a.error).toEqual("already exists");
+      expect(cat._.fields.a.error).toEqual("already exists");
     }
     expect(saved).toBe(false);
 
@@ -921,7 +921,7 @@ describe("test row provider", () => {
       });
       let c1 = c.create();
       let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
-      let cs = { column: c1._.columns.id.defs, valueList: getValueList(c) } as DataControlSettings<newCategories>
+      let cs = { column: c1._.fields.id.defs, valueList: getValueList(c) } as DataControlSettings<newCategories>
       await cc.add(cs);
 
       let xx = cs.valueList as ValueListItem[];
@@ -1035,10 +1035,10 @@ describe("column collection", () => {
 
 
       var cc = new ColumnCollection(() => c, () => false, undefined, () => true, () => undefined);
-      await cc.add(c.defs.columns.categoryName);
-      expect(cc.items[0] === c.defs.columns.categoryName).toBe(false);
+      await cc.add(c.defs.fields.categoryName);
+      expect(cc.items[0] === c.defs.fields.categoryName).toBe(false);
       expect(cc.items[0] === cc.items[0].column).toBe(false);
-      expect(cc.items[0].caption == c.defs.columns.categoryName.caption).toBe(true);
+      expect(cc.items[0].caption == c.defs.fields.categoryName.caption).toBe(true);
       expect(cc.items[0].readOnly).toBe(true);
 
     })
@@ -1047,7 +1047,7 @@ describe("column collection", () => {
     itAsync("works ok with filter", async () => {
       let c = ctx.for(newCategories);
       var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
-      await cc.add(c.defs.columns.id);
+      await cc.add(c.defs.fields.id);
       cc.filterHelper.filterColumn(cc.items[0].column, false, false);
       expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
 
@@ -1063,14 +1063,14 @@ describe("grid settings ",
 
 
         let gs = new GridSettings(s);
-        expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
-        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
-        gs.sort(s.defs.columns.id);
-        expect(gs.sortedAscending(s.defs.columns.id)).toBe(true);
-        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
-        gs.sort(s.defs.columns.id);
-        expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
-        expect(gs.sortedDescending(s.defs.columns.id)).toBe(true);
+        expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
+        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+        gs.sort(s.defs.fields.id);
+        expect(gs.sortedAscending(s.defs.fields.id)).toBe(true);
+        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+        gs.sort(s.defs.fields.id);
+        expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
+        expect(gs.sortedDescending(s.defs.fields.id)).toBe(true);
       });
     if (false)
       it("sort is displayed right on start", () => {
@@ -1080,13 +1080,13 @@ describe("grid settings ",
         let gs = new GridSettings(s, { orderBy: c => c.categoryName });
         //   expect(gs.sortedAscending(y)).toBe(true);
         //   expect(gs.sortedDescending(y)).toBe(false);
-        expect(gs.sortedAscending(s.defs.columns.id)).toBe(false);
-        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
-        gs.sort(s.defs.columns.id);
-        expect(gs.sortedAscending(s.defs.columns.id)).toBe(true);
-        expect(gs.sortedDescending(s.defs.columns.id)).toBe(false);
-        expect(gs.sortedAscending(s.defs.columns.categoryName)).toBe(false);
-        expect(gs.sortedDescending(s.defs.columns.categoryName)).toBe(false);
+        expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
+        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+        gs.sort(s.defs.fields.id);
+        expect(gs.sortedAscending(s.defs.fields.id)).toBe(true);
+        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+        expect(gs.sortedAscending(s.defs.fields.categoryName)).toBe(false);
+        expect(gs.sortedDescending(s.defs.fields.categoryName)).toBe(false);
       });
     it("paging works", async () => {
       let c = await createData(async i => {
@@ -1170,7 +1170,7 @@ describe("order by api", () => {
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
     let s = c.translateOrderByToSort(opt.orderBy);
     expect(s.Segments.length).toBe(1);
-    expect(s.Segments[0].column.key).toBe(c.defs.columns.id.key);
+    expect(s.Segments[0].field.key).toBe(c.defs.fields.id.key);
 
 
   });
@@ -1181,8 +1181,8 @@ describe("order by api", () => {
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
     let s = c.translateOrderByToSort(opt.orderBy);
     expect(s.Segments.length).toBe(2);
-    expect(s.Segments[0].column).toBe(c.defs.columns.id);
-    expect(s.Segments[1].column).toBe(c.defs.columns.categoryName);
+    expect(s.Segments[0].field).toBe(c.defs.fields.id);
+    expect(s.Segments[1].field).toBe(c.defs.fields.categoryName);
   });
 
 
@@ -1404,7 +1404,7 @@ describe("test ", () => {
       saved = true;
     }
     catch (err) {
-      expect(getEntityOf(cat).columns.a.error).toEqual("Should not be empty");
+      expect(getEntityOf(cat).fields.a.error).toEqual("Should not be empty");
     }
     expect(saved).toBe(false);
 
@@ -1425,11 +1425,11 @@ class myDp extends ArrayEntityDataProvider {
 
 
 
-class mockColumnDefs implements ColumnDefinitions {
+class mockColumnDefs implements FieldDefinitions {
   constructor(public dbName: string) {
 
   }
-  evilOriginalSettings: ColumnSettings<any, any>;
+  evilOriginalSettings: FieldSettings<any, any>;
   valueConverter: ValueConverter<any> = DefaultValueConverter;
   target: ClassType<any>;
   readonly: boolean;

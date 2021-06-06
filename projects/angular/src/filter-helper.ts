@@ -1,21 +1,21 @@
 
 import { AndFilter, Filter } from '@remult/core';
-import { comparableFilterItem, EntityColumn, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "@remult/core";
-import { ColumnDefinitions } from "@remult/core";
+import { comparableFilterItem,  EntityField, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "@remult/core";
+import {  FieldDefinitions } from "@remult/core";
 import { getColumnDefinition } from '..';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
-  filterColumns: ColumnDefinitions[] = [];
-  forceEqual: ColumnDefinitions[] = [];
+  filterColumns: FieldDefinitions[] = [];
+  forceEqual: FieldDefinitions[] = [];
   constructor(private reloadData: () => void, private repository: Repository<rowType>) {
 
   }
-  isFiltered(columnInput: ColumnDefinitions | EntityColumn<any, any>) {
+  isFiltered(columnInput: FieldDefinitions | EntityField<any, any>) {
 
     return this.filterColumns.indexOf(getColumnDefinition(columnInput)) >= 0;
   }
-  filterColumn(columnInput: ColumnDefinitions | EntityColumn<any, any>, clearFilter: boolean, forceEqual: boolean) {
+  filterColumn(columnInput: FieldDefinitions | EntityField<any, any>, clearFilter: boolean, forceEqual: boolean) {
     let column = getColumnDefinition(columnInput);
     if (!column)
       return;

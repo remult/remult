@@ -1,6 +1,6 @@
 import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { Filter, FilterConsumer } from '../filter/filter-interfaces';
-import { ColumnDefinitions } from '../column-interfaces';
+import { FieldDefinitions } from '../column-interfaces';
 import { EntityDefinitions } from '../remult3';
 
 
@@ -40,8 +40,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                     let r = 0;
                     for (let i = 0; i < options.orderBy.Segments.length; i++) {
                         let seg = options.orderBy.Segments[i];
-                        let left = a[seg.column.key];
-                        let right = b[seg.column.key];
+                        let left = a[seg.field.key];
+                        let right = b[seg.field.key];
                         if (left > right)
                             r = 1;
                         else if (left < right)
@@ -64,14 +64,14 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
     translateFromJson(row: any) {
         let result = {};
-        for (const col of this.entity.columns) {
+        for (const col of this.entity.fields) {
             result[col.key] = col.valueConverter.fromJson(row[col.key]);
         }
         return result;
     }
     translateToJson(row: any) {
         let result = {};
-        for (const col of this.entity.columns) {
+        for (const col of this.entity.fields) {
             result[col.key] = col.valueConverter.toJson(row[col.key]);
         }
         return result;
@@ -80,7 +80,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     private idMatches(id: any): (item: any) => boolean {
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
-            x.isEqualTo(this.entity.idColumn, id)
+            x.isEqualTo(this.entity.idField, id)
             return x.ok;
         };
     }
@@ -147,15 +147,15 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
         this.ok = false;
     }
-    isNull(col: ColumnDefinitions): void {
+    isNull(col: FieldDefinitions): void {
         if (this.row[col.key] != null)
             this.ok = false;
     }
-    isNotNull(col: ColumnDefinitions): void {
+    isNotNull(col: FieldDefinitions): void {
         if (this.row[col.key] == null)
             this.ok = false;
     }
-    isIn(col: ColumnDefinitions, val: any[]): void {
+    isIn(col: FieldDefinitions, val: any[]): void {
 
         for (const v of val) {
             if (this.row[col.key] == col.valueConverter.toJson(v)) {
@@ -164,38 +164,38 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
         this.ok = false;
     }
-    public isEqualTo(col: ColumnDefinitions, val: any): void {
+    public isEqualTo(col: FieldDefinitions, val: any): void {
 
         if (this.row[col.key] != col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isDifferentFrom(col: ColumnDefinitions, val: any): void {
+    public isDifferentFrom(col: FieldDefinitions, val: any): void {
         if (this.row[col.key] == col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isGreaterOrEqualTo(col: ColumnDefinitions, val: any): void {
+    public isGreaterOrEqualTo(col: FieldDefinitions, val: any): void {
         if (this.row[col.key] < col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isGreaterThan(col: ColumnDefinitions, val: any): void {
+    public isGreaterThan(col: FieldDefinitions, val: any): void {
 
         if (this.row[col.key] <= col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isLessOrEqualTo(col: ColumnDefinitions, val: any): void {
+    public isLessOrEqualTo(col: FieldDefinitions, val: any): void {
         if (this.row[col.key] > col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isLessThan(col: ColumnDefinitions, val: any): void {
+    public isLessThan(col: FieldDefinitions, val: any): void {
         if (this.row[col.key] >= col.valueConverter.toJson(val))
             this.ok = false;
     }
-    public containsCaseInsensitive(col: ColumnDefinitions, val: any): void {
+    public containsCaseInsensitive(col: FieldDefinitions, val: any): void {
         let v = this.row[col.key];
         if (!v) {
             this.ok = false;
@@ -208,7 +208,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
-    public startsWith(col: ColumnDefinitions, val: any): void {
+    public startsWith(col: FieldDefinitions, val: any): void {
         let v = this.row[col.key];
         if (!v) {
             this.ok = false;

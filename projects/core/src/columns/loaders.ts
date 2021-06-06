@@ -66,7 +66,7 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
         return new Date(val.valueOf() - val.getTimezoneOffset() * 60000);
 
     },
-    columnTypeInDb: 'date',
+    fieldTypeInDb: 'date',
     displayValue: (value: Date) => {
         if (!value)
             return '';
@@ -141,7 +141,7 @@ export const IntValueConverter: ValueConverter<number> =
 export const DecimalValueConverter: ValueConverter<Number> =
 {
     ...IntValueConverter,
-    columnTypeInDb: 'decimal'
+    fieldTypeInDb: 'decimal'
 }
 export const DefaultValueConverter: ValueConverter<any> = {
     fromJson: x => x,
@@ -178,7 +178,7 @@ export class StoreAsStringValueConverter<T> implements ValueConverter<T>{
     displayValue?(val: T): string {
         return this.toJson(val);
     }
-    columnTypeInDb?: string;
+    fieldTypeInDb?: string;
     inputType?: string;
 
 }
@@ -209,7 +209,7 @@ export class JsonValueLoader<T> implements ValueConverter<T>{
     displayValue?(val: T): string {
         return this.toDb(val);
     }
-    columnTypeInDb?: string;
+    fieldTypeInDb?: string;
     inputType?: string;
 
 }

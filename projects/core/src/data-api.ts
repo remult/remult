@@ -1,4 +1,4 @@
-import { EntityOptions } from './entity';
+import { EntitySettings } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
 import { UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
@@ -50,7 +50,7 @@ export class DataApi<T = any> {
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {
-              if (this.repository.isIdColumn(col))
+              if (this.repository.isIdField(col))
                 hasId = true;
             },
             isGreaterOrEqualTo: () => { },
@@ -218,7 +218,7 @@ export function determineSort(sortUrlParm: string, dirUrlParam: string) {
     return sortUrlParm.split(',').map((name, i) => {
       let r: SortSegment = x[name.trim()];
       if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
-        return { column: r.column, isDescending: true };
+        return { field: r.field, isDescending: true };
       return r;
     });
 

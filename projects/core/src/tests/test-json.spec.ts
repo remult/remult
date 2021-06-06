@@ -9,7 +9,7 @@ import { IdEntity } from '../id-entity';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
 import { Categories as newCategories } from './remult-3-entities';
-import { Column, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase } from '../remult3';
 
 
 describe("test json database", () => {
@@ -43,11 +43,11 @@ describe("test json database", () => {
 });
 @Entity({ key: 'tasks' })
 class tasks extends EntityBase {
-    @Column()
+    @Field()
     id: number;
-    @Column()
+    @Field()
     name: string;
-    @Column()
+    @Field()
     completed: boolean;
 
 }

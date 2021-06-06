@@ -9,7 +9,7 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Column, Entity, Repository } from '../src/remult3';
+import { Field, Entity, Repository } from '../src/remult3';
 import { DecimalValueConverter } from '../src/columns/loaders';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
@@ -436,21 +436,21 @@ export class EntityQueueStorage implements QueueStorage {
   includeInApi: false
 })
 export class JobsInQueueEntity extends IdEntity {
-  @Column()
+  @Field()
   userId: string;
-  @Column()
+  @Field()
   url: string;
-  @Column()
+  @Field()
   submitTime: Date;
-  @Column()
+  @Field()
   doneTime: Date;
-  @Column()
+  @Field()
   result: string;
-  @Column()
+  @Field()
   done: boolean;
-  @Column()
+  @Field()
   error: boolean;
-  @Column({ valueConverter: () => DecimalValueConverter })
+  @Field({ valueConverter: () => DecimalValueConverter })
   progress: number;
 }
 

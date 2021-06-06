@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Context,  ServerFunction, SqlDatabase, ServerProgress, IdEntity } from '@remult/core';
 
-import { Column, Entity, EntityBase } from '../../../projects/core/src/remult3';
+import {  Field, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 
 
@@ -59,17 +59,17 @@ export class TestComponent {
 })
 class Tasks extends IdEntity {
 
-  @Column<Tasks, string>({
+  @Field<Tasks, string>({
     validate: (row, col) => {
       if (col.value.length < 3)
         col.error = "is too short";
       if (row.title.length < 3)
-        row._.columns.title.error = "is too short";
+        row._.fields.title.error = "is too short";
     },
   })
   title = '';
 
-  @Column()
+  @Field()
   completed: boolean;
   constructor(private context: Context) {
     super();

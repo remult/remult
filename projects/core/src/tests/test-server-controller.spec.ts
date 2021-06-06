@@ -1,12 +1,12 @@
 import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
 import { prepareArgsToSend, prepareReceivedArgs, ServerController, ServerFunction, ServerMethod } from '../server-action';
-import { Column, Entity, getControllerDefs, Storable } from '../remult3';
+import { Field, Entity, getControllerDefs, FieldType } from '../remult3';
 import { ValueListValueConverter } from '../column';
 import { IdEntity } from '../id-entity';
 
 
-@Storable({ valueConverter: () => new ValueListValueConverter(myType) })
+@FieldType({ valueConverter: () => new ValueListValueConverter(myType) })
 export class myType {
     static x = new myType((n) => 'x' + n);
     static y = new myType((n) => 'y' + n);
@@ -17,7 +17,7 @@ export class myType {
 }
 @Entity({ key: 'testEntity' })
 class testEntity extends IdEntity {
-    @Column()
+    @Field()
     name: string;
 }
 @ServerController({ allowed: true, key: '1' })
@@ -26,11 +26,11 @@ class testBasics {
 
     }
 
-    @Column()
+    @Field()
     theDate: Date;
-    @Column()
+    @Field()
     myType: myType;
-    @Column()
+    @Field()
     myEntity: testEntity;
     @ServerMethod({ allowed: true })
     async testDate() {
@@ -48,7 +48,7 @@ class testBasics {
     }
 
     static test: string;
-    @Column<testBasics, string>({
+    @Field<testBasics, string>({
         validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";

@@ -3,7 +3,7 @@ import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 
 import { EntityDefinitions } from "../remult3";
-import { ColumnDefinitions } from "../column-interfaces";
+import { FieldDefinitions } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
@@ -35,13 +35,13 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     }
     async createTable(entity: EntityDefinitions<any>) {
         let result = '';
-        for (const x of entity.columns) {
+        for (const x of entity.fields) {
             if (!x.dbReadOnly) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
                 result += this.addColumnSqlSyntax(x);
-                if (x.key == entity.idColumn.key) {
+                if (x.key == entity.idField.key) {
                     result += ' primary key';
                     if (entity.dbAutoIncrementId)
                         result += " autoincrement";
@@ -62,19 +62,19 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         throw new Error("Method not implemented.");
     }
 
-    private addColumnSqlSyntax(x: ColumnDefinitions) {
+    private addColumnSqlSyntax(x: FieldDefinitions) {
         let result = x.dbName;
         if (x.dataType == Date)
             result += " integer";
         else if (x.dataType == Boolean)
             result += " integer default 0 not null";
         else if (x.dataType == Number) {
-            if (x.valueConverter.columnTypeInDb == "decimal")
+            if (x.valueConverter.fieldTypeInDb == "decimal")
                 result += ' real default 0 not null';
-            else if (!x.valueConverter.columnTypeInDb)
+            else if (!x.valueConverter.fieldTypeInDb)
                 result += " integer default 0 not null";
             else
-                x.valueConverter.columnTypeInDb + ' default 0 not null';
+                x.valueConverter.fieldTypeInDb + ' default 0 not null';
         }
         else
             result += " text default '' not null ";

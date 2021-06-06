@@ -16,7 +16,7 @@ import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 import { getEntityOf, rowHelperImplementation, getControllerDefs, decorateColumnSettings, getEntityOptions } from './remult3';
-import { ColumnSettings } from './column-interfaces';
+import { FieldSettings } from './column-interfaces';
 
 
 
@@ -109,7 +109,6 @@ export class myServerAction extends Action<inArgs, result>
             }
 
             catch (err) {
-                console.error(err);
                 throw err
             }
         });
@@ -282,7 +281,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                                 data: await defs.toApiPojo(),
                                                 isNewRow: defs.isNew(),
                                                 wasChanged: defs.wasChanged(),
-                                                id: defs.columns.find(defs.repository.defs.idColumn).originalValue
+                                                id: defs.fields.find(defs.repository.defs.idField).originalValue
                                             }
                                         };
                                     } catch (err) {
@@ -341,7 +340,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 data: await defs.toApiPojo(),
                                 isNewRow: defs.isNew(),
                                 wasChanged: defs.wasChanged(),
-                                id: defs.columns.find(defs.repository.defs.idColumn).originalValue
+                                id: defs.fields.find(defs.repository.defs.idField).originalValue
                             }
 
                         }));
@@ -431,14 +430,14 @@ export function prepareArgsToSend(types: any[], args: any[]) {
                 }
             }
             if (args[index] != undefined) {
-                let x: ColumnSettings = { dataType: paramType };
+                let x: FieldSettings = { dataType: paramType };
                 x = decorateColumnSettings(x);
                 if (x.valueConverter)
                     args[index] = x.valueConverter(undefined).toJson(args[index]);
                 let eo = getEntityOptions(paramType, false);
                 if (eo != null) {
                     let rh = getEntityOf(args[index]);
-                    args[index] = rh.columns.idColumn.value;
+                    args[index] = rh.fields.idField.value;
                 }
             }
         }
@@ -466,7 +465,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Se
             } else if (types[i] == ServerProgress) {
                 args[i] = new ServerProgress(res);
             } else {
-                let x: ColumnSettings = { dataType: types[i] };
+                let x: FieldSettings = { dataType: types[i] };
                 x = decorateColumnSettings(x);
                 if (x.valueConverter)
                     args[i] = x.valueConverter(undefined).fromJson(args[i]);

@@ -1,7 +1,7 @@
 import { fitAsync, itAsync } from './testHelper.spec';
 import { ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Column, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase } from '../remult3';
 
 
 
@@ -71,10 +71,10 @@ describe("test server expression value",  () => {
 class testServerExpression extends EntityBase {
     static testVal = 1;
     static testVal2 = 10;
-    @Column()
+    @Field()
     code: number;
-    @Column({ serverExpression: () => testServerExpression.testVal++ })
+    @Field({ serverExpression: () => testServerExpression.testVal++ })
     test: number;
-    @Column({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
+    @Field({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
     testPromise :number;
 }

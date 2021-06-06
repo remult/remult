@@ -1,4 +1,4 @@
-import { AndFilter, ColumnDefinitions,   Sort,ColumnDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
+import { AndFilter,  FieldDefinitions,   Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
 import { DataList } from "./angular/dataList";
 
 import { ColumnCollection } from "./column-collection";
@@ -18,7 +18,7 @@ export class GridSettings<rowType>  {
       this.filterHelper.filterRow = <rowType>repository.create();
     }
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).columns.find(b))
+    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b))
 
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
@@ -28,7 +28,7 @@ export class GridSettings<rowType>  {
     if (settings) {
 
       if (settings.columnSettings) {
-        let x = settings.columnSettings(repository.defs.columns);
+        let x = settings.columnSettings(repository.defs.fields);
         this.columns.add(...x);
       }
       if (settings.allowCrud !== undefined) {
@@ -159,10 +159,10 @@ export class GridSettings<rowType>  {
   noam: string;
 
   addArea(settings: IDataAreaSettings<rowType>) {
-    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).columns.find(b));
+    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b));
     col.numOfColumnsInGrid = 0;
 
-    return new DataAreaSettings<rowType>(settings, col, this.repository.defs.columns);
+    return new DataAreaSettings<rowType>(settings, col, this.repository.defs.fields);
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {
@@ -358,11 +358,11 @@ export class GridSettings<rowType>  {
   }
 
   _currentOrderBy: Sort;
-  sort(column: ColumnDefinitions) {
+  sort(column: FieldDefinitions) {
 
     let done = false;
     if (this._currentOrderBy && this._currentOrderBy.Segments.length > 0) {
-      if (this._currentOrderBy.Segments[0].column.key == column.key) {
+      if (this._currentOrderBy.Segments[0].field.key == column.key) {
         this._currentOrderBy.Segments[0].isDescending = !this._currentOrderBy.Segments[0].isDescending;
         done = true;
       }
@@ -371,22 +371,22 @@ export class GridSettings<rowType>  {
     //      this._currentOrderBy = new Sort({ column: column });
     this.reloadData();
   }
-  sortedAscending(column: ColumnDefinitions) {
+  sortedAscending(column: FieldDefinitions) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
       return false;
     return this._currentOrderBy.Segments.length > 0 &&
-      this._currentOrderBy.Segments[0].column.key == column.key &&
+      this._currentOrderBy.Segments[0].field.key == column.key &&
       !this._currentOrderBy.Segments[0].isDescending;
   }
-  sortedDescending(column: ColumnDefinitions) {
+  sortedDescending(column: FieldDefinitions) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
       return false;
     return this._currentOrderBy.Segments.length > 0 &&
-      this._currentOrderBy.Segments[0].column.key == column.key &&
+      this._currentOrderBy.Segments[0].field.key == column.key &&
       !!this._currentOrderBy.Segments[0].isDescending;
   }
 
@@ -482,7 +482,7 @@ export interface IDataSettings<rowType> {
   allowSelection?: boolean,
   confirmDelete?: (r: rowType) => Promise<boolean>;
 
-  columnSettings?: (row: ColumnDefinitionsOf<rowType>) => DataControlInfo<rowType>[],
+  columnSettings?: (row: FieldDefinitionsOf<rowType>) => DataControlInfo<rowType>[],
   areas?: { [areaKey: string]: DataControlInfo<rowType>[] },
 
   rowCssClass?: (row: rowType) => string;

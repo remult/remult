@@ -13,7 +13,7 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Column, Filter, filterOf, ServerContext, ServerFunction } from '../../../projects/core';
+import { Field, Filter, filterOf, ServerContext, ServerFunction } from '../../../projects/core';
 import { Products } from '../products-test/products';
 import {
     ClassType, ErrorInfo
@@ -102,9 +102,9 @@ serverInit().then(async (dataSource) => {
 // }
 
 class ProductInfo {
-    @Column()
+    @Field()
     Basket: Products;
-    @Column()
+    @Field()
     quantity: number;
 }
 

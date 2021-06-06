@@ -1,4 +1,4 @@
-import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, SqlDatabase, SqlCommand, SqlResult,  SqlImplementation, EntityDefinitions, ColumnDefinitions } from '../';
+import { ServerContext, DataProvider, EntityDataProvider, Entity,  SqlDatabase, SqlCommand, SqlResult,  SqlImplementation, EntityDefinitions,  FieldDefinitions } from '../';
 import {  ExpressBridge } from '../server';
 import { Pool, QueryResult } from 'pg';
 
@@ -29,7 +29,7 @@ export class PostgresDataProvider implements SqlImplementation {
     }
     async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefinitions) {
         let r = await command.execute(insertStatementString);
-        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.dbName + "','" + entity.columns.idColumn.dbName + "'));");
+        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.dbName + "','" + entity.fields.idField.dbName + "'));");
         return +r.rows[0].currval;
     }
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
@@ -114,17 +114,17 @@ export class PostgresSchemaBuilder {
 
             if (r.rows.length == 0) {
                 let result = '';
-                for (const x of e.columns) {
+                for (const x of e.fields) {
                     if (!x.dbReadOnly&&!x.isServerExpression) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
                         //@ts-ignore
-                        if (x == e.columns.idColumn && e.__options.dbAutoIncrementId)
+                        if (x == e.fields.idField && e.__options.dbAutoIncrementId)
                             result += x.dbName + ' serial';
                         else {
                             result += this.addColumnSqlSyntax(x);
-                            if (x == e.columns.idColumn)
+                            if (x == e.fields.idField)
                                 result += ' primary key';
                         }
                     }
@@ -136,13 +136,13 @@ export class PostgresSchemaBuilder {
             }
         });
     }
-    private addColumnSqlSyntax(x: ColumnDefinitions) {
+    private addColumnSqlSyntax(x: FieldDefinitions) {
         let result = x.dbName;
-        if (x.valueConverter.columnTypeInDb) {
-            if (x.dataType == Number && x.valueConverter.columnTypeInDb == "decimal")
+        if (x.valueConverter.fieldTypeInDb) {
+            if (x.dataType == Number && x.valueConverter.fieldTypeInDb == "decimal")
                 result += " numeric" + (x.allowNull ? "" : " default 0 not null");
             else
-                result += " " + x.valueConverter.columnTypeInDb;
+                result += " " + x.valueConverter.fieldTypeInDb;
         }
         else if (x.dataType == Date)
             result += " timestamp";
@@ -164,7 +164,7 @@ export class PostgresSchemaBuilder {
         return result;
     }
 
-    async addColumnIfNotExist<T extends EntityDefinitions>(e: T, c: ((e: T) => ColumnDefinitions)) {
+    async addColumnIfNotExist<T extends EntityDefinitions>(e: T, c: ((e: T) => FieldDefinitions)) {
         if (c(e).dbReadOnly||c(e).isServerExpression)
             return;
         try {
@@ -193,7 +193,7 @@ export class PostgresSchemaBuilder {
         FROM information_schema.columns 
         WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
-            for (const col of e.columns) {
+            for (const col of e.fields) {
                 if (!col.dbReadOnly&&!col.isServerExpression)
                     if (!cols.includes(col.dbName.toLocaleLowerCase())) {
                         let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(col)}`;

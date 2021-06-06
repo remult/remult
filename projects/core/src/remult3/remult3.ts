@@ -1,7 +1,7 @@
 
-import { ColumnDefinitions } from "../column-interfaces";
+import {  FieldDefinitions } from "../column-interfaces";
 import { IterateToArrayOptions } from "../context";
-import { EntityOptions } from "../entity";
+import { EntitySettings } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 import { RowEvents } from "../__EntityValueProvider";
@@ -164,7 +164,7 @@ export interface rowHelper<T> {
     isNew(): boolean;
     wasChanged(): boolean;
     wasDeleted(): boolean;
-    columns: EntityColumns<T>;
+    fields: EntityFields<T>;
 
     repository: Repository<T>;
     error: string;
@@ -176,21 +176,21 @@ export interface rowHelper<T> {
 
 
 }
-export type EntityColumns<Type> = {
-    [Properties in keyof Type]: EntityColumn<Type[Properties], Type>
+export type EntityFields<Type> = {
+    [Properties in keyof Type]: EntityField<Type[Properties], Type>
 } & {
-    find(col: ColumnDefinitions | string): EntityColumn<any, Type>,
-    [Symbol.iterator]: () => IterableIterator<EntityColumn<any, Type>>,
-    idColumn: EntityColumn<any, Type>
+    find(col: FieldDefinitions | string): EntityField<any, Type>,
+    [Symbol.iterator]: () => IterableIterator<EntityField<any, Type>>,
+    idField: EntityField<any, Type>
 
 
 }
-export type ColumnDefinitionsOf<Type> = {
-    [Properties in keyof Type]: ColumnDefinitions
+export type FieldDefinitionsOf<Type> = {
+    [Properties in keyof Type]: FieldDefinitions
 } & {
-    find(col: ColumnDefinitions | string): ColumnDefinitions,
-    [Symbol.iterator]: () => IterableIterator<ColumnDefinitions>,
-    idColumn: ColumnDefinitions,
+    find(col: FieldDefinitions | string): FieldDefinitions,
+    [Symbol.iterator]: () => IterableIterator<FieldDefinitions>,
+    idField: FieldDefinitions,
     createFilterOf(): filterOf<Type>
 }
 
@@ -205,7 +205,7 @@ export interface IdDefs {
 
 }
 
-export interface EntityColumn<T, entityType = any> {
+export interface EntityField<T, entityType = any> {
     inputType: string;
     error: string;
     displayValue: string;
@@ -215,19 +215,19 @@ export interface EntityColumn<T, entityType = any> {
     wasChanged(): boolean;
     rowHelper: rowHelper<entityType>;
     entity: entityType;
-    defs: ColumnDefinitions<entityType>;
+    defs: FieldDefinitions<entityType>;
     load(): Promise<T>;
 }
 
 export interface EntityDefinitions<T = any> {
     readonly dbAutoIncrementId: boolean;
-    readonly idColumn: ColumnDefinitions<any>;
+    readonly idField: FieldDefinitions<any>;
 
     readonly key: string,
     readonly dbName: string,
-    readonly columns: ColumnDefinitionsOf<T>,
+    readonly fields: FieldDefinitionsOf<T>,
     readonly caption: string;
-    readonly evilOriginalSettings: EntityOptions
+    readonly evilOriginalSettings: EntitySettings
 
 
 }
@@ -279,7 +279,7 @@ export interface Repository<T> {
 
     //candidate For Defs
     getIdFilter(id: any): Filter;
-    isIdColumn(col: ColumnDefinitions): boolean;
+    isIdField(col: FieldDefinitions): boolean;
     createIdInFilter(items: T[]): Filter;
 
     translateWhereToFilter(where: EntityWhere<T>): Filter;
@@ -331,7 +331,7 @@ export interface FindOptions<T> {
  * @example
  * await this.context.for(Products).find({ orderBy: p => [p.price, p.name])
  * @example
- * await this.context.for(Products).find({ orderBy: p => [{ column: p.price, descending: true }, p.name])
+ * await this.context.for(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
  */
 export declare type EntityOrderBy<T> = (entity: sortOf<T>) => SortSegment[] | SortSegment;
 /**Used to filter the desired result set

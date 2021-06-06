@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context,  Column, getControllerDefs, EntityColumns, Entity, EntityBase, DateOnlyValueConverter } from '@remult/core';
+import { Context,   Field, getControllerDefs,  Entity, EntityBase, DateOnlyValueConverter } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputControl, openDialog } from '@remult/angular';
@@ -91,33 +91,33 @@ export class ProductsComponent implements OnInit {
 
 @Entity({ key: 'Orders' })
 export class Orders extends EntityBase {
-  @Column({ caption: 'OrderID' })
+  @Field({ caption: 'OrderID' })
   id: number;
-  @Column()
+  @Field()
   customerID: string;
-  @Column()
+  @Field()
   employeeID: number;
-  @Column({ valueConverter: () => DateOnlyValueConverter })
+  @Field({ valueConverter: () => DateOnlyValueConverter })
   orderDate: Date;
-  @Column({ valueConverter: () => DateOnlyValueConverter })
+  @Field({ valueConverter: () => DateOnlyValueConverter })
   requiredDate: Date;
-  @Column({ valueConverter: () => DateOnlyValueConverter })
+  @Field({ valueConverter: () => DateOnlyValueConverter })
   shippedDate: Date;
-  @Column()
+  @Field()
   shipVia: number;
-  @Column()
+  @Field()
   freight: number;
-  @Column()
+  @Field()
   shipName: string;
-  @Column()
+  @Field()
   shipAddress: string;
-  @Column()
+  @Field()
   shipCity: string;
-  @Column()
+  @Field()
   shipRegion: string;
-  @Column()
+  @Field()
   shipPostalCode: string;
-  @Column()
+  @Field()
   shipCountry: string;
 
 }
@@ -126,27 +126,27 @@ export class Orders extends EntityBase {
 
 @Entity({ key: 'Customers' })
 export class Customers extends EntityBase {
-  @Column({ caption: 'CustomerID' })
+  @Field({ caption: 'CustomerID' })
   id: string;
-  @Column()
+  @Field()
   companyName: string;
-  @Column()
+  @Field()
   contactName: string;
-  @Column()
+  @Field()
   contactTitle: string;
-  @Column()
+  @Field()
   address: string;
-  @Column()
+  @Field()
   city: string;
-  @Column()
+  @Field()
   region: string;
-  @Column()
+  @Field()
   postalCode: string;
-  @Column()
+  @Field()
   country: string;
-  @Column()
+  @Field()
   phone: string;
-  @Column()
+  @Field()
   fax: string;
 
 }

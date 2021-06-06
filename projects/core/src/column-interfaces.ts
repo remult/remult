@@ -1,5 +1,5 @@
 import { Allowed, Context, EntityAllowed } from './context';
-import { EntityColumn, ColumnDefinitionsOf, ClassType, EntityDefinitions } from './remult3';
+import { EntityField, FieldDefinitionsOf, ClassType, EntityDefinitions } from './remult3';
 
 
 
@@ -8,7 +8,7 @@ import { EntityColumn, ColumnDefinitionsOf, ClassType, EntityDefinitions } from 
 
 
 
-export interface ColumnSettings<valueType = any, entityType = any> {
+export interface FieldSettings<valueType = any, entityType = any> {
     key?: string;
     target?: ClassType<entityType>;
     dataType?: any;
@@ -17,7 +17,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     caption?: string | ((context: Context) => string);
     displayValue?: (entity: entityType, value: valueType) => string;
     defaultValue?: (entity: entityType, context: Context) => valueType | Promise<valueType>;
-    validate?: ColumnValidator<valueType, entityType> | ColumnValidator<valueType, entityType>[];
+    validate?: FieldValidator<valueType, entityType> | FieldValidator<valueType, entityType>[];
     inputType?: string;
     allowNull?: boolean;
 
@@ -30,7 +30,7 @@ export interface ColumnSettings<valueType = any, entityType = any> {
     includeInApi?: Allowed;
     allowApiUpdate?: EntityAllowed<entityType>;
 }
-export interface ColumnDefinitions<T = any> {
+export interface FieldDefinitions<T = any> {
     readonly key: string;
     readonly target: ClassType<T>;
     readonly dataType: any;
@@ -44,7 +44,7 @@ export interface ColumnDefinitions<T = any> {
     readonly dbReadOnly: boolean;
     readonly dbName: string;
     readonly valueConverter: ValueConverter<T>;
-    readonly evilOriginalSettings: ColumnSettings;
+    readonly evilOriginalSettings: FieldSettings;
 
 }
 export interface ValueConverter<T> {
@@ -55,13 +55,13 @@ export interface ValueConverter<T> {
     toInput(val: T, inputType: string): string;
     fromInput(val: string, inputType: string): T;
     displayValue?(val: T): string;
-    readonly columnTypeInDb?: string;
+    readonly fieldTypeInDb?: string;
     readonly inputType?: string;
 
 
 }
 
-export declare type ColumnValidator<valueType = any, entityType = any> = (entity: entityType, col: EntityColumn<valueType, entityType>) => void | Promise<void>;
+export declare type FieldValidator<valueType = any, entityType = any> = (entity: entityType, col: EntityField<valueType, entityType>) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 

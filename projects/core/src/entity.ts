@@ -1,14 +1,14 @@
 import {  Allowed, Context, EntityAllowed } from "./context";
 
-import { ColumnDefinitions } from './column-interfaces';
-import {  EntityOrderBy, EntityWhereItem, ClassType,  ColumnDefinitionsOf, filterOf } from "./remult3";
+import { FieldDefinitions } from './column-interfaces';
+import {  EntityOrderBy, EntityWhereItem, ClassType,  FieldDefinitionsOf, filterOf } from "./remult3";
 import { Filter } from "./filter/filter-interfaces";
 
 
 
-export interface EntityOptions<T = any> {
+export interface EntitySettings<T = any> {
 
-  id?: (entity: ColumnDefinitionsOf<T>) => ColumnDefinitions,
+  id?: (entity: FieldDefinitionsOf<T>) => FieldDefinitions,
   
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
@@ -22,7 +22,7 @@ export interface EntityOptions<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: ColumnDefinitionsOf<T>,context:Context) => string);
+  dbName?: string | ((entity: FieldDefinitionsOf<T>,context:Context) => string);
   /**A human readable name for the entity */
   caption?: string;
   includeInApi?:boolean;

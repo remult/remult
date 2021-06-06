@@ -3,9 +3,9 @@
 import { createData, } from './RowProvider.spec';
 import { fitAsync, itAsync } from './testHelper.spec';
 import { Context, iterateConfig } from '../context';
-import { Entity, EntityBase,Column, CompoundId, EntityOrderBy } from '../remult3';
+import { Entity, EntityBase,Field, CompoundId, EntityOrderBy } from '../remult3';
 import { Categories } from './remult-3-entities';
-import { ColumnDefinitions } from '../column-interfaces';
+import { FieldDefinitions } from '../column-interfaces';
 import { GridSettings } from '../../../angular';
 
 
@@ -114,12 +114,12 @@ describe("test paged foreach ",  () => {
     itAsync("test make sort unique", async () => {
         let context = new Context();
         let e = context.for(Categories);
-        function test(orderBy: EntityOrderBy<Categories>, ...sort: ColumnDefinitions[]) {
+        function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldDefinitions[]) {
             let s = e.translateOrderByToSort(e.createAUniqueSort(orderBy));
-            expect(s.Segments.map(x => x.column)).toEqual(sort);
+            expect(s.Segments.map(x => x.field)).toEqual(sort);
         }
-        test(x => x.id, e.defs.columns.id);
-        test(x => x.categoryName, e.defs.columns.categoryName, e.defs.columns.id);
+        test(x => x.id, e.defs.fields.id);
+        test(x => x.categoryName, e.defs.fields.categoryName, e.defs.fields.id);
     });
   
     // itAsync("unique sort and  compound id", async () => {
@@ -233,10 +233,10 @@ describe("test paged foreach ",  () => {
     id:t=>new CompoundId(t.a,t.b)
 })
 class theTable extends EntityBase{
-    @Column()
+    @Field()
     a: string;
-    @Column()
+    @Field()
     b: string;
-    @Column()
+    @Field()
     c: string;
 }

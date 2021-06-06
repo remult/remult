@@ -1,6 +1,6 @@
 import {  ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Column, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase } from '../remult3';
 import { async } from '@angular/core/testing';
 
 
@@ -8,19 +8,19 @@ import { async } from '@angular/core/testing';
 
 @Entity({ key: 'categories' })
 class Categories extends EntityBase {
-    @Column()
+    @Field()
     id: number;
-    @Column()
+    @Field()
     name: string;
 }
 
 @Entity({ key: 'products' })
 class Products extends EntityBase {
-    @Column()
+    @Field()
     id: number;
-    @Column()
+    @Field()
     name: string;
-    @Column()
+    @Field()
     category: Categories;
 }
 

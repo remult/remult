@@ -1,6 +1,6 @@
 import { ServerContext } from '../context';
 import { itWithDataProvider } from './basicRowFunctionality.spec';
-import { Column, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase } from '../remult3';
 
 
 
@@ -12,8 +12,8 @@ describe("custom id column", () => {
             b: number;
         }
         Entity({ key: 'custom' })(type);
-        Column()(type.prototype, 'a');
-        Column()(type.prototype, 'b');
+        Field()(type.prototype, 'a');
+        Field()(type.prototype, 'b');
         let c = context.for(type);
         let r = c.create();
         r.a = 1;
@@ -23,7 +23,7 @@ describe("custom id column", () => {
         r.a = 2;
         r.b = 2;
         await r._.save();
-        expect(c.defs.idColumn.key).toBe(c.defs.columns.a.key);
+        expect(c.defs.idField.key).toBe(c.defs.fields.a.key);
 
 
     });
@@ -34,8 +34,8 @@ describe("custom id column", () => {
             id: number;
         }
         Entity({ key: 'custom2' })(type);
-        Column({ dataType: Number })(type.prototype, 'a');
-        Column({ dataType: Number })(type.prototype, 'id');
+        Field({ dataType: Number })(type.prototype, 'a');
+        Field({ dataType: Number })(type.prototype, 'id');
         let c = context.for(type);
         let r = c.create();
         r.a = 1;
@@ -45,7 +45,7 @@ describe("custom id column", () => {
         r.a = 2;
         r.id = 6;
         await r._.save();
-        expect(r._.repository.defs.idColumn.key).toBe(r._.columns.id.defs.key);
+        expect(r._.repository.defs.idField.key).toBe(r._.fields.id.defs.key);
         expect((await c.findId(6)).a).toBe(2);
 
 

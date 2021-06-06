@@ -1,5 +1,5 @@
 
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, ColumnSettings, Context, ValueConverter } from "@remult/core";
+import {  FieldDefinitions,  EntityField, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed,  FieldSettings, Context, ValueConverter } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -9,7 +9,7 @@ import { decorateColumnSettings } from '@remult/core/src/remult3';
 
 export class ColumnCollection<rowType = any> {
 
-  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: ColumnDefinitions) => EntityColumn<any, any>) {
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: FieldDefinitions) => EntityField<any, any>) {
 
 
   }
@@ -18,11 +18,11 @@ export class ColumnCollection<rowType = any> {
 
   }
   __getColumn(map: DataControlSettings, record: any) {
-    let result: EntityColumn<any, any>;
+    let result: EntityField<any, any>;
     if (record)
-      result = getEntityOf(record).columns.find(getColumnDefinition(map.column));
+      result = getEntityOf(record).fields.find(getColumnDefinition(map.column));
     if (!result)
-      result = map.column as unknown as EntityColumn<any, any>;
+      result = map.column as unknown as EntityField<any, any>;
     return result;
   }
 
@@ -43,14 +43,14 @@ export class ColumnCollection<rowType = any> {
     }
     return this.getRowColumn({ col, row }, (c, row) => col.allowClick(row, c));
   }
-  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityColumn<any, any>, row: any) => T) {
-    let column: EntityColumn<any, any>;
+  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityField<any, any>, row: any) => T) {
+    let column: EntityField<any, any>;
     let row = args.row;
     if (this._getRowColumn && args.col.column && row) {
       column = this._getRowColumn(row, getColumnDefinition(args.col.column));
     }
     if (!column)
-      column = args.col.column as unknown as EntityColumn<any, any>;
+      column = args.col.column as unknown as EntityField<any, any>;
     if (!row)
       row = column.entity;
     return what(column, row);
@@ -78,8 +78,8 @@ export class ColumnCollection<rowType = any> {
         continue;
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
-      let col = c as ColumnDefinitions;
-      let ecol = c as EntityColumn<any, any>;
+      let col = c as FieldDefinitions;
+      let ecol = c as EntityField<any, any>;
       if (!x.column && col.valueConverter || ecol.defs) {
         x = {
           column: c,
@@ -257,10 +257,10 @@ export class ColumnCollection<rowType = any> {
     if (this.items.length == 0) {
 
       if (defs) {
-        let ignoreCol: ColumnDefinitions = undefined;
+        let ignoreCol: FieldDefinitions = undefined;
         //   if (r instanceof IdEntity)
         //    ignoreCol = r.id;
-        for (const c of defs.columns) {
+        for (const c of defs.fields) {
           if (c != ignoreCol)
             this.add(c);
         }
@@ -327,11 +327,11 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 }
 
 
-export class InputControl<T> implements EntityColumn<T, any> {
-  private settings: ColumnSettings;
+export class InputControl<T> implements EntityField<T, any> {
+  private settings: FieldSettings;
   private dataControl: DataControlSettings;
   constructor(
-    settings: ColumnSettings<T, any>
+    settings: FieldSettings<T, any>
       & DataControlSettings
       & {
 
@@ -358,8 +358,8 @@ export class InputControl<T> implements EntityColumn<T, any> {
     }
     this._value = settings.defaultValue as unknown as T;
     this.originalValue = this._value;
-    let valueConverter = settings.valueConverter ? settings.valueConverter(settings.context) : undefined;
-    if (this.defs.valueConverter)
+    let valueConverter = this.settings.valueConverter ? this.settings.valueConverter(settings.context) : undefined;
+    if (valueConverter)
       if (!settings.inputType) {
         settings.inputType = valueConverter.inputType;
       }
@@ -367,7 +367,7 @@ export class InputControl<T> implements EntityColumn<T, any> {
 
       allowNull: settings.allowNull,
       caption: settings.caption,
-      evilOriginalSettings: settings,
+      evilOriginalSettings: this.settings,
       valueConverter: valueConverter,
       dataType: settings.dataType,
       key: settings.key,
@@ -399,7 +399,7 @@ export class InputControl<T> implements EntityColumn<T, any> {
     readonly dbReadOnly: boolean;
     readonly dbName: string;
     readonly valueConverter: ValueConverter<T>;
-    readonly evilOriginalSettings: ColumnSettings;
+    readonly evilOriginalSettings: FieldSettings;
   };
   _value: T;
   inputType: string;

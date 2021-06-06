@@ -1,8 +1,8 @@
 
-import { ColumnDefinitions, ColumnSettings, ValueConverter } from "../column-interfaces";
-import { EntityOptions } from "../entity";
-import { CompoundIdColumn, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
-import { EntityDefinitions, filterOptions, EntityColumn, EntityColumns, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, ColumnDefinitionsOf, supportsContains } from "./remult3";
+import { FieldDefinitions, FieldSettings, ValueConverter } from "../column-interfaces";
+import { EntitySettings } from "../entity";
+import {  CompoundIdField, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
+import { EntityDefinitions, filterOptions, EntityField, EntityFields, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, FieldDefinitionsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -20,22 +20,22 @@ export class RepositoryImplementation<T> implements Repository<T>{
         let values = new Map<string, any>();
 
         for (const s of this.translateOrderByToSort(orderBy).Segments) {
-            values.set(s.column.key, lastRow[s.column.key]);
+            values.set(s.field.key, lastRow[s.field.key]);
         }
         return x => {
             let r: Filter = undefined;
-            let equalToColumn: ColumnDefinitions[] = [];
+            let equalToColumn: FieldDefinitions[] = [];
             for (const s of this.translateOrderByToSort(orderBy).Segments) {
                 let f: Filter;
                 for (const c of equalToColumn) {
                     f = new AndFilter(f, new Filter(x => x.isEqualTo(c, values.get(c.key))));
                 }
-                equalToColumn.push(s.column);
+                equalToColumn.push(s.field);
                 if (s.isDescending) {
-                    f = new AndFilter(f, new Filter(x => x.isLessThan(s.column, values.get(s.column.key))));
+                    f = new AndFilter(f, new Filter(x => x.isLessThan(s.field, values.get(s.field.key))));
                 }
                 else
-                    f = new AndFilter(f, new Filter(x => x.isGreaterThan(s.column, values.get(s.column.key))));
+                    f = new AndFilter(f, new Filter(x => x.isGreaterThan(s.field, values.get(s.field.key))));
                 r = new OrFilter(r, f);
             }
             return r;
@@ -45,11 +45,11 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!orderBy)
             orderBy = this._info.entityInfo.defaultOrderBy;
         if (!orderBy)
-            orderBy = x => ({ column: this._info.idColumn })
+            orderBy = x => ({ field: this._info.idField })
         return x => {
             let sort = this.translateOrderByToSort(orderBy);
-            if (!sort.Segments.find(x => x.column == this.defs.idColumn)) {
-                sort.Segments.push({ column: this.defs.idColumn });
+            if (!sort.Segments.find(x => x.field == this.defs.idField)) {
+                sort.Segments.push({ field: this.defs.idField });
             }
             return sort.Segments;
         }
@@ -94,7 +94,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
     addToCache(item: T) {
         if (item)
-            this.idCache.set(this.getRowHelper(item).columns.idColumn.value, item);
+            this.idCache.set(this.getRowHelper(item).fields.idField.value, item);
     }
     fromPojo(x: any) {
         throw new Error("Method not implemented.");
@@ -133,11 +133,11 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
 
-    isIdColumn(col: ColumnDefinitions<any>): boolean {
-        return col.key == this.defs.idColumn.key;
+    isIdField(col: FieldDefinitions<any>): boolean {
+        return col.key == this.defs.idField.key;
     }
     getIdFilter(id: any): Filter {
-        return new Filter(x => x.isEqualTo(this.defs.idColumn, id));
+        return new Filter(x => x.isEqualTo(this.defs.idField, id));
     }
 
 
@@ -349,12 +349,12 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return r;
     }
     findId(id: any): Promise<T> {
-        return this.iterate(x => x[this.defs.idColumn.key].isEqualTo(id)).first();
+        return this.iterate(x => x[this.defs.idField.key].isEqualTo(id)).first();
     }
 
     createIdInFilter(items: T[]): Filter {
-        let idColumn = this.defs.idColumn;
-        return new Filter(x => x.isIn(idColumn, items.map(i => this.getRowHelper(i).columns[idColumn.key].value)))
+        let idField = this.defs.idField;
+        return new Filter(x => x.isIn(idField, items.map(i => this.getRowHelper(i).fields[idField.key].value)))
 
     }
     translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort {
@@ -430,7 +430,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     }
     extractWhere(filterInfo: { get: (key: string) => any; }): Filter {
-        return extractWhere([...this.defs.columns], filterInfo);
+        return extractWhere([...this.defs.fields], filterInfo);
     }
 }
 
@@ -444,7 +444,7 @@ export function getEntityOptions<T>(entity: ClassType<T>, throwError = true) {
             throw new Error("Undefined is not an entity :)")
         }
         else return undefined;
-    let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
+    let info: EntitySettings = Reflect.getMetadata(entityInfo, entity);
     if (!info && throwError)
         throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?")
 
@@ -470,11 +470,7 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
     }
 
 
-    return new EntityFullInfo<T>(r.map(x => ({
-        key: x.key,
-        type: x.type,
-        settings: decorateColumnSettings(x.settings)
-    })), info, context);
+    return new EntityFullInfo<T>(prepareColumnInfo(r), info, context);
 }
 
 class rowHelperBase<T>
@@ -593,7 +589,7 @@ class rowHelperBase<T>
                     if (val) {
                         let eo = getEntityOptions(val.constructor, false);
                         if (eo) {
-                            val = getEntityOf(val).columns.idColumn.value;
+                            val = getEntityOf(val).fields.idField.value;
                         }
                     }
                 }
@@ -667,21 +663,21 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         });
     }
 
-    private _columns: EntityColumns<T>;
+    private _columns: EntityFields<T>;
 
-    get columns(): EntityColumns<T> {
+    get fields(): EntityFields<T> {
         if (!this._columns) {
             let _items = [];
             let r = {
-                find: (c: ColumnDefinitions<T>) => r[c.key],
+                find: (c: FieldDefinitions<T>) => r[c.key],
                 [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
-                _items.push(r[c.key] = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this));
+                _items.push(r[c.key] = new columnImpl(c.settings, this.info.fields[c.key], this.instance, this, this));
             }
-            r["idColumn"] = r.find(this.info.idColumn);
+            r["idField"] = r.find(this.info.idField);
 
-            this._columns = r as unknown as EntityColumns<T>;
+            this._columns = r as unknown as EntityFields<T>;
         }
         return this._columns;
 
@@ -697,7 +693,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         this.__assertValidity();
 
         let d = this.copyDataToObject();
-        if (this.info.idColumn instanceof CompoundIdColumn)
+        if (this.info.idField instanceof CompoundIdField)
             d.id = undefined;
         let updatedRow: any;
         try {
@@ -756,7 +752,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
 
     async loadDataFrom(data: any) {
-        for (const col of this.info.columns) {
+        for (const col of this.info.fields) {
             let lu = this.lookups.get(col.key);
             if (lu)
                 lu.id = data[col.key];
@@ -764,10 +760,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
                 this.instance[col.key] = data[col.key];
         }
         await this.calcServerExpression();
-        if (this.repository.defs.idColumn instanceof CompoundIdColumn) {
-            data.columns.idColumn.__addIdToPojo(data);
+        if (this.repository.defs.idField instanceof CompoundIdField) {
+            data.columns.idField.__addIdToPojo(data);
         }
-        this.id = data[this.repository.defs.idColumn.key];
+        this.id = data[this.repository.defs.idField.key];
     }
     private id;
 
@@ -784,7 +780,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         return this._isNew;
     }
     wasChanged(): boolean {
-        for (const col of this.info.columns) {
+        for (const col of this.info.fields) {
             let val = this.instance[col.key];
             let lu = this.lookups.get(col.key);
             if (lu) {
@@ -799,7 +795,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     async __performColumnAndEntityValidations() {
         for (const c of this.columnsInfo) {
             if (c.settings.validate) {
-                let col = new columnImpl(c.settings, this.info.columns[c.key], this.instance, this, this);
+                let col = new columnImpl(c.settings, this.info.fields[c.key], this.instance, this, this);
                 await col.__performValidation();
             }
         }
@@ -809,6 +805,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
 }
 const controllerColumns = Symbol("controllerColumns");
+function prepareColumnInfo(r: columnInfo[]): columnInfo[] {
+    return r.map(x => ({
+        key: x.key,
+        type: x.type,
+        settings: decorateColumnSettings(x.settings)
+    }));
+}
+
 export function getControllerDefs<T>(controller: T, context?: Context): controllerDefsImpl<T> {
 
     let result = controller[controllerColumns] as controllerDefsImpl<any>;
@@ -818,13 +822,13 @@ export function getControllerDefs<T>(controller: T, context?: Context): controll
         let columnSettings: columnInfo[] = columnsOfType.get(controller.constructor);
         if (!columnSettings)
             columnsOfType.set(controller.constructor, columnSettings = []);
-        controller[controllerColumns] = result = new controllerDefsImpl(columnSettings, controller, context);
+        controller[controllerColumns] = result = new controllerDefsImpl(prepareColumnInfo(columnSettings), controller, context);
     }
     return result;
 }
 
 export interface controllerDefs<T = any> {
-    readonly columns: EntityColumns<T>,
+    readonly columns: EntityFields<T>,
 }
 export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements controllerDefs<T> {
     constructor(columnsInfo: columnInfo[], instance: any, context: Context) {
@@ -833,15 +837,16 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
 
         let _items = [];
         let r = {
-            find: (c: EntityColumn<any, T>) => r[c.defs.key],
+            find: (c: EntityField<any, T>) => r[c.defs.key],
             [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
         for (const col of columnsInfo) {
-            _items.push(r[col.key] = new columnImpl<any, any>(col.settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
+            let settings = decorateColumnSettings(col.settings);
+            _items.push(r[col.key] = new columnImpl<any, any>(settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
         }
 
-        this.columns = r as unknown as EntityColumns<T>;
+        this.columns = r as unknown as EntityFields<T>;
 
 
     }
@@ -854,11 +859,11 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
     }
     errors: { [key: string]: string; };
     originalValues: any;
-    columns: EntityColumns<T>;
+    columns: EntityFields<T>;
 
 }
-export class columnImpl<colType, rowType> implements EntityColumn<colType, rowType> {
-    constructor(private settings: ColumnSettings, public defs: ColumnDefinitions, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
+export class columnImpl<colType, rowType> implements EntityField<colType, rowType> {
+    constructor(private settings: FieldSettings, public defs: FieldDefinitions, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
     async load(): Promise<colType> {
@@ -957,7 +962,7 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
 
 }
 
-export class columnDefsImpl implements ColumnDefinitions {
+export class columnDefsImpl implements FieldDefinitions {
     constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>, private context: Context) {
         if (colInfo.settings.serverExpression)
             this.isServerExpression = true;
@@ -977,7 +982,7 @@ export class columnDefsImpl implements ColumnDefinitions {
 
 
     }
-    evilOriginalSettings: ColumnSettings<any, any> = this.colInfo.settings;
+    evilOriginalSettings: FieldSettings<any, any> = this.colInfo.settings;
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
@@ -1008,12 +1013,12 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
     evilOriginalSettings = this.entityInfo;
 
-    constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions, private context: Context) {
+    constructor(public columnsInfo: columnInfo[], public entityInfo: EntitySettings, private context: Context) {
 
 
         let _items = [];
         let r = {
-            find: (c: ColumnDefinitions<any>) => r[c.key],
+            find: (c: FieldDefinitions<any>) => r[c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator](),
             createFilterOf: () => this.createFilterOf()
         };
@@ -1022,7 +1027,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
             _items.push(r[x.key] = new columnDefsImpl(x, this, context));
         }
 
-        this.columns = r as unknown as ColumnDefinitionsOf<T>;
+        this.fields = r as unknown as FieldDefinitionsOf<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;
@@ -1030,20 +1035,20 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
         if (typeof entityInfo.dbName === "string")
             this.dbName = entityInfo.dbName;
         else if (typeof entityInfo.dbName === "function")
-            this.dbName = entityInfo.dbName(this.columns, context);
+            this.dbName = entityInfo.dbName(this.fields, context);
         if (entityInfo.id) {
-            this.idColumn = entityInfo.id(this.columns)
+            this.idField = entityInfo.id(this.fields)
         } else {
-            if (this.columns["id"])
-                this.idColumn = this.columns["id"];
+            if (this.fields["id"])
+                this.idField = this.fields["id"];
             else
-                this.idColumn = [...this.columns][0];
+                this.idField = [...this.fields][0];
         }
     }
 
     dbAutoIncrementId: boolean;
-    idColumn: ColumnDefinitions<any>;
-    columns: ColumnDefinitionsOf<T>;
+    idField: FieldDefinitions<any>;
+    fields: FieldDefinitionsOf<T>;
 
 
     key: string;
@@ -1052,29 +1057,29 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
     createFilterOf(): filterOf<T> {
         let r = {};
-        for (const c of this.columns) {
+        for (const c of this.fields) {
             r[c.key] = new filterHelper(c);
         }
         return r as filterOf<T>;
     }
     createSortOf(): sortOf<T> {
         let r = {};
-        for (const c of this.columns) {
+        for (const c of this.fields) {
             r[c.key] = new sortHelper(c);
         }
         return r as sortOf<T>;
     }
 }
 class sortHelper implements SortSegment {
-    constructor(public column: ColumnDefinitions, public isDescending = false) {
+    constructor(public field: FieldDefinitions, public isDescending = false) {
 
     }
     descending(): SortSegment {
-        return new sortHelper(this.column, !this.isDescending);
+        return new sortHelper(this.field, !this.isDescending);
     }
 }
 export class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
-    constructor(private col: ColumnDefinitions) {
+    constructor(private col: FieldDefinitions) {
 
     }
     processVal(val: any) {
@@ -1133,7 +1138,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
 }
 
 
-export function Storable<T = any>(settings?: ColumnSettings<T, any>) {
+export function FieldType<T = any>(settings?: FieldSettings<T, any>) {
     return target => {
         if (!settings) {
             settings = {};
@@ -1146,7 +1151,7 @@ export function Storable<T = any>(settings?: ColumnSettings<T, any>) {
 
 }
 
-export function Column<T = any, colType = any>(settings?: ColumnSettings<colType, T>) {
+export function Field<T = any, colType = any>(settings?: FieldSettings<colType, T>) {
     if (!settings) {
         settings = {};
     }
@@ -1191,7 +1196,7 @@ export function Column<T = any, colType = any>(settings?: ColumnSettings<colType
 
 }
 const storableMember = Symbol("storableMember");
-export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
+export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     if (settings.dataType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.dataType);
         if (settingsOnTypeLevel) {
@@ -1205,19 +1210,19 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
         settings.caption = makeTitle(settings.key);
     }
     if (settings.dataType == Number) {
-        let x = settings as unknown as ColumnSettings<Number>;
+        let x = settings as unknown as FieldSettings<Number>;
         if (!settings.valueConverter)
             x.valueConverter = () => IntValueConverter;
     }
     if (settings.dataType == Date) {
-        let x = settings as unknown as ColumnSettings<Date>;
+        let x = settings as unknown as FieldSettings<Date>;
         if (!settings.valueConverter) {
             x.valueConverter = () => DateValueConverter;
         }
     }
 
     if (settings.dataType == Boolean) {
-        let x = settings as unknown as ColumnSettings<Boolean>;
+        let x = settings as unknown as FieldSettings<Boolean>;
         if (!x.valueConverter)
             x.valueConverter = () => BoolValueConverter;
 
@@ -1234,10 +1239,10 @@ export function decorateColumnSettings<T>(settings: ColumnSettings<T>) {
 
 interface columnInfo {
     key: string;
-    settings: ColumnSettings,
+    settings: FieldSettings,
     type: any
 }
-export function Entity<T>(options: EntityOptions<T>) {
+export function Entity<T>(options: EntitySettings<T>) {
     return target => {
         if (!options.key || options.key == '')
             options.key = target.name;
@@ -1263,12 +1268,12 @@ export function Entity<T>(options: EntityOptions<T>) {
 
 
 
-export class CompoundId implements ColumnDefinitions<string>{
-    constructor(...columns: ColumnDefinitions[]) {
+export class CompoundId implements FieldDefinitions<string>{
+    constructor(...columns: FieldDefinitions[]) {
         if (false)
             console.log(columns);
     }
-    evilOriginalSettings: ColumnSettings<any, any>;
+    evilOriginalSettings: FieldSettings<any, any>;
     valueConverter: ValueConverter<string>;
     target: ClassType<any>;
     readonly: true;
@@ -1304,5 +1309,5 @@ export class EntityBase {
     delete() { return this._.delete(); }
     isNew() { return this._.isNew(); }
     wasChanged() { return this._.wasChanged(); }
-    get $() { return this._.columns }
+    get $() { return this._.fields }
 }

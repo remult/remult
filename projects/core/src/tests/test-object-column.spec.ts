@@ -7,7 +7,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Column, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase } from '../remult3';
 import { JsonValueLoader, StoreAsStringValueConverter } from '../columns/loaders';
 
 
@@ -63,9 +63,9 @@ describe("test object column", () => {
 
 @Entity({ key: 'objectColumnTest' })
 class ObjectColumnTest extends EntityBase {
-    @Column()
+    @Field()
     id: number;
-    @Column({
+    @Field({
         valueConverter: () => new JsonValueLoader()
     })
     col: person;

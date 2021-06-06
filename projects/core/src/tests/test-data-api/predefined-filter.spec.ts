@@ -7,7 +7,7 @@ import { DataApi } from '../../data-api';
 
 import { Context } from '../../context';
 import { Categories as newCategories } from '../remult-3-entities';
-import { Column, Entity as EntityDecorator, EntityBase } from '../../remult3';
+import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3';
 
 
 
@@ -144,7 +144,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.columns.description.defs.key)
+        if (x == c.create()._.fields.description.defs.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""

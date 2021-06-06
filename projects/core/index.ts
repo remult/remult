@@ -7,12 +7,12 @@
 
 export {
     ClassType,
-    Column,
-    ColumnDefinitionsOf,
+    Field,
+    FieldDefinitionsOf,
     Entity,
     EntityBase,
-    EntityColumn,
-    EntityColumns,
+    EntityField,
+    EntityFields,
     EntityDefinitions,
     EntityOrderBy,
     EntityWhere,
@@ -22,7 +22,7 @@ export {
     IteratableResult,
     IterateOptions,
     Repository,
-    Storable,
+    FieldType as Storable,
     comparableFilterItem,
     controllerDefs,
     filterOf,
@@ -34,6 +34,7 @@ export {
     sortOf,
     supportsContains
 } from './src/remult3';
+export { EntitySettings  } from './src/entity';
 export {
     DataProvider,
     EntityDataProvider,
@@ -45,9 +46,9 @@ export {
     SqlCommand, SqlImplementation, SqlResult
 } from './src/sql-command';//V
 export {
-    ColumnDefinitions,
-    ColumnSettings,
-    ColumnValidator,
+    FieldDefinitions,
+    FieldSettings,
+    FieldValidator,
     ValueConverter,
     ValueListItem,// reconsider, maybe it should go to remult angular as the abstraction ?
     ValueOrExpression,

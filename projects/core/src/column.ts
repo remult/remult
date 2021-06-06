@@ -1,5 +1,5 @@
 import { Allowed, Context, RoleChecker } from './context';
-import { ColumnDefinitions, ColumnSettings, ValueConverter, ValueListItem } from './column-interfaces';
+import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from './column-interfaces';
 
 import { AndFilter, Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
@@ -23,16 +23,16 @@ export function makeTitle(name: string) {
 
 
 
-export class CompoundIdColumn {
-  columns: ColumnDefinitions[];
-  constructor(...columns: ColumnDefinitions[]) {
+export class CompoundIdField {
+  columns: FieldDefinitions[];
+  constructor(...columns: FieldDefinitions[]) {
     // super({
     //   serverExpression: () => this.getId()
     // });
     this.columns = columns;
   }
   __isVirtual() { return true; }
-  isEqualTo(value: ColumnDefinitions<string> | string): Filter {
+  isEqualTo(value: FieldDefinitions<string> | string): Filter {
     return new Filter(add => {
       // let val = this.__getVal(value);
       // let id = val.split(',');
@@ -97,7 +97,7 @@ export class ValueListValueConverter<T extends ValueListItem> implements ValueCo
   private info = ValueListInfo.get(this.type);
   constructor(private type: ClassType<T>) {
     if (this.info.isNumeric) {
-      this.columnTypeInDb = 'int';
+      this.fieldTypeInDb = 'int';
     }
   }
   fromJson(val: any): T {
@@ -125,7 +125,7 @@ export class ValueListValueConverter<T extends ValueListItem> implements ValueCo
       return '';
     return val.caption;
   }
-  columnTypeInDb?: string;
+  fieldTypeInDb?: string;
   inputType?: string;
   getOptions() {
     return this.info.getOptions();
@@ -188,7 +188,7 @@ export function lookupConverter<T>(type: ClassType<T>) {
 }
 export class LookupColumn<T> {
   setId(val: any) {
-    if (this.repository.defs.idColumn.dataType == Number)
+    if (this.repository.defs.idField.dataType == Number)
       val = +val;
     this.id = val;
   }

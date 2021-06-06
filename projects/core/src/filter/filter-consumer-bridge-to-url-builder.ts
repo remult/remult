@@ -1,6 +1,6 @@
 import { FilterConsumer, Filter } from './filter-interfaces';
 import { AndFilter, OrFilter } from './filter-interfaces';
-import { ColumnDefinitions } from "../column-interfaces";
+import { FieldDefinitions } from "../column-interfaces";
 import { filterHelper } from "../remult3";
 
 
@@ -35,51 +35,51 @@ export class FilterSerializer implements FilterConsumer {
       return f.result;
     }));
   }
-  isNull(col: ColumnDefinitions): void {
+  isNull(col: FieldDefinitions): void {
     this.add(col.key + "_null", true);
   }
-  isNotNull(col: ColumnDefinitions): void {
+  isNotNull(col: FieldDefinitions): void {
     this.add(col.key + "_null", false);
   }
-  isIn(col: ColumnDefinitions, val: any[]): void {
+  isIn(col: FieldDefinitions, val: any[]): void {
     this.add(col.key + "_in", val.map(x => col.valueConverter.toJson(x)));
   }
 
-  public isEqualTo(col: ColumnDefinitions, val: any): void {
+  public isEqualTo(col: FieldDefinitions, val: any): void {
     this.add(col.key, col.valueConverter.toJson(val));
   }
 
-  public isDifferentFrom(col: ColumnDefinitions, val: any): void {
+  public isDifferentFrom(col: FieldDefinitions, val: any): void {
     this.add(col.key + '_ne', col.valueConverter.toJson(val));
   }
 
-  public isGreaterOrEqualTo(col: ColumnDefinitions, val: any): void {
+  public isGreaterOrEqualTo(col: FieldDefinitions, val: any): void {
     this.add(col.key + '_gte', col.valueConverter.toJson(val));
   }
 
-  public isGreaterThan(col: ColumnDefinitions, val: any): void {
+  public isGreaterThan(col: FieldDefinitions, val: any): void {
     this.add(col.key + '_gt', col.valueConverter.toJson(val));
   }
 
-  public isLessOrEqualTo(col: ColumnDefinitions, val: any): void {
+  public isLessOrEqualTo(col: FieldDefinitions, val: any): void {
     this.add(col.key + '_lte', col.valueConverter.toJson(val));
   }
 
-  public isLessThan(col: ColumnDefinitions, val: any): void {
+  public isLessThan(col: FieldDefinitions, val: any): void {
     this.add(col.key + '_lt', col.valueConverter.toJson(val));
   }
-  public containsCaseInsensitive(col: ColumnDefinitions, val: any): void {
+  public containsCaseInsensitive(col: FieldDefinitions, val: any): void {
     this.add(col.key + "_contains", col.valueConverter.toJson(val));
   }
-  public startsWith(col: ColumnDefinitions, val: any): void {
+  public startsWith(col: FieldDefinitions, val: any): void {
     this.add(col.key + "_st", col.valueConverter.toJson(val));
   }
 }
 
-export function unpackWhere(columns: ColumnDefinitions[], packed: any) {
+export function unpackWhere(columns: FieldDefinitions[], packed: any) {
   return extractWhere(columns, { get: (key: string) => packed[key] });
 }
-export function extractWhere(columns: ColumnDefinitions[], filterInfo: {
+export function extractWhere(columns: FieldDefinitions[], filterInfo: {
   get: (key: string) => any;
 }) {
   let where: Filter = undefined;
