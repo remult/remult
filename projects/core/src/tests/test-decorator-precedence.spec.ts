@@ -25,7 +25,7 @@ describe("test where stuff", () => {
 
 
 
-    fitAsync("test basics", async () => {
+    itAsync("test basics", async () => {
         let c = new Context();
         let r = c.for(myEntity);
         expect([...r.defs.columns].length).toBe(3);

@@ -1,5 +1,5 @@
-import { ValueConverter } from "@angular/compiler/src/render3/view/template";
-import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, ColumnSettings, Context, valueOrExpressionToValue } from "@remult/core";
+
+import { ColumnDefinitions, EntityColumn, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, ColumnSettings, Context, ValueConverter } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -385,7 +385,22 @@ export class InputControl<T> implements EntityColumn<T, any> {
   load(): Promise<T> {
     throw new Error("Method not implemented.");
   }
-  defs: ColumnDefinitions;
+  defs: {
+    readonly key: string;
+    readonly target: ClassType<T>;
+    readonly dataType: any;
+
+    caption: string;
+    readonly inputType: string;
+    readonly allowNull: boolean;
+
+
+    readonly isServerExpression: boolean;
+    readonly dbReadOnly: boolean;
+    readonly dbName: string;
+    readonly valueConverter: ValueConverter<T>;
+    readonly evilOriginalSettings: ColumnSettings;
+  };
   _value: T;
   inputType: string;
   error: string;
