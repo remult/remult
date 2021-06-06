@@ -13,7 +13,7 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { ServerContext } from '../../../projects/core';
+import { Filter, filterOf, ServerContext } from '../../../projects/core';
 import { Products } from '../products-test/products';
 
 
@@ -52,13 +52,37 @@ serverInit().then(async (dataSource) => {
     });
     let con = new ServerContext(dataSource);
     let p = await con.for(Products).findFirst();
-   
+
     console.dir(p);
 
     let port = process.env.PORT || 3001;
+
+
+  
+
+
     app.listen(port);
 
 
 });
 
 
+
+
+// let a: hasWhere<theClass> = {
+//     where: x => x.a.isEqualTo(1)
+// }
+// let b: hasWhere<theClass> = {
+//     where: [x => x.a.isEqualTo(2), a.where]
+// }
+// class theClass {
+//     a: number;
+//     b: number;
+// }
+
+// export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]));
+// export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[])) | EntityWhereItem<entityType>[];
+
+// export interface hasWhere<T> {
+//     where: EntityWhere<T>;
+// }

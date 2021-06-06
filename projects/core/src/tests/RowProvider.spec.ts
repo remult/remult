@@ -128,7 +128,7 @@ export async function createData(doInsert?: (insert: (id: number, name: string, 
   return rep;
 }
 
-async function insertFourRows() {
+export async function insertFourRows() {
 
   return createData(async i => {
     await i(1, 'noam', 'x');
