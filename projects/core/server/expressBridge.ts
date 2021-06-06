@@ -1,6 +1,6 @@
 
 
-import { DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity } from '../';
+import { DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, serializeError } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -278,17 +278,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 }
 
-function serializeError(data: DataApiError) {
-  if (data instanceof TypeError) {
-    data = { message: data.message, stack: data.stack };
-  }
-  let x = JSON.parse(JSON.stringify(data));
-  if (!x.message && !x.modelState)
-    data = { message: data.message, stack: data.stack };
-  if (typeof x === 'string')
-    data = { message: x };
-  return data;
-}
+
 
 function throwError() {
   throw "Invalid";

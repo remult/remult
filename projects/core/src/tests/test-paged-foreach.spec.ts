@@ -9,7 +9,7 @@ import { ColumnDefinitions } from '../column-interfaces';
 import { GridSettings } from '../../../angular';
 
 
-describe("test paged foreach ", async () => {
+describe("test paged foreach ",  () => {
     iterateConfig.pageSize = 2;
 
     itAsync("basic foreach with where", async () => {

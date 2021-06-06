@@ -40,7 +40,7 @@ export class ProductsComponent implements OnInit {
         readonly: true,
       }, {
         column: orders.customerID,
-        getValue: (x,y) => this.context.for(Customers).lookupId(y.value).companyName
+        getValue: (x,y) => this.context.for(Customers).lookup(y.value).companyName
       },
       /* columnWithSelectPopupAndGetValue(this.context, orders.customerID, models.Customers,
          {

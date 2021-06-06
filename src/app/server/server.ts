@@ -13,6 +13,9 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
+import { ServerContext } from '../../../projects/core';
+import { Products } from '../products-test/products';
+
 
 
 
@@ -27,7 +30,7 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
     let s = initExpress(app, {
- //       dataProvider:dataSource,
+        //       dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource)
     });
 
@@ -45,12 +48,17 @@ serverInit().then(async (dataSource) => {
         }
         else {
             res.send('No Result' + index);
-
         }
     });
+    let con = new ServerContext(dataSource);
+    let p = await con.for(Products).findFirst();
+   
+    console.dir(p);
 
     let port = process.env.PORT || 3001;
     app.listen(port);
 
 
 });
+
+

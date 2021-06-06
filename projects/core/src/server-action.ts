@@ -15,7 +15,8 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityOf, rowHelperImplementation, getControllerDefs } from './remult3';
+import { getEntityOf, rowHelperImplementation, getControllerDefs, decorateColumnSettings, getEntityOptions } from './remult3';
+import { ColumnSettings } from './column-interfaces';
 
 
 
@@ -92,7 +93,7 @@ export class myServerAction extends Action<inArgs, result>
     constructor(name: string, private types: any[], private options: ServerFunctionOptions, private originalMethod: (args: any[]) => any) {
         super(name, options.queue)
     }
-    
+
     protected async execute(info: inArgs, context: ServerContext, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
         let ds = context._dataSource;
@@ -101,7 +102,7 @@ export class myServerAction extends Action<inArgs, result>
             if (!context.isAllowed(this.options.allowed))
                 throw 'not allowed';
 
-            prepareArgs(this.types, info.args, context, ds, res);
+            info.args = await prepareReceivedArgs(this.types, info.args, context, ds, res);
             try {
                 result.data = await this.originalMethod(info.args);
 
@@ -137,6 +138,7 @@ export function ServerFunction(options: ServerFunctionOptions) {
     return (target: any, key: string, descriptor: any) => {
 
         var originalMethod = descriptor.value;
+
         var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
         // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
@@ -146,16 +148,9 @@ export function ServerFunction(options: ServerFunctionOptions) {
 
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
-                for (const type of [Context, ServerContext, SqlDatabase]) {
-                    for (let index = 0; index < args.length; index++) {
-                        const element = args[index];
-                        if (element instanceof type) {
-                            args[index] = undefined;
-                        }
-                    }
-                }
 
-                args = args.map(x => x !== undefined ? x : customUndefined);
+
+                args = prepareArgsToSend(types, args);
                 if (options.blockUser === false) {
                     return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
                 }
@@ -225,7 +220,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
         x.methods.push(mh);
         var originalMethod = descriptor.value;
         let serverAction = {
-            
+
             __register(reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) {
 
                 let c = new ServerContext();
@@ -247,14 +242,14 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
                         try {
                             let context = req;
-                            
+
                             let ds = context._dataSource;
                             if (!context.isAllowed(allowed))
                                 throw 'not allowed';
                             let r: serverMethodOutArgs;
                             await ds.transaction(async ds => {
                                 context.setDataProvider(ds);
-                                prepareArgs(types, d.args, context, ds, res);
+                                d.args = await prepareReceivedArgs(types, d.args, context, ds, res);
                                 if (allEntities.includes(constructor)) {
                                     let repo = context.for(constructor);
                                     let y: any;
@@ -296,8 +291,9 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 }
                                 else {
                                     let y = new constructor(context, ds);
-                                    let defs = getControllerDefs( y, context);
+                                    let defs = getControllerDefs(y, context);
                                     defs._updateEntityBasedOnApi(d.columns);
+                                    await Promise.all([...defs.columns].map(x => x.load()));
 
                                     await defs.__validateEntity();
                                     try {
@@ -324,7 +320,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
                 let self = this;
-                args = args.map(x => x !== undefined ? x : customUndefined);
+                args = prepareArgsToSend(types, args);
 
                 if (allEntities.includes(target.constructor)) {
                     let defs = getEntityOf(self) as rowHelperImplementation<any>;
@@ -368,7 +364,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                             }
                         }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false).run({
                             args,
-                            columns: defs.toApiPojo()
+                            columns: await defs.toApiPojo()
                         }));
                         defs._updateEntityBasedOnApi(r.columns);
                         return r.result;
@@ -424,12 +420,39 @@ export class ServerProgress {
         this.res.progress(progress);
     }
 }
-function prepareArgs(types: any[], args: any[], context: ServerContext, ds: DataProvider, res: DataApiResponse) {
+export function prepareArgsToSend(types: any[], args: any[]) {
+
+    if (types) {
+        for (let index = 0; index < types.length; index++) {
+            const paramType = types[index];
+            for (const type of [Context, ServerContext, SqlDatabase]) {
+                if (paramType instanceof type) {
+                    args[index] = undefined;
+                }
+            }
+            if (args[index] != undefined) {
+                let x: ColumnSettings = { dataType: paramType };
+                x = decorateColumnSettings(x);
+                if (x.valueConverter)
+                    args[index] = x.valueConverter(undefined).toJson(args[index]);
+                let eo = getEntityOptions(paramType, false);
+                if (eo != null) {
+                    let rh = getEntityOf(args[index]);
+                    args[index] = rh.columns.idColumn.value;
+                }
+            }
+        }
+    }
+    return args.map(x => x !== undefined ? x : customUndefined);
+
+}
+export async function prepareReceivedArgs(types: any[], args: any[], context: ServerContext, ds: DataProvider, res: DataApiResponse) {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
         if (isCustomUndefined(element))
             args[index] = undefined;
     }
+
     if (types)
         for (let i = 0; i < types.length; i++) {
             if (args.length < i) {
@@ -442,6 +465,18 @@ function prepareArgs(types: any[], args: any[], context: ServerContext, ds: Data
                 args[i] = ds;
             } else if (types[i] == ServerProgress) {
                 args[i] = new ServerProgress(res);
+            } else {
+                let x: ColumnSettings = { dataType: types[i] };
+                x = decorateColumnSettings(x);
+                if (x.valueConverter)
+                    args[i] = x.valueConverter(undefined).fromJson(args[i]);
+                let eo = getEntityOptions(types[i], false);
+                if (eo != null) {
+                    args[i] = await context.for(types[i]).getCachedByIdAsync(args[i]);
+                }
+
+
             }
         }
+    return args;
 }

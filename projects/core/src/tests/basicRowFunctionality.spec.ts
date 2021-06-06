@@ -102,18 +102,18 @@ class tableWithPhone extends EntityBase {
   phone: Phone;
 }
 describe("test object column stored as string", () => {
-  itAsync("was changed should work correctly",async () => {
+  itAsync("was changed should work correctly", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
     let repo = context.for(tableWithPhone);
     let r = repo.create();
-    r.id=1;
+    r.id = 1;
     r.phone = new Phone("123");
     await r.save();
     r.phone = new Phone("123");
     expect(r.$.phone.wasChanged()).toBe(false);
     expect(r._.wasChanged()).toBe(false);
 
-    
+
   });
 });
 
@@ -1988,8 +1988,12 @@ describe("check allowedDataType", () => {
   let roleA = new Role(strA);
   let roleB = new Role(strB);
   let roleC = new Role(strC);
-  c.setUser({ id: 'x', name: 'y', roles: [strA, strB] }
-  );
+  beforeAll(async (done) => {
+
+    await c.setUser({ id: 'x', name: 'y', roles: [strA, strB] }
+    );
+    done();
+  });
   it("1", () => {
     expect(c.isAllowed(strA)).toBe(true);
   });

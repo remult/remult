@@ -2,7 +2,7 @@
 import { ColumnDefinitions, ColumnSettings, ValueConverter } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdColumn, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
-import { EntityDefinitions, filterOptions, EntityColumn, EntityColumns, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, EntityBase, ColumnDefinitionsOf, supportsContains } from "./remult3";
+import { EntityDefinitions, filterOptions, EntityColumn, EntityColumns, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, ColumnDefinitionsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
@@ -280,9 +280,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         let x = entity[entityMember];
         if (!x) {
             x = entity[entityMember] = new rowHelperImplementation(this._info, entity, this, this.edp, this.context, true);
-            if (entity instanceof EntityBase) {
-                entity._ = x;
-            }
+
         }
         return x;
     }
@@ -325,8 +323,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         helper.saveOriginalData();
 
         x[entityMember] = helper;
-        if (x instanceof EntityBase)
-            x._ = x[entityMember];
+
         return x;
     }
 
@@ -477,7 +474,22 @@ class rowHelperBase<T>
 {
     error: string;
     constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
+        for (const col of columnsInfo) {
+            let ei = getEntityOptions(col.settings.dataType, false);
 
+            if (ei && context) {
+                let lookup = new LookupColumn(context.for(col.settings.dataType), undefined);
+                this.lookups.set(col.key, lookup);
+                let val = instance[col.key];
+                Object.defineProperty(instance, col.key, {
+                    get: () =>
+                        lookup.item,
+                    set: (val) =>
+                        lookup.set(val),
+                });
+                instance[col.key] = val;
+            }
+        }
     }
     lookups = new Map<string, LookupColumn<any>>();
     async waitLoad() {
@@ -569,6 +581,14 @@ class rowHelperBase<T>
                 let lu = this.lookups.get(col.key);
                 if (lu)
                     val = lu.id;
+                else if (!this.context) {
+                    if (val) {
+                        let eo = getEntityOptions(val.constructor, false);
+                        if (eo) {
+                            val = getEntityOf(val).columns.idColumn.value;
+                        }
+                    }
+                }
                 result[col.key] = col.settings.valueConverter(this.context).toJson(val);
             }
         }
@@ -598,22 +618,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: Repository<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
         super(info.columnsInfo, instance, context);
-        for (const col of info.columnsInfo) {
-            let ei = getEntityOptions(col.settings.dataType, false);
 
-            if (ei) {
-                let lookup = new LookupColumn(context.for(col.settings.dataType), undefined);
-                this.lookups.set(col.key, lookup);
-                let val = instance[col.key];
-                Object.defineProperty(instance, col.key, {
-                    get: () =>
-                        lookup.item,
-                    set: (val) =>
-                        lookup.set(val),
-                });
-                instance[col.key] = val;
-            }
-        }
         if (_isNew) {
             for (const col of info.columnsInfo) {
 
@@ -899,7 +904,7 @@ export class columnImpl<colType, rowType> implements EntityColumn<colType, rowTy
     get inputValue(): string {
         let lu = this.rowBase.lookups.get(this.defs.key);
         if (lu)
-            return lu.id!=undefined ? lu.id.toString() : null;
+            return lu.id != undefined ? lu.id.toString() : null;
         return this.defs.valueConverter.toInput(this.value, this.settings.inputType);
     }
     set inputValue(val: string) {
@@ -1273,4 +1278,12 @@ function checkEntityAllowed(context: Context, x: EntityAllowed<any>, entity: any
     else if (typeof (x) === "function") {
         return x(context, entity)
     } else return context.isAllowed(x as Allowed);
+}
+export class EntityBase {
+    get _(): rowHelper<this> { return getEntityOf(this) }
+    save() { return this._.save(); }
+    delete() { return this._.delete(); }
+    isNew() { return this._.isNew(); }
+    wasChanged() { return this._.wasChanged(); }
+    get $() { return this._.columns }
 }

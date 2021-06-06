@@ -227,3 +227,16 @@ export function determineSort(sortUrlParm: string, dirUrlParam: string) {
   };
 }
 
+
+
+export function serializeError(data: DataApiError) {
+  if (data instanceof TypeError) {
+    data = { message: data.message, stack: data.stack };
+  }
+  let x = JSON.parse(JSON.stringify(data));
+  if (!x.message && !x.modelState)
+    data = { message: data.message, stack: data.stack };
+  if (typeof x === 'string')
+    data = { message: x };
+  return data;
+}

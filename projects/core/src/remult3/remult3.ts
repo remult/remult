@@ -8,6 +8,7 @@ import { RowEvents } from "../__EntityValueProvider";
 
 
 
+
 /*
 ## Should work
 [] when added DataControl decorator for category id - lost caption
@@ -159,7 +160,7 @@ export interface rowHelper<T> {
     toApiPojo(): any;
     register(listener: RowEvents);
     _updateEntityBasedOnApi(body: any);
-    
+
 
 
 }
@@ -203,7 +204,7 @@ export interface EntityColumn<T, entityType = any> {
     rowHelper: rowHelper<entityType>;
     entity: entityType;
     defs: ColumnDefinitions<entityType>;
-    load():Promise<T>;
+    load(): Promise<T>;
 }
 
 export interface EntityDefinitions<T = any> {
@@ -244,18 +245,18 @@ export interface Repository<T> {
 * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
  */
     lookup(filter: EntityWhere<T>): T;
-    
+
     /** returns a single row and caches the result for each future call
   * @example
   * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
   */
     lookupAsync(filter: EntityWhere<T>): Promise<T>;
-    
-    create(item?:Partial<T>): T;
 
-    getCachedById(id:any):T;
-    getCachedByIdAsync(id:any):Promise<T>;
-    addToCache(item:T);
+    create(item?: Partial<T>): T;
+
+    getCachedById(id: any): T;
+    getCachedByIdAsync(id: any): Promise<T>;
+    addToCache(item: T);
 
 
     getRowHelper(item: T): rowHelper<T>;
@@ -334,14 +335,7 @@ export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | Enti
 
 
 
-export class EntityBase {
-    _: rowHelper<this>;
-    save() { return this._.save(); }
-    delete() { return this._.delete(); }
-    isNew() { return this._.isNew(); }
-    wasChanged() { return this._.wasChanged(); }
-    get $() { return this._.columns }
-}
+
 
 export interface filterOptions<x> {
     isEqualTo(val: x): Filter;

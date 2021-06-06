@@ -5,7 +5,7 @@ import { Column, Entity, EntityBase } from '../remult3';
 
 
 
-describe("test server expression value", async () => {
+describe("test server expression value",  () => {
     itAsync("test basics create", async () => {
 
         let c = new ServerContext(new InMemoryDataProvider());
