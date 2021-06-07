@@ -39,7 +39,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] caption - lambda
 [V] storable to field Type
 [V] value list field Type
-[] upgrade to angular 9 and ts 3.7
+[V] upgrade to angular 9 and ts 3.7
 
 
 [V] column to field
@@ -99,7 +99,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] consider a column that is saved to more than one column in the db
 [] included display value and input type also in value converter - ias it is relevant to date only, and also value list
 [] i make errors with the order of the generic parameters, entity, column and vice versa
-[] reconsider all the where stuff - just searh references for AndFilter to see the problem
+[V] reconsider all the where stuff - just searh references for AndFilter to see the problem
 [] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
 [] consider the case when initing context, and cashing rows between requests, you might get a save to a context of a request two hours ago.
 [] make where awaitable
@@ -335,16 +335,12 @@ export interface FindOptions<T> {
  * await this.context.for(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
  */
 export declare type EntityOrderBy<T> = (entity: sortOf<T>) => SortSegment[] | SortSegment;
+
 /**Used to filter the desired result set
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]));
-/**Used to filter the desired result set
- * @example
- * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
- */
-export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
+export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[])) | EntityWhere<entityType>[];
 
 
 
