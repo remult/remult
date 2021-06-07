@@ -5,7 +5,7 @@ import { AndFilter, Filter } from './filter/filter-interfaces';
 import { ColumnValueProvider } from './__EntityValueProvider';
 
 import { ClassType, EntityWhere, FindOptions, Repository } from './remult3';
-import { StoreAsStringValueConverter } from './columns/loaders';
+
 
 
 
@@ -93,99 +93,8 @@ export class CompoundIdField {
 
 
 
-export class ValueListValueConverter<T extends ValueListItem> implements ValueConverter<T>{
-  private info = ValueListInfo.get(this.type);
-  constructor(private type: ClassType<T>) {
-    if (this.info.isNumeric) {
-      this.fieldTypeInDb = 'int';
-    }
-  }
-  fromJson(val: any): T {
-    return this.byId(val);
-  }
-  toJson(val: T) {
-    if (!val)
-      return undefined;
-    return val.id;
-  }
-  fromDb(val: any): T {
-    return this.fromJson(val);
-  }
-  toDb(val: T) {
-    return this.toJson(val);
-  }
-  toInput(val: T, inputType: string): string {
-    return this.toJson(val);
-  }
-  fromInput(val: string, inputType: string): T {
-    return this.fromJson(val);
-  }
-  displayValue?(val: T): string {
-    if (!val)
-      return '';
-    return val.caption;
-  }
-  fieldTypeInDb?: string;
-  inputType?: string;
-  getOptions() {
-    return this.info.getOptions();
-  }
-  byId(key: any) {
-    if (key === undefined)
-      return undefined;
-    if (this.info.isNumeric)
-      key = +key;
-
-    return this.info.byId(key);
-  }
-}
 
 
-
-class ValueListInfo<T extends ValueListItem> {
-  static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
-    let r = typeCache.get(type);
-    if (!r)
-      r = new ValueListInfo(type);
-    typeCache.set(type, r);
-    return r;
-  }
-  private byIdMap = new Map<any, T>();
-  private values: T[] = [];
-  isNumeric = false;
-  private constructor(private valueListType: any) {
-    for (let member in this.valueListType) {
-      let s = this.valueListType[member] as T;
-      if (s instanceof this.valueListType) {
-        if (s.id === undefined)
-          s.id = member;
-        if (s.caption === undefined)
-          s.caption = makeTitle(member);
-        if (typeof s.id === 'number')
-          this.isNumeric = true;
-        this.byIdMap.set(s.id, s);
-        this.values.push(s);
-      }
-    }
-  }
-
-  getOptions() {
-    return this.values;
-  }
-  byId(key: any) {
-    if (this.isNumeric)
-      key = +key;
-    return this.byIdMap.get(key);
-  }
-}
-const typeCache = new Map<any, ValueListInfo<any>>();
-
-export function lookupConverter<T>(type: ClassType<T>) {
-  return (c: Context) => {
-    return new StoreAsStringValueConverter<LookupColumn<T>>(
-      x => x.id.toString(), x => new LookupColumn<T>(c.for(type), x))
-  }
-}
 export class LookupColumn<T> {
   setId(val: any) {
     if (this.repository.defs.idField.dataType == Number)

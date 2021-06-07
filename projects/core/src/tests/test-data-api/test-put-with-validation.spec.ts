@@ -8,7 +8,8 @@ import { Field, Entity, EntityBase } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
-import { ValueListValueConverter } from "../../column";
+import { ValueListValueConverter } from "../../../valueConverters";
+
 
 describe("data api", () => {
     let context = new Context();
@@ -119,10 +120,10 @@ describe("data api", () => {
 
     });
 
-     it("test value list type",()=>{
-         let x = new ValueListValueConverter(Status);
-         expect(x.fieldTypeInDb).toBe("int");
-     });
+    it("test value list type", () => {
+        let x = new ValueListValueConverter(Status);
+        expect(x.fieldTypeInDb).toBe("int");
+    });
 
 });
 
@@ -130,7 +131,7 @@ describe("data api", () => {
     key: undefined,
     allowApiUpdate: true,
     allowApiInsert: true,
-    
+
     saving: (t) => {
         if (t.categoryName.indexOf('1') >= 0)
             t._.fields.categoryName.error = 'invalid'

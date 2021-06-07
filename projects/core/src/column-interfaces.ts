@@ -48,12 +48,12 @@ export interface FieldDefinitions<T = any> {
 
 }
 export interface ValueConverter<T> {
-    fromJson(val: any): T;
-    toJson(val: T): any;
-    fromDb(val: any): T
-    toDb(val: T): any;
-    toInput(val: T, inputType: string): string;
-    fromInput(val: string, inputType: string): T;
+    fromJson?(val: any): T;
+    toJson?(val: T): any;
+    fromDb?(val: any): T
+    toDb?(val: T): any;
+    toInput?(val: T, inputType: string): string;
+    fromInput?(val: string, inputType: string): T;
     displayValue?(val: T): string;
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;

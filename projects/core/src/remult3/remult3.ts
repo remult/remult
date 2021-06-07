@@ -55,7 +55,7 @@ import { RowEvents } from "../__EntityValueProvider";
 
 ## TODO
 
-[] "test object column"
+[V] "test object column"
 [] review repository api - and consider moving stuff to defs
 [V] fix extends to be smarter
 [V] "order by api"

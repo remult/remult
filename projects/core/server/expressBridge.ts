@@ -10,7 +10,7 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 import { Field, Entity, Repository, DecimalField } from '../src/remult3';
-import { DecimalValueConverter } from '../src/columns/loaders';
+import { DecimalValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';

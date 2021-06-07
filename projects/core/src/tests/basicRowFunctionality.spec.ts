@@ -1,7 +1,7 @@
 
 
 import { createData, testAllDbs } from './RowProvider.spec';
-import { DataApi,  DataApiResponse } from '../data-api';
+import { DataApi, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './testHelper.spec';
@@ -22,7 +22,7 @@ import { OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories } from './remult-3-entities';
 
 import { Field, CompoundId, decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
-import { DateOnlyValueConverter, StoreAsStringValueConverter } from '../columns/loaders';
+import { DateOnlyValueConverter } from '../../valueConverters';
 
 
 
@@ -89,7 +89,12 @@ export class TestDataApiResponse implements DataApiResponse {
 
 }
 
-@FieldType<Phone>({ valueConverter:  new StoreAsStringValueConverter(x => x.thePhone, x => new Phone(x)) })
+@FieldType<Phone>({
+  valueConverter: {
+    toJson: x => x.thePhone,
+    fromJson: x => new Phone(x)
+  }
+})
 class Phone {
   constructor(private thePhone) {
 

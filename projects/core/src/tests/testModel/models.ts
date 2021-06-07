@@ -1,4 +1,4 @@
-import { ValueListValueConverter } from "../../column";
+
 import { FieldType as FieldType, ValueListFieldType } from "../../remult3";
 
 @ValueListFieldType(Status)

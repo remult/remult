@@ -4,7 +4,7 @@ import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-pro
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Allowed, Context, ServerContext } from '../context';
-import { OneToMany, ValueListValueConverter as ValueListValueConverter } from '../column';
+import { OneToMany } from '../column';
 import { FilterHelper } from '../../../angular/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
@@ -16,7 +16,7 @@ import { Categories, Categories as newCategories, CategoriesForTesting } from '.
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
-import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter } from '../columns/loaders';
+import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
 import { EntitySettings } from '../entity';
 import { async } from '@angular/core/testing';
 

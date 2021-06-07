@@ -2,13 +2,8 @@ import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
-
-
-
-
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase } from '../remult3';
-import { JsonValueLoader, StoreAsStringValueConverter } from '../columns/loaders';
 
 
 describe("test object column", () => {
@@ -67,9 +62,7 @@ describe("test object column", () => {
 class ObjectColumnTest extends EntityBase {
     @Field()
     id: number;
-    @Field({
-        valueConverter:  new JsonValueLoader()
-    })
+    @Field()
     col: person;
 }
 

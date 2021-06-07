@@ -1,5 +1,6 @@
-import { ValueConverter } from "../column-interfaces";
-import { InputTypes } from "../remult3";
+import { makeTitle } from "./src/column";
+import { ValueConverter, ValueListItem } from "./src/column-interfaces";
+import { ClassType, InputTypes } from "./src/remult3";
 
 
 
@@ -146,70 +147,95 @@ export const DecimalValueConverter: ValueConverter<Number> =
 export const DefaultValueConverter: ValueConverter<any> = {
     fromJson: x => x,
     toJson: x => x,
-    fromDb: x => DefaultValueConverter.fromJson(x),
-    toDb: x => DefaultValueConverter.toJson(x),
+    fromDb: x => x != undefined ? JSON.parse(DefaultValueConverter.fromJson(x)) : undefined,
+    toDb: x => x != undefined ? JSON.stringify(DefaultValueConverter.toJson(x)) : undefined,
     fromInput: x => DefaultValueConverter.fromJson(x),
     toInput: x => DefaultValueConverter.toJson(x)
 }
-export class StoreAsStringValueConverter<T> implements ValueConverter<T>{
-    constructor(public _toJson: (x: T) => string, public _fromJson: (x: string) => T) {
-
+export class ValueListValueConverter<T extends ValueListItem> implements ValueConverter<T>{
+    private info = ValueListInfo.get(this.type);
+    constructor(private type: ClassType<T>) {
+      if (this.info.isNumeric) {
+        this.fieldTypeInDb = 'int';
+      }
     }
     fromJson(val: any): T {
-        return this._fromJson(val);
+      return this.byId(val);
     }
     toJson(val: T) {
-        if (val === undefined)
-            return undefined;
-        return this._toJson(val);
+      if (!val)
+        return undefined;
+      return val.id;
     }
     fromDb(val: any): T {
-        return this.fromJson(val);
+      return this.fromJson(val);
     }
     toDb(val: T) {
-        return this.toJson(val);
+      return this.toJson(val);
     }
     toInput(val: T, inputType: string): string {
-        return this.toJson(val);
+      return this.toJson(val);
     }
     fromInput(val: string, inputType: string): T {
-        return this.fromJson(val);
+      return this.fromJson(val);
     }
     displayValue?(val: T): string {
-        return this.toJson(val);
+      if (!val)
+        return '';
+      return val.caption;
     }
     fieldTypeInDb?: string;
     inputType?: string;
-
-}
-export class JsonValueLoader<T> implements ValueConverter<T>{
-
-    fromJson(val: any): T {
-        return val;
+    getOptions() {
+      return this.info.getOptions();
     }
-    toJson(val: T) {
-        return val;
-    }
-    fromDb(val: any): T {
-        if (val !== undefined)
-            return JSON.parse(val);
+    byId(key: any) {
+      if (key === undefined)
         return undefined;
+      if (this.info.isNumeric)
+        key = +key;
+  
+      return this.info.byId(key);
     }
-    toDb(val: T) {
-        if (val !== undefined)
-            return JSON.stringify(val);
-        return undefined;
+  }
+  
+  
+  
+  class ValueListInfo<T extends ValueListItem> {
+    static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
+      let r = typeCache.get(type);
+      if (!r)
+        r = new ValueListInfo(type);
+      typeCache.set(type, r);
+      return r;
     }
-    toInput(val: T, inputType: string): string {
-        return this.toDb(val);
+    private byIdMap = new Map<any, T>();
+    private values: T[] = [];
+    isNumeric = false;
+    private constructor(private valueListType: any) {
+      for (let member in this.valueListType) {
+        let s = this.valueListType[member] as T;
+        if (s instanceof this.valueListType) {
+          if (s.id === undefined)
+            s.id = member;
+          if (s.caption === undefined)
+            s.caption = makeTitle(member);
+          if (typeof s.id === 'number')
+            this.isNumeric = true;
+          this.byIdMap.set(s.id, s);
+          this.values.push(s);
+        }
+      }
     }
-    fromInput(val: string, inputType: string): T {
-        return this.fromDb(val);
+  
+    getOptions() {
+      return this.values;
     }
-    displayValue?(val: T): string {
-        return this.toDb(val);
+    byId(key: any) {
+      if (this.isNumeric)
+        key = +key;
+      return this.byIdMap.get(key);
     }
-    fieldTypeInDb?: string;
-    inputType?: string;
-
-}
+  }
+  const typeCache = new Map<any, ValueListInfo<any>>();
+  

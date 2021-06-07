@@ -1,7 +1,7 @@
 
 import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntitySettings } from "../entity";
-import { CompoundIdField, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
+import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityDefinitions, filterOptions, EntityField, EntityFields, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, FieldDefinitionsOf, supportsContains } from "./remult3";
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
@@ -11,7 +11,7 @@ import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
 import { RowEvents } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter } from "../columns/loaders";
+import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter, ValueListValueConverter } from "../../valueConverters";
 
 
 export class RepositoryImplementation<T> implements Repository<T>{
@@ -95,7 +95,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (item)
             this.idCache.set(this.getRowHelper(item).fields.idField.value, item);
     }
-    fromPojo(x: any):T {
+    fromPojo(x: any): T {
         throw new Error("Method not implemented.");
     }
 
@@ -122,7 +122,12 @@ export class RepositoryImplementation<T> implements Repository<T>{
             allowInsert: (e) => checkEntityAllowed(this.context, options.allowApiInsert, e),
             requireId: this.context.isAllowed(options.apiRequireId),
             get: {
-                where: options.apiDataFilter
+                where: x => {
+                    if (options.apiDataFilter) {
+                        return options.apiDataFilter(x, this.context);
+                    }
+                    return undefined;
+                }
             }
         }
     }
@@ -1220,6 +1225,15 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     if (!settings.caption && settings.key) {
         settings.caption = makeTitle(settings.key);
     }
+    if (settings.dataType == String) {
+        let x = settings as unknown as FieldSettings<String>;
+        if (!settings.valueConverter)
+            x.valueConverter = {
+                toJson: x => x,
+                fromJson: x => x
+            };
+    }
+
     if (settings.dataType == Number) {
         let x = settings as unknown as FieldSettings<Number>;
         if (!settings.valueConverter)
@@ -1240,6 +1254,24 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     }
     if (!settings.valueConverter) {
         settings.valueConverter = DefaultValueConverter;
+    }
+    if (!settings.valueConverter.toJson) {
+        settings.valueConverter.toJson = x => x;
+    }
+    if (!settings.valueConverter.fromJson) {
+        settings.valueConverter.fromJson = x => x;
+    }
+    if (!settings.valueConverter.toDb) {
+        settings.valueConverter.toDb = x => settings.valueConverter.toJson(x);
+    }
+    if (!settings.valueConverter.fromDb) {
+        settings.valueConverter.fromDb = x => settings.valueConverter.fromJson(x);
+    }
+    if (!settings.valueConverter.toInput) {
+        settings.valueConverter.toInput = x => settings.valueConverter.toJson(x);
+    }
+    if (!settings.valueConverter.fromInput) {
+        settings.valueConverter.fromInput = x => settings.valueConverter.fromJson(x);
     }
 
 
