@@ -122,7 +122,7 @@ export function hello(_options: Schema): Rule {
       json.scripts.start = "node dist/server/server/";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["@remult/core"] = "^2.5.4";
+      json.dependencies["@remult/core"] = "^3.0.10";
       json.dependencies["@remult/server-postgres"] = "^2.5.4";
 
       json.dependencies["pg"] = "^8.3.0";

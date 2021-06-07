@@ -827,7 +827,7 @@ export function getControllerDefs<T>(controller: T, context?: Context): controll
 }
 
 export interface controllerDefs<T = any> {
-    readonly columns: EntityFields<T>,
+    readonly fields: EntityFields<T>,
 }
 export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements controllerDefs<T> {
     constructor(columnsInfo: columnInfo[], instance: any, context: Context) {
@@ -845,12 +845,12 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
             _items.push(r[col.key] = new columnImpl<any, any>(settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
         }
 
-        this.columns = r as unknown as EntityFields<T>;
+        this.fields = r as unknown as EntityFields<T>;
 
 
     }
     async __performColumnAndEntityValidations() {
-        for (const col of this.columns) {
+        for (const col of this.fields) {
             if (col instanceof columnImpl) {
                 await col.__performValidation();
             }
@@ -858,7 +858,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
     }
     errors: { [key: string]: string; };
     originalValues: any;
-    columns: EntityFields<T>;
+    fields: EntityFields<T>;
 
 }
 export class columnImpl<colType, rowType> implements EntityField<colType, rowType> {

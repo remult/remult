@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
   }
 
   async signIn() {
-    let user = new InputField<string>('', { caption: "User Name" });
+    let user = new InputField<string>({ caption: "User Name" });
     let password = new PasswordControl();
     openDialog(InputAreaComponent, i => i.args = {
       title: "Sign In",

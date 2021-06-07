@@ -190,7 +190,7 @@ describe("test Server Controller basics", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on client");
-            expect(getControllerDefs(x).columns.a.error).toBe("error on client");
+            expect(getControllerDefs(x).fields.a.error).toBe("error on client");
         }
         expect(happened).toBe(false);
 
@@ -207,7 +207,7 @@ describe("test Server Controller basics", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on server");
-            expect(getControllerDefs(x).columns.a.error).toBe("error on server");
+            expect(getControllerDefs(x).fields.a.error).toBe("error on server");
         }
         expect(happened).toBe(false);
 

@@ -27,16 +27,20 @@ import {
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
+    
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
+    
     let s = initExpress(app, {
         //       dataProvider:dataSource,
-        queueStorage: await preparePostgresQueueStorage(dataSource)
+        queueStorage: await preparePostgresQueueStorage(dataSource),
+        
     });
+    console.log('123');
 
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {

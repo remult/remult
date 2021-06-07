@@ -1,5 +1,5 @@
-import { ServerContext, DataProvider, EntityDataProvider, Entity,  SqlDatabase, SqlCommand, SqlResult,  SqlImplementation, EntityDefinitions,  FieldDefinitions } from '../';
-import {  ExpressBridge } from '../server';
+import { ServerContext, DataProvider, EntityDataProvider, Entity, SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityDefinitions, FieldDefinitions } from '../';
+import { ExpressBridge } from '../server';
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
@@ -115,7 +115,7 @@ export class PostgresSchemaBuilder {
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of e.fields) {
-                    if (!x.dbReadOnly&&!x.isServerExpression) {
+                    if (!x.dbReadOnly && !x.isServerExpression) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
@@ -165,7 +165,7 @@ export class PostgresSchemaBuilder {
     }
 
     async addColumnIfNotExist<T extends EntityDefinitions>(e: T, c: ((e: T) => FieldDefinitions)) {
-        if (c(e).dbReadOnly||c(e).isServerExpression)
+        if (c(e).dbReadOnly || c(e).isServerExpression)
             return;
         try {
             let cmd = this.pool.createCommand();
@@ -194,7 +194,7 @@ export class PostgresSchemaBuilder {
         WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
             for (const col of e.fields) {
-                if (!col.dbReadOnly&&!col.isServerExpression)
+                if (!col.dbReadOnly && !col.isServerExpression)
                     if (!cols.includes(col.dbName.toLocaleLowerCase())) {
                         let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(col)}`;
                         console.log(sql);
@@ -216,8 +216,10 @@ export class PostgresSchemaBuilder {
 }
 
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
+
     let c = new ServerContext(sql);
     {
+
         let e = c.for(JobsInQueueEntity);
         await new PostgresSchemaBuilder(sql).createIfNotExist(e.defs);
         await new PostgresSchemaBuilder(sql).verifyAllColumns(e.defs);

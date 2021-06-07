@@ -20,7 +20,7 @@ describe("remult angular", () => {
         let dc = new DataControl2Component();
         let c = new classWithColumn();
         c.a = '1';
-        dc.field = c._.columns.a;
+        dc.field = c._.fields.a;
         dc.click();
         expect(classWithColumn.click.a).toBe('1');
     });

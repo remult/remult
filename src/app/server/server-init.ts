@@ -36,7 +36,9 @@ export async function serverInit() {
         ssl: ssl
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
-    //   await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
+    console.log("123");
+       await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
+       console.log("123");
 
     return r;
 

@@ -1,5 +1,5 @@
 
-import { IdEntity, ColumnSettings, ServerMethod, Filter, InputTypes, Entity, Column, Validators } from "@remult/core";
+import { IdEntity, FieldSettings, ServerMethod, Filter, InputTypes, Entity, Field, Validators } from "@remult/core";
 import { Context, } from '@remult/core';
 import { Roles } from './roles';
 import { InputField } from "@remult/angular";
@@ -30,18 +30,18 @@ import { InputField } from "@remult/angular";
     }
 })
 export class Users extends IdEntity {
-    @Column({
+    @Field({
         validate: [Validators.required, Validators.unique]
     })
     name: string = '';
-    @Column({ includeInApi: false })
+    @Field({ includeInApi: false })
     password: string = '';
-    @Column({
+    @Field({
         allowApiUpdate: false
     })
     createDate: Date = new Date();
 
-    @Column({
+    @Field({
         allowApiUpdate: Roles.admin
     })
     admin: Boolean = false;
@@ -72,7 +72,7 @@ export class Users extends IdEntity {
 }
 export class PasswordControl extends InputField<string>
 {
-    constructor(settings?: ColumnSettings) {
-        InputField({ ...settings, caption: 'password', inputType: InputTypes.password });
+    constructor(settings?: FieldSettings) {
+        super({ ...settings, caption: 'password', inputType: InputTypes.password });
     }
 }

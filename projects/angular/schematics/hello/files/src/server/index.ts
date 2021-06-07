@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { DataProvider, SqlDatabase } from '@remult/core';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
+import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/core/postgres';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
 import * as compression from 'compression';

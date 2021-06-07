@@ -292,7 +292,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                     let y = new constructor(context, ds);
                                     let defs = getControllerDefs(y, context);
                                     defs._updateEntityBasedOnApi(d.columns);
-                                    await Promise.all([...defs.columns].map(x => x.load()));
+                                    await Promise.all([...defs.fields].map(x => x.load()));
 
                                     await defs.__validateEntity();
                                     try {
