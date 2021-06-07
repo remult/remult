@@ -1,5 +1,5 @@
 
-import {  FieldDefinitions } from "../column-interfaces";
+import { FieldDefinitions } from "../column-interfaces";
 import { IterateToArrayOptions } from "../context";
 import { EntitySettings } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
@@ -233,7 +233,7 @@ export interface EntityDefinitions<T = any> {
 
 }
 export interface Repository<T> {
-    fromPojo(x: any): any;
+    fromPojo(x: any): T;
 
     defs: EntityDefinitions<T>;
 

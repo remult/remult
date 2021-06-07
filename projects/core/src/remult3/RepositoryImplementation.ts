@@ -95,7 +95,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (item)
             this.idCache.set(this.getRowHelper(item).fields.idField.value, item);
     }
-    fromPojo(x: any) {
+    fromPojo(x: any):T {
         throw new Error("Method not implemented.");
     }
 

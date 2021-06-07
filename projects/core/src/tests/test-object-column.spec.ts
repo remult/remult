@@ -50,7 +50,9 @@ describe("test object column", () => {
             lastName: 'honig'
         }
         await x.save();
-        x = await context.for(ObjectColumnTest).findFirst();
+        console.log(mem.rows);
+        x = await c.for(ObjectColumnTest).findFirst();
+        console.log(x);
         expect(x.col.firstName).toBe('noam');
         expect(mem.rows[x._.repository.defs.key][0].col).toEqual({
             firstName: 'noam',
