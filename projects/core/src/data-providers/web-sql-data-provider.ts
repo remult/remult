@@ -77,7 +77,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 x.valueConverter.fieldTypeInDb + ' default 0 not null';
         }
         else
-            result += " text default '' not null ";
+            result += " text" + (x.allowNull ? " " : " default '' not null ");
         return result;
     }
 

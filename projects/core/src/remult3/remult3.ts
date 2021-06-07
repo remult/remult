@@ -169,6 +169,7 @@ export interface rowHelper<T> {
 
     repository: Repository<T>;
     error: string;
+    setValues(item?: Partial<T>);
 
     toApiPojo(): any;
     register(listener: RowEvents);

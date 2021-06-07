@@ -214,7 +214,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       } if (x.dbReadOnly||x.isServerExpression) { }
       else {
         let v = x.valueConverter.toDb(data[x.key]);
-        if (v != undefined) {
+        if (v !== undefined) {
           if (!added)
             added = true;
           else

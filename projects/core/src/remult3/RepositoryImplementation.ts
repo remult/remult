@@ -340,9 +340,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     create(item?: Partial<T>): T {
         let r = new this.entity(this.context);
+        let z = this.getRowHelper(r);
         if (item)
             Object.assign(r, item);
-        let z = this.getRowHelper(r);
 
         return r;
     }
@@ -631,6 +631,11 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         }
     }
 
+    setValues(item?: Partial<T>): T {
+        if (item)
+            Object.assign(this.instance, item);
+        return this.instance;
+    }
     private _wasDeleted = false;
 
     listeners: RowEvents[];
@@ -1353,4 +1358,5 @@ export class EntityBase {
     isNew() { return this._.isNew(); }
     wasChanged() { return this._.wasChanged(); }
     get $() { return this._.fields }
+    setValues(item?: Partial<this>) { return this._.setValues(item); }
 }
