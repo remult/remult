@@ -9,7 +9,7 @@ import { FilterHelper } from '../../../angular/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { ColumnCollection, DataAreaSettings, DataControlSettings, extend, getValueList, GridSettings, InputControl, __getDataControlSettings } from '../../../angular';
+import { FieldCollection, DataAreaSettings, DataControlSettings, extend, getValueList, GridSettings, InputField, __getDataControlSettings } from '../../../angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
@@ -920,8 +920,8 @@ describe("test row provider", () => {
         await insert(2, 'yael');
       });
       let c1 = c.create();
-      let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
-      let cs = { column: c1._.fields.id.defs, valueList: getValueList(c) } as DataControlSettings<newCategories>
+      let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
+      let cs = { field: c1._.fields.id.defs, valueList: getValueList(c) } as DataControlSettings<newCategories>
       await cc.add(cs);
 
       let xx = cs.valueList as ValueListItem[];
@@ -1007,7 +1007,7 @@ describe("api test", () => {
 
     let gs = new GridSettings(ctx.for(newCategories));
     gs.addArea({
-      columnSettings: x => [
+      fields: x => [
         x.categoryName,
         [x.categoryName, x.categoryName]]
     });
@@ -1034,10 +1034,10 @@ describe("column collection", () => {
       let c = ctx.for(type);
 
 
-      var cc = new ColumnCollection(() => c, () => false, undefined, () => true, () => undefined);
+      var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
       await cc.add(c.defs.fields.categoryName);
       expect(cc.items[0] === c.defs.fields.categoryName).toBe(false);
-      expect(cc.items[0] === cc.items[0].column).toBe(false);
+      expect(cc.items[0] === cc.items[0].field).toBe(false);
       expect(cc.items[0].caption == c.defs.fields.categoryName.caption).toBe(true);
       expect(cc.items[0].readOnly).toBe(true);
 
@@ -1046,10 +1046,10 @@ describe("column collection", () => {
   if (false)
     itAsync("works ok with filter", async () => {
       let c = ctx.for(newCategories);
-      var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
+      var cc = new FieldCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
       await cc.add(c.defs.fields.id);
-      cc.filterHelper.filterColumn(cc.items[0].column, false, false);
-      expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
+      cc.filterHelper.filterColumn(cc.items[0].field, false, false);
+      expect(cc.filterHelper.isFiltered(cc.items[0].field)).toBe(true);
 
     });
 });
@@ -1208,11 +1208,11 @@ describe("order by api", () => {
 });
 describe("test area", () => {
   it("works without entity", () => {
-    let n = new InputControl<number>({
+    let n = new InputField<number>({
       dataType: Number
     });
     n.value = 5;
-    let area = new DataAreaSettings({ columnSettings: () => [n] });
+    let area = new DataAreaSettings({ fields: () => [n] });
     expect(area.columns.items.length).toBe(1);
     expect(area.columns.__showArea()).toBe(true);
     expect(area.columns.getNonGridColumns().length).toBe(1);
@@ -1308,7 +1308,7 @@ describe("Test char date storage", () => {
 
 describe("value list column without id and caption", () => {
   it("works with automatic id", () => {
-    let col = new InputControl<TestStatus>({
+    let col = new InputField<TestStatus>({
       valueConverter: new ValueListValueConverter(TestStatus),
       defaultValue: () => TestStatus.open
     });

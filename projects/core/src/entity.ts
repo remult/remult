@@ -1,7 +1,7 @@
-import {  Allowed, Context, EntityAllowed } from "./context";
+import { Allowed, Context, EntityAllowed } from "./context";
 
 import { FieldDefinitions } from './column-interfaces';
-import {  EntityOrderBy, EntityWhereItem, ClassType,  FieldDefinitionsOf, filterOf } from "./remult3";
+import { EntityOrderBy, EntityWhereItem, ClassType, FieldDefinitionsOf, filterOf } from "./remult3";
 import { Filter } from "./filter/filter-interfaces";
 
 
@@ -9,7 +9,7 @@ import { Filter } from "./filter/filter-interfaces";
 export interface EntitySettings<T = any> {
 
   id?: (entity: FieldDefinitionsOf<T>) => FieldDefinitions,
-  
+
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
  */
@@ -22,10 +22,10 @@ export interface EntitySettings<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: FieldDefinitionsOf<T>,context:Context) => string);
+  dbName?: string | ((entity: FieldDefinitionsOf<T>, context: Context) => string);
   /**A human readable name for the entity */
-  caption?: string;
-  includeInApi?:boolean;
+  caption?: string | ((context: Context) => string);
+  includeInApi?: boolean;
   /**
    * Determines if this Entity is available for get requests using Rest Api 
    * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
@@ -46,7 +46,7 @@ export interface EntitySettings<T = any> {
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */
-  apiDataFilter?: ((entityType: filterOf<T>,context:Context) => (Filter | Filter[]));
+  apiDataFilter?: ((entityType: filterOf<T>, context: Context) => (Filter | Filter[]));
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example

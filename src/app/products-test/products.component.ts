@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Context,   Field, getControllerDefs,  Entity, EntityBase, DateOnlyValueConverter } from '@remult/core';
 
 import { Products } from './products';
-import { DialogConfig, getValueList, GridSettings, InputControl, openDialog } from '@remult/angular';
+import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
 import { DataAreaSettings, DataControl } from '@remult/angular';
 import { DateOnlyField } from '../../../projects/core/src/remult3';
 
@@ -36,11 +36,11 @@ export class ProductsComponent implements OnInit {
         getValue: () => 1 + 1
       },
       {
-        column: orders.id,
+        field: orders.id,
         width: '90px',
         readonly: true,
       }, {
-        column: orders.customerID,
+        field: orders.customerID,
         getValue: (x,y) => this.context.for(Customers).lookup(y.value).companyName
       },
       /* columnWithSelectPopupAndGetValue(this.context, orders.customerID, models.Customers,
@@ -48,11 +48,11 @@ export class ProductsComponent implements OnInit {
            width: '300px'
          }),*/
       {
-        column: orders.orderDate,
+        field: orders.orderDate,
         width: '170px'
       },
       {
-        column: orders.shipVia,
+        field: orders.shipVia,
         width: '150px',
         valueList: getValueList(this.context.for(Products)),
       },

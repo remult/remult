@@ -1,10 +1,6 @@
 /*
  * Public API Surface of @remult/core
  */
-
-
-
-
 export {
     ClassType,
     Field,
@@ -22,19 +18,22 @@ export {
     IteratableResult,
     IterateOptions,
     Repository,
-    FieldType as Storable,
+    FieldType,
     comparableFilterItem,
     controllerDefs,
     filterOf,
     filterOptions,
     getControllerDefs,
     getEntityOf,
-    getEntityOptions,
+    getEntitySettings,
     rowHelper,
     sortOf,
-    supportsContains
+    supportsContains,
+    ValueListFieldType,
+    DateOnlyField,
+    DecimalField
 } from './src/remult3';
-export { EntitySettings  } from './src/entity';
+export { EntitySettings } from './src/entity';
 export {
     DataProvider,
     EntityDataProvider,

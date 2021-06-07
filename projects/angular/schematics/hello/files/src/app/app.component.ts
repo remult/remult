@@ -5,7 +5,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { Context, InputTypes, ServerFunction, UserInfo } from '@remult/core';
 
 import { DialogService } from './common/dialog';
-import { InputControl, openDialog, RouteHelperService } from '@remult/angular';
+import { InputField, openDialog, RouteHelperService } from '@remult/angular';
 import { PasswordControl, Users } from './users/users';
 import { Roles } from './users/roles';
 import { InputAreaComponent } from './common/input-area/input-area.component';
@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
   }
 
   async signIn() {
-    let user = new InputControl<string>('', { caption: "User Name" });
+    let user = new InputField<string>('', { caption: "User Name" });
     let password = new PasswordControl();
     openDialog(InputAreaComponent, i => i.args = {
       title: "Sign In",

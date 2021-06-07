@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityOf, rowHelperImplementation, getControllerDefs, decorateColumnSettings, getEntityOptions } from './remult3';
+import { getEntityOf, rowHelperImplementation, getControllerDefs, decorateColumnSettings, getEntitySettings } from './remult3';
 import { FieldSettings } from './column-interfaces';
 
 
@@ -434,7 +434,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
                 x = decorateColumnSettings(x);
                 if (x.valueConverter)
                     args[index] = x.valueConverter.toJson(args[index]);
-                let eo = getEntityOptions(paramType, false);
+                let eo = getEntitySettings(paramType, false);
                 if (eo != null) {
                     let rh = getEntityOf(args[index]);
                     args[index] = rh.fields.idField.value;
@@ -469,7 +469,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Se
                 x = decorateColumnSettings(x);
                 if (x.valueConverter)
                     args[i] = x.valueConverter.fromJson(args[i]);
-                let eo = getEntityOptions(types[i], false);
+                let eo = getEntitySettings(types[i], false);
                 if (eo != null) {
                     args[i] = await context.for(types[i]).getCachedByIdAsync(args[i]);
                 }

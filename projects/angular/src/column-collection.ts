@@ -1,13 +1,13 @@
 
 import {  FieldDefinitions,  EntityField, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed,  FieldSettings, Context, ValueConverter } from "@remult/core";
 
-import { DataControlInfo, DataControlSettings, decorateDataSettings, getColumnDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
+import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings } from '@remult/core/src/remult3';
 
 
 
-export class ColumnCollection<rowType = any> {
+export class FieldCollection<rowType = any> {
 
   constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: FieldDefinitions) => EntityField<any, any>) {
 
@@ -20,9 +20,9 @@ export class ColumnCollection<rowType = any> {
   __getColumn(map: DataControlSettings, record: any) {
     let result: EntityField<any, any>;
     if (record)
-      result = getEntityOf(record).fields.find(getColumnDefinition(map.column));
+      result = getEntityOf(record).fields.find(getFieldDefinition(map.field));
     if (!result)
-      result = map.column as unknown as EntityField<any, any>;
+      result = map.field as unknown as EntityField<any, any>;
     return result;
   }
 
@@ -46,11 +46,11 @@ export class ColumnCollection<rowType = any> {
   getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityField<any, any>, row: any) => T) {
     let column: EntityField<any, any>;
     let row = args.row;
-    if (this._getRowColumn && args.col.column && row) {
-      column = this._getRowColumn(row, getColumnDefinition(args.col.column));
+    if (this._getRowColumn && args.col.field && row) {
+      column = this._getRowColumn(row, getFieldDefinition(args.col.field));
     }
     if (!column)
-      column = args.col.column as unknown as EntityField<any, any>;
+      column = args.col.field as unknown as EntityField<any, any>;
     if (!row)
       row = column.entity;
     return what(column, row);
@@ -80,14 +80,14 @@ export class ColumnCollection<rowType = any> {
       let x = c as DataControlSettings<rowType>;
       let col = c as FieldDefinitions;
       let ecol = c as EntityField<any, any>;
-      if (!x.column && col.valueConverter || ecol.defs) {
+      if (!x.field && col.valueConverter || ecol.defs) {
         x = {
-          column: c,
+          field: c,
         }
 
       }
-      if (x.column) {
-        decorateDataSettings(x.column, x);
+      if (x.field) {
+        decorateDataSettings(x.field, x);
       }
 
       if (x.getValue) {
@@ -174,11 +174,11 @@ export class ColumnCollection<rowType = any> {
     let forceEqual = col.forceEqualFilter;
     if (forceEqual === undefined)
       forceEqual = (col.valueList != undefined)
-    this.filterHelper.filterColumn(col.column, false, forceEqual);
+    this.filterHelper.filterColumn(col.field, false, forceEqual);
   }
   clearFilter(col: DataControlSettings) {
 
-    this.filterHelper.filterColumn(col.column, true, false);
+    this.filterHelper.filterColumn(col.field, true, false);
   }
   _shouldShowFilterDialog(col: DataControlSettings) {
     return false;
@@ -197,7 +197,7 @@ export class ColumnCollection<rowType = any> {
   _getEditable(col: DataControlSettings, row: rowType) {
     if (!this.allowUpdate())
       return false;
-    if (!col.column)
+    if (!col.field)
       return false
     if (col.readOnly !== undefined)
       return !valueOrEntityExpressionToValue(col.readOnly, row);
@@ -218,7 +218,7 @@ export class ColumnCollection<rowType = any> {
 
 
     }
-    else if (col.column) {
+    else if (col.field) {
       if (col.valueList) {
         for (let x of (col.valueList as ValueListItem[])) {
           if (x.id == this.__getColumn(col, row).value)
@@ -249,7 +249,7 @@ export class ColumnCollection<rowType = any> {
   }
 
   _getError(col: DataControlSettings, r: any) {
-    if (!col.column)
+    if (!col.field)
       return undefined;
     return this.__getColumn(col, r).error;
   }
@@ -327,7 +327,7 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 }
 
 
-export class InputControl<T> implements EntityField<T, any> {
+export class InputField<T> implements EntityField<T, any> {
   private settings: FieldSettings;
   private dataControl: DataControlSettings;
   constructor(

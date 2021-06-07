@@ -2,7 +2,7 @@
 import { AndFilter, Filter } from '@remult/core';
 import { comparableFilterItem,  EntityField, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "@remult/core";
 import {  FieldDefinitions } from "@remult/core";
-import { getColumnDefinition } from '..';
+import { getFieldDefinition } from '..';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
@@ -13,10 +13,10 @@ export class FilterHelper<rowType> {
   }
   isFiltered(columnInput: FieldDefinitions | EntityField<any, any>) {
 
-    return this.filterColumns.indexOf(getColumnDefinition(columnInput)) >= 0;
+    return this.filterColumns.indexOf(getFieldDefinition(columnInput)) >= 0;
   }
   filterColumn(columnInput: FieldDefinitions | EntityField<any, any>, clearFilter: boolean, forceEqual: boolean) {
-    let column = getColumnDefinition(columnInput);
+    let column = getFieldDefinition(columnInput);
     if (!column)
       return;
     if (clearFilter) {

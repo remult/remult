@@ -1,7 +1,7 @@
 import { AndFilter,  FieldDefinitions,   Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
 import { DataList } from "./angular/dataList";
 
-import { ColumnCollection } from "./column-collection";
+import { FieldCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -18,7 +18,7 @@ export class GridSettings<rowType>  {
       this.filterHelper.filterRow = <rowType>repository.create();
     }
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b))
+    this.columns = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b))
 
     this.restList._rowReplacedListeners.push((old, curr) => {
       if (old == this.currentRow)
@@ -159,7 +159,7 @@ export class GridSettings<rowType>  {
   noam: string;
 
   addArea(settings: IDataAreaSettings<rowType>) {
-    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b));
+    let col = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b));
     col.numOfColumnsInGrid = 0;
 
     return new DataAreaSettings<rowType>(settings, col, this.repository.defs.fields);
@@ -266,7 +266,7 @@ export class GridSettings<rowType>  {
     this.reloadData();
   }, this.repository);
 
-  columns: ColumnCollection<rowType>;
+  columns: FieldCollection<rowType>;
 
 
 

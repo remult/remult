@@ -105,6 +105,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] make where awaitable
 [] custom context 
 [] reconsider the custom filter with the FD
+[] talk about allow null for date, object types, etc...
 
 
 ## consider if needed

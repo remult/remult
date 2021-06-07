@@ -2,19 +2,19 @@ import {  EntityField,  FieldDefinitions,  Entity, ValueListItem } from "@remult
 
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | EntityField<any, any>;
-export interface DataControlSettings<entityType = any, colType = any> {
+export interface DataControlSettings<entityType = any, fieldType = any> {
 
-    column?: FieldDefinitions | EntityField<any, any>;
-    getValue?: (row: entityType, val: EntityField<colType, entityType>) => any;
+    field?: FieldDefinitions | EntityField<any, any>;
+    getValue?: (row: entityType, val: EntityField<fieldType, entityType>) => any;
     readOnly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType, val: EntityField<colType, entityType>) => boolean;
+    visible?: (row: entityType, val: EntityField<fieldType, entityType>) => boolean;
 
-    click?: (row: entityType, val: EntityField<colType, entityType>) => void;
-    valueChange?: (row: entityType, val: EntityField<colType, entityType>) => void;
-    allowClick?: (row: entityType, val: EntityField<colType, entityType>) => boolean;
+    click?: (row: entityType, val: EntityField<fieldType, entityType>) => void;
+    valueChange?: (row: entityType, val: EntityField<fieldType, entityType>) => void;
+    allowClick?: (row: entityType, val: EntityField<fieldType, entityType>) => boolean;
     clickIcon?: string;
 
     valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>);
@@ -52,7 +52,7 @@ export function extend<T extends FieldDefinitions>(col: T): {
 
 export const configDataControlField = Symbol('configDataControlField');
 
-export function getColumnDefinition(col: FieldDefinitions | EntityField<any, any>) {
+export function getFieldDefinition(col: FieldDefinitions | EntityField<any, any>) {
     if (!col)
         return undefined;
     let r = col as FieldDefinitions;
@@ -64,7 +64,7 @@ export function getColumnDefinition(col: FieldDefinitions | EntityField<any, any
 }
 export function decorateDataSettings(colInput: FieldDefinitions | EntityField<any, any>, x: DataControlSettings) {
 
-    let col = getColumnDefinition(colInput);
+    let col = getFieldDefinition(colInput);
     if (col.target) {
         let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);
         if (settingsOnColumnLevel) {

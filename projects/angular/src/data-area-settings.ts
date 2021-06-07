@@ -1,10 +1,10 @@
 import {  FieldDefinitionsOf } from "@remult/core";
 
-import { ColumnCollection } from "./column-collection";
+import { FieldCollection } from "./column-collection";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
 export interface IDataAreaSettings<rowType=any > {
-  columnSettings?: (rowType: FieldDefinitionsOf<rowType>) => DataArealColumnSetting<rowType>[];
+  fields?: (rowType: FieldDefinitionsOf<rowType>) => DataAreaFieldsSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
 }
@@ -12,16 +12,16 @@ export interface IDataAreaSettings<rowType=any > {
 export class DataAreaSettings<rowType =any>
 {
   lines: DataControlSettings[][] = [];
-  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?:FieldDefinitionsOf<rowType>) {
+  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: FieldCollection<rowType>, entity?:FieldDefinitionsOf<rowType>) {
     if (columns == undefined) {
-      columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true,()=>undefined);
+      columns = new FieldCollection<rowType>(() => undefined, () => true, undefined, () => true,()=>undefined);
       columns.numOfColumnsInGrid = 0;
       this.columns = columns;
     }
-    if (settings && settings.columnSettings) {
+    if (settings && settings.fields) {
 
 
-      for (const colSettings of settings.columnSettings(entity)) {
+      for (const colSettings of settings.fields(entity)) {
         if (Array.isArray(colSettings)) {
           let x = columns.items.length;
           //@ts-ignore
@@ -45,5 +45,5 @@ export class DataAreaSettings<rowType =any>
 }
 
 
-export type DataArealColumnSetting<rowType > = DataControlInfo<rowType> | DataControlInfo<rowType>[];
+export type DataAreaFieldsSetting<rowType > = DataControlInfo<rowType> | DataControlInfo<rowType>[];
 

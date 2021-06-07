@@ -24,7 +24,7 @@ export class DataFilterInfoComponent {
     filterColumnToAdd: DataControlSettings;
     getCurrentFilterValue(col: FieldDefinitions) {
         this.settings.initOrigList();
-        let m = this.settings.origList.find(x => x.column == col);
+        let m = this.settings.origList.find(x => x.field == col);
         if (this.settings.filterHelper.filterRow[col.key] instanceof Date){
             return this.settings.filterHelper.filterRow[col.key].toLocaleDateString();
         }
@@ -43,7 +43,7 @@ export class DataFilterInfoComponent {
     showAddFilter = false;
     editFilterVisible = false;
     showEditFilter(col: FieldDefinitions) {
-        this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
+        this.filterColumnToAdd = this.settings.origList.find(x => x.field == col);
         this.editFilterVisible = true;
         this.showAddFilter = false;
     }
@@ -71,7 +71,7 @@ export class DataFilterInfoComponent {
         this.filterColumnToAdd = undefined;
     }
     public async editFilter(col: FieldDefinitions) {
-        this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
+        this.filterColumnToAdd = this.settings.origList.find(x => x.field == col);
         await openDialog(FilterDialogComponent, x => x.info = this);
     }
     confirmEditFilter() {

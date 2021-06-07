@@ -1,5 +1,5 @@
 
-import { FieldDefinitions, FieldSettings, ValueConverter } from "../column-interfaces";
+import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntitySettings } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle, ValueListValueConverter } from '../column';
 import { EntityDefinitions, filterOptions, EntityField, EntityFields, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, FieldDefinitionsOf, supportsContains } from "./remult3";
@@ -11,7 +11,6 @@ import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
 import { RowEvents } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { isFunction } from "util";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter } from "../columns/loaders";
 
 
@@ -438,7 +437,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
-export function getEntityOptions<T>(entity: ClassType<T>, throwError = true) {
+export function getEntitySettings<T>(entity: ClassType<T>, throwError = true) {
     if (entity === undefined)
         if (throwError) {
             throw new Error("Undefined is not an entity :)")
@@ -456,7 +455,7 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
     if (!r)
         columnsOfType.set(entity, r = []);
 
-    let info = getEntityOptions(entity);
+    let info = getEntitySettings(entity);
 
 
     let base = Object.getPrototypeOf(entity);
@@ -478,7 +477,7 @@ class rowHelperBase<T>
     error: string;
     constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
         for (const col of columnsInfo) {
-            let ei = getEntityOptions(col.settings.dataType, false);
+            let ei = getEntitySettings(col.settings.dataType, false);
 
             if (ei && context) {
                 let lookup = new LookupColumn(context.for(col.settings.dataType), undefined);
@@ -587,7 +586,7 @@ class rowHelperBase<T>
                     val = lu.id;
                 else if (!this.context) {
                     if (val) {
-                        let eo = getEntityOptions(val.constructor, false);
+                        let eo = getEntitySettings(val.constructor, false);
                         if (eo) {
                             val = getEntityOf(val).fields.idField.value;
                         }
@@ -1031,7 +1030,11 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;
-        this.caption = entityInfo.caption;
+        if (entityInfo.caption)
+            if (typeof entityInfo.caption === "function")
+                this.caption = entityInfo.caption(context);
+            else
+                this.caption = entityInfo.caption;
         if (typeof entityInfo.dbName === "string")
             this.dbName = entityInfo.dbName;
         else if (typeof entityInfo.dbName === "function")
@@ -1083,7 +1086,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
 
     }
     processVal(val: any) {
-        let ei = getEntityOptions(this.col.dataType, false);
+        let ei = getEntitySettings(this.col.dataType, false);
         if (ei) {
             if (!val)
                 return null;
@@ -1162,9 +1165,10 @@ export function DecimalField<T = any>(settings?: FieldSettings<Number, T>) {
         , ...settings
     })
 }
-export function ValueListFieldType<T = any, colType = any>(type: ClassType<colType>, settings?: FieldSettings<colType, T>) {
+export function ValueListFieldType<T = any, colType extends ValueListItem = any>(type: ClassType<colType>, settings?: FieldSettings<colType, T>) {
     return FieldType<colType>({
-        valueConverter: new ValueListValueConverter(type)
+        valueConverter: new ValueListValueConverter(type),
+        displayValue: (item, val) => val.caption
         , ...settings
     })
 }

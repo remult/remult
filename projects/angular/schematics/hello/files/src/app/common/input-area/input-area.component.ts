@@ -40,10 +40,10 @@ export class InputAreaComponent implements OnInit {
     if (this.args.areaSettings)
       this.area = new DataAreaSettings(this.args.areaSettings, null, null);
     else if (this.args.columnSettings) {
-      this.area = new DataAreaSettings({ columnSettings: () => this.args.columnSettings() });
+      this.area = new DataAreaSettings({ fields: () => this.args.columnSettings() });
     }
     else if (this.args.object) {
-      this.area = new DataAreaSettings({ columnSettings: () => [...getControllerDefs(this.args.object).columns] })
+      this.area = new DataAreaSettings({ fields: () => [...getControllerDefs(this.args.object).columns] })
     }
   }
   cancel() {

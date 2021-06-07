@@ -7,8 +7,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { Context,    FieldDefinitions,   ValueListItem} from '@remult/core';
-import {actionInfo} from '@remult/core/src/server-action';
+import { Context, FieldDefinitions, ValueListItem } from '@remult/core';
+import { actionInfo } from '@remult/core/src/server-action';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -30,7 +30,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
-import { Repository,EntityOrderBy, EntityWhere, EntityDefinitions } from '@remult/core';
+import { Repository, EntityOrderBy, EntityWhere, EntityDefinitions } from '@remult/core';
 
 
 
@@ -51,8 +51,8 @@ import { Repository,EntityOrderBy, EntityWhere, EntityDefinitions } from '@remul
     provide: Context,
     useFactory: buildContext,
     deps: [HttpClient, MatDialog]
-  }, 
-  NotSignedInGuard, SignedInGuard, RouteHelperService,
+  },
+    NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
 
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
@@ -74,7 +74,7 @@ export function buildContext(http: HttpClient, _dialog: MatDialog) {
   let r = new Context(http);
   _matDialog = _dialog;
 
-  
+
   actionInfo.runActionWithoutBlockingUI = async x => await BusyService.singleInstance.donotWait(x);
   actionInfo.startBusyWithProgress = () => BusyService.singleInstance.startBusyWithProgress()
 
@@ -103,35 +103,35 @@ export async function openDialog<T, C>(component: { new(...args: any[]): C; }, s
 
 /** returns an array of values that can be used in the value list property of a data control object */
 
-export async function getValueList<T >(repository:Repository<T>, args?: {
-  idColumn?: (e: EntityDefinitions<T>) => FieldDefinitions,
-  captionColumn?: (e: EntityDefinitions<T>) => FieldDefinitions,
+export async function getValueList<T>(repository: Repository<T>, args?: {
+  idField?: (e: EntityDefinitions<T>) => FieldDefinitions,
+  captionField?: (e: EntityDefinitions<T>) => FieldDefinitions
   orderBy?: EntityOrderBy<T>,
   where?: EntityWhere<T>
 }): Promise<ValueListItem[]> {
   if (!args) {
     args = {};
   }
-  if (!args.idColumn) {
-    args.idColumn = x => x.idField;
+  if (!args.idField) {
+    args.idField = x => x.idField;
   }
-  if (!args.captionColumn) {
-    let idCol = args.idColumn(repository.defs);
+  if (!args.captionField) {
+    let idCol = args.idField(repository.defs);
     for (const keyInItem of repository.defs.fields) {
       if (keyInItem != idCol) {
-        args.captionColumn = x => x.fields.find(keyInItem);
+        args.captionField = x => x.fields.find(keyInItem);
         break;
       }
     }
   }
-  let r =  (await repository.find({
+  let r = (await repository.find({
     where: args.where,
     orderBy: args.orderBy,
     limit: 1000
   })).map(x => {
     return {
-      id:repository.getRowHelper(x).fields.find(args.idColumn(repository.defs)).value,
-      caption: repository.getRowHelper(x).fields.find(args.captionColumn(repository.defs)).value,
+      id: repository.getRowHelper(x).fields.find(args.idField(repository.defs)).value,
+      caption: repository.getRowHelper(x).fields.find(args.captionField(repository.defs)).value,
     }
   });
   return r;

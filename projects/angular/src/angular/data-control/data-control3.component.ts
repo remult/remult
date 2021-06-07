@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FieldDefinitions,  Entity,  ValueListItem } from '@remult/core';
 
-import { ColumnCollection } from '../../column-collection';
+import { FieldCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
 
 @Component({
@@ -17,9 +17,9 @@ export class DataControl3Component {
   @Input() map: DataControlSettings;
   @Input() set column(value: FieldDefinitions) {
     this.map = {
-      column: value
+      field: value
     };
-    decorateDataSettings(this.map.column,this.map);
+    decorateDataSettings(this.map.field,this.map);
   }
   @Input() rightToLeft = false;
 
@@ -27,10 +27,10 @@ export class DataControl3Component {
   @Input() record: any;
 
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined,()=>undefined);
+  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined,()=>undefined);
   showDescription() {
 
-    return (this.map.column) && this.map.getValue || !this._getEditable();
+    return (this.map.field) && this.map.getValue || !this._getEditable();
   }
   showClick() {
     if (!this.map.click)

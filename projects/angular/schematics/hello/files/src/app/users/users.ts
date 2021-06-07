@@ -2,7 +2,7 @@
 import { IdEntity, ColumnSettings, ServerMethod, Filter, InputTypes, Entity, Column, Validators } from "@remult/core";
 import { Context, } from '@remult/core';
 import { Roles } from './roles';
-import { InputControl } from "@remult/angular";
+import { InputField } from "@remult/angular";
 
 @Entity<Users>({
     key: "Users",
@@ -70,9 +70,9 @@ export class Users extends IdEntity {
         await this._.save();
     }
 }
-export class PasswordControl extends InputControl<string>
+export class PasswordControl extends InputField<string>
 {
     constructor(settings?: ColumnSettings) {
-        super({ ...settings, caption: 'password', inputType: InputTypes.password });
+        InputField({ ...settings, caption: 'password', inputType: InputTypes.password });
     }
 }

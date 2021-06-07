@@ -4,7 +4,7 @@
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 import { Context, getControllerDefs } from '@remult/core';
 
-import { ColumnCollection } from '../../column-collection';
+import { FieldCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';
 import { DataControlSettings } from '../../data-control-interfaces';
 
@@ -22,14 +22,14 @@ export class DataArea2Component implements OnChanges {
   }
 
   @Input() settings: DataAreaSettings = {
-    columns: new ColumnCollection(() => undefined, () => false, undefined, () => true, () => undefined), lines: undefined
+    columns: new FieldCollection(() => undefined, () => false, undefined, () => true, () => undefined), lines: undefined
   };
   @Input() object: any;
 
   ngOnChanges(): void {
     if (this.object) {
       this.settings = new DataAreaSettings({
-        columnSettings: () => [...getControllerDefs(this.object).columns]
+        fields: () => [...getControllerDefs(this.object).columns]
       });
     }
     if (this.settings && this.settings.columns) {

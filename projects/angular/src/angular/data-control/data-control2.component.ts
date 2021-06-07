@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import {  Entity,  ValueListItem,   FieldDefinitions, EntityField } from '@remult/core';
 
-import { ColumnCollection } from '../../column-collection';
+import { FieldCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
 
 
@@ -13,19 +13,19 @@ import { DataControlSettings, decorateDataSettings } from '../../data-control-in
 })
 export class DataControl2Component {
   @Input() map: DataControlSettings;
-  @Input() set column(value: FieldDefinitions|EntityField<any,any>) {
+  @Input() set field(value: FieldDefinitions|EntityField<any,any>) {
     this.map = {
-      column: value
+      field: value
     };
-    decorateDataSettings(this.map.column, this.map);
+    decorateDataSettings(this.map.field, this.map);
   }
   theId: any;
   @Input() record: any;
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined,()=>undefined);
+  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined,()=>undefined);
   showDescription() {
 
-    return (this.map.column) && this.map.getValue || !this._getEditable();
+    return (this.map.field) && this.map.getValue || !this._getEditable();
   }
   getDropDown(): ValueListItem[] {
     return this.map.valueList as ValueListItem[];

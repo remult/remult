@@ -7,7 +7,7 @@ import {  FieldDefinitions, Context, Entity } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
 
-import { DataControlSettings, getColumnDefinition } from '../../data-control-interfaces';
+import { DataControlSettings, getFieldDefinition } from '../../data-control-interfaces';
 import { GridButton, GridSettings, RowButton } from '../../grid-settings';
 import { openDialog } from '../remult-core.module';
 
@@ -95,7 +95,7 @@ export class DataGrid2Component implements OnChanges {
   @ViewChild(DataFilterInfoComponent) dataFilterInfo: DataFilterInfoComponent;
   showFilterColumnDialog(dataControlSettings: DataControlSettings) {
     this.settings.initOrigList();
-    this.dataFilterInfo.editFilter(getColumnDefinition(dataControlSettings.column));
+    this.dataFilterInfo.editFilter(getFieldDefinition(dataControlSettings.field));
   }
 
   getButtonCssClass(b: RowButton<any>, row: any) {
