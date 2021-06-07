@@ -12,28 +12,28 @@ export interface IDataAreaSettings<rowType=any > {
 export class DataAreaSettings<rowType =any>
 {
   lines: DataControlSettings[][] = [];
-  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: FieldCollection<rowType>, entity?:FieldDefinitionsOf<rowType>) {
-    if (columns == undefined) {
-      columns = new FieldCollection<rowType>(() => undefined, () => true, undefined, () => true,()=>undefined);
-      columns.numOfColumnsInGrid = 0;
-      this.columns = columns;
+  constructor(public settings?: IDataAreaSettings<rowType>, public fields?: FieldCollection<rowType>, entity?:FieldDefinitionsOf<rowType>) {
+    if (fields == undefined) {
+      fields = new FieldCollection<rowType>(() => undefined, () => true, undefined, () => true,()=>undefined);
+      fields.numOfColumnsInGrid = 0;
+      this.fields = fields;
     }
     if (settings && settings.fields) {
 
 
       for (const colSettings of settings.fields(entity)) {
         if (Array.isArray(colSettings)) {
-          let x = columns.items.length;
+          let x = fields.items.length;
           //@ts-ignore
-          columns.add(...colSettings);
+          fields.add(...colSettings);
           let line = [];
-          for (let index = x; index < columns.items.length; index++) {
-            line.push(columns.items[index]);
+          for (let index = x; index < fields.items.length; index++) {
+            line.push(fields.items[index]);
           }
           this.lines.push(line);
         } else {
-          columns.add(<DataControlSettings<rowType>>colSettings);
-          this.lines.push([columns.items[columns.items.length - 1]]);
+          fields.add(<DataControlSettings<rowType>>colSettings);
+          this.lines.push([fields.items[fields.items.length - 1]]);
 
         }
       }

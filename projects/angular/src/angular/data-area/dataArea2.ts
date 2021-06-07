@@ -22,7 +22,7 @@ export class DataArea2Component implements OnChanges {
   }
 
   @Input() settings: DataAreaSettings = {
-    columns: new FieldCollection(() => undefined, () => false, undefined, () => true, () => undefined), lines: undefined
+    fields: new FieldCollection(() => undefined, () => false, undefined, () => true, () => undefined), lines: undefined
   };
   @Input() object: any;
 
@@ -32,11 +32,11 @@ export class DataArea2Component implements OnChanges {
         fields: () => [...getControllerDefs(this.object).fields]
       });
     }
-    if (this.settings && this.settings.columns) {
-      this.settings.columns.setContext(this.context);
+    if (this.settings && this.settings.fields) {
+      this.settings.fields.setContext(this.context);
 
 
-      this.settings.columns.onColListChange(() => this.lastCols = undefined);
+      this.settings.fields.onColListChange(() => this.lastCols = undefined);
       let areaSettings = this.settings as DataAreaSettings;
       if (areaSettings.settings) {
         if (areaSettings.settings.numberOfColumnAreas)
@@ -54,7 +54,7 @@ export class DataArea2Component implements OnChanges {
 
 
 
-    let cols = this.settings.columns.getNonGridColumns();
+    let cols = this.settings.fields.getNonGridColumns();
     if (cols == this.lastAllCols)
       return this.lastCols;
     this.lastAllCols = cols;

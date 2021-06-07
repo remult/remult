@@ -9,11 +9,11 @@ import { FilterHelper } from '../../../angular/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { FieldCollection, DataAreaSettings, DataControlSettings, extend, getValueList, GridSettings, InputField, __getDataControlSettings } from '../../../angular';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getControllerDefs, DateOnlyField } from '../remult3/RepositoryImplementation';
 import { SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
@@ -845,159 +845,199 @@ describe("test row provider", () => {
 
 
   });
-  if (false)
-    itAsync("column drop down", async () => {
-      // let c = await createData(async insert => {
-      //   await insert(1, 'noam');
-      //   await insert(2, 'yael');
-      // });
 
-      // let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-      // let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
-      // await cc.buildDropDown(cs);
-      // let xx = cs.valueList as ValueListItem[];
-      // expect(xx.length).toBe(2);
-      // expect(xx[0].id).toBe(1);
-      // expect(xx[1].id).toBe(2);
-      // expect(xx[0].caption).toBe('noam');
-      // expect(xx[1].caption).toBe('yael');
-
+  itAsync("column drop down", async () => {
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
     });
-  if (false)
-    itAsync("column drop down with promise", async () => {
-      // let c = await createData(async insert => {
-      //   await insert(1, 'noam');
-      //   await insert(2, 'yael');
-      // });
 
-      // let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-      // let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
-      // await cc.buildDropDown(cs);
-      // let xx = cs.valueList as ValueListItem[];
-      // expect(xx.length).toBe(2);
-      // expect(xx[0].id).toBe(1);
-      // expect(xx[1].id).toBe(2);
-      // expect(xx[0].caption).toBe('noam');
-      // expect(xx[1].caption).toBe('yael');
-
-    });
-  if (false)
-    itAsync("column drop down with promise", async () => {
-      // let c = await createData(async insert => {
-      //   await insert(1, 'noam');
-      //   await insert(2, 'yael');
-      // });
-
-      // let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-      // let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
-      // await cc.buildDropDown(cs);
-      // let xx = cs.valueList as ValueListItem[];
-      // expect(xx.length).toBe(2);
-      // expect(xx[0].id).toBe(1);
-      // expect(xx[1].id).toBe(2);
-      // expect(xx[0].caption).toBe('noam');
-      // expect(xx[1].caption).toBe('yael');
-
-    });
-  itAsync("column drop down with items", async () => {
-    // let c = new Categories();
-
-    // let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
-    // let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } as DataControlSettings<Categories>
-    // await cc.buildDropDown(cs);
-    // let xx = cs.valueList as ValueListItem[];
-    // expect(xx.length).toBe(2);
-    // expect(xx[0].id).toBe(1);
-    // expect(xx[1].id).toBe(0);
-    // expect(xx[0].caption).toBe('a');
-    // expect(xx[1].caption).toBe('b');
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
+    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    await cc.buildDropDown(cs);
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
 
   });
-  if (false)
-    itAsync("column drop down 1", async () => {
-      let c = await createData(async insert => {
-        await insert(1, 'noam');
-        await insert(2, 'yael');
-      });
-      let c1 = c.create();
-      let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
-      let cs = { field: c1._.fields.id.defs, valueList: getValueList(c) } as DataControlSettings<newCategories>
-      await cc.add(cs);
 
-      let xx = cs.valueList as ValueListItem[];
-      expect(xx.length).toBe(2);
-      expect(xx[0].id).toBe(1);
-      expect(xx[1].id).toBe(2);
-      expect(xx[0].caption).toBe('noam');
-      expect(xx[1].caption).toBe('yael');
-      var c2 = c.create();
-      c2.id = 1;
-      expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
-
+  itAsync("column drop down with promise", async () => {
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
     });
-  // it("get value function works", () => {
-  //   let a = new NumberColumn();
-  //   a.value = 5;
-  //   var cc = new DataAreaSettings({ columnSettings: () => [a] })
+
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
+    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    await cc.buildDropDown(cs);
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
+
+  });
+
+  itAsync("column drop down with promise", async () => {
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
+    });
+
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
+    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    await cc.buildDropDown(cs);
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
+
+  });
+  itAsync("column drop down with items", async () => {
+    let c = new Categories();
+
+    let cc = new FieldCollection(() => c, () => true, undefined, () => true, undefined);
+    let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } as DataControlSettings<Categories>
+    await cc.buildDropDown(cs);
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(0);
+    expect(xx[0].caption).toBe('a');
+    expect(xx[1].caption).toBe('b');
+
+  });
+
+  itAsync("column drop down 1", async () => {
+    let c = await createData(async insert => {
+      await insert(1, 'noam');
+      await insert(2, 'yael');
+    });
+    let c1 = c.create();
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
+    let cs = { field: c1._.fields.id.defs, valueList: getValueList(c) } as DataControlSettings<newCategories>
+    await cc.add(cs);
+
+    let xx = cs.valueList as ValueListItem[];
+    expect(xx.length).toBe(2);
+    expect(xx[0].id).toBe(1);
+    expect(xx[1].id).toBe(2);
+    expect(xx[0].caption).toBe('noam');
+    expect(xx[1].caption).toBe('yael');
+    var c2 = c.create();
+    c2.id = 1;
+    expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
+
+  });
+  it("get value function works 1", () => {
+    let a = new InputField<number>({ dataType: Number });
+    a.value = 5;
+    var cc = new DataAreaSettings({ fields: () => [a] })
 
 
-  //   expect(cc.columns._getColDisplayValue(cc.columns.items[0], null)).toBe('5');
+    expect(cc.fields._getColDisplayValue(cc.fields.items[0], null)).toBe('5');
 
-  // });
-  // it("get value function works", () => {
-  //   let a = new NumberColumn();
-  //   a.value = 5;
-  //   var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-  //   cc.add(a);
-  //   expect(cc._getColDisplayValue(cc.items[0], null)).toBe('5');
+  });
+  it("get value function works 2", () => {
+    let a = new InputField<number>({ dataType: Number });
+    a.value = 5;
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add(a);
+    expect(cc._getColDisplayValue(cc.items[0], null)).toBe('5');
 
-  // });
-  // it("get value function works", () => {
-  //   let a = new NumberColumn();
-  //   a.value = 5;
-  //   var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-  //   cc.add({ column: a, getValue: () => a.value * 2 });
-  //   expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
-  // });
-  // it("get value function works", () => {
-  //   let a = extend(new NumberColumn()).dataControl(s => s.getValue = () => a.value * 3);
-  //   a.value = 5;
-  //   var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-  //   cc.add(a);
-  //   expect(cc._getColDisplayValue(cc.items[0], null)).toBe(15);
-  // });
-  // it("readonly should work well", () => {
-  //   let a = extend(new DateColumn()).dataControl(s => s.readOnly = true);
+  });
+  it("get value function works 3", () => {
+    let a = new InputField<number>({ dataType: Number });
+    a.value = 5;
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add({ field: a, getValue: () => a.value * 2 });
+    expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
+  });
+})
+class myClass1 {
+  @Field()
+  @DataControl<myClass1>({
+    getValue: self => self.a * 3
+  })
+  a: number;
+}
+describe("field display stuff", () => {
+  it("get value function works", () => {
+    let x = new myClass1();
+    let $ = getControllerDefs(x).fields;
+    x.a = 5;
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add($.a);
+    expect(cc._getColDisplayValue(cc.items[0], null)).toBe(15);
+  });
+})
+class myClass2 {
+  @DateOnlyField()
+  @DataControl<myClass2>({
+    readonly: true
+  })
+  a: Date;
+}
+describe("field display stuff", () => {
+  it("readonly should work well", () => {
+    let x = new myClass2();
+    let $ = getControllerDefs(x).fields;
 
-  //   var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-  //   cc.add(a);
-  //   expect(cc.items[0].readOnly).toBe(true);
-  //   expect(cc.items[0].inputType).toBe('date');
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add($.a);
+    expect(cc.items[0].readonly).toBe(true);
+    expect(cc.items[0].inputType).toBe('date');
 
-  // });
-  // it("test consolidate", () => {
+  });
+})
+class myClass3 {
+  @Field({
+    caption: '1st', ...{ caption: '2nd' }
+  })
+  @DataControl<myClass3>({
+    inputType: 'text'
+  })
 
-  //   var col = extend(extend(new NumberColumn({ caption: '1st', ...{ caption: '2nd' } })).dataControl(
-  //     x => {
-  //       x.inputType = 'text';
-  //     }
-  //   )).dataControl(x => x.readOnly = true);
+  a: Number;
+}
+describe("field display stuff", () => {
+  it("test consolidate", () => {
 
-  //   let s = __getDataControlSettings(col);
-  //   expect(s.inputType).toBe('text');
-  //   expect(s.readOnly).toBe(true);
+    let x = new myClass3();
+    let $ = getControllerDefs(x).fields;
+    let s: DataControlSettings = { readonly: true };
+    decorateDataSettings($.a.defs, s);
+    expect(s.inputType).toBe('text');
+    expect(s.readonly).toBe(true);
 
 
-  // });
-  // it("readonly should work well for string column", () => {
-  //   let a = extend(new StringColumn()).dataControl(x => x.readOnly = true);
+  });
+})
+class myClass4 {
+  @Field()
+  @DataControl<myClass4>({
+    readonly: true
+  })
 
-  //   var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-  //   cc.add(a);
-  //   expect(cc.items[0].readOnly).toBe(true);
-  //   expect(cc.items[0].inputType).toBe(undefined);
+  a: string;
+}
+describe("field display stuff", () => {
+  it("readonly should work well for string column", () => {
+    let x = new myClass4();
+    let $ = getControllerDefs(x).fields;
 
-  // });
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add($.a);
+    expect(cc.items[0].readonly).toBe(true);
+    expect(cc.items[0].inputType).toBe(undefined);
+
+  });
 
 });
 describe("api test", () => {
@@ -1018,76 +1058,71 @@ describe("api test", () => {
 
 
 });
-"".toString();
 describe("column collection", () => {
   let ctx = new Context();
   ctx.setDataProvider(new InMemoryDataProvider());
-  if (false)
-    itAsync("uses a saparate column", async () => {
-      let type = class extends newCategories {
-        categoryName: string;
-      }
-      EntityDecorator({ key: 'asdf' })(type);
-      ColumnDecorator({
-        allowApiUpdate: false
-      })(type.prototype, "categoryName");
-      let c = ctx.for(type);
+
+  itAsync("uses a saparate column", async () => {
+    let type = class extends newCategories {
+      categoryName: string;
+    }
+    EntityDecorator({ key: 'asdf' })(type);
+    ColumnDecorator({
+      allowApiUpdate: false
+    })(type.prototype, "categoryName");
+    let c = ctx.for(type);
 
 
-      var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
-      await cc.add(c.defs.fields.categoryName);
-      expect(cc.items[0] === c.defs.fields.categoryName).toBe(false);
-      expect(cc.items[0] === cc.items[0].field).toBe(false);
-      expect(cc.items[0].caption == c.defs.fields.categoryName.caption).toBe(true);
-      expect(cc.items[0].readOnly).toBe(true);
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    await cc.add(c.defs.fields.categoryName);
+    expect(cc.items[0] === c.defs.fields.categoryName).toBe(false);
+    expect(cc.items[0] === cc.items[0].field).toBe(false);
+    expect(cc.items[0].caption == c.defs.fields.categoryName.caption).toBe(true);
+    expect(cc.items[0].readonly).toBe(true);
 
-    })
+  })
 
-  if (false)
-    itAsync("works ok with filter", async () => {
-      let c = ctx.for(newCategories);
-      var cc = new FieldCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
-      await cc.add(c.defs.fields.id);
-      cc.filterHelper.filterColumn(cc.items[0].field, false, false);
-      expect(cc.filterHelper.isFiltered(cc.items[0].field)).toBe(true);
+  itAsync("works ok with filter", async () => {
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
+    await cc.add(c.defs.fields.id);
+    cc.filterHelper.filterColumn(cc.items[0].field, false, false);
+    expect(cc.filterHelper.isFiltered(cc.items[0].field)).toBe(true);
 
-    });
+  });
 });
 describe("grid settings ",
   () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
-    if (false)
-      it("sort is displayed right", () => {
-        let s = ctx.for(newCategories);
+
+    it("sort is displayed right", () => {
+      let s = ctx.for(newCategories);
 
 
-        let gs = new GridSettings(s);
-        expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
-        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
-        gs.sort(s.defs.fields.id);
-        expect(gs.sortedAscending(s.defs.fields.id)).toBe(true);
-        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
-        gs.sort(s.defs.fields.id);
-        expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
-        expect(gs.sortedDescending(s.defs.fields.id)).toBe(true);
-      });
-    if (false)
-      it("sort is displayed right on start", () => {
-        let s = ctx.for(newCategories);
+      let gs = new GridSettings(s);
+      expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
+      expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+      gs.sort(s.defs.fields.id);
+      expect(gs.sortedAscending(s.defs.fields.id)).toBe(true);
+      expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+      gs.sort(s.defs.fields.id);
+      expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
+      expect(gs.sortedDescending(s.defs.fields.id)).toBe(true);
+    });
+    it("sort is displayed right on start", () => {
+      let s = ctx.for(newCategories);
 
 
-        let gs = new GridSettings(s, { orderBy: c => c.categoryName });
-        //   expect(gs.sortedAscending(y)).toBe(true);
-        //   expect(gs.sortedDescending(y)).toBe(false);
-        expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
-        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
-        gs.sort(s.defs.fields.id);
-        expect(gs.sortedAscending(s.defs.fields.id)).toBe(true);
-        expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
-        expect(gs.sortedAscending(s.defs.fields.categoryName)).toBe(false);
-        expect(gs.sortedDescending(s.defs.fields.categoryName)).toBe(false);
-      });
+      let gs = new GridSettings(s, { orderBy: c => c.categoryName });
+      expect(gs.sortedAscending(s.defs.fields.id)).toBe(false);
+      expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+      gs.sort(s.defs.fields.id);
+      expect(gs.sortedAscending(s.defs.fields.id)).toBe(true);
+      expect(gs.sortedDescending(s.defs.fields.id)).toBe(false);
+      expect(gs.sortedAscending(s.defs.fields.categoryName)).toBe(false);
+      expect(gs.sortedDescending(s.defs.fields.categoryName)).toBe(false);
+    });
     it("paging works", async () => {
       let c = await createData(async i => {
         await i(1, "a");
@@ -1213,29 +1248,40 @@ describe("test area", () => {
     });
     n.value = 5;
     let area = new DataAreaSettings({ fields: () => [n] });
-    expect(area.columns.items.length).toBe(1);
-    expect(area.columns.__showArea()).toBe(true);
-    expect(area.columns.getNonGridColumns().length).toBe(1);
+    expect(area.fields.items.length).toBe(1);
+    expect(area.fields.__showArea()).toBe(true);
+    expect(area.fields.getNonGridColumns().length).toBe(1);
   });
 });
 
-// describe("test column value change", () => {
-//   it("should fire", () => {
-//     let d = new Done();
-//     let x = new NumberColumn({
-//       valueChange: () => d.ok()
-//     });
-//     x.value++;
-//     d.test();
-//   });
-//   it("should fire 2", () => {
-//     let d = new Done();
-//     let x = new NumberColumn({ valueChange: () => d.ok() });
+class myClass {
+  @Field()
+  @DataControl<myClass>({
+    valueChange: self => self.d.ok()
+  })
+  col: Number;
+  d = new Done();
+}
+describe("test column value change", () => {
+  it("should fire", () => {
 
-//     x.value++;
-//     d.test();
-//   });
-// });
+    let x = new myClass();
+    let $ = getControllerDefs(x).fields;
+    let area = new DataAreaSettings({ fields: () => [$.col] });
+    area.fields._colValueChanged(area.fields.items[0], null);
+    x.d.test();
+  });
+  it("should fire", () => {
+    let d = new Done();
+    let x = new InputField<number>({
+      valueChange: () => d.ok()
+    });
+    let area = new DataAreaSettings({ fields: () => [x] });
+    area.fields._colValueChanged(area.fields.items[0], null);
+    d.test();
+  });
+
+});
 // describe("test number column", () => {
 //   it("Number is always a number", () => {
 //     let x = new NumberColumn();

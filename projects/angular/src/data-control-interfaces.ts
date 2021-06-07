@@ -1,4 +1,6 @@
-import {  EntityField,  FieldDefinitions,  Entity, ValueListItem } from "@remult/core";
+import { EntityField, FieldDefinitions, Entity, ValueListItem } from "@remult/core";
+import { InputField } from "./column-collection";
+
 
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | EntityField<any, any>;
@@ -6,7 +8,7 @@ export interface DataControlSettings<entityType = any, fieldType = any> {
 
     field?: FieldDefinitions | EntityField<any, any>;
     getValue?: (row: entityType, val: EntityField<fieldType, entityType>) => any;
-    readOnly?: ValueOrEntityExpression<boolean, entityType>;
+    readonly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
@@ -26,26 +28,6 @@ export interface DataControlSettings<entityType = any, fieldType = any> {
 }
 
 
-export function extend<T extends FieldDefinitions>(col: T): {
-    dataControl(set: (settings: DataControlSettings) => void): T;
-} {
-    return {
-        dataControl: (set) => {
-            let configureDataControl: (settings: DataControlSettings) => void = col[configDataControlField];
-            if (configureDataControl) {
-                var existing = configureDataControl;
-                configureDataControl = z => {
-                    existing(z);
-                    set(z);
-                }
-            }
-            else
-                configureDataControl = set;
-            col[configDataControlField] = configureDataControl;
-            return col;
-        }
-    }
-}
 
 
 
@@ -63,6 +45,17 @@ export function getFieldDefinition(col: FieldDefinitions | EntityField<any, any>
 
 }
 export function decorateDataSettings(colInput: FieldDefinitions | EntityField<any, any>, x: DataControlSettings) {
+    if (colInput instanceof InputField) {
+
+        for (const key in colInput.dataControl) {
+            if (Object.prototype.hasOwnProperty.call(colInput.dataControl, key)) {
+                const element = colInput.dataControl[key];
+                if (!x[key])
+                    x[key] = element;
+            }
+
+        }
+    }
 
     let col = getFieldDefinition(colInput);
     if (col.target) {
@@ -90,37 +83,23 @@ export function decorateDataSettings(colInput: FieldDefinitions | EntityField<an
         }
     }
 
+
     if (!x.caption && col.caption)
         x.caption = col.caption;
 
     if (!x.inputType && col.inputType)
         x.inputType = col.inputType;
 
-    if (x.readOnly == undefined) {
+    if (x.readonly == undefined) {
         if (col.dbReadOnly)
-            x.readOnly = true;
+            x.readonly = true;
 
         if (typeof col.evilOriginalSettings.allowApiUpdate === 'boolean')
-            x.readOnly = !col.evilOriginalSettings.allowApiUpdate;
+            x.readonly = !col.evilOriginalSettings.allowApiUpdate;
     }
 }
-const __displayResult = Symbol("__displayResult");
 
-export function __getDataControlSettings(col: FieldDefinitions): DataControlSettings {
-    let settings = Reflect.getMetadata(configDataControlField, col.target, col.key);
 
-    // if (col[configDataControlField]) {
-    //     let r = {};
-    //     col[configDataControlField](r);
-    //     return r;
-    // }
-    /*if (col instanceof ValueListColumn) {
-        col[configDataControlField] = (x: DataControlSettings) => {
-            x.valueList = col.getOptions();
-        };
-    }*/
-    return undefined;
-}
 export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);
 
 

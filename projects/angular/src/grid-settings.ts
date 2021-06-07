@@ -1,4 +1,4 @@
-import { AndFilter,  FieldDefinitions,   Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
+import { AndFilter, FieldDefinitions, Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
 import { DataList } from "./angular/dataList";
 
 import { FieldCollection } from "./column-collection";
@@ -367,8 +367,8 @@ export class GridSettings<rowType>  {
         done = true;
       }
     } if (!done)
-      throw new Error("need to fix order by ");
-    //      this._currentOrderBy = new Sort({ column: column });
+
+      this._currentOrderBy = new Sort({ field: column });
     this.reloadData();
   }
   sortedAscending(column: FieldDefinitions) {

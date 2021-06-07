@@ -1,5 +1,5 @@
 
-import {  FieldDefinitions,  EntityField, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed,  FieldSettings, Context, ValueConverter } from "@remult/core";
+import { FieldDefinitions, EntityField, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, FieldSettings, Context, ValueConverter } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -199,8 +199,8 @@ export class FieldCollection<rowType = any> {
       return false;
     if (!col.field)
       return false
-    if (col.readOnly !== undefined)
-      return !valueOrEntityExpressionToValue(col.readOnly, row);
+    if (col.readonly !== undefined)
+      return !valueOrEntityExpressionToValue(col.readonly, row);
     return true;
   }
   _click(col: DataControlSettings, row: any) {
@@ -280,8 +280,11 @@ export class FieldCollection<rowType = any> {
     width = ((+width) + what).toString();
     col.width = width;
   }
-  _colValueChanged(col: DataControlSettings, r: any) {
+  _colValueChanged(col: DataControlSettings, row: any) {
+    if (!col.valueChange)
+      return false;
 
+    return this.getRowColumn({ col, row }, (c, row) => col.valueChange(row, c));
 
 
   }
@@ -329,7 +332,7 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 
 export class InputField<T> implements EntityField<T, any> {
   private settings: FieldSettings;
-  private dataControl: DataControlSettings;
+  dataControl: DataControlSettings;
   constructor(
     settings: FieldSettings<T, any>
       & DataControlSettings
@@ -405,7 +408,9 @@ export class InputField<T> implements EntityField<T, any> {
   inputType: string;
   error: string;
   get displayValue() {
-    return this.settings.displayValue(this.value, undefined);
+    if (this.settings.displayValue)
+      return this.settings.displayValue(this.value, undefined);
+    return this.value.toString();
   }
   get value(): T { return this._value; }
   set value(val: T) {

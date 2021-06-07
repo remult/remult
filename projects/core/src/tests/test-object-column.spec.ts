@@ -56,7 +56,7 @@ describe("test object column", () => {
             phone2: null,
             phone3: null
         }).save();
-        
+
         sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.defs.dbName)).rows[0];
         expect(sqlr.phone1).toBe('');
         expect(sqlr.phone2).toBeNull();
@@ -77,9 +77,9 @@ describe("test object column", () => {
             lastName: 'honig'
         }
         await x.save();
-        console.log(mem.rows);
+
         x = await c.for(ObjectColumnTest).findFirst();
-        console.log(x);
+
         expect(x.col.firstName).toBe('noam');
         expect(mem.rows[x._.repository.defs.key][0].col).toEqual({
             firstName: 'noam',

@@ -1278,6 +1278,7 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     if (!settings.valueConverter.fromInput) {
         settings.valueConverter.fromInput = x => settings.valueConverter.fromJson(x);
     }
+    
 
 
 
