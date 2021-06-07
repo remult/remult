@@ -12,7 +12,6 @@ export {
     EntityDefinitions,
     EntityOrderBy,
     EntityWhere,
-    EntityWhereItem,
     FindOptions,
     InputTypes,
     IteratableResult,

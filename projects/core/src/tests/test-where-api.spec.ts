@@ -20,10 +20,8 @@ describe("test where stuff", () => {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
 
-        //expect(await repo.count([y => y.id.isLessOrEqualTo(3), fo.where])).toBe(2);
-        expect(await repo.count(y => y.id.isLessOrEqualTo(3).and(
-            repo.translateWhereToFilter(fo.where)
-        ))).toBe(2);
+        expect(await repo.count([y => y.id.isLessOrEqualTo(3), fo.where])).toBe(2);
+      
 
     });
 

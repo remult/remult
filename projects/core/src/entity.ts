@@ -1,7 +1,7 @@
 import { Allowed, Context, EntityAllowed } from "./context";
 
 import { FieldDefinitions } from './column-interfaces';
-import { EntityOrderBy, EntityWhereItem, ClassType, FieldDefinitionsOf, filterOf } from "./remult3";
+import { EntityOrderBy,  ClassType, FieldDefinitionsOf, filterOf, EntityWhere } from "./remult3";
 import { Filter } from "./filter/filter-interfaces";
 
 
@@ -46,13 +46,13 @@ export interface EntitySettings<T = any> {
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */
-  apiDataFilter?: ((entityType: filterOf<T>, context: Context) => (Filter | Filter[]));
+  apiDataFilter?: EntityWhere<T>;
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  fixedFilter?: EntityWhereItem<T>;
+  fixedFilter?: EntityWhere<T>;
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: () => this.name

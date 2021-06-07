@@ -122,12 +122,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
             allowInsert: (e) => checkEntityAllowed(this.context, options.allowApiInsert, e),
             requireId: this.context.isAllowed(options.apiRequireId),
             get: {
-                where: x => {
-                    if (options.apiDataFilter) {
-                        return options.apiDataFilter(x, this.context);
-                    }
-                    return undefined;
-                }
+                where: options.apiDataFilter
             }
         }
     }
@@ -219,8 +214,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                         if (items && items.length < pageSize)
                             return { value: <T>undefined, done: true };
                         items = await cont.find({
-                            where: x => new AndFilter(self.translateWhereToFilter(opts.where),
-                                self.translateWhereToFilter(nextPageFilter)),
+                            where: [opts.where, nextPageFilter],
                             orderBy: opts.orderBy,
                             limit: pageSize
                         });
@@ -370,23 +364,18 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     }
 
-    translateWhereToFilter(where: EntityWhere<T>): Filter {
+    translateWhereToFilter(where: EntityWhere<T>, ignoreFixed = false): Filter {
         let entity = this._info.createFilterOf();
-        if (this._info.entityInfo.fixedFilter) {
+        if (this._info.entityInfo.fixedFilter && !ignoreFixed) {
             if (Array.isArray(where))
                 where.push(this._info.entityInfo.fixedFilter);
             else
                 where = [where, this._info.entityInfo.fixedFilter];
         }
         if (Array.isArray(where)) {
-            return new AndFilter(...where.map(x => {
-                if (x === undefined)
-                    return undefined;
-                let r = x(entity);
-                if (Array.isArray(r))
-                    return new AndFilter(...r);
-                return r;
-            }));
+            return new AndFilter(...where.map(x =>
+                this.translateWhereToFilter(x, true)
+            ));
 
         }
         else if (typeof where === 'function') {

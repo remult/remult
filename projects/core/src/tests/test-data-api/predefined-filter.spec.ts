@@ -1,4 +1,4 @@
-import { itAsync, Done } from "../testHelper.spec";
+import { itAsync, Done, fitAsync } from "../testHelper.spec";
 import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
@@ -167,7 +167,7 @@ describe("data api", () => {
 
 @EntityDecorator<stam1>({
   key: 'categories',
-  
+
   fixedFilter: (c) => {
     return c.description.isEqualTo('b')
   }
@@ -198,6 +198,6 @@ describe("", () => {
   apiDataFilter: (x) => {
     return x.description.isEqualTo('b')
   }
-  
+
 })
 class CategoriesForThisTest extends newCategories { }

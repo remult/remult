@@ -1,6 +1,6 @@
 
 import { AndFilter, Filter } from '@remult/core';
-import { comparableFilterItem,  EntityField, EntityWhere, EntityWhereItem, FindOptions, Repository, supportsContains } from "@remult/core";
+import { comparableFilterItem,  EntityField, EntityWhere,  FindOptions, Repository, supportsContains } from "@remult/core";
 import {  FieldDefinitions } from "@remult/core";
 import { getFieldDefinition } from '..';
 
@@ -35,7 +35,7 @@ export class FilterHelper<rowType> {
 
       //@ts-ignore
       let val = this.filterRow[c.key];
-      let w: EntityWhereItem<rowType> = item => {
+      let w: EntityWhere<rowType> = item => {
         let itemForFilter: comparableFilterItem<any> & supportsContains<any> = item[c.key];
         let f: Filter = itemForFilter.isEqualTo(val);
         if (c.dataType == String && !this.forceEqual.find(x => c.key == x.key))
