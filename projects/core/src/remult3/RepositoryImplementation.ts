@@ -611,11 +611,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         }
     }
 
-    setValues(item?: Partial<T>): T {
-        if (item)
-            Object.assign(this.instance, item);
-        return this.instance;
-    }
+  
     private _wasDeleted = false;
 
     listeners: RowEvents[];
@@ -1369,5 +1365,4 @@ export class EntityBase {
     isNew() { return this._.isNew(); }
     wasChanged() { return this._.wasChanged(); }
     get $() { return this._.fields }
-    setValues(item?: Partial<this>) { return this._.setValues(item); }//move to static set method.
 }

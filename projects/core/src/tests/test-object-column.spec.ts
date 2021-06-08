@@ -3,7 +3,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, FieldType } from '../remult3';
+import { Field, Entity, EntityBase, FieldType, set } from '../remult3';
 
 
 
@@ -17,12 +17,12 @@ describe("test object column", () => {
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
-    fitAsync("test basics with wsql", async () => {
-        await deleteAll();
-        var x = context.for(ObjectColumnTest);
-        x.getCachedById(1);
-    });
-    fitAsync("test basics with wsql", async () => {
+    // itAsync("test basics with wsql", async () => {
+    //     await deleteAll();
+    //     var x = context.for(ObjectColumnTest);
+    //     x.getCachedById(1);
+    // });
+    itAsync("test basics with wsql", async () => {
         await deleteAll();
         var x = context.for(ObjectColumnTest).create();
         x.id = 1;
@@ -46,22 +46,22 @@ describe("test object column", () => {
         expect(sqlr.phone1).toBe('');
         expect(sqlr.phone2).toBeNull();
         expect(sqlr.phone3).toBe('');
-        x.setValues({
+        set(x, {
             phone1: new Phone("123"),
             phone2: new Phone("456"),
             phone3: new Phone("789")
-        })
+        });
         await x.save();
         sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.defs.dbName)).rows[0];
         expect(sqlr.phone1).toBe('123');
         expect(sqlr.phone2).toBe('456');
         expect(sqlr.phone3).toBe('789');
-        await x.setValues({
+        await set(x, {
             phone1: null,
             phone2: null,
             phone3: null
         }).save();
-        
+
 
 
         sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.defs.dbName)).rows[0];

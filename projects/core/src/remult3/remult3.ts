@@ -171,7 +171,7 @@ export interface rowHelper<T> {
     error: string;
 
     repository: Repository<T>;
-    setValues(item?: Partial<T>);//create set static function
+    
     //add defs
     toApiPojo(): any;//toApiJson
     register(listener: RowEvents);// move to repo - addEventListener and return UnObserve and change unobserver to be with lower o - Unobserve
@@ -195,7 +195,7 @@ export type FieldDefinitionsOf<Type> = {
     find(col: FieldDefinitions | string): FieldDefinitions,
     [Symbol.iterator]: () => IterableIterator<FieldDefinitions>,
     idField: FieldDefinitions
-    
+
 }
 
 
@@ -288,7 +288,7 @@ export interface Repository<entityType> {
     isIdField(col: FieldDefinitions): boolean;
     createIdInFilter(items: entityType[]): Filter;
 
-    
+
     packWhere(where: EntityWhere<entityType>): any;//to filter
     unpackWhere(packed: any): Filter;//to filter
     extractWhere(filterInfo: {//toFilter
@@ -374,7 +374,7 @@ export type filterOf<Type> = {
     [Properties in keyof Type]: Type[Properties] extends number | Date ? comparableFilterItem<Type[Properties]> :
     Type[Properties] extends string ? supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]> :
     supportsContains<Type[Properties]>
-}&{
+} & {
     translateWhereToFilter(where: EntityWhere<Type>): Filter;//to filter
 }
 
@@ -404,4 +404,9 @@ export class InputTypes {
     static email = 'email';
     static tel = 'tel';
     static time = "time";
+}
+export function set<T>(item: T, valuesToSet: Partial<T>): T {
+    if (valuesToSet)
+        Object.assign(item, valuesToSet);
+    return item;
 }
