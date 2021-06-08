@@ -14,7 +14,7 @@ describe("test paged foreach ", () => {
     iterateConfig.pageSize = 2;
 
     itAsync("basic foreach with where", async () => {
-        let c = await createData(async insert => {
+        let [c]  = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
             await insert(3, 'yoni');
@@ -28,7 +28,7 @@ describe("test paged foreach ", () => {
         expect(i).toBe(4);
     });
     itAsync("basic foreach with where 2", async () => {
-        let c = await createData(async insert => {
+        let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
             await insert(3, 'yoni');
@@ -45,7 +45,7 @@ describe("test paged foreach ", () => {
         expect(i).toBe(4);
     });
     itAsync("basic foreach with order by", async () => {
-        let c = await createData(async insert => {
+        let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
             await insert(3, 'yoni');
@@ -67,7 +67,7 @@ describe("test paged foreach ", () => {
     });
 
     itAsync("basic foreach with order by desc", async () => {
-        let c = await createData(async insert => {
+        let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
             await insert(3, 'yoni');
@@ -84,7 +84,7 @@ describe("test paged foreach ", () => {
         expect(i).toBe(5);
     });
     itAsync("iterate", async () => {
-        let c = await createData(async insert => {
+        let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
             await insert(3, 'yoni');
@@ -99,7 +99,7 @@ describe("test paged foreach ", () => {
         expect(i).toBe(5);
     });
     itAsync("test toArray", async () => {
-        let c = await createData(async insert => {
+        let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
             await insert(3, 'yoni');

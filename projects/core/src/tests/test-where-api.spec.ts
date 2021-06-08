@@ -11,7 +11,7 @@ describe("test where stuff", () => {
 
     let repo: Repository<CategoriesForTesting>;
     beforeAll(async done => {
-        repo = await insertFourRows();
+        [repo] = await insertFourRows();
         done();
     });
 

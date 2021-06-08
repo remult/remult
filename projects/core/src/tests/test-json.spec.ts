@@ -21,7 +21,7 @@ describe("test json database", () => {
             await c._.delete();
         }
     }
-  
+
     itAsync("test basics", async () => {
         await deleteAll();
         expect(await context.for(newCategories).count()).toBe(0);
@@ -75,7 +75,7 @@ describe("test tasks", () => {
         expect(await c.count(t => t.completed.isDifferentFrom(true))).toBe(1);
         expect(await c.count(t => t.completed.isEqualTo(true))).toBe(2);
         expect(await c.count(t => t.completed.isEqualTo(false))).toBe(0);
-        var api = new DataApi(c);
+        var api = new DataApi(c, cont);
         let tr = new TestDataApiResponse();
         let d = new Done();
         tr.success = async (data) => {

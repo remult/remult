@@ -12,12 +12,12 @@ import { ValueListValueConverter } from "../../../valueConverters";
 
 
 describe("data api", () => {
-    let context = new Context();
+
     itAsync("put with validations fails", async () => {
 
-        let c = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
+        let [c, context] = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
 
-        var api = new DataApi(c);
+        var api = new DataApi(c, context);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.error = async (data: any) => {
@@ -36,9 +36,9 @@ describe("data api", () => {
     itAsync("post with validation fails", async () => {
 
 
-        let c = await createData(async () => { }, CategoriesForThisTest);
+        let [c, context] = await createData(async () => { }, CategoriesForThisTest);
 
-        var api = new DataApi(c);
+        var api = new DataApi(c, context);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.error = async (data: any) => {
@@ -65,7 +65,7 @@ describe("data api", () => {
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(type);
 
-        var api = new DataApi(c);
+        var api = new DataApi(c, context);
         let t = new TestDataApiResponse();
         t.success = () => { };
         t.created = () => { };
@@ -98,7 +98,7 @@ describe("data api", () => {
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(type);
 
-        var api = new DataApi(c);
+        var api = new DataApi(c, context);
         let t = new TestDataApiResponse();
         t.success = () => { };
         t.created = () => { };

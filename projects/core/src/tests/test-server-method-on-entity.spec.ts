@@ -47,7 +47,7 @@ class testServerMethodOnEntity extends EntityBase {
     key: 'testBoolCreate123',
     allowApiCrud: true,
     saving: async t => {
-        if (t.context.onServer&&t._.isNew()) {
+        if (t.context.onServer && t._.isNew()) {
 
             await t.context.for(testBoolCreate123).count();
             await new Promise((res, rej) => setTimeout(() => {
@@ -128,7 +128,7 @@ describe("test Server method in entity", () => {
         let context = new ServerContext();
         context.setDataProvider(new InMemoryDataProvider());
         let r = context.for(testBoolCreate123);
-        let dataApi = new DataApi(r);
+        let dataApi = new DataApi(r, context);
         let t = new TestDataApiResponse();
         t.created = x => {
             expect(x.ok123).toBe(true);

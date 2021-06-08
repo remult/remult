@@ -1,6 +1,6 @@
 import { EntitySettings } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
-import { UserInfo } from './context';
+import { Context, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { filterOf, FindOptions, Repository } from './remult3';
 import { SortSegment } from './sort';
@@ -11,8 +11,8 @@ export class DataApi<T = any> {
     return this.options.name;
   }
   options: DataApiSettings<T>;
-  constructor(private repository: Repository<T>) {
-    this.options = repository._getApiSettings();
+  constructor(private repository: Repository<T>,private context:Context) {
+    this.options = this._getApiSettings();
   }
 
   async get(response: DataApiResponse, id: any) {
@@ -131,7 +131,7 @@ export class DataApi<T = any> {
 
     await this.doOnId(response, id, async row => {
       this.repository.getRowHelper(row)._updateEntityBasedOnApi(body);
-      if (!this._getApiSettings(row).allowUpdate(row)) {
+      if (!this._getApiSettings().allowUpdate(row)) {
         response.forbidden();
         return;
       }
@@ -139,13 +139,13 @@ export class DataApi<T = any> {
       response.success(this.repository.getRowHelper(row).toApiJson());
     });
   }
-  private _getApiSettings(row: T): DataApiSettings<T> {
+  private _getApiSettings(): DataApiSettings<T> {
     return this.repository._getApiSettings();
   }
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
 
-      if (!this._getApiSettings(row).allowDelete(row)) {
+      if (!this._getApiSettings().allowDelete(row)) {
         response.forbidden();
         return;
       }
@@ -160,7 +160,7 @@ export class DataApi<T = any> {
     try {
       let newr = this.repository.create();
       this.repository.getRowHelper(newr)._updateEntityBasedOnApi(body);
-      if (!this._getApiSettings(newr).allowInsert(newr)) {
+      if (!this._getApiSettings().allowInsert(newr)) {
         response.forbidden();
         return;
       }

@@ -1,5 +1,5 @@
 import { SiteArea } from "./expressBridge";
-import { ServerContext,  DataProviderFactoryBuilder } from "../";
+import { ServerContext, DataProviderFactoryBuilder } from "../";
 import { createOldEntity, getEntitySettings } from "../src/remult3";
 import { allEntities } from "../src/context";
 import { DataApi } from "../src/data-api";
@@ -11,7 +11,7 @@ export function registerEntitiesOnServer(area: SiteArea) {
     allEntities.forEach(e => {
         if (!(getEntitySettings(e).includeInApi === false))
             area.add(c => {
-                return new DataApi(c.for(e));
+                return new DataApi(c.for(e), c);
             });
 
     });

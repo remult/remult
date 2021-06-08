@@ -108,7 +108,7 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
 }
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting
-}) {
+}): Promise<[Repository<CategoriesForTesting>, ServerContext]> {
   let context = new ServerContext();
   context.setDataProvider(new InMemoryDataProvider());
   if (!entity)
@@ -126,7 +126,7 @@ export async function createData(doInsert?: (insert: (id: number, name: string, 
       await rep.save(c);
 
     });
-  return rep;
+  return [rep, context];
 }
 
 export async function insertFourRows() {
@@ -141,7 +141,7 @@ export async function insertFourRows() {
 
 describe("grid filter stuff", () => {
   itAsync("test filter works", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
 
       orderBy: c => c.id,
@@ -157,7 +157,7 @@ describe("grid filter stuff", () => {
 
   });
   itAsync("test filter works without the get statement", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
 
       orderBy: c => c.id,
@@ -171,22 +171,22 @@ describe("grid filter stuff", () => {
 
 
   });
-  if (false)
-    itAsync("test filter works with user filter", async () => {
-      let c = await insertFourRows();
-      let ds = new GridSettings<CategoriesForTesting>(c, {
-        orderBy: c => c.id,
-        where: c => c.categoryName.contains('a'),
-        rowsInPage: 2
-      });
-      await ds.reloadData();
-      ds.filterHelper.filterRow.description = 'y';
-      ds.filterHelper.filterColumn(ds.filterHelper.filterRow._.fields.description, false, false);
-      let w = ds.getFilterWithSelectedRows().where;
 
-      expect(await c.count(w)).toBe(1);
-
+  itAsync("test filter works with user filter", async () => {
+    let [c] = await insertFourRows();
+    let ds = new GridSettings<CategoriesForTesting>(c, {
+      orderBy: c => c.id,
+      where: c => c.categoryName.contains('a'),
+      rowsInPage: 2
     });
+    await ds.reloadData();
+    ds.filterHelper.filterRow.description = 'y';
+    ds.filterHelper.filterColumn(ds.filterHelper.filterRow._.fields.description, false, false);
+    let w = ds.getFilterWithSelectedRows().where;
+
+    expect(await c.count(w)).toBe(1);
+
+  });
   it("filter with contains", () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "",
@@ -213,29 +213,29 @@ describe("grid filter stuff", () => {
     x.startsWith(new mockColumnDefs("col"), "no'am");
     expect(x.where).toBe(" where col like ?");
   });
-  if (false)
-    itAsync("test filter works with selected rows", async () => {
-      let c = await insertFourRows();
-      let ds = new GridSettings<CategoriesForTesting>(c, {
-        orderBy: c => c.id,
-        rowsInPage: 3
-      });
-      await ds.reloadData();
-      ds.selectedChanged(ds.items[0]);
-      ds.selectedChanged(ds.items[2]);
-      expect(ds.selectedRows[0].id).toBe(1);
-      expect(ds.selectedRows[1].id).toBe(3);
-      let w = ds.getFilterWithSelectedRows().where;
 
-      expect(await c.count(w)).toBe(2);
-      expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
+  itAsync("test filter works with selected rows", async () => {
+    let [c] = await insertFourRows();
+    let ds = new GridSettings<CategoriesForTesting>(c, {
+      orderBy: c => c.id,
+      rowsInPage: 3
     });
+    await ds.reloadData();
+    ds.selectedChanged(ds.items[0]);
+    ds.selectedChanged(ds.items[2]);
+    expect(ds.selectedRows[0].id).toBe(1);
+    expect(ds.selectedRows[1].id).toBe(3);
+    let w = ds.getFilterWithSelectedRows().where;
+
+    expect(await c.count(w)).toBe(2);
+    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
+  });
   itAsync("test in statement", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
   itAsync("test all rows selected when some rows are outside the scope", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
       orderBy: c => c.id,
       rowsInPage: 3
@@ -271,27 +271,27 @@ describe("grid filter stuff", () => {
     expect(d.happened).toBe(false, "should not have fired because unsubscribe has happened");
 
   }));
-  if (false)
-    itAsync("test select rows in page is not select all", async () => {
-      let c = await insertFourRows();
-      let ds = new GridSettings(c, {
-        orderBy: c => c.id,
-        rowsInPage: 3
-      });
-      await ds.reloadData();
-      expect(ds.selectAllIntermitent()).toBe(false, 'intermetent');
-      for (const r of ds.items) {
-        ds.selectedChanged(r);
-      }
-      expect(ds.selectAllIntermitent()).toBe(true, 'intermetent');
-      expect(ds.selectAllChecked()).toBe(false, 'select all checked');
-      expect(ds.selectedRows.length).toBe(3, 'selected rows');
-      let w = ds.getFilterWithSelectedRows().where;
 
-      expect(await c.count(w)).toBe(3, 'rows in count');
+  itAsync("test select rows in page is not select all", async () => {
+    let [c] = await insertFourRows();
+    let ds = new GridSettings(c, {
+      orderBy: c => c.id,
+      rowsInPage: 3
     });
+    await ds.reloadData();
+    expect(ds.selectAllIntermitent()).toBe(false, 'intermetent');
+    for (const r of ds.items) {
+      ds.selectedChanged(r);
+    }
+    expect(ds.selectAllIntermitent()).toBe(true, 'intermetent');
+    expect(ds.selectAllChecked()).toBe(false, 'select all checked');
+    expect(ds.selectedRows.length).toBe(3, 'selected rows');
+    let w = ds.getFilterWithSelectedRows().where;
+
+    expect(await c.count(w)).toBe(3, 'rows in count');
+  });
   itAsync("select select row by row when all rows are in view", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
       knowTotalRows: true,
       orderBy: c => c.id,
@@ -425,7 +425,7 @@ describe("test row provider", () => {
 
   });
   itAsync("test update", async () => {
-    let c = await createData(async insert => await insert(5, 'noam'));
+    let [c] = await createData(async insert => await insert(5, 'noam'));
     let r = await c.find();
     expect(r[0].categoryName).toBe('noam');
     r[0].categoryName = 'yael';
@@ -435,7 +435,7 @@ describe("test row provider", () => {
   });
 
   itAsync("test filter", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
 
     let rows = await c.find();
     expect(rows.length).toBe(4);
@@ -481,7 +481,7 @@ describe("test row provider", () => {
 
   });
   itAsync("test in filter packer", async () => {
-    let r = await insertFourRows();
+    let [r] = await insertFourRows();
     let rows = await r.find();
     expect(rows.length).toBe(4);
 
@@ -496,7 +496,7 @@ describe("test row provider", () => {
 
   });
   itAsync("sort", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let rows = await c.find({ orderBy: c => c.id });
     expect(rows[0].id).toBe(1);
     expect(rows[1].id).toBe(2);
@@ -513,17 +513,17 @@ describe("test row provider", () => {
     expect(rows[3].id).toBe(3);
   });
   itAsync("counts", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let count = await c.count();
     expect(count).toBe(4);
   });
   itAsync("counts with filter", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let count = await c.count(c => c.id.isLessOrEqualTo(2));
     expect(count).toBe(2);
   });
   itAsync("test grid update", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
       orderBy: c => c.id
     });
@@ -752,7 +752,7 @@ describe("test row provider", () => {
     expect(orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
   });
   itAsync("test that it fails nicely", async () => {
-    let c = (await insertFourRows()).create();
+    let c = (await insertFourRows())[0].create();
     c.id = 1;
     c.categoryName = 'bla bla';
     try {
@@ -781,7 +781,7 @@ describe("test row provider", () => {
   });
   itAsync("filter should return none", async () => {
 
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
 
 
     let r = await c.lookupAsync(c => c.categoryName.isEqualTo(undefined));
@@ -829,7 +829,7 @@ describe("test row provider", () => {
 
   });
   itAsync("lookup updates the data", async () => {
-    let c = await createData(async insert => await insert(1, 'noam'));
+    let [c] = await createData(async insert => await insert(1, 'noam'));
     let r = c.lookup(c => c.id.isEqualTo(1));
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
@@ -847,7 +847,7 @@ describe("test row provider", () => {
   });
 
   itAsync("column drop down", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -865,7 +865,7 @@ describe("test row provider", () => {
   });
 
   itAsync("column drop down with promise", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -883,7 +883,7 @@ describe("test row provider", () => {
   });
 
   itAsync("column drop down with promise", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -915,7 +915,7 @@ describe("test row provider", () => {
   });
 
   itAsync("column drop down 1", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
@@ -1124,7 +1124,7 @@ describe("grid settings ",
       expect(gs.sortedDescending(s.defs.fields.categoryName)).toBe(false);
     });
     it("paging works", async () => {
-      let c = await createData(async i => {
+      let [c] = await createData(async i => {
         await i(1, "a");
         await i(2, "b");
         await i(3, "a");
@@ -1150,7 +1150,7 @@ describe("grid settings ",
       expect(ds.items[0].id).toBe(3);
     });
     it("paging works with filter", async () => {
-      let c = await createData(async i => {
+      let [c] = await createData(async i => {
         await i(1, "a");
         await i(2, "b");
         await i(3, "a");
@@ -1222,7 +1222,7 @@ describe("order by api", () => {
 
 
   itAsync("test several sort options", async () => {
-    let c = await createData(async i => {
+    let [c] = await createData(async i => {
       await i(1, 'z');
       await i(2, 'y');
     });
@@ -1374,7 +1374,7 @@ describe("value list column without id and caption", () => {
 describe("relation", () => {
   itAsync("should get values", async () => {
 
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
@@ -1384,7 +1384,7 @@ describe("relation", () => {
     expect(n.description).toBe("x");
   });
   itAsync("should have an array and lazy load it", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
@@ -1420,7 +1420,7 @@ describe("context", () => {
 });
 describe("test grid basics", () => {
   itAsync("basically works", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let gs = new GridSettings(c);
     await gs.reloadData();
     expect(gs.columns.items.length).toBe(6);

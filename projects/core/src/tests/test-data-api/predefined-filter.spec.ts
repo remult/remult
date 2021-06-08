@@ -16,13 +16,13 @@ describe("data api", () => {
   let context = new Context();
   itAsync("getArray works with predefined filter", async () => {
 
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
 
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -36,12 +36,12 @@ describe("data api", () => {
 
   });
   itAsync("get works with predefined filter", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -54,12 +54,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("get id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -69,12 +69,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -84,12 +84,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.deleted = () => {
@@ -99,12 +99,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = () => {
@@ -114,12 +114,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id 1 works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -129,12 +129,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("getArray works with predefined filter", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -154,7 +154,7 @@ describe("data api", () => {
   });
 
   itAsync("works with predefined Entity Filter", async () => {
-    let c = await createData(async (i) => {
+    let [c] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
@@ -177,7 +177,7 @@ class stam1 extends newCategories {
 }
 describe("", () => {
   itAsync("works with predefined Entity Filter", async () => {//
-    let c = await createData(async (i) => {
+    let [c] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
