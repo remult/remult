@@ -140,7 +140,7 @@ export class GridSettings<rowType>  {
     }
     this._currentOrderBy = undefined;
     if (this.getOptions && this.getOptions.orderBy)
-      this._currentOrderBy = this.repository.translateOrderByToSort(this.getOptions.orderBy);
+      this._currentOrderBy = Sort.translateOrderByToSort(this.repository.defs, this.getOptions.orderBy);
 
   }
 

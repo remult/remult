@@ -6,7 +6,7 @@ import { EntityDefinitions, filterOptions, EntityField, EntityFields, EntityWher
 import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
-import { extractWhere, packToRawWhere } from "../filter/filter-consumer-bridge-to-url-builder";
+
 import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
 import { RowEvents } from "../__EntityValueProvider";
@@ -18,13 +18,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
     createAfterFilter(orderBy: EntityOrderBy<T>, lastRow: T): EntityWhere<T> {
         let values = new Map<string, any>();
 
-        for (const s of this.translateOrderByToSort(orderBy).Segments) {
+        for (const s of Sort.translateOrderByToSort(this.defs,orderBy).Segments) {
             values.set(s.field.key, lastRow[s.field.key]);
         }
         return x => {
             let r: Filter = undefined;
             let equalToColumn: FieldDefinitions[] = [];
-            for (const s of this.translateOrderByToSort(orderBy).Segments) {
+            for (const s of Sort.translateOrderByToSort(this.defs,orderBy).Segments) {
                 let f: Filter;
                 for (const c of equalToColumn) {
                     f = new AndFilter(f, new Filter(x => x.isEqualTo(c, values.get(c.key))));
@@ -46,7 +46,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!orderBy)
             orderBy = x => ({ field: this._info.idField })
         return x => {
-            let sort = this.translateOrderByToSort(orderBy);
+            let sort = Sort.translateOrderByToSort(this.defs, orderBy);
             if (!sort.Segments.find(x => x.field == this.defs.idField)) {
                 sort.Segments.push({ field: this.defs.idField });
             }
@@ -261,7 +261,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                         opts = <any>options;
                 }
                 if (opts.where) {
-                    this.updateEntityBasedOnWhere(opts.where, r);
+                    __updateEntityBasedOnWhere(this.defs, opts.where, r);
                 }
             }
             return r;
@@ -302,7 +302,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
         opt.where = this.translateWhereToFilter(options.where);
-        opt.orderBy = this.translateOrderByToSort(options.orderBy);
+        opt.orderBy = Sort.translateOrderByToSort(this.defs,options.orderBy);
 
         opt.limit = options.limit;
         opt.page = options.page;
@@ -355,60 +355,37 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return new Filter(x => x.isIn(idField, items.map(i => this.getRowHelper(i).fields[idField.key].value)))
 
     }
-    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort {
-        if (!orderBy)
-            return undefined;
-        let entity = Sort.createSortOf(this.defs);
-        let resultOrder = orderBy(entity);//
-        let sort: Sort;
-        if (Array.isArray(resultOrder))
-            sort = new Sort(...resultOrder);
-        else
-            sort = new Sort(resultOrder);
-        return sort;
-
-    }
 
 
-    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T) {
-        let w = this.translateWhereToFilter(where);
 
-        if (w) {
-            w.__applyToConsumer({
-                containsCaseInsensitive: () => { },
-                isDifferentFrom: () => { },
-                isEqualTo: (col, val) => {
-                    r[col.key] = val;
-                },
-                isGreaterOrEqualTo: () => { },
-                isGreaterThan: () => { },
-                isIn: () => { },
-                isLessOrEqualTo: () => { },
-                isLessThan: () => { },
-                isNotNull: () => { },
-                isNull: () => { },
-                startsWith: () => { },
-                or: () => { }
-            });
-        }
-    }
     private translateWhereToFilter(where: EntityWhere<T>): Filter {
         if (this.defs.evilOriginalSettings.fixedFilter)
             where = [where, this.defs.evilOriginalSettings.fixedFilter];
         return Filter.translateWhereToFilter(Filter.createFilterOf(this.defs), where);
     }
-    packWhere(where: EntityWhere<T>) {
-        if (!where)
-            return {};
-        return packToRawWhere(this.translateWhereToFilter(where));
 
-    }
-    unpackWhere(packed: any): Filter {
-        return this.extractWhere({ get: (key: string) => packed[key] });
+}
 
-    }
-    extractWhere(filterInfo: { get: (key: string) => any; }): Filter {
-        return extractWhere([...this.defs.fields], filterInfo);
+export function __updateEntityBasedOnWhere<T>(entityDefs: EntityDefinitions<T>, where: EntityWhere<T>, r: T) {
+    let w = Filter.translateWhereToFilter(Filter.createFilterOf(entityDefs), where);
+
+    if (w) {
+        w.__applyToConsumer({
+            containsCaseInsensitive: () => { },
+            isDifferentFrom: () => { },
+            isEqualTo: (col, val) => {
+                r[col.key] = val;
+            },
+            isGreaterOrEqualTo: () => { },
+            isGreaterThan: () => { },
+            isIn: () => { },
+            isLessOrEqualTo: () => { },
+            isLessThan: () => { },
+            isNotNull: () => { },
+            isNull: () => { },
+            startsWith: () => { },
+            or: () => { }
+        });
     }
 }
 

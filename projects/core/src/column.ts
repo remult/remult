@@ -4,7 +4,7 @@ import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from '
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import { ClassType, EntityWhere, FindOptions, Repository } from './remult3';
+import { ClassType, EntityWhere, FindOptions, Repository, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -185,7 +185,7 @@ export class OneToMany<T>{
   }
   create(): T {
     let r = this.provider.create();
-    this.provider.updateEntityBasedOnWhere(this.settings.where, r);
+    __updateEntityBasedOnWhere(this.provider.defs, this.settings.where, r);
     if (this.settings.create)
       this.settings.create(r);
     return r;

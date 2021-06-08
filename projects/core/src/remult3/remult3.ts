@@ -285,16 +285,12 @@ export interface Repository<entityType> {
     createIdInFilter(items: entityType[]): Filter;
 
 
-    packWhere(where: EntityWhere<entityType>): any;//to filter
-    unpackWhere(packed: any): Filter;//to filter
-    extractWhere(filterInfo: {//toFilter
-        get: (key: string) => any;
-    }): Filter;
-    updateEntityBasedOnWhere(where: EntityWhere<entityType>, r: entityType);//internalize
-    translateOrderByToSort(orderBy: EntityOrderBy<entityType>): Sort;//sort
+    
+    
+    
 
     _getApiSettings(): import("../data-api").DataApiSettings<entityType>;//move to api, and have api get context
-    createAUniqueSort(orderBy: EntityOrderBy<entityType>): EntityOrderBy<entityType>;//internalize as it's not used outside
+    
 
 }
 export interface FindOptions<T> {

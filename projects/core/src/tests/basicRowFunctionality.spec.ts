@@ -14,11 +14,11 @@ import { DataProvider } from '../data-interfaces';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/src/angular/dataList';
 import { UrlBuilder } from '../url-builder';
-import { FilterSerializer } from '../filter/filter-consumer-bridge-to-url-builder';
+
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../data-providers/rest-data-provider';
-import { OrFilter } from '../filter/filter-interfaces';
+import { Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories } from './remult-3-entities';
 
 import { Field, CompoundId, decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
@@ -1949,7 +1949,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
-    let r = c.packWhere(x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
+    let r = Filter.packWhere(c.defs, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
   itAsync("put works", async () => {

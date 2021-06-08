@@ -98,10 +98,10 @@ export class DataApi<T = any> {
     if (this.options && this.options.get && this.options.get.where)
       where = Filter.translateWhereToFilter(entity, this.options.get.where);
     if (request) {
-      where = new AndFilter(where, this.repository.extractWhere(request));
+      where = new AndFilter(where, Filter.extractWhere(this.repository.defs, request));
     }
     if (filterBody)
-      where = new AndFilter(where, this.repository.unpackWhere(filterBody))
+      where = new AndFilter(where, Filter.unpackWhere(this.repository.defs, filterBody))
     return where;
   }
 

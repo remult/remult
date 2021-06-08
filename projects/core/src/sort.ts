@@ -1,6 +1,6 @@
 
 import { FieldDefinitions } from "./column-interfaces";
-import { EntityDefinitions, sortOf } from "./remult3";
+import { EntityDefinitions, EntityOrderBy, sortOf } from "./remult3";
 export class Sort {
   constructor(...segments: SortSegment[]) {
     this.Segments = segments;
@@ -19,6 +19,19 @@ export class Sort {
       r[c.key] = new sortHelper(c);
     }
     return r as sortOf<T>;
+  }
+  static translateOrderByToSort<T>(entityDefs: EntityDefinitions<T>, orderBy: EntityOrderBy<T>): Sort {
+    if (!orderBy)
+      return undefined;
+    let entity = Sort.createSortOf(entityDefs);
+    let resultOrder = orderBy(entity);//
+    let sort: Sort;
+    if (Array.isArray(resultOrder))
+      sort = new Sort(...resultOrder);
+    else
+      sort = new Sort(resultOrder);
+    return sort;
+
   }
 }
 export interface SortSegment {

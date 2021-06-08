@@ -1,9 +1,9 @@
 
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
-import { packToRawWhere, } from '../filter/filter-consumer-bridge-to-url-builder';
+
 import { UrlBuilder } from '../url-builder';
-import { Filter } from '../filter/filter-interfaces';
+import { Filter, packToRawWhere } from '../filter/filter-interfaces';
 import { EntityDefinitions } from '../remult3';
 
 

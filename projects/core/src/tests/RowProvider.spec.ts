@@ -14,11 +14,12 @@ import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityOf, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getControllerDefs, DateOnlyField } from '../remult3/RepositoryImplementation';
-import { SqlDatabase, WebSqlDataProvider } from '../..';
+import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
 import { EntitySettings } from '../entity';
 import { async } from '@angular/core/testing';
+import { Filter } from '../filter/filter-interfaces';
 
 
 
@@ -464,17 +465,17 @@ describe("test row provider", () => {
       expect(rows.length).toBe(4);
 
       rows = await r.find({
-        where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('x')))
+        where: c => Filter.unpackWhere(r.defs, Filter.packWhere(r.defs, c => c.description.isEqualTo('x')))
 
       });
       expect(rows.length).toBe(2);
-      rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isEqualTo(4))) });
+      rows = await r.find({ where: c => Filter.unpackWhere(r.defs, Filter.packWhere(r.defs, c => c.id.isEqualTo(4))) });
       expect(rows.length).toBe(1);
       expect(rows[0].categoryName).toBe('yael');
-      rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+      rows = await r.find({ where: c => Filter.unpackWhere(r.defs, Filter.packWhere(r.defs, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
       expect(rows.length).toBe(1);
       expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+      rows = await r.find({ where: c => Filter.unpackWhere(r.defs, Filter.packWhere(r.defs, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
       expect(rows.length).toBe(2);
     })
 
@@ -485,12 +486,12 @@ describe("test row provider", () => {
     expect(rows.length).toBe(4);
 
     rows = await r.find({
-      where: c => r.unpackWhere(r.packWhere(c => c.description.isEqualTo('x')))
+      where: c => Filter.unpackWhere(r.defs, Filter.packWhere(r.defs, c => c.description.isEqualTo('x')))
 
     });
-    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isIn([1, 3]))) });
+    rows = await r.find({ where: c => Filter.unpackWhere(r.defs, Filter.packWhere(r.defs, c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: c => r.unpackWhere(r.packWhere(c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await r.find({ where: c => Filter.unpackWhere(r.defs, Filter.packWhere(r.defs, c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });
@@ -796,9 +797,8 @@ describe("test row provider", () => {
     let calledFind = false;
     var l = new Lookup({
       ...c,
-      updateEntityBasedOnWhere: (x, y) => c.updateEntityBasedOnWhere(x, y),
+      defs: c.defs,
       create: () => c.create(),
-      packWhere: x => c.packWhere(x),
       find: options => {
         calledFind = true;
         return c.find(options)
@@ -1203,7 +1203,7 @@ describe("order by api", () => {
   it("works with sort", () => {
     let c = new ServerContext().for(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
-    let s = c.translateOrderByToSort(opt.orderBy);
+    let s = Sort.translateOrderByToSort(c.defs, opt.orderBy);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].field.key).toBe(c.defs.fields.id.key);
 
@@ -1214,7 +1214,7 @@ describe("order by api", () => {
   it("works with columns array", () => {
     let c = new ServerContext().for(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
-    let s = c.translateOrderByToSort(opt.orderBy);
+    let s = Sort.translateOrderByToSort(c.defs, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].field).toBe(c.defs.fields.id);
     expect(s.Segments[1].field).toBe(c.defs.fields.categoryName);

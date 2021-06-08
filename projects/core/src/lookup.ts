@@ -1,4 +1,5 @@
-import { EntityWhere, FindOptions, Repository } from "./remult3";
+import { Filter } from "./filter/filter-interfaces";
+import { EntityWhere, FindOptions, Repository, __updateEntityBasedOnWhere } from "./remult3";
 
 export class Lookup<entityType> {
 
@@ -23,7 +24,7 @@ export class Lookup<entityType> {
 
   _internalGetByOptions(find: FindOptions<entityType>): lookupRowInfo<entityType> {
 
-    let f = this.repository.packWhere(find.where);
+    let f = Filter.packWhere(this.repository.defs, find.where);
     let key = JSON.stringify(f);
     let res = this.cache.get(key);
     if (res !== undefined) {
@@ -35,7 +36,7 @@ export class Lookup<entityType> {
     }
     res = new lookupRowInfo<entityType>();
     res.value = <entityType>this.repository.create();
-    this.repository.updateEntityBasedOnWhere(find.where, res.value);
+    __updateEntityBasedOnWhere(this.repository.defs, find.where, res.value);
     this.cache.set(key, res);
     let foundNonUnDefined = false;
     for (const key in f) {

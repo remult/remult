@@ -3,13 +3,14 @@
 import { createData, } from './RowProvider.spec';
 import { fitAsync, itAsync } from './testHelper.spec';
 import { Context, iterateConfig } from '../context';
-import { Entity, EntityBase,Field, CompoundId, EntityOrderBy } from '../remult3';
+import { Entity, EntityBase, Field, CompoundId, EntityOrderBy, RepositoryImplementation } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldDefinitions } from '../column-interfaces';
 import { GridSettings } from '../../../angular';
+import { Sort } from '../sort';
 
 
-describe("test paged foreach ",  () => {
+describe("test paged foreach ", () => {
     iterateConfig.pageSize = 2;
 
     itAsync("basic foreach with where", async () => {
@@ -35,8 +36,10 @@ describe("test paged foreach ",  () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({ where: x =>
-             x.categoryName.isGreaterOrEqualTo("n") })) {
+        for await (const x of c.iterate({
+            where: x =>
+                x.categoryName.isGreaterOrEqualTo("n")
+        })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
         }
         expect(i).toBe(4);
@@ -113,18 +116,18 @@ describe("test paged foreach ",  () => {
     });
     itAsync("test make sort unique", async () => {
         let context = new Context();
-        let e = context.for(Categories);
+        let e = context.for(Categories) as RepositoryImplementation<Categories>;
         function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldDefinitions[]) {
-            let s = e.translateOrderByToSort(e.createAUniqueSort(orderBy));
+            let s = Sort.translateOrderByToSort(e.defs, e.createAUniqueSort(orderBy));
             expect(s.Segments.map(x => x.field)).toEqual(sort);
         }
         test(x => x.id, e.defs.fields.id);
         test(x => x.categoryName, e.defs.fields.categoryName, e.defs.fields.id);
     });
-  
+
     // itAsync("unique sort and  compound id", async () => {
     //     let context = new Context();
-      
+
     //     let e = context.for(theTable).create();
     //     function test<T >(blabla: T, orderBy: EntityOrderBy<T>, ...sort: Column[]) {
     //         let s = extractSort(createAUniqueSort(orderBy, e)(e));
@@ -229,10 +232,10 @@ describe("test paged foreach ",  () => {
 })
 
 @Entity<theTable>({
-    key:'',
-    id:t=>new CompoundId(t.a,t.b)
+    key: '',
+    id: t => new CompoundId(t.a, t.b)
 })
-class theTable extends EntityBase{
+class theTable extends EntityBase {
     @Field()
     a: string;
     @Field()
