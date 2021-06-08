@@ -185,7 +185,7 @@ export type EntityFields<Type> = {
 } & {
     find(col: FieldDefinitions | string): EntityField<any, Type>,
     [Symbol.iterator]: () => IterableIterator<EntityField<any, Type>>
-    
+
 
 
 }
@@ -223,13 +223,16 @@ export interface EntityField<T, entityType = any> {
     load(): Promise<T>;
 }
 
-export interface EntityDefinitions<T = any> {
+export interface EntityDefinitions<entityType = any> {
     readonly dbAutoIncrementId: boolean;
     readonly idField: FieldDefinitions<any>;
+    getIdFilter(id: any): Filter;
+    isIdField(col: FieldDefinitions): boolean;
+    createIdInFilter(items: entityType[]): Filter;
 
     readonly key: string,
     readonly dbName: string,
-    readonly fields: FieldDefinitionsOf<T>,
+    readonly fields: FieldDefinitionsOf<entityType>,
     readonly caption: string;
     readonly evilOriginalSettings: EntitySettings;
 }
@@ -276,16 +279,6 @@ export interface Repository<entityType> {
     getRowHelper(item: entityType): rowHelper<entityType>;
     save(entity: entityType): Promise<entityType>;
     delete(entity: entityType): Promise<void>;
-
-
-    //candidate For Defs
-    getIdFilter(id: any): Filter;
-    isIdField(col: FieldDefinitions): boolean;
-    createIdInFilter(items: entityType[]): Filter;
-
-
-
-
 
 
     _getApiSettings(): import("../data-api").DataApiSettings<entityType>;//move to api, and have api get context

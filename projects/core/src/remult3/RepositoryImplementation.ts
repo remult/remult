@@ -132,12 +132,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
 
-    isIdField(col: FieldDefinitions<any>): boolean {
-        return col.key == this.defs.idField.key;
-    }
-    getIdFilter(id: any): Filter {
-        return new Filter(x => x.isEqualTo(this.defs.idField, id));
-    }
+  
 
 
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T> {
@@ -347,13 +342,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return r;
     }
     findId(id: any): Promise<T> {
-        return this.iterate(x => x[this.defs.idField.key].isEqualTo(id)).first();
-    }
-
-    createIdInFilter(items: T[]): Filter {
-        let idField = this.defs.idField;
-        return new Filter(x => x.isIn(idField, items.map(i => this.getRowHelper(i).fields[idField.key].value)))
-
+        return this.iterate(x => this.defs.getIdFilter(id)).first();
     }
 
 
@@ -617,7 +606,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         this.__clearErrors();
     }
     async reload(): Promise<void> {
-        return this.edp.find({ where: this.repository.getIdFilter(this.id) }).then(async newData => {
+        return this.edp.find({ where: this.repository.defs.getIdFilter(this.id) }).then(async newData => {
             await this.loadDataFrom(newData[0]);
         });
     }
@@ -660,7 +649,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             }
             else {
                 if (doNotSave) {
-                    updatedRow = (await this.edp.find({ where: this.repository.getIdFilter(this.id) }))[0];
+                    updatedRow = (await this.edp.find({ where: this.repository.defs.getIdFilter(this.id) }))[0];
                 }
                 else
                     updatedRow = await this.edp.update(this.id, d);
@@ -724,6 +713,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         this.id = data[this.repository.defs.idField.key];
     }
     private id;
+    public getOriginalId() {
+        return this.id;
+    }
 
     private async calcServerExpression() {
         if (this.context.onServer)
@@ -1019,6 +1011,20 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
     dbAutoIncrementId: boolean;
     idField: FieldDefinitions<any>;
+    
+    createIdInFilter(items: T[]): Filter {
+        if (items.length > 0)
+            return new OrFilter(...items.map(x => this.getIdFilter(getEntityOf(x).getId())));
+
+
+    }
+    isIdField(col: FieldDefinitions<any>): boolean {
+        return col.key == this.idField.key;
+    }
+    getIdFilter(id: any): Filter {
+        return new Filter(x => x.isEqualTo(this.idField, id));
+    }
+
     fields: FieldDefinitionsOf<T>;
 
 

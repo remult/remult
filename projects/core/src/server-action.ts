@@ -261,7 +261,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                     else {
                                         let rows = await repo.find({
                                             where: x => {
-                                                let where: Filter = repo.getIdFilter(d.rowInfo.id);
+                                                let where: Filter = repo.defs.getIdFilter(d.rowInfo.id);
                                                 if (this.options && this.options.get && this.options.get.where)
                                                     where = new AndFilter(where, this.options.get.where(x));
                                                 return where;
@@ -281,7 +281,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                                 data: await defs.toApiJson(),
                                                 isNewRow: defs.isNew(),
                                                 wasChanged: defs.wasChanged(),
-                                                id: defs.fields.find(defs.repository.defs.idField).originalValue
+                                                id: defs.getOriginalId()
                                             }
                                         };
                                     } catch (err) {
@@ -340,7 +340,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 data: await defs.toApiJson(),
                                 isNewRow: defs.isNew(),
                                 wasChanged: defs.wasChanged(),
-                                id: defs.fields.find(defs.repository.defs.idField).originalValue
+                                id: defs.getOriginalId()
                             }
 
                         }));

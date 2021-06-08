@@ -50,7 +50,7 @@ export class DataApi<T = any> {
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {
-              if (this.repository.isIdField(col))
+              if (this.repository.defs.isIdField(col))
                 hasId = true;
             },
             isGreaterOrEqualTo: () => { },
@@ -113,7 +113,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: [this.options?.get?.where, x => this.repository.getIdFilter(id)]
+        where: [this.options?.get?.where, x => this.repository.defs.getIdFilter(id)]
       })
         .then(async r => {
           if (r.length == 0)
