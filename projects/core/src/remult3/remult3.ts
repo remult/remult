@@ -169,7 +169,7 @@ export interface rowHelper<T> {
     wasDeleted(): boolean;
     fields: EntityFields<T>;
     error: string;
-
+    getId(): any;
     repository: Repository<T>;
 
     //add defs
@@ -184,8 +184,8 @@ export type EntityFields<Type> = {
     [Properties in keyof Type]: EntityField<Type[Properties], Type>
 } & {
     find(col: FieldDefinitions | string): EntityField<any, Type>,
-    [Symbol.iterator]: () => IterableIterator<EntityField<any, Type>>,
-    idField: EntityField<any, Type>
+    [Symbol.iterator]: () => IterableIterator<EntityField<any, Type>>
+    
 
 
 }
@@ -194,7 +194,7 @@ export type FieldDefinitionsOf<Type> = {
 } & {
     find(col: FieldDefinitions | string): FieldDefinitions,
     [Symbol.iterator]: () => IterableIterator<FieldDefinitions>
-    
+
 
 }
 
@@ -274,7 +274,6 @@ export interface Repository<entityType> {
 
 
     getRowHelper(item: entityType): rowHelper<entityType>;
-    //candidate to be removed 
     save(entity: entityType): Promise<entityType>;
     delete(entity: entityType): Promise<void>;
 
@@ -285,12 +284,12 @@ export interface Repository<entityType> {
     createIdInFilter(items: entityType[]): Filter;
 
 
-    
-    
-    
+
+
+
 
     _getApiSettings(): import("../data-api").DataApiSettings<entityType>;//move to api, and have api get context
-    
+
 
 }
 export interface FindOptions<T> {
@@ -366,7 +365,7 @@ export type filterOf<Type> = {
     [Properties in keyof Type]: Type[Properties] extends number | Date ? comparableFilterItem<Type[Properties]> :
     Type[Properties] extends string ? supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]> :
     supportsContains<Type[Properties]>
-} 
+}
 
 export type ClassType<T> = { new(...args: any[]): T };
 

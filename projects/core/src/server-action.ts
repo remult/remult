@@ -437,7 +437,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
                 let eo = getEntitySettings(paramType, false);
                 if (eo != null) {
                     let rh = getEntityOf(args[index]);
-                    args[index] = rh.fields.idField.value;
+                    args[index] = rh.getId();
                 }
             }
         }

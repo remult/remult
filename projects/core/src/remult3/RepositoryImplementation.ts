@@ -18,13 +18,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
     createAfterFilter(orderBy: EntityOrderBy<T>, lastRow: T): EntityWhere<T> {
         let values = new Map<string, any>();
 
-        for (const s of Sort.translateOrderByToSort(this.defs,orderBy).Segments) {
+        for (const s of Sort.translateOrderByToSort(this.defs, orderBy).Segments) {
             values.set(s.field.key, lastRow[s.field.key]);
         }
         return x => {
             let r: Filter = undefined;
             let equalToColumn: FieldDefinitions[] = [];
-            for (const s of Sort.translateOrderByToSort(this.defs,orderBy).Segments) {
+            for (const s of Sort.translateOrderByToSort(this.defs, orderBy).Segments) {
                 let f: Filter;
                 for (const c of equalToColumn) {
                     f = new AndFilter(f, new Filter(x => x.isEqualTo(c, values.get(c.key))));
@@ -93,7 +93,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
     addToCache(item: T) {
         if (item)
-            this.idCache.set(this.getRowHelper(item).fields.idField.value, item);
+            this.idCache.set(this.getRowHelper(item).getId(), item);
     }
     fromJson(x: any): T {
         throw new Error("Method not implemented.");
@@ -302,7 +302,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
         opt.where = this.translateWhereToFilter(options.where);
-        opt.orderBy = Sort.translateOrderByToSort(this.defs,options.orderBy);
+        opt.orderBy = Sort.translateOrderByToSort(this.defs, options.orderBy);
 
         opt.limit = options.limit;
         opt.page = options.page;
@@ -544,7 +544,7 @@ class rowHelperBase<T>
                     if (val) {
                         let eo = getEntitySettings(val.constructor, false);
                         if (eo) {
-                            val = getEntityOf(val).fields.idField.value;
+                            val = getEntityOf(val).getId();
                         }
                     }
                 }
@@ -592,6 +592,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             }
         }
     }
+    getId() {
+        return this.instance[this.info.idField.key];
+    }
 
 
     private _wasDeleted = false;
@@ -631,7 +634,6 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             for (const c of this.info.columnsInfo) {
                 _items.push(r[c.key] = new columnImpl(c.settings, this.info.fields[c.key], this.instance, this, this));
             }
-            r["idField"] = r.find(this.info.idField);
 
             this._columns = r as unknown as EntityFields<T>;
         }

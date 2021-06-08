@@ -136,7 +136,7 @@ describe('Test basic row functionality', () => {
     expect(c.defs.idField.key).toBe("id");
     let n = c.create();
     n.id = 5;
-    expect(n.$.idField.value).toBe(5);
+    expect(n._.getId()).toBe(5);
 
   });
   it("object assign works", () => {
