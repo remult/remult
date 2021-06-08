@@ -160,21 +160,20 @@ import { RowEvents } from "../__EntityValueProvider";
 */
 
 
-export interface rowHelper<T> {
+export interface rowHelper<entityType> {
     hasErrors(): boolean;
     undoChanges();
-    save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T>;//move parameter to listener
+    save(afterValidationBeforeSaving?: (row: entityType) => Promise<any> | any): Promise<entityType>;//move parameter to listener
     reload(): Promise<void>;
     delete(): Promise<void>;
     isNew(): boolean;
     wasChanged(): boolean;
     wasDeleted(): boolean;
-    fields: EntityFields<T>;
+    fields: EntityFields<entityType>;
     error: string;
     getId(): any;
-    repository: Repository<T>;
-
-    //add defs
+    repository: Repository<entityType>;
+    defs:EntityDefinitions<entityType>
     toApiJson(): any;
     register(listener: RowEvents);// move to repo - addEventListener and return UnObserve and change unobserver to be with lower o - Unobserve
 }

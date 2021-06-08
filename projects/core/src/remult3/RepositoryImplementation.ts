@@ -526,7 +526,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: Repository<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
         super(info.columnsInfo, instance, context);
-
+        this.defs = info;
         if (_isNew) {
             for (const col of info.columnsInfo) {
 
@@ -541,6 +541,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             }
         }
     }
+    defs: EntityDefinitions<T>;
     getId() {
         if (this.info.idField instanceof CompoundIdField)
             return this.info.idField.getId(this.instance);
