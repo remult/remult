@@ -171,7 +171,7 @@ export interface rowHelper<T> {
     error: string;
 
     repository: Repository<T>;
-    
+
     //add defs
     toApiJson(): any;
     register(listener: RowEvents);// move to repo - addEventListener and return UnObserve and change unobserver to be with lower o - Unobserve
@@ -234,7 +234,7 @@ export interface EntityDefinitions<T = any> {
     readonly evilOriginalSettings: EntitySettings;
 }
 export interface Repository<entityType> {
-    fromJson(x: any): entityType; 
+    fromJson(x: any): entityType;
 
     defs: EntityDefinitions<entityType>;
 

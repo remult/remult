@@ -392,16 +392,16 @@ export class RepositoryImplementation<T> implements Repository<T>{
             });
         }
     }
+    private translateWhereToFilter(where: EntityWhere<T>): Filter {
+        if (this.defs.evilOriginalSettings.fixedFilter)
+            where = [where, this.defs.evilOriginalSettings.fixedFilter];
+        return Filter.translateWhereToFilter(Filter.createFilterOf(this.defs), where);
+    }
     packWhere(where: EntityWhere<T>) {
         if (!where)
             return {};
         return packToRawWhere(this.translateWhereToFilter(where));
 
-    }
-    private translateWhereToFilter(where: EntityWhere<T>): Filter {
-        if (this.defs.evilOriginalSettings.fixedFilter)
-            where = [where, this.defs.evilOriginalSettings.fixedFilter];
-        return Filter.translateWhereToFilter(Filter.createFilterOf(this.defs), where);
     }
     unpackWhere(packed: any): Filter {
         return this.extractWhere({ get: (key: string) => packed[key] });
