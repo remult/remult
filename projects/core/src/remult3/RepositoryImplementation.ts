@@ -89,36 +89,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     get defs(): EntityDefinitions { return this._info };
 
-    _getApiSettings(): DataApiSettings<T> {
-        let options = this._info.entityInfo;
-        if (options.allowApiCrud !== undefined) {
-            if (options.allowApiDelete === undefined)
-                options.allowApiDelete = options.allowApiCrud;
-            if (options.allowApiInsert === undefined)
-                options.allowApiInsert = options.allowApiCrud;
-            if (options.allowApiUpdate === undefined)
-                options.allowApiUpdate = options.allowApiCrud;
-            if (options.allowApiRead === undefined)
-                options.allowApiRead = options.allowApiCrud;
-        }
-
-        return {
-            name: options.key,
-            allowRead: this.context.isAllowed(options.allowApiRead),
-            allowUpdate: (e) => checkEntityAllowed(this.context, options.allowApiUpdate, e),
-            allowDelete: (e) => checkEntityAllowed(this.context, options.allowApiDelete, e),
-            allowInsert: (e) => checkEntityAllowed(this.context, options.allowApiInsert, e),
-            requireId: this.context.isAllowed(options.apiRequireId),
-            get: {
-                where: x => {
-                    if (options.apiDataFilter) {
-                        return options.apiDataFilter(x, this.context);
-                    }
-                    return undefined;
-                }
-            }
-        }
-    }
+    
 
 
 
@@ -1210,7 +1181,7 @@ export function Entity<T>(options: EntitySettings<T>) {
 
 
 
-function checkEntityAllowed(context: Context, x: EntityAllowed<any>, entity: any) {
+export function checkEntityAllowed(context: Context, x: EntityAllowed<any>, entity: any) {
     if (Array.isArray(x)) {
         {
             for (const item of x) {

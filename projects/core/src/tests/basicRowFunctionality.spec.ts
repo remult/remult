@@ -21,7 +21,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../da
 import { Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field,  decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
 
@@ -1294,7 +1294,7 @@ describe("data api", () => {
 
     }
     Entity({ allowApiCrud: false, key: 'a' })(type);
-    expect(sc.for(type)._getApiSettings().allowRead).toBe(false);
+    expect(new DataApi(sc.for(type), sc)._getApiSettings().allowRead).toBe(false);
   });
   itAsync("allow api read depends also on api crud", async () => {
     let sc = new ServerContext();
@@ -1302,7 +1302,7 @@ describe("data api", () => {
 
     }
     Entity({ allowApiCrud: false, allowApiRead: true, key: 'a' })(type);
-    expect(sc.for(type)._getApiSettings().allowRead).toBe(true);
+    expect(new DataApi(sc.for(type), sc)._getApiSettings().allowRead).toBe(true);
 
   });
 
@@ -1687,7 +1687,7 @@ describe("compound id", () => {
     let ctx = new ServerContext(mem);
     let s = ctx.for(CompoundIdEntity);
 
-    mem.rows[s.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[s.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await s.find();
@@ -1705,7 +1705,7 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await c.find();
@@ -1725,8 +1725,8 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    
-    mem.rows[c.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+
+    mem.rows[c.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await c.find();
@@ -1736,7 +1736,7 @@ describe("compound id", () => {
 
     expect(mem.rows[c.defs.key][0].b).toBe(55);
     expect(mem.rows[c.defs.key][0].id).toBe(undefined);
-    
+
     expect(r[0]._.getId()).toBe('1,55');
   });
   itAsync("insert", async () => {
@@ -1758,7 +1758,7 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
     let r = await c.find();
     await r[1]._.delete();

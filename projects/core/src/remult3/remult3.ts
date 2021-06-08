@@ -275,11 +275,6 @@ export interface Repository<entityType> {
     getRowHelper(item: entityType): rowHelper<entityType>;
     save(entity: entityType): Promise<entityType>;
     delete(entity: entityType): Promise<void>;
-
-
-    _getApiSettings(): import("../data-api").DataApiSettings<entityType>;//move to api, and have api get context
-
-
 }
 export interface FindOptions<T> {
     /** filters the data

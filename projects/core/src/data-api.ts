@@ -2,7 +2,7 @@ import { EntitySettings } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
 import { Context, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { filterOf, FindOptions, Repository } from './remult3';
+import { checkEntityAllowed, filterOf, FindOptions, Repository } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -11,7 +11,7 @@ export class DataApi<T = any> {
     return this.options.name;
   }
   options: DataApiSettings<T>;
-  constructor(private repository: Repository<T>,private context:Context) {
+  constructor(private repository: Repository<T>, private context: Context) {
     this.options = this._getApiSettings();
   }
 
@@ -139,8 +139,36 @@ export class DataApi<T = any> {
       response.success(this.repository.getRowHelper(row).toApiJson());
     });
   }
-  private _getApiSettings(): DataApiSettings<T> {
-    return this.repository._getApiSettings();
+   _getApiSettings(): DataApiSettings<T> {
+
+    let options = this.repository.defs.evilOriginalSettings;
+    if (options.allowApiCrud !== undefined) {
+      if (options.allowApiDelete === undefined)
+        options.allowApiDelete = options.allowApiCrud;
+      if (options.allowApiInsert === undefined)
+        options.allowApiInsert = options.allowApiCrud;
+      if (options.allowApiUpdate === undefined)
+        options.allowApiUpdate = options.allowApiCrud;
+      if (options.allowApiRead === undefined)
+        options.allowApiRead = options.allowApiCrud;
+    }
+
+    return {
+      name: options.key,
+      allowRead: this.context.isAllowed(options.allowApiRead),
+      allowUpdate: (e) => checkEntityAllowed(this.context, options.allowApiUpdate, e),
+      allowDelete: (e) => checkEntityAllowed(this.context, options.allowApiDelete, e),
+      allowInsert: (e) => checkEntityAllowed(this.context, options.allowApiInsert, e),
+      requireId: this.context.isAllowed(options.apiRequireId),
+      get: {
+        where: x => {
+          if (options.apiDataFilter) {
+            return options.apiDataFilter(x, this.context);
+          }
+          return undefined;
+        }
+      }
+    }
   }
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
