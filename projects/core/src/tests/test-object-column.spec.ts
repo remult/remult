@@ -3,7 +3,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, FieldType } from '../remult3';
 
 
 
@@ -89,6 +89,23 @@ describe("test object column", () => {
 
 
 });
+class Phone {
+    constructor(private phone: string) {
+
+    }
+}
+@FieldType({
+    valueConverter: {
+        fromJson: x => x ? new Phone4(x) : null,
+        toJson: x => x ? x.phone : ''
+    }
+})
+class Phone4 {
+    constructor(private phone: string) {
+
+    }
+
+}
 
 @Entity({ key: 'objectColumnTest' })
 class ObjectColumnTest extends EntityBase {
@@ -117,15 +134,12 @@ class ObjectColumnTest extends EntityBase {
             toJson: x => x ? x.phone : ''
         }
     })
-    phone3: Phone
+    phone3: Phone;
+    @Field()
+    phone4: Phone4
 }
 
 interface person {
     firstName: string;
     lastName: string;
-}
-class Phone {
-    constructor(private phone: string) {
-
-    }
 }

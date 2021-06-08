@@ -44,7 +44,7 @@ export class DataApi<T = any> {
       findOptions.where = t => this.buildWhere(request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        let w = this.repository.translateWhereToFilter(findOptions.where);
+        let w = this.repository.defs.translateWhereToFilter(findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },
@@ -96,7 +96,7 @@ export class DataApi<T = any> {
   private buildWhere(request: DataApiRequest, filterBody: any) {
     var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
-      where = this.repository.translateWhereToFilter(this.options.get.where);
+      where = this.repository.defs.translateWhereToFilter(this.options.get.where);
     if (request) {
       where = new AndFilter(where, this.repository.extractWhere(request));
     }
@@ -116,7 +116,7 @@ export class DataApi<T = any> {
         where: x => {
           let where: Filter = this.repository.getIdFilter(id);
           if (this.options && this.options.get && this.options.get.where)
-            where = new AndFilter(where, this.repository.translateWhereToFilter(this.options.get.where));
+            where = new AndFilter(where, this.repository.defs.translateWhereToFilter(this.options.get.where));
           return where;
         }
       })

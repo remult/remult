@@ -31,7 +31,8 @@ export {
     supportsContains,
     ValueListFieldType,
     DateOnlyField,
-    DecimalField
+    DecimalField,
+    CaptionHelper
 } from './src/remult3';
 export { EntitySettings } from './src/entity';
 export {

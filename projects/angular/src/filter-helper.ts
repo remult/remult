@@ -1,7 +1,7 @@
 
 import { AndFilter, Filter } from '@remult/core';
-import { comparableFilterItem,  EntityField, EntityWhere,  FindOptions, Repository, supportsContains } from "@remult/core";
-import {  FieldDefinitions } from "@remult/core";
+import { comparableFilterItem, EntityField, EntityWhere, FindOptions, Repository, supportsContains } from "@remult/core";
+import { FieldDefinitions } from "@remult/core";
 import { getFieldDefinition } from '..';
 
 export class FilterHelper<rowType> {
@@ -78,9 +78,9 @@ export class FilterHelper<rowType> {
 
       if (opt.where) {
         let x = opt.where;
-        opt.where = r => new AndFilter(this.repository.translateWhereToFilter(x), this.repository.translateWhereToFilter(w));
+        opt.where = r => new AndFilter(this.repository.defs.translateWhereToFilter(x), this.repository.defs.translateWhereToFilter(w));
       }
-      else opt.where = r => this.repository.translateWhereToFilter(w);
+      else opt.where = r => this.repository.defs.translateWhereToFilter(w);
     });
   }
 }

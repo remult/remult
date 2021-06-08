@@ -21,7 +21,7 @@ class myEntity extends EntityBase {
 
 }
 
-describe("test where stuff", () => {
+describe("test decorator precedence", () => {
 
 
 

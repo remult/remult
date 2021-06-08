@@ -190,7 +190,12 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         let result: any = {};
         for (let index = 0; index < colKeys.length; index++) {
           const col = colKeys[index];
-          result[col.key] = col.valueConverter.fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
+          try {
+            result[col.key] = col.valueConverter.fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
+          }
+          catch (err) {
+            throw new Error("Failed to load from db:"+col.key+"\r\n"+err);
+          }
         }
         return result;
       });
@@ -211,7 +216,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
         resultFilter = x.resultIdFilter(id, data);
-      } if (x.dbReadOnly||x.isServerExpression) { }
+      } if (x.dbReadOnly || x.isServerExpression) { }
       else {
         let v = x.valueConverter.toDb(data[x.key]);
         if (v !== undefined) {
@@ -240,7 +245,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     f.isEqualTo(this.entity.idField, id);
     let statement = 'delete from ' + this.entity.dbName;
     statement += f.where;
-    return r.execute(statement).then(()=>{});
+    return r.execute(statement).then(() => { });
   }
   async insert(data: any): Promise<any> {
     await this.iAmUsed();
@@ -254,7 +259,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       if (x instanceof CompoundIdField) {
         resultFilter = x.resultIdFilter(undefined, data);
       }
-      if (x.dbReadOnly||x.isServerExpression) { }
+      if (x.dbReadOnly || x.isServerExpression) { }
 
       else {
         let v = x.valueConverter.toDb(data[x.key]);

@@ -192,8 +192,8 @@ export type FieldDefinitionsOf<Type> = {
 } & {
     find(col: FieldDefinitions | string): FieldDefinitions,
     [Symbol.iterator]: () => IterableIterator<FieldDefinitions>,
-    idField: FieldDefinitions,
-    createFilterOf(): filterOf<Type>
+    idField: FieldDefinitions
+    
 }
 
 
@@ -229,7 +229,9 @@ export interface EntityDefinitions<T = any> {
     readonly dbName: string,
     readonly fields: FieldDefinitionsOf<T>,
     readonly caption: string;
-    readonly evilOriginalSettings: EntitySettings
+    readonly evilOriginalSettings: EntitySettings;
+    translateWhereToFilter(where: EntityWhere<T>): Filter;
+    createFilterOf(): filterOf<T>
 
 
 }
@@ -284,7 +286,7 @@ export interface Repository<T> {
     isIdField(col: FieldDefinitions): boolean;
     createIdInFilter(items: T[]): Filter;
 
-    translateWhereToFilter(where: EntityWhere<T>): Filter;
+    
     packWhere(where: EntityWhere<T>): any;
     unpackWhere(packed: any): Filter;
     extractWhere(filterInfo: {
@@ -370,6 +372,8 @@ export type filterOf<Type> = {
     [Properties in keyof Type]: Type[Properties] extends number | Date ? comparableFilterItem<Type[Properties]> :
     Type[Properties] extends string ? supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]> :
     supportsContains<Type[Properties]>
+}&{
+    translateWhereToFilter(where: EntityWhere<Type>): Filter;
 }
 
 export type ClassType<T> = { new(...args: any[]): T };

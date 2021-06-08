@@ -3,7 +3,7 @@
         <ng-container *ngFor="let line of col">
             <div class="one-line">
                 <ng-container *ngFor="let map of line">
-                    <data-control [settings]="settings.columns" [map]="map" [record]="settings.columns.currentRow()" *ngIf="settings.columns.__visible(map,settings.columns.currentRow())">
+                    <data-control [settings]="settings.fields" [map]="map" [record]="settings.fields.currentRow()" *ngIf="settings.fields.__visible(map,settings.fields.currentRow())">
                     </data-control>
                 </ng-container>
             </div>

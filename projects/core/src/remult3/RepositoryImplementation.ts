@@ -301,7 +301,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!options.orderBy) {
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
-        opt.where = this.translateWhereToFilter(options.where);
+        opt.where = this.defs.translateWhereToFilter(options.where);
         opt.orderBy = this.translateOrderByToSort(options.orderBy);
 
         opt.limit = options.limit;
@@ -330,7 +330,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
     async count(where?: EntityWhere<T>): Promise<number> {
-        return this.edp.count(this.translateWhereToFilter(where));
+        return this.edp.count(this.defs.translateWhereToFilter(where));
     }
     async findFirst(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
 
@@ -369,29 +369,9 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     }
 
-    translateWhereToFilter(where: EntityWhere<T>, ignoreFixed = false): Filter {
-        let entity = this._info.createFilterOf();
-        if (this._info.entityInfo.fixedFilter && !ignoreFixed) {
-            if (Array.isArray(where))
-                where.push(this._info.entityInfo.fixedFilter);
-            else
-                where = [where, this._info.entityInfo.fixedFilter];
-        }
-        if (Array.isArray(where)) {
-            return new AndFilter(...where.map(x =>
-                this.translateWhereToFilter(x, true)
-            ));
 
-        }
-        else if (typeof where === 'function') {
-            let r = where(entity);
-            if (Array.isArray(r))
-                return new AndFilter(...r);
-            return r;
-        }
-    }
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T) {
-        let w = this.translateWhereToFilter(where);
+        let w = this.defs.translateWhereToFilter(where);
 
         if (w) {
             w.__applyToConsumer({
@@ -415,7 +395,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     packWhere(where: EntityWhere<T>) {
         if (!where)
             return {};
-        return packToRawWhere(this.translateWhereToFilter(where));
+        return packToRawWhere(this.defs.translateWhereToFilter(where));
 
     }
     unpackWhere(packed: any): Filter {
@@ -959,6 +939,22 @@ export function getEntityOf<T>(item: T): rowHelper<T> {
     return x;
 
 }
+export const CaptionHelper = {
+    determineCaption: (context: Context, key: string, caption: string) => caption
+}
+export function buildCaption(caption: string | ((context: Context) => string), key: string, context: Context): string {
+    let result: string;
+    if (typeof (caption) === "function") {
+        if (context)
+            result = caption(context);
+    }
+    else if (caption)
+        result = caption;
+    result = CaptionHelper.determineCaption(context, key, result);
+    if (result)
+        return result;
+    return makeTitle(key);
+}
 
 export class columnDefsImpl implements FieldDefinitions {
     constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>, private context: Context) {
@@ -970,12 +966,8 @@ export class columnDefsImpl implements FieldDefinitions {
             this.readonly = this.colInfo.settings.allowApiUpdate;
         if (!this.inputType)
             this.inputType = this.valueConverter.inputType;
-        if (typeof (colInfo.settings.caption) === "function") {
-            if (context)
-                this.caption = colInfo.settings.caption(context);
-        }
-        else
-            this.caption = colInfo.settings.caption;
+        this.caption = buildCaption(colInfo.settings.caption, colInfo.key, context);
+
 
 
 
@@ -1018,7 +1010,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
         let r = {
             find: (c: FieldDefinitions<any>) => r[c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator](),
-            createFilterOf: () => this.createFilterOf()
+
         };
 
         for (const x of columnsInfo) {
@@ -1029,11 +1021,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;
-        if (entityInfo.caption)
-            if (typeof entityInfo.caption === "function")
-                this.caption = entityInfo.caption(context);
-            else
-                this.caption = entityInfo.caption;
+        this.caption = buildCaption(entityInfo.caption, entityInfo.key, context);
         if (typeof entityInfo.dbName === "string")
             this.dbName = entityInfo.dbName;
         else if (typeof entityInfo.dbName === "function")
@@ -1047,6 +1035,27 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
                 this.idField = [...this.fields][0];
         }
     }
+    translateWhereToFilter(where: EntityWhere<T>, ignoreFixed = false): Filter {
+        let entity = this.createFilterOf();
+        if (this.entityInfo.fixedFilter && !ignoreFixed) {
+            if (Array.isArray(where))
+                where.push(this.entityInfo.fixedFilter);
+            else
+                where = [where, this.entityInfo.fixedFilter];
+        }
+        if (Array.isArray(where)) {
+            return new AndFilter(...where.map(x =>
+                this.translateWhereToFilter(x, true)
+            ));
+
+        }
+        else if (typeof where === 'function') {
+            let r = where(entity);
+            if (Array.isArray(r))
+                return new AndFilter(...r);
+            return r;
+        }
+    }
 
     dbAutoIncrementId: boolean;
     idField: FieldDefinitions<any>;
@@ -1058,7 +1067,9 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
     caption: string;
 
     createFilterOf(): filterOf<T> {
-        let r = {};
+        let r = {
+            translateWhereToFilter: this.translateWhereToFilter
+        };
         for (const c of this.fields) {
             r[c.key] = new filterHelper(c);
         }
@@ -1218,6 +1229,7 @@ export function Field<T = any, colType = any>(settings?: FieldSettings<colType, 
 }
 const storableMember = Symbol("storableMember");
 export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
+    
     if (settings.dataType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.dataType);
         if (settingsOnTypeLevel) {
@@ -1227,9 +1239,7 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
             }
         }
     }
-    if (!settings.caption && settings.key) {
-        settings.caption = makeTitle(settings.key);
-    }
+
     if (settings.dataType == String) {
         let x = settings as unknown as FieldSettings<String>;
         if (!settings.valueConverter)
@@ -1278,7 +1288,7 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     if (!settings.valueConverter.fromInput) {
         settings.valueConverter.fromInput = x => settings.valueConverter.fromJson(x);
     }
-    
+
 
 
 

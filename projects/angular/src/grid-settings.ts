@@ -451,7 +451,7 @@ export class GridSettings<rowType>  {
 
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(this.repository.translateWhereToFilter(x), this.repository.createIdInFilter(this.selectedRows))
+        r.where = e => new AndFilter(this.repository.defs.translateWhereToFilter(x), this.repository.createIdInFilter(this.selectedRows))
       }
       else
         r.where = e => this.repository.createIdInFilter(this.selectedRows);

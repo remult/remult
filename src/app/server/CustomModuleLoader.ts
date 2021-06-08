@@ -31,6 +31,9 @@ export class CustomModuleLoader {
                 case "@remult/core/src/server-action":
                     request = request = process.cwd() + root + '/core/src/server-action';
                     break;
+                    case "@remult/core/valueConverters":
+                    request = request = process.cwd() + root + '/core/valueConverters';
+                    break;
             }
 
 
