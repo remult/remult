@@ -193,8 +193,8 @@ export type FieldDefinitionsOf<Type> = {
     [Properties in keyof Type]: FieldDefinitions
 } & {
     find(col: FieldDefinitions | string): FieldDefinitions,
-    [Symbol.iterator]: () => IterableIterator<FieldDefinitions>,
-    idField: FieldDefinitions
+    [Symbol.iterator]: () => IterableIterator<FieldDefinitions>
+    
 
 }
 

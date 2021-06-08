@@ -29,7 +29,7 @@ export class PostgresDataProvider implements SqlImplementation {
     }
     async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefinitions) {
         let r = await command.execute(insertStatementString);
-        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.dbName + "','" + entity.fields.idField.dbName + "'));");
+        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.dbName + "','" + entity.idField.dbName + "'));");
         return +r.rows[0].currval;
     }
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
@@ -120,11 +120,11 @@ export class PostgresSchemaBuilder {
                             result += ',';
                         result += '\r\n  ';
                         //@ts-ignore
-                        if (x == e.fields.idField && e.__options.dbAutoIncrementId)
+                        if (x == e.idField && e.__options.dbAutoIncrementId)
                             result += x.dbName + ' serial';
                         else {
                             result += this.addColumnSqlSyntax(x);
-                            if (x == e.fields.idField)
+                            if (x == e.idField)
                                 result += ' primary key';
                         }
                     }
