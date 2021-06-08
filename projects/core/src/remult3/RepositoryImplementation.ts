@@ -40,19 +40,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
             return r;
         }
     }
-    createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T> {
-        if (!orderBy)
-            orderBy = this._info.entityInfo.defaultOrderBy;
-        if (!orderBy)
-            orderBy = x => ({ field: this._info.idField })
-        return x => {
-            let sort = Sort.translateOrderByToSort(this.defs, orderBy);
-            if (!sort.Segments.find(x => x.field == this.defs.idField)) {
-                sort.Segments.push({ field: this.defs.idField });
-            }
-            return sort.Segments;
-        }
-    }
+
     private _info: EntityFullInfo<T>;
     private _lookup = new Lookup(this);
     private __edp: EntityDataProvider;
@@ -132,7 +120,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
 
-  
+
 
 
     iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T> {
@@ -194,7 +182,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
                 if (!opts.where) {
                     opts.where = x => undefined;
                 }
-                opts.orderBy = self.createAUniqueSort(opts.orderBy);
+                let ob = opts.orderBy;
+                opts.orderBy = x => Sort.createUniqueSort(self.defs, ob).Segments;
                 let pageSize = iterateConfig.pageSize;
 
 
@@ -1011,7 +1000,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
     dbAutoIncrementId: boolean;
     idField: FieldDefinitions<any>;
-    
+
     createIdInFilter(items: T[]): Filter {
         if (items.length > 0)
             return new OrFilter(...items.map(x => this.getIdFilter(getEntityOf(x).getId())));

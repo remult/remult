@@ -33,6 +33,18 @@ export class Sort {
     return sort;
 
   }
+  static createUniqueSort<T>(entityDefs: EntityDefinitions<T>, orderBy: EntityOrderBy<T>): Sort {
+    if (!orderBy)
+      orderBy = entityDefs.evilOriginalSettings.defaultOrderBy;
+    if (!orderBy)
+      orderBy = x => ({ field: entityDefs.idField })
+
+    let sort = Sort.translateOrderByToSort(entityDefs, orderBy);
+    if (!sort.Segments.find(x => x.field == entityDefs.idField)) {
+      sort.Segments.push({ field: entityDefs.idField });
+    }
+    return sort;
+  }
 }
 export interface SortSegment {
   field: FieldDefinitions,

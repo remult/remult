@@ -14,7 +14,7 @@ describe("test paged foreach ", () => {
     iterateConfig.pageSize = 2;
 
     itAsync("basic foreach with where", async () => {
-        let [c]  = await createData(async insert => {
+        let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
             await insert(3, 'yoni');
@@ -118,7 +118,7 @@ describe("test paged foreach ", () => {
         let context = new Context();
         let e = context.for(Categories) as RepositoryImplementation<Categories>;
         function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldDefinitions[]) {
-            let s = Sort.translateOrderByToSort(e.defs, e.createAUniqueSort(orderBy));
+            let s = Sort.createUniqueSort(e.defs, orderBy);
             expect(s.Segments.map(x => x.field)).toEqual(sort);
         }
         test(x => x.id, e.defs.fields.id);
