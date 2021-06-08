@@ -8,7 +8,8 @@ import { Filter } from "./filter/filter-interfaces";
 
 export interface EntitySettings<T = any> {
 
-  id?: (entity: FieldDefinitionsOf<T>) => FieldDefinitions,
+  id?: (entity: FieldDefinitionsOf<T>) => FieldDefinitions;
+  dbAutoIncrementId?: boolean;
 
   /**
  * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
@@ -86,6 +87,5 @@ export interface EntitySettings<T = any> {
 
   validation?: (e: T) => Promise<any> | any;
 
-  dbAutoIncrementId?: boolean;
 }
 

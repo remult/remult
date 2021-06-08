@@ -65,7 +65,7 @@ class testBoolCreate123 extends EntityBase {
     ok123: Boolean = false;
     @ServerMethod({ allowed: true })
     async testIt() {
-        console.log("in testit");
+        
         await this._.save();
 
     }

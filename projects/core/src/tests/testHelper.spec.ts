@@ -67,8 +67,7 @@ export class Done {
     this.happened = true;
   }
   test(message = 'expected to be done') {
-    if (!this.happened)
-      fail(message);
+    expect(this.happened).toBe(true, message);
   }
 
 }
@@ -81,7 +80,7 @@ Action.provider = {
   post: async (urlreq, data) => {
     return await new Promise((res, r) => {
       let found = false;
-      //   if (false)
+
       actionInfo.allActions.forEach(action => {
 
         action[serverActionField].

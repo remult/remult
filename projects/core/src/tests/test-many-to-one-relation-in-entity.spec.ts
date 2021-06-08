@@ -1,7 +1,7 @@
 import {  ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase } from '../remult3';
-import { async } from '@angular/core/testing';
+import { async, waitForAsync } from '@angular/core/testing';
 
 
 
@@ -79,17 +79,6 @@ describe("many to one relation", () => {
         expect(p.category).toBe(c2);
     }));
 
-    /*
-[V] where category =
-[V] was changed
-[V] wait load - what to do with it.
-[V] set (so it'll be in the cache immediately)
-[V] redescribe the get experience (null, loading, found)
-[V] null
-[V] original value?
-
-
-*/
     it("test wait load", async(async () => {
         let mem = new InMemoryDataProvider();
         let context = new ServerContext(mem);
@@ -117,7 +106,7 @@ describe("many to one relation", () => {
 
 
     }));
-    it("test null", async(async () => {
+    it("test null", waitForAsync(async () => {
         let mem = new InMemoryDataProvider();
         let context = new ServerContext(mem);
 

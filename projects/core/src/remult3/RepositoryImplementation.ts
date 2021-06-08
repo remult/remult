@@ -571,7 +571,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         }
     }
     getId() {
-        return this.instance[this.info.idField.key];
+        if (this.info.idField instanceof CompoundIdField)
+            return this.info.idField.getId(this.instance);
+        else
+            return this.instance[this.info.idField.key];
     }
 
 
@@ -697,9 +700,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         }
         await this.calcServerExpression();
         if (this.repository.defs.idField instanceof CompoundIdField) {
-            data.columns.idField.__addIdToPojo(data);
-        }
-        this.id = data[this.repository.defs.idField.key];
+            this.id = this.repository.defs.idField.getId(this.instance);
+        } else
+            this.id = data[this.repository.defs.idField.key];
     }
     private id;
     public getOriginalId() {
@@ -1011,7 +1014,10 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
         return col.key == this.idField.key;
     }
     getIdFilter(id: any): Filter {
-        return new Filter(x => x.isEqualTo(this.idField, id));
+        if (this.idField instanceof CompoundIdField)
+            return this.idField.isEqualTo(id);
+        else
+            return new Filter(x => x.isEqualTo(this.idField, id));
     }
 
     fields: FieldDefinitionsOf<T>;
@@ -1203,28 +1209,7 @@ export function Entity<T>(options: EntitySettings<T>) {
 
 
 
-export class CompoundId implements FieldDefinitions<string>{
-    constructor(...columns: FieldDefinitions[]) {
-        if (false)
-            console.log(columns);
-    }
-    evilOriginalSettings: FieldSettings<any, any>;
-    valueConverter: ValueConverter<string>;
-    target: ClassType<any>;
-    readonly: true;
 
-    allowNull: boolean;
-    dbReadOnly: boolean;
-    isServerExpression: boolean;
-    key: string;
-    caption: string;
-    inputType: string;
-    dbName: string;
-
-    dataType: any;
-
-
-}
 function checkEntityAllowed(context: Context, x: EntityAllowed<any>, entity: any) {
     if (Array.isArray(x)) {
         {

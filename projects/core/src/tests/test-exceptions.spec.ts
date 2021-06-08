@@ -45,12 +45,10 @@ describe("test exception", () => {
             expect(x._.fields.id.error).toBe('error for id');
             expect(err.message).toBe("error");
             expect(err.modelState.id).toBe('error for id');
-      //      expect(err.exception.error.message).toBe("error");
             ok.ok();
         }
         ok.test();
 
-        //   x.__entityData
 
     });
 

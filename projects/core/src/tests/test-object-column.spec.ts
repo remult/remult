@@ -17,11 +17,7 @@ describe("test object column", () => {
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
-    // itAsync("test basics with wsql", async () => {
-    //     await deleteAll();
-    //     var x = context.for(ObjectColumnTest);
-    //     x.getCachedById(1);
-    // });
+  
     itAsync("test basics with wsql", async () => {
         await deleteAll();
         var x = context.for(ObjectColumnTest).create();

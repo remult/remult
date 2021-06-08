@@ -48,6 +48,7 @@ import { RowEvents } from "../__EntityValueProvider";
 [] test dateonly field decorator  on function parameter
 
 [] instead of row, use entity
+[] test data control with number, make sure it updates on blur
 
 [] use helmet instead of force https
 [] fix timeout by using a repeat mechanism in context.
@@ -58,7 +59,7 @@ import { RowEvents } from "../__EntityValueProvider";
 ## TODO
 
 [V] "test object column"
-[] review repository api - and consider moving stuff to defs
+[V] review repository api - and consider moving stuff to defs
 [V] fix extends to be smarter
 [V] "order by api"
 [X] test default value set in the pojo itself: a=0;
@@ -78,8 +79,9 @@ import { RowEvents } from "../__EntityValueProvider";
 [V]"getArray works with filter and multiple values with closed list columns"
 
 ## compound id column
-[] "compound id"
-[] reconsider the IdColumn member - might make sense to remove it
+[V] "compound id"
+[V] reconsider the IdColumn member - might make sense to remove it
+[] sql database, update of row where id is not named id is compromised
 
 ## review with Yoni
 [] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
@@ -119,27 +121,27 @@ import { RowEvents } from "../__EntityValueProvider";
 ## remult angular
 [V] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
 [V] fix grid filter on string to be contains if not force equals - and same for object
-[] "test column value change"
-[]"test filter works with user filter"
-[]"test filter works with selected rows"
-[]"test select rows in page is not select all"
-[] "column drop down"
-[] "column drop down with promise"
-[] "column drop down with promise"
-[] "sort is displayed right on start"
-[] "sort is displayed right"
-[] "column drop down 1"
-[] "works ok with filter"
-[] "uses a saparate column"
+[V] "test column value change"
+[V]"test filter works with user filter"
+[V]"test filter works with selected rows"
+[V]"test select rows in page is not select all"
+[V] "column drop down"
+[V] "column drop down with promise"
+[V] "column drop down with promise"
+[V] "sort is displayed right on start"
+[V] "sort is displayed right"
+[V] "column drop down 1"
+[V] "works ok with filter"
+[V] "uses a saparate column"
 [V] redesign extend 
-[] fix ignore id in id Entity
-[] fix sort method on grid settings
-[] fix getColumnsFromObject and it's usages
-[] make sure that column will be readonly if allowApiUpdateIsFalse
-[] data area with local columns "get value function works"
-    [] "test consolidate"
-    [] "works without entity"
-    [] "get value function works"
+[V] fix ignore id in id Entity
+[V] fix sort method on grid settings
+[V] fix getColumnsFromObject and it's usages
+[V] make sure that column will be readonly if allowApiUpdateIsFalse
+[V] data area with local columns "get value function works"
+    [V] "test consolidate"
+    [V] "works without entity"
+    [V] "get value function works"
 
 ## remult angular future
 [] change the getValue - to  displayValue
@@ -201,12 +203,6 @@ export type FieldDefinitionsOf<Type> = {
 
 export type sortOf<Type> = {
     [Properties in keyof Type]: SortSegment & { descending(): SortSegment }
-}
-export type idOf<Type> = {
-    [Properties in keyof Type]: IdDefs
-}
-export interface IdDefs {
-
 }
 
 export interface EntityField<T, entityType = any> {
@@ -356,7 +352,7 @@ export interface supportsContains<x> extends filterOptions<x> {
 
 export type filterOf<Type> = {
     [Properties in keyof Type]: Type[Properties] extends number | Date ? comparableFilterItem<Type[Properties]> :
-    Type[Properties] extends string ? supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]> :
+    Type[Properties] extends string ? (supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]>) :
     supportsContains<Type[Properties]>
 }
 

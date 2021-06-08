@@ -3,11 +3,12 @@
 import { createData, } from './RowProvider.spec';
 import { fitAsync, itAsync } from './testHelper.spec';
 import { Context, iterateConfig } from '../context';
-import { Entity, EntityBase, Field, CompoundId, EntityOrderBy, RepositoryImplementation } from '../remult3';
+import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityWhere } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldDefinitions } from '../column-interfaces';
-import { GridSettings } from '../../../angular';
 import { Sort } from '../sort';
+import { CompoundIdField } from '../column';
+import { Filter } from '../filter/filter-interfaces';
 
 
 describe("test paged foreach ", () => {
@@ -125,115 +126,102 @@ describe("test paged foreach ", () => {
         test(x => x.categoryName, e.defs.fields.categoryName, e.defs.fields.id);
     });
 
-    // itAsync("unique sort and  compound id", async () => {
-    //     let context = new Context();
+    itAsync("unique sort and  compound id", async () => {
+        let context = new Context();
 
-    //     let e = context.for(theTable).create();
-    //     function test<T >(blabla: T, orderBy: EntityOrderBy<T>, ...sort: Column[]) {
-    //         let s = extractSort(createAUniqueSort(orderBy, e)(e));
-    //         expect(s.Segments.map(x => x.column)).toEqual(sort);
-    //     }
-    //     test(e, x => [x.b, x.c], e.b, e.c);
-    //     test(e, x => x.a, e.a, e.b, e.c);
-    //     test(e, x => x.b, e.b, e.c);
-    //     test(e, x => x.c, e.c, e.b);
-    // });
-    // itAsync("create rows after filter compound id", async () => {
-    //     let context = new Context();
-    //     let theTable = class EntityBase {
-    //         a: string;
-    //         b: string;
-    //         c: string;
-    //     }
-    //     Entity<typeof theTable.prototype>({ name: '', id: t => [t.a, t.b] })(theTable);
+        let eDefs = context.for(theTable).defs;
+        let e = eDefs.fields;
+
+        function test(orderBy: EntityOrderBy<theTable>, ...sort: FieldDefinitions[]) {
+            let s = Sort.createUniqueSort(eDefs, orderBy);
+            expect(s.Segments.map(x => x.field)).toEqual(sort.map(x => x));
+        }
+        test(x => [x.b, x.c], e.b, e.c, e.a);
+        test(x => [x.a, x.b], e.a, e.b);
+        test(x => x.a, e.a, e.b);
+        test(x => x.b, e.b, e.a);
+        test(x => x.c, e.c, e.a, e.b);
+    });
+    itAsync("create rows after filter compound id", async () => {
+        let context = new Context();
 
 
+        let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
+        let e = eDefs.create();
+        e.a = 'a';
+        e.b = 'b';
+        e.c = 'c';
+        function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityWhere<theTable>) {
+            expect(JSON.stringify(Filter.packWhere(eDefs.defs, eDefs.createAfterFilter(orderBy, e)))).toEqual(
+                JSON.stringify(Filter.packWhere(eDefs.defs, expectedWhere)));
+        }
+        test(x => x.a, x => x.a.isGreaterThan('a'));
+        test(x => [x.a.descending()], x => x.a.isLessThan('a'));
+        test(x => [x.a, x.b], x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))));
 
-    //     let e = context.for_old(theTable).create();
-    //     e.a.value = 'a';
-    //     e.b.value = 'b';
-    //     e.c.value = 'c';
-    //     function test<T extends Entity>(theEntity: T, orderBy: EntityOrderBy<T>, expectedWhere: EntityWhere<T>) {
-    //         expect(JSON.stringify(packWhere(theEntity, createAfterFilter(orderBy, theEntity)))).toEqual(
-    //             JSON.stringify(packWhere(theEntity, expectedWhere)));
-    //     }
-    //     test(e, x => x.a, x => x.a.isGreaterThan('a'));
-    //     test(e, x => [{ column: x.a, descending: true }], x => x.a.isLessThan('a'));
-    //     test(e, x => [x.a, x.b], x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))));
+    });
+    itAsync("create rows after filter, values are frozen when filter is created", async () => {
+        let context = new Context();
 
-    // });
-    // itAsync("create rows after filter, values are frozen when filter is created", async () => {
-    //     let context = new Context();
-    //     let theTable = class extends Entity {
-    //         a = new StringColumn();
-    //         b = new StringColumn();
-    //         c = new StringColumn();
-    //         id = new CompoundIdColumn(this.b, this.c);
-    //     }
 
-    //     let e = context.for_old(theTable).create();
-    //     e.a.value = 'a';
-    //     e.b.value = 'b';
-    //     e.c.value = 'c';
+        let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
+        let e = eDefs.create();
+        e.a = 'a';
+        e.b = 'b';
+        e.c = 'c';
 
-    //     let f = createAfterFilter(x => [x.a, x.b], e);
-    //     e.a.value = '1';
-    //     e.b.value = '2';
-    //     expect(JSON.stringify(packWhere(e, f))).toEqual(
-    //         JSON.stringify(packWhere(e, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
+        let f = eDefs.createAfterFilter(x => [x.a, x.b], e);
+        e.a = '1';
+        e.b = '2';
+        expect(JSON.stringify(Filter.packWhere(eDefs.defs, f))).toEqual(
+            JSON.stringify(Filter.packWhere<theTable>(eDefs.defs, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
 
-    // });
-    // itAsync("serialize filter with or", async () => {
-    //     let context = new Context();
-    //     let theTable = class extends Entity {
-    //         a = new StringColumn();
-    //         b = new StringColumn();
-    //         c = new StringColumn();
-    //         id = new CompoundIdColumn(this.b, this.c);
-    //     }
+    });
+    itAsync("serialize filter with or", async () => {
+        let context = new Context();
+        let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
+        let e = eDefs.create();
 
-    //     let e = context.for_old(theTable).create();
-
-    //     function test<T extends Entity>(theEntity: T, expectedWhere: EntityWhere<T>, expected: any) {
-    //         expect(JSON.stringify(packWhere(theEntity, expectedWhere))).toEqual(
-    //             JSON.stringify(expected));
-    //     }
-    //     test(e,
-    //         x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')).or(x.a.isGreaterThan('a')),
-    //         {
-    //             OR: [
-    //                 {
-    //                     a: 'a',
-    //                     b_gt: 'b'
-    //                 },
-    //                 {
-    //                     a_gt: 'a'
-    //                 }
-    //             ]
-    //         });
-    //     test(e,
-    //         x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')),
-    //         {
-    //             a: 'a',
-    //             b_gt: 'b'
-    //         });
-    //     test(e,
-    //         x => x.a.isEqualTo('a').or(x.b.isGreaterThan('b')),
-    //         {
-    //             OR: [
-    //                 { a: 'a' },
-    //                 { b_gt: 'b' }]
-    //         });
+        function test(expectedWhere: EntityWhere<theTable>, expected: any) {
+            expect(JSON.stringify(Filter.packWhere(eDefs.defs, expectedWhere))).toEqual(
+                JSON.stringify(expected));
+        }
+        test(
+            x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')).or(x.a.isGreaterThan('a')),
+            {
+                OR: [
+                    {
+                        a: 'a',
+                        b_gt: 'b'
+                    },
+                    {
+                        a_gt: 'a'
+                    }
+                ]
+            });
+        test(
+            x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')),
+            {
+                a: 'a',
+                b_gt: 'b'
+            });
+        test(
+            x => x.a.isEqualTo('a').or(x.b.isGreaterThan('b')),
+            {
+                OR: [
+                    { a: 'a' },
+                    { b_gt: 'b' }]
+            });
 
 
 
 
-    // });
+    });
 })
 
 @Entity<theTable>({
     key: '',
-    id: t => new CompoundId(t.a, t.b)
+    id: t => new CompoundIdField(t.a, t.b)
 })
 class theTable extends EntityBase {
     @Field()

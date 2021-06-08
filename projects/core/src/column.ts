@@ -23,43 +23,56 @@ export function makeTitle(name: string) {
 
 
 
-export class CompoundIdField {
-  columns: FieldDefinitions[];
+export class CompoundIdField implements FieldDefinitions<string> {
+  fields: FieldDefinitions[];
   constructor(...columns: FieldDefinitions[]) {
     // super({
     //   serverExpression: () => this.getId()
     // });
-    this.columns = columns;
+    this.fields = columns;
   }
-  __isVirtual() { return true; }
-  isEqualTo(value: FieldDefinitions<string> | string): Filter {
-    return new Filter(add => {
-      // let val = this.__getVal(value);
-      // let id = val.split(',');
-      // let result: Filter;
-      // this.columns.forEach((c, i) => {
-      //   if (!result)
-      //     result = c.isEqualTo(id[i]);
-      //   else
-      //     result = new AndFilter(result, c.isEqualTo(id[i]));
-      // });
-      // return result.__applyToConsumer(add);
-    });
-  }
-  private getId() {
+  getId(instance: any) {
     let r = "";
-    this.columns.forEach(c => {
-      // if (r.length > 0)
-      //   r += ',';
-      // r += c.rawValue;
+    this.fields.forEach(c => {
+      if (r.length > 0)
+        r += ',';
+      r += instance[c.key];
     });
     return r;
   }
+  evilOriginalSettings: FieldSettings<any, any>;
+  get valueConverter(): ValueConverter<string> {
+    throw new Error("cant get value converter of compound id");
+  }
+
+  target: ClassType<any>;
+  readonly: true;
+
+  allowNull: boolean;
+  dbReadOnly: boolean;
+  isServerExpression: boolean;
+  key: string;
+  caption: string;
+  inputType: string;
+  dbName: string;
+
+  dataType: any
+  __isVirtual() { return true; }
+  isEqualTo(value: FieldDefinitions<string> | string): Filter {
+    return new Filter(add => {
+      let val = value.toString();
+      let id = val.split(',');
+      this.fields.forEach((c, i) => {
+        add.isEqualTo(c, id[i]);
+      });
+    });
+  }
+
   __addIdToPojo(p: any) {
     if (p.id)
       return;
     let r = "";
-    this.columns.forEach(c => {
+    this.fields.forEach(c => {
       // if (r.length > 0)
       //   r += ',';
       // r += p[c.defs.key];
@@ -69,22 +82,18 @@ export class CompoundIdField {
   }
   resultIdFilter(id: string, data: any) {
     return new Filter(add => {
-      // let idParts: any[] = [];
-      // if (id != undefined)
-      //   idParts = id.split(',');
-      // let result: Filter;
-      // this.columns.forEach((c, i) => {
-      //   let val = undefined;
-      //   if (i < idParts.length)
-      //     val = idParts[i];
-      //   if (data[c.defs.key] != undefined)
-      //     val = data[c.defs.key];
-      //   if (!result)
-      //     result = c.isEqualTo(val);
-      //   else
-      //     result = new AndFilter(result, c.isEqualTo(val));
-      // });
-      // return result.__applyToConsumer(add);
+      let idParts: any[] = [];
+      if (id != undefined)
+        idParts = id.split(',');
+      this.fields.forEach((c, i) => {
+        let val = undefined;
+        if (i < idParts.length)
+          val = idParts[i];
+        if (data[c.key] != undefined)
+          val = data[c.key];
+        add.isEqualTo(c, val);
+      });
+
     });
   }
 }

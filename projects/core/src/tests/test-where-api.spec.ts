@@ -27,26 +27,3 @@ describe("test where stuff", () => {
 
 
 });
-
-// *********************************************
-
-// ***** only supported in Typescript 3.7  *****
-
-//********************************************** */
-// let a: hasWhere<theClass> = {
-//     where: x => x.a.isEqualTo(1)
-// }
-// let b: hasWhere<theClass> = {
-//     where: [x => x.a.isEqualTo(2), a.where]
-// }
-// class theClass {
-//     a: number;
-//     b: number;
-// }
-
-// export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]));
-// export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[])) | EntityWhereItem<entityType>[];
-
-// export interface hasWhere<T> {
-//     where: EntityWhere<T>;
-// }

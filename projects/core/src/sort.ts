@@ -1,4 +1,5 @@
 
+import { CompoundIdField } from "./column";
 import { FieldDefinitions } from "./column-interfaces";
 import { EntityDefinitions, EntityOrderBy, sortOf } from "./remult3";
 export class Sort {
@@ -28,8 +29,11 @@ export class Sort {
     let sort: Sort;
     if (Array.isArray(resultOrder))
       sort = new Sort(...resultOrder);
-    else
+    else {
+      if (!resultOrder)
+        return new Sort();
       sort = new Sort(resultOrder);
+    }
     return sort;
 
   }
@@ -40,9 +44,17 @@ export class Sort {
       orderBy = x => ({ field: entityDefs.idField })
 
     let sort = Sort.translateOrderByToSort(entityDefs, orderBy);
-    if (!sort.Segments.find(x => x.field == entityDefs.idField)) {
-      sort.Segments.push({ field: entityDefs.idField });
+    if (entityDefs.idField instanceof CompoundIdField) {
+        for (const field of entityDefs.idField.fields) {
+          if (!sort.Segments.find(x => x.field == field)) {
+            sort.Segments.push({ field: field });
+          }    
+        }
     }
+    else
+      if (!sort.Segments.find(x => x.field == entityDefs.idField)) {
+        sort.Segments.push({ field: entityDefs.idField });
+      }
     return sort;
   }
 }

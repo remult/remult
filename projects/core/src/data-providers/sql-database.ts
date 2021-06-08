@@ -146,16 +146,15 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         options.where.__applyToConsumer(where);
         select += where.where;
       }
-      if (options.limit && !options.orderBy) {
-        options.orderBy = new Sort({ field: this.entity.idField })
+      if (options.limit) {
+        options.orderBy = Sort.createUniqueSort(this.entity, x => options.orderBy?.Segments);
       }
       if (options.orderBy) {
         let first = true;
         let segs: SortSegment[] = [];
         for (const s of options.orderBy.Segments) {
           if (s.field instanceof CompoundIdField) {
-            throw new Error("compound column");
-            //      segs.push(...s.column.columns.map(c => ({ column: c, descending: s.descending })))
+            segs.push(...s.field.fields.map(c => ({ field: c, isDescending: s.isDescending })))
           }
           else segs.push(s);
         }
@@ -194,7 +193,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
             result[col.key] = col.valueConverter.fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
           }
           catch (err) {
-            throw new Error("Failed to load from db:"+col.key+"\r\n"+err);
+            throw new Error("Failed to load from db:" + col.key + "\r\n" + err);
           }
         }
         return result;
@@ -206,13 +205,13 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    f.isEqualTo(this.entity.idField, id);
+    this.entity.getIdFilter(id).__applyToConsumer(f);
 
     let statement = 'update ' + this.entity.dbName + ' set ';
     let added = false;
-    let resultFilter = new Filter(f => f.isEqualTo(this.entity.idField, id));
+    let resultFilter = this.entity.getIdFilter(id);
     if (data.id != undefined)
-      resultFilter = new Filter(f => f.isEqualTo(this.entity.idField, data.id));
+      resultFilter = this.entity.getIdFilter(data.id);
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
         resultFilter = x.resultIdFilter(id, data);
@@ -242,7 +241,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     await this.iAmUsed();
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    f.isEqualTo(this.entity.idField, id);
+    this.entity.getIdFilter(id).__applyToConsumer(f);
     let statement = 'delete from ' + this.entity.dbName;
     statement += f.where;
     return r.execute(statement).then(() => { });
@@ -254,11 +253,13 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let cols = '';
     let vals = '';
     let added = false;
-    let resultFilter = new Filter(x => x.isEqualTo(this.entity.idField, data[this.entity.idField.key]));
+    let resultFilter: Filter;
+    if (this.entity.idField instanceof CompoundIdField)
+      resultFilter = this.entity.idField.resultIdFilter(undefined, data);
+    else
+      resultFilter = this.entity.getIdFilter(data[this.entity.idField.key]);
     for (const x of this.entity.fields) {
-      if (x instanceof CompoundIdField) {
-        resultFilter = x.resultIdFilter(undefined, data);
-      }
+
       if (x.dbReadOnly || x.isServerExpression) { }
 
       else {

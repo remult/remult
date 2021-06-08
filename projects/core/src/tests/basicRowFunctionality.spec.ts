@@ -21,10 +21,11 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../da
 import { Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, CompoundId, decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
+import { Field,  decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
+import { CompoundIdField } from '../column';
 
-
+//SqlDatabase.LogToConsole = true;
 
 
 export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
@@ -1656,8 +1657,11 @@ describe("test web sql identity", () => {
   });
 });
 describe("compound id", () => {
-  return;
-  itAsync("compund sql",
+  it("id field is comound", () => {
+    let ctx = new Context();
+    expect(ctx.for(CompoundIdEntity).defs.idField instanceof CompoundIdField).toBe(true);
+  });
+  itAsync("compound sql",
     async () => {
       let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
       let ctx = new Context();
@@ -1683,14 +1687,14 @@ describe("compound id", () => {
     let ctx = new ServerContext(mem);
     let s = ctx.for(CompoundIdEntity);
 
-    mem.rows[s.defs.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[s.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await s.find();
     expect(r.length).toBe(2);
     expect(r[0].a).toBe(1);
-    expect(r[0].id).toBe('1,11');
-    r = await s.find({ where: c => c.id.isEqualTo('1,11') });
+    expect(r[0]._.getId()).toBe('1,11');
+    r = await s.find({ where: c => s.defs.getIdFilter('1,11') });
 
     expect(r.length).toBe(1);
     expect(r[0].a).toBe(1);
@@ -1701,7 +1705,7 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await c.find();
@@ -1715,13 +1719,14 @@ describe("compound id", () => {
 
     expect(mem.rows[c.defs.key][0].c).toBe(55);
     expect(mem.rows[c.defs.key][0].id).toBe(undefined);
-    expect(r[0].id).toBe('1,11');
+    expect(r[0]._.getId()).toBe('1,11');
   });
   itAsync("update2", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    
+    mem.rows[c.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await c.find();
@@ -1731,7 +1736,8 @@ describe("compound id", () => {
 
     expect(mem.rows[c.defs.key][0].b).toBe(55);
     expect(mem.rows[c.defs.key][0].id).toBe(undefined);
-    expect(r[0].id).toBe('1,55');
+    
+    expect(r[0]._.getId()).toBe('1,55');
   });
   itAsync("insert", async () => {
     let mem = new InMemoryDataProvider();
@@ -1746,13 +1752,13 @@ describe("compound id", () => {
     await c._.save();
     expect(mem.rows[ctx.for(CompoundIdEntity).defs.key][2].b).toBe(33);
     expect(mem.rows[ctx.for(CompoundIdEntity).defs.key][2].id).toBe(undefined);
-    expect(c.id).toBe('3,33');
+    expect(c._.getId()).toBe('3,33');
   });
   itAsync("delete", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[c.defs.key]=[{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
     let r = await c.find();
     await r[1]._.delete();
@@ -2037,7 +2043,11 @@ describe("check allowedDataType", () => {
   });
 
 });
-@Entity<CompoundIdEntity>({ key: 'compountIdEntity', id: x => new CompoundId(x.a, x.b) })
+@Entity<CompoundIdEntity>(
+  {
+    key: 'compountIdEntity',
+    id: x => new CompoundIdField(x.a, x.b)
+  })
 class CompoundIdEntity extends EntityBase {
   @Field()
   a: number;
@@ -2045,7 +2055,6 @@ class CompoundIdEntity extends EntityBase {
   b: number;
   @Field()
   c: number;
-  id = {};
 }
 @Entity<entityWithValidations>({
   key: '',

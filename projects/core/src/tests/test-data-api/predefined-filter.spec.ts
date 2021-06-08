@@ -176,7 +176,7 @@ class stam1 extends newCategories {
 
 }
 describe("", () => {
-  itAsync("works with predefined Entity Filter", async () => {//
+  itAsync("works with predefined Entity Filter", async () => {
     let [c] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');

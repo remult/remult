@@ -38,7 +38,6 @@ describe("remult-3-basics", () => {
         expect(products[0].name).toBe("yael");
         p = await c.for(Products).findFirst(p => p.id.isEqualTo(3));
         expect(p.name).toBe("yoni");
-    });//
+    });
 });
 
-//
