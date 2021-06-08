@@ -1,6 +1,6 @@
-import {  ServerContext } from '../context';
+import { ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, rowHelperImplementation } from '../remult3';
 import { async, waitForAsync } from '@angular/core/testing';
 
 
@@ -163,7 +163,7 @@ describe("many to one relation", () => {
         await c.save();
         await p.save();
         expect(p.category).toBeNull();
-        p._._updateEntityBasedOnApi({ category: 1 });
+        (p._ as rowHelperImplementation<Products>)._updateEntityBasedOnApi({ category: 1 });
         expect(p.$.category.inputValue).toBe('1');
         await p.$.category.load();
         expect(p.category.id).toBe(c.id);

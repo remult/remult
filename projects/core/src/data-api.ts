@@ -2,7 +2,7 @@ import { EntitySettings } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
 import { Context, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { checkEntityAllowed, filterOf, FindOptions, Repository } from './remult3';
+import { checkEntityAllowed, filterOf, FindOptions, Repository, rowHelper, rowHelperImplementation } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -130,7 +130,7 @@ export class DataApi<T = any> {
   async put(response: DataApiResponse, id: any, body: any) {
 
     await this.doOnId(response, id, async row => {
-      this.repository.getRowHelper(row)._updateEntityBasedOnApi(body);
+      (this.repository.getRowHelper(row) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings().allowUpdate(row)) {
         response.forbidden();
         return;
@@ -187,7 +187,7 @@ export class DataApi<T = any> {
 
     try {
       let newr = this.repository.create();
-      this.repository.getRowHelper(newr)._updateEntityBasedOnApi(body);
+      (this.repository.getRowHelper(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings().allowInsert(newr)) {
         response.forbidden();
         return;

@@ -177,10 +177,6 @@ export interface rowHelper<T> {
     //add defs
     toApiJson(): any;
     register(listener: RowEvents);// move to repo - addEventListener and return UnObserve and change unobserver to be with lower o - Unobserve
-    _updateEntityBasedOnApi(body: any);//internalize
-
-
-
 }
 export type EntityFields<Type> = {
     [Properties in keyof Type]: EntityField<Type[Properties], Type>
@@ -363,7 +359,6 @@ export interface IteratableResult<T> {
     first(): Promise<T>;
     count(): Promise<number>;
     forEach(what: (item: T) => Promise<any>): Promise<number>;
-    //@ts-ignore
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<T>>;
     };

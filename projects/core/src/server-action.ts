@@ -255,7 +255,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
                                     if (d.rowInfo.isNewRow) {
                                         y = repo.create();
-                                        let rowHelper = repo.getRowHelper(y);
+                                        let rowHelper = repo.getRowHelper(y) as rowHelperImplementation<any>;
                                         rowHelper._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
                                     else {
@@ -270,7 +270,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         if (rows.length != 1)
                                             throw new Error("not found or too many matches");
                                         y = rows[0];
-                                        repo.getRowHelper(y)._updateEntityBasedOnApi(d.rowInfo.data);
+                                        (repo.getRowHelper(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
                                     let defs = getEntityOf(y) as rowHelperImplementation<any>;
                                     await defs.__validateEntity();
