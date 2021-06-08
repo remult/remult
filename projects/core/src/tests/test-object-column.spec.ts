@@ -17,7 +17,7 @@ describe("test object column", () => {
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
-    itAsync("test basics with wsql", async () => {
+    fitAsync("test basics with wsql", async () => {
         await deleteAll();
         var x = context.for(ObjectColumnTest).create();
         x.id = 1;
@@ -56,6 +56,8 @@ describe("test object column", () => {
             phone2: null,
             phone3: null
         }).save();
+        
+
 
         sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.defs.dbName)).rows[0];
         expect(sqlr.phone1).toBe('');

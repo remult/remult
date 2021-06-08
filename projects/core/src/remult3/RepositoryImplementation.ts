@@ -1369,5 +1369,5 @@ export class EntityBase {
     isNew() { return this._.isNew(); }
     wasChanged() { return this._.wasChanged(); }
     get $() { return this._.fields }
-    setValues(item?: Partial<this>) { return this._.setValues(item); }
+    setValues(item?: Partial<this>) { return this._.setValues(item); }//move to static set method.
 }

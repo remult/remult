@@ -159,21 +159,21 @@ import { RowEvents } from "../__EntityValueProvider";
 export interface rowHelper<T> {
     hasErrors(): boolean;
     undoChanges();
-    save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T>;
+    save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T>;//move parameter to listener
     reload(): Promise<void>;
     delete(): Promise<void>;
     isNew(): boolean;
     wasChanged(): boolean;
     wasDeleted(): boolean;
     fields: EntityFields<T>;
+    error: string;
 
     repository: Repository<T>;
-    error: string;
-    setValues(item?: Partial<T>);
-
-    toApiPojo(): any;
-    register(listener: RowEvents);
-    _updateEntityBasedOnApi(body: any);
+    setValues(item?: Partial<T>);//create set static function
+    //add defs
+    toApiPojo(): any;//toApiJson
+    register(listener: RowEvents);// move to repo - addEventListener and return UnObserve and change unobserver to be with lower o - Unobserve
+    _updateEntityBasedOnApi(body: any);//internalize
 
 
 
@@ -230,13 +230,13 @@ export interface EntityDefinitions<T = any> {
     readonly fields: FieldDefinitionsOf<T>,
     readonly caption: string;
     readonly evilOriginalSettings: EntitySettings;
-    translateWhereToFilter(where: EntityWhere<T>): Filter;
-    createFilterOf(): filterOf<T>
+    translateWhereToFilter(where: EntityWhere<T>): Filter;// to filter
+    createFilterOf(): filterOf<T> //to filter
 
 
 }
 export interface Repository<T> {
-    fromPojo(x: any): T;
+    fromPojo(x: any): T; //fromJson
 
     defs: EntityDefinitions<T>;
 
@@ -287,16 +287,16 @@ export interface Repository<T> {
     createIdInFilter(items: T[]): Filter;
 
     
-    packWhere(where: EntityWhere<T>): any;
-    unpackWhere(packed: any): Filter;
-    extractWhere(filterInfo: {
+    packWhere(where: EntityWhere<T>): any;//to filter
+    unpackWhere(packed: any): Filter;//to filter
+    extractWhere(filterInfo: {//toFilter
         get: (key: string) => any;
     }): Filter;
-    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);
-    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort;
+    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);//internalize
+    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort;//sort
 
-    _getApiSettings(): import("../data-api").DataApiSettings<T>;
-    createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T>;
+    _getApiSettings(): import("../data-api").DataApiSettings<T>;//move to api, and have api get context
+    createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T>;//internalize as it's not used outside
 
 }
 export interface FindOptions<T> {
@@ -373,7 +373,7 @@ export type filterOf<Type> = {
     Type[Properties] extends string ? supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]> :
     supportsContains<Type[Properties]>
 }&{
-    translateWhereToFilter(where: EntityWhere<Type>): Filter;
+    translateWhereToFilter(where: EntityWhere<Type>): Filter;//to filter
 }
 
 export type ClassType<T> = { new(...args: any[]): T };

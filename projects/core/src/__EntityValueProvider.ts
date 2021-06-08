@@ -6,17 +6,12 @@ export interface packedRowInfo {
   wasChanged: boolean
 
 }
-export interface ColumnValueProvider {
-  getValue(key: string, calcDefaultValue: () => void): any;
-  getOriginalValue(key: string): any;
-  setValue(key: string, value: any): void;
-}
 
 
 
 
 export interface RowEvents {
-  rowDeleted?: () => void;
-  rowSaved?: (newRow: boolean) => void;
-  rowReset?: (newRow: boolean) => void;
+  rowDeleted?: () => void;//deleted
+  rowSaved?: (newRow: boolean) => void;//saved
+  rowReset?: (newRow: boolean) => void;//consider remove and solve some other way
 }
