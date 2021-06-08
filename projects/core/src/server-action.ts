@@ -278,7 +278,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
                                             rowInfo: {
-                                                data: await defs.toApiPojo(),
+                                                data: await defs.toApiJson(),
                                                 isNewRow: defs.isNew(),
                                                 wasChanged: defs.wasChanged(),
                                                 id: defs.fields.find(defs.repository.defs.idField).originalValue
@@ -298,7 +298,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
-                                            columns: await defs.toApiPojo()
+                                            columns: await defs.toApiJson()
                                         };
                                     } catch (err) {
                                         throw defs.catchSaveErrors(err);
@@ -337,7 +337,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                         }(classOptions.key + "/" + key, options ? options.queue : false).run({
                             args,
                             rowInfo: {
-                                data: await defs.toApiPojo(),
+                                data: await defs.toApiJson(),
                                 isNewRow: defs.isNew(),
                                 wasChanged: defs.wasChanged(),
                                 id: defs.fields.find(defs.repository.defs.idField).originalValue
@@ -363,7 +363,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                             }
                         }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false).run({
                             args,
-                            columns: await defs.toApiPojo()
+                            columns: await defs.toApiJson()
                         }));
                         defs._updateEntityBasedOnApi(r.columns);
                         return r.result;

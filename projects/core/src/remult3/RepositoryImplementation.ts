@@ -95,7 +95,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (item)
             this.idCache.set(this.getRowHelper(item).fields.idField.value, item);
     }
-    fromPojo(x: any): T {
+    fromJson(x: any): T {
         throw new Error("Method not implemented.");
     }
 
@@ -301,7 +301,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (!options.orderBy) {
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
-        opt.where = this.defs.translateWhereToFilter(options.where);
+        opt.where = this.translateWhereToFilter(options.where);
         opt.orderBy = this.translateOrderByToSort(options.orderBy);
 
         opt.limit = options.limit;
@@ -330,7 +330,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
     async count(where?: EntityWhere<T>): Promise<number> {
-        return this.edp.count(this.defs.translateWhereToFilter(where));
+        return this.edp.count(this.translateWhereToFilter(where));
     }
     async findFirst(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
 
@@ -358,7 +358,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort {
         if (!orderBy)
             return undefined;
-        let entity = this._info.createSortOf();
+        let entity = Sort.createSortOf(this.defs);
         let resultOrder = orderBy(entity);//
         let sort: Sort;
         if (Array.isArray(resultOrder))
@@ -371,7 +371,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 
     updateEntityBasedOnWhere(where: EntityWhere<T>, r: T) {
-        let w = this.defs.translateWhereToFilter(where);
+        let w = this.translateWhereToFilter(where);
 
         if (w) {
             w.__applyToConsumer({
@@ -395,8 +395,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
     packWhere(where: EntityWhere<T>) {
         if (!where)
             return {};
-        return packToRawWhere(this.defs.translateWhereToFilter(where));
+        return packToRawWhere(this.translateWhereToFilter(where));
 
+    }
+    private translateWhereToFilter(where: EntityWhere<T>): Filter {
+        if (this.defs.evilOriginalSettings.fixedFilter)
+            where = [where, this.defs.evilOriginalSettings.fixedFilter];
+        return Filter.translateWhereToFilter(Filter.createFilterOf(this.defs), where);
     }
     unpackWhere(packed: any): Filter {
         return this.extractWhere({ get: (key: string) => packed[key] });
@@ -550,7 +555,7 @@ class rowHelperBase<T>
     async __performColumnAndEntityValidations() {
 
     }
-    toApiPojo() {
+    toApiJson() {
         let result: any = {};
         for (const col of this.columnsInfo) {
             if (!this.context || col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
@@ -611,7 +616,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         }
     }
 
-  
+
     private _wasDeleted = false;
 
     listeners: RowEvents[];
@@ -1031,27 +1036,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
                 this.idField = [...this.fields][0];
         }
     }
-    translateWhereToFilter(where: EntityWhere<T>, ignoreFixed = false): Filter {
-        let entity = this.createFilterOf();
-        if (this.entityInfo.fixedFilter && !ignoreFixed) {
-            if (Array.isArray(where))
-                where.push(this.entityInfo.fixedFilter);
-            else
-                where = [where, this.entityInfo.fixedFilter];
-        }
-        if (Array.isArray(where)) {
-            return new AndFilter(...where.map(x =>
-                this.translateWhereToFilter(x, true)
-            ));
 
-        }
-        else if (typeof where === 'function') {
-            let r = where(entity);
-            if (Array.isArray(r))
-                return new AndFilter(...r);
-            return r;
-        }
-    }
 
     dbAutoIncrementId: boolean;
     idField: FieldDefinitions<any>;
@@ -1062,89 +1047,10 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
     dbName: string;
     caption: string;
 
-    createFilterOf(): filterOf<T> {
-        let r = {
-            translateWhereToFilter: this.translateWhereToFilter
-        };
-        for (const c of this.fields) {
-            r[c.key] = new filterHelper(c);
-        }
-        return r as filterOf<T>;
-    }
-    createSortOf(): sortOf<T> {
-        let r = {};
-        for (const c of this.fields) {
-            r[c.key] = new sortHelper(c);
-        }
-        return r as sortOf<T>;
-    }
-}
-class sortHelper implements SortSegment {
-    constructor(public field: FieldDefinitions, public isDescending = false) {
-
-    }
-    descending(): SortSegment {
-        return new sortHelper(this.field, !this.isDescending);
-    }
-}
-export class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
-    constructor(private col: FieldDefinitions) {
-
-    }
-    processVal(val: any) {
-        let ei = getEntitySettings(this.col.dataType, false);
-        if (ei) {
-            if (!val)
-                return null;
-            return val.id;
-        }
-        return val;
-    }
-    startsWith(val: any): Filter {
-        return new Filter(add => add.startsWith(this.col, val));
-    }
-
-    contains(val: string): Filter {
-        return new Filter(add => add.containsCaseInsensitive(this.col, val));
-
-    }
-    isLessThan(val: any): Filter {
-        return new Filter(add => add.isLessThan(this.col, val));
-    }
-    isGreaterOrEqualTo(val: any): Filter {
-        return new Filter(add => add.isGreaterOrEqualTo(this.col, val));
-    }
-    isNotIn(values: any[]): Filter {
-        return new Filter(add => {
-            for (const v of values) {
-                add.isDifferentFrom(this.col, v);
-            }
-        });
-    }
-    isDifferentFrom(val: any) {
-        val = this.processVal(val);
-        if (val === null && this.col.allowNull)
-            return new Filter(add => add.isNotNull(this.col));
-        return new Filter(add => add.isDifferentFrom(this.col, val));
-    }
-    isLessOrEqualTo(val: any): Filter {
-        return new Filter(add => add.isLessOrEqualTo(this.col, val));
-    }
-    isGreaterThan(val: any): Filter {
-        return new Filter(add => add.isGreaterThan(this.col, val));
-    }
-    isEqualTo(val: any): Filter {
-        val = this.processVal(val);
-        if (val === null && this.col.allowNull)
-            return new Filter(add => add.isNull(this.col));
-        return new Filter(add => add.isEqualTo(this.col, val));
-    }
-    isIn(val: any[]): Filter {
-        val = val.map(x => this.processVal(x));
-        return new Filter(add => add.isIn(this.col, val));
-    }
 
 }
+
+
 
 
 export function FieldType<T = any>(settings?: FieldSettings<T, any>) {
@@ -1225,7 +1131,7 @@ export function Field<T = any, colType = any>(settings?: FieldSettings<colType, 
 }
 const storableMember = Symbol("storableMember");
 export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
-    
+
     if (settings.dataType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.dataType);
         if (settingsOnTypeLevel) {

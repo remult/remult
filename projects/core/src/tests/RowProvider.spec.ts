@@ -335,7 +335,7 @@ describe("Closed List  column", () => {
     await e._.save();
     e = await c.findFirst();
     expect(e.l).toBe(Language.Russian);
-    expect(e._.toApiPojo().l).toBe(10);
+    expect(e._.toApiJson().l).toBe(10);
   })
   itAsync("test with entity and data defined on type", async () => {
     let c = new ServerContext(new InMemoryDataProvider())
@@ -352,7 +352,7 @@ describe("Closed List  column", () => {
     await e._.save();
     e = await c.findFirst();
     expect(e.v).toBe(valueList.listName);
-    expect(e._.toApiPojo().v).toBe('listName');
+    expect(e._.toApiJson().v).toBe('listName');
   })
 });
 

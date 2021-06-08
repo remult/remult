@@ -448,10 +448,9 @@ export class GridSettings<rowType>  {
   getFilterWithSelectedRows() {
     let r = this._internalBuildFindOptions();
     if (this.selectedRows.length > 0 && !this._selectedAll) {
-
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(this.repository.defs.translateWhereToFilter(x), this.repository.createIdInFilter(this.selectedRows))
+        r.where = [x, y => this.repository.createIdInFilter(this.selectedRows)];
       }
       else
         r.where = e => this.repository.createIdInFilter(this.selectedRows);

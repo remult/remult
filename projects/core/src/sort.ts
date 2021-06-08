@@ -1,5 +1,6 @@
 
 import { FieldDefinitions } from "./column-interfaces";
+import { EntityDefinitions, sortOf } from "./remult3";
 export class Sort {
   constructor(...segments: SortSegment[]) {
     this.Segments = segments;
@@ -12,8 +13,24 @@ export class Sort {
     }
     return r;
   }
+  static createSortOf<T>(entityDefs: EntityDefinitions<T>): sortOf<T> {
+    let r = {};
+    for (const c of entityDefs.fields) {
+      r[c.key] = new sortHelper(c);
+    }
+    return r as sortOf<T>;
+  }
 }
 export interface SortSegment {
   field: FieldDefinitions,
   isDescending?: boolean
+}
+
+class sortHelper implements SortSegment {
+  constructor(public field: FieldDefinitions, public isDescending = false) {
+
+  }
+  descending(): SortSegment {
+    return new sortHelper(this.field, !this.isDescending);
+  }
 }

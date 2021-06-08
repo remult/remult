@@ -1,7 +1,7 @@
-import { FilterConsumer, Filter } from './filter-interfaces';
+import { FilterConsumer, Filter, filterHelper } from './filter-interfaces';
 import { AndFilter, OrFilter } from './filter-interfaces';
 import { FieldDefinitions } from "../column-interfaces";
-import { filterHelper } from "../remult3";
+
 
 
 

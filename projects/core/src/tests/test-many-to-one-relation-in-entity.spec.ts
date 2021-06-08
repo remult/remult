@@ -45,7 +45,7 @@ describe("many to one relation", () => {
         await p.save();
         expect(p.category.name).toBe("cat 1", "after save");
         expect(mem.rows[context.for(Products).defs.key][0].category).toBe(1);
-        expect(p._.toApiPojo().category).toBe(1, "to api pojo");
+        expect(p._.toApiJson().category).toBe(1, "to api pojo");
         p = await context.for(Products).findFirst();
         expect(p.id).toBe(10);
         expect(p.category.id).toBe(1);

@@ -192,7 +192,7 @@ describe('Test basic row functionality', () => {
     let x = ctx.create();
     x.id = 1;
     x.categoryName = 'noam';
-    let y = x._.toApiPojo();
+    let y = x._.toApiJson();
     expect(y.id).toBe(1);
     expect(y.categoryName).toBe('noam');
   });

@@ -173,7 +173,7 @@ export interface rowHelper<T> {
     repository: Repository<T>;
     
     //add defs
-    toApiPojo(): any;//toApiJson
+    toApiJson(): any;
     register(listener: RowEvents);// move to repo - addEventListener and return UnObserve and change unobserver to be with lower o - Unobserve
     _updateEntityBasedOnApi(body: any);//internalize
 
@@ -232,13 +232,9 @@ export interface EntityDefinitions<T = any> {
     readonly fields: FieldDefinitionsOf<T>,
     readonly caption: string;
     readonly evilOriginalSettings: EntitySettings;
-    translateWhereToFilter(where: EntityWhere<T>): Filter;// to filter
-    createFilterOf(): filterOf<T> //to filter
-
-
 }
 export interface Repository<entityType> {
-    fromPojo(x: any): entityType; //fromJson
+    fromJson(x: any): entityType; 
 
     defs: EntityDefinitions<entityType>;
 
@@ -374,9 +370,7 @@ export type filterOf<Type> = {
     [Properties in keyof Type]: Type[Properties] extends number | Date ? comparableFilterItem<Type[Properties]> :
     Type[Properties] extends string ? supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]> :
     supportsContains<Type[Properties]>
-} & {
-    translateWhereToFilter(where: EntityWhere<Type>): Filter;//to filter
-}
+} 
 
 export type ClassType<T> = { new(...args: any[]): T };
 

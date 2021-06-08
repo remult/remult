@@ -51,36 +51,13 @@ export class FilterHelper<rowType> {
         return f;
 
       }
-      //@ts-ignore
-      // if (c instanceof StringColumn) {
-      //   let fe = this.forceEqual;
-      //   if (fe.indexOf(c) < 0)
-      //     f = c.contains(val);
-      //   if (val === undefined || val == '')
-      //     f = c.isEqualTo('');
-      // }
-      // if (c instanceof ObjectColumn) {
-      //   let fe = this.forceEqual;
-      //   if (fe.indexOf(c) < 0)
-      //     f = c.contains(val);
-      //   if (val === undefined || val == '')
-      //     f = c.isEqualTo('');
-      // }
-      // if (c instanceof DateTimeColumn) {
-      //   if (val) {
-      //     let v = <Date>val;
-      //     v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
-
-      //     f = c.isGreaterOrEqualTo(v).and(c.isLessThan((new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
-
-      //   }
-      // }
+     
 
       if (opt.where) {
         let x = opt.where;
-        opt.where = r => new AndFilter(this.repository.defs.translateWhereToFilter(x), this.repository.defs.translateWhereToFilter(w));
+        opt.where = [x, w];
       }
-      else opt.where = r => this.repository.defs.translateWhereToFilter(w);
+      else opt.where = w;
     });
   }
 }

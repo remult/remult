@@ -2,7 +2,7 @@ import { EntitySettings } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
 import { UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FindOptions, Repository } from './remult3';
+import { filterOf, FindOptions, Repository } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -20,12 +20,12 @@ export class DataApi<T = any> {
       response.forbidden();
       return;
     }
-    await this.doOnId(response, id, async row => response.success(this.repository.getRowHelper(row).toApiPojo()));
+    await this.doOnId(response, id, async row => response.success(this.repository.getRowHelper(row).toApiJson()));
   }
   async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     try {
 
-      response.success({ count: +await this.repository.count(t => this.buildWhere(request, filterBody)) });
+      response.success({ count: +await this.repository.count(t => this.buildWhere(t, request, filterBody)) });
     } catch (err) {
       response.error(err);
     }
@@ -41,10 +41,10 @@ export class DataApi<T = any> {
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
-      findOptions.where = t => this.buildWhere(request, filterBody);
+      findOptions.where = t => this.buildWhere(t, request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        let w = this.repository.defs.translateWhereToFilter(findOptions.where);
+        let w = Filter.translateWhereToFilter(Filter.createFilterOf(this.repository.defs), findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },
@@ -86,17 +86,17 @@ export class DataApi<T = any> {
       }
       await this.repository.find(findOptions)
         .then(async r => {
-          response.success(await Promise.all(r.map(async y => this.repository.getRowHelper(y).toApiPojo())));
+          response.success(await Promise.all(r.map(async y => this.repository.getRowHelper(y).toApiJson())));
         });
     }
     catch (err) {
       response.error(err);
     }
   }
-  private buildWhere(request: DataApiRequest, filterBody: any) {
+  private buildWhere(entity: filterOf<T>, request: DataApiRequest, filterBody: any) {
     var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
-      where = this.repository.defs.translateWhereToFilter(this.options.get.where);
+      where = Filter.translateWhereToFilter(entity, this.options.get.where);
     if (request) {
       where = new AndFilter(where, this.repository.extractWhere(request));
     }
@@ -113,12 +113,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: x => {
-          let where: Filter = this.repository.getIdFilter(id);
-          if (this.options && this.options.get && this.options.get.where)
-            where = new AndFilter(where, this.repository.defs.translateWhereToFilter(this.options.get.where));
-          return where;
-        }
+        where: [this.options?.get?.where, x => this.repository.getIdFilter(id)]
       })
         .then(async r => {
           if (r.length == 0)
@@ -141,7 +136,7 @@ export class DataApi<T = any> {
         return;
       }
       await this.repository.getRowHelper(row).save();
-      response.success(this.repository.getRowHelper(row).toApiPojo());
+      response.success(this.repository.getRowHelper(row).toApiJson());
     });
   }
   private _getApiSettings(row: T): DataApiSettings<T> {
@@ -171,7 +166,7 @@ export class DataApi<T = any> {
       }
 
       await this.repository.getRowHelper(newr).save();
-      response.created(this.repository.getRowHelper(newr).toApiPojo());
+      response.created(this.repository.getRowHelper(newr).toApiJson());
     } catch (err) {
       response.error(err);
     }
