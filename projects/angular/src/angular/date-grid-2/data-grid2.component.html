@@ -30,16 +30,16 @@
             [style.flex]="getColFlex(map)" [style.width]="getColWidth(map)" draggable="true"
             (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)">
 
-            <span (click)="settings.sort(map.column)">{{map.caption}}</span>
+            <span (click)="settings.sort(map.field)">{{map.caption}}</span>
 
 
-            <span class="filterButton" [class.filteredFilterButton]="isFiltered(map.column)"
+            <span class="filterButton" [class.filteredFilterButton]="isFiltered(map.field)"
               (click)="showFilterColumnDialog(map)">
               <mat-icon>filter_alt</mat-icon>
             </span>
 
-            <mat-icon *ngIf="settings.sortedAscending(map.column)">arrow_downward</mat-icon>
-            <mat-icon class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedDescending(map.column)">
+            <mat-icon *ngIf="settings.sortedAscending(map.field)">arrow_downward</mat-icon>
+            <mat-icon class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedDescending(map.field)">
               arrow_upward</mat-icon>
           </div>
           <div class="dataGridButtonHeaderCell" *ngIf="rowButtons&& rowButtons.length>0&&displayButtons"
