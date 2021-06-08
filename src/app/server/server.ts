@@ -19,6 +19,7 @@ import {
     ClassType, ErrorInfo
 
 } from '@remult/core'
+import { isJSDocTypedefTag } from 'typescript';
 
 
 
@@ -27,18 +28,18 @@ import {
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
-    
+
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
-    
+
     let s = initExpress(app, {
         //       dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource),
-        
+
     });
     console.log('123');
 
@@ -70,14 +71,23 @@ serverInit().then(async (dataSource) => {
     // console.log(result.products);
 
 
-
-    app.listen(port);
+    let z = doIt(new myClass());
+    
+   
 
 
 });
+class hasId<idType> {
+    id: idType
+}
+class myClass extends hasId<number>{
+    id: number;
 
+}
 
-
+function doIt<idType, x extends hasId<idType>>(x: x):hasId<idType> {
+    return x;
+}
 
 
 

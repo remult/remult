@@ -19,6 +19,11 @@ describe("test object column", () => {
     }
     fitAsync("test basics with wsql", async () => {
         await deleteAll();
+        var x = context.for(ObjectColumnTest);
+        x.getCachedById(1);
+    });
+    fitAsync("test basics with wsql", async () => {
+        await deleteAll();
         var x = context.for(ObjectColumnTest).create();
         x.id = 1;
         x.col = {

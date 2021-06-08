@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context,   Field, getControllerDefs,  Entity, EntityBase, DateOnlyValueConverter } from '@remult/core';
+import { Context,   Field, getControllerDefs,  Entity, EntityBase } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';

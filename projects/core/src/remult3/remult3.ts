@@ -47,6 +47,8 @@ import { RowEvents } from "../__EntityValueProvider";
 [V] date only field
 [] test dateonly field decorator  on function parameter
 
+[] instead of row, use entity
+
 [] use helmet instead of force https
 [] fix timeout by using a repeat mechanism in context.
 [] "bool column doesn't need contains, isin and is not in"
@@ -235,19 +237,19 @@ export interface EntityDefinitions<T = any> {
 
 
 }
-export interface Repository<T> {
-    fromPojo(x: any): T; //fromJson
+export interface Repository<entityType> {
+    fromPojo(x: any): entityType; //fromJson
 
-    defs: EntityDefinitions<T>;
+    defs: EntityDefinitions<entityType>;
 
 
 
-    find(options?: FindOptions<T>): Promise<T[]>;
-    iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T>;
-    count(where?: EntityWhere<T>): Promise<number>;
-    findFirst(where?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
-    findId(id: any): Promise<T>;
-    findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T>;
+    find(options?: FindOptions<entityType>): Promise<entityType[]>;
+    iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IteratableResult<entityType>;
+    count(where?: EntityWhere<entityType>): Promise<number>;
+    findFirst(where?: EntityWhere<entityType> | IterateOptions<entityType>): Promise<entityType>;
+    findId(id: any): Promise<entityType>;
+    findOrCreate(options?: EntityWhere<entityType> | IterateOptions<entityType>): Promise<entityType>;
     /**
  * Used to get non critical values from the Entity.
 * The first time this method is called, it'll return a new instance of the Entity.
@@ -260,43 +262,43 @@ export interface Repository<T> {
 * @example
 * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
  */
-    lookup(filter: EntityWhere<T>): T;
+    lookup(filter: EntityWhere<entityType>): entityType;
 
     /** returns a single row and caches the result for each future call
   * @example
   * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
   */
-    lookupAsync(filter: EntityWhere<T>): Promise<T>;
+    lookupAsync(filter: EntityWhere<entityType>): Promise<entityType>;
 
-    create(item?: Partial<T>): T;
+    create(item?: Partial<entityType>): entityType;
 
-    getCachedById(id: any): T;
-    getCachedByIdAsync(id: any): Promise<T>;
-    addToCache(item: T);
+    getCachedById(id: any): entityType;
+    getCachedByIdAsync(id: any): Promise<entityType>;
+    addToCache(item: entityType);
 
 
-    getRowHelper(item: T): rowHelper<T>;
+    getRowHelper(item: entityType): rowHelper<entityType>;
     //candidate to be removed 
-    save(entity: T): Promise<T>;
-    delete(entity: T): Promise<void>;
+    save(entity: entityType): Promise<entityType>;
+    delete(entity: entityType): Promise<void>;
 
 
     //candidate For Defs
     getIdFilter(id: any): Filter;
     isIdField(col: FieldDefinitions): boolean;
-    createIdInFilter(items: T[]): Filter;
+    createIdInFilter(items: entityType[]): Filter;
 
     
-    packWhere(where: EntityWhere<T>): any;//to filter
+    packWhere(where: EntityWhere<entityType>): any;//to filter
     unpackWhere(packed: any): Filter;//to filter
     extractWhere(filterInfo: {//toFilter
         get: (key: string) => any;
     }): Filter;
-    updateEntityBasedOnWhere(where: EntityWhere<T>, r: T);//internalize
-    translateOrderByToSort(orderBy: EntityOrderBy<T>): Sort;//sort
+    updateEntityBasedOnWhere(where: EntityWhere<entityType>, r: entityType);//internalize
+    translateOrderByToSort(orderBy: EntityOrderBy<entityType>): Sort;//sort
 
-    _getApiSettings(): import("../data-api").DataApiSettings<T>;//move to api, and have api get context
-    createAUniqueSort(orderBy: EntityOrderBy<T>): EntityOrderBy<T>;//internalize as it's not used outside
+    _getApiSettings(): import("../data-api").DataApiSettings<entityType>;//move to api, and have api get context
+    createAUniqueSort(orderBy: EntityOrderBy<entityType>): EntityOrderBy<entityType>;//internalize as it's not used outside
 
 }
 export interface FindOptions<T> {

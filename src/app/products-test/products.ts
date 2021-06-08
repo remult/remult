@@ -1,4 +1,4 @@
-import { DataControl, extend } from '@remult/angular';
+import { DataControl } from '@remult/angular';
 import { Filter, IdEntity, ServerMethod } from '@remult/core';
 import {  Field, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
