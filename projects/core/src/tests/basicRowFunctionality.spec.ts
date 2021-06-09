@@ -1887,14 +1887,14 @@ describe("test bool value", () => {
 });
 
 describe("test number negative", () => {
-  it("negative", () => {
-    let nc = decorateColumnSettings<number>({ dataType: Number });
-    expect(nc.valueConverter.toInput(nc.valueConverter.fromInput("-", ''), '')).toBe("-");
-  });
-  it("negative2", () => {
-    let nc = decorateColumnSettings<number>({ dataType: Number });;
-    expect(nc.valueConverter.fromInput('2-1', '')).toBe(0);
-  });
+  // it("negative", () => {
+  //   let nc = decorateColumnSettings<number>({ dataType: Number });
+  //   expect(nc.valueConverter.toInput(nc.valueConverter.fromInput("-", ''), '')).toBe("-");
+  // });
+  // it("negative2", () => {
+  //   let nc = decorateColumnSettings<number>({ dataType: Number });;
+  //   expect(nc.valueConverter.fromInput('2-1', '')).toBe(0);
+  // });
   // it("negative decimal", () => {
   //   let nc = new NumberColumn();
   //   nc.inputValue = '-0.00';

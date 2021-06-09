@@ -65,6 +65,8 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
         if (ei) {
             if (!val)
                 return null;
+            if (typeof val === "string" || typeof val === "number")
+                return val;
             return val.id;
         }
         return val;
@@ -238,7 +240,7 @@ export function extractWhere(columns: FieldDefinitions[], filterInfo: {
     columns.forEach(col => {
         function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false) {
             let val = filterInfo.get(col.key + operation);
-            if (val != undefined) {
+            if (val !== undefined) {
                 let addFilter = (val: any) => {
                     let theVal = val;
                     if (jsonArray) {

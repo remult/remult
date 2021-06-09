@@ -189,7 +189,7 @@ describe("many to one relation", () => {
         await p.save();
         expect(p.category.id).toBe(1);
     }));
-    fit("test filter create", waitForAsync(async () => {
+    it("test filter create", waitForAsync(async () => {
         let mem = new InMemoryDataProvider();
         let context = new ServerContext(mem);
         let c = await context.for(Categories).create({
@@ -234,8 +234,8 @@ describe("many to one relation", () => {
                 where)))).toBe(expected, "packed where");
         }
 
-        test(p => p.category.isEqualTo(null), 3);
         test(p => p.category.isEqualTo(c), 2);
+        test(p => p.category.isEqualTo(null), 3);
         test(p => p.category.isEqualTo(c2), 1);
 
     }));
