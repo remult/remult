@@ -33,7 +33,11 @@ export class Filter {
         else if (typeof where === 'function') {
             let r = where(entity);
             if (Array.isArray(r))
-                return new AndFilter(...r);
+                return new AndFilter(
+                    //@ts-ignore
+                    ...r);
+            else if (typeof r === 'function')
+                return this.translateWhereToFilter(entity, r);
             return r;
         }
     }

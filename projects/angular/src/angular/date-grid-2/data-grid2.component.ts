@@ -3,7 +3,7 @@ import { Component, OnChanges, Input, ViewChild } from '@angular/core';
 
 
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
-import {  FieldDefinitions, Context, Entity } from '@remult/core';
+import { FieldDefinitions, Context, Entity } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
 
@@ -94,6 +94,8 @@ export class DataGrid2Component implements OnChanges {
   //@ts-ignore
   @ViewChild(DataFilterInfoComponent) dataFilterInfo: DataFilterInfoComponent;
   showFilterColumnDialog(dataControlSettings: DataControlSettings) {
+    if (!dataControlSettings.field)
+      return;
     this.settings.initOrigList();
     this.dataFilterInfo.editFilter(getFieldDefinition(dataControlSettings.field));
   }
@@ -221,7 +223,7 @@ export class DataGrid2Component implements OnChanges {
 
         click: r => {
           this.settings.undoChanges(r);
-          
+
         }
       });
 
@@ -235,7 +237,7 @@ export class DataGrid2Component implements OnChanges {
           return r && !this.settings.getRowHelper(r).isNew();
         }
         , icon: 'delete',
- //       showInLine: true,
+        //       showInLine: true,
         textInMenu: () => this.rightToLeft ? 'מחק' : 'Delete',
         click: async r => {
           if (this.settings.settings.confirmDelete) {

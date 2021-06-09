@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context,   Field, getControllerDefs,  Entity, EntityBase } from '@remult/core';
+import { Context, Field, getControllerDefs, Entity, EntityBase } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
@@ -13,7 +13,7 @@ import { DateOnlyField } from '../../../projects/core/src/remult3';
 
 
 
-//Context.apiBaseUrl = '/dataApi'
+Context.apiBaseUrl = '/dataApi'
 
 @Component({
   selector: 'app-products',
@@ -24,130 +24,45 @@ import { DateOnlyField } from '../../../projects/core/src/remult3';
   height: '1500px'
 
 })
-export class ProductsComponent implements OnInit {
+export class ProductsComponent {
 
 
 
   constructor(private context: Context) { }
-  products = new GridSettings<Orders>(this.context.for(Orders), {
-    allowCrud: true,
-    columnSettings: orders => [
-      {
-        getValue: () => 1 + 1
-      },
-      {
-        field: orders.id,
-        width: '90px',
-        readonly: true,
-      }, {
-        field: orders.customerID,
-        getValue: (x,y) => this.context.for(Customers).lookup(y.value).companyName
-      },
-      /* columnWithSelectPopupAndGetValue(this.context, orders.customerID, models.Customers,
-         {
-           width: '300px'
-         }),*/
-      {
-        field: orders.orderDate,
-        width: '170px'
-      },
-      {
-        field: orders.shipVia,
-        width: '150px',
-        valueList: getValueList(this.context.for(Products)),
-      },
-      orders.employeeID,
-      orders.requiredDate,
-      orders.shippedDate,
-      orders.freight,
-      orders.shipName,
-      orders.shipAddress,
-      orders.shipCity,
-      orders.shipRegion,
-      orders.shipPostalCode,
-      orders.shipCountry,
+  categories = new GridSettings(this.context.for(Categories),
+    {
 
-    ],
-    rowButtons: [
-      {
-        click: orders =>
-          window.open(
-            '/home/print/' + orders.id),
-        showInLine: true,
-        textInMenu: 'Print',
-        icon: 'print'
-      }
-    ],
-  });
-  async ngOnInit() {
-
-
-
-
-  }
-
+      allowUpdate: true,
+      allowInsert: true,
+      columnSettings: categories =>
+        [
+          {
+            field: categories.id,
+            width: '100px'
+          },
+          {
+            field: categories.categoryName,
+             click: () => { },
+             width: '150px'
+            //,getValue:(x)=>x.categoryName
+          },
+          categories.categoryName
+        ]
+    });
 
 
 }
 
-@Entity({ key: 'Orders' })
-export class Orders extends EntityBase {
-  @Field({ caption: 'OrderID' })
+@Entity({ key: 'Categories' })
+export class Categories extends EntityBase {
+  @Field({ caption: 'CategoryID' })
+  @DataControl({})
   id: number;
   @Field()
-  customerID: string;
+  categoryName: string;
   @Field()
-  employeeID: number;
-  @DateOnlyField()
-  orderDate: Date;
-  @DateOnlyField()
-  requiredDate: Date;
-  @DateOnlyField()
-  shippedDate: Date;
-  @Field()
-  shipVia: number;
-  @Field()
-  freight: number;
-  @Field()
-  shipName: string;
-  @Field()
-  shipAddress: string;
-  @Field()
-  shipCity: string;
-  @Field()
-  shipRegion: string;
-  @Field()
-  shipPostalCode: string;
-  @Field()
-  shipCountry: string;
-
-}
+  description: string;
 
 
-
-@Entity({ key: 'Customers' })
-export class Customers extends EntityBase {
-  @Field({ caption: 'CustomerID' })
-  id: string;
-  @Field()
-  companyName: string;
-  @Field()
-  contactName: string;
-  @Field()
-  contactTitle: string;
-  @Field()
-  address: string;
-  @Field()
-  city: string;
-  @Field()
-  region: string;
-  @Field()
-  postalCode: string;
-  @Field()
-  country: string;
-  @Field()
-  phone: string;
-  @Field()
-  fax: string;
 
 }

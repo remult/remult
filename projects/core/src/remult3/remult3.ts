@@ -45,13 +45,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] column to field
 [V] decimal field
 [V] date only field
-[] test dateonly field decorator  on function parameter
 
 [] instead of row, use entity
 [] test data control with number, make sure it updates on blur
 
 [] use helmet instead of force https
 [V] fix timeout by using a repeat mechanism in context.
+[] test dateonly field decorator  on function parameter
 [] "bool column doesn't need contains, isin and is not in"
 
 
@@ -110,6 +110,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] custom context 
 [] reconsider the custom filter with the FD
 [] talk about allow null for date, object types, etc...
+[] consider adding the count value in the response of the array
 
 
 ## consider if needed
@@ -315,7 +316,7 @@ export declare type EntityOrderBy<T> = (entity: sortOf<T>) => SortSegment[] | So
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[])) | EntityWhere<entityType>[];
+export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]|EntityWhere<entityType>)) | EntityWhere<entityType>[];
 
 
 

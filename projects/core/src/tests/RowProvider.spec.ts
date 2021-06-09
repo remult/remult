@@ -9,7 +9,7 @@ import { FilterHelper } from '../../../angular/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings, DataControlInfo } from '../../../angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
@@ -18,7 +18,7 @@ import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityDefinitions, ClassType, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
 import { EntitySettings } from '../entity';
-import { async } from '@angular/core/testing';
+import { async, waitForAsync } from '@angular/core/testing';
 import { Filter } from '../filter/filter-interfaces';
 
 
@@ -1090,6 +1090,27 @@ describe("column collection", () => {
     expect(cc.filterHelper.isFiltered(cc.items[0].field)).toBe(true);
 
   });
+  fit("test caption etc...", waitForAsync(async () => {
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    cc.add(c.defs.fields.id);
+    expect(cc.items[0].caption).toBe('Id');
+
+  }))
+  fit("test caption etc...", waitForAsync(async () => {
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    cc.add({ field: c.defs.fields.id });
+    expect(cc.items[0].caption).toBe('Id');
+
+  }))
+  fit("test caption etc...", waitForAsync(async () => {
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    cc.add({ field: c.defs.fields.id ,width:'100'});
+    expect(cc.items[0].caption).toBe('Id');
+
+  }))
 });
 describe("grid settings ",
   () => {

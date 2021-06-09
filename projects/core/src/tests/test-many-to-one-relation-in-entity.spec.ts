@@ -1,7 +1,8 @@
 import { ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, rowHelperImplementation } from '../remult3';
+import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere } from '../remult3';
 import { async, waitForAsync } from '@angular/core/testing';
+import { Filter } from '../filter/filter-interfaces';
 
 
 
@@ -188,6 +189,57 @@ describe("many to one relation", () => {
         await p.save();
         expect(p.category.id).toBe(1);
     }));
+    fit("test filter create", waitForAsync(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let c = await context.for(Categories).create({
+            id: 1,
+            name: 'cat 1'
+        }).save();
+        let c2 = await context.for(Categories).create({
+            id: 2,
+            name: 'cat 2'
+        }).save();
+        let repo = context.for(Products);
+        await repo.create({
+            id: 10,
+            name: "prod 10",
+            category: c
+        }).save();
+        await repo.create({
+            id: 11,
+            name: "prod 1",
+            category: c
+        }).save();
+        await repo.create({
+            id: 12,
+            name: "prod 12",
+            category: c2
+        }).save();
+        await repo.create({
+            id: 13,
+            name: "prod 13",
+        }).save();
+        await repo.create({
+            id: 14,
+            name: "prod 14",
+        }).save();
+        await repo.create({
+            id: 15,
+            name: "prod 15",
+        }).save();
+        async function test(where: EntityWhere<Products>, expected: number) {
+            expect(await repo.count(where)).toBe(expected);
+            expect(await repo.count(p => Filter.unpackWhere(repo.defs, Filter.packWhere(repo.defs,
+                where)))).toBe(expected, "packed where");
+        }
+
+        test(p => p.category.isEqualTo(null), 3);
+        test(p => p.category.isEqualTo(c), 2);
+        test(p => p.category.isEqualTo(c2), 1);
+
+    }));
+
 
 });
 
