@@ -289,9 +289,9 @@ export const iterateConfig = {
 
 
 export interface EventDispatcher {
-    observe(what: () => any | Promise<any>): Promise<UnObserve>;
+    observe(what: () => any | Promise<any>): Promise<Unobserve>;
 }
-export declare type UnObserve = () => void;
+export declare type Unobserve = () => void;
 export class EventSource {
     listeners: (() => {})[] = []
     async fire() {

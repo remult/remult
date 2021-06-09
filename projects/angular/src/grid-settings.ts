@@ -1,4 +1,4 @@
-import { AndFilter, FieldDefinitions, Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core";
+import { AndFilter, FieldDefinitions, Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository, rowHelper } from "@remult/core";
 import { DataList } from "./angular/dataList";
 
 import { FieldCollection } from "./column-collection";
@@ -10,20 +10,31 @@ import { FilterHelper } from "./filter-helper";
 
 
 export class GridSettings<rowType>  {
+  undoChanges(r: rowType) {
+    let helper = this.getRowHelper(r);
+    helper.undoChanges();
+    if (helper.isNew())
+      this.restList.removeItem(r);
+  }
   constructor(private repository: Repository<rowType>, public settings?: IDataSettings<rowType>) {
     if (!settings)
       this.settings = settings = {};
     this.restList = new DataList<rowType>(repository);
     if (repository) {
       this.filterHelper.filterRow = <rowType>repository.create();
+      repository.addEventListener({
+        validating: async (entity) => {
+          if (this.onValidate)
+            await this.onValidate(entity);
+          if (this.onSavingRow)
+            await this.onSavingRow(entity);
+        }
+      });
     }
 
     this.columns = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b))
 
-    this.restList._rowReplacedListeners.push((old, curr) => {
-      if (old == this.currentRow)
-        this.setCurrentRow(curr);
-    });
+
 
     if (settings) {
 
@@ -251,12 +262,7 @@ export class GridSettings<rowType>  {
   onNewRow: (row: rowType) => void;
   _doSavingRow(s: rowType) {
 
-    return getEntityOf(s).save(async () => {
-      if (this.onValidate)
-        await this.onValidate(s);
-      if (this.onSavingRow)
-        await this.onSavingRow(s);
-    });
+    return getEntityOf(s).save();
 
   }
   caption: string;

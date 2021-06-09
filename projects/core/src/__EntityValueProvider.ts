@@ -10,8 +10,7 @@ export interface packedRowInfo {
 
 
 
-export interface RowEvents {
-  rowDeleted?: () => void;//deleted
-  rowSaved?: (newRow: boolean) => void;//saved
-  rowReset?: (newRow: boolean) => void;//consider remove and solve some other way
+export interface entityEventListener<entityType> {
+  deleted?: (entity: entityType) => void;
+  validating?: (entity: entityType) => Promise<any> | any;
 }

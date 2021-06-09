@@ -9,7 +9,7 @@ import { Sort, SortSegment } from "../sort";
 
 import { Lookup } from "../lookup";
 import { DataApiSettings } from "../data-api";
-import { RowEvents } from "../__EntityValueProvider";
+import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter, ValueListValueConverter } from "../../valueConverters";
 
@@ -89,8 +89,16 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     get defs(): EntityDefinitions { return this._info };
 
-    
 
+    listeners: entityEventListener<T>[];
+    addEventListener(listener: entityEventListener<T>) {
+        if (!this.listeners)
+            this.listeners = []
+        this.listeners.push(listener);
+        return () => {
+            this.listeners.splice(this.listeners.indexOf(listener), 1);
+        }
+    }
 
 
 
@@ -470,12 +478,10 @@ class rowHelperBase<T>
     saveOriginalData() {
         this.originalValues = this.copyDataToObject();
     }
-    async __validateEntity(afterValidationBeforeSaving?: (row: T) => Promise<any> | any) {
+    async __validateEntity() {
         this.__clearErrors();
 
         await this.__performColumnAndEntityValidations();
-        if (afterValidationBeforeSaving)
-            await afterValidationBeforeSaving(this.instance);
         this.__assertValidity();
     }
     async __performColumnAndEntityValidations() {
@@ -524,7 +530,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
 
 
-    constructor(private info: EntityFullInfo<T>, instance: T, public repository: Repository<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
+    constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
         super(info.columnsInfo, instance, context);
         this.defs = info;
         if (_isNew) {
@@ -552,12 +558,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
     private _wasDeleted = false;
 
-    listeners: RowEvents[];
-    register(listener: RowEvents) {
-        if (!this.listeners)
-            this.listeners = []
-        this.listeners.push(listener);
-    }
+
 
 
 
@@ -594,8 +595,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
     }
 
-    async save(afterValidationBeforeSaving?: (row: T) => Promise<any> | any): Promise<T> {
-        await this.__validateEntity(afterValidationBeforeSaving);
+    async save(): Promise<T> {
+        await this.__validateEntity();
         let doNotSave = false;
         if (this.info.entityInfo.saving) {
             await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
@@ -621,11 +622,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             await this.loadDataFrom(updatedRow);
             if (this.info.entityInfo.saved)
                 await this.info.entityInfo.saved(this.instance);
-            if (this.listeners)
-                this.listeners.forEach(x => {
-                    if (x.rowSaved)
-                        x.rowSaved(true);
-                });
+
             this.saveOriginalData();
             this._isNew = false;
             return this.instance;
@@ -650,12 +647,12 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             await this.edp.delete(this.id);
             if (this.info.entityInfo.deleted)
                 await this.info.entityInfo.deleted(this.instance);
-            if (this.listeners) {
-                for (const l of this.listeners) {
-                    if (l.rowDeleted)
-                        l.rowDeleted();
+
+            if (this.repository.listeners)
+                for (const listener of this.repository.listeners.filter(x => x.deleted)) {
+                    await listener.deleted(this.instance);
                 }
-            }
+
             this._wasDeleted = true;
         } catch (err) {
             await this.catchSaveErrors(err);
@@ -716,6 +713,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
 
         if (this.info.entityInfo.validation)
             await this.info.entityInfo.validation(this.instance);
+        if (this.repository.listeners)
+            for (const listener of this.repository.listeners.filter(x => x.validating)) {
+                await listener.validating(this.instance);
+            }
     }
 }
 const controllerColumns = Symbol("controllerColumns");

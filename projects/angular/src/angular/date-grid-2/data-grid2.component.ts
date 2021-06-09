@@ -220,7 +220,8 @@ export class DataGrid2Component implements OnChanges {
         textInMenu: () => this.rightToLeft ? 'בטל שינוים' : 'cancel',
 
         click: r => {
-          this.settings.getRowHelper(r).undoChanges()
+          this.settings.undoChanges(r);
+          
         }
       });
 

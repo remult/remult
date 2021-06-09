@@ -1,10 +1,10 @@
 
 import { FieldDefinitions } from "../column-interfaces";
-import { IterateToArrayOptions } from "../context";
+import { IterateToArrayOptions, Unobserve } from "../context";
 import { EntitySettings } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
-import { RowEvents } from "../__EntityValueProvider";
+import { entityEventListener } from "../__EntityValueProvider";
 
 
 
@@ -163,7 +163,7 @@ import { RowEvents } from "../__EntityValueProvider";
 export interface rowHelper<entityType> {
     hasErrors(): boolean;
     undoChanges();
-    save(afterValidationBeforeSaving?: (row: entityType) => Promise<any> | any): Promise<entityType>;//move parameter to listener
+    save(): Promise<entityType>;
     reload(): Promise<void>;
     delete(): Promise<void>;
     isNew(): boolean;
@@ -173,9 +173,8 @@ export interface rowHelper<entityType> {
     error: string;
     getId(): any;
     repository: Repository<entityType>;
-    defs:EntityDefinitions<entityType>
+    defs: EntityDefinitions<entityType>
     toApiJson(): any;
-    register(listener: RowEvents);// move to repo - addEventListener and return UnObserve and change unobserver to be with lower o - Unobserve
 }
 export type EntityFields<Type> = {
     [Properties in keyof Type]: EntityField<Type[Properties], Type>
@@ -270,6 +269,7 @@ export interface Repository<entityType> {
     getRowHelper(item: entityType): rowHelper<entityType>;
     save(entity: entityType): Promise<entityType>;
     delete(entity: entityType): Promise<void>;
+    addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
 export interface FindOptions<T> {
     /** filters the data

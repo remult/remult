@@ -12,7 +12,7 @@ export {
     EntityDefinitions,
     EntityOrderBy,
     EntityWhere,
-    
+
     FindOptions,
     InputTypes,
     IteratableResult,
@@ -82,7 +82,7 @@ export {
 export {
     Allowed, Context, ControllerOptions, DataProviderFactoryBuilder, EntityAllowed,
     EventDispatcher, EventSource, HttpProvider, IterateToArrayOptions, Role, RoleChecker,
-    ServerContext, UnObserve, UserInfo, keyFor
+    ServerContext, Unobserve, UserInfo, keyFor
 } from './src/context';
 export {
     IdEntity
