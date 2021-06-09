@@ -1,6 +1,6 @@
 import { DataControl } from '@remult/angular';
 import { Filter, IdEntity, ServerMethod } from '@remult/core';
-import {  Field, Entity, EntityBase } from '../../../projects/core/src/remult3';
+import { Field, Entity, EntityBase } from '../../../projects/core/src/remult3';
 
 @Entity({
   key: "Products",
@@ -18,10 +18,10 @@ export class Products extends IdEntity {
   })
   name: string = '';
   @Field()
-  price = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
+  price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
   @Field() // should be Date
   availableFrom1: Date;
-  @Field() // should be Date
+  @Field()
   availableTo: Date;
   @Field()
   archive: boolean;

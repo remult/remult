@@ -51,7 +51,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] test data control with number, make sure it updates on blur
 
 [] use helmet instead of force https
-[] fix timeout by using a repeat mechanism in context.
+[V] fix timeout by using a repeat mechanism in context.
 [] "bool column doesn't need contains, isin and is not in"
 
 

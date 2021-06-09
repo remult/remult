@@ -16,8 +16,8 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
     constructor(private http: HttpProvider) {
 
     }
-    post(url: string, data: any): Promise<any> {
-        return toPromise(this.http.post(url, data));
+    async post(url: string, data: any): Promise<any> {
+        return await retry(() => toPromise(this.http.post(url, data)));
     }
     delete(url: string): Promise<void> {
         return toPromise(this.http.delete(url));
@@ -25,10 +25,28 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
     put(url: string, data: any): Promise<any> {
         return toPromise(this.http.put(url, data));
     }
-    get(url: string): Promise<any> {
-        return toPromise(this.http.get(url));
+    async get(url: string): Promise<any> {
+        return await retry(() => toPromise(this.http.get(url)));
+
     }
 
+}
+async function retry<T>(what: () => Promise<T>): Promise<T> {
+    while (true) {
+        try {
+            return await what();
+        } catch (err) {
+            if (err.message?.startsWith("Error occured while trying to proxy")) {
+                await new Promise((res, req) => {
+                    setTimeout(() => {
+                        res({})
+                    }, 250);
+                })
+                continue;
+            }
+            throw err;
+        }
+    }
 }
 export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     let r: Promise<T>;

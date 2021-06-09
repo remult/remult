@@ -257,13 +257,10 @@ export class FieldCollection<rowType = any> {
     if (this.items.length == 0) {
 
       if (defs) {
-
         for (const c of defs.fields) {
           if (!(c.key == 'id' && c.dataType === String))
             this.add(c);
         }
-
-
       }
     }
 
