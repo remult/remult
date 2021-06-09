@@ -174,13 +174,13 @@ export const serverActionField = Symbol('serverActionField');
 
 interface serverMethodInArgs {
     args: any[],
-    columns?: any,
+    fields?: any,
     rowInfo?: packedRowInfo
 
 }
 interface serverMethodOutArgs {
     result: any,
-    columns?: any,
+    fields?: any,
     rowInfo?: packedRowInfo
 }
 
@@ -291,14 +291,14 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 else {
                                     let y = new constructor(context, ds);
                                     let defs = getControllerDefs(y, context);
-                                    defs._updateEntityBasedOnApi(d.columns);
+                                    defs._updateEntityBasedOnApi(d.fields);
                                     await Promise.all([...defs.fields].map(x => x.load()));
 
                                     await defs.__validateEntity();
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
-                                            columns: await defs.toApiJson()
+                                            fields: await defs.toApiJson()
                                         };
                                     } catch (err) {
                                         throw defs.catchSaveErrors(err);
@@ -363,9 +363,9 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                             }
                         }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false).run({
                             args,
-                            columns: await defs.toApiJson()
+                            fields: await defs.toApiJson()
                         }));
-                        defs._updateEntityBasedOnApi(r.columns);
+                        defs._updateEntityBasedOnApi(r.fields);
                         return r.result;
                     }
                     catch (e) {

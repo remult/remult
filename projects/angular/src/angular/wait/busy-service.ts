@@ -59,7 +59,7 @@ export class BusyService {
             };
         }
         let suspendWait = false;
-        let waitRef = this.dialog.open(WaitComponent, { disableClose: true });
+        let waitRef = this.dialog.open(WaitComponent, { disableClose: true, autoFocus: false, restoreFocus: false });
         return {
             close: async () => {
                 if (suspendWait) {

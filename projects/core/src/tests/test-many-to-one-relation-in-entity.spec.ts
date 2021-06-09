@@ -239,6 +239,38 @@ describe("many to one relation", () => {
         test(p => p.category.isEqualTo(c2), 1);
 
     }));
+    it("test that not too many reads are made", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await context.for(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+        let p = await context.for(Products).create({
+            id: 10,
+            name: "prod 10",
+            category: cat
+        }).save();
+        let fetches = 0;
+        context = new ServerContext({
+            transaction: undefined,
+            getEntityDataProvider: e => {
+                let r = mem.getEntityDataProvider(e);
+                return {
+                    find: x => {
+                        fetches++;
+                        return r.find(x);
+                    }, count: r.count, delete: r.delete, insert: r.insert, update: r.update
+                }
+
+            }
+        })
+        p = await context.for(Products).findFirst();
+        expect(fetches).toBe(1);
+        p._.toApiJson();
+        expect(fetches).toBe(1);
+
+
+    }));
 
 
 });

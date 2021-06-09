@@ -19,7 +19,7 @@
     <div *ngIf="isSelect()" class="my-select" [class.rtl-select]="rightToLeft">
         <select matNativeControl [(ngModel)]="_getColumn().inputValue"
             (ngModelChange)="settings._colValueChanged(map,record)">
-            <option *ngFor="let v of getDropDown()" value="{{v.id}}">{{v.caption}}</option>
+            <option *ngFor="let v of getDropDown()" [ngValue]="v.id">{{v.caption}}</option>
 
         </select>
     </div>

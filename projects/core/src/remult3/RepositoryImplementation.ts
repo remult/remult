@@ -491,15 +491,18 @@ class rowHelperBase<T>
         let result: any = {};
         for (const col of this.columnsInfo) {
             if (!this.context || col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                let val = this.instance[col.key];
+                let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
                     val = lu.id;
-                else if (!this.context) {
-                    if (val) {
-                        let eo = getEntitySettings(val.constructor, false);
-                        if (eo) {
-                            val = getEntityOf(val).getId();
+                else {
+                    val = this.instance[col.key];
+                    if (!this.context) {
+                        if (val) {
+                            let eo = getEntitySettings(val.constructor, false);
+                            if (eo) {
+                                val = getEntityOf(val).getId();
+                            }
                         }
                     }
                 }
