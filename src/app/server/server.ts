@@ -65,15 +65,9 @@ serverInit().then(async (dataSource) => {
     console.dir(p);
 
     let port = process.env.PORT || 3001;
-
-    // let result = new returnType();
-    // result.products.push(new ProductInfo, { Basket: undefined, quantity: 1 });
-    // console.log(result.products);
+    app.listen(port);
 
 
-    let z = doIt(new myClass());
-    
-   
 
 
 });
@@ -85,7 +79,7 @@ class myClass extends hasId<number>{
 
 }
 
-function doIt<idType, x extends hasId<idType>>(x: x):hasId<idType> {
+function doIt<idType, x extends hasId<idType>>(x: x): hasId<idType> {
     return x;
 }
 

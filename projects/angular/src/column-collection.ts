@@ -257,11 +257,9 @@ export class FieldCollection<rowType = any> {
     if (this.items.length == 0) {
 
       if (defs) {
-        let ignoreCol: FieldDefinitions = undefined;
-        //   if (r instanceof IdEntity)
-        //    ignoreCol = r.id;
+
         for (const c of defs.fields) {
-          if (c != ignoreCol)
+          if (!(c.key == 'id' && c.dataType === String))
             this.add(c);
         }
 
