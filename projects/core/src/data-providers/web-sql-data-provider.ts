@@ -43,7 +43,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 result += this.addColumnSqlSyntax(x);
                 if (x.key == entity.idField.key) {
                     result += ' primary key';
-                    if (entity.dbAutoIncrementId)
+                    if (entity.evilOriginalSettings.dbAutoIncrementId)
                         result += " autoincrement";
                 }
             }

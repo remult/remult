@@ -900,8 +900,6 @@ export class columnDefsImpl implements FieldDefinitions {
     constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>, private context: Context) {
         if (colInfo.settings.serverExpression)
             this.isServerExpression = true;
-        if (colInfo.settings.sqlExpression)
-            this.dbReadOnly = true;
         if (typeof (this.colInfo.settings.allowApiUpdate) === "boolean")
             this.readonly = this.colInfo.settings.allowApiUpdate;
         if (!this.inputType)
@@ -935,7 +933,9 @@ export class columnDefsImpl implements FieldDefinitions {
     }
     inputType = this.colInfo.settings.inputType;
     key = this.colInfo.settings.key;
-    dbReadOnly = this.colInfo.settings.dbReadOnly;
+    get dbReadOnly() {
+        return this.colInfo.settings.dbReadOnly || this.dbName != this.colInfo.settings.dbName
+    };
     isServerExpression: boolean;
     dataType = this.colInfo.settings.dataType;
 }

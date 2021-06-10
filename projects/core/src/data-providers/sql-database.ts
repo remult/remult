@@ -280,7 +280,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
     let statement = `insert into ${this.entity.dbName} (${cols}) values (${vals})`;
-    if (this.entity.dbAutoIncrementId) {
+    if (this.entity.evilOriginalSettings.dbAutoIncrementId) {
       let newId = await this.strategy.insertAndReturnAutoIncrementId(r, statement, this.entity);
       resultFilter = new Filter(x => x.isEqualTo(this.entity.idField, newId));
     }

@@ -7,7 +7,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Field, Entity, EntityBase } from '../remult3';
 
-describe("test sql database",  () => {
+describe("test sql database", () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
     let context = new ServerContext();
     context.setDataProvider(db);
@@ -28,9 +28,27 @@ describe("test sql database",  () => {
 
         expect(x.testExpression).toBe(15);
     });
-
+    it("test undefined behaves as a column", () => {
+        let x = context.for(expressionEntity);
+        expect(x.defs.fields.col.dbName).toBe('col');
+        expect(x.defs.fields.col.dbReadOnly).toBe(false);
+        let c=  new ServerContext();
+        expressionEntity.yes= true;
+         x = context.for(expressionEntity);
+        expect(x.defs.fields.col.dbName).toBe('name');
+        expect(x.defs.fields.col.dbReadOnly).toBe(true);
+    });
 
 });
+@Entity({ key: 'expressionEntity' })
+class expressionEntity extends EntityBase {
+    static yes: boolean;
+    @Field({
+        sqlExpression: () => expressionEntity.yes ? 'name' : undefined
+    })
+    col: string;
+}
+
 
 
 

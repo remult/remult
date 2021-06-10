@@ -35,7 +35,11 @@ export class Filter {
             if (Array.isArray(r))
                 return new AndFilter(
                     //@ts-ignore
-                    ...r);
+                    ...r.map(x => {
+                    if (typeof x === "function")
+                        return this.translateWhereToFilter(entity, x);
+                    return x
+                }));
             else if (typeof r === 'function')
                 return this.translateWhereToFilter(entity, r);
             return r;

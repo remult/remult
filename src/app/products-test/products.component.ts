@@ -13,7 +13,7 @@ import { DateOnlyField } from '../../../projects/core/src/remult3';
 
 
 
-Context.apiBaseUrl = '/dataApi'
+//Context.apiBaseUrl = '/dataApi'
 
 @Component({
   selector: 'app-products',
@@ -29,40 +29,10 @@ export class ProductsComponent {
 
 
   constructor(private context: Context) { }
-  categories = new GridSettings(this.context.for(Categories),
-    {
 
-      allowUpdate: true,
-      allowInsert: true,
-      columnSettings: categories =>
-        [
-          {
-            field: categories.id,
-            width: '100px'
-          },
-          {
-            field: categories.categoryName,
-             click: () => { },
-             width: '150px'
-            //,getValue:(x)=>x.categoryName
-          },
-          categories.categoryName
-        ]
-    });
-
-
-}
-
-@Entity({ key: 'Categories' })
-export class Categories extends EntityBase {
-  @Field({ caption: 'CategoryID' })
-  @DataControl({})
-  id: number;
-  @Field()
-  categoryName: string;
-  @Field()
-  description: string;
-
-
-
+  confirmPassword = new InputField<string>({
+    caption: "confirm password",
+    //inputType: 'password',
+     defaultValue: () => "default value"
+  });
 }

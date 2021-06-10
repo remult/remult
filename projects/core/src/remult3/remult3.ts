@@ -110,7 +110,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] custom context 
 [] reconsider the custom filter with the FD
 [] talk about allow null for date, object types, etc...
+[] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
 [] consider adding the count value in the response of the array
+[] talk about forgetting the :type on fields - it's dangerous and can lead to debug issues - on the other hand we want some default - not sure if we should scream
+[] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
 
 
 ## consider if needed
@@ -215,7 +218,6 @@ export interface EntityField<T, entityType = any> {
 }
 
 export interface EntityDefinitions<entityType = any> {
-    readonly dbAutoIncrementId: boolean;
     readonly idField: FieldDefinitions<any>;
     getIdFilter(id: any): Filter;
     isIdField(col: FieldDefinitions): boolean;

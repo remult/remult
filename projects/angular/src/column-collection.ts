@@ -94,7 +94,7 @@ export class FieldCollection<rowType = any> {
         s = x;
       }
 
-       {
+      {
         promises.push(this.buildDropDown(x));
       }
       this.items.push(x);
@@ -354,7 +354,7 @@ export class InputField<T> implements EntityField<T, any> {
     if (settings.defaultValue) {
       this._value = settings.defaultValue(undefined, undefined) as unknown as T
     }
-    this._value = settings.defaultValue as unknown as T;
+    
     this.originalValue = this._value;
     let valueConverter = this.settings.valueConverter ? this.settings.valueConverter : undefined;
     if (valueConverter)

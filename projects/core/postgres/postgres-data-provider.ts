@@ -119,8 +119,8 @@ export class PostgresSchemaBuilder {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
-                        //@ts-ignore
-                        if (x == e.idField && e.__options.dbAutoIncrementId)
+                        
+                        if (x == e.idField && e.evilOriginalSettings.dbAutoIncrementId)
                             result += x.dbName + ' serial';
                         else {
                             result += this.addColumnSqlSyntax(x);
