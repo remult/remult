@@ -44,16 +44,16 @@ export class FieldCollection<rowType = any> {
     return this.getRowColumn({ col, row }, (c, row) => col.allowClick(row, c));
   }
   getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityField<any, any>, row: any) => T) {
-    let column: EntityField<any, any>;
+    let field: EntityField<any, any>;
     let row = args.row;
     if (this._getRowColumn && args.col.field && row) {
-      column = this._getRowColumn(row, getFieldDefinition(args.col.field));
+      field = this._getRowColumn(row, getFieldDefinition(args.col.field));
     }
-    if (!column)
-      column = args.col.field as unknown as EntityField<any, any>;
+    if (!field)
+      field = args.col.field as unknown as EntityField<any, any>;
     if (!row)
-      row = column.entity;
-    return what(column, row);
+      row = field.entity;
+    return what(field, row);
   }
 
   __dataControlStyle(map: DataControlSettings): string {
@@ -94,7 +94,7 @@ export class FieldCollection<rowType = any> {
         s = x;
       }
 
-      else {
+       {
         promises.push(this.buildDropDown(x));
       }
       this.items.push(x);

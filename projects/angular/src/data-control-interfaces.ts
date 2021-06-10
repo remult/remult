@@ -19,7 +19,7 @@ export interface DataControlSettings<entityType = any, fieldType = any> {
     allowClick?: (row: entityType, val: EntityField<fieldType, entityType>) => boolean;
     clickIcon?: string;
 
-    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>);
+    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>)|((context) => ValueListItem[]);
     inputType?: string; //used: password,date,tel,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     forceEqualFilter?: boolean;

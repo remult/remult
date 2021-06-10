@@ -90,7 +90,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] "test number is always number"
     [] test number is always a number - settings value with any string, and then doing math options for it.
 [] consider the setting decimal digits, instead might be useful to determine db storage - replaced with db type
-[] validationError is now called error
+[V] validationError is now called error
 [] the inconsistenacy beyween Date and DateTime - in our naming and also with input management
 [] rename context to remult
 [] consider DbAutoIncrement to decorator

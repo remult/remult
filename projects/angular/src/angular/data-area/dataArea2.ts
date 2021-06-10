@@ -53,7 +53,8 @@ export class DataArea2Component implements OnChanges {
   theColumns(): DataControlSettings[][][] {
 
 
-
+    if (this.settings["columns"] && !this.settings.fields)
+      this.settings.fields = this.settings["columns"]
     let cols = this.settings.fields.getNonGridColumns();
     if (cols == this.lastAllCols)
       return this.lastCols;
