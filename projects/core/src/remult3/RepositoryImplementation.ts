@@ -83,9 +83,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (item)
             this.idCache.set(this.getRowHelper(item).getId(), item);
     }
-    fromJson(x: any): T {
-        throw new Error("Method not implemented.");
-    }
+
 
     get defs(): EntityDefinitions { return this._info };
 
@@ -308,6 +306,17 @@ export class RepositoryImplementation<T> implements Repository<T>{
             Object.assign(r, item);
 
         return r;
+    }
+    async fromJson(json: any, newRow?: boolean): Promise<T> {
+        if (newRow) {
+            let r = this.create();
+            let helper = this.getRowHelper(r) as rowHelperImplementation<T>;
+            await helper.loadDataFrom(json);
+            return r;
+        }
+        else
+            return this.mapRawDataToResult(json);
+
     }
     findId(id: any): Promise<T> {
         return this.iterate(x => this.defs.getIdFilter(id)).first();

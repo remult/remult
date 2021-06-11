@@ -268,7 +268,51 @@ describe("many to one relation", () => {
         expect(fetches).toBe(1);
         p._.toApiJson();
         expect(fetches).toBe(1);
+    }));
+    it("test to and from json ", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await context.for(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+        let json = cat._.toApiJson();
+        let x = await context.for(Categories).fromJson(json);
+        expect(x.isNew()).toBe(false);
+        x.name = 'cat 3';
+        await x.save();
+        let rows = await context.for(Categories).find();
+        expect(rows.length).toBe(1);
+        expect(rows[0].name).toBe('cat 3');
 
+    }));
+    it("test to and from json 2", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await context.for(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+        let p = await context.for(Products).create({ id: 10, name: 'p1' }).save();
+        let json = p._.toApiJson();
+        let x = await context.for(Products).fromJson(json);
+        expect(x.isNew()).toBe(false);
+        await p.$.category.load();
+        expect(p.category).toBe(null);
+        p.category = cat;
+        await p.save();
+
+        json = p._.toApiJson();
+        x = await context.for(Products).fromJson(json);
+        expect(x.isNew()).toBe(false);
+        await p.$.category.load();
+        expect(p.category.id).toBe(cat.id);
+    }));
+    it("test to and from json 2", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await (await context.for(Categories).fromJson({
+            id: 1, name: 'cat 2'
+        }, true)).save();
+        expect(await context.for(Categories).count()).toBe(1);
 
     }));
 

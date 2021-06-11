@@ -230,7 +230,7 @@ export interface EntityDefinitions<entityType = any> {
     readonly evilOriginalSettings: EntitySettings;
 }
 export interface Repository<entityType> {
-    fromJson(x: any): entityType;
+    fromJson(x: any, isNew?: boolean): Promise<entityType>;
 
     defs: EntityDefinitions<entityType>;
 
@@ -318,7 +318,7 @@ export declare type EntityOrderBy<T> = (entity: sortOf<T>) => SortSegment[] | So
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]|EntityWhere<entityType>)) | EntityWhere<entityType>[];
+export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[] | EntityWhere<entityType>)) | EntityWhere<entityType>[];
 
 
 
