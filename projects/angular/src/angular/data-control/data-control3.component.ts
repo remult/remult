@@ -3,7 +3,7 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import { FieldDefinitions,  Entity,  ValueListItem } from '@remult/core';
+import { FieldDefinitions, Entity, ValueListItem } from '@remult/core';
 
 import { FieldCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
@@ -19,7 +19,7 @@ export class DataControl3Component {
     this.map = {
       field: value
     };
-    decorateDataSettings(this.map.field,this.map);
+    decorateDataSettings(this.map.field, this.map);
   }
   @Input() rightToLeft = false;
 
@@ -27,7 +27,7 @@ export class DataControl3Component {
   @Input() record: any;
 
   @Input() notReadonly: false;
-  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined,()=>undefined);
+  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined, () => undefined);
   showDescription() {
 
     return (this.map.field) && this.map.getValue || !this._getEditable();
@@ -51,8 +51,10 @@ export class DataControl3Component {
 
     return this.settings.__dataControlStyle(this.map);
   }
+  dummy = { inputValue: '' };
   _getColumn() {
-
+    if (!this.map.field)
+      return this.dummy;
     return this.settings.__getColumn(this.map, this.record);
 
   }
@@ -63,23 +65,23 @@ export class DataControl3Component {
   _getEditable() {
     if (this.notReadonly)
       return true;
-    return this.settings._getEditable(this.map,this.record);
+    return this.settings._getEditable(this.map, this.record);
   }
   ngOnChanges(): void {
 
   }
-  getDropDown():ValueListItem[]{
+  getDropDown(): ValueListItem[] {
     return this.map.valueList as ValueListItem[];
   }
   isSelect(): boolean {
-    if (this.map.valueList&&this._getEditable())
+    if (this.map.valueList && this._getEditable())
       return true;
     return false;
   }
   showTextBox() {
-    return !this.isSelect() && !this.showCheckbox()&&this._getEditable();
+    return !this.isSelect() && !this.showCheckbox() && this._getEditable();
   }
-  showReadonlyText(){
+  showReadonlyText() {
     return !this._getEditable();
   }
   showCheckbox() {

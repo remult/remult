@@ -4,6 +4,7 @@ import { FieldDefinitions, EntityField, EntityDefinitions, getEntityOf, IdEntity
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings } from '@remult/core/src/remult3';
+import { ValueListValueConverter } from "../../core/valueConverters";
 
 
 
@@ -18,6 +19,8 @@ export class FieldCollection<rowType = any> {
 
   }
   __getColumn(map: DataControlSettings, record: any) {
+    if (!map.field)
+      return undefined;
     let result: EntityField<any, any>;
     if (record)
       result = getEntityOf(record).fields.find(getFieldDefinition(map.field));
@@ -51,7 +54,7 @@ export class FieldCollection<rowType = any> {
     }
     if (!field)
       field = args.col.field as unknown as EntityField<any, any>;
-    if (!row)
+    if (!row && field)
       row = field.entity;
     return what(field, row);
   }
@@ -342,6 +345,10 @@ export class InputField<T> implements EntityField<T, any> {
 
     this.settings = decorateColumnSettings(settings);
     this.dataControl = settings;
+    if (!this.dataControl.valueList && this.settings.valueConverter instanceof ValueListValueConverter) {
+      this.dataControl.valueList = this.settings.valueConverter.getOptions();
+    }
+
     if (settings.caption)
       if (typeof settings.caption === "function")
         settings.caption = settings.caption(settings.context);
@@ -354,7 +361,7 @@ export class InputField<T> implements EntityField<T, any> {
     if (settings.defaultValue) {
       this._value = settings.defaultValue(undefined, undefined) as unknown as T
     }
-    
+
     this.originalValue = this._value;
     let valueConverter = this.settings.valueConverter ? this.settings.valueConverter : undefined;
     if (valueConverter)

@@ -3,6 +3,8 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere } from '../remult3';
 import { async, waitForAsync } from '@angular/core/testing';
 import { Filter } from '../filter/filter-interfaces';
+import { Language } from './RowProvider.spec';
+import { ValueListValueConverter } from '../../valueConverters';
 
 
 
@@ -13,6 +15,10 @@ class Categories extends EntityBase {
     id: number;
     @Field()
     name: string;
+    @Field({ valueConverter: new ValueListValueConverter(Language) })
+    language: Language
+    @Field()
+    archive: boolean = false;
 }
 
 @Entity({ key: 'products' })
@@ -23,6 +29,7 @@ class Products extends EntityBase {
     name: string;
     @Field()
     category: Categories;
+
 }
 
 
@@ -273,11 +280,13 @@ describe("many to one relation", () => {
         let mem = new InMemoryDataProvider();
         let context = new ServerContext(mem);
         let cat = await context.for(Categories).create({
-            id: 1, name: 'cat 2'
+            id: 1, name: 'cat 2', language: Language.Russian
         }).save();
         let json = cat._.toApiJson();
         let x = await context.for(Categories).fromJson(json);
         expect(x.isNew()).toBe(false);
+        expect(x.language).toBe(Language.Russian);
+        expect(x.archive).toBe(false);
         x.name = 'cat 3';
         await x.save();
         let rows = await context.for(Categories).find();

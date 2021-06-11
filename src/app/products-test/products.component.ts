@@ -30,9 +30,9 @@ export class ProductsComponent {
 
   constructor(private context: Context) { }
 
-  confirmPassword = new InputField<string>({
-    caption: "confirm password",
-    //inputType: 'password',
-     defaultValue: () => "default value"
-  });
+  area = new DataAreaSettings({
+    fields: () => [{
+      getValue: () => 1 + 1
+    }]
+  })
 }

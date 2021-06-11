@@ -308,14 +308,20 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return r;
     }
     async fromJson(json: any, newRow?: boolean): Promise<T> {
+        let obj = {};
+        for (const col of this.defs.fields) {
+            if (json[col.key] !== undefined) {
+                obj[col.key] = col.valueConverter.fromJson(json[col.key]);
+            }
+        }
         if (newRow) {
             let r = this.create();
             let helper = this.getRowHelper(r) as rowHelperImplementation<T>;
-            await helper.loadDataFrom(json);
+            await helper.loadDataFrom(obj);
             return r;
         }
         else
-            return this.mapRawDataToResult(json);
+            return this.mapRawDataToResult(obj);
 
     }
     findId(id: any): Promise<T> {

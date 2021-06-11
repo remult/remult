@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
-import {  Entity,  ValueListItem,   FieldDefinitions, EntityField } from '@remult/core';
+import { Entity, ValueListItem, FieldDefinitions, EntityField } from '@remult/core';
 
 import { FieldCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
@@ -13,7 +13,7 @@ import { DataControlSettings, decorateDataSettings } from '../../data-control-in
 })
 export class DataControl2Component {
   @Input() map: DataControlSettings;
-  @Input() set field(value: FieldDefinitions|EntityField<any,any>) {
+  @Input() set field(value: FieldDefinitions | EntityField<any, any>) {
     this.map = {
       field: value
     };
@@ -22,7 +22,7 @@ export class DataControl2Component {
   theId: any;
   @Input() record: any;
   @Input() notReadonly: false;
-  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined,()=>undefined);
+  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined, () => undefined);
   showDescription() {
 
     return (this.map.field) && this.map.getValue || !this._getEditable();
@@ -53,8 +53,10 @@ export class DataControl2Component {
 
     return this.settings.__dataControlStyle(this.map);
   }
+  dummy = { inputValue: '' };
   _getColumn() {
-
+    if (!this.map.field)
+      return this.dummy;
     return this.settings.__getColumn(this.map, this.record);
 
   }
