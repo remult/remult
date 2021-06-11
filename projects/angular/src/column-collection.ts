@@ -136,11 +136,19 @@ export class FieldCollection<rowType = any> {
       }
       else if (typeof orig === "function") {
         let theFunc = orig as ((context: Context) => Promise<ValueListItem[]>);
+        let todo = async (context: Context) => {
+          let x = await theFunc(context);
+          if (x === undefined)
+            s.valueList = undefined;
+          else
+            result.push(...x);
+
+        }
         if (this.context) {
-          result.push(...(await (theFunc)(this.context)));
+          todo(this.context);
         }
         else
-          this.doWhenWeHaveContext.push(async context => result.push(...(await (theFunc)(context))));
+          this.doWhenWeHaveContext.push(async context => todo(context));
 
       }
       else {
