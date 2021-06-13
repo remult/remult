@@ -57,7 +57,11 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     else r = p;
     return r.catch(async ex => {
         let z = await ex;
-        var error = z.error;
+        var error;
+        if (z.error)
+            error = z.error;
+        else 
+        error = z.message;
         if (typeof error === 'string') {
             error = {
                 message: error

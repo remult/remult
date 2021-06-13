@@ -1831,6 +1831,11 @@ describe("test date storage", () => {
     expect(d.getDate()).toBe(16);
 
   });
+  it("works", () => {
+
+    let val = new Date(1976,5,16);
+    expect(DateOnlyValueConverter.toJson(val)).toBe('1976-06-16')
+  });
 });
 describe("test bool value", () => {
   it("should work", () => {

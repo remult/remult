@@ -46,6 +46,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] decimal field
 [V] date only field
 
+[] ?add tojson and from json to FieldDefinitions
+[] support toJSON in entityBase
+[] support settings of entity values with plain JSON objects, and figuring out their id.
+[] setting value of entity with a plain id/string should work also.
+
+[] add code that entity relation can be tested for null - and it'll not perform fetch.
+
 [] instead of row, use entity
 [] test data control with number, make sure it updates on blur
 
@@ -116,6 +123,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
 [] talk about await Promise.all(existingFamilies.map(f => f.$.distributionCenter.load())); that was needed before checking if the distribution center is allowed for the user
 [] talk some more about value change, since in the current implementation, an update through click doesn't fire it
+
 
 
 ## consider if needed

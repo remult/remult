@@ -1,4 +1,5 @@
 import { EntityField, FieldDefinitions, Entity, ValueListItem } from "@remult/core";
+import { ValueListValueConverter } from "@remult/core/valueConverters";
 import { InputField } from "./column-collection";
 
 
@@ -76,12 +77,14 @@ export function decorateDataSettings(colInput: FieldDefinitions | EntityField<an
             for (const key in settingsOnColumnLevel) {
                 if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
                     const element = settingsOnColumnLevel[key];
-                    if (x[key]===undefined)
+                    if (x[key] === undefined)
                         x[key] = element;
                 }
             }
         }
     }
+    if (x.valueList === undefined && col && col.valueConverter instanceof ValueListValueConverter)
+        x.valueList = col.valueConverter.getOptions();
 
 
     if (!x.caption && col.caption)
@@ -94,7 +97,7 @@ export function decorateDataSettings(colInput: FieldDefinitions | EntityField<an
         if (col.dbReadOnly)
             x.readonly = true;
 
-        if (typeof col.evilOriginalSettings.allowApiUpdate === 'boolean')
+        if (typeof col.evilOriginalSettings?.allowApiUpdate === 'boolean')
             x.readonly = !col.evilOriginalSettings.allowApiUpdate;
     }
 }

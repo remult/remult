@@ -4,7 +4,7 @@ import { FieldDefinitions, EntityField, EntityDefinitions, getEntityOf, IdEntity
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings } from '@remult/core/src/remult3';
-import { ValueListValueConverter } from "../../core/valueConverters";
+import { ValueListValueConverter } from "@remult/core/valueConverters";
 
 
 
@@ -358,8 +358,8 @@ export class InputField<T> implements EntityField<T, any> {
     }
 
     if (settings.caption)
-      if (typeof settings.caption === "function")
-        settings.caption = settings.caption(settings.context);
+      if (typeof this.settings.caption === "function")
+        settings.caption = this.settings.caption(settings.context);
     if (!settings.caption)
       settings.caption = 'caption';
 
