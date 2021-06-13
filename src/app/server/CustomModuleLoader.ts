@@ -1,11 +1,14 @@
 // @ts-ignore: 
 import customModuleLoader = require('module');
-
+var done = false
 export class CustomModuleLoader {
     constructor(root?: string) {
         if (!root)
             root = '/distServer';
-        (<any>customModuleLoader)._originalResolveFilename = (<any>customModuleLoader)._resolveFilename;
+        if (done)
+         return;
+         done = true;
+       (<any>customModuleLoader)._originalResolveFilename = (<any>customModuleLoader)._resolveFilename;
 
         (<any>customModuleLoader)._resolveFilename = (request: string, parent: customModuleLoader, isMain: boolean) => {
             switch (request) {
@@ -31,7 +34,7 @@ export class CustomModuleLoader {
                 case "@remult/core/src/server-action":
                     request = request = process.cwd() + root + '/core/src/server-action';
                     break;
-                    case "@remult/core/valueConverters":
+                case "@remult/core/valueConverters":
                     request = request = process.cwd() + root + '/core/valueConverters';
                     break;
             }

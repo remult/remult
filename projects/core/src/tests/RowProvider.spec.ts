@@ -1107,7 +1107,7 @@ describe("column collection", () => {
   it("test caption etc...", waitForAsync(async () => {
     let c = ctx.for(newCategories);
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
-    cc.add({ field: c.defs.fields.id ,width:'100'});
+    cc.add({ field: c.defs.fields.id, width: '100' });
     expect(cc.items[0].caption).toBe('Id');
 
   }))
@@ -1360,6 +1360,33 @@ describe("test datetime column", () => {
 
   });
 
+});
+@FieldType()
+@DataControl({ click: () => { }, allowClick: () => true })
+class typefd {
+
+}
+class myClassfd {
+  @Field()
+  @DataControl({ click: () => { } })
+  a: string;
+  @Field()
+  b: typefd;
+}
+
+describe("data control overrides settings on column", () => {
+  it("testit", () => {
+    let $ = getControllerDefs(new myClassfd()).fields;
+    let defs: DataControlSettings = { field: $.a, click: null };
+    decorateDataSettings(defs.field, defs);
+    expect(defs.click).toBeNull();
+  });
+  it("testit2", () => {
+    let $ = getControllerDefs(new myClassfd()).fields;
+    let defs: DataControlSettings = { field: $.b, click: null };
+    decorateDataSettings(defs.field, defs);
+    expect(defs.click).toBeNull();
+  });
 });
 describe("Test char date storage", () => {
 

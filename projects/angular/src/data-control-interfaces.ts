@@ -19,7 +19,7 @@ export interface DataControlSettings<entityType = any, fieldType = any> {
     allowClick?: (row: entityType, val: EntityField<fieldType, entityType>) => boolean;
     clickIcon?: string;
 
-    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>)|((context) => ValueListItem[]);
+    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>) | ((context) => ValueListItem[]);
     inputType?: string; //used: password,date,tel,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     forceEqualFilter?: boolean;
@@ -50,7 +50,7 @@ export function decorateDataSettings(colInput: FieldDefinitions | EntityField<an
         for (const key in colInput.dataControl) {
             if (Object.prototype.hasOwnProperty.call(colInput.dataControl, key)) {
                 const element = colInput.dataControl[key];
-                if (!x[key])
+                if (x[key] === undefined)
                     x[key] = element;
             }
 
@@ -64,7 +64,7 @@ export function decorateDataSettings(colInput: FieldDefinitions | EntityField<an
             for (const key in settingsOnColumnLevel) {
                 if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
                     const element = settingsOnColumnLevel[key];
-                    if (!x[key])
+                    if (x[key] === undefined)
                         x[key] = element;
                 }
             }
@@ -76,7 +76,7 @@ export function decorateDataSettings(colInput: FieldDefinitions | EntityField<an
             for (const key in settingsOnColumnLevel) {
                 if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
                     const element = settingsOnColumnLevel[key];
-                    if (!x[key])
+                    if (x[key]===undefined)
                         x[key] = element;
                 }
             }

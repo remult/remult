@@ -25,14 +25,16 @@ import { DateOnlyField } from '../../../projects/core/src/remult3';
 
 })
 export class ProductsComponent {
-
-  x = new InputField({
-    valueList:  ()=>undefined//[{id:"a",caption:"b"}]
-  });
+  @Field()
+  @DataControl({ click: () => { } })
+  x: string;
 
   constructor(private context: Context) { }
 
   area = new DataAreaSettings({
-    fields: () => [this.x]
+    fields: () => [getControllerDefs(this).fields.x, {
+      field: getControllerDefs(this).fields.x,
+      click:null
+    }]
   })
 }

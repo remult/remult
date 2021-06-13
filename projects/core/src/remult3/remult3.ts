@@ -115,6 +115,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about forgetting the :type on fields - it's dangerous and can lead to debug issues - on the other hand we want some default - not sure if we should scream
 [] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
 [] talk about await Promise.all(existingFamilies.map(f => f.$.distributionCenter.load())); that was needed before checking if the distribution center is allowed for the user
+[] talk some more about value change, since in the current implementation, an update through click doesn't fire it
 
 
 ## consider if needed

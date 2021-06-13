@@ -24,9 +24,6 @@
         </select>
     </div>
 
-
-
-
     <div *ngIf="showCheckbox()">
         <mat-checkbox #theId1 [(ngModel)]="_getColumn().inputValue"
             (ngModelChange)="settings._colValueChanged(map,record)" class="fix-label"></mat-checkbox>
