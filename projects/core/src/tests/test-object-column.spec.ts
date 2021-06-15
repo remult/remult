@@ -4,7 +4,7 @@ import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, FieldType, set } from '../remult3';
-
+import { Filter } from '../filter/filter-interfaces';
 
 
 describe("test object column", () => {
@@ -17,7 +17,7 @@ describe("test object column", () => {
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
-  
+
     itAsync("test basics with wsql", async () => {
         await deleteAll();
         var x = context.for(ObjectColumnTest).create();
@@ -68,6 +68,25 @@ describe("test object column", () => {
 
 
     });
+    itAsync("test contains on custom type", async () => {
+        await deleteAll();
+        await context.for(ObjectColumnTest).create({
+            id: 1,
+            col: { firstName: 'noam', lastName: 'honig' },
+            phone1: new Phone("1234")
+
+        }).save();
+        await context.for(ObjectColumnTest).create({
+            id: 2,
+            col: { firstName: 'noam', lastName: 'honig' },
+            phone1: new Phone("5678")
+
+        }).save();
+        
+        let r = context.for(ObjectColumnTest).defs;
+        expect(await context.for(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
+        expect(await context.for(ObjectColumnTest).count(x => Filter.unpackWhere(r,Filter.packWhere(r,x=> x.phone1.contains("23"))))).toBe(1);
+    });
     itAsync("test basics with json", async () => {
 
         var mem = new InMemoryDataProvider();
@@ -89,6 +108,7 @@ describe("test object column", () => {
             lastName: 'honig'
         });
     });
+
 
 
 });

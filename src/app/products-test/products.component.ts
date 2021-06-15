@@ -37,5 +37,13 @@ export class ProductsComponent {
       click: null
     }]
   })
-  grid = new GridSettings(this.context.for(Products));
+  grid = new GridSettings(this.context.for(Products), {
+    allowCrud: true,
+    where:x=>x.name.contains("1"),
+    gridButtons:[{
+      name:'dosomething',
+      visible:()=>this.grid.selectedRows.length>0
+    }]
+  });
+  
 }

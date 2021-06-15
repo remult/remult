@@ -120,6 +120,19 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
 [] talk about await Promise.all(existingFamilies.map(f => f.$.distributionCenter.load())); that was needed before checking if the distribution center is allowed for the user
 [] talk some more about value change, since in the current implementation, an update through click doesn't fire it
+[] talk about typescript loosing types in a case of self reference - in this sample, the visible that references the grid - breaks the typing
+```
+ grid = new GridSettings(this.context.for(Products), {
+    allowCrud: true,
+    where:x=>x.name.contains("1"),
+    gridButtons:[{
+      name:'dosomething',
+      visible:()=>this.grid.selectedRows.length>0
+    }]
+  });
+```
+[] talk about $.find('name') vs $['name']
+[]c.defs.valueConverter !== DateOnlyValueConverter
 
 ## context related:
 [] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
@@ -208,7 +221,7 @@ export interface rowHelper<entityType> {
 export type EntityFields<Type> = {
     [Properties in keyof Type]: EntityField<Type[Properties], Type>
 } & {
-    find(col: FieldDefinitions | string): EntityField<any, Type>,
+    find(col: FieldDefinitions ): EntityField<any, Type>,
     [Symbol.iterator]: () => IterableIterator<EntityField<any, Type>>
 
 
@@ -217,7 +230,7 @@ export type EntityFields<Type> = {
 export type FieldDefinitionsOf<Type> = {
     [Properties in keyof Type]: FieldDefinitions
 } & {
-    find(col: FieldDefinitions | string): FieldDefinitions,
+    find(col: FieldDefinitions ): FieldDefinitions,
     [Symbol.iterator]: () => IterableIterator<FieldDefinitions>
 
 

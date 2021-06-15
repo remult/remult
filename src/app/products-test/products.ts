@@ -1,6 +1,24 @@
 import { DataControl } from '@remult/angular';
-import { Filter, IdEntity, ServerMethod } from '@remult/core';
-import { Field, Entity, EntityBase } from '../../../projects/core/src/remult3';
+import { Allowed, Context, EntityAllowed, EntitySettings, FieldDefinitions, Filter, IdEntity, ServerMethod } from '@remult/core';
+import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere, FieldDefinitionsOf, filterOf, FieldType } from '../../../projects/core/src/remult3';
+
+
+
+@FieldType<GroupsValue>({
+  valueConverter: {
+    toJson: x => x ? x.value : '',
+    fromJson: x => new GroupsValue(x)
+  },
+  
+})
+
+export class GroupsValue {
+  replace(val: string) {
+    this.value = val;
+  }
+  constructor(private value: string) {
+
+  }}
 
 @Entity({
   key: "Products",
@@ -8,15 +26,10 @@ import { Field, Entity, EntityBase } from '../../../projects/core/src/remult3';
   apiDataFilter: (e, c) => {
     return new Filter();
   }
-})
+},)
 export class Products extends IdEntity {
   @Field()
-  @DataControl<Products, string>({
-    caption: 'the caption',
-    getValue: (x, y) => x.name.length,
-    click: (x) => alert(x.name)
-  })
-  name: string = '';
+  name: GroupsValue;
   @Field()
   price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
   @Field() // should be Date
@@ -33,3 +46,31 @@ export class Products extends IdEntity {
 }
 
 
+class entityDecorator<T> {
+  constructor(settings: EntitySettings<T>) {
+
+  }
+}
+
+
+class productsDecorator extends entityDecorator<Products> {
+  constructor(private context: Context) {
+    super({
+      key: 'asdf',
+      apiDataFilter: (p) => {
+        
+        return undefined;
+      }
+    });
+  }
+
+}
+
+class productsDecorator2 implements EntitySettings<Products>{
+  key='123';
+  apiDataFilter=p=>{
+    
+    return undefined;
+  }
+
+}

@@ -36,10 +36,10 @@ export class Filter {
                 return new AndFilter(
                     //@ts-ignore
                     ...r.map(x => {
-                    if (typeof x === "function")
-                        return this.translateWhereToFilter(entity, x);
-                    return x
-                }));
+                        if (typeof x === "function")
+                            return this.translateWhereToFilter(entity, x);
+                        return x
+                    }));
             else if (typeof r === 'function')
                 return this.translateWhereToFilter(entity, r);
             return r;
@@ -227,7 +227,7 @@ export class FilterSerializer implements FilterConsumer {
         this.add(col.key + '_lt', col.valueConverter.toJson(val));
     }
     public containsCaseInsensitive(col: FieldDefinitions, val: any): void {
-        this.add(col.key + "_contains", col.valueConverter.toJson(val));
+        this.add(col.key + "_contains", val);
     }
     public startsWith(col: FieldDefinitions, val: any): void {
         this.add(col.key + "_st", col.valueConverter.toJson(val));
@@ -242,7 +242,7 @@ export function extractWhere(columns: FieldDefinitions[], filterInfo: {
 }) {
     let where: Filter = undefined;
     columns.forEach(col => {
-        function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false) {
+        function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false, asString = false) {
             let val = filterInfo.get(col.key + operation);
             if (val !== undefined) {
                 let addFilter = (val: any) => {
@@ -253,9 +253,9 @@ export function extractWhere(columns: FieldDefinitions[], filterInfo: {
                             arr = JSON.parse(val);
                         else
                             arr = val;
-                        theVal = arr.map(x => col.valueConverter.fromJson(x));
+                        theVal = arr.map(x => asString ? x : col.valueConverter.fromJson(x));
                     } else {
-                        theVal = col.valueConverter.fromJson(theVal);
+                        theVal = asString ? theVal : col.valueConverter.fromJson(theVal);
                     }
                     let f = theFilter(theVal);
                     if (f) {
@@ -298,7 +298,7 @@ export function extractWhere(columns: FieldDefinitions[], filterInfo: {
 
             return c.contains(val);
 
-        });
+        }, false, true);
         addFilter('_st', val => {
             return c.startsWith(val);
         });
