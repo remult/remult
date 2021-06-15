@@ -34,7 +34,8 @@ export class ProductsComponent {
   area = new DataAreaSettings({
     fields: () => [getControllerDefs(this).fields.x, {
       field: getControllerDefs(this).fields.x,
-      click:null
+      click: null
     }]
   })
+  grid = new GridSettings(this.context.for(Products));
 }

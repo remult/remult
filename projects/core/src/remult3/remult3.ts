@@ -91,7 +91,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] sql database, update of row where id is not named id is compromised
 
 ## review with Yoni
-[] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
+
 [] "negative decimal" - inputValue
 [] "Number is always a number"
     [] "test number is always number"
@@ -99,7 +99,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider the setting decimal digits, instead might be useful to determine db storage - replaced with db type
 [V] validationError is now called error
 [] the inconsistenacy beyween Date and DateTime - in our naming and also with input management
-[] rename context to remult
+
 [] consider DbAutoIncrement to decorator
 [] reconsider idColumn - maybe internalize it.
 [] rowHelper naming
@@ -111,10 +111,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] included display value and input type also in value converter - ias it is relevant to date only, and also value list
 [] i make errors with the order of the generic parameters, entity, column and vice versa
 [V] reconsider all the where stuff - just searh references for AndFilter to see the problem
-[] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
-[] consider the case when initing context, and cashing rows between requests, you might get a save to a context of a request two hours ago.
 [] make where awaitable
-[] custom context 
 [] reconsider the custom filter with the FD
 [] talk about allow null for date, object types, etc...
 [] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
@@ -124,7 +121,25 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about await Promise.all(existingFamilies.map(f => f.$.distributionCenter.load())); that was needed before checking if the distribution center is allowed for the user
 [] talk some more about value change, since in the current implementation, an update through click doesn't fire it
 
+## context related:
+[] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
+[] rename context to remult
+[] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
+[] consider the case when initing context, and cashing rows between requests, you might get a save to a context of a request two hours ago.
+[] custom context 
 
+
+## context stuff:
+    * repository for
+    * current user
+        *  is signed in
+        * is allowed
+        * basic current user info
+        * setuser
+        * add listener to user
+    * map (getter and setter of stuff)
+    * onServer (let's you know you're on the server)
+    * Info about request
 
 ## consider if needed
 
