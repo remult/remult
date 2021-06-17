@@ -4,7 +4,7 @@ import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from '
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import { ClassType, EntityWhere, FindOptions, Repository, __updateEntityBasedOnWhere } from './remult3';
+import { ClassType, EntityWhere, FindOptions, getEntityOf, Repository, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -122,8 +122,18 @@ export class LookupColumn<T> {
   }
   set(item: T) {
     if (item) {
-      this.repository.addToCache(item);
-      this.id = item["id"];
+      if (typeof item === "string" || typeof item === "number")
+        this.id = item as any;
+      else {
+        let eo = getEntityOf(item, false);
+        if (eo) {
+          this.repository.addToCache(item);
+          this.id = eo.getId();
+        }
+        else {
+          this.id = item[this.repository.defs.idField.key];
+        }
+      }
     }
     else {
       this.id = undefined;

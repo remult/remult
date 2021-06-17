@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
     let password = new PasswordControl();
     openDialog(InputAreaComponent, i => i.args = {
       title: "Sign In",
-      columnSettings: () => [
+      fields: () => [
         user,
         password
       ],
@@ -88,7 +88,7 @@ export class AppComponent implements OnInit {
     let confirmPassword = new PasswordControl({ caption: "Confirm Password" });
     openDialog(InputAreaComponent, i => i.args = {
       title: "Sign Up",
-      columnSettings: () => [
+      fields: () => [
         user.$.name,
         password,
         confirmPassword
@@ -109,7 +109,7 @@ export class AppComponent implements OnInit {
     let user = await this.context.for(Users).findId(this.context.user.id);
     openDialog(InputAreaComponent, i => i.args = {
       title: "Update Info",
-      columnSettings: () => [
+      fields: () => [
         user.$.name
       ],
       ok: async () => {
@@ -123,7 +123,7 @@ export class AppComponent implements OnInit {
     let confirmPassword = new PasswordControl({ caption: "Confirm Password" });
     openDialog(InputAreaComponent, i => i.args = {
       title: "Change Password",
-      columnSettings: () => [
+      fields: () => [
         password,
         confirmPassword
       ],

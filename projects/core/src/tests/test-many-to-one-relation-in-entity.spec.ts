@@ -324,6 +324,46 @@ describe("many to one relation", () => {
         expect(await context.for(Categories).count()).toBe(1);
 
     }));
+    it("test lookup with create", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await context.for(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+        let p = await context.for(Products).lookupAsync(p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat)));
+        expect(p.isNew()).toBe(true);
+        expect(p.id).toBe(10);
+        expect((await p.$.category.load()).id).toBe(cat.id);
+    }));
+    it("test set with id", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await context.for(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+
+        let p = context.for(Products).create({
+            id: 10,
+            category: 1 as any
+        });
+        expect(p.id).toBe(10);
+        expect((await p.$.category.load()).id).toBe(cat.id);
+    }));
+    it("test set with json object", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await context.for(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+
+        let p = context.for(Products).create({
+            id: 10,
+            category: cat._.toApiJson()
+        });
+        expect(p.id).toBe(10);
+        expect((await p.$.category.load()).id).toBe(cat.id);
+        expect((await p.$.category.load()).isNew()).toBe(false);
+    }));
 
 
 });

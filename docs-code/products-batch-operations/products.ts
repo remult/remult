@@ -1,16 +1,16 @@
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
+import { IdEntity, Field, Entity, DateOnlyField } from '@remult/core';
 
-@EntityClass
+@Entity({
+    key: 'Products',
+    allowApiCrud: true
+})
 export class Products extends IdEntity {
-    name = new StringColumn();
-    price = new NumberColumn();
-    availableFrom = new DateColumn();
-    availableTo = new DateColumn();
-    constructor() {
-        super({
-            name: "Products",
-            allowApiCRUD:true,
-            allowApiRead:true
-        });
-    }
-} 
+    @Field()
+    name: string;
+    @Field()
+    price: number;
+    @DateOnlyField()
+    availableFrom: Date;
+    @DateOnlyField()
+    availableTo: Date;
+}

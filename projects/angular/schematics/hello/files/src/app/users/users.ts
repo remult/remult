@@ -18,15 +18,12 @@ import { InputField } from "@remult/angular";
     saving: async (user) => {
         
         if (user.context.onServer) {
-
             if (user._.isNew()) {
                 user.createDate = new Date();
                 if ((await user.context.for(Users).count()) == 0)
                     user.admin = true;// If it's the first user, make it an admin
             }
-            
-            user.admin = true;
-        }
+       }
     }
 })
 export class Users extends IdEntity {
@@ -73,6 +70,6 @@ export class Users extends IdEntity {
 export class PasswordControl extends InputField<string>
 {
     constructor(settings?: FieldSettings) {
-        super({ ...settings, caption: 'password', inputType: InputTypes.password });
+        super({ ...settings, caption: 'password', inputType: InputTypes.password, defaultValue: () => '' });
     }
 }

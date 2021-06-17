@@ -887,9 +887,9 @@ export class columnImpl<colType, rowType> implements EntityField<colType, rowTyp
 
 }
 
-export function getEntityOf<T>(item: T): rowHelper<T> {
+export function getEntityOf<T>(item: T, throwException = true): rowHelper<T> {
     let x = item[entityMember];
-    if (!x)
+    if (!x && throwException)
         throw new Error("item " + item + " was not initialized using a context");
     return x;
 

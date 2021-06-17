@@ -46,6 +46,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] decimal field
 [V] date only field
 
+[] remove get set from context
+[] remove server context from public
+
+
 [] ?add tojson and from json to FieldDefinitions
 [] support toJSON in entityBase
 [] support settings of entity values with plain JSON objects, and figuring out their id.
