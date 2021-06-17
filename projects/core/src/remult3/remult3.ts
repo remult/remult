@@ -52,18 +52,18 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] ?add tojson and from json to FieldDefinitions
 [] support toJSON in entityBase
-[] support settings of entity values with plain JSON objects, and figuring out their id.
-[] setting value of entity with a plain id/string should work also.
+[V] support settings of entity values with plain JSON objects, and figuring out their id.
+[V] setting value of entity with a plain id/string should work also.
 
 [] add code that entity relation can be tested for null - and it'll not perform fetch.
 
 [] instead of row, use entity
 [] test data control with number, make sure it updates on blur
 
-[] use helmet instead of force https
+[V] use helmet instead of force https
 [V] fix timeout by using a repeat mechanism in context.
-[] test dateonly field decorator  on function parameter
-[] "bool column doesn't need contains, isin and is not in"
+[X] test dateonly field decorator  on function parameter
+[X] "bool column doesn't need contains, isin and is not in"
 
 
 

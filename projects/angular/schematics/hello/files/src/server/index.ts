@@ -7,7 +7,7 @@ import { DataProvider, SqlDatabase } from '@remult/core';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
 import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/core/postgres';
-import * as forceHttps from 'express-force-https';
+import * as helmet from 'helmet';
 import * as jwt from 'express-jwt';
 import * as compression from 'compression';
 
@@ -17,7 +17,7 @@ async function startup() {
     let dataProvider: DataProvider;
 
     // use json db for dev, and postgres for production
-    if (!process.env.DEV_MODE) {
+    if (!process.env.DEV_MODE) {//if you want to use postgres for development - change this if to be if(true)
         const pool = new Pool({
             connectionString: process.env.DATABASE_URL,
             ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
@@ -31,7 +31,7 @@ async function startup() {
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(compression());
     if (!process.env.DEV_MODE)
-        app.use(forceHttps);
+        app.use(helmet());
     initExpress(app, {
         dataProvider
     });
