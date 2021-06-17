@@ -1,5 +1,4 @@
-import { Allowed, Context, RoleChecker } from './context';
-import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from './column-interfaces';
+import { FieldDefinitions, FieldSettings, ValueConverter } from './column-interfaces';
 
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
@@ -26,9 +25,6 @@ export function makeTitle(name: string) {
 export class CompoundIdField implements FieldDefinitions<string> {
   fields: FieldDefinitions[];
   constructor(...columns: FieldDefinitions[]) {
-    // super({
-    //   serverExpression: () => this.getId()
-    // });
     this.fields = columns;
   }
   getId(instance: any) {
@@ -57,7 +53,6 @@ export class CompoundIdField implements FieldDefinitions<string> {
   dbName: string;
 
   dataType: any
-  __isVirtual() { return true; }
   isEqualTo(value: FieldDefinitions<string> | string): Filter {
     return new Filter(add => {
       let val = value.toString();
@@ -68,18 +63,7 @@ export class CompoundIdField implements FieldDefinitions<string> {
     });
   }
 
-  __addIdToPojo(p: any) {
-    if (p.id)
-      return;
-    let r = "";
-    this.fields.forEach(c => {
-      // if (r.length > 0)
-      //   r += ',';
-      // r += p[c.defs.key];
-    });
-    p.id = r;
-
-  }
+  
   resultIdFilter(id: string, data: any) {
     return new Filter(add => {
       let idParts: any[] = [];
