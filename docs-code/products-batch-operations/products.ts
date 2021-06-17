@@ -8,7 +8,7 @@ export class Products extends IdEntity {
     @Field()
     name: string;
     @Field()
-    price: number;
+    price: number = 0;
     @DateOnlyField()
     availableFrom: Date;
     @DateOnlyField()

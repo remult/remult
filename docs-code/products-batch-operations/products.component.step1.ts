@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, NumberColumn } from '@remult/core';
-import { Products } from './products';
+import { Context } from '@remult/core';
 import { GridSettings } from '@remult/angular';
+import { Products } from './products';
 @Component({
   selector: 'app-products',
   templateUrl: './products.component.html',
@@ -14,7 +14,7 @@ export class ProductsComponent implements OnInit {
   });
   ngOnInit() {
   }
-  priceToUpdate = new NumberColumn({ caption: 'Price to Update' });
+  priceInput: string;
   async updatePrice() {
   }
 }

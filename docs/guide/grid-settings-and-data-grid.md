@@ -8,7 +8,7 @@ To add a data grid to our controller, we'll let the context create a GridSetting
 ```ts
 export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
-  products = this.context.for(Products).gridSettings();
+  products = new GridSettings(this.context.for(Products));
 ```
 And in the `html` refer to the `gridSettings` object
 ```html
@@ -27,7 +27,7 @@ By default the grid will display the first 5 columns that are defined in the ent
 We can control which columns to display in the grid, by setting the `columnSettings` property
 for example:
 ```ts{2-5}
-products = this.context.for(Products).gridSettings({
+products = new GridSettings(this.context.for(Products),{
     columnSettings: p => [
       p.name,
       p.price
@@ -61,7 +61,7 @@ You can configure several types of buttons for the grid.
 ## Row Buttons
 These buttons appear for each row in the grid, they can appear both as buttons that appear on the grid, and as entries in a row level buttons.
 ```ts{2-11}
-  products = this.context.for(Products).gridSettings({
+  products = new GridSettings(this.context.for(Products),{
     rowButtons: [{
       name: 'Show product name',
       icon: 'help',
@@ -81,7 +81,7 @@ Explore the [RowButton](https://remult-ts.github.io/guide/ref_rowbutton) object 
 ## Grid Buttons
 These buttons appear at the grid title, and are intended for actions that are relevant for all the displayed rows.
 ```ts{2-6}
-  products = this.context.for(Products).gridSettings({
+  products = new GridSettings(this.context.for(Products),{
     gridButtons: [{
       name: 'Show product count',
       icon: 'help',
