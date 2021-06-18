@@ -141,7 +141,7 @@ export const DecimalValueConverter: ValueConverter<Number> =
 export const DefaultValueConverter: ValueConverter<any> = {
   fromJson: x => x,
   toJson: x => x,
-  fromDb: x => x != undefined ? JSON.parse(DefaultValueConverter.fromJson(x)) : undefined,
+  fromDb: x => x==null?null: x  ? JSON.parse(DefaultValueConverter.fromJson(x)) : undefined,
   toDb: x => x != undefined ? JSON.stringify(DefaultValueConverter.toJson(x)) : undefined,
   fromInput: x => DefaultValueConverter.fromJson(x),
   toInput: x => DefaultValueConverter.toJson(x)

@@ -68,6 +68,7 @@ describe("test object column", () => {
 
 
     });
+
     itAsync("test contains on custom type", async () => {
         await deleteAll();
         await context.for(ObjectColumnTest).create({
@@ -82,10 +83,10 @@ describe("test object column", () => {
             phone1: new Phone("5678")
 
         }).save();
-        
+
         let r = context.for(ObjectColumnTest).defs;
         expect(await context.for(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
-        expect(await context.for(ObjectColumnTest).count(x => Filter.unpackWhere(r,Filter.packWhere(r,x=> x.phone1.contains("23"))))).toBe(1);
+        expect(await context.for(ObjectColumnTest).count(x => Filter.unpackWhere(r, Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
     });
     itAsync("test basics with json", async () => {
 
@@ -108,6 +109,22 @@ describe("test object column", () => {
             lastName: 'honig'
         });
     });
+    itAsync("test string[]", async () => {
+        await deleteAll();
+        let x = await context.for(ObjectColumnTest).create({
+            id: 1,
+            col: { firstName: 'noam', lastName: 'honig' }
+        }).save();
+        expect(x.tags).toBe(undefined);
+        expect(x.tags2).toBe(null);
+        x.tags = ["a", "b"];
+        await x.save();
+        expect(x.tags).toEqual(["a", "b"]);
+        let sqlr = (await db.execute('select tags,tags2 from ' + x._.repository.defs.dbName)).rows[0];
+        expect(sqlr.tags).toBe(JSON.stringify(["a", "b"]));
+        expect(sqlr.tags2).toBeNull();
+    });
+    //
 
 
 
@@ -160,6 +177,10 @@ class ObjectColumnTest extends EntityBase {
     phone3: Phone;
     @Field()
     phone4: Phone4
+    @Field()
+    tags: string[];
+    @Field({ allowNull: true })
+    tags2: string[];
 }
 
 interface person {

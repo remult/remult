@@ -5,6 +5,9 @@ import { async, waitForAsync } from '@angular/core/testing';
 import { Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
+import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
+import { SqlDatabase } from '../data-providers/sql-database';
+import { itAsync } from './testHelper.spec';
 
 
 
@@ -20,7 +23,13 @@ class Categories extends EntityBase {
     @Field()
     archive: boolean = false;
 }
-
+@Entity({ key: 'suppliers' })
+class Suppliers extends EntityBase {
+    @Field()
+    supplierId: string;
+    @Field()
+    name: string;
+}
 @Entity({ key: 'products' })
 class Products extends EntityBase {
     @Field()
@@ -29,6 +38,8 @@ class Products extends EntityBase {
     name: string;
     @Field()
     category: Categories;
+    @Field()
+    supplier: Suppliers;
 
 }
 
@@ -364,6 +375,34 @@ describe("many to one relation", () => {
         expect((await p.$.category.load()).id).toBe(cat.id);
         expect((await p.$.category.load()).isNew()).toBe(false);
     }));
+    itAsync("test relation in sql", async () => {
+        var wsql = new WebSqlDataProvider("test2");
+        let db = new SqlDatabase(wsql);
+        let context = new ServerContext();
+        context.setDataProvider(db);
+        for (const x of [Categories, Products, Suppliers] as any[]) {
+            let e = context.for(x).defs;
+            await wsql.dropTable(e);
+            await wsql.createTable(e);
+        }
+        let cat = await context.for(Categories).create({ id: 1, name: 'cat' }).save();
+        let sup = await context.for(Suppliers).create({ supplierId: 'sup1', name: 'sup1name' }).save();
+        let p = await context.for(Products).create({
+            id: 10,
+            name: 'prod',
+            category: cat,
+            supplier: sup
+        }).save();
+        await p.$.category.load();
+        expect(p.category.id).toBe(cat.id);
+        let sqlr = (await db.execute("select category,supplier from products")).rows[0];
+        expect(sqlr.category).toEqual('1.0');
+        expect(sqlr.supplier).toBe('sup1');  
+        expect(await context.for(Products).count(p=>p.supplier.isEqualTo(sup))).toBe(1);
+        expect(await context.for(Products).count(p=>p.supplier.isIn([sup]))).toBe(1);
+
+
+    });
 
 
 });

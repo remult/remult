@@ -1,5 +1,5 @@
 import { FieldDefinitions } from "../column-interfaces";
-import { comparableFilterItem, EntityDefinitions, EntityWhere, filterOf, filterOptions, getEntitySettings, sortOf, supportsContains } from "../remult3";
+import { comparableFilterItem, EntityDefinitions, EntityWhere, filterOf, filterOptions, getEntityOf, getEntitySettings, sortOf, supportsContains } from "../remult3";
 
 
 export class Filter {
@@ -71,7 +71,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
                 return null;
             if (typeof val === "string" || typeof val === "number")
                 return val;
-            return val.id;
+            return  getEntityOf(val).getId();
         }
         return val;
     }

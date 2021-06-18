@@ -1138,10 +1138,17 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
         let x = settings as unknown as FieldSettings<Boolean>;
         if (!x.valueConverter)
             x.valueConverter = BoolValueConverter;
-
     }
     if (!settings.valueConverter) {
-        settings.valueConverter = DefaultValueConverter;
+        let ei = getEntitySettings(settings.dataType, false);
+        if (ei) {
+            settings.valueConverter = {
+                toDb: x => x,
+                fromDb: x => x
+            };
+        }
+        else
+            settings.valueConverter = DefaultValueConverter;
     }
     if (!settings.valueConverter.toJson) {
         settings.valueConverter.toJson = x => x;
