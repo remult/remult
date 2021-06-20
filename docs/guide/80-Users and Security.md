@@ -31,7 +31,7 @@ Now that we understand how users can be managed, let's start securing the applic
 
 In the `products.ts` 
 
-<<< @/docs-code/products-batch-operations/products.secure.ts{5-6}
+<<< @/docs-code/products-batch-operations/products.secure.ts{5-6} 
 
 We've changed the `allowApiCrud` property to only allow it for users that has the role `Roles.admin` (later we'll define new roles)
 We've kept the `allowApiRead` to true, since even non signed in users can view products in the `home.component.ts`

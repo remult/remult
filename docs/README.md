@@ -18,7 +18,7 @@ footer: Made by the Remult team with ❤️
 
 An Entity object is defined once and is used on the server and in the browser. For example:
 
-<<< @/docs-code/products-batch-operations/products.ts
+<<< @/docs-code/products-batch-operations/products.ts 
 
 Then you query that entity using the following code.
 ```ts
@@ -28,6 +28,7 @@ await this.context.for(Products).find({
                 p.availableTo.isGreaterOrEqualTo(new Date()))
 });
 ```
+
 
 This same code can run in the browser and produce http calls to the api that is automatically generated from the `Entity`'s definition, or this code can run on the server and interact with the database of your choice - in both cases returning a fully typed object for you to use.
 
