@@ -5,6 +5,7 @@ import { Pool, QueryResult } from 'pg';
 import { connect } from 'net';
 import { allEntities } from '../src/context';
 import { EntityQueueStorage, JobsInQueueEntity } from '../server/expressBridge';
+import { DateOnlyValueConverter } from '../valueConverters';
 
 
 export interface PostgresPool extends PostgresCommandSource {
@@ -119,7 +120,7 @@ export class PostgresSchemaBuilder {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
-                        
+
                         if (x == e.idField && e.evilOriginalSettings.dbAutoIncrementId)
                             result += x.dbName + ' serial';
                         else {
@@ -145,9 +146,10 @@ export class PostgresSchemaBuilder {
                 result += " " + x.valueConverter.fieldTypeInDb;
         }
         else if (x.dataType == Date)
-            result += " timestamp";
-        // else if (x instanceof DateColumn)
-        //     result += " date";
+            if (x.valueConverter == DateOnlyValueConverter)
+                result += " date";
+            else
+                result += " timestamp";
         else if (x.dataType == Boolean)
             result += " boolean" + (x.allowNull ? "" : " default false not null");
         else if (x.dataType == Number) {
