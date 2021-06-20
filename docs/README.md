@@ -69,3 +69,5 @@ export class Products extends IdEntity {
     availableTo: Date;
 }
 ```
+
+All api endpoints are secured by design, and were built to resist sql injection, xss etc...
