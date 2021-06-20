@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Users } from './users';
-import { Context, ServerFunction } from '@remult/core';
+import { BackendMethod, Context } from '@remult/core';
 
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';
@@ -49,7 +49,7 @@ export class UsersComponent implements OnInit {
       return await this.dialog.confirmDelete(h.name)
     },
   });
-  @ServerFunction({ allowed: Roles.admin })
+  @BackendMethod({ allowed: Roles.admin })
   static async resetPassword(userId: string, context?: Context) {
     let u = await context.for(Users).findId(userId);
     if (u) {

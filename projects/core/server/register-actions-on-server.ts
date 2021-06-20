@@ -5,7 +5,7 @@ export function registerActionsOnServer(area: SiteArea) {
     var addAction = (a: any) => {
         let x = <myServerAction>a[serverActionField];
         if (!x) {
-            throw 'failed to set server action, did you forget the ServerFunctionDecorator?';
+            throw 'failed to set server action, did you forget the BackendMethod Decorator?';
         }
         
         area.addAction(x);

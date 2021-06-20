@@ -1,5 +1,5 @@
 import { DataControl } from '@remult/angular';
-import { Allowed, Context,   EntityOptions, Filter, IdEntity, ServerMethod } from '@remult/core';
+import { Allowed, BackendMethod, Context,   EntityOptions, Filter, IdEntity } from '@remult/core';
 import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere,  FieldType } from '../../../projects/core/src/remult3';
 
 
@@ -39,7 +39,7 @@ export class Products extends IdEntity {
   @Field()
   archive: boolean;
 
-  @ServerMethod({ allowed: true })
+  @BackendMethod({ allowed: true })
   async doit() {
     await this._.save();
   }

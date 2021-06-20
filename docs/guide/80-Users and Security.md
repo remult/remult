@@ -38,10 +38,10 @@ We've kept the `allowApiRead` to true, since even non signed in users can view p
 
 This step has secured the `API` which means that even someone who is accessing our server directly, without the application can't update the categories if they are not authorized to do so.
 
-Next we'll secure the `updatePriceOnServer` server function we've used in the `products.component.ts`
+Next we'll secure the `updatePriceOnBackend` server function we've used in the `products.component.ts`
 ```ts{1}
-  @ServerFunction({allowed:Roles.admin})
-  static async updatePriceOnServer(priceToUpdate: number, context?: Context) {
+  @BackendMethod({allowed:Roles.admin})
+  static async updatePriceOnBackend(priceToUpdate: number, context?: Context) {
 ```
 We've set the `allowed` property to the `Roles.admin` role.
 

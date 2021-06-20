@@ -32,15 +32,15 @@ await this.context.for(Products).find({
 
 This same code can run in the browser and produce http calls to the api that is automatically generated from the `Entity`'s definition, or this code can run on the server and interact with the database of your choice - in both cases returning a fully typed object for you to use.
 
-### Server Functions
+### Backend Methods
 You can also easily create functions that run on the server, using the same code and end-to-end type safety.
 ```ts
 async updatePrice() {
-    await ProductsComponent.updatePriceOnServer(Number.parseInt(this.priceInput));
+    await ProductsComponent.updatePriceOnBackend(Number.parseInt(this.priceInput));
     this.products.reloadData();
   }
-  @ServerFunction({ allowed: true })
-  static async updatePriceOnServer(priceToUpdate: number, context?: Context) {
+  @BackendMethod({ allowed: true })
+  static async updatePriceOnBackend(priceToUpdate: number, context?: Context) {
     for await (const p of context.for(Products).iterate()) {
       p.price += priceToUpdate
       await p.save();

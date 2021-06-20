@@ -149,7 +149,7 @@ export class UsersComponent implements OnInit {
 
 The `app.component.ts` file contains the `signIn` function that signs the user in. In that function we would like to add the `productManager` role if the user has it.
 ```ts{15-17}
-@ServerFunction({ allowed: true })
+@BackendMethod({ allowed: true })
   static async signIn(user: string, password: string, context?: Context) {
     let result: UserInfo;
     let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));

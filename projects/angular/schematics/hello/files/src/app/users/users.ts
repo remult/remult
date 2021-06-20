@@ -1,8 +1,9 @@
 
-import { IdEntity, FieldSettings, ServerMethod, Filter, InputTypes, Entity, Field, Validators } from "@remult/core";
+import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators } from "@remult/core";
 import { Context, } from '@remult/core';
 import { Roles } from './roles';
 import { InputField } from "@remult/angular";
+import { InputTypes } from "@remult/core/inputTypes";
 
 @Entity<Users>({
     key: "Users",
@@ -16,14 +17,14 @@ import { InputField } from "@remult/angular";
         return new Filter(() => { });
     },
     saving: async (user) => {
-        
-        if (user.context.onServer) {
+
+        if (user.context.backend) {
             if (user._.isNew()) {
                 user.createDate = new Date();
                 if ((await user.context.for(Users).count()) == 0)
                     user.admin = true;// If it's the first user, make it an admin
             }
-       }
+        }
     }
 })
 export class Users extends IdEntity {
@@ -52,14 +53,14 @@ export class Users extends IdEntity {
     async passwordMatches(password: string) {
         return !this.password || (await import('password-hash')).verify(password, this.password);
     }
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async create(password: string) {
         if (!this._.isNew())
             throw "Invalid Operation";
         await this.hashAndSetPassword(password);
         await this._.save();
     }
-    @ServerMethod({ allowed: context => context.isSignedIn() })
+    @BackendMethod({ allowed: context => context.isSignedIn() })
     async updatePassword(password: string) {
         if (this._.isNew() || this.id != this.context.user.id)
             throw "Invalid Operation";
@@ -69,7 +70,7 @@ export class Users extends IdEntity {
 }
 export class PasswordControl extends InputField<string>
 {
-    constructor(settings?: FieldSettings) {
+    constructor(settings?: FieldOptions) {
         super({ ...settings, caption: 'password', inputType: InputTypes.password, defaultValue: () => '' });
     }
 }
