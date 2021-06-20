@@ -5,7 +5,7 @@ import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDef
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings } from '@remult/core/src/remult3';
 import { ValueListValueConverter } from "@remult/core/valueConverters";
-import { ClassType } from "../../core/classType";
+import { ClassType } from "@remult/core/classType";
 
 
 
