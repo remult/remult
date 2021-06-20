@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
+import { Context, AllowedForInstance, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
 
 
 
@@ -90,7 +90,7 @@ export abstract class Action<inParam, outParam>{
 
 export class myServerAction extends Action<inArgs, result>
 {
-    constructor(name: string, private types: any[], private options: ServerFunctionOptions, private originalMethod: (args: any[]) => any) {
+    constructor(name: string, private types: any[], private options: BackendMethodOptions<any>, private originalMethod: (args: any[]) => any) {
         super(name, options.queue)
     }
 
@@ -99,7 +99,7 @@ export class myServerAction extends Action<inArgs, result>
         let ds = context._dataSource;
         await ds.transaction(async ds => {
             context.setDataProvider(ds);
-            if (!context.isAllowed(this.options.allowed))
+            if (!context.isAllowedForInstance(undefined, this.options.allowed))
                 throw 'not allowed';
 
             info.args = await prepareReceivedArgs(this.types, info.args, context, ds, res);
@@ -118,8 +118,8 @@ export class myServerAction extends Action<inArgs, result>
 
 
 }
-export interface ServerFunctionOptions {
-    allowed: Allowed;
+export interface BackendMethodOptions<type> {
+    allowed: AllowedForInstance<type>;
     blockUser?: boolean;
     queue?: boolean;
 }
@@ -133,39 +133,7 @@ export const actionInfo = {
     })
 }
 
-export function ServerFunction(options: ServerFunctionOptions) {
-    return (target: any, key: string, descriptor: any) => {
 
-        var originalMethod = descriptor.value;
-
-        var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
-        // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
-
-        let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
-
-
-
-        descriptor.value = async function (...args: any[]) {
-            if (!actionInfo.runningOnServer) {
-
-
-                args = prepareArgsToSend(types, args);
-                if (options.blockUser === false) {
-                    return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
-                }
-                else
-                    return (await serverAction.run({ args })).data;
-            }
-            else
-                return (await originalMethod.apply(undefined, args));
-        }
-        actionInfo.allActions.push(descriptor.value);
-        descriptor.value[serverActionField] = serverAction;
-
-
-        return descriptor;
-    }
-}
 export const serverActionField = Symbol('serverActionField');
 
 
@@ -195,7 +163,7 @@ const classOptions = new Map<any, ControllerOptions>();
 export function Controller(key: string) {
     return function (target) {
         let r = target;
-        classOptions.set(r, { key }); 
+        classOptions.set(r, { key });
         setControllerSettings(target, { key });
 
 
@@ -205,8 +173,39 @@ export function Controller(key: string) {
 }
 
 
-export function ServerMethod(options: ServerFunctionOptions) {
+export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     return (target: any, key: string, descriptor: any) => {
+        if (target.prototype !== undefined) {
+            var originalMethod = descriptor.value;
+
+            var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
+            // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
+
+            let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
+
+
+
+            descriptor.value = async function (...args: any[]) {
+                if (!actionInfo.runningOnServer) {
+
+
+                    args = prepareArgsToSend(types, args);
+                    if (options.blockUser === false) {
+                        return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
+                    }
+                    else
+                        return (await serverAction.run({ args })).data;
+                }
+                else
+                    return (await originalMethod.apply(undefined, args));
+            }
+            actionInfo.allActions.push(descriptor.value);
+            descriptor.value[serverActionField] = serverAction;
+
+
+            return descriptor;
+        }
+
 
         var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
         let x = classHelpers.get(target.constructor);
@@ -235,15 +234,14 @@ export function ServerMethod(options: ServerFunctionOptions) {
                     reg(controllerOptions.key + '/' + key, options ? options.queue : false, async (d: serverMethodInArgs, req, res) => {
 
                         d.args = d.args.map(x => isCustomUndefined(x) ? undefined : x);
-                        let allowed: Allowed = options.allowed;
-                        
+                        let allowed = options.allowed;
+
 
                         try {
                             let context = req;
 
                             let ds = context._dataSource;
-                            if (!context.isAllowed(allowed))
-                                throw 'not allowed';
+
                             let r: serverMethodOutArgs;
                             await ds.transaction(async ds => {
                                 context.setDataProvider(ds);
@@ -271,6 +269,8 @@ export function ServerMethod(options: ServerFunctionOptions) {
                                         y = rows[0];
                                         (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
+                                    if (!context.isAllowedForInstance(y, allowed))
+                                        throw 'not allowed';
                                     let defs = getEntityRef(y) as rowHelperImplementation<any>;
                                     await defs.__validateEntity();
                                     try {
@@ -292,6 +292,8 @@ export function ServerMethod(options: ServerFunctionOptions) {
                                     let controllerRef = getControllerRef(y, context);
                                     controllerRef._updateEntityBasedOnApi(d.fields);
                                     await Promise.all([...controllerRef.fields].map(x => x.load()));
+                                    if (!context.isAllowedForInstance(y, allowed))
+                                        throw 'not allowed';
 
                                     await controllerRef.__validateEntity();
                                     try {

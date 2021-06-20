@@ -1,6 +1,6 @@
 import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
-import { prepareArgsToSend, prepareReceivedArgs, Controller, ServerFunction, ServerMethod } from '../server-action';
+import { prepareArgsToSend, prepareReceivedArgs, Controller,  BackendMethod, BackendMethodOptions } from '../server-action';
 import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remult3';
 
 import { IdEntity } from '../id-entity';
@@ -20,6 +20,7 @@ class testEntity extends IdEntity {
     @Field()
     name: string;
 }
+
 @Controller('1')
 class testBasics {
     constructor(private context: Context) {
@@ -32,17 +33,17 @@ class testBasics {
     myType: myType;
     @Field()
     myEntity: testEntity;
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async testDate() {
 
         return this.theDate.getFullYear();
     }
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async testDataType(n: number) {
         return this.myType.what(n);
     }
 
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async sendEntityAsParamter() {
         return this.myEntity.name;
     }
@@ -59,7 +60,7 @@ class testBasics {
         }
     })
     a: string;
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async doIt() {
         let result = 'hello ' + this.a;
         this.a = 'yael';
@@ -68,36 +69,36 @@ class testBasics {
             result
         }
     }
-    @ServerFunction({ allowed: true })
+    @BackendMethod({ allowed: true })
     static async sf(name: string, context?: Context) {
         return {
             onServer: context.backend,
             result: 'hello ' + name
         }
     }
-    @ServerFunction({ allowed: true })
+    @BackendMethod({ allowed: true })
     static async testDate(d: Date) {
 
         return d.getFullYear();
     }
-    @ServerFunction({ allowed: true })
+    @BackendMethod({ allowed: true })
     static async testDataType(d: myType, n: number) {
         return d.what(n);
     }
-    @ServerFunction({ allowed: true })
+    @BackendMethod({ allowed: true })
     static async getValFromServer(context?: Context) {
         return (await context.for(testEntity).findFirst()).name;
     }
-    @ServerFunction({ allowed: true })
+    @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
         return entity.name;
     }
-    @ServerFunction({ allowed: true })
+    @BackendMethod({ allowed: true })
     static async syntaxError() {
         let z = undefined;
         return z.toString();
     }
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async syntaxError() {
         let z = undefined;
         return z.toString();

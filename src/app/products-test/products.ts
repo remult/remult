@@ -1,5 +1,5 @@
 import { DataControl } from '@remult/angular';
-import { Allowed, Context, EntityAllowed,  EntityOptions, Filter, IdEntity, ServerMethod } from '@remult/core';
+import { Allowed, Context,   EntityOptions, Filter, IdEntity, ServerMethod } from '@remult/core';
 import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere,  FieldType } from '../../../projects/core/src/remult3';
 
 

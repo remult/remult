@@ -1,6 +1,6 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
-import { ServerMethod } from '../server-action';
+import { BackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
@@ -23,7 +23,7 @@ class testServerMethodOnEntity extends EntityBase {
     })
 
     a: string;
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async doIt1() {
         let result = 'hello ' + this.a;
         this.a = 'yael';
@@ -32,7 +32,7 @@ class testServerMethodOnEntity extends EntityBase {
             result
         }
     }
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async doItAgain() {
         expect(await this.context.for(testServerMethodOnEntity).count()).toBe(0);
         await this._.save();
@@ -63,7 +63,7 @@ class testBoolCreate123 extends EntityBase {
     id: number;
     @Field({})
     ok123: Boolean = false;
-    @ServerMethod({ allowed: true })
+    @BackendMethod({ allowed: true })
     async testIt() {
         
         await this._.save();

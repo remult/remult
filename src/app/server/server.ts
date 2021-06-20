@@ -13,7 +13,7 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Field, Filter,  ServerFunction } from '../../../projects/core';
+import { Field, Filter } from '../../../projects/core';
 import { Products } from '../products-test/products';
 
 import { isJSDocTypedefTag } from 'typescript';
@@ -56,90 +56,34 @@ serverInit().then(async (dataSource) => {
             res.send('No Result' + index);
         }
     });
-   
-
-    
 
     let port = process.env.PORT || 3001;
     app.listen(port);
-
-
-
-
 });
-class hasId<idType> {
-    id: idType
-}
-class myClass extends hasId<number>{
-    id: number;
 
-}
-
-function doIt<idType, x extends hasId<idType>>(x: x): hasId<idType> {
-    return x;
+function decorator() {
+    return (a, b, c) => {
+        console.log({ a, b, c, p: a.prototype,cont:a.constructor,cName:a.constructor.name });
+        return a;
+    };
 }
 
-
-
-// class myClass {
-//     @ServerFunction({ allowed: true,returnType:new ArrayOf(Products) })
-//     static myFunction(a: number,
-//         @Column({dataType:ArrayOf(Products)})
-//         myArray:Products): returnType {
-//         let result = new returnType();
-//         result.products.push({ Basket: undefined, quantity: 1, asdfsa: 3 })
-//         return undefined;
-//     }
-// }
-
-// export class ArrayOf<T>{
-//     constructor(T: ClassType<T>) {
-
-//     }
-// }
-
-
-// class returnType {
-
-//     @Column({})
-//     products: ProductInfo[] = [];
-// }
-
-class ProductInfo {
-    @Field()
-    Basket: Products;
-    @Field()
-    quantity: number;
+class base{
+    b:number;
+    c(){
+        return 1234;
+    }
+    
 }
+class myClass extends base {
+    a:number;
+    constructor(){super()}
+    @decorator()
+    method() {
 
+    }
+    @decorator()
+    static staticMethod() {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// let a: hasWhere<theClass> = {
-//     where: x => x.a.isEqualTo(1)
-// }
-// let b: hasWhere<theClass> = {
-//     where: [x => x.a.isEqualTo(2), a.where]
-// }
-// class theClass {
-//     a: number;
-//     b: number;
-// }
-
-// export declare type EntityWhereItem<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[]));
-// export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[])) | EntityWhereItem<entityType>[];
-
-// export interface hasWhere<T> {
-//     where: EntityWhere<T>;
-// }
+    }
+} 

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context,  ServerFunction, Entity,  IdEntity, Field } from '@remult/core';
+import { Context,   Entity,  IdEntity, Field, ServerMethod } from '@remult/core';
 @Component({
   selector: 'app-test',
   templateUrl: './test.component.html',
@@ -35,7 +35,7 @@ export class TestComponent {
     await TestComponent.setAll(completed);
     this.loadTasks();
   }
-  @ServerFunction({ allowed: true })
+  @ServerMethod({ allowed: true })
   static async setAll(completed: boolean, context?: Context) {
     for await (const task of context.for(Tasks).iterate()) {
       task.completed = completed;

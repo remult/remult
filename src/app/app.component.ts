@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, Route, ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
-import { Context, ServerFunction,  UserInfo } from '@remult/core';
+import { Context,  ServerMethod,  UserInfo } from '@remult/core';
 
 
 import { openDialog, RouteHelperService } from '@remult/angular';
@@ -49,7 +49,7 @@ export class AppComponent implements OnInit {
     //   }
     // });
   }
-  @ServerFunction({ allowed: true })
+  @ServerMethod({ allowed: true })
   static async signIn(user: string, password: string, context?: Context) {
     let result: UserInfo;
     // let u = await context.for_old(Users).findFirst(h => h.name.isEqualTo(user));

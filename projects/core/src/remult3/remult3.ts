@@ -52,13 +52,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] move set to it's own file
 [V] move input types to it's own files.
 [V] move url builder to it's own type
-[] move server function to server method.
-[] rename terminology from ServerMethod to BackendMethod
+[V] move server function to server method.
+[V] rename terminology from ServerMethod to BackendMethod
 [V] rename onserver to backend
-[] change server function allowed to be entity allowed
+[V] change server function allowed to be entity allowed
 [V] change entityallowed to InstanceAllowed.
 [V] remove controller Allowed
-[] move utility functions to utilities. (get value or expression etc...)
+[V] move utility functions to utilities. (get value or expression etc...)
 [V] change controller to just recieve a key parameters
 
 

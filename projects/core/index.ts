@@ -68,9 +68,8 @@ export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-d
 //export * from './src/data-api'; //reconsider if to make internal
 export {
     Controller,
-    ServerFunction,
-    ServerFunctionOptions,
-    ServerMethod,
+    BackendMethodOptions,
+    BackendMethod,
     ProgressListener
 } from './src/server-action';
 
