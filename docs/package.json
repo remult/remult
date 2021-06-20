@@ -1,0 +1,13 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vuepress dev .",
+    "build": "vuepress build .",
+    "publish": "deploy.sh"
+  },
+  "devDependencies": {
+    "vuepress": "^1.8.2",
+    "vuepress-plugin-code-copy": "^1.0.6"
+  }
+}

@@ -1,7 +1,7 @@
 # Todo App with Angular
 ### Build a production ready task list app with Remult using Angular + Node
 
-In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node + Express for the API server, a and Remult as our full stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
+In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node + Express for the API server, and Remult as our full stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
 ### Prerequisites
 
@@ -18,21 +18,22 @@ npm i -g @angular/cli
 ### Create an Angular Project
 Create the new Angular project.
 ```sh
-ng new angular-sample
+ng new remult-angular-todo
 ```
 ::: warning Note
 The ng new command prompts you for information about features to include in the initial app project. Accept the defaults by pressing the Enter or Return key.
 :::
 
 ### Adding Remult and Server Stuff
-In this tutorial we'll be using the project folder created by `Angular` as the root folder for our server project as well.
+In this tutorial we'll be using the workspace folder created by `Angular` as the root folder for our server project as well.
 ```sh
-cd angular-sample
+cd remult-angular-todo
 ```
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
 ```sh
 npm i express @remult/core
+npm i --save-dev @types/express
 ```
 #### The API server project
 
@@ -100,7 +101,7 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    npm run dev-node
    ```
 
-   The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
+The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
 ### Finishing up the Starter Project
 
@@ -129,20 +130,20 @@ We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-serve
    "dev-ng": "ng serve --proxy-config proxy.conf.json --open"
    ```
 
+   ::: warning Note
+   The `start` and `build` npm scripts created by Angular CLI will be modified in the [Deployment](#deployment) section of this tutorial to script that will `start` and `build` the full-stack app.
+   :::
+
 3. Start the Angular app in a new terminal. **Don't stop the `dev-node` script. `dev-ng` and `dev-node` should be running concurrently.**
 
    ```sh
    npm run dev-ng
    ```
 
-   The default Angular app main screen should be displayed.
+The default Angular app main screen should be displayed.
 
-   ::: tip
-   If you are using Visual Studio Code and would like to run both `dev-node` and `dev-ng` scripts using a single Visual Studio Code `task`, create a `.vscode/tasks.json` file with the contents found [here](https://gist.github.com/noam-honig/623898a6cd539d86113263d3c63260f0) and run the `dev` task.
-   :::
-
-::: warning Note
-The `start` and `build` npm scripts created by Angular CLI will be modified in the [Deployment](#deployment) section of this tutorial to script that will `start` and `build` the full-stack app.
+::: tip
+If you are using Visual Studio Code and would like to run both `dev-node` and `dev-ng` scripts using a single Visual Studio Code `task`, create a `.vscode/tasks.json` file with the contents found [here](https://gist.github.com/noam-honig/623898a6cd539d86113263d3c63260f0) and run the `dev` task.
 :::
 
 #### Setting up an Angular DI Provider for Remult
@@ -156,8 +157,8 @@ While we're editing the root Angular module, we can also import the `FormsModule
 
 *src/app/app.module.ts*
 ```ts{5-7,15-16,19}
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
@@ -240,8 +241,8 @@ Let's implement this feature within the main `AppComponent` class.
       styleUrls: ['./app.component.css']
    })
    export class AppComponent {
-      title = 'angular-sample';
-      constructor(private context: Context) { 
+      title = 'remult-angular-todo';
+      constructor(public context: Context) { 
       }
       newTask = this.context.for(Tasks).create();
       async createNewTask() {
@@ -251,7 +252,7 @@ Let's implement this feature within the main `AppComponent` class.
    }
    ```
 
-   The `context` field we've add to the `AppComponent` class (using a constructor argument), is a Remult `Context` object which will be instantiated by Angular`s dependency injection.
+   The `context` field we've add to the `AppComponent` class (using a constructor argument), is a Remult `Context` object which will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on in the tutorial.
 
    The `newTask` field contains a new, empty, instance of a `Tasks` entity object, instantiated using Remult. 
    
@@ -278,7 +279,7 @@ Let's implement this feature within the main `AppComponent` class.
 Using the browser, create a few new tasks. Then navigate to the `tasks` API route at <http://localhost:4200/api/tasks> to see the tasks have been successfully stored on the server.
 
 ::: warning Wait, where is the backend database?
-By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the project folder, with a `tasks.json` file that contains the created tasks.
+By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file that contains the created tasks.
 
 If you're using git, it is advisable to exclude the `db` folder from version control by adding it to the project's `.gitignore` file.
 :::
@@ -409,7 +410,7 @@ Here are the code files we've modified to implement these features.
 
 *src/app/tasks.ts*
 ```ts
-import { EntityClass, IdEntity, StringColumn, BoolColumn } from "@remult/core";
+import { BoolColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
 
 @EntityClass
 export class Tasks extends IdEntity {
@@ -436,8 +437,8 @@ import { Tasks } from './tasks';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'angular-sample';
-  constructor(private context: Context) {
+  title = 'remult-angular-todo';
+  constructor(public context: Context) {
   }
   newTask = this.context.for(Tasks).create();
   async createNewTask() {
@@ -526,7 +527,8 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    *src/app/app.component.html*
    ```html
    <p>
-      <input type="checkbox" [(ngModel)]="hideCompleted" (change)="loadTasks()">Hide completed
+      <input type="checkbox" id="hideCompleted" [(ngModel)]="hideCompleted" (change)="loadTasks()">
+      <label for="hideCompleted">Hide completed</label>
    </p>
    ```
 
@@ -702,28 +704,7 @@ In this section, we'll be using the following packages:
    import * as jwt from 'jsonwebtoken';
    ```
 
-3. Add a `signIn` server function to the `AppComponent` class. The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret hash key. 
-   
-   The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
-
-   ```ts
-   @ServerFunction({ allowed: true })
-   static async signIn(username: string) {
-      let validUsers = {
-         ["Jane"]: { id: "1", name: "Jane", roles: [] },
-         ["Steve"]: { id: "2", name: "Steve", roles: [] }
-      };
-      let user = validUsers[username];
-      if (!user)
-         throw "Invalid User";
-      return jwt.sign(user, "my secret hash key");
-   }
-   ```
-
-   ::: warning Note
-   The secret hash key used to sign the JWT should be kept secret (dah) 
-
-4. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
+3. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
 
    *package.json*
    ```json
@@ -734,12 +715,35 @@ In this section, we'll be using the following packages:
 
    ::: danger This step is not optional
    Angular CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
+
+   **For this change to take effect, our Angular app's dev server must be restarted by terminating the `dev-ng` script and running it again.**
    :::
+
+4. Add a `signIn` server function to the `AppComponent` class. The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
+   
+   The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
+
+   ```ts
+   @ServerFunction({ allowed: true })
+   static async signIn(username: string) {
+      let validUsers = [
+          { id: "1", name: "Jane", roles: [] },
+         { id: "2", name: "Steve", roles: [] }
+      ];
+      let user = validUsers.find(user => user.name === username);
+      if (!user)
+         throw "Invalid User";
+      return jwt.sign(user, "my secret key");
+   }
+   ```
+
+   ::: warning Note
+   The secret key used to sign the JWT should be kept secret (dah) 
 
 5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. Then, provide the `UserInfo` JWT payload (stored by `express-jwt` in `req.user`) to Remult.
 
    *src/server/index.ts*
-   ```ts{4,7-10}
+   ```ts{4,7-13}
    import * as express from 'express';
    import { initExpress } from '@remult/core/server';
    import '../app/app.module';
@@ -747,7 +751,7 @@ In this section, we'll be using the following packages:
 
    let app = express();
    app.use(expressJwt({ 
-      secret: "my secret hash key", 
+      secret: "my secret key", 
       credentialsRequired: false, 
       algorithms: ['HS256'] }));
    initExpress(app, {
@@ -770,7 +774,7 @@ In this section, we'll be using the following packages:
 
    setAuthToken(token: string) {
       this.context.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
-      sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+      sessionStorage.setItem(AppComponent.AUTH_TOKEN_KEY, token);
    }
 
    username: string;
@@ -782,7 +786,7 @@ In this section, we'll be using the following packages:
 
    signOut() {
       this.context.setUser(undefined);
-      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      sessionStorage.removeItem(AppComponent.AUTH_TOKEN_KEY);
    }
    ```
 
@@ -794,15 +798,17 @@ In this section, we'll be using the following packages:
 
    *src/app/app.component.html*
    ```html
-   <ng-container *ngIf="!context.isSignedIn()">
-      <input [(ngModel)]="username"> 
-      <button (click)="signIn()">Sign in</button>
-   </ng-container>
+   <p>
+      <ng-container *ngIf="!context.isSignedIn()">
+         <input [(ngModel)]="username"> 
+         <button (click)="signIn()">Sign in</button>
+      </ng-container>
 
-   <ng-container *ngIf="context.isSignedIn()">
-      Hi {{context.user.name}}
-      <button (click)="signOut()">Sign out</button>
-   </ng-container>
+      <ng-container *ngIf="context.isSignedIn()">
+         Hi {{context.user.name}}
+         <button (click)="signOut()">Sign out</button>
+      </ng-container>
+   </p>
    ```
 
 8. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
@@ -903,7 +909,7 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
 
    *src/app/tasks.ts*
    ```ts
-   completedUser = new StringColumn({
+   readonly completedUser = new StringColumn({
       allowApiUpdate: false
    })
    ```
@@ -911,19 +917,19 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
 2. Add a `context` argument to the constructor of the `Tasks` entity class, and set the `saving` property of the `EntityOptions` implemented in the constructor to the following arrow function.
 
    *src/app/tasks.ts*
-   ```ts{4-8}
+   ```ts{1,8-12}
    constructor(context: Context) {
       super({
          name: 'tasks',
+         allowApiRead: context => context.isSignedIn(),
+         allowApiUpdate: context => context.isSignedIn(),
+         allowApiInsert: Roles.admin,
+         allowApiDelete: Roles.admin,
          saving: () => {
             if (context.onServer && this.completed.wasChanged() && this.completed.value) {
                   this.completedUser.value = context.user.name;
             }
-         },
-         allowApiRead: context => context.isSignedIn(),
-         allowApiUpdate: context => context.isSignedIn(),
-         allowApiInsert: Roles.admin,
-         allowApiDelete: Roles.admin
+         }
       })
    }
    ```
@@ -958,23 +964,23 @@ In addition, to follow a few basic production best practices, we'll use [compres
    import * as helmet from 'helmet';
 
    let app = express();
-   app.use(compression());
    app.use(helmet());
+   app.use(compression());
    app.use(expressJwt({ 
-      secret: "my secret hash key", 
+      secret: "my secret key", 
       credentialsRequired: false, 
       algorithms: ['HS256'] }));
    initExpress(app, {
       getUserFromRequest: req => req.user
    });
-   app.use(express.static('dist/angular-sample'));
+   app.use(express.static('dist/remult-angular-todo'));
    app.use('/*', async (req, res) => {
-      res.sendFile('dist/angular-sample/index.html');
+      res.sendFile('./dist/remult-angular-todo/index.html');
    });
    app.listen(process.env.PORT || 3002, () => console.log("Server started"));
    ```
 
-3. Modify the project's `build` npm script to also transpile the API server's TypeScript code (using `tsc`).
+3. Modify the project's `build` npm script to also transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
    *package.json*
    ```json
@@ -1026,121 +1032,67 @@ If you run into trouble deploying the app to Heroku, try using Heroku's [documen
 
 #### Use PostreSQL as production database
 
+While the simple backend JSON database provided by `remult` is nice for development, it isn't suitable for production (it will be discarded each time the Heroku `dyno` is restarted).
 
-### Https
-The first stage of securing any application is making sure that the communication between the server and the browser will be encrypted using SSL and HTTPS.
+Let's replace it with a production PostgreSQL database.
 
-In our app, we want to make sure that any request that comes in without encryption (using http) will be automatically redirected to use encryption (https).
+1. Install `pg` and `@remult/server-postgres`.
 
-To do that we'll install a package called:`express-force-https`
-```sh
-npm i express-force-https
-```
+   ```sh
+   npm i pg @remult/server-postgres
+   ```
 
-And adjust the `server.ts` to call it. Since most dev environments do not have https - we'll only call it in production.
-```ts{8,20,21}
-import * as express from 'express';
-import { initExpress } from '@remult/server';
-import * as fs from 'fs';
-import { SqlDatabase } from '@remult/core';
-import { Pool } from 'pg';
-import { config } from 'dotenv';
-import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
-import * as forceHttps from 'express-force-https';
-import '../app.module';
+2. Add the highlighted code lines to `src/server/index.ts`.
 
-config(); //loads the configuration from the .env file
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
-});
-let database = new SqlDatabase(new PostgresDataProvider(pool));
-verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
+   *src/server/index.ts*
+   ```ts{7-9,18-25,28}
+   import * as express from 'express';
+   import { initExpress } from '@remult/core/server';
+   import '../app/app.module';
+   import * as expressJwt from 'express-jwt';
+   import * as compression from 'compression';
+   import * as helmet from 'helmet';
+   import { SqlDatabase } from '@remult/core';
+   import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
+   import { Pool } from 'pg';
 
-let app = express();
-if (!process.env.DEV_MODE)
-    app.use(forceHttps);
-initExpress(app, database);
-app.use(express.static('dist/angular-sample'));
-app.use('/*', async (req, res) => {
-    try {
-        res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
-    } catch (err) {
-        res.sendStatus(500);
-    }
-});
-let port = process.env.PORT || 3002;
-app.listen(port); 
-```
+   let app = express();
+   app.use(helmet());
+   app.use(compression());
+   app.use(expressJwt({ 
+      secret: "my secret key", 
+      credentialsRequired: false, 
+      algorithms: ['HS256'] }));
+   let getDatabase = () => {
+      if (process.env.NODE_ENV === "production") {
+         const db = new SqlDatabase(new PostgresDataProvider(new Pool()));
+         verifyStructureOfAllEntities(db);
+         return db;
+      }
+      return undefined;
+   }
+   initExpress(app, {
+      getUserFromRequest: req => req.user,
+      dataProvider: getDatabase()
+   });
+   app.use(express.static('dist/remult-angular-todo'));
+   app.use('/*', async (req, res) => {
+      res.sendFile('./dist/remult-angular-todo/index.html');
+   });
+   app.listen(process.env.PORT || 3002, () => console.log("Server started"));
+   ```
 
+3. Deploy to Heroku using `git push`:
 
+   ```sh
+   git push heroku master
+   ```
 
-::: tip Ready for production
-The application as it is now is ready to be deployed to production.
+4. Run the production app using `heroku apps:open` command: 
 
-If you want to deploy it to `heroku` for example, after you install the heroku cli and sign in you'll need to run the following commands in the terminal window:
-
-**Setup the site once**
-1. create an app on heroku `heroku apps:create`
-2. Provision a database `heroku addons:create heroku-postgresql:hobby-dev`
-
-**Every time you want to update the site**
-1. commit your changes to git.
-2. Deploy to heroku using git `git push heroku master -f`
-
-Once it's done simply run the app using: `heroku apps:open`
-:::
-
-
-### Production Tips
-It's recommended to use compression on the server in production environments:
-```sh
-npm i compression
-```
-
-In `server.ts`
-```ts{10,22}
-import * as express from 'express';
-import { initExpress } from '@remult/server';
-import * as fs from 'fs';
-import { SqlDatabase } from '@remult/core';
-import { Pool } from 'pg';
-import { config } from 'dotenv';
-import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
-import * as forceHttps from 'express-force-https';
-import * as jwt from 'jsonwebtoken';
-import * as compression from 'compression';
-import '../app.module';
-
-config(); //loads the configuration from the .env file
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
-});
-let database = new SqlDatabase(new PostgresDataProvider(pool));
-verifyStructureOfAllEntities(database); //This method can be run in the install phase on the server.
-
-let app = express();
-app.use(compression());
-if (!process.env.DEV_MODE)
-    app.use(forceHttps); 
-initExpress(app, database, { 
-    tokenProvider: {
-        createToken: userInfo => jwt.sign(userInfo, process.env.TOKEN_SIGN_KEY),
-        verifyToken: token => jwt.verify(token, process.env.TOKEN_SIGN_KEY)
-    }
-});
-app.use(express.static('dist/angular-sample'));
-app.use('/*', async (req, res) => {
-    try {
-        res.send(fs.readFileSync('dist/angular-sample/index.html').toString());
-    } catch (err) {
-        res.sendStatus(500);
-    }
-});
-let port = process.env.PORT || 3002;
-app.listen(port); 
-```
+   ```sh
+   heroku apps:open
+   ```
 
 ## todo
 [V] finish release of remult after jwt changes introduced in v2.2.1
@@ -1151,7 +1103,6 @@ app.listen(port);
 
 [V] extract from init express the usage of compression, secure etc... and make the JwtAuthentication recieve a authenticate provider interface that is simple and is implemented with the jwt. make JWTCookieAuthorizationHelper internal and only get sign and validate in the interface.
 
-
 [] reconsider the find limit - currently it's set by default to 25 and that can cause problems.
 
 [] reconsider separating the setup code - to something the user can extract from a github template - and only worry about the setup if they want to.
@@ -1160,8 +1111,17 @@ app.listen(port);
 
 [] verifyStructureOfAllEntities better name (should include the word schema)
 
-[] explain Column
-
-[] use pg for deployment
-
 [] consider more code reviews
+
+[] code sections prevent scrollbar
+
+[] "set all..." buttons hidden for Steve
+
+[] reflect-metadata should be a dependency of remult core
+
+[] setAuthToken from ngOnInit()
+
+[] add dotenv before secret key
+
+[] upgrade vuepress for code groups
+

@@ -16,10 +16,10 @@
     "patch-versions": "cd projects/core && npm version patch && cd.. && cd angular && npm version patch && cd..",
     "node-serve": "./node_modules/.bin/tsc-watch -p tsconfig.server.json --onSuccess \"npm run server:dev-run",
     "build-server-watch": "tsc -p tsconfig.server.json --watch",
-    "server:dev-run": "node dist-server/src/app/server/server.js",
-    "docs": "vuepress dev docs",
-    "build-docs": "vuepress build docs",
-    "release-docs": "deploy.sh",
+    "server:dev-run": "node --inspect dist-server/src/app/server/server.js",
+    "docs": "cd docs && npm run dev",
+    "build-docs": "cd docs && npm run build",
+    "release-docs": "cd docs && npm run publish",
     "setup-type-doc": " typedoc typedoc-plugin-markdown",
     "try-generate-typedoc-docs": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work",
     "t": "copyfiles -V -u 1 dist/core/** dist/build-angular/@remult",
@@ -64,7 +64,6 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "~6.6.0",
     "uuid": "^3.3.2",
-    "vuepress-plugin-code-copy": "^1.0.6",
     "zone.js": "~0.11.3"
   },
   "devDependencies": {
@@ -93,8 +92,7 @@
     "tsickle": "^0.37.0",
     "tslib": "^2.2.0",
     "tslint": "~6.1.0",
-    "typescript": "~4.1.5",
-    "vuepress": "^1.5.2"
+    "typescript": "~4.1.5"
   },
   "browser": {
     "jsonwebtoken": false,
