@@ -32,7 +32,7 @@ cd remult-angular-todo
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
 ```sh
-npm i express @remult/core
+npm i express @remult/core@next
 npm i --save-dev @types/express
 ```
 #### The API server project
