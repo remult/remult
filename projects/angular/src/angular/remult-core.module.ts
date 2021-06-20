@@ -7,7 +7,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { actionInfo, Context, RestDataProvider, Action,  Column, EntityOrderBy, EntityWhere, Entity, ValueListItem, EntityProvider } from '@remult/core';
+import { Context, FieldDefinitions, ValueListItem } from '@remult/core';
+import { actionInfo } from '@remult/core/src/server-action';
 
 import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -29,6 +30,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
+import { Repository, EntityOrderBy, EntityWhere, EntityDefinitions } from '@remult/core';
 
 
 
@@ -49,8 +51,8 @@ import { BidiModule } from '@angular/cdk/bidi';
     provide: Context,
     useFactory: buildContext,
     deps: [HttpClient, MatDialog]
-  }, 
-  NotSignedInGuard, SignedInGuard, RouteHelperService,
+  },
+    NotSignedInGuard, SignedInGuard, RouteHelperService,
     BusyService,
 
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
@@ -72,7 +74,7 @@ export function buildContext(http: HttpClient, _dialog: MatDialog) {
   let r = new Context(http);
   _matDialog = _dialog;
 
-  
+
   actionInfo.runActionWithoutBlockingUI = async x => await BusyService.singleInstance.donotWait(x);
   actionInfo.startBusyWithProgress = () => BusyService.singleInstance.startBusyWithProgress()
 
@@ -89,6 +91,7 @@ export async function openDialog<T, C>(component: { new(...args: any[]): C; }, s
   if (ref.beforeClosed)
     r = await ref.beforeClosed().toPromise();
   else
+    //@ts-ignore
     r = await ref.beforeClose().toPromise();
 
 
@@ -100,36 +103,37 @@ export async function openDialog<T, C>(component: { new(...args: any[]): C; }, s
 
 /** returns an array of values that can be used in the value list property of a data control object */
 
-export async function getValueList<T extends Entity>(provider:EntityProvider<T>, args?: {
-  idColumn?: (e: T) => Column,
-  captionColumn?: (e: T) => Column,
+export async function getValueList<T>(repository: Repository<T>, args?: {
+  idField?: (e: EntityDefinitions<T>) => FieldDefinitions,
+  captionField?: (e: EntityDefinitions<T>) => FieldDefinitions
   orderBy?: EntityOrderBy<T>,
   where?: EntityWhere<T>
 }): Promise<ValueListItem[]> {
   if (!args) {
     args = {};
   }
-  if (!args.idColumn) {
-    args.idColumn = x => x.columns.idColumn;
+  if (!args.idField) {
+    args.idField = x => x.idField;
   }
-  if (!args.captionColumn) {
-    let entity = provider.create();
-    let idCol = args.idColumn(entity);
-    for (const keyInItem of entity.columns) {
+  if (!args.captionField) {
+    let idCol = args.idField(repository.defs);
+    for (const keyInItem of repository.defs.fields) {
       if (keyInItem != idCol) {
-        args.captionColumn = x => x.columns.find(keyInItem);
+        args.captionField = x => x.fields.find(keyInItem);
         break;
       }
     }
   }
-  return (await provider.find({
+  let r = (await repository.find({
     where: args.where,
     orderBy: args.orderBy,
     limit: 1000
   })).map(x => {
     return {
-      id: args.idColumn(x).value,
-      caption: args.captionColumn(x).value
+      id: repository.getRowHelper(x).fields.find(args.idField(repository.defs)).value,
+      caption: repository.getRowHelper(x).fields.find(args.captionField(repository.defs)).value,
     }
   });
+  return r;
+
 }

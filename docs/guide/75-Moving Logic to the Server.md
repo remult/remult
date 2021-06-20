@@ -8,10 +8,10 @@ An easy way to improve the performance, is to make a single call to the server a
 
 Let's refactor the code to do that:
 
-<<< @/docs-code/products-batch-operations/products.component.ts{18-26} 
+<<< @/docs-code/products-batch-operations/products.component.ts{20-33} 
 
 * We've created a new static method called `updatePriceOnServer` and moved the code to it
-* * note that the `context` parameter is marked as optional - that parameter will automatically be populated with the server context once this method will run on the server.
+* * note that the `context` parameter is marked as optional - that parameter will automatically be injected with the server context once this method will run on the server.
 * * note that since this is a `static` method, we can't use the `this` keyword so instead of writing `this.context.for(Products)` we write `context.for(Products) ` and we receive the context as a parameter.
 * * note that we also that the parameter `priceToUpdate` is typed, which means that we achieved type check across backend calls.
 * We've tagged it with the `@ServerFunction` decorator to indicate that it runs on the server and we've moved the code to it.

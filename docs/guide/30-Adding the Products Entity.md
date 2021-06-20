@@ -6,14 +6,14 @@ Let's add a new file under the `Products` folder, called `products.ts`
 <<< @/docs-code/products/products.ts
 
 Let's review:
-1. We've added a `Products` class that extends the `IdEntity` class from `@remult/core`. This will create an `Entity` that will have an `id` column that is unique, and anything else we would like to add to it.
-2. On line 5 we've defined a `name` column (the product name)
+1. We've added a `Products` class that extends the `IdEntity` class from `@remult/core`. This will create an `Entity` that will have an `id` field that is unique, and anything else we would like to add to it.
+2. On line 5 we've defined a `name` field (the product name)
 3. On line 7 we've called the `super` class's constructor and defined:
    1.  Line 8 - the `name` for our `API` 
-   2.  Line 9 - `allowApiCRUD` determined that CRUD operations are allowed in the `API` (**C**reate **R**ead **U**pdate **D**elete)
+   2.  Line 9 - `allowApiCrud` determined that CRUD operations are allowed in the `API` (**C**reate **R**ead **U**pdate **D**elete)
    
 
->The `allowApiCRUD` properties are set by default to false, to secure the data of your application, you may want to restrict access to this data and we want to make sure that data will not be exposed by default. Later we'll review how to control access to data.
+>The `allowApiCrud` properties are set by default to false, to secure the data of your application, you may want to restrict access to this data and we want to make sure that data will not be exposed by default. Later we'll review how to control access to data.
 
 ## Using the Entity in a Component
 Now let's add a grid on the `ProductsComponent` that displays the `Products` Entity.
@@ -50,7 +50,7 @@ and in the `products.component.html`
 
 let's review:
 1. We've replaced the `html` with a `data-grid` tag that will display the grid settings provided in the `products` member of the `products.component.ts` file.
-2. We've determined a fixed height of 300 pixels.
+
 
 ## The result on the server
 Now if we'll look at the bottom of our screen, at the Terminal output for the task `node-serve`, we'll see that the server restarted and a new api is now available:
@@ -66,7 +66,7 @@ start verify structure
 Let's review:
 1. On line 7 it added an api endpoint for our `Products` `Entity`
 :::tip
-Initially in this tutorial we're using a json file based database - later when we'll use an sql database, the table will be automatically creating using a script similar to:
+Initially in this tutorial we're using a json file based database - later when we'll use an sql database, the table will be automatically created using a script similar to:
 ```sql
 create table Products (
   id varchar default '' not null  primary key,
@@ -76,7 +76,7 @@ create table Products (
 :::
 
 
-When we'll review the products page, we'll be able to see an empty grid with a column called `id` and a column called `name`, we can add new rows by clicking on the `+` sign at the bottom, and saving them when we edit them.
+When we'll review the products page, we'll be able to see an empty grid with a field called `id` and a field called `name`, we can add new rows by clicking on the `+` sign at the bottom, and saving them when we edit them.
 
 Let's add a few products:
 1. Beer
@@ -109,12 +109,12 @@ We can also navigate through the browser directly to the api address `http://loc
 ]
 ```
 
-## Adding More Columns
+## Adding More Fields
 let's add a price, and availability dates to the `Products` entity
 
 In the `products.ts` file
 
-<<< @/docs-code/products-batch-operations/products.ts{6-8}
+<<< @/docs-code/products-batch-operations/products.ts{10-15}
 
 
 And when we'll look at the browser, we'll see that there are 3 more columns to the grid

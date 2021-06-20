@@ -30,21 +30,22 @@
             [style.flex]="getColFlex(map)" [style.width]="getColWidth(map)" draggable="true"
             (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)">
 
-            <span (click)="settings.sort(map.column)">{{map.caption}}</span>
+            <span (click)="settings.sort(map.field)">{{map.caption}}</span>
 
 
-            <span class="filterButton" [class.filteredFilterButton]="isFiltered(map.column)"
+            <span class="filterButton" *ngIf="map.field" [class.filteredFilterButton]="isFiltered(map.field)"
               (click)="showFilterColumnDialog(map)">
               <mat-icon>filter_alt</mat-icon>
             </span>
 
-            <mat-icon *ngIf="settings.sortedAscending(map.column)">arrow_downward</mat-icon>
-            <mat-icon class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedDescending(map.column)">
+            <mat-icon *ngIf="settings.sortedAscending(map.field)">arrow_downward</mat-icon>
+            <mat-icon class="glyphicon glyphicon-chevron-down pull-right" *ngIf="settings.sortedDescending(map.field)">
               arrow_upward</mat-icon>
           </div>
           <div class="dataGridButtonHeaderCell" *ngIf="rowButtons&& rowButtons.length>0&&displayButtons"
             [class.col-xs-1]="rowButtons&&rowButtons.length<3">
-            <button mat-icon-button *ngIf="showSaveAllButton()" (click)="saveAllClick()" style="line-height:36px;max-height:28px">
+            <button mat-icon-button *ngIf="showSaveAllButton()" (click)="saveAllClick()"
+              style="line-height:36px;max-height:28px">
               <mat-icon [matTooltip]="saveAllText()" class="row-button" style="font-size:24px">done_all</mat-icon>
             </button>
           </div>
@@ -62,7 +63,8 @@
           </div>
           <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
 
-            <mat-checkbox [checked]="settings.isSelected(record)" (change)="settings.selectedChanged(record)" (click)="clickOnselectCheckboxFor(record,$event)">
+            <mat-checkbox [checked]="settings.isSelected(record)" (change)="settings.selectedChanged(record)"
+              (click)="clickOnselectCheckboxFor(record,$event)">
             </mat-checkbox>
 
           </div>
@@ -106,7 +108,7 @@
 
       {{rightToLeft?'שורות בדף': 'lines per page'}}
       <select class="form-control" style="width:80px;display:inline-block" [(ngModel)]="settings.rowsPerPage"
-        (change)="settings.getRecords()">
+        (change)="settings.reloadData()">
         <option *ngFor="let r of settings.rowsPerPageOptions" value="{{r}}">{{r}}</option>
       </select>
     </div>

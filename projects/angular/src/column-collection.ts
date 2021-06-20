@@ -1,10 +1,16 @@
-import { Column, Entity, FilterHelper, IdEntity, ValueListItem, valueOrEntityExpressionToValue } from "@remult/core";
-import { DataControlInfo, DataControlSettings, decorateDataSettings } from "./data-control-interfaces";
+
+import { FieldDefinitions, EntityField, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, FieldSettings, Context, ValueConverter } from "@remult/core";
+
+import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
+import { FilterHelper } from "./filter-helper";
+import { decorateColumnSettings } from '@remult/core/src/remult3';
+import { ValueListValueConverter } from "@remult/core/valueConverters";
 
 
 
-export class ColumnCollection<rowType extends Entity = Entity> {
-  constructor(public currentRow: () => Entity, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean) {
+export class FieldCollection<rowType = any> {
+
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: FieldDefinitions) => EntityField<any, any>) {
 
 
   }
@@ -12,12 +18,14 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     return this.showArea();
 
   }
-  __getColumn(map: DataControlSettings, record: Entity) {
-    let result: Column;
+  __getColumn(map: DataControlSettings, record: any) {
+    if (!map.field)
+      return undefined;
+    let result: EntityField<any, any>;
     if (record)
-      result = record.columns.find(map.column);
+      result = getEntityOf(record).fields.find(getFieldDefinition(map.field));
     if (!result)
-      result = map.column;
+      result = map.field as unknown as EntityField<any, any>;
     return result;
   }
 
@@ -26,7 +34,29 @@ export class ColumnCollection<rowType extends Entity = Entity> {
   __visible(col: DataControlSettings, row: any) {
     if (col.visible === undefined)
       return true;
-    return col.visible(row);
+    return this.getRowColumn({ col, row }, (c, row) => col.visible(row, c));
+  }
+  allowClick(col: DataControlSettings<any, any>, row: any) {
+    if (!col.click)
+      return false;
+    if (!this._getEditable(col, row))
+      return false;
+    if (col.allowClick === undefined) {
+      return true;
+    }
+    return this.getRowColumn({ col, row }, (c, row) => col.allowClick(row, c));
+  }
+  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityField<any, any>, row: any) => T) {
+    let field: EntityField<any, any>;
+    let row = args.row;
+    if (this._getRowColumn && args.col.field && row) {
+      field = this._getRowColumn(row, getFieldDefinition(args.col.field));
+    }
+    if (!field)
+      field = args.col.field as unknown as EntityField<any, any>;
+    if (!row && field)
+      row = field.entity;
+    return what(field, row);
   }
 
   __dataControlStyle(map: DataControlSettings): string {
@@ -51,21 +81,23 @@ export class ColumnCollection<rowType extends Entity = Entity> {
         continue;
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
-      if (!x.column && c instanceof Column) {
+      let col = c as FieldDefinitions;
+      let ecol = c as EntityField<any, any>;
+      if (!x.field && col.valueConverter || ecol.defs) {
         x = {
-          column: c,
+          field: c,
         }
 
       }
-      if (x.column) {
-        decorateDataSettings(x.column, x);
+      if (x.field) {
+        decorateDataSettings(x.field, x);
       }
 
       if (x.getValue) {
         s = x;
       }
 
-      else {
+      {
         promises.push(this.buildDropDown(x));
       }
       this.items.push(x);
@@ -74,6 +106,14 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     }
     await Promise.all(promises);
     return Promise.resolve();
+  }
+  private doWhenWeHaveContext: ((c: Context) => Promise<any>)[] = [];
+  private context: Context;
+  setContext(context: Context) {
+    this.context = context;
+    for (const what of this.doWhenWeHaveContext) {
+      what(context);
+    }
   }
   async buildDropDown(s: DataControlSettings) {
     if (s.valueList) {
@@ -95,7 +135,21 @@ export class ColumnCollection<rowType extends Entity = Entity> {
         }
       }
       else if (typeof orig === "function") {
-        result.push(...(await (orig as (() => Promise<ValueListItem[]>))()));
+        let theFunc = orig as ((context: Context) => Promise<ValueListItem[]>);
+        let todo = async (context: Context) => {
+          let x = await theFunc(context);
+          if (x === undefined)
+            s.valueList = undefined;
+          else
+            result.push(...x);
+
+        }
+        if (this.context) {
+          todo(this.context);
+        }
+        else
+          this.doWhenWeHaveContext.push(async context => todo(context));
+
       }
       else {
         result.push(...(await (orig as (Promise<ValueListItem[]>))));
@@ -131,11 +185,11 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     let forceEqual = col.forceEqualFilter;
     if (forceEqual === undefined)
       forceEqual = (col.valueList != undefined)
-    this.filterHelper.filterColumn(col.column, false, forceEqual);
+    this.filterHelper.filterColumn(col.field, false, forceEqual);
   }
   clearFilter(col: DataControlSettings) {
 
-    this.filterHelper.filterColumn(col.column, true, false);
+    this.filterHelper.filterColumn(col.field, true, false);
   }
   _shouldShowFilterDialog(col: DataControlSettings) {
     return false;
@@ -154,28 +208,28 @@ export class ColumnCollection<rowType extends Entity = Entity> {
   _getEditable(col: DataControlSettings, row: rowType) {
     if (!this.allowUpdate())
       return false;
-    if (!col.column)
+    if (!col.field)
       return false
-    if (col.readOnly !== undefined)
-      return !valueOrEntityExpressionToValue(col.readOnly, row);
+    if (col.readonly !== undefined)
+      return !valueOrEntityExpressionToValue(col.readonly, row);
     return true;
   }
   _click(col: DataControlSettings, row: any) {
-    col.click(row);
+    this.getRowColumn({ col, row }, (c, r) => { col.click(r, c) });
+
   }
 
   _getColDisplayValue(col: DataControlSettings, row: rowType) {
     let r;
     if (col.getValue) {
 
-      r = col.getValue(row)
-      if (r instanceof Column)
-        r = r.value;
+      r = this.getRowColumn({ row, col }, (c, r) => col.getValue(r, c));
+
 
 
 
     }
-    else if (col.column) {
+    else if (col.field) {
       if (col.valueList) {
         for (let x of (col.valueList as ValueListItem[])) {
           if (x.id == this.__getColumn(col, row).value)
@@ -205,84 +259,26 @@ export class ColumnCollection<rowType extends Entity = Entity> {
 
   }
 
-  _getError(col: DataControlSettings, r: Entity) {
-    if (!col.column)
+  _getError(col: DataControlSettings, r: any) {
+    if (!col.field)
       return undefined;
-    return this.__getColumn(col, r).validationError;
+    return this.__getColumn(col, r).error;
   }
-  autoGenerateColumnsBasedOnData(r: Entity) {
+  autoGenerateColumnsBasedOnData(defs: EntityDefinitions<any>) {
     if (this.items.length == 0) {
 
-      if (r) {
-        let ignoreCol: Column = undefined;
-        if (r instanceof IdEntity)
-          ignoreCol = r.id;
-        for (const c of r.columns) {
-          if (c != ignoreCol)
+      if (defs) {
+        for (const c of defs.fields) {
+          if (!(c.key == 'id' && c.dataType === String))
             this.add(c);
         }
-
-
       }
     }
 
 
 
   }
-  __columnSettingsTypeScript() {
-    let memberName = 'x';
-    if (this.currentRow())
-      memberName = this.currentRow().defs.name;
-    memberName = memberName[0].toLocaleLowerCase() + memberName.substring(1);
-    let result = ''
 
-    this.items.forEach(c => {
-      if (result.length > 0)
-        result += ',\n';
-
-      result += '  ' + this.__columnTypeScriptDescription(c, memberName);
-
-    });
-    result = `columnSettings: ${memberName} => [\n` + result + "\n]";
-    return result;
-  }
-  __columnTypeScriptDescription(c: DataControlSettings, memberName: string) {
-    let properties = "";
-    function addToProperties(name: string, value: any) {
-      if (properties.length > 0)
-        properties += ', ';
-      properties += "\n    " + name + ": " + value;
-    }
-    function addString(name: string, value: string) {
-      addToProperties(name, "'" + value + "'");
-
-    }
-    let columnMember = '';
-    if (c.column) {
-      columnMember += memberName + "." + c.column.defs.key;
-      if (c == c.column)
-        columnMember += '/*equal*/';
-      if (c.caption != c.column.defs.caption) {
-        addString('caption', c.caption)
-      }
-
-    } else {
-      addString('caption', c.caption);
-    }
-    if (c.width && c.width.length > 0)
-      addString('width', c.width);
-    if (properties.length > 0) {
-      if (columnMember != '') {
-        properties = '\n    column: ' + columnMember + ', ' + properties;
-      }
-    }
-    let whatToAdd = '';
-    if (properties.length > 0)
-      whatToAdd = "{" + properties + "\n  }";
-    else if (columnMember != '')
-      whatToAdd = columnMember;
-    return whatToAdd;
-  }
   __changeWidth(col: DataControlSettings, what: number) {
     let width = col.width;
     if (!width)
@@ -290,8 +286,11 @@ export class ColumnCollection<rowType extends Entity = Entity> {
     width = ((+width) + what).toString();
     col.width = width;
   }
-  _colValueChanged(col: DataControlSettings, r: any) {
+  _colValueChanged(col: DataControlSettings, row: any) {
+    if (!col.valueChange)
+      return false;
 
+    return this.getRowColumn({ col, row }, (c, row) => col.valueChange(row, c));
 
 
   }
@@ -327,3 +326,117 @@ export class ColumnCollection<rowType extends Entity = Entity> {
   }
 }
 
+
+export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityExpression<T, entityType>, e: entityType): T {
+  if (typeof f === 'function') {
+    let x = f as any;
+    return x(e);
+  }
+  return <T>f;
+}
+
+
+export class InputField<T> implements EntityField<T, any> {
+  private settings: FieldSettings;
+  dataControl: DataControlSettings;
+  constructor(
+    settings: FieldSettings<T, any>
+      & DataControlSettings
+      & {
+
+
+        context?: Context
+      }) {
+
+    if (!settings.dbName)
+      settings.dbName = settings.key;
+
+    this.settings = decorateColumnSettings(settings);
+    this.dataControl = settings;
+    if (!this.dataControl.valueList && this.settings.valueConverter instanceof ValueListValueConverter) {
+      this.dataControl.valueList = this.settings.valueConverter.getOptions();
+    }
+
+    if (settings.caption)
+      if (typeof this.settings.caption === "function")
+        settings.caption = this.settings.caption(settings.context);
+    if (!settings.caption)
+      settings.caption = 'caption';
+
+    if (!settings.key)
+      settings.key = settings.caption;
+    this.inputType = settings.inputType;
+    if (settings.defaultValue) {
+      this._value = settings.defaultValue(undefined, undefined) as unknown as T
+    }
+
+    this.originalValue = this._value;
+    let valueConverter = this.settings.valueConverter ? this.settings.valueConverter : undefined;
+    if (valueConverter)
+      if (!settings.inputType) {
+        settings.inputType = valueConverter.inputType;
+      }
+    this.defs = {
+
+      allowNull: settings.allowNull,
+      caption: settings.caption,
+      evilOriginalSettings: this.settings,
+      valueConverter: valueConverter,
+      dataType: settings.dataType,
+      key: settings.key,
+      dbName: settings.dbName,
+      dbReadOnly: false,
+      inputType: settings.inputType,
+      isServerExpression: false,
+
+      target: undefined
+
+    }
+
+
+  }
+  load(): Promise<T> {
+    throw new Error("Method not implemented.");
+  }
+  defs: {
+    readonly key: string;
+    readonly target: ClassType<T>;
+    readonly dataType: any;
+
+    caption: string;
+    readonly inputType: string;
+    readonly allowNull: boolean;
+
+
+    readonly isServerExpression: boolean;
+    readonly dbReadOnly: boolean;
+    readonly dbName: string;
+    readonly valueConverter: ValueConverter<T>;
+    readonly evilOriginalSettings: FieldSettings;
+  };
+  _value: T;
+  inputType: string;
+  error: string;
+  get displayValue() {
+    if (this.settings.displayValue)
+      return this.settings.displayValue(this.value, undefined);
+    return this.value.toString();
+  }
+  get value(): T { return this._value; }
+  set value(val: T) {
+    this._value = val;
+    if (this.dataControl.valueChange)
+      this.dataControl.valueChange(undefined, this)
+  };
+  originalValue: T;
+  get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.inputType); }
+  set inputValue(val: string) { this.value = this.defs.valueConverter.fromInput(val, this.inputType); };
+  wasChanged(): boolean {
+    return this.originalValue != this.value;
+  }
+  rowHelper: rowHelper<any>;
+  entity: any;
+
+
+
+}

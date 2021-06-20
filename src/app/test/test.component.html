@@ -1,11 +1,24 @@
-<input [(ngModel)]="newTask.name.value"> <button (click)="this.save()">add</button>
+<title>{{title}}</title>
+<div>
+    <input [(ngModel)]="newTask._.columns.title.inputValue" [placeholder]="newTask._.columns.title.caption">
+    <button (click)="createNewTask()">Create new task</button>
+</div>
+<div *ngIf="newTask._.columns.title.error">
+    {{newTask._.columns.title.caption}} {{newTask._.columns.title.error}}
+</div>
+
+<p>
+    <input type="checkbox" [(ngModel)]="hideCompleted" (change)="loadTasks()">Hide completed
+</p>
+
 <ul>
-    <li *ngFor="let t of tasks">
-        <input [(ngModel)]="t.completed.inputValue" type="checkbox" > {{t.name.value}}<button
-            (click)="t.save()">save</button> 
+    <li *ngFor="let task of tasks">
+        <input [(ngModel)]="task._.columns.completed.inputValue" type="checkbox">
+        <input [(ngModel)]="task._.columns.title.inputValue" [style.textDecoration]="task.completed?'line-through':''">
+
+        <button (click)="task._.save()" [disabled]="!task._.wasChanged()">Save</button>
+        <button (click)="deleteTask(task)">Delete</button>
     </li>
 </ul>
-
-<input [(ngModel)]="cb1" type="checkbox" > {{cb1|json}}
-<input [(ngModel)]="cb2" [type]="'checkbox'" name="mf" value="yes"> {{cb2|json}}
-<input [(ngModel)]="cb3" type="{{'checkbox'}}"> {{cb3|json}}
+<button (click)="setAll(true)">Set all as completed</button> 
+<button (click)="setAll(false)">Set all as uncompleted</button>

@@ -1,30 +1,28 @@
 <div class="data-control3" #myDiv>
     <div style="display:flex;width:100%;" *ngIf="showTextBox()">
         <input #theId matInput [(ngModel)]="_getColumn().inputValue" type="{{settings._getColDataType(map)}}"
-             (ngModelChange)="settings._colValueChanged(map,record)"
-            [errorStateMatcher]="ngErrorStateMatches" [ngStyle]="getStyle()" />
+            (ngModelChange)="settings._colValueChanged(map,record)" [errorStateMatcher]="ngErrorStateMatches"
+            [ngStyle]="getStyle()" />
         <div *ngIf="showDescription()" style="white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-left:10px; width:100%;"  (click)="click()">
+            padding-left:10px; width:100%;" (click)="click()">
             {{settings._getColDisplayValue(map,record)}}&nbsp;</div>
+        <button mat-icon-button *ngIf="showClick()" (click)="click()" class="row-button">
+            <mat-icon style="height:19px;">{{getClickIcon()}} </mat-icon>
+        </button>
     </div>
     <div *ngIf="showReadonlyText()" style="
             overflow: hidden;
-            padding-left:10px; width:100%;"  >
-            {{settings._getColDisplayValue(map,record)}}&nbsp;</div>
+            padding-left:10px; width:100%;">
+        {{settings._getColDisplayValue(map,record)}}&nbsp;</div>
     <div *ngIf="isSelect()" class="my-select" [class.rtl-select]="rightToLeft">
         <select matNativeControl [(ngModel)]="_getColumn().inputValue"
             (ngModelChange)="settings._colValueChanged(map,record)">
-            <option *ngFor="let v of getDropDown()" value="{{v.id}}">{{v.caption}}</option>
+            <option *ngFor="let v of getDropDown()" [ngValue]="v.id">{{v.caption}}</option>
 
         </select>
     </div>
-
-    <button mat-icon-button *ngIf="showClick()" (click)="click()" class="row-button">
-        <mat-icon style="height:19px;">{{getClickIcon()}} </mat-icon>
-    </button>
-
 
     <div *ngIf="showCheckbox()">
         <mat-checkbox #theId1 [(ngModel)]="_getColumn().inputValue"

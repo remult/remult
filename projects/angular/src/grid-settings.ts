@@ -1,39 +1,55 @@
-import { AndFilter, Column, DataList, Entity, EntityOrderBy, entityOrderByToSort, EntityProvider, EntityWhere, FilterHelper, FindOptions, Sort, translateEntityWhere } from "@remult/core";
-import { ColumnCollection } from "./column-collection";
+import { AndFilter, FieldDefinitions, Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository, rowHelper } from "@remult/core";
+import { DataList } from "./angular/dataList";
+
+import { FieldCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
+import { FilterHelper } from "./filter-helper";
 
 
 
 
-export class GridSettings<rowType extends Entity = Entity>  {
-  constructor(private entityProvider: EntityProvider<rowType>, public settings?: IDataSettings<rowType>) {
+export class GridSettings<rowType>  {
+  undoChanges(r: rowType) {
+    let helper = this.getRowHelper(r);
+    helper.undoChanges();
+    if (helper.isNew())
+      this.restList.removeItem(r);
+  }
+  constructor(private repository: Repository<rowType>, public settings?: IDataSettings<rowType>) {
     if (!settings)
       this.settings = settings = {};
-    this.restList = new DataList<rowType>(entityProvider);
-    if (entityProvider) {
-      this.filterHelper.filterRow = <rowType>entityProvider.create();
+    this.restList = new DataList<rowType>(repository);
+    if (repository) {
+      this.filterHelper.filterRow = <rowType>repository.create();
+      repository.addEventListener({
+        validating: async (entity) => {
+          if (this.onValidate)
+            await this.onValidate(entity);
+          if (this.onSavingRow)
+            await this.onSavingRow(entity);
+        }
+      });
     }
 
-    this.columns = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false)
+    this.columns = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b))
 
-    this.restList._rowReplacedListeners.push((old, curr) => {
-      if (old == this.currentRow)
-        this.setCurrentRow(curr);
-    });
+
 
     if (settings) {
 
-      if (settings.columnSettings)
-        this.columns.add(...settings.columnSettings(entityProvider.create()));
-      if (settings.allowCRUD !== undefined) {
+      if (settings.columnSettings) {
+        let x = settings.columnSettings(repository.defs.fields);
+        this.columns.add(...x);
+      }
+      if (settings.allowCrud !== undefined) {
 
         if (settings.allowUpdate === undefined)
-          settings.allowUpdate = settings.allowCRUD;
+          settings.allowUpdate = settings.allowCrud;
         if (settings.allowDelete === undefined)
-          settings.allowDelete = settings.allowCRUD;
+          settings.allowDelete = settings.allowCrud;
         if (settings.allowInsert === undefined)
-          settings.allowInsert = settings.allowCRUD;
+          settings.allowInsert = settings.allowCrud;
       }
       if (settings.allowUpdate)
         this.allowUpdate = true;
@@ -65,13 +81,11 @@ export class GridSettings<rowType extends Entity = Entity>  {
         this.onValidate = settings.validation;
       if (settings.caption)
         this.caption = settings.caption;
-      if (!this.caption && entityProvider) {
-        this.caption = entityProvider.create().defs.caption;
+      if (!this.caption && repository) {
+        this.caption = repository.defs.caption;
       }
-      let get = settings.get;
-      if (!get) {
-        get = {};
-      }
+      let get: FindOptions<any> = {};
+
       if (settings.where)
         get.where = settings.where;
       if (settings.orderBy)
@@ -137,7 +151,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
     }
     this._currentOrderBy = undefined;
     if (this.getOptions && this.getOptions.orderBy)
-      this._currentOrderBy = entityOrderByToSort(this.entityProvider.create(), this.getOptions.orderBy);
+      this._currentOrderBy = Sort.translateOrderByToSort(this.repository.defs, this.getOptions.orderBy);
 
   }
 
@@ -156,10 +170,10 @@ export class GridSettings<rowType extends Entity = Entity>  {
   noam: string;
 
   addArea(settings: IDataAreaSettings<rowType>) {
-    let col = new ColumnCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false);
+    let col = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b));
     col.numOfColumnsInGrid = 0;
 
-    return new DataAreaSettings<rowType>(settings, col, this.entityProvider.create());
+    return new DataAreaSettings<rowType>(settings, col, this.repository.defs.fields);
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {
@@ -213,14 +227,17 @@ export class GridSettings<rowType extends Entity = Entity>  {
   currentRowAsRestListItemRow() {
     if (!this.currentRow)
       return undefined;
-    return this.currentRow;
+    this.getRowHelper(this.currentRow);
+  }
+  getRowHelper(item: rowType) {
+    return this.repository.getRowHelper(item);
   }
   cancelCurrentRowChanges() {
     if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow())
       this.currentRowAsRestListItemRow().undoChanges();
   }
   deleteCurrentRowAllowed() {
-    return this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().delete && this.allowDelete && !isNewRow(this.currentRow);
+    return this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().delete && this.allowDelete && !this.currentRowAsRestListItemRow().isNew();
   }
   currentRowChanged() {
     return this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow().wasChanged();
@@ -236,7 +253,7 @@ export class GridSettings<rowType extends Entity = Entity>  {
   showDataArea = false;
 
 
-  _buttons: RowButton<Entity>[] = [];
+  _buttons: RowButton<any>[] = [];
 
   rowClass?: (row: any) => string;
   onSavingRow?: (row: any) => Promise<any> | any;
@@ -244,22 +261,18 @@ export class GridSettings<rowType extends Entity = Entity>  {
   onEnterRow: (row: rowType) => void;
   onNewRow: (row: rowType) => void;
   _doSavingRow(s: rowType) {
-    return s.save(async () => {
-      if (this.onValidate)
-        await this.onValidate(s);
-      if (this.onSavingRow)
-        await this.onSavingRow(s);
-    });
+
+    return getEntityOf(s).save();
 
   }
   caption: string;
 
   filterHelper = new FilterHelper<rowType>(() => {
     this.page = 1;
-    this.getRecords();
-  });
+    this.reloadData();
+  }, this.repository);
 
-  columns: ColumnCollection<rowType>;
+  columns: FieldCollection<rowType>;
 
 
 
@@ -267,17 +280,17 @@ export class GridSettings<rowType extends Entity = Entity>  {
   page = 1;
   nextPage() {
     this.page++;
-    return this.getRecords();
+    return this.reloadData();
   }
   previousPage() {
     if (this.page <= 1)
       return;
     this.page--;
-    return this.getRecords();
+    return this.reloadData();
   }
   firstPage() {
     this.page = 1;
-    return this.getRecords();
+    return this.reloadData();
   }
   selectedRows: rowType[] = [];
   selectedChanged(row: rowType) {
@@ -346,40 +359,41 @@ export class GridSettings<rowType extends Entity = Entity>  {
 
     this.setGetOptions(options);
     this.page = 1;
-    return this.getRecords();
+    return this.reloadData();
 
   }
 
   _currentOrderBy: Sort;
-  sort(column: Column) {
+  sort(column: FieldDefinitions) {
 
     let done = false;
     if (this._currentOrderBy && this._currentOrderBy.Segments.length > 0) {
-      if (this._currentOrderBy.Segments[0].column == column) {
-        this._currentOrderBy.Segments[0].descending = !this._currentOrderBy.Segments[0].descending;
+      if (this._currentOrderBy.Segments[0].field.key == column.key) {
+        this._currentOrderBy.Segments[0].isDescending = !this._currentOrderBy.Segments[0].isDescending;
         done = true;
       }
     } if (!done)
-      this._currentOrderBy = new Sort({ column: column });
-    this.getRecords();
+
+      this._currentOrderBy = new Sort({ field: column });
+    this.reloadData();
   }
-  sortedAscending(column: Column) {
+  sortedAscending(column: FieldDefinitions) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
       return false;
     return this._currentOrderBy.Segments.length > 0 &&
-      this._currentOrderBy.Segments[0].column == column &&
-      !this._currentOrderBy.Segments[0].descending;
+      this._currentOrderBy.Segments[0].field.key == column.key &&
+      !this._currentOrderBy.Segments[0].isDescending;
   }
-  sortedDescending(column: Column) {
+  sortedDescending(column: FieldDefinitions) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
       return false;
     return this._currentOrderBy.Segments.length > 0 &&
-      this._currentOrderBy.Segments[0].column == column &&
-      !!this._currentOrderBy.Segments[0].descending;
+      this._currentOrderBy.Segments[0].field.key == column.key &&
+      !!this._currentOrderBy.Segments[0].isDescending;
   }
 
 
@@ -387,17 +401,11 @@ export class GridSettings<rowType extends Entity = Entity>  {
   private getOptions: FindOptions<rowType>;
 
   totalRows: number;
-  /**
-     * reloads the data for the grid
-     * @deprecated Use `reloadData` instead
-     */
-  getRecords() {
-    return this.reloadData();
-  }
+
 
   reloadData() {
     let opt: FindOptions<rowType> = this._internalBuildFindOptions();
-    this.columns.autoGenerateColumnsBasedOnData(this.entityProvider.create());
+    this.columns.autoGenerateColumnsBasedOnData(this.repository.defs);
     let result = this.restList.get(opt).then(() => {
       this.selectedRows.splice(0);
       this._selectedAll = false;
@@ -431,7 +439,12 @@ export class GridSettings<rowType extends Entity = Entity>  {
       opt = Object.assign(opt, this.getOptions);
     }
     if (this._currentOrderBy)
-      opt.orderBy = r => this._currentOrderBy.translateFor(r);
+      opt.orderBy = r => {
+        if (this._currentOrderBy) {
+          return this._currentOrderBy.Segments
+        }
+        else return undefined;
+      };
     opt.limit = this.rowsPerPage;
     if (this.page > 1)
       opt.page = this.page;
@@ -441,13 +454,12 @@ export class GridSettings<rowType extends Entity = Entity>  {
   getFilterWithSelectedRows() {
     let r = this._internalBuildFindOptions();
     if (this.selectedRows.length > 0 && !this._selectedAll) {
-      let ids = this.selectedRows.map(x => x.columns.idColumn.value);
       if (r.where) {
         let x = r.where;
-        r.where = e => new AndFilter(translateEntityWhere(x, e), e.columns.idColumn.isIn(...ids))
+        r.where = [x, y => this.repository.defs.createIdInFilter(this.selectedRows)];
       }
       else
-        r.where = e => e.columns.idColumn.isIn(...ids);
+        r.where = e => this.repository.defs.createIdInFilter(this.selectedRows);
     }
     return r;
   }
@@ -464,28 +476,24 @@ export class GridSettings<rowType extends Entity = Entity>  {
 
 
 }
-export interface IDataSettings<rowType extends Entity> {
+export interface IDataSettings<rowType> {
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
-  allowCRUD?: boolean,
+  allowCrud?: boolean,
   showDataArea?: boolean,
   showPagination?: boolean,
   showFilter?: boolean,
   allowSelection?: boolean,
   confirmDelete?: (r: rowType) => Promise<boolean>;
 
-  columnSettings?: (row: rowType) => DataControlInfo<rowType>[],
+  columnSettings?: (row: FieldDefinitionsOf<rowType>) => DataControlInfo<rowType>[],
   areas?: { [areaKey: string]: DataControlInfo<rowType>[] },
 
   rowCssClass?: (row: rowType) => string;
   rowButtons?: RowButton<rowType>[];
   gridButtons?: GridButton[];
-  /**
-     * controls the data that is presented on the data grid
-     * @deprecated Use `where`, `orderBy`, `rowsPerPage` and `page`
-     */
-  get?: FindOptions<rowType>;
+
   /** filters the data
    * @example
    * where p => p.price.isGreaterOrEqualTo(5)
@@ -522,7 +530,7 @@ export interface IDataSettings<rowType extends Entity> {
   caption?: string;
 
 }
-export interface RowButton<rowType extends Entity> {
+export interface RowButton<rowType> {
   name?: string;
   visible?: (r: rowType) => boolean;
   click?: (r: rowType) => void;
@@ -540,11 +548,4 @@ export interface GridButton {
   textInMenu?: () => string;
   icon?: string;
   cssClass?: (string | (() => string));
-}
-
-function isNewRow(r: Entity) {
-  if (r) {
-    r.isNew();
-  }
-  return false;
 }

@@ -1,12 +1,14 @@
-import { itAsync, Done } from "../testHelper.spec";
-import { createData, CategoriesForTesting } from '../RowProvider.spec';
+import { itAsync, Done, fitAsync } from "../testHelper.spec";
+import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
-import { Entity } from '../../entity';
-import { NumberColumn } from '../../columns/number-column';
-import { StringColumn } from '../../columns/string-column';
-import { StatusColumn, Categories } from '../testModel/models';
+
+
+
 import { Context } from '../../context';
+import { Categories as newCategories } from '../remult-3-entities';
+import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3';
+
 
 
 
@@ -14,13 +16,13 @@ describe("data api", () => {
   let context = new Context();
   itAsync("getArray works with predefined filter", async () => {
 
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
 
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -34,12 +36,12 @@ describe("data api", () => {
 
   });
   itAsync("get works with predefined filter", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -52,12 +54,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("get id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -67,12 +69,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -82,12 +84,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.deleted = () => {
@@ -97,12 +99,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id  works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = () => {
@@ -112,12 +114,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("put id 1 works with predefined filterand shouldnt return anything", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -127,12 +129,12 @@ describe("data api", () => {
     d.test();
   });
   itAsync("getArray works with predefined filter", async () => {
-    let c = await createData(async (i) => {
+    let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c);
+    var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -142,7 +144,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create().description.defs.key)
+        if (x == c.create()._.fields.description.defs.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -150,56 +152,52 @@ describe("data api", () => {
     });
     d.test();
   });
+
   itAsync("works with predefined Entity Filter", async () => {
-    let c = await createData(async (i) => {
-      await i(1, 'noam', 'a');
-      await i(2, 'yael', 'b');
-      await i(3, 'yoni', 'a');
-    }, class extends Categories {
-      constructor() {
-        super({
-          name: 'categories',
-          fixedWhereFilter: () => {
-            return this.description.isEqualTo('b')
-          }
-        })
-      }
-    });
-    let r = await c.find();
-    expect(r.length).toBe(1,'array length');
-    expect(r[0].id.value).toBe(2,'value of first row');
-    expect(await c.count()).toBe(1,'count');
-    expect(await c.iterate(x => x.id.isEqualTo(1)).first()).toBe(undefined,'find first');
-    expect((await c.lookupAsync(x => x.id.isEqualTo(1))).isNew()).toBe(true,'lookup ');
-  });
-  itAsync("works with predefined Entity Filter", async () => {
-    let c = await createData(async (i) => {
+    let [c] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     });
-    expect ((await c.iterate(x=>x.id.isEqualTo(1)).first()).categoryName.value).toBe('noam');
-    expect ((await c.findId(1)).categoryName.value).toBe('noam');
-    expect ((await c.findId(new NumberColumn({defaultValue:1}))).categoryName.value).toBe('noam');
+    expect((await c.iterate(x => x.id.isEqualTo(1)).first()).categoryName).toBe('noam');
+    expect((await c.findId(1)).categoryName).toBe('noam');
   });
-      
+
 });
 
-class CategoriesForThisTest extends Entity<number> implements CategoriesForTesting {
-  id = new NumberColumn();
-  categoryName = new StringColumn();
-  description = new StringColumn();
-  status = new StatusColumn();
-  constructor() {
-    super({
-      name: undefined,
-      allowApiUpdate: true,
-      allowApiDelete: true,
-      apiDataFilter: () => {
-        return this.description.isEqualTo('b')
-      }
-    });
-  }
+@EntityDecorator<stam1>({
+  key: 'categories',
 
+  fixedFilter: (c) => {
+    return c.description.isEqualTo('b')
+  }
+})
+class stam1 extends newCategories {
 
 }
+describe("", () => {
+  itAsync("works with predefined Entity Filter", async () => {
+    let [c] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, stam1);
+    let r = await c.find();
+    expect(r.length).toBe(1, 'array length');
+    expect(r[0].id).toBe(2, 'value of first row');
+    expect(await c.count()).toBe(1, 'count');
+    expect(await c.iterate(x => x.id.isEqualTo(1)).first()).toBe(undefined, 'find first');
+    expect((await c.lookupAsync(x => x.id.isEqualTo(1)))._.isNew()).toBe(true, 'lookup ');
+  });
+})
+
+@EntityDecorator<CategoriesForThisTest>({
+  key: undefined,
+  allowApiUpdate: true,
+  allowApiDelete: true,
+  apiDataFilter: (x) => {
+    return x.description.isEqualTo('b')
+  }
+
+})
+class CategoriesForThisTest extends newCategories { }

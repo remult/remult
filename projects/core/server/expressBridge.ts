@@ -1,6 +1,6 @@
 
 
-import { Entity, DataApi, DataApiResponse, DataApiError, DataApiRequest, Action, UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, jobWasQueuedResult, queuedJobInfoResponse, InMemoryDataProvider, IdEntity, StringColumn, BoolColumn, DateTimeColumn, NumberColumn, SpecificEntityHelper } from '../';
+import { UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, InMemoryDataProvider, IdEntity } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -9,6 +9,11 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
+import { Field, Entity, Repository, DecimalField } from '../src/remult3';
+import { DecimalValueConverter } from '../valueConverters';
+import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
+import { ErrorInfo } from '../src/data-interfaces';
+import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 
 
 
@@ -20,6 +25,7 @@ export function initExpress(app: express.Express,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
       getUserFromRequest?: (origReq: express.Request) => Promise<UserInfo>,
+      initRequest?: (context: ServerContext) => Promise<void>
     }) {
 
   if (!options) {
@@ -51,14 +57,14 @@ export function initExpress(app: express.Express,
     builder = () => new JsonDataProvider(new JsonEntityFileStorage('./db'));
   }
 
-  let result = new ExpressBridge(app, options.getUserFromRequest, new inProcessQueueHandler(options.queueStorage));
+  let result = new ExpressBridge(app, options.getUserFromRequest, new inProcessQueueHandler(options.queueStorage), options.initRequest, builder);
   let apiArea = result.addArea('/' + Context.apiBaseUrl);
 
 
+
   if (!options.disableAutoApi) {
-    apiArea.setDataProviderFactory(builder);
-    registerActionsOnServer(apiArea, builder);
-    registerEntitiesOnServer(apiArea, builder);
+    registerActionsOnServer(apiArea);
+    registerEntitiesOnServer(apiArea);
   }
 
 
@@ -73,16 +79,18 @@ export class ExpressBridge {
 
 
 
-  constructor(private app: express.Express, public getUserFromRequest: (origReq: express.Request) => Promise<UserInfo>, public queue: inProcessQueueHandler) {
+  constructor(private app: express.Express, public getUserFromRequest: (origReq: express.Request) => Promise<UserInfo>, public queue: inProcessQueueHandler, public initRequest: (context: ServerContext) => Promise<void>,
+    public _dataProviderFactory: DataProviderFactoryBuilder) {
 
   }
   logApiEndPoints = true;
   private firstArea: SiteArea;
 
   addArea(
-    rootUrl: string
+    rootUrl: string,
+    isUserValidForArea?: (origReq: DataApiRequest) => boolean
   ) {
-    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints);
+    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints, isUserValidForArea);
     if (!this.firstArea) {
       this.firstArea = r;
 
@@ -101,70 +109,78 @@ export class SiteArea {
     private bridge: ExpressBridge,
     private app: express.Express,
     private rootUrl: string,
-    private logApiEndpoints: boolean) {
+    private logApiEndpoints: boolean,
+    private isUserValidForArea: (origReq: DataApiRequest) => boolean) {
 
 
   }
 
-  private _dataProviderFactory: DataProviderFactoryBuilder;
-  setDataProviderFactory(dataProvider: DataProviderFactoryBuilder) {
-    this._dataProviderFactory = dataProvider;
-  }
 
 
-  add(entityOrDataApiFactory: ((req: DataApiRequest) => DataApi)) {
 
 
-    let api: ((req: DataApiRequest) => DataApi);
+  add(entityOrDataApiFactory: ((req: ServerContext) => DataApi)) {
+
+
+    let api: ((req: ServerContext) => DataApi);
     api = entityOrDataApiFactory;
-
-    let myRoute = api({ clientIp: 'onServer', user: undefined, get: (r: any) => '', getHeader: (x: any) => "", getBaseUrl: () => '' }).getRoute();
+    let contextForRouteExtraction = new ServerContext();
+    contextForRouteExtraction.setReq({ clientIp: 'onServer', user: undefined, get: (r: any) => '', getHeader: (x: any) => "", getBaseUrl: () => '' })
+    let myRoute = api(contextForRouteExtraction).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
     if (this.logApiEndpoints)
       console.log(myRoute);
 
 
     this.app.route(myRoute)
-      .get(this.process((req, res) => {
+      .get(this.process((c, req, res) => {
         if (req.get("__action") == "count") {
-          return api(req).count(res, req);
+          return api(c).count(res, req);
         } else
-          return api(req).getArray(res, req);
-      })).put(this.process(async (req, res, orig) => api(req).put(res, '', orig.body)))
-      .delete(this.process(async (req, res, orig) => api(req).delete(res, '')))
-      .post(this.process(async (req, res, orig) => {
+          return api(c).getArray(res, req);
+      })).put(this.process(async (c, req, res, orig) => api(c).put(res, '', orig.body)))
+      .delete(this.process(async (c, req, res, orig) => api(c).delete(res, '')))
+      .post(this.process(async (c, req, res, orig) => {
         switch (req.get("__action")) {
           case "get":
-            return api(req).getArray(res, req, orig.body);
+            return api(c).getArray(res, req, orig.body);
           case "count":
-            return api(req).count(res, req, orig.body);
+            return api(c).count(res, req, orig.body);
           default:
-            return api(req).post(res, orig.body);
+            return api(c).post(res, orig.body);
         }
       }));
     this.app.route(myRoute + '/:id')
       //@ts-ignore
-      .get(this.process(async (req, res, orig) => api(req).get(res, orig.params.id)))
+      .get(this.process(async (c, req, res, orig) => api(c).get(res, orig.params.id)))
       //@ts-ignore
-      .put(this.process(async (req, res, orig) => api(req).put(res, orig.params.id, orig.body)))
+      .put(this.process(async (c, req, res, orig) => api(c).put(res, orig.params.id, orig.body)))
       //@ts-ignore
-      .delete(this.process(async (req, res, orig) => api(req).delete(res, orig.params.id)));
+      .delete(this.process(async (c, req, res, orig) => api(c).delete(res, orig.params.id)));
 
 
   }
-  process(what: (myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
+  process(what: (context: ServerContext, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
       myReq.user = await this.bridge.getUserFromRequest(req);
-      what(myReq, myRes, req);
+      if (this.isUserValidForArea)
+        if (!this.isUserValidForArea(myReq))
+          myReq.user = null;
+      let context = new ServerContext();
+      context.setReq(myReq);
+      context.setDataProvider(this.bridge._dataProviderFactory(context));
+      if (this.bridge.initRequest) {
+        await this.bridge.initRequest(context);
+      }
+      what(context, myReq, myRes, req);
     }
   };
   async getValidContext(req: express.Request) {
-    let context = new ServerContext();
-    await this.process(async (req) => {
-      context.setReq(req);
-      context.setDataProvider(this._dataProviderFactory(context));
+    let context: ServerContext;
+    await this.process(async (c) => {
+      context = c;
     })(req, undefined);
     return context;
   }
@@ -188,9 +204,9 @@ export class SiteArea {
     this.initQueue = () => { };
   }
   addAction(action: {
-    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) => void
+    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) => void
   }) {
-    action.__register((url: string, queue: boolean, what: (data: any, r: DataApiRequest, res: DataApiResponse) => void) => {
+    action.__register((url: string, queue: boolean, what: (data: any, r: ServerContext, res: DataApiResponse) => void) => {
       let myUrl = this.rootUrl + '/' + url;
       if (this.logApiEndpoints)
         console.log(myUrl);
@@ -199,16 +215,16 @@ export class SiteArea {
         this.bridge.queue.mapQueuedAction(myUrl, what);
       }
       this.app.route(myUrl).post(this.process(
-        async (req, res, orig) => {
+        async (context, req, res, orig) => {
 
           if (queue) {
             let r: jobWasQueuedResult = {
-              queuedJobId: await this.bridge.queue.submitJob(myUrl, req, orig.body)
+              queuedJobId: await this.bridge.queue.submitJob(myUrl, context, orig.body)
             };
 
             res.success(r);
           } else
-            return what(orig.body, req, res)
+            return what(orig.body, context, res)
         }
       ));
     });
@@ -244,9 +260,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   public success(data: any): void {
     this.r.json(data);
   }
-  public methodNotAllowed(): void {
-    this.r.sendStatus(405);
-  }
+
   public created(data: any): void {
     this.r.statusCode = 201;
     this.r.json(data);
@@ -260,24 +274,14 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     this.r.sendStatus(404);
   }
 
-  public error(data: DataApiError): void {
+  public error(data: ErrorInfo): void {
 
     data = serializeError(data);
     this.r.status(400).json(data);
   }
 }
 
-function serializeError(data: DataApiError) {
-  if (data instanceof TypeError) {
-    data = { message: data.message, stack: data.stack };
-  }
-  let x = JSON.parse(JSON.stringify(data));
-  if (!x.message && !x.modelState)
-    data = { message: data.message, stack: data.stack };
-  if (typeof x === 'string')
-    data = { message: x };
-  return data;
-}
+
 
 function throwError() {
   throw "Invalid";
@@ -286,7 +290,7 @@ class inProcessQueueHandler {
   constructor(private storage: QueueStorage) {
 
   }
-  async submitJob(url: string, req: DataApiRequest, body: any): Promise<string> {
+  async submitJob(url: string, req: ServerContext, body: any): Promise<string> {
     let id = await this.storage.createJob(url, req.user ? req.user.id : undefined);
     let job = await this.storage.getJobInfo(id);
 
@@ -299,10 +303,10 @@ class inProcessQueueHandler {
     });
     return id;
   }
-  mapQueuedAction(url: string, what: (data: any, r: DataApiRequest, res: ApiActionResponse) => void) {
+  mapQueuedAction(url: string, what: (data: any, r: ServerContext, res: ApiActionResponse) => void) {
     this.actions.set(url, what);
   }
-  actions = new Map<string, ((data: any, r: DataApiRequest, res: ApiActionResponse) => void)>();
+  actions = new Map<string, ((data: any, r: ServerContext, res: ApiActionResponse) => void)>();
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
     return await this.storage.getJobInfo(queuedJobId);
   }
@@ -354,14 +358,14 @@ class InMemoryQueueStorage implements QueueStorage {
 
 }
 
-interface QueueStorage {
+export interface QueueStorage {
   createJob(url: string, userId: string): Promise<string>;
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>;
 
 }
 let test = 0;
 export class EntityQueueStorage implements QueueStorage {
-  constructor(private context: SpecificEntityHelper<string, JobsInQueueEntity>) {
+  constructor(private context: Repository<JobsInQueueEntity>) {
 
   }
   sync: Promise<any> = Promise.resolve();
@@ -373,29 +377,29 @@ export class EntityQueueStorage implements QueueStorage {
     let q = await this.context.findId(queuedJobId);
     let lastProgress: Date = undefined;
     return {
-      userId: q.userId.value,
+      userId: q.userId,
       info: {
-        done: q.done.value,
-        error: q.error.value ? JSON.parse(q.result.value) : undefined,
-        result: q.done.value && !q.error.value ? JSON.parse(q.result.value) : undefined,
-        progress: q.progress.value
+        done: q.done,
+        error: q.error ? JSON.parse(q.result) : undefined,
+        result: q.done && !q.error ? JSON.parse(q.result) : undefined,
+        progress: q.progress
       },
       setErrorResult: async (error: any) => {
         await this.sync;
-        q.error.value = true;
-        q.done.value = true;
-        q.result.value = JSON.stringify(error);
-        q.doneTime.value = new Date();
-        q.progress.value = 1;
-        await this.doSync(() => q.save());
+        q.error = true;
+        q.done = true;
+        q.result = JSON.stringify(error);
+        q.doneTime = new Date();
+        q.progress = 1;
+        await this.doSync(() => q._.save());
       },
       setResult: async (result: any) => {
         await this.sync;
-        q.done.value = true;
-        q.result.value = JSON.stringify(result);
-        q.doneTime.value = new Date();
+        q.done = true;
+        q.result = JSON.stringify(result);
+        q.doneTime = new Date();
 
-        await this.doSync(() => q.save());
+        await this.doSync(() => q._.save());
 
       },
       setProgress: async (progress: number) => {
@@ -406,8 +410,8 @@ export class EntityQueueStorage implements QueueStorage {
           return;
         lastProgress = new Date();
         await this.sync;
-        q.progress.value = progress;
-        await this.doSync(() => q.save());
+        q.progress = progress;
+        await this.doSync(() => q._.save());
 
       }
     };
@@ -416,30 +420,37 @@ export class EntityQueueStorage implements QueueStorage {
 
   async createJob(url: string, userId: string): Promise<string> {
     let q = this.context.create();
-    q.userId.value = userId;
-    q.submitTime.value = new Date();
-    q.url.value = url;
-    await q.save();
-    return q.id.value;
+    q.userId = userId;
+    q.submitTime = new Date();
+    q.url = url;
+    await q._.save();
+    return q.id;
   }
 
 
 }
 
+
+@Entity({
+  key: 'jobsInQueue',
+  includeInApi: false
+})
 export class JobsInQueueEntity extends IdEntity {
-  userId = new StringColumn();
-  url = new StringColumn();
-  submitTime = new DateTimeColumn();
-  doneTime = new DateTimeColumn();
-  result = new StringColumn();
-  done = new BoolColumn();
-  error = new BoolColumn();
-  progress = new NumberColumn({ decimalDigits: 3 });
-  constructor() {
-    super({
-      name: 'jobsInQueue',
-      allowApiRead: false
-    });
-  }
+  @Field()
+  userId: string;
+  @Field()
+  url: string;
+  @Field()
+  submitTime: Date;
+  @Field()
+  doneTime: Date;
+  @Field()
+  result: string;
+  @Field()
+  done: boolean;
+  @Field()
+  error: boolean;
+  @DecimalField()
+  progress: number;
 }
 

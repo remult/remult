@@ -1,73 +1,61 @@
-import { Entity } from "./entity";
-import { DataList } from "./dataList";
-import { EntityProvider, EntityWhere, FindOptions, translateEntityWhere, updateEntityBasedOnWhere } from "./data-interfaces";
-import { Column } from "./column";
+import { Filter } from "./filter/filter-interfaces";
+import { EntityWhere, FindOptions, Repository, __updateEntityBasedOnWhere } from "./remult3";
 
+export class Lookup<entityType> {
 
+  constructor(private repository: Repository<entityType>) {
 
-import { FilterSerializer } from "./filter/filter-consumer-bridge-to-url-builder";
-import { Filter } from './filter/filter-interfaces';
-
-export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
-
-  constructor(private entity: entityType, private entityProvider: EntityProvider<entityType>) {
-    this.restList = new DataList<entityType>(entityProvider);
 
   }
 
-  private restList: DataList<entityType>;
+
   private cache = new Map<string, lookupRowInfo<entityType>>();
 
-  get(filter: Column<lookupIdType> | EntityWhere<entityType>): entityType {
+  get(filter: EntityWhere<entityType>): entityType {
     return this.getInternal(filter).value;
   }
-  found(filter: Column<lookupIdType> | ((entityType: entityType) => Filter)): boolean {
+  found(filter: EntityWhere<entityType>): boolean {
     return this.getInternal(filter).found;
   }
 
-  private getInternal(filter: Column<lookupIdType> | EntityWhere<entityType>): lookupRowInfo<entityType> {
-    let find: FindOptions<entityType> = {};
-    if (filter instanceof Column)
-      find.where = (e) => e.columns.idColumn.isEqualTo(filter);
-    else {
-      find.where = e => translateEntityWhere(filter, e);
-    }
-
-
-    return this._internalGetByOptions(find);
+  private getInternal(where: EntityWhere<entityType>): lookupRowInfo<entityType> {
+    return this._internalGetByOptions({ where });
   }
 
   _internalGetByOptions(find: FindOptions<entityType>): lookupRowInfo<entityType> {
 
-    let key = "";
-
-    let f = new FilterSerializer()
-    if (find.where)
-      translateEntityWhere(find.where, this.entity).__applyToConsumer(f);
-    key = JSON.stringify(f);
-
-    if (this.cache == undefined)
-      this.cache = new Map<string, lookupRowInfo<entityType>>();
+    let f = Filter.packWhere(this.repository.defs, find.where);
+    let key = JSON.stringify(f);
     let res = this.cache.get(key);
-    if (res!==undefined) {
-      if (res.value.__entityData._deleted) {
+    if (res !== undefined) {
+      if (this.repository.getRowHelper(res.value).wasDeleted()) {
         res = undefined;
         this.cache.set(key, undefined);
       } else
         return this.cache.get(key);
     }
     res = new lookupRowInfo<entityType>();
-    res.value = <entityType>this.entityProvider.create();
-    updateEntityBasedOnWhere(find.where, res.value);
+    res.value = <entityType>this.repository.create();
+    __updateEntityBasedOnWhere(this.repository.defs, find.where, res.value);
     this.cache.set(key, res);
-    if (find == undefined || key == undefined || f.hasUndefined) {
+    let foundNonUnDefined = false;
+    for (const key in f) {
+      if (Object.prototype.hasOwnProperty.call(f, key)) {
+        const element = f[key];
+        if (element !== undefined) {
+          foundNonUnDefined = true;
+          break;
+        }
+      }
+    }
+    if (find == undefined || key == undefined || !foundNonUnDefined) {
       res.loading = false;
       res.found = false;
       res.promise = Promise.resolve(res);
       return res;
     } else {
 
-      res.promise = this.restList.get(find).then(r => {
+      res.promise = this.repository.find(find).then(r => {
         res.loading = false;
         if (r.length > 0) {
           res.value = r[0];
@@ -80,7 +68,7 @@ export class Lookup<lookupIdType, entityType extends Entity<lookupIdType>> {
 
   }
 
-  whenGet(filter: Column<lookupIdType> | EntityWhere<entityType>) {
+  whenGet(filter: EntityWhere<entityType>) {
     return this.getInternal(filter).promise.then(r => r.value);
   }
 }

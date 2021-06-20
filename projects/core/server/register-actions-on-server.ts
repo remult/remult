@@ -1,13 +1,13 @@
 import { SiteArea } from "./expressBridge";
-import { myServerAction, serverActionField, actionInfo, DataProviderFactoryBuilder, DataApiResponse, DataApiRequest, Action, queuedJobInfoResponse, jobWasQueuedResult, DataApi } from '../';
+import { myServerAction, serverActionField, actionInfo } from '../src/server-action';
 
-export function registerActionsOnServer(area: SiteArea, dataProvider: DataProviderFactoryBuilder) {
+export function registerActionsOnServer(area: SiteArea) {
     var addAction = (a: any) => {
         let x = <myServerAction>a[serverActionField];
         if (!x) {
             throw 'failed to set server action, did you forget the ServerFunctionDecorator?';
         }
-        x.dataProvider = dataProvider;
+        
         area.addAction(x);
     };
     actionInfo.runningOnServer = true;

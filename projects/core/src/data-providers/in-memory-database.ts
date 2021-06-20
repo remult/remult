@@ -1,21 +1,15 @@
-
-import { Column } from '../column';
-import {  DataProvider, EntityDataProvider, EntityDataProviderFindOptions,  __RowsOfDataForTesting } from '../data-interfaces';
-
-import { Entity } from '../entity';
-import { StringColumn } from '../columns/string-column';
-import { FilterConsumer } from '../filter/filter-interfaces';
+import {  DataProvider, EntityDataProvider } from '../data-interfaces';
+import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { ArrayEntityDataProvider } from './array-entity-data-provider';
-
-
+import { EntityDefinitions } from '../remult3';
 
 export class InMemoryDataProvider implements DataProvider, __RowsOfDataForTesting {
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
-    throw new Error("Method not implemented.");
+    await action(this);
   }
   rows: any = {};
-  public getEntityDataProvider(entity:Entity): EntityDataProvider {
-    let name = entity.defs.name;
+  public getEntityDataProvider(entity:EntityDefinitions): EntityDataProvider {
+    let name = entity.key;
     if (!this.rows[name])
       this.rows[name] = [];
     return new ArrayEntityDataProvider(entity, this.rows[name]);

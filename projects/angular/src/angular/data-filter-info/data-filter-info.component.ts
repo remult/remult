@@ -2,12 +2,13 @@
 import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { openDialog } from '../remult-core.module';
-import { Column, Context } from '@remult/core';
+import { FieldDefinitions, Context } from '@remult/core';
 import { GridSettings } from '../../grid-settings';
 import { DataControlSettings } from '../../data-control-interfaces';
 
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { FilterDialogComponent } from '../filter-dialog/filter-dialog.component';
+
 @Component({
     selector: 'Data-Filter',
     templateUrl: './data-filter-info.component.html',
@@ -21,9 +22,12 @@ export class DataFilterInfoComponent {
 
     @Input() settings: GridSettings<any>;
     filterColumnToAdd: DataControlSettings;
-    getCurrentFilterValue(col: Column) {
+    getCurrentFilterValue(col: FieldDefinitions) {
         this.settings.initOrigList();
-        let m = this.settings.origList.find(x => x.column == col);
+        let m = this.settings.origList.find(x => x.field == col);
+        if (this.settings.filterHelper.filterRow[col.key] instanceof Date){
+            return this.settings.filterHelper.filterRow[col.key].toLocaleDateString();
+        }
         return this.settings.columns._getColDisplayValue(m, this.settings.filterHelper.filterRow);
     }
     cancelAddFilter() {
@@ -38,8 +42,8 @@ export class DataFilterInfoComponent {
     showFilterButton = false;
     showAddFilter = false;
     editFilterVisible = false;
-    showEditFilter(col: Column) {
-        this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
+    showEditFilter(col: FieldDefinitions) {
+        this.filterColumnToAdd = this.settings.origList.find(x => x.field == col);
         this.editFilterVisible = true;
         this.showAddFilter = false;
     }
@@ -66,8 +70,8 @@ export class DataFilterInfoComponent {
         this.showAddFilter = true;
         this.filterColumnToAdd = undefined;
     }
-    public async editFilter(col: Column) {
-        this.filterColumnToAdd = this.settings.origList.find(x => x.column == col);
+    public async editFilter(col: FieldDefinitions) {
+        this.filterColumnToAdd = this.settings.origList.find(x => x.field == col);
         await openDialog(FilterDialogComponent, x => x.info = this);
     }
     confirmEditFilter() {

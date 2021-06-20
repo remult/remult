@@ -1,8 +1,10 @@
 import { itAsync, Done } from './testHelper.spec';
 import { ServerContext, toPromise } from '../context';
-import { NumberColumn } from '../columns/number-column';
-import { Entity } from '../entity';
+
+
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+
+import { Field, Entity, EntityBase } from '../remult3';
 
 describe("test exception", () => {
     itAsync("test save exception", async () => {
@@ -30,25 +32,23 @@ describe("test exception", () => {
             transaction: undefined
         });
         var ok = new Done();
-        var x = c.for(class extends Entity<number> {
-            id = new NumberColumn();
-            constructor() {
-                super('test');
-            }
-        }).create();
+        let type = class extends EntityBase{
+            id:string;
+        }
+        Entity({key:'test'})(type);
+        Field()(type.prototype,"id");
+        var x = c.for(type).create();
         try {
-            await x.save();
+            await x._.save();
         } catch (err) {
 
-            expect(x.id.validationError).toBe('error for id');
+            expect(x._.fields.id.error).toBe('error for id');
             expect(err.message).toBe("error");
             expect(err.modelState.id).toBe('error for id');
-      //      expect(err.exception.error.message).toBe("error");
             ok.ok();
         }
         ok.test();
 
-        //   x.__entityData
 
     });
 

@@ -11,12 +11,12 @@ And `Entity` will always be created by the `context` object.
 
 ## Here's a sample entity:
 
-<<< @/docs-code/products/products.ts
+<<< @/docs-code/products/products.ts 
 
-The Entity configuration can be determined by the `options` object that is being sent to the `super` method (the constructor of it's base class)
+The Entity configuration can be determined by the `settings` object that is being sent to the `@Entity` decorator
 
 
-See the [EntityOptions](ref_entityoptions) docs for all the different options.
+See the [EntitySettings](ref_entitysettings) docs for all the different options.
 
 ##  The Context class
 Most of the work with entity will be done using the `Context` object.
@@ -26,7 +26,7 @@ The `Context` object is responsible for providing Entity instances with their da
 ```ts
 let products = await context.for(Products).find();
 for (const p of products) {
-    console.log(p.name.value);
+    console.log(p.name);
 }
 ```
 in this example we get an array of products and write their names to the console.
@@ -48,7 +48,7 @@ When we get a result set of entities, we can perform actions on them, update the
 
 ```ts
 for await (let p of this.context.for(Products).iterate()){
-    p.price.value += 5;
+    p.price += 5;
     await p.save();
 }
 ```
