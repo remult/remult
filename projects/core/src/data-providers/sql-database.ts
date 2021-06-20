@@ -6,8 +6,8 @@ import { CompoundIdField } from "../column";
 import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityDefinitions } from "../remult3";
-import { FieldDefinitions } from "../column-interfaces";
+import { EntityMetadata } from "../remult3";
+import { FieldMetadata } from "../column-interfaces";
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
@@ -17,7 +17,7 @@ export class SqlDatabase implements DataProvider {
   async execute(sql: string) {
     return await this.createCommand().execute(sql);
   }
-  getEntityDataProvider(entity: EntityDefinitions): EntityDataProvider {
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async () => {
       if (this.createdEntities.indexOf(entity.dbName) < 0) {
@@ -100,7 +100,7 @@ class LogSQLCommand implements SqlCommand {
 
 class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity: EntityDefinitions, private sql: SqlDatabase, private iAmUsed: () => Promise<void>, private strategy: SqlImplementation) {
+  constructor(private entity: EntityMetadata, private sql: SqlDatabase, private iAmUsed: () => Promise<void>, private strategy: SqlImplementation) {
 
 
   }
@@ -125,7 +125,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     await this.iAmUsed();
     let select = 'select ';
-    let colKeys: FieldDefinitions[] = [];
+    let colKeys: FieldMetadata[] = [];
     for (const x of this.entity.fields) {
       if (x.isServerExpression) {
 
@@ -205,13 +205,13 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.getIdFilter(id).__applyToConsumer(f);
+    this.entity.idMetadata.getIdFilter(id).__applyToConsumer(f);
 
     let statement = 'update ' + this.entity.dbName + ' set ';
     let added = false;
-    let resultFilter = this.entity.getIdFilter(id);
+    let resultFilter = this.entity.idMetadata.getIdFilter(id);
     if (data.id != undefined)
-      resultFilter = this.entity.getIdFilter(data.id);
+      resultFilter = this.entity.idMetadata.getIdFilter(data.id);
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
         resultFilter = x.resultIdFilter(id, data);
@@ -241,7 +241,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     await this.iAmUsed();
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.getIdFilter(id).__applyToConsumer(f);
+    this.entity.idMetadata.getIdFilter(id).__applyToConsumer(f);
     let statement = 'delete from ' + this.entity.dbName;
     statement += f.where;
     return r.execute(statement).then(() => { });
@@ -254,10 +254,10 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let vals = '';
     let added = false;
     let resultFilter: Filter;
-    if (this.entity.idField instanceof CompoundIdField)
-      resultFilter = this.entity.idField.resultIdFilter(undefined, data);
+    if (this.entity.idMetadata.field instanceof CompoundIdField)
+      resultFilter = this.entity.idMetadata.field.resultIdFilter(undefined, data);
     else
-      resultFilter = this.entity.getIdFilter(data[this.entity.idField.key]);
+      resultFilter = this.entity.idMetadata.getIdFilter(data[this.entity.idMetadata.field.key]);
     for (const x of this.entity.fields) {
 
       if (x.dbReadOnly || x.isServerExpression) { }
@@ -280,9 +280,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
     let statement = `insert into ${this.entity.dbName} (${cols}) values (${vals})`;
-    if (this.entity.evilOriginalSettings.dbAutoIncrementId) {
+    if (this.entity.options.dbAutoIncrementId) {
       let newId = await this.strategy.insertAndReturnAutoIncrementId(r, statement, this.entity);
-      resultFilter = new Filter(x => x.isEqualTo(this.entity.idField, newId));
+      resultFilter = new Filter(x => x.isEqualTo(this.entity.idMetadata.field, newId));
     }
     else await r.execute(statement);
     return this.find({ where: resultFilter }).then(y => {

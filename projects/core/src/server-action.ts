@@ -15,8 +15,8 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityOf, rowHelperImplementation, getControllerDefs, decorateColumnSettings, getEntitySettings } from './remult3';
-import { FieldSettings } from './column-interfaces';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef } from './remult3';
+import { FieldOptions } from './column-interfaces';
 
 
 
@@ -192,11 +192,11 @@ interface serverMethodOutArgs {
 
 const methodHelpers = new Map<any, MethodHelper>();
 const classOptions = new Map<any, ControllerOptions>();
-export function ServerController(options: ControllerOptions) {
+export function Controller(key: string) {
     return function (target) {
         let r = target;
-        classOptions.set(r, options);
-        setControllerSettings(target, options);
+        classOptions.set(r, { key }); 
+        setControllerSettings(target, { key });
 
 
 
@@ -205,7 +205,7 @@ export function ServerController(options: ControllerOptions) {
 }
 
 
-export function ServerMethod(options?: ServerFunctionOptions) {
+export function ServerMethod(options: ServerFunctionOptions) {
     return (target: any, key: string, descriptor: any) => {
 
         var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
@@ -228,16 +228,15 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
                     if (!controllerOptions.key) {
-                        controllerOptions.key = c.for(constructor).defs.key + "_methods";
+                        controllerOptions.key = c.for(constructor).metadata.key + "_methods";
                     }
 
 
                     reg(controllerOptions.key + '/' + key, options ? options.queue : false, async (d: serverMethodInArgs, req, res) => {
 
                         d.args = d.args.map(x => isCustomUndefined(x) ? undefined : x);
-                        let allowed: Allowed = controllerOptions.allowed;
-                        if (options && options.allowed !== undefined)
-                            allowed = options.allowed;
+                        let allowed: Allowed = options.allowed;
+                        
 
                         try {
                             let context = req;
@@ -255,13 +254,13 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
                                     if (d.rowInfo.isNewRow) {
                                         y = repo.create();
-                                        let rowHelper = repo.getRowHelper(y) as rowHelperImplementation<any>;
+                                        let rowHelper = repo.getEntityRef(y) as rowHelperImplementation<any>;
                                         rowHelper._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
                                     else {
                                         let rows = await repo.find({
                                             where: x => {
-                                                let where: Filter = repo.defs.getIdFilter(d.rowInfo.id);
+                                                let where: Filter = repo.metadata.idMetadata.getIdFilter(d.rowInfo.id);
                                                 if (this.options && this.options.get && this.options.get.where)
                                                     where = new AndFilter(where, this.options.get.where(x));
                                                 return where;
@@ -270,9 +269,9 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         if (rows.length != 1)
                                             throw new Error("not found or too many matches");
                                         y = rows[0];
-                                        (repo.getRowHelper(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
+                                        (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
-                                    let defs = getEntityOf(y) as rowHelperImplementation<any>;
+                                    let defs = getEntityRef(y) as rowHelperImplementation<any>;
                                     await defs.__validateEntity();
                                     try {
                                         r = {
@@ -290,18 +289,18 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                 }
                                 else {
                                     let y = new constructor(context, ds);
-                                    let defs = getControllerDefs(y, context);
-                                    defs._updateEntityBasedOnApi(d.fields);
-                                    await Promise.all([...defs.fields].map(x => x.load()));
+                                    let controllerRef = getControllerRef(y, context);
+                                    controllerRef._updateEntityBasedOnApi(d.fields);
+                                    await Promise.all([...controllerRef.fields].map(x => x.load()));
 
-                                    await defs.__validateEntity();
+                                    await controllerRef.__validateEntity();
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
-                                            fields: await defs.toApiJson()
+                                            fields: await controllerRef.toApiJson()
                                         };
                                     } catch (err) {
-                                        throw defs.catchSaveErrors(err);
+                                        throw controllerRef.catchSaveErrors(err);
                                     }
                                 }
 
@@ -322,11 +321,11 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                 args = prepareArgsToSend(types, args);
 
                 if (allEntities.includes(target.constructor)) {
-                    let defs = getEntityOf(self) as rowHelperImplementation<any>;
+                    let defs = getEntityRef(self) as rowHelperImplementation<any>;
                     await defs.__validateEntity();
                     let classOptions = mh.classes.get(self.constructor);
                     if (!classOptions.key) {
-                        classOptions.key = defs.repository.defs.key + "_methods";
+                        classOptions.key = defs.repository.metadata.key + "_methods";
                     }
                     try {
 
@@ -354,7 +353,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                 }
 
                 else {
-                    let defs = getControllerDefs(self, undefined);
+                    let defs = getControllerRef(self, undefined);
                     try {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
@@ -389,12 +388,7 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
 
-export function controllerAllowed(controller: any, context: Context) {
-    let x = classOptions.get(controller.constructor);
-    if (x)
-        return context.isAllowed(x.allowed);
-    return undefined;
-}
+
 const customUndefined = {
     _isUndefined: true
 }
@@ -413,7 +407,7 @@ export interface queuedJobInfoResponse {
     error?: any;
     progress?: number;
 }
-export class ServerProgress {
+export class ProgressListener {
     constructor(private res: DataApiResponse) { }
     progress(progress: number) {
         this.res.progress(progress);
@@ -430,13 +424,13 @@ export function prepareArgsToSend(types: any[], args: any[]) {
                 }
             }
             if (args[index] != undefined) {
-                let x: FieldSettings = { dataType: paramType };
+                let x: FieldOptions = { dataType: paramType };
                 x = decorateColumnSettings(x);
                 if (x.valueConverter)
                     args[index] = x.valueConverter.toJson(args[index]);
                 let eo = getEntitySettings(paramType, false);
                 if (eo != null) {
-                    let rh = getEntityOf(args[index]);
+                    let rh = getEntityRef(args[index]);
                     args[index] = rh.getId();
                 }
             }
@@ -462,10 +456,10 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Se
                 args[i] = context;
             } else if (types[i] == SqlDatabase && ds) {
                 args[i] = ds;
-            } else if (types[i] == ServerProgress) {
-                args[i] = new ServerProgress(res);
+            } else if (types[i] == ProgressListener) {
+                args[i] = new ProgressListener(res);
             } else {
-                let x: FieldSettings = { dataType: types[i] };
+                let x: FieldOptions = { dataType: types[i] };
                 x = decorateColumnSettings(x);
                 if (x.valueConverter)
                     args[i] = x.valueConverter.fromJson(args[i]);

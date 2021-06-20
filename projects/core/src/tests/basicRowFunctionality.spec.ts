@@ -13,7 +13,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider } from '../data-interfaces';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/src/angular/dataList';
-import { UrlBuilder } from '../url-builder';
+import { UrlBuilder } from '../../urlBuilder';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
@@ -134,7 +134,7 @@ describe('Test basic row functionality', () => {
   });
   it("finds its id column", () => {
     let c = new Context().for(newCategories);
-    expect(c.defs.idField.key).toBe("id");
+    expect(c.metadata.idMetadata.field.key).toBe("id");
     let n = c.create();
     n.id = 5;
     expect(n._.getId()).toBe(5);
@@ -186,7 +186,7 @@ describe('Test basic row functionality', () => {
     let y = new Context().for(newCategories).create();
     x.categoryName = 'noam';
     y.categoryName = 'yael';
-    expect(y._.fields.find(x._.fields.categoryName.defs).value).toBe('yael');
+    expect(y._.fields.find(x._.fields.categoryName.metadata).value).toBe('yael');
   });
   itAsync("can be saved to a pojo", async () => {
     let ctx = new Context().for(newCategories);
@@ -1228,7 +1228,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.fields.categoryName.defs.key + '_contains')
+        if (x == c.create()._.fields.categoryName.metadata.key + '_contains')
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1254,7 +1254,7 @@ describe("data api", () => {
       };
       await api.getArray(t, {
         get: x => {
-          if (x == c.create()._.fields.categoryName.defs.key + '_st')
+          if (x == c.create()._.fields.categoryName.metadata.key + '_st')
             return "y";
           return undefined;
         }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1279,7 +1279,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.fields.description.defs.key)
+        if (x == c.create()._.fields.description.metadata.key)
           return "a";
         return undefined;
       }, clientIp: '', user: undefined, getHeader: x => ""
@@ -1659,7 +1659,7 @@ describe("test web sql identity", () => {
 describe("compound id", () => {
   it("id field is comound", () => {
     let ctx = new Context();
-    expect(ctx.for(CompoundIdEntity).defs.idField instanceof CompoundIdField).toBe(true);
+    expect(ctx.for(CompoundIdEntity).metadata.idMetadata.field instanceof CompoundIdField).toBe(true);
   });
   itAsync("compound sql",
     async () => {
@@ -1687,14 +1687,14 @@ describe("compound id", () => {
     let ctx = new ServerContext(mem);
     let s = ctx.for(CompoundIdEntity);
 
-    mem.rows[s.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[s.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await s.find();
     expect(r.length).toBe(2);
     expect(r[0].a).toBe(1);
     expect(r[0]._.getId()).toBe('1,11');
-    r = await s.find({ where: c => s.defs.getIdFilter('1,11') });
+    r = await s.find({ where: c => s.metadata.idMetadata.getIdFilter('1,11') });
 
     expect(r.length).toBe(1);
     expect(r[0].a).toBe(1);
@@ -1705,7 +1705,7 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await c.find();
@@ -1717,8 +1717,8 @@ describe("compound id", () => {
     expect(r[0].c).toBe(55);
 
 
-    expect(mem.rows[c.defs.key][0].c).toBe(55);
-    expect(mem.rows[c.defs.key][0].id).toBe(undefined);
+    expect(mem.rows[c.metadata.key][0].c).toBe(55);
+    expect(mem.rows[c.metadata.key][0].id).toBe(undefined);
     expect(r[0]._.getId()).toBe('1,11');
   });
   itAsync("update2", async () => {
@@ -1726,7 +1726,7 @@ describe("compound id", () => {
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
 
-    mem.rows[c.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
     var r = await c.find();
@@ -1734,8 +1734,8 @@ describe("compound id", () => {
     let saved = await r[0]._.save();
 
 
-    expect(mem.rows[c.defs.key][0].b).toBe(55);
-    expect(mem.rows[c.defs.key][0].id).toBe(undefined);
+    expect(mem.rows[c.metadata.key][0].b).toBe(55);
+    expect(mem.rows[c.metadata.key][0].id).toBe(undefined);
 
     expect(r[0]._.getId()).toBe('1,55');
   });
@@ -1743,27 +1743,27 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity).create();
-    mem.rows[ctx.for(CompoundIdEntity).defs.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    mem.rows[ctx.for(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     c.a = 3;
     c.b = 33;
     c.c = 3333;
     await c._.save();
-    expect(mem.rows[ctx.for(CompoundIdEntity).defs.key][2].b).toBe(33);
-    expect(mem.rows[ctx.for(CompoundIdEntity).defs.key][2].id).toBe(undefined);
+    expect(mem.rows[ctx.for(CompoundIdEntity).metadata.key][2].b).toBe(33);
+    expect(mem.rows[ctx.for(CompoundIdEntity).metadata.key][2].id).toBe(undefined);
     expect(c._.getId()).toBe('3,33');
   });
   itAsync("delete", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new ServerContext(mem);
     let c = ctx.for(CompoundIdEntity);
-    mem.rows[c.defs.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
+    mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
     let r = await c.find();
     await r[1]._.delete();
-    expect(mem.rows[c.defs.key].length).toBe(1);
-    expect(mem.rows[c.defs.key][0].a).toBe(1);
+    expect(mem.rows[c.metadata.key].length).toBe(1);
+    expect(mem.rows[c.metadata.key][0].a).toBe(1);
   });
 
 });
@@ -1788,12 +1788,12 @@ describe("test data list", () => {
     }
     Entity({ key: 'testName', dbName: 'test' })(type);
     let r = new Context().for(type);
-    expect(r.defs.dbName).toBe('test');
+    expect(r.metadata.dbName).toBe('test');
   });
   it("dbname of entity can use column names", () => {
 
     let r = new Context().for(EntityWithLateBoundDbName);
-    expect(r.defs.dbName).toBe('(select CategoryID)');
+    expect(r.metadata.dbName).toBe('(select CategoryID)');
   });
 
 
@@ -1937,7 +1937,7 @@ describe("test rest data provider translates data correctly", () => {
       post: undefined,
       put: undefined
     });
-    let x = z.getEntityDataProvider(c.defs);
+    let x = z.getEntityDataProvider(c.metadata);
     let r = await x.find();
     expect(r.length).toBe(1);
     expect(r[0].a).toBe(1);
@@ -1954,7 +1954,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ dataType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
-    let r = Filter.packWhere(c.defs, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
+    let r = Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
   itAsync("put works", async () => {
@@ -1979,7 +1979,7 @@ describe("test rest data provider translates data correctly", () => {
       },
       put: undefined
     });
-    let x = z.getEntityDataProvider(c.defs);
+    let x = z.getEntityDataProvider(c.metadata);
     let r = await x.insert({
       a: 1,
       b: new Date("2021-05-16T08:32:19.905Z")

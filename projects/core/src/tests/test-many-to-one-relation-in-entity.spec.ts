@@ -63,7 +63,7 @@ describe("many to one relation", () => {
         expect(p.category.name).toBe("cat 1", "after set and wait load");
         await p.save();
         expect(p.category.name).toBe("cat 1", "after save");
-        expect(mem.rows[context.for(Products).defs.key][0].category).toBe(1);
+        expect(mem.rows[context.for(Products).metadata.key][0].category).toBe(1);
         expect(p._.toApiJson().category).toBe(1, "to api pojo");
         p = await context.for(Products).findFirst();
         expect(p.id).toBe(10);
@@ -248,7 +248,7 @@ describe("many to one relation", () => {
         }).save();
         async function test(where: EntityWhere<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
-            expect(await repo.count(p => Filter.unpackWhere(repo.defs, Filter.packWhere(repo.defs,
+            expect(await repo.count(p => Filter.unpackWhere(repo.metadata, Filter.packWhere(repo.metadata,
                 where)))).toBe(expected, "packed where");
         }
 
@@ -381,7 +381,7 @@ describe("many to one relation", () => {
         let context = new ServerContext();
         context.setDataProvider(db);
         for (const x of [Categories, Products, Suppliers] as any[]) {
-            let e = context.for(x).defs;
+            let e = context.for(x).metadata;
             await wsql.dropTable(e);
             await wsql.createTable(e);
         }

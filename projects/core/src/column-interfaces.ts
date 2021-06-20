@@ -1,5 +1,6 @@
-import { Allowed, Context, EntityAllowed } from './context';
-import { EntityField, FieldDefinitionsOf, ClassType, EntityDefinitions } from './remult3';
+import { ClassType } from '../classType';
+import { Allowed, Context, AllowedForInstance } from './context';
+import {   EntityMetadata, FieldRef } from './remult3';
 
 
 
@@ -8,7 +9,7 @@ import { EntityField, FieldDefinitionsOf, ClassType, EntityDefinitions } from '.
 
 
 
-export interface FieldSettings<valueType = any, entityType = any> {
+export interface FieldOptions<valueType = any, entityType = any> {
     key?: string;
     target?: ClassType<entityType>;
     dataType?: any;
@@ -22,15 +23,15 @@ export interface FieldSettings<valueType = any, entityType = any> {
     allowNull?: boolean;
 
     dbName?: string;
-    sqlExpression?: string | ((entity: EntityDefinitions<entityType>, context: Context) => string);
+    sqlExpression?: string | ((entity: EntityMetadata<entityType>, context: Context) => string);
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     valueConverter?: ValueConverter<valueType>;
 
     includeInApi?: Allowed;
-    allowApiUpdate?: EntityAllowed<entityType>;
+    allowApiUpdate?: AllowedForInstance<entityType>;
 }
-export interface FieldDefinitions<T = any> {
+export interface FieldMetadata<T = any> {
     readonly key: string;
     readonly target: ClassType<T>;
     readonly dataType: any;
@@ -44,7 +45,7 @@ export interface FieldDefinitions<T = any> {
     readonly dbReadOnly: boolean;
     readonly dbName: string;
     readonly valueConverter: ValueConverter<T>;
-    readonly evilOriginalSettings: FieldSettings;
+    readonly options: FieldOptions;
 
 }
 export interface ValueConverter<T> {
@@ -61,17 +62,17 @@ export interface ValueConverter<T> {
 
 }
 
-export declare type FieldValidator<valueType = any, entityType = any> = (entity: entityType, col: EntityField<valueType, entityType>) => void | Promise<void>;
+export declare type FieldValidator<valueType = any, entityType = any> = (entity: entityType, col: FieldRef<valueType, entityType>) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 
 
-export function valueOrExpressionToValue<T>(f: ValueOrExpression<T>): T {
+export function valueOrExpressionToValue<valueType>(f: ValueOrExpression<valueType>): valueType {
     if (typeof f === 'function') {
         let x = f as any;
         return x();
     }
-    return <T>f;
+    return <valueType>f;
 }
 
 

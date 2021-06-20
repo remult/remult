@@ -1,7 +1,7 @@
 import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
-import { prepareArgsToSend, prepareReceivedArgs, ServerController, ServerFunction, ServerMethod } from '../server-action';
-import { Field, Entity, getControllerDefs, FieldType, ValueListFieldType } from '../remult3';
+import { prepareArgsToSend, prepareReceivedArgs, Controller, ServerFunction, ServerMethod } from '../server-action';
+import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 
@@ -20,7 +20,7 @@ class testEntity extends IdEntity {
     @Field()
     name: string;
 }
-@ServerController({ allowed: true, key: '1' })
+@Controller('1')
 class testBasics {
     constructor(private context: Context) {
 
@@ -53,25 +53,25 @@ class testBasics {
             if (y.a == "errorc") {
                 x.error = "error on client";
             }
-            else if (y.a == "error on server" && y.context.onServer) {
+            else if (y.a == "error on server" && y.context.backend) {
                 x.error = "error on server";
             }
         }
     })
     a: string;
-    @ServerMethod()
+    @ServerMethod({ allowed: true })
     async doIt() {
         let result = 'hello ' + this.a;
         this.a = 'yael';
         return {
-            onServer: this.context.onServer,
+            onServer: this.context.backend,
             result
         }
     }
     @ServerFunction({ allowed: true })
     static async sf(name: string, context?: Context) {
         return {
-            onServer: context.onServer,
+            onServer: context.backend,
             result: 'hello ' + name
         }
     }
@@ -98,7 +98,7 @@ class testBasics {
         return z.toString();
     }
     @ServerMethod({ allowed: true })
-     async syntaxError() {
+    async syntaxError() {
         let z = undefined;
         return z.toString();
     }
@@ -113,19 +113,19 @@ describe("test Server Controller basics", () => {
         done();
     });
     itAsync("test error", async () => {
-        try{
+        try {
             await testBasics.syntaxError();
         }
-        catch (err){
-            expect (err.message).toBe("Cannot read property 'toString' of undefined")
+        catch (err) {
+            expect(err.message).toBe("Cannot read property 'toString' of undefined")
         }
     });
     itAsync("test error server method", async () => {
-        try{
+        try {
             await new testBasics(c).syntaxError();
         }
-        catch (err){
-            expect (err.message).toBe("Cannot read property 'toString' of undefined")
+        catch (err) {
+            expect(err.message).toBe("Cannot read property 'toString' of undefined")
         }
     });
     itAsync("send entity to server ", async () => {
@@ -190,7 +190,7 @@ describe("test Server Controller basics", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on client");
-            expect(getControllerDefs(x).fields.a.error).toBe("error on client");
+            expect(getFields(x).a.error).toBe("error on client");
         }
         expect(happened).toBe(false);
 
@@ -207,7 +207,7 @@ describe("test Server Controller basics", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on server");
-            expect(getControllerDefs(x).fields.a.error).toBe("error on server");
+            expect(getFields(x).a.error).toBe("error on server");
         }
         expect(happened).toBe(false);
 

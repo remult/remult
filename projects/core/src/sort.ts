@@ -1,7 +1,7 @@
 
 import { CompoundIdField } from "./column";
-import { FieldDefinitions } from "./column-interfaces";
-import { EntityDefinitions, EntityOrderBy, sortOf } from "./remult3";
+import { FieldMetadata } from "./column-interfaces";
+import { EntityMetadata, EntityOrderBy, SortSegments } from "./remult3";
 export class Sort {
   constructor(...segments: SortSegment[]) {
     this.Segments = segments;
@@ -14,14 +14,14 @@ export class Sort {
     }
     return r;
   }
-  static createSortOf<T>(entityDefs: EntityDefinitions<T>): sortOf<T> {
+  static createSortOf<T>(entityDefs: EntityMetadata<T>): SortSegments<T> {
     let r = {};
     for (const c of entityDefs.fields) {
       r[c.key] = new sortHelper(c);
     }
-    return r as sortOf<T>;
+    return r as SortSegments<T>;
   }
-  static translateOrderByToSort<T>(entityDefs: EntityDefinitions<T>, orderBy: EntityOrderBy<T>): Sort {
+  static translateOrderByToSort<T>(entityDefs: EntityMetadata<T>, orderBy: EntityOrderBy<T>): Sort {
     if (!orderBy)
       return undefined;
     let entity = Sort.createSortOf(entityDefs);
@@ -37,34 +37,34 @@ export class Sort {
     return sort;
 
   }
-  static createUniqueSort<T>(entityDefs: EntityDefinitions<T>, orderBy: EntityOrderBy<T>): Sort {
+  static createUniqueSort<T>(entityMetadata: EntityMetadata<T>, orderBy: EntityOrderBy<T>): Sort {
     if (!orderBy)
-      orderBy = entityDefs.evilOriginalSettings.defaultOrderBy;
+      orderBy = entityMetadata.options.defaultOrderBy;
     if (!orderBy)
-      orderBy = x => ({ field: entityDefs.idField })
+      orderBy = x => ({ field: entityMetadata.idMetadata.field })
 
-    let sort = Sort.translateOrderByToSort(entityDefs, orderBy);
-    if (entityDefs.idField instanceof CompoundIdField) {
-        for (const field of entityDefs.idField.fields) {
+    let sort = Sort.translateOrderByToSort(entityMetadata, orderBy);
+    if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
+        for (const field of entityMetadata.idMetadata.field.fields) {
           if (!sort.Segments.find(x => x.field == field)) {
             sort.Segments.push({ field: field });
           }    
         }
     }
     else
-      if (!sort.Segments.find(x => x.field == entityDefs.idField)) {
-        sort.Segments.push({ field: entityDefs.idField });
+      if (!sort.Segments.find(x => x.field == entityMetadata.idMetadata.field)) {
+        sort.Segments.push({ field: entityMetadata.idMetadata.field });
       }
     return sort;
   }
 }
 export interface SortSegment {
-  field: FieldDefinitions,
+  field: FieldMetadata,
   isDescending?: boolean
 }
 
 class sortHelper implements SortSegment {
-  constructor(public field: FieldDefinitions, public isDescending = false) {
+  constructor(public field: FieldMetadata, public isDescending = false) {
 
   }
   descending(): SortSegment {

@@ -28,10 +28,10 @@ describe("test decorator precedence", () => {
     itAsync("test basics", async () => {
         let c = new Context();
         let r = c.for(myEntity);
-        expect([...r.defs.fields].length).toBe(3);
-        expect(r.defs.fields.a.caption).toBe('123');
-        expect(r.defs.fields.b.caption).toBe('123');
-        expect(r.defs.fields.c.caption).toBe('456');
+        expect([...r.metadata.fields].length).toBe(3);
+        expect(r.metadata.fields.a.caption).toBe('123');
+        expect(r.metadata.fields.b.caption).toBe('123');
+        expect(r.metadata.fields.c.caption).toBe('456');
     });
 
 

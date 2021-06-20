@@ -1,9 +1,10 @@
 
-import { FieldDefinitions, FieldSettings, ValueConverter, ValueListItem } from "../column-interfaces";
-import { EntitySettings } from "../entity";
+import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
+import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityDefinitions, filterOptions, EntityField, EntityFields, EntityWhere, filterOf, FindOptions, ClassType, Repository, sortOf, comparableFilterItem, rowHelper, IterateOptions, IteratableResult, EntityOrderBy, FieldDefinitionsOf, supportsContains } from "./remult3";
-import { allEntities, Allowed, Context, EntityAllowed, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
+import { EntityMetadata, FilterFactory, FieldRef, Fields, EntityWhere, FilterFactories, FindOptions, Repository, SortSegments, ComparisonFilterFactory, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, ContainsFilterFactory, IdMetadata } from "./remult3";
+import { ClassType } from "../../classType";
+import { allEntities, Allowed, Context, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 
@@ -18,13 +19,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
     createAfterFilter(orderBy: EntityOrderBy<T>, lastRow: T): EntityWhere<T> {
         let values = new Map<string, any>();
 
-        for (const s of Sort.translateOrderByToSort(this.defs, orderBy).Segments) {
+        for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
             values.set(s.field.key, lastRow[s.field.key]);
         }
         return x => {
             let r: Filter = undefined;
-            let equalToColumn: FieldDefinitions[] = [];
-            for (const s of Sort.translateOrderByToSort(this.defs, orderBy).Segments) {
+            let equalToColumn: FieldMetadata[] = [];
+            for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
                 let f: Filter;
                 for (const c of equalToColumn) {
                     f = new AndFilter(f, new Filter(x => x.isEqualTo(c, values.get(c.key))));
@@ -45,7 +46,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     private _lookup = new Lookup(this);
     private __edp: EntityDataProvider;
     private get edp() {
-        return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.defs);
+        return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
     }
     constructor(private entity: ClassType<T>, private context: Context, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity, context);
@@ -81,11 +82,11 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
     addToCache(item: T) {
         if (item)
-            this.idCache.set(this.getRowHelper(item).getId(), item);
+            this.idCache.set(this.getEntityRef(item).getId(), item);
     }
 
 
-    get defs(): EntityDefinitions { return this._info };
+    get metadata(): EntityMetadata { return this._info };
 
 
     listeners: entityEventListener<T>[];
@@ -100,7 +101,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 
 
-    iterate(options?: EntityWhere<T> | IterateOptions<T>): IteratableResult<T> {
+    iterate(options?: EntityWhere<T> | IterateOptions<T>): IterableResult<T> {
         let opts: IterateOptions<T> = {};
         if (options) {
             if (typeof options === 'function')
@@ -160,7 +161,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                     opts.where = x => undefined;
                 }
                 let ob = opts.orderBy;
-                opts.orderBy = x => Sort.createUniqueSort(self.defs, ob).Segments;
+                opts.orderBy = x => Sort.createUniqueSort(self.metadata, ob).Segments;
                 let pageSize = iterateConfig.pageSize;
 
 
@@ -222,7 +223,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                         opts = <any>options;
                 }
                 if (opts.where) {
-                    __updateEntityBasedOnWhere(this.defs, opts.where, r);
+                    __updateEntityBasedOnWhere(this.metadata, opts.where, r);
                 }
             }
             return r;
@@ -235,7 +236,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     async lookupAsync(filter: EntityWhere<T>): Promise<T> {
         return this._lookup.whenGet(filter);
     }
-    getRowHelper(entity: T): rowHelper<T> {
+    getEntityRef(entity: T): EntityRef<T> {
         let x = entity[entityMember];
         if (!x) {
             x = new rowHelperImplementation(this._info, entity, this, this.edp, this.context, true);
@@ -248,10 +249,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
     async delete(entity: T): Promise<void> {
-        await this.getRowHelper(entity).delete();
+        await this.getEntityRef(entity).delete();
     }
     async save(entity: T): Promise<T> {
-        return await this.getRowHelper(entity).save();
+        return await this.getEntityRef(entity).save();
     }
     async find(options?: FindOptions<T>): Promise<T[]> {
         let opt: EntityDataProviderFindOptions = {};
@@ -263,7 +264,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
         opt.where = this.translateWhereToFilter(options.where);
-        opt.orderBy = Sort.translateOrderByToSort(this.defs, options.orderBy);
+        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
 
         opt.limit = options.limit;
         opt.page = options.page;
@@ -301,7 +302,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     create(item?: Partial<T>): T {
         let r = new this.entity(this.context);
-        let z = this.getRowHelper(r);
+        let z = this.getEntityRef(r);
         if (item)
             Object.assign(r, item);
 
@@ -309,14 +310,14 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
     async fromJson(json: any, newRow?: boolean): Promise<T> {
         let obj = {};
-        for (const col of this.defs.fields) {
+        for (const col of this.metadata.fields) {
             if (json[col.key] !== undefined) {
                 obj[col.key] = col.valueConverter.fromJson(json[col.key]);
             }
         }
         if (newRow) {
             let r = this.create();
-            let helper = this.getRowHelper(r) as rowHelperImplementation<T>;
+            let helper = this.getEntityRef(r) as rowHelperImplementation<T>;
             await helper.loadDataFrom(obj);
             return r;
         }
@@ -325,20 +326,20 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
     }
     findId(id: any): Promise<T> {
-        return this.iterate(x => this.defs.getIdFilter(id)).first();
+        return this.iterate(x => this.metadata.idMetadata.getIdFilter(id)).first();
     }
 
 
 
     private translateWhereToFilter(where: EntityWhere<T>): Filter {
-        if (this.defs.evilOriginalSettings.fixedFilter)
-            where = [where, this.defs.evilOriginalSettings.fixedFilter];
-        return Filter.translateWhereToFilter(Filter.createFilterOf(this.defs), where);
+        if (this.metadata.options.fixedFilter)
+            where = [where, this.metadata.options.fixedFilter];
+        return Filter.translateWhereToFilter(Filter.createFilterOf(this.metadata), where);
     }
 
 }
 
-export function __updateEntityBasedOnWhere<T>(entityDefs: EntityDefinitions<T>, where: EntityWhere<T>, r: T) {
+export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
     let w = Filter.translateWhereToFilter(Filter.createFilterOf(entityDefs), where);
 
     if (w) {
@@ -371,7 +372,7 @@ export function getEntitySettings<T>(entity: ClassType<T>, throwError = true) {
             throw new Error("Undefined is not an entity :)")
         }
         else return undefined;
-    let info: EntitySettings = Reflect.getMetadata(entityInfo, entity);
+    let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
     if (!info && throwError)
         throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?")
 
@@ -516,7 +517,7 @@ class rowHelperBase<T>
                         if (val) {
                             let eo = getEntitySettings(val.constructor, false);
                             if (eo) {
-                                val = getEntityOf(val).getId();
+                                val = getEntityRef(val).getId();
                             }
                         }
                     }
@@ -531,7 +532,7 @@ class rowHelperBase<T>
         for (const col of this.columnsInfo) {
             if (body[col.key] !== undefined)
                 if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                    if (!this.context || col.settings.allowApiUpdate === undefined || checkEntityAllowed(this.context, col.settings.allowApiUpdate, this.instance)) {
+                    if (!this.context || col.settings.allowApiUpdate === undefined || this.context.isAllowedForInstance(this.instance, col.settings.allowApiUpdate)) {
                         let lu = this.lookups.get(col.key);
                         if (lu)
                             lu.id = body[col.key];
@@ -544,13 +545,13 @@ class rowHelperBase<T>
 
     }
 }
-export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowHelper<T> {
+export class rowHelperImplementation<T> extends rowHelperBase<T> implements EntityRef<T> {
 
 
 
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
         super(info.columnsInfo, instance, context);
-        this.defs = info;
+        this.metadata = info;
         if (_isNew) {
             for (const col of info.columnsInfo) {
 
@@ -565,12 +566,12 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             }
         }
     }
-    defs: EntityDefinitions<T>;
+    metadata: EntityMetadata<T>;
     getId() {
-        if (this.info.idField instanceof CompoundIdField)
-            return this.info.idField.getId(this.instance);
+        if (this.info.idMetadata.field instanceof CompoundIdField)
+            return this.info.idMetadata.field.getId(this.instance);
         else
-            return this.instance[this.info.idField.key];
+            return this.instance[this.info.idMetadata.field.key];
     }
 
 
@@ -589,25 +590,25 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         this.__clearErrors();
     }
     async reload(): Promise<void> {
-        return this.edp.find({ where: this.repository.defs.getIdFilter(this.id) }).then(async newData => {
+        return this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }).then(async newData => {
             await this.loadDataFrom(newData[0]);
         });
     }
 
-    private _columns: EntityFields<T>;
+    private _columns: Fields<T>;
 
-    get fields(): EntityFields<T> {
+    get fields(): Fields<T> {
         if (!this._columns) {
             let _items = [];
             let r = {
-                find: (c: FieldDefinitions<T>) => r[c.key],
+                find: (c: FieldMetadata<T>) => r[c.key],
                 [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
                 _items.push(r[c.key] = new columnImpl(c.settings, this.info.fields[c.key], this.instance, this, this));
             }
 
-            this._columns = r as unknown as EntityFields<T>;
+            this._columns = r as unknown as Fields<T>;
         }
         return this._columns;
 
@@ -623,7 +624,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
         this.__assertValidity();
 
         let d = this.copyDataToObject();
-        if (this.info.idField instanceof CompoundIdField)
+        if (this.info.idMetadata.field instanceof CompoundIdField)
             d.id = undefined;
         let updatedRow: any;
         try {
@@ -632,7 +633,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
             }
             else {
                 if (doNotSave) {
-                    updatedRow = (await this.edp.find({ where: this.repository.defs.getIdFilter(this.id) }))[0];
+                    updatedRow = (await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }))[0];
                 }
                 else
                     updatedRow = await this.edp.update(this.id, d);
@@ -686,10 +687,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
                 this.instance[col.key] = data[col.key];
         }
         await this.calcServerExpression();
-        if (this.repository.defs.idField instanceof CompoundIdField) {
-            this.id = this.repository.defs.idField.getId(this.instance);
+        if (this.repository.metadata.idMetadata.field instanceof CompoundIdField) {
+            this.id = this.repository.metadata.idMetadata.field.getId(this.instance);
         } else
-            this.id = data[this.repository.defs.idField.key];
+            this.id = data[this.repository.metadata.idMetadata.field.key];
     }
     private id;
     public getOriginalId() {
@@ -697,7 +698,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements rowH
     }
 
     private async calcServerExpression() {
-        if (this.context.onServer)
+        if (this.context.backend)
             for (const col of this.info.columnsInfo) {
                 if (col.settings.serverExpression) {
                     this.instance[col.key] = await col.settings.serverExpression(this.instance);
@@ -746,31 +747,32 @@ function prepareColumnInfo(r: columnInfo[]): columnInfo[] {
     }));
 }
 
-export function getControllerDefs<T>(controller: T, context?: Context): controllerDefsImpl<T> {
+export function getFields<fieldsContainerType>(container: fieldsContainerType, context?: Context): Fields<fieldsContainerType> {
+    return getControllerRef(container, context).fields;
+}
+export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, context?: Context): controllerRefImpl<fieldsContainerType> {
 
-    let result = controller[controllerColumns] as controllerDefsImpl<any>;
+    let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
-        result = controller[entityMember];
+        result = container[entityMember];
     if (!result) {
-        let columnSettings: columnInfo[] = columnsOfType.get(controller.constructor);
+        let columnSettings: columnInfo[] = columnsOfType.get(container.constructor);
         if (!columnSettings)
-            columnsOfType.set(controller.constructor, columnSettings = []);
-        controller[controllerColumns] = result = new controllerDefsImpl(prepareColumnInfo(columnSettings), controller, context);
+            columnsOfType.set(container.constructor, columnSettings = []);
+        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings), container, context);
     }
     return result;
 }
 
-export interface controllerDefs<T = any> {
-    readonly fields: EntityFields<T>,
-}
-export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements controllerDefs<T> {
+
+export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
     constructor(columnsInfo: columnInfo[], instance: any, context: Context) {
         super(columnsInfo, instance, context);
 
 
         let _items = [];
         let r = {
-            find: (c: EntityField<any, T>) => r[c.defs.key],
+            find: (c: FieldRef<any, T>) => r[c.metadata.key],
             [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
@@ -779,7 +781,7 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
             _items.push(r[col.key] = new columnImpl<any, any>(settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
         }
 
-        this.fields = r as unknown as EntityFields<T>;
+        this.fields = r as unknown as Fields<T>;
 
 
     }
@@ -792,15 +794,15 @@ export class controllerDefsImpl<T = any> extends rowHelperBase<T> implements con
     }
     errors: { [key: string]: string; };
     originalValues: any;
-    fields: EntityFields<T>;
+    fields: Fields<T>;
 
 }
-export class columnImpl<colType, rowType> implements EntityField<colType, rowType> {
-    constructor(private settings: FieldSettings, public defs: FieldDefinitions, public entity: any, private helper: rowHelper<rowType>, private rowBase: rowHelperBase<rowType>) {
+export class columnImpl<colType, rowType> implements FieldRef<colType, rowType> {
+    constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
     async load(): Promise<colType> {
-        let lu = this.rowBase.lookups.get(this.defs.key);
+        let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
             if (this.wasChanged()) {
                 await lu.waitLoadOf(this.rawOriginalValue());
@@ -817,69 +819,69 @@ export class columnImpl<colType, rowType> implements EntityField<colType, rowTyp
     get error(): string {
         if (!this.rowBase.errors)
             return undefined;
-        return this.rowBase.errors[this.defs.key];
+        return this.rowBase.errors[this.metadata.key];
     }
     set error(error: string) {
         if (!this.rowBase.errors)
             this.rowBase.errors = {};
-        this.rowBase.errors[this.defs.key] = error;
+        this.rowBase.errors[this.metadata.key] = error;
     }
     get displayValue(): string {
         if (this.value != undefined) {
             if (this.settings.displayValue)
-                return this.settings.displayValue(this.entity, this.value);
-            else if (this.defs.valueConverter.displayValue)
-                return this.defs.valueConverter.displayValue(this.value);
+                return this.settings.displayValue(this.container, this.value);
+            else if (this.metadata.valueConverter.displayValue)
+                return this.metadata.valueConverter.displayValue(this.value);
             else
                 return this.value.toString();
         }
         return "";
     };
-    get value() { return this.entity[this.defs.key] };
-    set value(value: any) { this.entity[this.defs.key] = value };
+    get value() { return this.container[this.metadata.key] };
+    set value(value: any) { this.container[this.metadata.key] = value };
     get originalValue(): any {
-        let lu = this.rowBase.lookups.get(this.defs.key);
+        let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu)
             return lu.get(this.rawOriginalValue());
-        return this.rowBase.originalValues[this.defs.key];
+        return this.rowBase.originalValues[this.metadata.key];
     };
     private rawOriginalValue(): any {
-        return this.rowBase.originalValues[this.defs.key];
+        return this.rowBase.originalValues[this.metadata.key];
     }
 
     get inputValue(): string {
-        let lu = this.rowBase.lookups.get(this.defs.key);
+        let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu)
             return lu.id != undefined ? lu.id.toString() : null;
-        return this.defs.valueConverter.toInput(this.value, this.settings.inputType);
+        return this.metadata.valueConverter.toInput(this.value, this.settings.inputType);
     }
     set inputValue(val: string) {
-        let lu = this.rowBase.lookups.get(this.defs.key);
+        let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
             lu.setId(val);
         }
         else
-            this.value = this.defs.valueConverter.fromInput(val, this.settings.inputType);
+            this.value = this.metadata.valueConverter.fromInput(val, this.settings.inputType);
     };
     wasChanged(): boolean {
         let val = this.value;
-        let lu = this.rowBase.lookups.get(this.defs.key);
+        let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
             val = lu.id;
         }
-        return this.defs.valueConverter.toJson(this.rowBase.originalValues[this.defs.key]) != this.defs.valueConverter.toJson(val);
+        return this.metadata.valueConverter.toJson(this.rowBase.originalValues[this.metadata.key]) != this.metadata.valueConverter.toJson(val);
     }
-    rowHelper: rowHelper<any> = this.helper;
+    entityRef: EntityRef<any> = this.helper;
 
 
     async __performValidation() {
         let x = typeof (this.settings.validate);
         if (Array.isArray(this.settings.validate)) {
             for (const v of this.settings.validate) {
-                await v(this.entity, this);
+                await v(this.container, this);
             }
         } else if (typeof this.settings.validate === 'function')
-            await this.settings.validate(this.entity, this);
+            await this.settings.validate(this.container, this);
     }
 
 
@@ -887,15 +889,15 @@ export class columnImpl<colType, rowType> implements EntityField<colType, rowTyp
 
 }
 
-export function getEntityOf<T>(item: T, throwException = true): rowHelper<T> {
-    let x = item[entityMember];
+export function getEntityRef<entityType>(entity: entityType, throwException = true): EntityRef<entityType> {
+    let x = entity[entityMember];
     if (!x && throwException)
-        throw new Error("item " + item + " was not initialized using a context");
+        throw new Error("item " + entity + " was not initialized using a context");
     return x;
 
 }
-export const CaptionHelper = {
-    determineCaption: (context: Context, key: string, caption: string) => caption
+export const CaptionTransformer = {
+    transformCaption: (context: Context, key: string, caption: string) => caption
 }
 export function buildCaption(caption: string | ((context: Context) => string), key: string, context: Context): string {
     let result: string;
@@ -905,13 +907,13 @@ export function buildCaption(caption: string | ((context: Context) => string), k
     }
     else if (caption)
         result = caption;
-    result = CaptionHelper.determineCaption(context, key, result);
+    result = CaptionTransformer.transformCaption(context, key, result);
     if (result)
         return result;
     return makeTitle(key);
 }
 
-export class columnDefsImpl implements FieldDefinitions {
+export class columnDefsImpl implements FieldMetadata {
     constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>, private context: Context) {
         if (colInfo.settings.serverExpression)
             this.isServerExpression = true;
@@ -925,7 +927,7 @@ export class columnDefsImpl implements FieldDefinitions {
 
 
     }
-    evilOriginalSettings: FieldSettings<any, any> = this.colInfo.settings;
+    options: FieldOptions<any, any> = this.colInfo.settings;
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
 
@@ -954,16 +956,16 @@ export class columnDefsImpl implements FieldDefinitions {
     isServerExpression: boolean;
     dataType = this.colInfo.settings.dataType;
 }
-class EntityFullInfo<T> implements EntityDefinitions<T> {
+class EntityFullInfo<T> implements EntityMetadata<T> {
 
-    evilOriginalSettings = this.entityInfo;
+    options = this.entityInfo;
 
-    constructor(public columnsInfo: columnInfo[], public entityInfo: EntitySettings, private context: Context) {
+    constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions, private context: Context) {
 
 
         let _items = [];
         let r = {
-            find: (c: FieldDefinitions<any>) => r[c.key],
+            find: (c: FieldMetadata<any>) => r[c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator](),
 
         };
@@ -972,7 +974,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
             _items.push(r[x.key] = new columnDefsImpl(x, this, context));
         }
 
-        this.fields = r as unknown as FieldDefinitionsOf<T>;
+        this.fields = r as unknown as FieldsMetadata<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;
@@ -982,36 +984,40 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
         else if (typeof entityInfo.dbName === "function")
             this.dbName = entityInfo.dbName(this.fields, context);
         if (entityInfo.id) {
-            this.idField = entityInfo.id(this.fields)
+            this.idMetadata.field = entityInfo.id(this.fields)
         } else {
             if (this.fields["id"])
-                this.idField = this.fields["id"];
+                this.idMetadata.field = this.fields["id"];
             else
-                this.idField = [...this.fields][0];
+                this.idMetadata.field = [...this.fields][0];
         }
     }
+    idMetadata: IdMetadata<T> = {
+        field: undefined,
+        createIdInFilter: (items: T[]): Filter => {
+            if (items.length > 0)
+                return new OrFilter(...items.map(x => this.idMetadata.getIdFilter(getEntityRef(x).getId())));
+
+
+        },
+        isIdField: (col: FieldMetadata<any>): boolean => {
+            return col.key == this.idMetadata.field.key;
+        },
+        getIdFilter: (id: any): Filter => {
+            if (this.idMetadata.field instanceof CompoundIdField)
+                return this.idMetadata.field.isEqualTo(id);
+            else
+                return new Filter(x => x.isEqualTo(this.idMetadata.field, id));
+        }
+    };
 
 
     dbAutoIncrementId: boolean;
-    idField: FieldDefinitions<any>;
-
-    createIdInFilter(items: T[]): Filter {
-        if (items.length > 0)
-            return new OrFilter(...items.map(x => this.getIdFilter(getEntityOf(x).getId())));
 
 
-    }
-    isIdField(col: FieldDefinitions<any>): boolean {
-        return col.key == this.idField.key;
-    }
-    getIdFilter(id: any): Filter {
-        if (this.idField instanceof CompoundIdField)
-            return this.idField.isEqualTo(id);
-        else
-            return new Filter(x => x.isEqualTo(this.idField, id));
-    }
 
-    fields: FieldDefinitionsOf<T>;
+
+    fields: FieldsMetadata<T>;
 
 
     key: string;
@@ -1024,7 +1030,7 @@ class EntityFullInfo<T> implements EntityDefinitions<T> {
 
 
 
-export function FieldType<T = any>(settings?: FieldSettings<T, any>) {
+export function FieldType<T = any>(settings?: FieldOptions<T, any>) {
     return target => {
         if (!settings) {
             settings = {};
@@ -1036,19 +1042,19 @@ export function FieldType<T = any>(settings?: FieldSettings<T, any>) {
     }
 
 }
-export function DateOnlyField<T = any>(settings?: FieldSettings<Date, T>) {
+export function DateOnlyField<T = any>(settings?: FieldOptions<Date, T>) {
     return Field({
         valueConverter: DateOnlyValueConverter
         , ...settings
     })
 }
-export function DecimalField<T = any>(settings?: FieldSettings<Number, T>) {
+export function DecimalField<T = any>(settings?: FieldOptions<Number, T>) {
     return Field({
         valueConverter: DecimalValueConverter
         , ...settings
     })
 }
-export function ValueListFieldType<T = any, colType extends ValueListItem = any>(type: ClassType<colType>, settings?: FieldSettings<colType, T>) {
+export function ValueListFieldType<T = any, colType extends ValueListItem = any>(type: ClassType<colType>, settings?: FieldOptions<colType, T>) {
     return FieldType<colType>({
         valueConverter: new ValueListValueConverter(type),
         displayValue: (item, val) => val.caption
@@ -1056,7 +1062,7 @@ export function ValueListFieldType<T = any, colType extends ValueListItem = any>
     })
 }
 
-export function Field<T = any, colType = any>(settings?: FieldSettings<colType, T>) {
+export function Field<T = any, colType = any>(settings?: FieldOptions<colType, T>) {
     if (!settings) {
         settings = {};
     }
@@ -1101,7 +1107,7 @@ export function Field<T = any, colType = any>(settings?: FieldSettings<colType, 
 
 }
 const storableMember = Symbol("storableMember");
-export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
+export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
 
     if (settings.dataType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.dataType);
@@ -1114,7 +1120,7 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     }
 
     if (settings.dataType == String) {
-        let x = settings as unknown as FieldSettings<String>;
+        let x = settings as unknown as FieldOptions<String>;
         if (!settings.valueConverter)
             x.valueConverter = {
                 toJson: x => x,
@@ -1123,19 +1129,19 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
     }
 
     if (settings.dataType == Number) {
-        let x = settings as unknown as FieldSettings<Number>;
+        let x = settings as unknown as FieldOptions<Number>;
         if (!settings.valueConverter)
             x.valueConverter = IntValueConverter;
     }
     if (settings.dataType == Date) {
-        let x = settings as unknown as FieldSettings<Date>;
+        let x = settings as unknown as FieldOptions<Date>;
         if (!settings.valueConverter) {
             x.valueConverter = DateValueConverter;
         }
     }
 
     if (settings.dataType == Boolean) {
-        let x = settings as unknown as FieldSettings<Boolean>;
+        let x = settings as unknown as FieldOptions<Boolean>;
         if (!x.valueConverter)
             x.valueConverter = BoolValueConverter;
     }
@@ -1178,10 +1184,10 @@ export function decorateColumnSettings<T>(settings: FieldSettings<T>) {
 
 interface columnInfo {
     key: string;
-    settings: FieldSettings,
+    settings: FieldOptions,
     type: any
 }
-export function Entity<T>(options: EntitySettings<T>) {
+export function Entity<T>(options: EntityOptions<T>) {
     return target => {
         if (!options.key || options.key == '')
             options.key = target.name;
@@ -1198,7 +1204,7 @@ export function Entity<T>(options: EntitySettings<T>) {
         if (!options.dbName)
             options.dbName = options.key;
         allEntities.push(target);
-        setControllerSettings(target, { allowed: false, key: undefined })
+        setControllerSettings(target, { key: undefined })
         Reflect.defineMetadata(entityInfo, options, target);
         return target;
     }
@@ -1208,21 +1214,9 @@ export function Entity<T>(options: EntitySettings<T>) {
 
 
 
-export function checkEntityAllowed(context: Context, x: EntityAllowed<any>, entity: any) {
-    if (Array.isArray(x)) {
-        {
-            for (const item of x) {
-                if (checkEntityAllowed(context, item, entity))
-                    return true;
-            }
-        }
-    }
-    else if (typeof (x) === "function") {
-        return x(context, entity)
-    } else return context.isAllowed(x as Allowed);
-}
+
 export class EntityBase {
-    get _(): rowHelper<this> { return getEntityOf(this) }
+    get _(): EntityRef<this> { return getEntityRef(this) }
     save() { return this._.save(); }
     delete() { return this._.delete(); }
     isNew() { return this._.isNew(); }

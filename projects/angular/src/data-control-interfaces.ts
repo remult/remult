@@ -1,23 +1,23 @@
-import { EntityField, FieldDefinitions, Entity, ValueListItem } from "@remult/core";
+import {  FieldRef,  FieldMetadata, Entity, ValueListItem } from "@remult/core";
 import { ValueListValueConverter } from "@remult/core/valueConverters";
 import { InputField } from "./column-collection";
 
 
 
-export type DataControlInfo<rowType> = DataControlSettings<rowType> | EntityField<any, any>;
+export type DataControlInfo<rowType> = DataControlSettings<rowType> | FieldRef<any, any>;
 export interface DataControlSettings<entityType = any, fieldType = any> {
 
-    field?: FieldDefinitions | EntityField<any, any>;
-    getValue?: (row: entityType, val: EntityField<fieldType, entityType>) => any;
+    field?: FieldMetadata | FieldRef<any, any>;
+    getValue?: (row: entityType, val: FieldRef<fieldType, entityType>) => any;
     readonly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType, val: EntityField<fieldType, entityType>) => boolean;
+    visible?: (row: entityType, val: FieldRef<fieldType, entityType>) => boolean;
 
-    click?: (row: entityType, val: EntityField<fieldType, entityType>) => void;
-    valueChange?: (row: entityType, val: EntityField<fieldType, entityType>) => void;
-    allowClick?: (row: entityType, val: EntityField<fieldType, entityType>) => boolean;
+    click?: (row: entityType, val: FieldRef<fieldType, entityType>) => void;
+    valueChange?: (row: entityType, val: FieldRef<fieldType, entityType>) => void;
+    allowClick?: (row: entityType, val: FieldRef<fieldType, entityType>) => boolean;
     clickIcon?: string;
 
     valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>) | ((context) => ValueListItem[]);
@@ -35,17 +35,17 @@ export interface DataControlSettings<entityType = any, fieldType = any> {
 
 export const configDataControlField = Symbol('configDataControlField');
 
-export function getFieldDefinition(col: FieldDefinitions | EntityField<any, any>) {
+export function getFieldDefinition(col: FieldMetadata | FieldRef<any, any>) {
     if (!col)
         return undefined;
-    let r = col as FieldDefinitions;
-    let c = col as EntityField<any, any>;
-    if (c.defs)
-        r = c.defs;
+    let r = col as FieldMetadata;
+    let c = col as FieldRef<any, any>;
+    if (c.metadata)
+        r = c.metadata;
     return r;
 
 }
-export function decorateDataSettings(colInput: FieldDefinitions | EntityField<any, any>, x: DataControlSettings) {
+export function decorateDataSettings(colInput: FieldMetadata | FieldRef<any, any>, x: DataControlSettings) {
     if (colInput instanceof InputField) {
 
         for (const key in colInput.dataControl) {
@@ -97,8 +97,8 @@ export function decorateDataSettings(colInput: FieldDefinitions | EntityField<an
         if (col.dbReadOnly)
             x.readonly = true;
 
-        if (typeof col.evilOriginalSettings?.allowApiUpdate === 'boolean')
-            x.readonly = !col.evilOriginalSettings.allowApiUpdate;
+        if (typeof col.options?.allowApiUpdate === 'boolean')
+            x.readonly = !col.options.allowApiUpdate;
     }
 }
 

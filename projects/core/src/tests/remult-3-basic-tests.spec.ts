@@ -1,8 +1,9 @@
-import { ServerContext } from "../..";
+
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { fitAsync, itAsync } from "./testHelper.spec";
 import { Products } from './remult-3-entities';
-import { createOldEntity, getEntityOf } from "../remult3";
+import { createOldEntity, getEntityRef } from "../remult3";
+import { ServerContext } from "../context";
 
 
 describe("remult-3-basics", () => {
@@ -24,7 +25,7 @@ describe("remult-3-basics", () => {
         p.name = "yael";
         p.price = 10;
         p.archived = true;
-        await getEntityOf(p).save();
+        await getEntityRef(p).save();
         p = new Products();
         p.id = 3;
         p.name = "yoni";

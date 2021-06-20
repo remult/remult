@@ -24,11 +24,11 @@ export class Lookup<entityType> {
 
   _internalGetByOptions(find: FindOptions<entityType>): lookupRowInfo<entityType> {
 
-    let f = Filter.packWhere(this.repository.defs, find.where);
+    let f = Filter.packWhere(this.repository.metadata, find.where);
     let key = JSON.stringify(f);
     let res = this.cache.get(key);
     if (res !== undefined) {
-      if (this.repository.getRowHelper(res.value).wasDeleted()) {
+      if (this.repository.getEntityRef(res.value).wasDeleted()) {
         res = undefined;
         this.cache.set(key, undefined);
       } else
@@ -36,7 +36,7 @@ export class Lookup<entityType> {
     }
     res = new lookupRowInfo<entityType>();
     res.value = <entityType>this.repository.create();
-    __updateEntityBasedOnWhere(this.repository.defs, find.where, res.value);
+    __updateEntityBasedOnWhere(this.repository.metadata, find.where, res.value);
     this.cache.set(key, res);
     let foundNonUnDefined = false;
     for (const key in f) {

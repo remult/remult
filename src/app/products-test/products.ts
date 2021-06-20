@@ -1,6 +1,6 @@
 import { DataControl } from '@remult/angular';
-import { Allowed, Context, EntityAllowed, EntitySettings, FieldDefinitions, Filter, IdEntity, ServerMethod } from '@remult/core';
-import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere, FieldDefinitionsOf, filterOf, FieldType } from '../../../projects/core/src/remult3';
+import { Allowed, Context, EntityAllowed,  EntityOptions, Filter, IdEntity, ServerMethod } from '@remult/core';
+import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere,  FieldType } from '../../../projects/core/src/remult3';
 
 
 
@@ -47,7 +47,7 @@ export class Products extends IdEntity {
 
 
 class entityDecorator<T> {
-  constructor(settings: EntitySettings<T>) {
+  constructor(settings: EntityOptions<T>) {
 
   }
 }
@@ -66,7 +66,7 @@ class productsDecorator extends entityDecorator<Products> {
 
 }
 
-class productsDecorator2 implements EntitySettings<Products>{
+class productsDecorator2 implements EntityOptions<Products>{
   key='123';
   apiDataFilter=p=>{
     

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataControl, GridSettings } from '@remult/angular';
-import { Context, Field, getControllerDefs } from '@remult/core';
+import { Context, Field, getFields } from '@remult/core';
 import { Categories } from './categories';
 
 @Component({
@@ -18,7 +18,7 @@ export class CategoriesComponent implements OnInit {
   })
   something: string = null;
 
-  $ = getControllerDefs(this).fields;
+  $ = getFields(this);
   ngOnInit() {
   }
 

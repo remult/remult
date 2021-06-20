@@ -13,12 +13,9 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Field, Filter, filterOf, ServerContext, ServerFunction } from '../../../projects/core';
+import { Field, Filter,  ServerFunction } from '../../../projects/core';
 import { Products } from '../products-test/products';
-import {
-    ClassType, ErrorInfo
 
-} from '@remult/core'
 import { isJSDocTypedefTag } from 'typescript';
 
 
@@ -59,10 +56,9 @@ serverInit().then(async (dataSource) => {
             res.send('No Result' + index);
         }
     });
-    let con = new ServerContext(dataSource);
-    let p = await con.for(Products).findFirst();
+   
 
-    console.dir(p);
+    
 
     let port = process.env.PORT || 3001;
     app.listen(port);

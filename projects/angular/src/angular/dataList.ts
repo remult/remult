@@ -1,4 +1,4 @@
-import { EntityWhere, FindOptions, getEntityOf, Repository } from "@remult/core/src/remult3";
+import { EntityWhere, FindOptions,  Repository } from "@remult/core/src/remult3";
 
 export class DataList<T> implements Iterable<T>{
   [Symbol.iterator](): Iterator<T> {

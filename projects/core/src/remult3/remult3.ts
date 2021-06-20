@@ -1,7 +1,7 @@
 
-import { FieldDefinitions } from "../column-interfaces";
+import { FieldMetadata } from "../column-interfaces";
 import { IterateToArrayOptions, Unobserve } from "../context";
-import { EntitySettings } from "../entity";
+import { EntityOptions as EntityOptions } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
@@ -41,13 +41,26 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] value list field Type
 [V] upgrade to angular 9 and ts 3.7
 
-
 [V] column to field
 [V] decimal field
 [V] date only field
 
-[] remove get set from context
-[] remove server context from public
+[V] remove get set from context
+[V] remove server context from public
+[V] change idfield to idMetadata and move logic in.
+[V] move classType to it's own file and remove it from index.
+[V] move set to it's own file
+[V] move input types to it's own files.
+[V] move url builder to it's own type
+[] move server function to server method.
+[] rename terminology from ServerMethod to BackendMethod
+[V] rename onserver to backend
+[] change server function allowed to be entity allowed
+[V] change entityallowed to InstanceAllowed.
+[V] remove controller Allowed
+[] move utility functions to utilities. (get value or expression etc...)
+[V] change controller to just recieve a key parameters
+
 
 
 [] ?add tojson and from json to FieldDefinitions
@@ -64,6 +77,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] fix timeout by using a repeat mechanism in context.
 [X] test dateonly field decorator  on function parameter
 [X] "bool column doesn't need contains, isin and is not in"
+
 
 
 
@@ -95,7 +109,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] sql database, update of row where id is not named id is compromised
 
 ## review with Yoni
-
+[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
 [] "negative decimal" - inputValue
 [] "Number is always a number"
     [] "test number is always number"
@@ -206,7 +220,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 */
 
 
-export interface rowHelper<entityType> {
+export interface EntityRef<entityType> {
     hasErrors(): boolean;
     undoChanges();
     save(): Promise<entityType>;
@@ -215,71 +229,75 @@ export interface rowHelper<entityType> {
     isNew(): boolean;
     wasChanged(): boolean;
     wasDeleted(): boolean;
-    fields: EntityFields<entityType>;
+    fields: Fields<entityType>;
     error: string;
     getId(): any;
     repository: Repository<entityType>;
-    defs: EntityDefinitions<entityType>
+    metadata: EntityMetadata<entityType>
     toApiJson(): any;
 }
-export type EntityFields<Type> = {
-    [Properties in keyof Type]: EntityField<Type[Properties], Type>
+export type Fields<entityType> = {
+    [Properties in keyof entityType]: FieldRef<entityType[Properties], entityType>
 } & {
-    find(col: FieldDefinitions ): EntityField<any, Type>,
-    [Symbol.iterator]: () => IterableIterator<EntityField<any, Type>>
+    find(col: FieldMetadata): FieldRef<any, entityType>,
+    [Symbol.iterator]: () => IterableIterator<FieldRef<any, entityType>>
 
 
 
 }
-export type FieldDefinitionsOf<Type> = {
-    [Properties in keyof Type]: FieldDefinitions
+export type FieldsMetadata<entityType> = {
+    [Properties in keyof entityType]: FieldMetadata
 } & {
-    find(col: FieldDefinitions ): FieldDefinitions,
-    [Symbol.iterator]: () => IterableIterator<FieldDefinitions>
+    find(col: FieldMetadata): FieldMetadata,
+    [Symbol.iterator]: () => IterableIterator<FieldMetadata>
 
 
 }
 
 
-export type sortOf<Type> = {
-    [Properties in keyof Type]: SortSegment & { descending(): SortSegment }
+export type SortSegments<entityType> = {
+    [Properties in keyof entityType]: SortSegment & { descending(): SortSegment }
 }
 
-export interface EntityField<T, entityType = any> {
+export interface FieldRef<valueType, entityType = any> {
     inputType: string;
     error: string;
     displayValue: string;
-    value: T;
-    originalValue: T;
+    value: valueType;
+    originalValue: valueType;
     inputValue: string;
     wasChanged(): boolean;
-    rowHelper: rowHelper<entityType>;
-    entity: entityType;
-    defs: FieldDefinitions<entityType>;
-    load(): Promise<T>;
+    entityRef: EntityRef<entityType>;
+    container: entityType;
+    metadata: FieldMetadata<entityType>;
+    load(): Promise<valueType>;
 }
+export interface IdMetadata<entityType = any> {
 
-export interface EntityDefinitions<entityType = any> {
-    readonly idField: FieldDefinitions<any>;
+    field: FieldMetadata<any>;
     getIdFilter(id: any): Filter;
-    isIdField(col: FieldDefinitions): boolean;
+    isIdField(col: FieldMetadata): boolean;
     createIdInFilter(items: entityType[]): Filter;
 
+}
+
+export interface EntityMetadata<entityType = any> {
+    readonly idMetadata: IdMetadata<entityType>;
     readonly key: string,
     readonly dbName: string,
-    readonly fields: FieldDefinitionsOf<entityType>,
+    readonly fields: FieldsMetadata<entityType>,
     readonly caption: string;
-    readonly evilOriginalSettings: EntitySettings;
+    readonly options: EntityOptions;
 }
 export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
 
-    defs: EntityDefinitions<entityType>;
+    metadata: EntityMetadata<entityType>;
 
 
 
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
-    iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IteratableResult<entityType>;
+    iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
     count(where?: EntityWhere<entityType>): Promise<number>;
     findFirst(where?: EntityWhere<entityType> | IterateOptions<entityType>): Promise<entityType>;
     findId(id: any): Promise<entityType>;
@@ -311,22 +329,22 @@ export interface Repository<entityType> {
     addToCache(item: entityType);
 
 
-    getRowHelper(item: entityType): rowHelper<entityType>;
-    save(entity: entityType): Promise<entityType>;
-    delete(entity: entityType): Promise<void>;
+    getEntityRef(item: entityType): EntityRef<entityType>;
+    save(item: entityType): Promise<entityType>;
+    delete(item: entityType): Promise<void>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
-export interface FindOptions<T> {
+export interface FindOptions<entityType> {
     /** filters the data
      * @example
      * where p => p.price.isGreaterOrEqualTo(5)
      * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
      */
-    where?: EntityWhere<T>;
+    where?: EntityWhere<entityType>;
     /** Determines the order in which the result will be sorted in
      * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
      */
-    orderBy?: EntityOrderBy<T>;
+    orderBy?: EntityOrderBy<entityType>;
     /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
      * @example
      * this.products = await this.context.for(Products).find({
@@ -354,51 +372,49 @@ export interface FindOptions<T> {
  * @example
  * await this.context.for(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
  */
-export declare type EntityOrderBy<T> = (entity: sortOf<T>) => SortSegment[] | SortSegment;
+export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType>) => SortSegment[] | SortSegment;
 
 /**Used to filter the desired result set
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = ((entityType: filterOf<entityType>) => (Filter | Filter[] | EntityWhere<entityType>)) | EntityWhere<entityType>[];
+export declare type EntityWhere<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Filter[] | EntityWhere<entityType>)) | EntityWhere<entityType>[];
 
 
 
 
 
-export interface filterOptions<x> {
-    isEqualTo(val: x): Filter;
-    isDifferentFrom(val: x);
-    isIn(val: x[]): Filter;
-    isNotIn(val: x[]): Filter;
+export interface FilterFactory<valueType> {
+    isEqualTo(val: valueType): Filter;
+    isDifferentFrom(val: valueType);
+    isIn(val: valueType[]): Filter;
+    isNotIn(val: valueType[]): Filter;
 }
 
-export interface comparableFilterItem<x> extends filterOptions<x> {
+export interface ComparisonFilterFactory<valueType> extends FilterFactory<valueType> {
 
 
-    isLessOrEqualTo(val: x): Filter;
-    isLessThan(val: x): Filter;
-    isGreaterThan(val: x): Filter;
-    isGreaterOrEqualTo(val: x): Filter;
+    isLessOrEqualTo(val: valueType): Filter;
+    isLessThan(val: valueType): Filter;
+    isGreaterThan(val: valueType): Filter;
+    isGreaterOrEqualTo(val: valueType): Filter;
 }
-export interface supportsContains<x> extends filterOptions<x> {
+export interface ContainsFilterFactory<valueType> extends FilterFactory<valueType> {
     contains(val: string): Filter;
 }
 
-export type filterOf<Type> = {
-    [Properties in keyof Type]: Type[Properties] extends number | Date ? comparableFilterItem<Type[Properties]> :
-    Type[Properties] extends string ? (supportsContains<Type[Properties]> & comparableFilterItem<Type[Properties]>) :
-    supportsContains<Type[Properties]>
+export type FilterFactories<entityType> = {
+    [Properties in keyof entityType]: entityType[Properties] extends number | Date ? ComparisonFilterFactory<entityType[Properties]> :
+    entityType[Properties] extends string ? (ContainsFilterFactory<entityType[Properties]> & ComparisonFilterFactory<entityType[Properties]>) :
+    ContainsFilterFactory<entityType[Properties]>
 }
-
-export type ClassType<T> = { new(...args: any[]): T };
 
 export interface IterateOptions<entityType> {
     where?: EntityWhere<entityType>;
     orderBy?: EntityOrderBy<entityType>;
     progress?: { progress: (progress: number) => void };
 }
-export interface IteratableResult<T> {
+export interface IterableResult<T> {
     toArray(options?: IterateToArrayOptions): Promise<T[]>;
     first(): Promise<T>;
     count(): Promise<number>;
@@ -408,17 +424,3 @@ export interface IteratableResult<T> {
     };
 }
 
-export class InputTypes {
-    static number = 'number';
-    static date = 'date';
-    static checkbox = 'checkbox';
-    static password = 'password';
-    static email = 'email';
-    static tel = 'tel';
-    static time = "time";
-}
-export function set<T>(item: T, valuesToSet: Partial<T>): T {
-    if (valuesToSet)
-        Object.assign(item, valuesToSet);
-    return item;
-}

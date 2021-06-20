@@ -2,16 +2,16 @@
 
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
 
-import { UrlBuilder } from '../url-builder';
+import { UrlBuilder } from '../../urlBuilder';
 import { Filter, packToRawWhere } from '../filter/filter-interfaces';
-import { EntityDefinitions } from '../remult3';
+import { EntityMetadata } from '../remult3';
 
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
   }
-  public getEntityDataProvider(entity: EntityDefinitions): EntityDataProvider {
+  public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
     return new RestEntityDataProvider(this.url + '/' + entity.key, this.http, entity);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -20,7 +20,7 @@ export class RestDataProvider implements DataProvider {
 }
 class RestEntityDataProvider implements EntityDataProvider {
 
-  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityDefinitions) {
+  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityMetadata) {
 
   }
   translateFromJson(row: any) {

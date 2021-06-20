@@ -1,6 +1,8 @@
+import { ClassType } from "./classType";
+import { InputTypes } from "./inputTypes";
 import { makeTitle } from "./src/column";
 import { ValueConverter, ValueListItem } from "./src/column-interfaces";
-import { ClassType, InputTypes } from "./src/remult3";
+
 
 
 

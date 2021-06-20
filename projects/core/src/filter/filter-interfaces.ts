@@ -1,5 +1,5 @@
-import { FieldDefinitions } from "../column-interfaces";
-import { comparableFilterItem, EntityDefinitions, EntityWhere, filterOf, filterOptions, getEntityOf, getEntitySettings, sortOf, supportsContains } from "../remult3";
+import { FieldMetadata } from "../column-interfaces";
+import { ComparisonFilterFactory, EntityMetadata, EntityWhere, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory } from "../remult3";
 
 
 export class Filter {
@@ -17,14 +17,14 @@ export class Filter {
     or(filter: Filter): Filter {
         return new OrFilter(this, filter);
     }
-    static createFilterOf<T>(entityDefs: EntityDefinitions<T>): filterOf<T> {
+    static createFilterOf<T>(entityDefs: EntityMetadata<T>): FilterFactories<T> {
         let r = {};
         for (const c of entityDefs.fields) {
             r[c.key] = new filterHelper(c);
         }
-        return r as filterOf<T>;
+        return r as FilterFactories<T>;
     }
-    static translateWhereToFilter<T>(entity: filterOf<T>, where: EntityWhere<T>): Filter {
+    static translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityWhere<T>): Filter {
         if (Array.isArray(where)) {
             return new AndFilter(...where.map(x =>
                 Filter.translateWhereToFilter(entity, x)
@@ -45,23 +45,23 @@ export class Filter {
             return r;
         }
     }
-    static packWhere<T>(entityDefs: EntityDefinitions<T>, where: EntityWhere<T>) {
+    static packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>) {
         if (!where)
             return {};
         return packToRawWhere(this.translateWhereToFilter(this.createFilterOf(entityDefs), where));
 
     }
-    static unpackWhere<T>(entityDefs: EntityDefinitions<T>, packed: any): Filter {
+    static unpackWhere<T>(entityDefs: EntityMetadata<T>, packed: any): Filter {
         return this.extractWhere(entityDefs, { get: (key: string) => packed[key] });
 
     }
-    static extractWhere<T>(entityDefs: EntityDefinitions<T>, filterInfo: { get: (key: string) => any; }): Filter {
+    static extractWhere<T>(entityDefs: EntityMetadata<T>, filterInfo: { get: (key: string) => any; }): Filter {
         return extractWhere([...entityDefs.fields], filterInfo);
     }
 
 }
-export class filterHelper implements filterOptions<any>, comparableFilterItem<any>, supportsContains<any>  {
-    constructor(private col: FieldDefinitions) {
+export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory<any>, ContainsFilterFactory<any>  {
+    constructor(private col: FieldMetadata) {
 
     }
     processVal(val: any) {
@@ -71,7 +71,7 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
                 return null;
             if (typeof val === "string" || typeof val === "number")
                 return val;
-            return  getEntityOf(val).getId();
+            return  getEntityRef(val).getId();
         }
         return val;
     }
@@ -122,17 +122,17 @@ export class filterHelper implements filterOptions<any>, comparableFilterItem<an
 }
 export interface FilterConsumer {
     or(orElements: Filter[]);
-    isEqualTo(col: FieldDefinitions, val: any): void;
-    isDifferentFrom(col: FieldDefinitions, val: any): void;
-    isNull(col: FieldDefinitions): void;
-    isNotNull(col: FieldDefinitions): void;
-    isGreaterOrEqualTo(col: FieldDefinitions, val: any): void;
-    isGreaterThan(col: FieldDefinitions, val: any): void;
-    isLessOrEqualTo(col: FieldDefinitions, val: any): void;
-    isLessThan(col: FieldDefinitions, val: any): void;
-    containsCaseInsensitive(col: FieldDefinitions, val: any): void;
-    startsWith(col: FieldDefinitions, val: any): void;
-    isIn(col: FieldDefinitions, val: any[]): void;
+    isEqualTo(col: FieldMetadata, val: any): void;
+    isDifferentFrom(col: FieldMetadata, val: any): void;
+    isNull(col: FieldMetadata): void;
+    isNotNull(col: FieldMetadata): void;
+    isGreaterOrEqualTo(col: FieldMetadata, val: any): void;
+    isGreaterThan(col: FieldMetadata, val: any): void;
+    isLessOrEqualTo(col: FieldMetadata, val: any): void;
+    isLessThan(col: FieldMetadata, val: any): void;
+    containsCaseInsensitive(col: FieldMetadata, val: any): void;
+    startsWith(col: FieldMetadata, val: any): void;
+    isIn(col: FieldMetadata, val: any[]): void;
 }
 
 
@@ -193,51 +193,51 @@ export class FilterSerializer implements FilterConsumer {
             return f.result;
         }));
     }
-    isNull(col: FieldDefinitions): void {
+    isNull(col: FieldMetadata): void {
         this.add(col.key + "_null", true);
     }
-    isNotNull(col: FieldDefinitions): void {
+    isNotNull(col: FieldMetadata): void {
         this.add(col.key + "_null", false);
     }
-    isIn(col: FieldDefinitions, val: any[]): void {
+    isIn(col: FieldMetadata, val: any[]): void {
         this.add(col.key + "_in", val.map(x => col.valueConverter.toJson(x)));
     }
 
-    public isEqualTo(col: FieldDefinitions, val: any): void {
+    public isEqualTo(col: FieldMetadata, val: any): void {
         this.add(col.key, col.valueConverter.toJson(val));
     }
 
-    public isDifferentFrom(col: FieldDefinitions, val: any): void {
+    public isDifferentFrom(col: FieldMetadata, val: any): void {
         this.add(col.key + '_ne', col.valueConverter.toJson(val));
     }
 
-    public isGreaterOrEqualTo(col: FieldDefinitions, val: any): void {
+    public isGreaterOrEqualTo(col: FieldMetadata, val: any): void {
         this.add(col.key + '_gte', col.valueConverter.toJson(val));
     }
 
-    public isGreaterThan(col: FieldDefinitions, val: any): void {
+    public isGreaterThan(col: FieldMetadata, val: any): void {
         this.add(col.key + '_gt', col.valueConverter.toJson(val));
     }
 
-    public isLessOrEqualTo(col: FieldDefinitions, val: any): void {
+    public isLessOrEqualTo(col: FieldMetadata, val: any): void {
         this.add(col.key + '_lte', col.valueConverter.toJson(val));
     }
 
-    public isLessThan(col: FieldDefinitions, val: any): void {
+    public isLessThan(col: FieldMetadata, val: any): void {
         this.add(col.key + '_lt', col.valueConverter.toJson(val));
     }
-    public containsCaseInsensitive(col: FieldDefinitions, val: any): void {
+    public containsCaseInsensitive(col: FieldMetadata, val: any): void {
         this.add(col.key + "_contains", val);
     }
-    public startsWith(col: FieldDefinitions, val: any): void {
+    public startsWith(col: FieldMetadata, val: any): void {
         this.add(col.key + "_st", col.valueConverter.toJson(val));
     }
 }
 
-export function unpackWhere(columns: FieldDefinitions[], packed: any) {
+export function unpackWhere(columns: FieldMetadata[], packed: any) {
     return extractWhere(columns, { get: (key: string) => packed[key] });
 }
-export function extractWhere(columns: FieldDefinitions[], filterInfo: {
+export function extractWhere(columns: FieldMetadata[], filterInfo: {
     get: (key: string) => any;
 }) {
     let where: Filter = undefined;

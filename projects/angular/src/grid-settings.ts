@@ -1,4 +1,4 @@
-import { AndFilter, FieldDefinitions, Sort, FieldDefinitionsOf, EntityOrderBy, EntityWhere, FindOptions, getEntityOf, Repository, rowHelper } from "@remult/core";
+import { AndFilter,  FieldMetadata, Sort,  FieldsMetadata, EntityOrderBy, EntityWhere, FindOptions,  getEntityRef, Repository } from "@remult/core";
 import { DataList } from "./angular/dataList";
 
 import { FieldCollection } from "./column-collection";
@@ -32,14 +32,14 @@ export class GridSettings<rowType>  {
       });
     }
 
-    this.columns = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b))
+    this.columns = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getEntityRef(a).fields.find(b))
 
 
 
     if (settings) {
 
       if (settings.columnSettings) {
-        let x = settings.columnSettings(repository.defs.fields);
+        let x = settings.columnSettings(repository.metadata.fields);
         this.columns.add(...x);
       }
       if (settings.allowCrud !== undefined) {
@@ -82,7 +82,7 @@ export class GridSettings<rowType>  {
       if (settings.caption)
         this.caption = settings.caption;
       if (!this.caption && repository) {
-        this.caption = repository.defs.caption;
+        this.caption = repository.metadata.caption;
       }
       let get: FindOptions<any> = {};
 
@@ -151,7 +151,7 @@ export class GridSettings<rowType>  {
     }
     this._currentOrderBy = undefined;
     if (this.getOptions && this.getOptions.orderBy)
-      this._currentOrderBy = Sort.translateOrderByToSort(this.repository.defs, this.getOptions.orderBy);
+      this._currentOrderBy = Sort.translateOrderByToSort(this.repository.metadata, this.getOptions.orderBy);
 
   }
 
@@ -170,10 +170,10 @@ export class GridSettings<rowType>  {
   noam: string;
 
   addArea(settings: IDataAreaSettings<rowType>) {
-    let col = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getRowHelper(a).fields.find(b));
+    let col = new FieldCollection<rowType>(() => this.currentRow, () => this.allowUpdate, this.filterHelper, () => this.currentRow ? true : false, (a, b) => this.repository.getEntityRef(a).fields.find(b));
     col.numOfColumnsInGrid = 0;
 
-    return new DataAreaSettings<rowType>(settings, col, this.repository.defs.fields);
+    return new DataAreaSettings<rowType>(settings, col, this.repository.metadata.fields);
   }
   currentRow: rowType;
   setCurrentRow(row: rowType) {
@@ -230,7 +230,7 @@ export class GridSettings<rowType>  {
     this.getRowHelper(this.currentRow);
   }
   getRowHelper(item: rowType) {
-    return this.repository.getRowHelper(item);
+    return this.repository.getEntityRef(item);
   }
   cancelCurrentRowChanges() {
     if (this.currentRowAsRestListItemRow() && this.currentRowAsRestListItemRow())
@@ -262,7 +262,7 @@ export class GridSettings<rowType>  {
   onNewRow: (row: rowType) => void;
   _doSavingRow(s: rowType) {
 
-    return getEntityOf(s).save();
+    return getEntityRef(s).save();
 
   }
   caption: string;
@@ -364,7 +364,7 @@ export class GridSettings<rowType>  {
   }
 
   _currentOrderBy: Sort;
-  sort(column: FieldDefinitions) {
+  sort(column: FieldMetadata) {
 
     let done = false;
     if (this._currentOrderBy && this._currentOrderBy.Segments.length > 0) {
@@ -377,7 +377,7 @@ export class GridSettings<rowType>  {
       this._currentOrderBy = new Sort({ field: column });
     this.reloadData();
   }
-  sortedAscending(column: FieldDefinitions) {
+  sortedAscending(column: FieldMetadata) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
@@ -386,7 +386,7 @@ export class GridSettings<rowType>  {
       this._currentOrderBy.Segments[0].field.key == column.key &&
       !this._currentOrderBy.Segments[0].isDescending;
   }
-  sortedDescending(column: FieldDefinitions) {
+  sortedDescending(column: FieldMetadata) {
     if (!this._currentOrderBy)
       return false;
     if (!column)
@@ -405,7 +405,7 @@ export class GridSettings<rowType>  {
 
   reloadData() {
     let opt: FindOptions<rowType> = this._internalBuildFindOptions();
-    this.columns.autoGenerateColumnsBasedOnData(this.repository.defs);
+    this.columns.autoGenerateColumnsBasedOnData(this.repository.metadata);
     let result = this.restList.get(opt).then(() => {
       this.selectedRows.splice(0);
       this._selectedAll = false;
@@ -456,10 +456,10 @@ export class GridSettings<rowType>  {
     if (this.selectedRows.length > 0 && !this._selectedAll) {
       if (r.where) {
         let x = r.where;
-        r.where = [x, y => this.repository.defs.createIdInFilter(this.selectedRows)];
+        r.where = [x, y => this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)];
       }
       else
-        r.where = e => this.repository.defs.createIdInFilter(this.selectedRows);
+        r.where = e => this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows);
     }
     return r;
   }
@@ -487,7 +487,7 @@ export interface IDataSettings<rowType> {
   allowSelection?: boolean,
   confirmDelete?: (r: rowType) => Promise<boolean>;
 
-  columnSettings?: (row: FieldDefinitionsOf<rowType>) => DataControlInfo<rowType>[],
+  columnSettings?: (row: FieldsMetadata<rowType>) => DataControlInfo<rowType>[],
   areas?: { [areaKey: string]: DataControlInfo<rowType>[] },
 
   rowCssClass?: (row: rowType) => string;

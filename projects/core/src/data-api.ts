@@ -1,8 +1,8 @@
-import { EntitySettings } from './entity';
+import { EntityOptions } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
 import { Context, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { checkEntityAllowed, filterOf, FindOptions, Repository, rowHelper, rowHelperImplementation } from './remult3';
+import {  FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -20,7 +20,7 @@ export class DataApi<T = any> {
       response.forbidden();
       return;
     }
-    await this.doOnId(response, id, async row => response.success(this.repository.getRowHelper(row).toApiJson()));
+    await this.doOnId(response, id, async row => response.success(this.repository.getEntityRef(row).toApiJson()));
   }
   async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     try {
@@ -44,13 +44,13 @@ export class DataApi<T = any> {
       findOptions.where = t => this.buildWhere(t, request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        let w = Filter.translateWhereToFilter(Filter.createFilterOf(this.repository.defs), findOptions.where);
+        let w = Filter.translateWhereToFilter(Filter.createFilterOf(this.repository.metadata), findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {
-              if (this.repository.defs.isIdField(col))
+              if (this.repository.metadata.idMetadata.isIdField(col))
                 hasId = true;
             },
             isGreaterOrEqualTo: () => { },
@@ -86,22 +86,22 @@ export class DataApi<T = any> {
       }
       await this.repository.find(findOptions)
         .then(async r => {
-          response.success(await Promise.all(r.map(async y => this.repository.getRowHelper(y).toApiJson())));
+          response.success(await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson())));
         });
     }
     catch (err) {
       response.error(err);
     }
   }
-  private buildWhere(entity: filterOf<T>, request: DataApiRequest, filterBody: any) {
+  private buildWhere(entity: FilterFactories<T>, request: DataApiRequest, filterBody: any) {
     var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
       where = Filter.translateWhereToFilter(entity, this.options.get.where);
     if (request) {
-      where = new AndFilter(where, Filter.extractWhere(this.repository.defs, request));
+      where = new AndFilter(where, Filter.extractWhere(this.repository.metadata, request));
     }
     if (filterBody)
-      where = new AndFilter(where, Filter.unpackWhere(this.repository.defs, filterBody))
+      where = new AndFilter(where, Filter.unpackWhere(this.repository.metadata, filterBody))
     return where;
   }
 
@@ -113,7 +113,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: [this.options?.get?.where, x => this.repository.defs.getIdFilter(id)]
+        where: [this.options?.get?.where, x => this.repository.metadata.idMetadata.getIdFilter(id)]
       })
         .then(async r => {
           if (r.length == 0)
@@ -130,18 +130,18 @@ export class DataApi<T = any> {
   async put(response: DataApiResponse, id: any, body: any) {
 
     await this.doOnId(response, id, async row => {
-      (this.repository.getRowHelper(row) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
+      (this.repository.getEntityRef(row) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings().allowUpdate(row)) {
         response.forbidden();
         return;
       }
-      await this.repository.getRowHelper(row).save();
-      response.success(this.repository.getRowHelper(row).toApiJson());
+      await this.repository.getEntityRef(row).save();
+      response.success(this.repository.getEntityRef(row).toApiJson());
     });
   }
    _getApiSettings(): DataApiSettings<T> {
 
-    let options = this.repository.defs.evilOriginalSettings;
+    let options = this.repository.metadata.options;
     if (options.allowApiCrud !== undefined) {
       if (options.allowApiDelete === undefined)
         options.allowApiDelete = options.allowApiCrud;
@@ -156,9 +156,9 @@ export class DataApi<T = any> {
     return {
       name: options.key,
       allowRead: this.context.isAllowed(options.allowApiRead),
-      allowUpdate: (e) => checkEntityAllowed(this.context, options.allowApiUpdate, e),
-      allowDelete: (e) => checkEntityAllowed(this.context, options.allowApiDelete, e),
-      allowInsert: (e) => checkEntityAllowed(this.context, options.allowApiInsert, e),
+      allowUpdate: (e) => this.context.isAllowedForInstance(e, options.allowApiUpdate),
+      allowDelete: (e) => this.context.isAllowedForInstance(e, options.allowApiDelete),
+      allowInsert: (e) => this.context.isAllowedForInstance(e, options.allowApiInsert),
       requireId: this.context.isAllowed(options.apiRequireId),
       get: {
         where: x => {
@@ -177,7 +177,7 @@ export class DataApi<T = any> {
         response.forbidden();
         return;
       }
-      await this.repository.getRowHelper(row).delete();
+      await this.repository.getEntityRef(row).delete();
       response.deleted();
     });
   }
@@ -187,14 +187,14 @@ export class DataApi<T = any> {
 
     try {
       let newr = this.repository.create();
-      (this.repository.getRowHelper(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
+      (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings().allowInsert(newr)) {
         response.forbidden();
         return;
       }
 
-      await this.repository.getRowHelper(newr).save();
-      response.created(this.repository.getRowHelper(newr).toApiJson());
+      await this.repository.getEntityRef(newr).save();
+      response.created(this.repository.getEntityRef(newr).toApiJson());
     } catch (err) {
       response.error(err);
     }

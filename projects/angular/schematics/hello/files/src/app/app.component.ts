@@ -96,7 +96,7 @@ export class AppComponent implements OnInit {
       ok: async () => {
         if (password.value != confirmPassword.value) {
           confirmPassword.error = "doesn't match password";
-          throw new Error(confirmPassword.defs.caption + " " + confirmPassword.error);
+          throw new Error(confirmPassword.metadata.caption + " " + confirmPassword.error);
         }
         await user.create(password.value);
         this.setToken(await AppComponent.signIn(user.name, password.value));
@@ -130,7 +130,7 @@ export class AppComponent implements OnInit {
       ok: async () => {
         if (password.value != confirmPassword.value) {
           confirmPassword.error = "doesn't match password";
-          throw new Error(confirmPassword.defs.caption + " " + confirmPassword.error);
+          throw new Error(confirmPassword.metadata.caption + " " + confirmPassword.error);
         }
         await user.updatePassword(password.value);
         await user._.save();

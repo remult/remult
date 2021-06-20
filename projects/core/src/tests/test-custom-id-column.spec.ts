@@ -23,7 +23,7 @@ describe("custom id column", () => {
         r.a = 2;
         r.b = 2;
         await r._.save();
-        expect(c.defs.idField.key).toBe(c.defs.fields.a.key);
+        expect(c.metadata.idMetadata.field.key).toBe(c.metadata.fields.a.key);
 
 
     });
@@ -45,7 +45,7 @@ describe("custom id column", () => {
         r.a = 2;
         r.id = 6;
         await r._.save();
-        expect(r._.repository.defs.idField.key).toBe(r._.fields.id.defs.key);
+        expect(r._.repository.metadata.idMetadata.field.key).toBe(r._.fields.id.metadata.key);
         expect((await c.findId(6)).a).toBe(2);
 
 

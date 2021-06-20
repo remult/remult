@@ -1,7 +1,7 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
 import { ServerMethod } from '../server-action';
-import { Field, Entity, EntityBase, getControllerDefs, getEntityOf } from '../remult3';
+import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
@@ -16,7 +16,7 @@ class testServerMethodOnEntity extends EntityBase {
             if (y.a == "errorc") {
                 x.error = "error on client";
             }
-            else if (y.a == "error on server" && y.context.onServer) {
+            else if (y.a == "error on server" && y.context.backend) {
                 x.error = "error on server";
             }
         }
@@ -28,7 +28,7 @@ class testServerMethodOnEntity extends EntityBase {
         let result = 'hello ' + this.a;
         this.a = 'yael';
         return {
-            onServer: this.context.onServer,
+            onServer: this.context.backend,
             result
         }
     }
@@ -47,7 +47,7 @@ class testServerMethodOnEntity extends EntityBase {
     key: 'testBoolCreate123',
     allowApiCrud: true,
     saving: async t => {
-        if (t.context.onServer && t._.isNew()) {
+        if (t.context.backend && t._.isNew()) {
 
             await t.context.for(testBoolCreate123).count();
             await new Promise((res, rej) => setTimeout(() => {
@@ -100,7 +100,7 @@ describe("test Server method in entity", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on client");
-            expect(getEntityOf(x).fields.a.error).toBe("error on client");
+            expect(getEntityRef(x).fields.a.error).toBe("error on client");
         }
         expect(happened).toBe(false);
 
@@ -117,7 +117,7 @@ describe("test Server method in entity", () => {
         }
         catch (err) {
             expect(err.modelState.a).toBe("error on server");
-            expect(getEntityOf(x).fields.a.error).toBe("error on server");
+            expect(getEntityRef(x).fields.a.error).toBe("error on server");
         }
         expect(happened).toBe(false);
 

@@ -30,13 +30,13 @@ describe("test sql database", () => {
     });
     it("test undefined behaves as a column", () => {
         let x = context.for(expressionEntity);
-        expect(x.defs.fields.col.dbName).toBe('col');
-        expect(x.defs.fields.col.dbReadOnly).toBe(false);
+        expect(x.metadata.fields.col.dbName).toBe('col');
+        expect(x.metadata.fields.col.dbReadOnly).toBe(false);
         let c=  new ServerContext();
         expressionEntity.yes= true;
          x = context.for(expressionEntity);
-        expect(x.defs.fields.col.dbName).toBe('name');
-        expect(x.defs.fields.col.dbReadOnly).toBe(true);
+        expect(x.metadata.fields.col.dbName).toBe('name');
+        expect(x.metadata.fields.col.dbReadOnly).toBe(true);
     });
 
 });

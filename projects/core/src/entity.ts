@@ -1,14 +1,14 @@
-import { Allowed, Context, EntityAllowed } from "./context";
+import { Allowed, Context, AllowedForInstance } from "./context";
 
-import { FieldDefinitions } from './column-interfaces';
-import { EntityOrderBy, ClassType, FieldDefinitionsOf, filterOf, EntityWhere } from "./remult3";
+import { FieldMetadata as FieldMetadata } from './column-interfaces';
+import { EntityOrderBy,  FieldsMetadata, FilterFactories, EntityWhere } from "./remult3";
 import { Filter } from "./filter/filter-interfaces";
 
 
 
-export interface EntitySettings<T = any> {
+export interface EntityOptions<T = any> {
 
-  id?: (entity: FieldDefinitionsOf<T>) => FieldDefinitions;
+  id?: (entity: FieldsMetadata<T>) => FieldMetadata;
   dbAutoIncrementId?: boolean;
 
   /**
@@ -23,7 +23,7 @@ export interface EntitySettings<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: FieldDefinitionsOf<T>, context: Context) => string);
+  dbName?: string | ((entity: FieldsMetadata<T>, context: Context) => string);
   /**A human readable name for the entity */
   caption?: string | ((context: Context) => string);
   includeInApi?: boolean;
@@ -32,11 +32,11 @@ export interface EntitySettings<T = any> {
    * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiRead?: Allowed;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiUpdate?: EntityAllowed<T>;
+  allowApiUpdate?: AllowedForInstance<T>;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiDelete?: EntityAllowed<T>;
+  allowApiDelete?: AllowedForInstance<T>;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiInsert?: EntityAllowed<T>;
+  allowApiInsert?: AllowedForInstance<T>;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed;
 
@@ -47,7 +47,7 @@ export interface EntitySettings<T = any> {
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */
-  apiDataFilter?: ((entityType: filterOf<T>, context: Context) => (Filter | Filter[]));
+  apiDataFilter?: ((entityType: FilterFactories<T>, context: Context) => (Filter | Filter[]));
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example

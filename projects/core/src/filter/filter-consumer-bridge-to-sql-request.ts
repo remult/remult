@@ -1,6 +1,6 @@
 import { SqlCommand } from "../sql-command";
 import { Filter, FilterConsumer } from './filter-interfaces';
-import { FieldDefinitions } from "../column-interfaces";
+import { FieldMetadata } from "../column-interfaces";
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
   private _addWhere = true;
@@ -24,43 +24,43 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     }
     this.addToWhere("(" + statement + ")");
   }
-  isNull(col: FieldDefinitions): void {
+  isNull(col: FieldMetadata): void {
     this.addToWhere(col.dbName + ' is null');
   }
-  isNotNull(col: FieldDefinitions): void {
+  isNotNull(col: FieldMetadata): void {
     this.addToWhere(col.dbName + ' is not null');
   }
-  isIn(col: FieldDefinitions, val: any[]): void {
+  isIn(col: FieldMetadata, val: any[]): void {
     if (val && val.length > 0)
       this.addToWhere(col.dbName + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb( x))).join(",") + ")");
     else
       this.addToWhere('1 = 0 /*isIn with no values*/');
   }
-  isEqualTo(col: FieldDefinitions, val: any): void {
+  isEqualTo(col: FieldMetadata, val: any): void {
     this.add(col, val, "=");
   }
-  isDifferentFrom(col: FieldDefinitions, val: any): void {
+  isDifferentFrom(col: FieldMetadata, val: any): void {
     this.add(col, val, "<>");
   }
-  isGreaterOrEqualTo(col: FieldDefinitions, val: any): void {
+  isGreaterOrEqualTo(col: FieldMetadata, val: any): void {
     this.add(col, val, ">=");
   }
-  isGreaterThan(col: FieldDefinitions, val: any): void {
+  isGreaterThan(col: FieldMetadata, val: any): void {
     this.add(col, val, ">");
   }
-  isLessOrEqualTo(col: FieldDefinitions, val: any): void {
+  isLessOrEqualTo(col: FieldMetadata, val: any): void {
     this.add(col, val, "<=");
   }
-  isLessThan(col: FieldDefinitions, val: any): void {
+  isLessThan(col: FieldMetadata, val: any): void {
     this.add(col, val, "<");
   }
-  public containsCaseInsensitive(col: FieldDefinitions, val: any): void {
+  public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.addToWhere('lower (' + col.dbName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
   }
-  public startsWith(col: FieldDefinitions, val: any): void {
+  public startsWith(col: FieldMetadata, val: any): void {
     this.add(col, val + '%', 'like');
   }
-  private add(col: FieldDefinitions, val: any, operator: string) {
+  private add(col: FieldMetadata, val: any, operator: string) {
     let x = col.dbName + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val));
     this.addToWhere(x);
 

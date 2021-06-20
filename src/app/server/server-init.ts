@@ -6,7 +6,8 @@ import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/core/postgr
 import * as passwordHash from 'password-hash';
 
 
-import { ClassType, Context, EntitySettings, FieldSettings, ServerContext, ServerController, SqlDatabase } from '@remult/core';
+import {  Context,  EntityOptions,  SqlDatabase } from '@remult/core';
+import { ClassType } from '../../../projects/core/classType';
 
 
 
@@ -47,10 +48,10 @@ function stam() {
     return (target, key, z) => target;
 }
 
-function Entity(settings: EntitySettings, stam: any) {
+function Entity(settings: EntityOptions, stam: any) {
     return (target) => target;
 }
-function Entity2(types: any[], func: (...args: any[]) => Partial<EntitySettings<Products>>) {
+function Entity2(types: any[], func: (...args: any[]) => Partial<EntityOptions<Products>>) {
     return target => target
 }
 
@@ -72,7 +73,7 @@ function Entity3<T>(a: any, b: any) {
 
 
 class Base<T>{
-    constructor(settings: Partial<EntitySettings<T>>) {
+    constructor(settings: Partial<EntityOptions<T>>) {
 
     }
 }
@@ -88,11 +89,11 @@ class zz extends Base<Products>{
     }
 }
 
-var zzz: Partial<EntitySettings<Products>> = {
+var zzz: Partial<EntityOptions<Products>> = {
     fixedFilter: p => p.a.isEqualTo("")
 
 }
-var zzzz: (settings: Partial<EntitySettings<Products>>) => void;
+var zzzz: (settings: Partial<EntityOptions<Products>>) => void;
 if (false)
     zzzz({
         fixedFilter: p => p.a.isEqualTo("")
@@ -104,10 +105,10 @@ var x = {
 export type kuku<Type> = {
     [Properties in keyof Type]: Type[Properties] extends ClassType<infer Z> ? Z : never
 }
-function entity7<Args>(type: Args, doSomething: (z: kuku<Args>, send: (to: Partial<EntitySettings>) => void) => void) {
+function entity7<Args>(type: Args, doSomething: (z: kuku<Args>, send: (to: Partial<EntityOptions>) => void) => void) {
     return a => a;
 }
-function entity8<Args>(type: Args, doSomething: (z: kuku<Args>) => Partial<EntitySettings>) {
+function entity8<Args>(type: Args, doSomething: (z: kuku<Args>) => Partial<EntityOptions>) {
     return a => a;
 }
 

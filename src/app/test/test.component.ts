@@ -1,10 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context,  ServerFunction, SqlDatabase, ServerProgress, IdEntity } from '@remult/core';
-
-import {  Field, Entity, EntityBase } from '../../../projects/core/src/remult3';
-
-
-
+import { Context,  ServerFunction, Entity,  IdEntity, Field } from '@remult/core';
 @Component({
   selector: 'app-test',
   templateUrl: './test.component.html',

@@ -1,5 +1,5 @@
 import { fitAsync, itAsync } from './testHelper.spec';
-import { ServerContext } from '../context';
+import { Context, ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase } from '../remult3';
 
@@ -35,8 +35,9 @@ describe("test server expression value",  () => {
         expect(testServerExpression.testVal2).toBe(12);
     });
     itAsync("test doesnt calc on client", async () => {
-        let c = new ServerContext(new InMemoryDataProvider());
-        (<any>c)._onServer = false;
+        let c = new Context();
+        c.setDataProvider(new InMemoryDataProvider());
+        
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.for(testServerExpression).create();
@@ -48,8 +49,8 @@ describe("test server expression value",  () => {
         expect(testServerExpression.testVal2).toBe(11);
     });
     itAsync("test basics find doesnt calc on client", async () => {
-        let c = new ServerContext(new InMemoryDataProvider());
-        (<any>c)._onServer = false;
+        let c = new Context();
+        c.setDataProvider(new InMemoryDataProvider());
 
         let r = c.for(testServerExpression).create();
         r.code = 5;

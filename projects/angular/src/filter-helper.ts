@@ -1,21 +1,21 @@
 
 import { AndFilter, Filter } from '@remult/core';
-import { comparableFilterItem, EntityField, EntityWhere, FindOptions, Repository, supportsContains } from "@remult/core";
-import { FieldDefinitions } from "@remult/core";
+import { ComparisonFilterFactory,  FieldRef, EntityWhere, FindOptions, Repository,  ContainsFilterFactory } from "@remult/core";
+import {  FieldMetadata } from "@remult/core";
 import { getFieldDefinition } from '..';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
-  filterColumns: FieldDefinitions[] = [];
-  forceEqual: FieldDefinitions[] = [];
+  filterColumns: FieldMetadata[] = [];
+  forceEqual: FieldMetadata[] = [];
   constructor(private reloadData: () => void, private repository: Repository<rowType>) {
 
   }
-  isFiltered(columnInput: FieldDefinitions | EntityField<any, any>) {
+  isFiltered(columnInput: FieldMetadata | FieldRef<any, any>) {
 
     return this.filterColumns.indexOf(getFieldDefinition(columnInput)) >= 0;
   }
-  filterColumn(columnInput: FieldDefinitions | EntityField<any, any>, clearFilter: boolean, forceEqual: boolean) {
+  filterColumn(columnInput: FieldMetadata | FieldRef<any, any>, clearFilter: boolean, forceEqual: boolean) {
     let column = getFieldDefinition(columnInput);
     if (!column)
       return;
@@ -36,7 +36,7 @@ export class FilterHelper<rowType> {
       //@ts-ignore
       let val = this.filterRow[c.key];
       let w: EntityWhere<rowType> = item => {
-        let itemForFilter: comparableFilterItem<any> & supportsContains<any> = item[c.key];
+        let itemForFilter: ComparisonFilterFactory<any> & ContainsFilterFactory<any> = item[c.key];
         let f: Filter = itemForFilter.isEqualTo(val);
         if (c.dataType == String && !this.forceEqual.find(x => c.key == x.key))
           f = itemForFilter.contains(val);

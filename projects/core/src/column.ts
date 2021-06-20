@@ -1,9 +1,10 @@
-import { FieldDefinitions, FieldSettings, ValueConverter } from './column-interfaces';
+import { ClassType } from '../classType';
+import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces';
 
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import { ClassType, EntityWhere, FindOptions, getEntityOf, Repository, __updateEntityBasedOnWhere } from './remult3';
+import {  EntityWhere, FindOptions, getEntityRef, Repository, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -22,9 +23,9 @@ export function makeTitle(name: string) {
 
 
 
-export class CompoundIdField implements FieldDefinitions<string> {
-  fields: FieldDefinitions[];
-  constructor(...columns: FieldDefinitions[]) {
+export class CompoundIdField implements FieldMetadata<string> {
+  fields: FieldMetadata[];
+  constructor(...columns: FieldMetadata[]) {
     this.fields = columns;
   }
   getId(instance: any) {
@@ -36,7 +37,7 @@ export class CompoundIdField implements FieldDefinitions<string> {
     });
     return r;
   }
-  evilOriginalSettings: FieldSettings<any, any>;
+  options: FieldOptions<any, any>;
   get valueConverter(): ValueConverter<string> {
     throw new Error("cant get value converter of compound id");
   }
@@ -53,7 +54,7 @@ export class CompoundIdField implements FieldDefinitions<string> {
   dbName: string;
 
   dataType: any
-  isEqualTo(value: FieldDefinitions<string> | string): Filter {
+  isEqualTo(value: FieldMetadata<string> | string): Filter {
     return new Filter(add => {
       let val = value.toString();
       let id = val.split(',');
@@ -63,7 +64,7 @@ export class CompoundIdField implements FieldDefinitions<string> {
     });
   }
 
-  
+
   resultIdFilter(id: string, data: any) {
     return new Filter(add => {
       let idParts: any[] = [];
@@ -90,7 +91,7 @@ export class CompoundIdField implements FieldDefinitions<string> {
 
 export class LookupColumn<T> {
   setId(val: any) {
-    if (this.repository.defs.idField.dataType == Number)
+    if (this.repository.metadata.idMetadata.field.dataType == Number)
       val = +val;
     this.id = val;
   }
@@ -109,13 +110,13 @@ export class LookupColumn<T> {
       if (typeof item === "string" || typeof item === "number")
         this.id = item as any;
       else {
-        let eo = getEntityOf(item, false);
+        let eo = getEntityRef(item, false);
         if (eo) {
           this.repository.addToCache(item);
           this.id = eo.getId();
         }
         else {
-          this.id = item[this.repository.defs.idField.key];
+          this.id = item[this.repository.metadata.idMetadata.field.key];
         }
       }
     }
@@ -127,7 +128,7 @@ export class LookupColumn<T> {
   constructor(private repository: Repository<T>, public id: string
   ) { }
   exists() {
-    return !this.repository.getRowHelper(this.item).isNew();
+    return !this.repository.getEntityRef(this.item).isNew();
   }
   get item(): T {
 
@@ -144,7 +145,7 @@ export class ManyToOne<T>{
     private where: EntityWhere<T>
   ) { }
   exists() {
-    return !this.repository.getRowHelper(this.item).isNew();
+    return !this.repository.getEntityRef(this.item).isNew();
   }
   get item(): T {
     return this.repository.lookup(this.where);
@@ -188,7 +189,7 @@ export class OneToMany<T>{
   }
   create(): T {
     let r = this.provider.create();
-    __updateEntityBasedOnWhere(this.provider.defs, this.settings.where, r);
+    __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
     if (this.settings.create)
       this.settings.create(r);
     return r;

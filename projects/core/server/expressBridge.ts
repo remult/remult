@@ -1,6 +1,6 @@
 
 
-import { UserInfo, DataProvider, Context, DataProviderFactoryBuilder, ServerContext, InMemoryDataProvider, IdEntity } from '../';
+import { UserInfo, DataProvider, Context, DataProviderFactoryBuilder,  InMemoryDataProvider, IdEntity } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -14,6 +14,7 @@ import { DecimalValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
+import { ServerContext } from '../src/context';
 
 
 

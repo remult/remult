@@ -5,7 +5,7 @@ import { fitAsync, itAsync } from './testHelper.spec';
 import { Context, iterateConfig } from '../context';
 import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityWhere } from '../remult3';
 import { Categories } from './remult-3-entities';
-import { FieldDefinitions } from '../column-interfaces';
+import { FieldMetadata } from '../column-interfaces';
 import { Sort } from '../sort';
 import { CompoundIdField } from '../column';
 import { Filter } from '../filter/filter-interfaces';
@@ -118,21 +118,21 @@ describe("test paged foreach ", () => {
     itAsync("test make sort unique", async () => {
         let context = new Context();
         let e = context.for(Categories) as RepositoryImplementation<Categories>;
-        function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldDefinitions[]) {
-            let s = Sort.createUniqueSort(e.defs, orderBy);
+        function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldMetadata[]) {
+            let s = Sort.createUniqueSort(e.metadata, orderBy);
             expect(s.Segments.map(x => x.field)).toEqual(sort);
         }
-        test(x => x.id, e.defs.fields.id);
-        test(x => x.categoryName, e.defs.fields.categoryName, e.defs.fields.id);
+        test(x => x.id, e.metadata.fields.id);
+        test(x => x.categoryName, e.metadata.fields.categoryName, e.metadata.fields.id);
     });
 
     itAsync("unique sort and  compound id", async () => {
         let context = new Context();
 
-        let eDefs = context.for(theTable).defs;
+        let eDefs = context.for(theTable).metadata;
         let e = eDefs.fields;
 
-        function test(orderBy: EntityOrderBy<theTable>, ...sort: FieldDefinitions[]) {
+        function test(orderBy: EntityOrderBy<theTable>, ...sort: FieldMetadata[]) {
             let s = Sort.createUniqueSort(eDefs, orderBy);
             expect(s.Segments.map(x => x.field)).toEqual(sort.map(x => x));
         }
@@ -152,8 +152,8 @@ describe("test paged foreach ", () => {
         e.b = 'b';
         e.c = 'c';
         function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityWhere<theTable>) {
-            expect(JSON.stringify(Filter.packWhere(eDefs.defs, eDefs.createAfterFilter(orderBy, e)))).toEqual(
-                JSON.stringify(Filter.packWhere(eDefs.defs, expectedWhere)));
+            expect(JSON.stringify(Filter.packWhere(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
+                JSON.stringify(Filter.packWhere(eDefs.metadata, expectedWhere)));
         }
         test(x => x.a, x => x.a.isGreaterThan('a'));
         test(x => [x.a.descending()], x => x.a.isLessThan('a'));
@@ -173,8 +173,8 @@ describe("test paged foreach ", () => {
         let f = eDefs.createAfterFilter(x => [x.a, x.b], e);
         e.a = '1';
         e.b = '2';
-        expect(JSON.stringify(Filter.packWhere(eDefs.defs, f))).toEqual(
-            JSON.stringify(Filter.packWhere<theTable>(eDefs.defs, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
+        expect(JSON.stringify(Filter.packWhere(eDefs.metadata, f))).toEqual(
+            JSON.stringify(Filter.packWhere<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
 
     });
     itAsync("serialize filter with or", async () => {
@@ -183,7 +183,7 @@ describe("test paged foreach ", () => {
         let e = eDefs.create();
 
         function test(expectedWhere: EntityWhere<theTable>, expected: any) {
-            expect(JSON.stringify(Filter.packWhere(eDefs.defs, expectedWhere))).toEqual(
+            expect(JSON.stringify(Filter.packWhere(eDefs.metadata, expectedWhere))).toEqual(
                 JSON.stringify(expected));
         }
         test(

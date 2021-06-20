@@ -3,8 +3,9 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, FieldType, set } from '../remult3';
+import { Field, Entity, EntityBase, FieldType } from '../remult3';
 import { Filter } from '../filter/filter-interfaces';
+import { set } from '../../set';
 
 
 describe("test object column", () => {
@@ -13,7 +14,7 @@ describe("test object column", () => {
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {
-        let e = context.for(ObjectColumnTest).defs;
+        let e = context.for(ObjectColumnTest).metadata;
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
@@ -38,7 +39,7 @@ describe("test object column", () => {
         expect(x.phone1).toBeNull();
         expect(x.phone2).toBeNull();
         expect(x.phone3).toBeNull();
-        let sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.defs.dbName)).rows[0];
+        let sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.metadata.dbName)).rows[0];
         expect(sqlr.phone1).toBe('');
         expect(sqlr.phone2).toBeNull();
         expect(sqlr.phone3).toBe('');
@@ -48,7 +49,7 @@ describe("test object column", () => {
             phone3: new Phone("789")
         });
         await x.save();
-        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.defs.dbName)).rows[0];
+        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.metadata.dbName)).rows[0];
         expect(sqlr.phone1).toBe('123');
         expect(sqlr.phone2).toBe('456');
         expect(sqlr.phone3).toBe('789');
@@ -60,7 +61,7 @@ describe("test object column", () => {
 
 
 
-        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.defs.dbName)).rows[0];
+        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.metadata.dbName)).rows[0];
         expect(sqlr.phone1).toBe('');
         expect(sqlr.phone2).toBeNull();
         expect(sqlr.phone3).toBe('');
@@ -84,7 +85,7 @@ describe("test object column", () => {
 
         }).save();
 
-        let r = context.for(ObjectColumnTest).defs;
+        let r = context.for(ObjectColumnTest).metadata;
         expect(await context.for(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
         expect(await context.for(ObjectColumnTest).count(x => Filter.unpackWhere(r, Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
     });
@@ -104,7 +105,7 @@ describe("test object column", () => {
         x = await c.for(ObjectColumnTest).findFirst();
 
         expect(x.col.firstName).toBe('noam');
-        expect(mem.rows[x._.repository.defs.key][0].col).toEqual({
+        expect(mem.rows[x._.repository.metadata.key][0].col).toEqual({
             firstName: 'noam',
             lastName: 'honig'
         });
@@ -120,7 +121,7 @@ describe("test object column", () => {
         x.tags = ["a", "b"];
         await x.save();
         expect(x.tags).toEqual(["a", "b"]);
-        let sqlr = (await db.execute('select tags,tags2 from ' + x._.repository.defs.dbName)).rows[0];
+        let sqlr = (await db.execute('select tags,tags2 from ' + x._.repository.metadata.dbName)).rows[0];
         expect(sqlr.tags).toBe(JSON.stringify(["a", "b"]));
         expect(sqlr.tags2).toBeNull();
     });

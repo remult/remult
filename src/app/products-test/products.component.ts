@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, Field, getControllerDefs, Entity, EntityBase } from '@remult/core';
+import { Context, Field, Entity, EntityBase } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
 import { DataAreaSettings, DataControl } from '@remult/angular';
-import { DateOnlyField } from '../../../projects/core/src/remult3';
+import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
 
 
 
@@ -32,8 +32,8 @@ export class ProductsComponent {
   constructor(private context: Context) { }
 
   area = new DataAreaSettings({
-    fields: () => [getControllerDefs(this).fields.x, {
-      field: getControllerDefs(this).fields.x,
+    fields: () => [getFields(this).x, {
+      field: getFields(this).x,
       click: null
     }]
   })

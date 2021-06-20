@@ -2,39 +2,36 @@
  * Public API Surface of @remult/core
  */
 export {
-    ClassType,
     Field,
-    FieldDefinitionsOf,
+    FieldsMetadata,
     Entity,
     EntityBase,
-    EntityField,
-    EntityFields,
-    EntityDefinitions,
+    FieldRef,
+    Fields,
+    EntityMetadata,
     EntityOrderBy,
     EntityWhere,
 
     FindOptions,
-    InputTypes,
-    IteratableResult,
+    IterableResult,
     IterateOptions,
     Repository,
     FieldType,
-    comparableFilterItem,
-    controllerDefs,
-    filterOf,
-    filterOptions,
-    getControllerDefs,
-    getEntityOf,
-    getEntitySettings,
-    rowHelper,
-    sortOf,
-    supportsContains,
+
+    ComparisonFilterFactory,
+    FilterFactories,
+    FilterFactory,
+    getFields,
+    EntityRef,
+    getEntityRef,
+    SortSegments,
+    ContainsFilterFactory,
     ValueListFieldType,
     DateOnlyField,
     DecimalField,
-    CaptionHelper
+    CaptionTransformer
 } from './src/remult3';
-export { EntitySettings } from './src/entity';
+export { EntityOptions } from './src/entity';
 export {
     DataProvider,
     EntityDataProvider,
@@ -46,13 +43,12 @@ export {
     SqlCommand, SqlImplementation, SqlResult
 } from './src/sql-command';//V
 export {
-    FieldDefinitions,
-    FieldSettings,
+    FieldMetadata,
+    FieldOptions,
     FieldValidator,
     ValueConverter,
     ValueListItem,// reconsider, maybe it should go to remult angular as the abstraction ?
-    ValueOrExpression,
-    valueOrExpressionToValue
+    ValueOrExpression
 } from './src/column-interfaces'; // revisit input type
 export {
     RestDataProvider
@@ -71,18 +67,25 @@ export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-d
 
 //export * from './src/data-api'; //reconsider if to make internal
 export {
-    ServerController,
+    Controller,
     ServerFunction,
     ServerFunctionOptions,
     ServerMethod,
-    ServerProgress,
-    controllerAllowed
+    ProgressListener
 } from './src/server-action';
 
 export {
-    Allowed, Context, ControllerOptions, DataProviderFactoryBuilder, EntityAllowed,
-    EventDispatcher, EventSource, HttpProvider, IterateToArrayOptions, Role, RoleChecker,
-    ServerContext, Unobserve, UserInfo, keyFor
+    Allowed,
+    Context,
+    DataProviderFactoryBuilder,
+    AllowedForInstance,
+    EventDispatcher,
+    EventSource,
+    HttpProvider,
+    IterateToArrayOptions,
+    Role,
+    Unobserve,
+    UserInfo
 } from './src/context';
 export {
     IdEntity
@@ -104,6 +107,6 @@ export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
-export { UrlBuilder } from './src/url-builder';
+export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 

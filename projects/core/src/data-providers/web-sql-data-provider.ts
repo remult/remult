@@ -2,8 +2,8 @@ import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 
-import { EntityDefinitions } from "../remult3";
-import { FieldDefinitions } from "../column-interfaces";
+import { EntityMetadata } from "../remult3";
+import { FieldMetadata } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
@@ -19,21 +19,21 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityDefinitions) {
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityMetadata) {
         let r = <WebSqlBridgeToSQLQueryResult>await command.execute(insertStatementString);
         return r.r.insertId;
     }
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
-    async entityIsUsedForTheFirstTime(entity: EntityDefinitions) {
+    async entityIsUsedForTheFirstTime(entity: EntityMetadata) {
         await this.createTable(entity);
     }
 
-    async dropTable(entity: EntityDefinitions) {
+    async dropTable(entity: EntityMetadata) {
         await this.createCommand().execute('drop  table if exists ' + entity.dbName);
     }
-    async createTable(entity: EntityDefinitions<any>) {
+    async createTable(entity: EntityMetadata<any>) {
         let result = '';
         for (const x of entity.fields) {
             if (!x.dbReadOnly) {
@@ -41,9 +41,9 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                     result += ',';
                 result += '\r\n  ';
                 result += this.addColumnSqlSyntax(x);
-                if (x.key == entity.idField.key) {
+                if (x.key == entity.idMetadata.field.key) {
                     result += ' primary key';
-                    if (entity.evilOriginalSettings.dbAutoIncrementId)
+                    if (entity.options.dbAutoIncrementId)
                         result += " autoincrement";
                 }
             }
@@ -62,7 +62,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         throw new Error("Method not implemented.");
     }
 
-    private addColumnSqlSyntax(x: FieldDefinitions) {
+    private addColumnSqlSyntax(x: FieldMetadata) {
         let result = x.dbName;
         if (x.dataType == Date)
             result += " integer";

@@ -1,16 +1,17 @@
 
-import { FieldDefinitions, EntityField, EntityDefinitions, getEntityOf, IdEntity, ValueListItem, rowHelper, ClassType, Allowed, FieldSettings, Context, ValueConverter } from "@remult/core";
+import {  FieldMetadata,   FieldRef,  EntityMetadata,  getEntityRef, IdEntity, ValueListItem,  EntityRef, Allowed,  FieldOptions, Context, ValueConverter } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings } from '@remult/core/src/remult3';
 import { ValueListValueConverter } from "@remult/core/valueConverters";
+import { ClassType } from "../../core/classType";
 
 
 
 export class FieldCollection<rowType = any> {
 
-  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: FieldDefinitions) => EntityField<any, any>) {
+  constructor(public currentRow: () => any, private allowUpdate: () => boolean, public filterHelper: FilterHelper<rowType>, private showArea: () => boolean, private _getRowColumn: (row: rowType, col: FieldMetadata) => FieldRef<any, any>) {
 
 
   }
@@ -21,11 +22,11 @@ export class FieldCollection<rowType = any> {
   __getColumn(map: DataControlSettings, record: any) {
     if (!map.field)
       return undefined;
-    let result: EntityField<any, any>;
+    let result: FieldRef<any, any>;
     if (record)
-      result = getEntityOf(record).fields.find(getFieldDefinition(map.field));
+      result = getEntityRef(record).fields.find(getFieldDefinition(map.field));
     if (!result)
-      result = map.field as unknown as EntityField<any, any>;
+      result = map.field as unknown as FieldRef<any, any>;
     return result;
   }
 
@@ -46,16 +47,16 @@ export class FieldCollection<rowType = any> {
     }
     return this.getRowColumn({ col, row }, (c, row) => col.allowClick(row, c));
   }
-  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: EntityField<any, any>, row: any) => T) {
-    let field: EntityField<any, any>;
+  getRowColumn<T>(args: { col: DataControlSettings<any>, row: any }, what: (c: FieldRef<any, any>, row: any) => T) {
+    let field: FieldRef<any, any>;
     let row = args.row;
     if (this._getRowColumn && args.col.field && row) {
       field = this._getRowColumn(row, getFieldDefinition(args.col.field));
     }
     if (!field)
-      field = args.col.field as unknown as EntityField<any, any>;
+      field = args.col.field as unknown as FieldRef<any, any>;
     if (!row && field)
-      row = field.entity;
+      row = field.container;
     return what(field, row);
   }
 
@@ -81,9 +82,9 @@ export class FieldCollection<rowType = any> {
         continue;
       let s: DataControlSettings<rowType>;
       let x = c as DataControlSettings<rowType>;
-      let col = c as FieldDefinitions;
-      let ecol = c as EntityField<any, any>;
-      if (!x.field && col.valueConverter || ecol.defs) {
+      let col = c as FieldMetadata;
+      let ecol = c as FieldRef<any, any>;
+      if (!x.field && col.valueConverter || ecol.metadata) {
         x = {
           field: c,
         }
@@ -264,7 +265,7 @@ export class FieldCollection<rowType = any> {
       return undefined;
     return this.__getColumn(col, r).error;
   }
-  autoGenerateColumnsBasedOnData(defs: EntityDefinitions<any>) {
+  autoGenerateColumnsBasedOnData(defs: EntityMetadata<any>) {
     if (this.items.length == 0) {
 
       if (defs) {
@@ -336,11 +337,11 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 }
 
 
-export class InputField<T> implements EntityField<T, any> {
-  private settings: FieldSettings;
+export class InputField<T> implements FieldRef<T, any> {
+  private options: FieldOptions;
   dataControl: DataControlSettings;
   constructor(
-    settings: FieldSettings<T, any>
+    settings: FieldOptions<T, any>
       & DataControlSettings
       & {
 
@@ -351,15 +352,15 @@ export class InputField<T> implements EntityField<T, any> {
     if (!settings.dbName)
       settings.dbName = settings.key;
 
-    this.settings = decorateColumnSettings(settings);
+    this.options = decorateColumnSettings(settings);
     this.dataControl = settings;
-    if (!this.dataControl.valueList && this.settings.valueConverter instanceof ValueListValueConverter) {
-      this.dataControl.valueList = this.settings.valueConverter.getOptions();
+    if (!this.dataControl.valueList && this.options.valueConverter instanceof ValueListValueConverter) {
+      this.dataControl.valueList = this.options.valueConverter.getOptions();
     }
 
     if (settings.caption)
-      if (typeof this.settings.caption === "function")
-        settings.caption = this.settings.caption(settings.context);
+      if (typeof this.options.caption === "function")
+        settings.caption = this.options.caption(settings.context);
     if (!settings.caption)
       settings.caption = 'caption';
 
@@ -371,16 +372,16 @@ export class InputField<T> implements EntityField<T, any> {
     }
 
     this.originalValue = this._value;
-    let valueConverter = this.settings.valueConverter ? this.settings.valueConverter : undefined;
+    let valueConverter = this.options.valueConverter ? this.options.valueConverter : undefined;
     if (valueConverter)
       if (!settings.inputType) {
         settings.inputType = valueConverter.inputType;
       }
-    this.defs = {
+    this.metadata = {
 
       allowNull: settings.allowNull,
       caption: settings.caption,
-      evilOriginalSettings: this.settings,
+      options: this.options,
       valueConverter: valueConverter,
       dataType: settings.dataType,
       key: settings.key,
@@ -398,7 +399,7 @@ export class InputField<T> implements EntityField<T, any> {
   load(): Promise<T> {
     throw new Error("Method not implemented.");
   }
-  defs: {
+  metadata: {
     readonly key: string;
     readonly target: ClassType<T>;
     readonly dataType: any;
@@ -412,14 +413,14 @@ export class InputField<T> implements EntityField<T, any> {
     readonly dbReadOnly: boolean;
     readonly dbName: string;
     readonly valueConverter: ValueConverter<T>;
-    readonly evilOriginalSettings: FieldSettings;
+    readonly options: FieldOptions;
   };
   _value: T;
   inputType: string;
   error: string;
   get displayValue() {
-    if (this.settings.displayValue)
-      return this.settings.displayValue(this.value, undefined);
+    if (this.options.displayValue)
+      return this.options.displayValue(this.value, undefined);
     return this.value.toString();
   }
   get value(): T { return this._value; }
@@ -429,13 +430,13 @@ export class InputField<T> implements EntityField<T, any> {
       this.dataControl.valueChange(undefined, this)
   };
   originalValue: T;
-  get inputValue(): string { return this.defs.valueConverter.toInput(this.value, this.inputType); }
-  set inputValue(val: string) { this.value = this.defs.valueConverter.fromInput(val, this.inputType); };
+  get inputValue(): string { return this.metadata.valueConverter.toInput(this.value, this.inputType); }
+  set inputValue(val: string) { this.value = this.metadata.valueConverter.fromInput(val, this.inputType); };
   wasChanged(): boolean {
     return this.originalValue != this.value;
   }
-  rowHelper: rowHelper<any>;
-  entity: any;
+  entityRef: EntityRef<any>;
+  container: any;
 
 
 

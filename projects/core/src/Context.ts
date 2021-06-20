@@ -3,8 +3,9 @@ import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
 import { Action } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { ClassType, Repository } from "./remult3";
+import { Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
+import { ClassType } from "../classType";
 
 export interface HttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
@@ -60,8 +61,8 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
         var error;
         if (z.error)
             error = z.error;
-        else 
-        error = z.message;
+        else
+            error = z.message;
         if (typeof error === 'string') {
             error = {
                 message: error
@@ -73,19 +74,8 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
         throw result;
     });
 }
-export class keyFor<T>{
-
-}
 
 export class Context {
-    map = new Map<any, any>();
-    set<T>(key: keyFor<T>, value: T) {
-        this.map.set(key, value);
-    }
-
-    get<T>(key: keyFor<T>): T {
-        return this.map.get(key);
-    }
     clearAllCache(): any {
         this.repCache.clear();
     }
@@ -122,9 +112,9 @@ export class Context {
     setDataProvider(dataProvider: DataProvider) {
         this._dataSource = dataProvider;
     }
-    protected _onServer = false;
-    get onServer(): boolean {
-        return this._onServer;
+    protected _backend = false;
+    get backend(): boolean {
+        return this._backend;
     }
     protected _user: UserInfo;
     get user(): UserInfo {
@@ -147,6 +137,19 @@ export class Context {
         await this._userChangeEvent.fire();
     }
     static apiBaseUrl = 'api';
+    isAllowedForInstance(instance: any, x: AllowedForInstance<any>) {
+        if (Array.isArray(x)) {
+            {
+                for (const item of x) {
+                    if (this.isAllowedForInstance(instance, item))
+                        return true;
+                }
+            }
+        }
+        else if (typeof (x) === "function") {
+            return x(this, instance)
+        } else return this.isAllowed(x as Allowed);
+    }
 
     isAllowed(roles: Allowed) {
         if (roles == undefined)
@@ -193,7 +196,7 @@ export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
     constructor(dp?: DataProvider) {
         super();
-        this._onServer = true;
+        this._backend = true;
         if (dp)
             this.setDataProvider(dp);
 
@@ -238,9 +241,7 @@ export class ServerContext extends Context {
 
 export const allEntities: ClassType<any>[] = [];
 export interface ControllerOptions {
-    key: string,
-    allowed: Allowed
-
+    key: string
 }
 
 export const classHelpers = new Map<any, ClassHelper>();
@@ -285,10 +286,10 @@ export class Role {
         return c => !c.isAllowed(allowed);
     }
 }
-declare type AllowedRule = string | Role | ((c: Context) => boolean) | boolean;;
-export declare type Allowed = AllowedRule | AllowedRule[];
-declare type EntityAllowedRule<T> = string | Role | ((c: Context, entity: T) => boolean) | boolean;;
-export declare type EntityAllowed<T> = EntityAllowedRule<T> | EntityAllowedRule<T>[];
+
+export declare type Allowed = string | Role | ((c: Context) => boolean) | boolean | Allowed[];
+
+export declare type AllowedForInstance<T> = string | Role | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
 
 
 
@@ -296,9 +297,7 @@ export declare type EntityAllowed<T> = EntityAllowedRule<T> | EntityAllowedRule<
 
 
 
-export interface RoleChecker {
-    isAllowed(roles: Allowed): boolean;
-}
+
 
 
 export interface IterateToArrayOptions {

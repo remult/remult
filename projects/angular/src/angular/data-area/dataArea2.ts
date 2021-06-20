@@ -2,7 +2,7 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
-import { Context, getControllerDefs } from '@remult/core';
+import { Context, getFields } from '@remult/core';
 
 import { FieldCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';
@@ -29,7 +29,7 @@ export class DataArea2Component implements OnChanges {
   ngOnChanges(): void {
     if (this.object) {
       this.settings = new DataAreaSettings({
-        fields: () => [...getControllerDefs(this.object).fields]
+        fields: () => [...getFields(this.object, this.context)]
       });
     }
     if (this.settings && this.settings.fields) {
