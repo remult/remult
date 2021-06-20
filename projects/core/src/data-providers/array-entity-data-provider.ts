@@ -204,7 +204,9 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
         let s = '' + v;
         if (val)
-            val = col.valueConverter.toJson(val).toString().toLowerCase();
+            val = col.valueConverter.toJson(val);
+        if (val)
+            val = val.toString().toLowerCase()
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
