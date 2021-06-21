@@ -6,9 +6,9 @@ export class CustomModuleLoader {
         if (!root)
             root = '/distServer';
         if (done)
-         return;
-         done = true;
-       (<any>customModuleLoader)._originalResolveFilename = (<any>customModuleLoader)._resolveFilename;
+            return;
+        done = true;
+        (<any>customModuleLoader)._originalResolveFilename = (<any>customModuleLoader)._resolveFilename;
 
         (<any>customModuleLoader)._resolveFilename = (request: string, parent: customModuleLoader, isMain: boolean) => {
             switch (request) {
@@ -33,6 +33,12 @@ export class CustomModuleLoader {
                     break;
                 case "@remult/core/src/server-action":
                     request = request = process.cwd() + root + '/core/src/server-action';
+                    break;
+                case "@remult/core/inputTypes":
+                    request = request = process.cwd() + root + '/core/inputTypes';
+                    break;
+                case "@remult/core/src/filter/filter-interfaces":
+                    request = request = process.cwd() + root + '/core/src/filter/filter-interfaces';
                     break;
                 case "@remult/core/valueConverters":
                     request = request = process.cwd() + root + '/core/valueConverters';

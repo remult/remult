@@ -104,7 +104,12 @@ export class Context {
         return '';
     }
     getPathInUrl() {
-        return window.location.pathname;
+        if (this.req)
+            return this.req.getBaseUrl();
+        if (!this.backend||typeof (window) != "undefined")
+            return window.location.pathname;
+        return undefined;
+
     }
     getOrigin() {
         return '';

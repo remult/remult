@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, Field, Entity, EntityBase } from '@remult/core';
+import { Context, Field, Entity, EntityBase, BackendMethod } from '@remult/core';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
@@ -29,7 +29,9 @@ export class ProductsComponent {
   @DataControl({ click: () => { } })
   x: string;
 
-  constructor(private context: Context) { }
+  constructor(private context: Context) {
+    ProductsComponent.doit();
+  }
 
   area = new DataAreaSettings({
     fields: () => [getFields(this).x, {
@@ -39,11 +41,17 @@ export class ProductsComponent {
   })
   grid = new GridSettings(this.context.for(Products), {
     allowCrud: true,
-    where:x=>x.name.contains("1"),
-    gridButtons:[{
-      name:'dosomething',
-      visible:()=>this.grid.selectedRows.length>0
+    where: x => x.name.contains("1"),
+    gridButtons: [{
+      name: 'dosomething',
+      visible: () => this.grid.selectedRows.length > 0
     }]
   });
-  
+  @BackendMethod({ allowed: true })
+  static async doit(context?: Context) {
+    console.log('doing it', {
+      backend: context.backend
+    });
+
+  }
 }
