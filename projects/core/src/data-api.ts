@@ -44,7 +44,7 @@ export class DataApi<T = any> {
       findOptions.where = t => this.buildWhere(t, request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        let w = Filter.translateWhereToFilter(Filter.createFilterOf(this.repository.metadata), findOptions.where);
+        let w = Filter.translateWhereToFilter(Filter.createFilterFactories(this.repository.metadata), findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },

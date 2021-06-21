@@ -334,13 +334,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
     private translateWhereToFilter(where: EntityWhere<T>): Filter {
         if (this.metadata.options.fixedFilter)
             where = [where, this.metadata.options.fixedFilter];
-        return Filter.translateWhereToFilter(Filter.createFilterOf(this.metadata), where);
+        return Filter.translateWhereToFilter(Filter.createFilterFactories(this.metadata), where);
     }
 
 }
 
 export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
-    let w = Filter.translateWhereToFilter(Filter.createFilterOf(entityDefs), where);
+    let w = Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
 
     if (w) {
         w.__applyToConsumer({

@@ -1,7 +1,7 @@
 
 import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
-import { Action } from './server-action';
+import { Action, actionInfo } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
@@ -106,13 +106,16 @@ export class Context {
     getPathInUrl() {
         return window.location.pathname;
     }
+    getOrigin() {
+        return '';
+    }
 
 
     _dataSource: DataProvider;
     setDataProvider(dataProvider: DataProvider) {
         this._dataSource = dataProvider;
     }
-    protected _backend = false;
+    protected _backend = actionInfo.runningOnServer;
     get backend(): boolean {
         return this._backend;
     }
@@ -181,14 +184,27 @@ export class Context {
 
         return false;
     }
-    repCache = new Map<ClassType<any>, Repository<any>>();
-    public for<T>(entity: ClassType<T>): Repository<T> {
-        let r = this.repCache.get(entity);
+    repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    public for<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
+        if (dataProvider === undefined)
+            dataProvider = this._dataSource;
+        let dpCache = this.repCache.get(dataProvider);
+        if (!dpCache)
+            this.repCache.set(dataProvider, dpCache = new Map<ClassType<any>, Repository<any>>());
+
+        let r = dpCache.get(entity);
         if (!r) {
-            this.repCache.set(entity, r = new RepositoryImplementation(entity, this, this._dataSource));
+
+            dpCache.set(entity, r = new RepositoryImplementation(entity, this, dataProvider));
         }
         return r;
 
+    }
+    protected req: DataApiRequest;
+
+    setReq(req: DataApiRequest) {
+        this.req = req;
+        this._user = req.user ? req.user : undefined;
     }
 
 }
@@ -225,12 +241,7 @@ export class ServerContext extends Context {
         }
         return undefined;
     }
-    private req: DataApiRequest;
 
-    setReq(req: DataApiRequest) {
-        this.req = req;
-        this._user = req.user ? req.user : undefined;
-    }
 
     getOrigin() {
         if (!this.req)

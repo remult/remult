@@ -125,7 +125,7 @@ export interface BackendMethodOptions<type> {
 }
 export const actionInfo = {
     allActions: [] as any[],
-    runningOnServer: false,
+    runningOnServer: typeof module !== 'undefined' && !!module.exports,
     runActionWithoutBlockingUI: (what: () => Promise<any>): Promise<any> => { return what() },
     startBusyWithProgress: () => ({
         progress: (percent: number) => { },

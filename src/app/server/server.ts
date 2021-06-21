@@ -60,30 +60,3 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
-
-function decorator() {
-    return (a, b, c) => {
-        console.log({ a, b, c, p: a.prototype,cont:a.constructor,cName:a.constructor.name });
-        return a;
-    };
-}
-
-class base{
-    b:number;
-    c(){
-        return 1234;
-    }
-    
-}
-class myClass extends base {
-    a:number;
-    constructor(){super()}
-    @decorator()
-    method() {
-
-    }
-    @decorator()
-    static staticMethod() {
-
-    }
-} 

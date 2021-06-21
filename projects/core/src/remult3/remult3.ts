@@ -158,6 +158,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
 [] consider the case when initing context, and cashing rows between requests, you might get a save to a context of a request two hours ago.
 [] custom context 
+[] consider the name FilterFactories to be EntityFilterFactories
+[] add to entity options a lambda that gets context and returns data provider.
 
 
 ## context stuff:

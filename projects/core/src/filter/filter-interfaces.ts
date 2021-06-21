@@ -17,7 +17,7 @@ export class Filter {
     or(filter: Filter): Filter {
         return new OrFilter(this, filter);
     }
-    static createFilterOf<T>(entityDefs: EntityMetadata<T>): FilterFactories<T> {
+    static createFilterFactories<T>(entityDefs: EntityMetadata<T>): FilterFactories<T> {
         let r = {};
         for (const c of entityDefs.fields) {
             r[c.key] = new filterHelper(c);
@@ -48,7 +48,7 @@ export class Filter {
     static packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>) {
         if (!where)
             return {};
-        return packToRawWhere(this.translateWhereToFilter(this.createFilterOf(entityDefs), where));
+        return packToRawWhere(this.translateWhereToFilter(this.createFilterFactories(entityDefs), where));
 
     }
     static unpackWhere<T>(entityDefs: EntityMetadata<T>, packed: any): Filter {

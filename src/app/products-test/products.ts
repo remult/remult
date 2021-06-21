@@ -1,6 +1,6 @@
 import { DataControl } from '@remult/angular';
-import { Allowed, BackendMethod, Context,   EntityOptions, Filter, IdEntity } from '@remult/core';
-import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere,  FieldType } from '../../../projects/core/src/remult3';
+import { Allowed, BackendMethod, Context, EntityOptions, Filter, IdEntity } from '@remult/core';
+import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere, FieldType } from '../../../projects/core/src/remult3';
 
 
 
@@ -9,7 +9,7 @@ import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere,  FieldType } fro
     toJson: x => x ? x.value : '',
     fromJson: x => new GroupsValue(x)
   },
-  
+
 })
 
 export class GroupsValue {
@@ -18,15 +18,21 @@ export class GroupsValue {
   }
   constructor(private value: string) {
 
-  }}
+  }
+}
 
 @Entity({
   key: "Products",
   allowApiCrud: true,
+  dbName: () => {
+    console.log({ module: typeof module !== 'undefined' && !!module.exports });
+    return 'Products';
+  },
   apiDataFilter: (e, c) => {
+
     return new Filter();
   }
-},)
+})
 export class Products extends IdEntity {
   @Field()
   name: GroupsValue;
@@ -58,7 +64,7 @@ class productsDecorator extends entityDecorator<Products> {
     super({
       key: 'asdf',
       apiDataFilter: (p) => {
-        
+
         return undefined;
       }
     });
@@ -67,9 +73,9 @@ class productsDecorator extends entityDecorator<Products> {
 }
 
 class productsDecorator2 implements EntityOptions<Products>{
-  key='123';
-  apiDataFilter=p=>{
-    
+  key = '123';
+  apiDataFilter = p => {
+
     return undefined;
   }
 
