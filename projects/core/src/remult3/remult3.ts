@@ -160,6 +160,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] custom context 
 [] consider the name FilterFactories to be EntityFilterFactories
 [] add to entity options a lambda that gets context and returns data provider.
+[] talk about isvalid that gives you indication of the data is valid etc....
 
 
 ## context stuff:
@@ -179,6 +180,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
 [] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
 [] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
+[] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
 ## remult angular
 [V] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow

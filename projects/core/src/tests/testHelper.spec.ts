@@ -7,7 +7,7 @@ import { Action, actionInfo, serverActionField } from "../server-action";
 import { TestDataApiResponse } from "./basicRowFunctionality.spec";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 999999;
-
+actionInfo.runningOnServer = false;
 
 
 export function itAsync(name: string, runAsync: () => Promise<any>) {
