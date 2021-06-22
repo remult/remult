@@ -78,8 +78,6 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
       "compilerOptions": {
          "outDir": "./dist/server",
          "module": "commonjs",
-         "target": "es5",
-         "skipLibCheck": true,
          "emitDecoratorMetadata": true
       },
       "include": [
@@ -100,7 +98,7 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    ```sh
    npm run dev-node
    ```
-
+ַ
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
 ### Finishing up the Starter Project
@@ -198,27 +196,23 @@ Create a file `tasks.ts` in the `src/app/` folder, with the following code:
 
 *src/app/tasks.ts*
 ```ts
-import { EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { Column, Entity, IdEntity } from "@remult/core";
 
-@EntityClass
+@Entity({
+    key: "tasks",
+    allowApiCrud: true
+})
 export class Tasks extends IdEntity {
-    readonly title = new StringColumn();
-    constructor() {
-        super({
-            name: 'tasks',
-            allowApiCRUD: true
-        })
-    }
+    @Column()
+    title: string;
 }
 ```
 
-The `@EntityClass` decorator tells Remult this class is an entity class. <!-- consider linking to reference -->
+The `@Entity` decorator tells Remult this class is an entity class, and accepts an argument which implements the `EntityOptions` interface. We use an anonymous object to instantiate it, setting the `key` property (used to name the API route and database collection/table), and the `allowApiCrud` property to `true`. <!-- consider linking to reference -->
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-`StringColumn` is a Remult `Column` class for `string` entity fields. **Remult entity fields are `TypeScript` objects, not values.** The main goals of this design are to encapsulate field related properties and operations, and prevent run-time type mismatch errors. Some of these benefits are discussed in the next sections of this tutorial.
-
-The `Entity` class constructor can accept an argument which implements the `EntityOptions` interface. We use an anonymous object to instantiate it, setting the `name` property (used to name the API route and database collection/table), and the `allowApiCRUD` property to `true`.
+The `@Column` decorator tells Remult the `title` property is an entity data field. This decorator is also used to encapsulate field related properties and operations, discussed in the next sections of this tutorial.
 
 
 ### Create new tasks
@@ -1124,4 +1118,8 @@ Let's replace it with a production PostgreSQL database.
 [] add dotenv before secret key
 
 [] upgrade vuepress for code groups
+
+[] check ng new strict 
+
+[] check angular cli versions / node versions
 
