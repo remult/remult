@@ -1,40 +1,82 @@
-import { extend } from '@remult/angular';
-import { IdEntity, StringColumn, EntityClass, Context, NumberColumn, DateColumn, DateTimeColumn, ServerMethod, ServerController, BoolColumn, Entity, ServerFunction } from '@remult/core';
+import { DataControl } from '@remult/angular';
+import { Allowed, BackendMethod, Context, EntityOptions, Filter, IdEntity } from '@remult/core';
+import { Field, Entity, EntityBase, EntityOrderBy, EntityWhere, FieldType } from '../../../projects/core/src/remult3';
 
-@EntityClass
 
+
+@FieldType<GroupsValue>({
+  valueConverter: {
+    toJson: x => x ? x.value : '',
+    fromJson: x => new GroupsValue(x)
+  },
+
+})
+
+export class GroupsValue {
+  replace(val: string) {
+    this.value = val;
+  }
+  constructor(private value: string) {
+
+  }
+}
+
+@Entity({
+  key: "Products",
+  allowApiCrud: true,
+  dbName: () => {
+    console.log({ module: typeof module !== 'undefined' && !!module.exports });
+    return 'Products';
+  },
+  apiDataFilter: (e, c) => {
+
+    return new Filter();
+  }
+})
 export class Products extends IdEntity {
-  name = new StringColumn({
+  @Field()
+  name: GroupsValue;
+  @Field()
+  price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
+  @Field() // should be Date
+  availableFrom1: Date;
+  @Field()
+  availableTo: Date;
+  @Field()
+  archive: boolean;
 
-  });
-  price = extend( new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x=>x.getValue=()=>this.price.value);
-  availableFrom1 = new DateColumn();
-  availableTo = new DateColumn();
-  archive = new BoolColumn();
-  constructor(context: Context) {
+  @BackendMethod({ allowed: true })
+  async doit() {
+    await this._.save();
+  }
+}
+
+
+class entityDecorator<T> {
+  constructor(settings: EntityOptions<T>) {
+
+  }
+}
+
+
+class productsDecorator extends entityDecorator<Products> {
+  constructor(private context: Context) {
     super({
-      name: "Products",
-      allowApiCRUD: true,
-      saving: () => {
-     
+      key: 'asdf',
+      apiDataFilter: (p) => {
+
+        return undefined;
       }
     });
+  }
 
-  }
-  @ServerMethod({ allowed: true })
-  async doit() {
-    await this.save();
-  }
 }
 
+class productsDecorator2 implements EntityOptions<Products>{
+  key = '123';
+  apiDataFilter = p => {
 
-export class bColumn extends StringColumn {
-  constructor() {
-    super()
-    extend(this).dataControl(s => s.valueList = ['c', 'd']);
+    return undefined;
   }
+
 }
-
-
-
-

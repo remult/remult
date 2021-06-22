@@ -2,11 +2,16 @@ import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
+import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/core/postgres';
 import * as passwordHash from 'password-hash';
 
-import '../app.module';
-import { SqlDatabase } from '@remult/core';
+
+import {  Context,  EntityOptions,  SqlDatabase } from '@remult/core';
+import { ClassType } from '../../../projects/core/classType';
+
+
+
+
 
 
 
@@ -32,7 +37,101 @@ export async function serverInit() {
         ssl: ssl
     });
     var r = new SqlDatabase(new PostgresDataProvider(pool));
-    await new PostgresSchemaBuilder( r).verifyStructureOfAllEntities();
+    console.log("123");
+    await new PostgresSchemaBuilder(r).verifyStructureOfAllEntities();
+    console.log("123");
+
     return r;
 
+}
+function stam() {
+    return (target, key, z) => target;
+}
+
+function Entity(settings: EntityOptions, stam: any) {
+    return (target) => target;
+}
+function Entity2(types: any[], func: (...args: any[]) => Partial<EntityOptions<Products>>) {
+    return target => target
+}
+
+function Entity3<T>(a: any, b: any) {
+
+}
+@Entity({
+    key: 'asdf'
+
+},
+    class {
+        constructor(
+
+            private context: Context) {
+            let p: Products;
+            p.a;
+        }
+    })
+
+
+class Base<T>{
+    constructor(settings: Partial<EntityOptions<T>>) {
+
+    }
+}
+
+class zz extends Base<Products>{
+    z: string;
+    constructor() {
+        let a = '';
+
+        super({
+
+        })
+    }
+}
+
+var zzz: Partial<EntityOptions<Products>> = {
+    fixedFilter: p => p.a.isEqualTo("")
+
+}
+var zzzz: (settings: Partial<EntityOptions<Products>>) => void;
+if (false)
+    zzzz({
+        fixedFilter: p => p.a.isEqualTo("")
+    })
+
+var x = {
+    context: Context
+}
+export type kuku<Type> = {
+    [Properties in keyof Type]: Type[Properties] extends ClassType<infer Z> ? Z : never
+}
+function entity7<Args>(type: Args, doSomething: (z: kuku<Args>, send: (to: Partial<EntityOptions>) => void) => void) {
+    return a => a;
+}
+function entity8<Args>(type: Args, doSomething: (z: kuku<Args>) => Partial<EntityOptions>) {
+    return a => a;
+}
+
+entity7({ context: Context }, (x, y) => {
+    y({ key: x.context.user.name });
+});
+
+
+
+
+
+@Entity2(
+    [Context], (c: Context) => ({
+        fixedFilter: p => p.a.isEqualTo(""),
+        allowApiCrudDDD: false
+    })
+)
+@entity7({ context: Context }, (x, y) => y({ apiDataFilter: p => p.a.isEqualTo(x.context.user.id) }))
+class Products {
+    a: string;
+    private b: string;
+    constructor(
+        @stam()
+        private z: string
+    ) { }
 }

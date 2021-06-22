@@ -1,41 +1,33 @@
-import { ColumnSettings, ValueListItem } from '../column-interfaces';
-
+import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
+import { Status, TestStatus } from './testModel/models';
+import { Allowed, Context, ServerContext } from '../context';
+import { OneToMany } from '../column';
+import { FilterHelper } from '../../../angular/src/filter-helper';
 
-import { Categories, Status, CategoriesWithValidation, StatusColumn, TestStatusColumn, TestStatus } from './testModel/models';
-
-import { Context, ServerContext } from '../context';
-import { LookupColumn, OneToMany, ValueListColumn, ValueListTypeInfo } from '../columns/value-list-column';
-import { Sort } from '../sort';
-
-import { NumberColumn } from '../columns/number-column';
-import { DataAreaSettings } from '../../../angular/src/data-area-settings';
-import { FilterHelper } from '../filter/filter-helper';
-import { Column } from '../column';
-import { DateTimeColumn } from '../columns/datetime-column';
-import { DateColumn } from '../columns/date-column';
-import { DateTimeDateStorage } from '../columns/storage/datetime-date-storage';
-import { CharDateStorage } from '../columns/storage/char-date-storage';
-import { StringColumn } from '../columns/string-column';
-import { Entity } from '../entity';
-import { FindOptions, entityOrderByToSort } from '../data-interfaces';
-import { packWhere, extractWhere, unpackWhere } from '../filter/filter-consumer-bridge-to-url-builder';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { ColumnCollection, DataControlSettings, extend, getValueList, GridSettings, __getDataControlSettings } from '@remult/angular';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings, DataControlInfo } from '../../../angular';
 import { Lookup } from '../lookup';
 import { IdEntity } from '../id-entity';
+import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField } from '../remult3/RepositoryImplementation';
+import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
+import { EntityBase, EntityMetadata,  Repository, FindOptions } from '../remult3';
+import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
+import { EntityOptions } from '../entity';
+import { async, waitForAsync } from '@angular/core/testing';
+import { Filter } from '../filter/filter-interfaces';
+import { ClassType } from '../../classType';
 
 
 
 
-export class LanguageColumn extends ValueListColumn<Language> {
-  constructor() {
-    super(Language, { caption: 'שפה' });
-  }
-}
+
+
+
 
 export class Language {
   static Hebrew = new Language(0, 'עברית');
@@ -48,36 +40,97 @@ export class Language {
 
 }
 
-export interface CategoriesForTesting extends Entity<number> {
-  id: NumberColumn;
-  categoryName: StringColumn;
-  description: StringColumn;
-  status: StatusColumn;
+
+
+
+export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper: {
+  context: Context,
+  createData: (doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>,
+    entity?: {
+      new(): CategoriesForTesting
+    }) => Promise<Repository<T>>,
+  insertFourRows: () => Promise<Repository<T>>
+}) => Promise<any>) {
+  let webSql = new WebSqlDataProvider('test');
+  var sql = new SqlDatabase(webSql);
+
+  for (const r of await (await sql.execute("select name from sqlite_master where type='table'")).rows) {
+    switch (r.name) {
+      case "__WebKitDatabaseInfoTable__":
+        break;
+      default:
+        await sql.execute("drop table if exists " + r.name);
+    }
+  }
+
+  for (const db of [
+    new InMemoryDataProvider()
+    ,
+    sql
+  ]) {
+    if (!db)
+      throw new Error("you forget to set a db for the test");
+    let context = new ServerContext(db);
+
+    let createData = async (doInsert, entity?) => {
+      if (!entity)
+        entity = newCategories;
+      let rep = context.for(entity) as Repository<T>;
+      if (doInsert)
+        await doInsert(async (id, name, description, status) => {
+
+          let c = rep.create();
+
+          c.id = id;
+          c.categoryName = name;
+          c.description = description;
+          if (status)
+            c.status = status;
+          await rep.save(c);
+
+        });
+      return rep;
+    };
+
+    await doTest({
+      context,
+      createData,
+      insertFourRows: async () => {
+        return createData(async i => {
+          await i(1, 'noam', 'x');
+          await i(4, 'yael', 'x');
+          await i(2, 'yoni', 'y');
+          await i(3, 'maayan', 'y');
+        });
+      }
+    });
+  }
+
 }
-
-
-export async function createData(doInsert: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
+export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting
-}) {
+}): Promise<[Repository<CategoriesForTesting>, ServerContext]> {
   let context = new ServerContext();
   context.setDataProvider(new InMemoryDataProvider());
   if (!entity)
-    entity = Categories;
-  await doInsert(async (id, name, description, status) => {
+    entity = newCategories;
+  let rep = context.for(entity);
+  if (doInsert)
+    await doInsert(async (id, name, description, status) => {
 
-    let c: CategoriesForTesting = context.for(entity).create();
-    c.id.value = id;
-    c.categoryName.value = name;
-    c.description.value = description;
-    if (status)
-      c.status.value = status;
-    await c.save();
+      let c = rep.create();
+      c.id = id;
+      c.categoryName = name;
+      c.description = description;
+      if (status)
+        c.status = status;
+      await rep.save(c);
 
-  });
-  return context.for(entity);
+    });
+  return [rep, context];
 }
 
-async function insertFourRows() {
+export async function insertFourRows() {
 
   return createData(async i => {
     await i(1, 'noam', 'x');
@@ -86,49 +139,50 @@ async function insertFourRows() {
     await i(3, 'maayan', 'y');
   });
 };
+
 describe("grid filter stuff", () => {
   itAsync("test filter works", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
-      get: {
-        orderBy: c => new Sort({ column: c.id }),
-        where: c => c.categoryName.contains('a'),
-        limit: 2
-      }
+
+      orderBy: c => c.id,
+      where: c =>
+        c.categoryName.contains('a'),
+      rowsInPage: 2
+
     });
-    await ds.getRecords();
+    await ds.reloadData();
     expect(ds.items.length).toBe(2);
     expect(await c.count(ds.getFilterWithSelectedRows().where)).toBe(3);
 
 
   });
   itAsync("test filter works without the get statement", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
 
-      orderBy: c => new Sort({ column: c.id }),
+      orderBy: c => c.id,
       where: c => c.categoryName.contains('a'),
       rowsInPage: 2
 
     });
-    await ds.getRecords();
+    await ds.reloadData();
     expect(ds.items.length).toBe(2);
     expect(await c.count(ds.getFilterWithSelectedRows().where)).toBe(3);
 
 
   });
+
   itAsync("test filter works with user filter", async () => {
-    let c = await insertFourRows();
-    let ds = new GridSettings(c, {
-      get: {
-        orderBy: c => new Sort({ column: c.id }),
-        where: c => c.categoryName.contains('a'),
-        limit: 2
-      }
+    let [c] = await insertFourRows();
+    let ds = new GridSettings<CategoriesForTesting>(c, {
+      orderBy: c => c.id,
+      where: c => c.categoryName.contains('a'),
+      rowsInPage: 2
     });
-    await ds.getRecords();
-    ds.filterHelper.filterRow.description.value = 'y';
-    ds.filterHelper.filterColumn(ds.filterHelper.filterRow.description, false, false);
+    await ds.reloadData();
+    ds.filterHelper.filterRow.description = 'y';
+    ds.filterHelper.filterColumn(ds.filterHelper.filterRow._.fields.description, false, false);
     let w = ds.getFilterWithSelectedRows().where;
 
     expect(await c.count(w)).toBe(1);
@@ -139,8 +193,8 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     });
-    var col = new StringColumn({ dbName: 'col' });
-    x.containsCaseInsensitive(col, "no'am");
+
+    x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
     expect(x.where).toBe(" where lower (col) like lower ('%no''am%')");
   });
   it("filter with contains", () => {
@@ -148,8 +202,8 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     });
-    var col = new StringColumn({ dbName: 'col' });
-    x.containsCaseInsensitive(col, "no'a'm");
+
+    x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
     expect(x.where).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
   it("filter with start with", () => {
@@ -157,42 +211,37 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "?",
       execute: () => { throw "rr" }
     });
-    var col = new StringColumn({ dbName: 'col' });
-    x.startsWith(col, "no'am");
+    x.startsWith(new mockColumnDefs("col"), "no'am");
     expect(x.where).toBe(" where col like ?");
   });
 
   itAsync("test filter works with selected rows", async () => {
-    let c = await insertFourRows();
-    let ds = new GridSettings(c, {
-      get: {
-        orderBy: c => new Sort({ column: c.id }),
-        limit: 3
-      }
+    let [c] = await insertFourRows();
+    let ds = new GridSettings<CategoriesForTesting>(c, {
+      orderBy: c => c.id,
+      rowsInPage: 3
     });
-    await ds.getRecords();
+    await ds.reloadData();
     ds.selectedChanged(ds.items[0]);
     ds.selectedChanged(ds.items[2]);
-    expect(ds.selectedRows[0].id.value).toBe(1);
-    expect(ds.selectedRows[1].id.value).toBe(3);
+    expect(ds.selectedRows[0].id).toBe(1);
+    expect(ds.selectedRows[1].id).toBe(3);
     let w = ds.getFilterWithSelectedRows().where;
 
     expect(await c.count(w)).toBe(2);
-    expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
+    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
   itAsync("test in statement", async () => {
-    let c = await insertFourRows();
-    expect(await c.count(c => c.id.isIn(1, 3))).toBe(2);
+    let [c] = await insertFourRows();
+    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
   itAsync("test all rows selected when some rows are outside the scope", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
-      get: {
-        orderBy: c => new Sort({ column: c.id }),
-        limit: 3
-      }
+      orderBy: c => c.id,
+      rowsInPage: 3
     });
-    await ds.getRecords();
+    await ds.reloadData();
     ds.selectAllChanged({
       checked: true
     });
@@ -201,10 +250,10 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
     expect(await c.count(w)).toBe(4);
   });
-  it("test context change event", () => {
+  it("test context change event", async(async () => {
     let d = new Done();
     let c = new Context();
-    let r = c.userChange.observe(() => d.ok());
+    let r = await c.userChange.observe(() => d.ok());
     d.test("first fire");
     d = new Done();
     c.setUser({
@@ -222,16 +271,15 @@ describe("grid filter stuff", () => {
     });
     expect(d.happened).toBe(false, "should not have fired because unsubscribe has happened");
 
-  });
+  }));
+
   itAsync("test select rows in page is not select all", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
-      get: {
-        orderBy: c => new Sort({ column: c.id }),
-        limit: 3
-      }
+      orderBy: c => c.id,
+      rowsInPage: 3
     });
-    await ds.getRecords();
+    await ds.reloadData();
     expect(ds.selectAllIntermitent()).toBe(false, 'intermetent');
     for (const r of ds.items) {
       ds.selectedChanged(r);
@@ -244,15 +292,13 @@ describe("grid filter stuff", () => {
     expect(await c.count(w)).toBe(3, 'rows in count');
   });
   itAsync("select select row by row when all rows are in view", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
       knowTotalRows: true,
-      get: {
-        orderBy: c => new Sort({ column: c.id }),
-        limit: 4
-      }
+      orderBy: c => c.id,
+      rowsInPage: 4
     });
-    await ds.getRecords();
+    await ds.reloadData();
     expect(ds.selectAllIntermitent()).toBe(false);
     for (const r of ds.items) {
       ds.selectedChanged(r);
@@ -268,80 +314,129 @@ describe("grid filter stuff", () => {
 describe("Closed List  column", () => {
 
   it("Basic Operations", () => {
-    let x = new LanguageColumn();
-    x.rawValue = 0;
-    expect(x.value).toBe(Language.Hebrew);
-    x.value = Language.Russian;
-    expect(x.rawValue).toBe(10);
+    let x = new ValueListValueConverter(Language);
 
-    expect(x.getOptions().length).toBe(3);
-  });
-  it("loads and saved from Pojo correctly", () => {
-    let x = new LanguageColumn();
-    x.defs.key = 'abc';
-    x.value = Language.Russian;
-    let y: any = {};
-    x.__addToPojo(y);
-    expect(y[x.defs.key]).toBe(10);
-    x.value = Language.Hebrew;
-    expect(x.value).toBe(Language.Hebrew);
-    x.__loadFromPojo({ 'abc': 10 });
-    expect(x.value).toBe(Language.Russian);
 
+    expect(x.fromJson(0)).toBe(Language.Hebrew);
+    expect(x.toJson(Language.Russian)).toBe(10);
+
+    expect(new ValueListValueConverter(Language).getOptions().length).toBe(3);
   });
+
   it("test auto caption", () => {
-    let val = ValueListTypeInfo.get(valueList);
+    let val = new ValueListValueConverter(valueList);
     expect(valueList.firstName.caption).toBe('First Name');
   });
+  itAsync("test with entity", async () => {
+    let c = new ServerContext(new InMemoryDataProvider())
+      .for(entityWithValueList);
+    let e = c.create();
+    e.id = 1;
+    expect(e.l).toBe(Language.Hebrew);
+    e.l = Language.Russian;
+    await e._.save();
+    e = await c.findFirst();
+    expect(e.l).toBe(Language.Russian);
+    expect(e._.toApiJson().l).toBe(10);
+  })
+  itAsync("test with entity and data defined on type", async () => {
+    let c = new ServerContext(new InMemoryDataProvider())
+      .for(entityWithValueList);
+    let e = c.create();
+    e.id = 1;
+    expect(c.metadata.fields.v.dataType).toBe(valueList);
+    expect(c.metadata.fields.v.valueConverter.fromJson('listName'))
+      .toBe(valueList.listName);
+    expect(c.metadata.fields.id.dataType).toBe(Number);
+    expect(e.v).toBe(valueList.firstName);
+
+    e.v = valueList.listName;
+    await e._.save();
+    e = await c.findFirst();
+    expect(e.v).toBe(valueList.listName);
+    expect(e._.toApiJson().v).toBe('listName');
+  })
 });
+
+export function fColumn<T = any, colType = any>(settings?: FieldOptions<colType, T>) {
+  let c = Field(settings);
+  return (target, key) => {
+    debugger;
+    return c(target, key);
+  }
+
+}
+@ValueListFieldType(valueList)
+class valueList {
+  static firstName = new valueList();
+  static listName = new valueList();
+  constructor(public id?: string, public caption?: string) { }
+}
+
+@Entity({ key: 'entity with value list' })
+class entityWithValueList extends EntityBase {
+  @Field()
+  id: number = 0;
+  @Field({ valueConverter: new ValueListValueConverter(Language) })
+  l: Language = Language.Hebrew;
+  @Field()
+  v: valueList = valueList.firstName;
+
+}
+
+
 
 
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Context().for(Categories).create();
-    expect(cat.defs.name).toBe('Categories');
+    var cat = new Context().for(newCategories).create();
+    expect(cat._.repository.metadata.key).toBe('Categories');
   });
   itAsync("Insert", async () => {
-
-    let forCat = await createData(async x => { });
-    let rows = await forCat.find();
-    expect(rows.length).toBe(0);
-    let c = forCat.create();
-    c.id.value = 1;
-    c.categoryName.value = 'noam';
-    await c.save();
-    rows = await forCat.find();
-    expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(1);
-    expect(rows[0].categoryName.value).toBe('noam');
+    await testAllDbs(async ({ createData }) => {
+      let forCat = await createData(async x => { });
+      let rows = await forCat.find();
+      expect(rows.length).toBe(0);
+      let c = forCat.create();
+      c.id = 1;
+      c.categoryName = 'noam';
+      await c._.save();
+      rows = await forCat.find();
+      expect(rows.length).toBe(1);
+      expect(rows[0].id).toBe(1);
+      expect(rows[0].categoryName).toBe('noam');
+    })
   });
 
 
 
-  itAsync("test  delete", async () => {
+  itAsync("test delete", async () => {
 
-    let c = await createData(async insert => await insert(5, 'noam'));
+    await testAllDbs(async ({ createData }) => {
+      let c = await createData(async insert => await insert(5, 'noam'));
 
-    let rows = await c.find();
-    expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(5);
-    await rows[0].delete();
-    rows = await c.find();
-    expect(rows.length).toBe(0);
+      let rows = await c.find();
+      expect(rows.length).toBe(1);
+      expect(rows[0].id).toBe(5);
+      await rows[0]._.delete();
+      rows = await c.find();
+      expect(rows.length).toBe(0);
+    })
+
 
   });
   itAsync("test update", async () => {
-    let c = await createData(async insert => await insert(5, 'noam'));
+    let [c] = await createData(async insert => await insert(5, 'noam'));
     let r = await c.find();
-    expect(r[0].categoryName.value).toBe('noam');
-    r[0].categoryName.value = 'yael';
-    await r[0].save();
+    expect(r[0].categoryName).toBe('noam');
+    r[0].categoryName = 'yael';
+    await r[0]._.save();
     r = await c.find();
-    expect(r[0].categoryName.value).toBe('yael');
+    expect(r[0].categoryName).toBe('yael');
   });
 
   itAsync("test filter", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
 
     let rows = await c.find();
     expect(rows.length).toBe(4);
@@ -349,236 +444,267 @@ describe("test row provider", () => {
     expect(rows.length).toBe(2);
     rows = await c.find({ where: c => c.id.isEqualTo(4) });
     expect(rows.length).toBe(1);
-    expect(rows[0].categoryName.value).toBe('yael');
+    expect(rows[0].categoryName).toBe('yael');
     rows = await c.find({ where: c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
+    expect(rows[0].id).toBe(2);
     rows = await c.find({
       where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni'), undefined]
     });
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
+    expect(rows[0].id).toBe(2);
     rows = await c.find({
       where: c => [c.description.isEqualTo('y'), c.categoryName.isEqualTo('yoni')]
     });
     expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
+    expect(rows[0].id).toBe(2);
   });
   itAsync("test filter packer", async () => {
-    let c = await insertFourRows();
-    let rows = await c.find();
-    expect(rows.length).toBe(4);
+    await testAllDbs(async ({ insertFourRows }) => {
+      let r = await insertFourRows();
+      let rows = await r.find();
+      expect(rows.length).toBe(4);
 
-    rows = await c.find({
-      where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
+      rows = await r.find({
+        where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
 
-    });
-    expect(rows.length).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isEqualTo(4))) });
-    expect(rows.length).toBe(1);
-    expect(rows[0].categoryName.value).toBe('yael');
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
-    expect(rows.length).toBe(1);
-    expect(rows[0].id.value).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
-    expect(rows.length).toBe(2);
+      });
+      expect(rows.length).toBe(2);
+      rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isEqualTo(4))) });
+      expect(rows.length).toBe(1);
+      expect(rows[0].categoryName).toBe('yael');
+      rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+      expect(rows.length).toBe(1);
+      expect(rows[0].id).toBe(2);
+      rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+      expect(rows.length).toBe(2);
+    })
 
   });
   itAsync("test in filter packer", async () => {
-    let c = await insertFourRows();
-    let rows = await c.find();
+    let [r] = await insertFourRows();
+    let rows = await r.find();
     expect(rows.length).toBe(4);
 
-    rows = await c.find({
-      where: c => unpackWhere(c, packWhere(c, c => c.description.isEqualTo('x')))
+    rows = await r.find({
+      where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
 
     });
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isIn(1, 3))) });
+    rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c => unpackWhere(c, packWhere(c, c => c.id.isNotIn(1, 2, 3))) });
+    rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });
   itAsync("sort", async () => {
-    let c = await insertFourRows();
-    let rows = await c.find({ orderBy: c => new Sort({ column: c.id }) });
-    expect(rows[0].id.value).toBe(1);
-    expect(rows[1].id.value).toBe(2);
-    expect(rows[2].id.value).toBe(3);
-    expect(rows[3].id.value).toBe(4);
+    let [c] = await insertFourRows();
+    let rows = await c.find({ orderBy: c => c.id });
+    expect(rows[0].id).toBe(1);
+    expect(rows[1].id).toBe(2);
+    expect(rows[2].id).toBe(3);
+    expect(rows[3].id).toBe(4);
 
-    rows = await c.find({ orderBy: c => new Sort({ column: c.categoryName, descending: true }) });
-    expect(rows[0].id.value).toBe(2);
-    expect(rows[1].id.value).toBe(4);
-    expect(rows[2].id.value).toBe(1);
-    expect(rows[3].id.value).toBe(3);
+    rows = await c.find({
+      orderBy: c =>
+        c.categoryName.descending()
+    });
+    expect(rows[0].id).toBe(2);
+    expect(rows[1].id).toBe(4);
+    expect(rows[2].id).toBe(1);
+    expect(rows[3].id).toBe(3);
   });
   itAsync("counts", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let count = await c.count();
     expect(count).toBe(4);
   });
   itAsync("counts with filter", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let count = await c.count(c => c.id.isLessOrEqualTo(2));
     expect(count).toBe(2);
   });
   itAsync("test grid update", async () => {
-    let c = await insertFourRows();
-    let ds = new GridSettings(c, {
-      get: {
-        orderBy: c => new Sort({ column: c.id })
-      }
+    let [c] = await insertFourRows();
+    let ds = new GridSettings<CategoriesForTesting>(c, {
+      orderBy: c => c.id
     });
-    await ds.getRecords();
+    await ds.reloadData();
     expect(ds.items.length).toBe(4);
-    expect(ds.items[0].categoryName.value).toBe('noam');
-    ds.items[0].categoryName.value = 'noam honig';
-    await ds.items[0].save();
-    expect(ds.items[0].categoryName.value).toBe('noam honig');
+    expect(ds.items[0].categoryName).toBe('noam');
+    ds.items[0].categoryName = 'noam honig';
+    await ds.items[0]._.save();
+    expect(ds.items[0].categoryName).toBe('noam honig');
   });
-  itAsync("Test Validation,", async () => {
+
+  itAsync("Test Validation 2", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
-      a = new StringColumn({
-        validate: Validators.required
-      })
-    });
+    let type = class extends newCategories {
+      a: string;
+    };
+    EntityDecorator({ key: '' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: (entity, col) =>
+        Validators.required(entity, col, "m")
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
-    cat.a.value = '';
+    cat.a = '';
     var saved = false;
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("Should not be empty");
+      expect(cat._.fields.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
 
   });
-  itAsync("Test Validation 2", async () => {
+  itAsync("Test Validation 2_1", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
-      a = new StringColumn({
-        validate: col => Validators.required(col, "m")
-      })
-    });
+    let type = class extends newCategories {
+      a: string;
+    };
+    EntityDecorator({ key: '' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: (entity, col) => {
+        if (!entity.a || entity.a.length == 0)
+          col.error = "m";
+      }
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
-    cat.a.value = '';
+    cat.a = '';
     var saved = false;
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("m");
+      expect(cat._.fields.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
 
   });
   itAsync("Test Validation 3", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
-      a = new StringColumn({
-        validate: Validators.required.withMessage("m")
-      })
-    });
+    let type = class extends newCategories {
+      a: string
+    };
+    EntityDecorator({ key: '' })(type);
+    ColumnDecorator({
+      validate: Validators.required.withMessage("m")
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
-    cat.a.value = '';
+    cat.a = '';
     var saved = false;
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("m");
+      expect(cat._.fields.a.error).toEqual("m");
     }
     expect(saved).toBe(false);
   });
   itAsync("Test unique Validation,", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
-      a = new StringColumn({
-        validate: async () => {
-          if (this.isNew() || this.a.value != this.a.originalValue) {
-            if (await c.count(f => f.a.isEqualTo(this.a.value)))
-              this.a.validationError = 'already exists';
+    await testAllDbs(async ({ context }) => {
+      let type = class extends newCategories {
+        a: string
+      };
+      EntityDecorator({ key: 'categories' })(type);
+      ColumnDecorator<typeof type.prototype, string>({
+        validate: async (en, col) => {
+          if (en._.isNew() || en.a != en._.fields.a.originalValue) {
+            if (await c.count(f => f.a.isEqualTo(en.a)))
+              en._.fields.a.error = 'already exists';
           }
         }
-      })
-    });
-    var cat = c.create();
-    cat.a.value = '12';
-    await cat.save();
-    cat = c.create();
-    cat.a.value = '12';
+      })(type.prototype, "a");
+      var c = context.for(type);
 
-    var saved = false;
-    try {
-      await cat.save();
-      saved = true;
-    }
-    catch (err) {
-      expect(cat.a.validationError).toEqual("already exists");
-    }
-    expect(saved).toBe(false);
+      var cat = c.create();
+      cat.a = '12';
+      cat.id = 1;
+      await cat._.save();
+      cat = c.create();
+      cat.a = '12';
+
+      var saved = false;
+      try {
+        await cat._.save();
+        saved = true;
+      }
+      catch (err) {
+        expect(cat._.fields.a.error).toEqual("already exists");
+      }
+      expect(saved).toBe(false);
+    });
 
   });
   itAsync("Test unique Validation 2", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
-      a = new StringColumn({
+    await testAllDbs(async ({ context }) => {
+      let type = class extends newCategories {
+        a: string
+      };
+      EntityDecorator({ key: 'sdfgds' })(type);
+      ColumnDecorator<typeof type.prototype, string>({
         validate: Validators.unique
-      })
-    });
-    var cat = c.create();
-    cat.a.value = '12';
-    await cat.save();
-    cat = c.create();
-    cat.a.value = '12';
+      })(type.prototype, "a");
+      var c = context.for(type);
+      var cat = c.create();
+      cat.a = '12';
 
-    var saved = false;
-    try {
-      await cat.save();
-      saved = true;
-    }
-    catch (err) {
-      expect(cat.a.validationError).toEqual("already exists");
-    }
-    expect(saved).toBe(false);
+      await cat._.save();
+      cat = c.create();
+      cat.a = '12';
+
+      var saved = false;
+      try {
+        await cat._.save();
+        saved = true;
+      }
+      catch (err) {
+        expect(cat._.fields.a.error).toEqual("already exists");
+      }
+      expect(saved).toBe(false);
+    });
 
   });
   itAsync("Test unique Validation and is not empty", async () => {
     var context = new ServerContext(new InMemoryDataProvider());
-    var c = context.for(class extends Categories {
-      a = new StringColumn({
-        validate: [Validators.required, Validators.unique]
-      })
-    });
+    let type = class extends newCategories {
+      a: string
+    };
+    EntityDecorator({ key: 'asdfa' })(type);
+    ColumnDecorator<typeof type.prototype, string>({
+      validate: [Validators.required, Validators.unique]
+    })(type.prototype, "a");
+    var c = context.for(type);
     var cat = c.create();
     var saved = false;
-    cat.a.value = '';
+    cat.a = '';
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch {
-      expect(cat.a.validationError).toEqual("Should not be empty");
-      cat.a.value = '12';
-      await cat.save();
+      expect(cat._.fields.a.error).toEqual("Should not be empty");
+      cat.a = '12';
+      await cat._.save();
     }
     expect(saved).toBe(false);
     cat = c.create();
-    cat.a.value = '12';
+    cat.a = '12';
 
 
     try {
-      await cat.save();
+      await cat._.save();
       saved = true;
     }
     catch (err) {
-      expect(cat.a.validationError).toEqual("already exists");
+      expect(cat._.fields.a.error).toEqual("already exists");
     }
     expect(saved).toBe(false);
 
@@ -587,138 +713,147 @@ describe("test row provider", () => {
   itAsync("test grid update and validation cycle", async () => {
     var context = new ServerContext();
     context.setDataProvider(new InMemoryDataProvider());
-    var c = context.for(class extends CategoriesWithValidation {
-      categoryName = new StringColumn({
-        validate: () => { CategoriesWithValidation.orderOfOperation += "ColumnValidate," }
-      });
-    });
+    let type = class extends newCategories {
+      categoryName: string
+
+    }
+    let orderOfOperation = '';
+    EntityDecorator({
+      key: 'asdf',
+      saving: () => orderOfOperation += "EntityOnSavingRow,",
+      validation: r => orderOfOperation += "EntityValidate,",
+
+    })(type);
+    ColumnDecorator({
+      validate: () => { orderOfOperation += "ColumnValidate," }
+    })(type.prototype, "categoryName")
+    var c = context.for(type);
     var newC = c.create();
-    newC.categoryName.value = 'noam';
-    newC.id.value = 1;
-    await newC.save();
+    newC.categoryName = 'noam';
+    newC.id = 1;
+    await newC._.save();;
 
 
-    let ds = new GridSettings(c, {
-      saving: r => CategoriesWithValidation.orderOfOperation += "GridOnSavingRow,",
-      validation: r => CategoriesWithValidation.orderOfOperation += "GridValidate,",
-      get: {
-        orderBy: c => new Sort({ column: c.id })
-      }
+    let ds = new GridSettings<CategoriesForTesting>(c, {
+      saving: r => orderOfOperation += "GridOnSavingRow,",
+      validation: r => orderOfOperation += "GridValidate,",
+      orderBy: c => c.id
     });
 
-    await ds.getRecords();
+    await ds.reloadData();
 
     let r = ds.items[0];
 
 
-    expect(r.categoryName.value).toBe('noam');
-    r.categoryName.value = 'noam honig';
-    CategoriesWithValidation.orderOfOperation = '';
+    expect(r.categoryName).toBe('noam');
+    r.categoryName = 'noam honig';
+    orderOfOperation = '';
     await ds._doSavingRow(r);
-    expect(ds.items[0].categoryName.value).toBe('noam honig');
-    expect(CategoriesWithValidation.orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
+    expect(ds.items[0].categoryName).toBe('noam honig');
+    expect(orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
   });
   itAsync("test that it fails nicely", async () => {
-    let c = (await insertFourRows()).create();
-    c.id.value = 1;
-    c.categoryName.value = 'bla bla';
+    let c = (await insertFourRows())[0].create();
+    c.id = 1;
+    c.categoryName = 'bla bla';
     try {
-      await c.save();
+      await c._.save();
       fail("Shouldnt have reached this");
     }
     catch (err) {
 
     }
-    expect(c.categoryName.value).toBe('bla bla');
+    expect(c.categoryName).toBe('bla bla');
   });
   itAsync("update should fail nicely", async () => {
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(Categories).create();
-    c.id.value = 1;
-    c.categoryName.value = 'noam';
-    await c.save();
-    c.categoryName.value = 'yael';
+    let c = cont.for(newCategories).create();
+    c.id = 1;
+    c.categoryName = 'noam';
+    await cont.for(newCategories).save(c);
+    c.categoryName = 'yael';
     try {
-      await c.save();
+      await cont.for(newCategories).save(c);
       fail("shouldnt be here");
     } catch (err) {
-      expect(c.categoryName.value).toBe('yael');
+      expect(c.categoryName).toBe('yael');
     }
   });
   itAsync("filter should return none", async () => {
 
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
 
 
     let r = await c.lookupAsync(c => c.categoryName.isEqualTo(undefined));
-    expect(r.categoryName.value).toBe(undefined);
+    expect(r.categoryName).toBe(undefined);
 
   });
   itAsync("lookup with undefined doesn't fetch", async () => {
 
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(Categories);
+    let c = cont.for(newCategories);
 
     let calledFind = false;
-    var l = new Lookup(c.create(), {
-      count: async () => 1,
+    var l = new Lookup({
+      ...c,
+      metadata: c.metadata,
       create: () => c.create(),
-      find: async () => {
+      find: options => {
         calledFind = true;
-        return [];
+        return c.find(options)
       }
-
     });
-    var nc = new NumberColumn();
+    var nc = { value: undefined };
     nc.value = undefined;
     expect(nc.value).toBe(undefined);
-    await l.whenGet(nc);
+    await l.whenGet(c => c.id.isEqualTo(nc.value));
     expect(calledFind).toBe(false, 'expected not to call find');
     nc.value = 1;
-    await l.whenGet(nc);
+    await l.whenGet(c => c.id.isEqualTo(nc.value));
     expect(calledFind).toBe(true);
 
   });
   itAsync("lookup return the same new row", async () => {
     let cont = new ServerContext();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(Categories);
-    var nc = new NumberColumn();
+    let c = cont.for(newCategories);
+    var nc = { value: undefined };
     nc.value = 1;
-    let r = c.lookup(nc);
-    expect(r.isNew()).toBe(true);
-    r.id.value = 5;
-    expect(c.lookup(nc).id.value).toBe(5);
-    r = await c.lookupAsync(nc);
-    expect(r.id.value).toBe(5);
+    let r = c.lookup(x => x.id.isEqualTo(nc.value));
+    expect(getEntityRef(r).isNew()).toBe(true);
+    r.id = 5;
+    expect(c.lookup(x => x.id.isEqualTo(nc.value)).id).toBe(5);
+    r = await c.lookupAsync(x => x.id.isEqualTo(nc.value));
+    expect(r.id).toBe(5);
 
   });
   itAsync("lookup updates the data", async () => {
-    let c = await createData(async insert => await insert(1, 'noam'));
+    let [c] = await createData(async insert => await insert(1, 'noam'));
     let r = c.lookup(c => c.id.isEqualTo(1));
-    expect(r.isNew()).toBe(true);
-    expect(r.id.value).toBe(1);
+    expect(r._.isNew()).toBe(true);
+    expect(r.id).toBe(1);
     r = await c.lookupAsync(c => c.id.isEqualTo(1));
-    expect(r.isNew()).toBe(false);
-    await r.delete();
+    expect(r._.isNew()).toBe(false);
+    await r._.delete();
     expect(await c.count()).toBe(0);
     r = await c.lookupAsync(c => c.id.isEqualTo(1));
-    expect(r.isNew()).toBe(true);
-    expect(r.id.value).toBe(1);
-    await r.save();
+    expect(r._.isNew()).toBe(true);
+    expect(r.id).toBe(1);
+    await r._.save();
     expect(await c.count()).toBe(1);
 
 
   });
+
   itAsync("column drop down", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
 
-    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
     let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
@@ -729,13 +864,14 @@ describe("test row provider", () => {
     expect(xx[1].caption).toBe('yael');
 
   });
+
   itAsync("column drop down with promise", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
 
-    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
     let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
@@ -746,13 +882,14 @@ describe("test row provider", () => {
     expect(xx[1].caption).toBe('yael');
 
   });
+
   itAsync("column drop down with promise", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
 
-    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
     let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
@@ -766,7 +903,7 @@ describe("test row provider", () => {
   itAsync("column drop down with items", async () => {
     let c = new Categories();
 
-    let cc = new ColumnCollection(() => c, () => true, undefined, () => true);
+    let cc = new FieldCollection(() => c, () => true, undefined, () => true, undefined);
     let cs = { valueList: [{ id: 1, caption: 'a' }, { id: 0, caption: 'b' }] } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
@@ -777,14 +914,15 @@ describe("test row provider", () => {
     expect(xx[1].caption).toBe('b');
 
   });
+
   itAsync("column drop down 1", async () => {
-    let c = await createData(async insert => {
+    let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
     });
     let c1 = c.create();
-    let cc = new ColumnCollection(() => c.create(), () => true, undefined, () => true);
-    let cs = { column: c1.id, valueList: getValueList(c) } as DataControlSettings<Categories>
+    let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
+    let cs = { field: c1._.fields.id.metadata, valueList: getValueList(c) } as DataControlSettings<newCategories>
     await cc.add(cs);
 
     let xx = cs.valueList as ValueListItem[];
@@ -794,70 +932,110 @@ describe("test row provider", () => {
     expect(xx[0].caption).toBe('noam');
     expect(xx[1].caption).toBe('yael');
     var c2 = c.create();
-    c2.id.value = 1;
+    c2.id = 1;
     expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
 
   });
-  it("get value function works", () => {
-    let a = new NumberColumn();
+  it("get value function works 1", () => {
+    let a = new InputField<number>({ dataType: Number });
     a.value = 5;
-    var cc = new DataAreaSettings({ columnSettings: () => [a] })
+    var cc = new DataAreaSettings({ fields: () => [a] })
 
 
-    expect(cc.columns._getColDisplayValue(cc.columns.items[0], null)).toBe('5');
+    expect(cc.fields._getColDisplayValue(cc.fields.items[0], null)).toBe('5');
 
   });
-  it("get value function works", () => {
-    let a = new NumberColumn();
+  it("get value function works 2", () => {
+    let a = new InputField<number>({ dataType: Number });
     a.value = 5;
-    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
     cc.add(a);
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe('5');
 
   });
-  it("get value function works", () => {
-    let a = new NumberColumn();
+  it("get value function works 3", () => {
+    let a = new InputField<number>({ dataType: Number });
     a.value = 5;
-    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-    cc.add({ column: a, getValue: () => a.value * 2 });
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add({ field: a, getValue: () => a.value * 2 });
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
   });
+})
+class myClass1 {
+  @Field()
+  @DataControl<myClass1>({
+    getValue: self => self.a * 3
+  })
+  a: number;
+}
+describe("field display stuff", () => {
   it("get value function works", () => {
-    let a = extend(new NumberColumn()).dataControl(s => s.getValue = () => a.value * 3);
-    a.value = 5;
-    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-    cc.add(a);
+    let x = new myClass1();
+    let $ = getFields(x);
+    x.a = 5;
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add($.a);
     expect(cc._getColDisplayValue(cc.items[0], null)).toBe(15);
   });
+})
+class myClass2 {
+  @DateOnlyField()
+  @DataControl<myClass2>({
+    readonly: true
+  })
+  a: Date;
+}
+describe("field display stuff", () => {
   it("readonly should work well", () => {
-    let a = extend(new DateColumn()).dataControl(s => s.readOnly = true);
+    let x = new myClass2();
+    let $ = getFields(x);
 
-    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-    cc.add(a);
-    expect(cc.items[0].readOnly).toBe(true);
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add($.a);
+    expect(cc.items[0].readonly).toBe(true);
     expect(cc.items[0].inputType).toBe('date');
 
   });
+})
+class myClass3 {
+  @Field({
+    caption: '1st', ...{ caption: '2nd' }
+  })
+  @DataControl<myClass3>({
+    inputType: 'text'
+  })
+
+  a: Number;
+}
+describe("field display stuff", () => {
   it("test consolidate", () => {
 
-    var col = extend(extend(new NumberColumn({ caption: '1st', ...{ caption: '2nd' } })).dataControl(
-      x => {
-        x.inputType = 'text';
-      }
-    )).dataControl(x => x.readOnly = true);
-
-    let s = __getDataControlSettings(col);
+    let x = new myClass3();
+    let $ = getFields(x);
+    let s: DataControlSettings = { readonly: true };
+    decorateDataSettings($.a.metadata, s);
     expect(s.inputType).toBe('text');
-    expect(s.readOnly).toBe(true);
+    expect(s.readonly).toBe(true);
 
 
   });
-  it("readonly should work well for string column", () => {
-    let a = extend(new StringColumn()).dataControl(x => x.readOnly = true);
+})
+class myClass4 {
+  @Field()
+  @DataControl<myClass4>({
+    readonly: true
+  })
 
-    var cc = new ColumnCollection(undefined, () => true, undefined, () => true);
-    cc.add(a);
-    expect(cc.items[0].readOnly).toBe(true);
+  a: string;
+}
+describe("field display stuff", () => {
+  it("readonly should work well for string column", () => {
+    let x = new myClass4();
+    let $ = getFields(x);
+
+    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
+    cc.add($.a);
+    expect(cc.items[0].readonly).toBe(true);
     expect(cc.items[0].inputType).toBe(undefined);
 
   });
@@ -868,9 +1046,9 @@ describe("api test", () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
 
-    let gs = new GridSettings(ctx.for(Categories));
+    let gs = new GridSettings(ctx.for(newCategories));
     gs.addArea({
-      columnSettings: x => [
+      fields: x => [
         x.categoryName,
         [x.categoryName, x.categoryName]]
     });
@@ -884,74 +1062,91 @@ describe("api test", () => {
 describe("column collection", () => {
   let ctx = new Context();
   ctx.setDataProvider(new InMemoryDataProvider());
+
   itAsync("uses a saparate column", async () => {
-    let c = ctx.for(class extends Categories {
-      categoryName = new StringColumn({ allowApiUpdate: false });
-    }).create();
+    let type = class extends newCategories {
+      categoryName: string;
+    }
+    EntityDecorator({ key: 'asdf' })(type);
+    ColumnDecorator({
+      allowApiUpdate: false
+    })(type.prototype, "categoryName");
+    let c = ctx.for(type);
 
-    var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
-    await cc.add(c.categoryName);
-    expect(cc.items[0] === c.categoryName).toBe(false);
-    expect(cc.items[0] === cc.items[0].column).toBe(false);
-    expect(cc.items[0].caption == c.categoryName.defs.caption).toBe(true);
-    expect(cc.items[0].readOnly).toBe(true);
+
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    await cc.add(c.metadata.fields.categoryName);
+    expect(cc.items[0] === c.metadata.fields.categoryName).toBe(false);
+    expect(cc.items[0] === cc.items[0].field).toBe(false);
+    expect(cc.items[0].caption == c.metadata.fields.categoryName.caption).toBe(true);
+    expect(cc.items[0].readonly).toBe(true);
 
   })
-  itAsync("jsonSaverIsNice", async () => {
-    let c = ctx.for(Categories).create();
-    var cc = new ColumnCollection(() => c, () => false, undefined, () => true);
-    await cc.add(c.categoryName);
-    expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe("x.categoryName");
-    cc.items[0].caption = 'name';
-    expect(cc.__columnTypeScriptDescription(cc.items[0], "x")).toBe(`{
-    column: x.categoryName, 
-    caption: 'name'
-  }`);
-  })
+
   itAsync("works ok with filter", async () => {
-    let c = ctx.for(Categories).create();
-    var cc = new ColumnCollection(() => c, () => false, new FilterHelper(() => { }), () => true);
-    await cc.add(c.id);
-    cc.filterHelper.filterColumn(cc.items[0].column, false, false);
-    expect(cc.filterHelper.isFiltered(cc.items[0].column)).toBe(true);
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
+    await cc.add(c.metadata.fields.id);
+    cc.filterHelper.filterColumn(cc.items[0].field, false, false);
+    expect(cc.filterHelper.isFiltered(cc.items[0].field)).toBe(true);
 
   });
+  it("test caption etc...", waitForAsync(async () => {
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    cc.add(c.metadata.fields.id);
+    expect(cc.items[0].caption).toBe('Id');
+
+  }))
+  it("test caption etc...", waitForAsync(async () => {
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    cc.add({ field: c.metadata.fields.id });
+    expect(cc.items[0].caption).toBe('Id');
+
+  }))
+  it("test caption etc...", waitForAsync(async () => {
+    let c = ctx.for(newCategories);
+    var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
+    cc.add({ field: c.metadata.fields.id, width: '100' });
+    expect(cc.items[0].caption).toBe('Id');
+
+  }))
 });
 describe("grid settings ",
   () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
+
     it("sort is displayed right", () => {
-      let s = ctx.for(Categories, new InMemoryDataProvider());
-      let c = s.create();
+      let s = ctx.for(newCategories);
+
 
       let gs = new GridSettings(s);
-      expect(gs.sortedAscending(c.id)).toBe(false);
-      expect(gs.sortedDescending(c.id)).toBe(false);
-      gs.sort(c.id);
-      expect(gs.sortedAscending(c.id)).toBe(true);
-      expect(gs.sortedDescending(c.id)).toBe(false);
-      gs.sort(c.id);
-      expect(gs.sortedAscending(c.id)).toBe(false);
-      expect(gs.sortedDescending(c.id)).toBe(true);
+      expect(gs.sortedAscending(s.metadata.fields.id)).toBe(false);
+      expect(gs.sortedDescending(s.metadata.fields.id)).toBe(false);
+      gs.sort(s.metadata.fields.id);
+      expect(gs.sortedAscending(s.metadata.fields.id)).toBe(true);
+      expect(gs.sortedDescending(s.metadata.fields.id)).toBe(false);
+      gs.sort(s.metadata.fields.id);
+      expect(gs.sortedAscending(s.metadata.fields.id)).toBe(false);
+      expect(gs.sortedDescending(s.metadata.fields.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let s = ctx.for(Categories, new InMemoryDataProvider());
-      let c = s.create();
-      let y: Column;
-      let gs = new GridSettings(s, { get: { orderBy: c => new Sort({ column: y = c.categoryName }) } });
-      expect(gs.sortedAscending(y)).toBe(true);
-      expect(gs.sortedDescending(y)).toBe(false);
-      expect(gs.sortedAscending(c.id)).toBe(false);
-      expect(gs.sortedDescending(c.id)).toBe(false);
-      gs.sort(c.id);
-      expect(gs.sortedAscending(c.id)).toBe(true);
-      expect(gs.sortedDescending(c.id)).toBe(false);
-      expect(gs.sortedAscending(c.categoryName)).toBe(false);
-      expect(gs.sortedDescending(c.categoryName)).toBe(false);
+      let s = ctx.for(newCategories);
+
+
+      let gs = new GridSettings(s, { orderBy: c => c.categoryName });
+      expect(gs.sortedAscending(s.metadata.fields.id)).toBe(false);
+      expect(gs.sortedDescending(s.metadata.fields.id)).toBe(false);
+      gs.sort(s.metadata.fields.id);
+      expect(gs.sortedAscending(s.metadata.fields.id)).toBe(true);
+      expect(gs.sortedDescending(s.metadata.fields.id)).toBe(false);
+      expect(gs.sortedAscending(s.metadata.fields.categoryName)).toBe(false);
+      expect(gs.sortedDescending(s.metadata.fields.categoryName)).toBe(false);
     });
     it("paging works", async () => {
-      let c = await createData(async i => {
+      let [c] = await createData(async i => {
         await i(1, "a");
         await i(2, "b");
         await i(3, "a");
@@ -962,22 +1157,22 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = new GridSettings(c, { get: { limit: 2 } });
-      await ds.getRecords();
+      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2 });
+      await ds.reloadData();
       expect(ds.items.length).toBe(2);
-      expect(ds.items[0].id.value).toBe(1);
+      expect(ds.items[0].id).toBe(1);
       await ds.nextPage();
       expect(ds.items.length).toBe(2);
-      expect(ds.items[0].id.value).toBe(3);
+      expect(ds.items[0].id).toBe(3);
       await ds.nextPage();
       expect(ds.items.length).toBe(2);
-      expect(ds.items[0].id.value).toBe(5);
+      expect(ds.items[0].id).toBe(5);
       await ds.previousPage();
       expect(ds.items.length).toBe(2);
-      expect(ds.items[0].id.value).toBe(3);
+      expect(ds.items[0].id).toBe(3);
     });
     it("paging works with filter", async () => {
-      let c = await createData(async i => {
+      let [c] = await createData(async i => {
         await i(1, "a");
         await i(2, "b");
         await i(3, "a");
@@ -988,196 +1183,175 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = new GridSettings(c, { get: { limit: 2, where: c => c.categoryName.isEqualTo('b') } });
-      await ds.getRecords();
+      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: c => c.categoryName.isEqualTo('b') });
+      await ds.reloadData();
       expect(ds.items.length).toBe(2);
-      expect(ds.items[0].id.value).toBe(2);
+      expect(ds.items[0].id).toBe(2);
       await ds.nextPage();
       expect(ds.items.length).toBe(2);
-      expect(ds.items[0].id.value).toBe(6);
+      expect(ds.items[0].id).toBe(6);
       await ds.nextPage();
       expect(ds.items.length).toBe(0);
 
       await ds.previousPage();
       expect(ds.items.length).toBe(2);
-      expect(ds.items[0].id.value).toBe(6);
+      expect(ds.items[0].id).toBe(6);
     });
   });
 
+@Entity({ key: 'typeA', dbName: 'dbnameA' })
+class typeA extends EntityBase {
+
+}
+@Entity({ key: 'typeB' })
+class typeB extends typeA {
+
+}
+describe("decorator inheritance", () => {
+  it("entity extends", () => {
+
+    let c = new ServerContext();
+    let defsA = c.for(typeA).metadata;
+    expect(defsA.key).toBe('typeA');
+    expect(defsA.dbName).toBe('dbnameA');
+    let defsB = c.for(typeB).metadata;
+    expect(defsB.key).toBe("typeB");
+    expect(defsB.dbName).toBe("dbnameA");;
+
+  });
+
+});
 describe("order by api", () => {
   it("works with sort", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => new Sort({ column: c.id }) };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(1);
-    expect(s.Segments[0].column).toBe(c.id);
-
-
-  });
-  it("works with columns", () => {
-    let c = new Categories();
+    let c = new ServerContext().for(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
-    let s = entityOrderByToSort(c, opt.orderBy);
+    let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(1);
-    expect(s.Segments[0].column).toBe(c.id);
+    expect(s.Segments[0].field.key).toBe(c.metadata.fields.id.key);
+
+
   });
+
 
   it("works with columns array", () => {
-    let c = new Categories();
+    let c = new ServerContext().for(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
-    let s = entityOrderByToSort(c, opt.orderBy);
+    let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(2);
-    expect(s.Segments[0].column).toBe(c.id);
-    expect(s.Segments[1].column).toBe(c.categoryName);
+    expect(s.Segments[0].field).toBe(c.metadata.fields.id);
+    expect(s.Segments[1].field).toBe(c.metadata.fields.categoryName);
   });
-  it("works with segment array", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => [{ column: c.id }, { column: c.categoryName }] };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(2);
-    expect(s.Segments[0].column).toBe(c.id);
-    expect(s.Segments[1].column).toBe(c.categoryName);
-  });
-  it("works with mixed column segment array", () => {
-    let c = new Categories();
-    let opt: FindOptions<Categories> = { orderBy: c => [c.id, { column: c.categoryName }] };
-    let s = entityOrderByToSort(c, opt.orderBy);
-    expect(s.Segments.length).toBe(2);
-    expect(s.Segments[0].column).toBe(c.id);
-    expect(s.Segments[1].column).toBe(c.categoryName);
-  });
+
+
   itAsync("test several sort options", async () => {
-    let c = await createData(async i => {
+    let [c] = await createData(async i => {
       await i(1, 'z');
       await i(2, 'y');
     });
 
     let r = await c.find({ orderBy: c => c.categoryName });
     expect(r.length).toBe(2);
-    expect(r[0].id.value).toBe(2);
+    expect(r[0].id).toBe(2);
 
     r = await c.find({ orderBy: c => [c.categoryName] });
     expect(r.length).toBe(2);
-    expect(r[0].id.value).toBe(2);
+    expect(r[0].id).toBe(2);
 
-    r = await c.find({ orderBy: c => [{ column: c.categoryName, descending: true }] });
+    r = await c.find({ orderBy: c => c.categoryName.descending() });
     expect(r.length).toBe(2);
-    expect(r[0].id.value).toBe(1);
+    expect(r[0].id).toBe(1);
 
   });
 });
 describe("test area", () => {
   it("works without entity", () => {
-    let n = new NumberColumn();
-    n.value = 5;
-    let area = new DataAreaSettings({ columnSettings: () => [n] });
-    expect(area.columns.items.length).toBe(1);
-    expect(area.columns.__showArea()).toBe(true);
-    expect(area.columns.getNonGridColumns().length).toBe(1);
-  });
-});
-/*describe("test Grid Settings", () => {  remember to copy to data area tests
-  it("works well with many columns", () => {
-
-    let x = new GridSettings(new Categories(), {
-      columnSettings: x => [
-        { caption: 'a', getValue: r => '' },
-        { caption: 'b', getValue: r => '' },
-        { caption: 'c', getValue: r => '' },
-        { caption: 'd', getValue: r => '' },
-        { caption: 'e', getValue: r => '' },
-        { caption: 'f', getValue: r => '' },
-        { caption: 'g', getValue: r => '' },
-        { caption: 'h', getValue: r => '' },
-      ]
+    let n = new InputField<number>({
+      dataType: Number
     });
-    expect(x.columns.getGridColumns().length).toBe(5);
-    expect(x.columns.getNonGridColumns().length).toBe(3);
-    let area = new DataAreaCompnent();
-    area.settings = x;
-    area.columns = 2;
-    expect(area.theColumns().length).toBe(2);
-    expect(area.theColumns()[0].length).toBe(2);
-    expect(area.theColumns()[1].length).toBe(1);
-
+    n.value = 5;
+    let area = new DataAreaSettings({ fields: () => [n] });
+    expect(area.fields.items.length).toBe(1);
+    expect(area.fields.__showArea()).toBe(true);
+    expect(area.fields.getNonGridColumns().length).toBe(1);
   });
 });
 
-*/
+class myClass {
+  @Field()
+  @DataControl<myClass>({
+    valueChange: self => self.d.ok()
+  })
+  col: Number;
+  d = new Done();
+}
 describe("test column value change", () => {
   it("should fire", () => {
+
+    let x = new myClass();
+    let $ = getFields(x);
+    let area = new DataAreaSettings({ fields: () => [$.col] });
+    area.fields._colValueChanged(area.fields.items[0], null);
+    x.d.test();
+  });
+  it("should fire", () => {
     let d = new Done();
-    let x = new NumberColumn({
+    let x = new InputField<number>({
       valueChange: () => d.ok()
     });
-    x.value++;
+    let area = new DataAreaSettings({ fields: () => [x] });
+    area.fields._colValueChanged(area.fields.items[0], null);
     d.test();
   });
-  it("should fire 2", () => {
-    let d = new Done();
-    let x = new NumberColumn({ valueChange: () => d.ok() });
 
-    x.value++;
-    d.test();
-  });
 });
-describe("test number column", () => {
-  it("Number is always a number", () => {
-    let x = new NumberColumn();
-    var z: any = '123';
-    x.value = z;
-    x.value += 1;
-    expect(x.value).toBe(124);
-  });
-});
+// describe("test number column", () => {
+//   it("Number is always a number", () => {
+//     let x = new NumberColumn();
+//     var z: any = '123';
+//     x.value = z;
+//     x.value += 1;
+//     expect(x.value).toBe(124);
+//   });
+// });
 
 describe("test datetime column", () => {
   it("stores well", () => {
-    var x = new DateTimeColumn();
-    x.value = new Date(1976, 11, 16, 8, 55, 31, 65)
-    //expect(x.rawValue).toBe('1976-12-16T06:55:31.065Z',"compare to string"); only relevant to il timezone
-
-
-    expect(x.value.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
+    let col = decorateColumnSettings<Date>({ dataType: Date });
+    let val = col.valueConverter.fromJson(col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
+    expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
-    var x = new DateTimeColumn();
-    x.value = undefined;
-    expect(x.value).toBe(undefined);
-    expect(x.rawValue).toBe('');
+    let col = decorateColumnSettings<Date>({ dataType: Date });
+    expect(col.valueConverter.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
-    var x = new DateColumn();
-    x.rawValue = '';
-    expect(x.displayValue).toBe('');
+
+    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson(''))).toBe('');
   });
   it("displays null date well 1", () => {
-    var x = new DateColumn();
-    x.value = null;
-    expect(DateColumn.dateToString(null)).toBe('');
-    expect(DateTimeColumn.dateToString(null)).toBe('');
-    expect(x.displayValue).toBe('');
+
+    expect(DateOnlyValueConverter.toJson(null)).toBe('');
+    expect(DateOnlyValueConverter.toJson(null)).toBe('');
+    expect(DateOnlyValueConverter.displayValue(null)).toBe('');
   });
   it("displays empty date well empty", () => {
-    var x = new DateColumn();
-    x.rawValue = '0000-00-00';
-    expect(x.displayValue).toBe('');
+    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson('0000-00-00'))).toBe('');
   });
   it("date works", () => {
-    var x = new DateColumn();
 
-    x.value = new Date('1976-06-16');
-    expect(x.rawValue).toBe('1976-06-16');
-    //expect(x.value.toISOString()).toBe(new Date('1976-06-16').toISOString());// incorrect due to time differences, tested in bahamas
-    //expect(x.value.toDateString()).toBe(new Date('1976-06-16').toDateString());
-    //  expect(x.dateValue.getHours()).toBe(0);
+    expect(DateOnlyValueConverter.toJson(new Date('1976-06-16'))).toBe('1976-06-16');
+
   });
   it("date Storage works 1", () => {
-    var x = new DateTimeDateStorage();
 
-    expect(x.toDb('1976-06-16').toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
-    expect(x.toDb('1976-06-16').getDate()).toBe(16);
-    let toDb = x.toDb('2021-04-26');
+    let col = decorateColumnSettings<Date>({
+      dataType: Date,
+      valueConverter: DateOnlyValueConverter
+    });
+    expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
+    expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
+
+    let toDb = col.valueConverter.toDb(col.valueConverter.fromJson('2021-04-26'));
     if (toDb.getTimezoneOffset() < 0)
       expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-25');
     else
@@ -1186,47 +1360,60 @@ describe("test datetime column", () => {
     //
 
   });
-  
+
+});
+@FieldType()
+@DataControl({ click: () => { }, allowClick: () => true })
+class typefd {
+
+}
+class myClassfd {
+  @Field()
+  @DataControl({ click: () => { } })
+  a: string;
+  @Field()
+  b: typefd;
+}
+
+describe("data control overrides settings on column", () => {
+  it("testit", () => {
+    let $ = getFields(new myClassfd());
+    let defs: DataControlSettings = { field: $.a, click: null };
+    decorateDataSettings(defs.field, defs);
+    expect(defs.click).toBeNull();
+  });
+  it("testit2", () => {
+    let $ = getFields(new myClassfd());
+    let defs: DataControlSettings = { field: $.b, click: null };
+    decorateDataSettings(defs.field, defs);
+    expect(defs.click).toBeNull();
+  });
 });
 describe("Test char date storage", () => {
-  let x = new CharDateStorage();
+
+
+  let x = CharDateValueConverter;
   it("from db", () => {
-    expect(x.fromDb('19760616')).toBe('1976-06-16');
+    expect(x.toJson(x.fromDb('19760616'))).toBe('1976-06-16');
   });
   it("to db", () => {
-    expect(x.toDb('1976-06-16')).toBe('19760616');
+    expect(x.toDb(x.fromJson('1976-06-16'))).toBe('19760616');
   });
 });
-describe("test parameter priority", () => {
-  it("a", () => {
-    let t = new testMyColumn();
-    expect(t.allowApiUpdate).toBe(false);
-    t = new testMyColumn({ allowApiUpdate: true });
-    expect(t.allowApiUpdate).toBe(false);
 
-  });
-  it("b", () => {
-    let s = new AnotherTest();
-    expect(s.defs.caption).toBe('default');
-  });
-  it("c", () => {
-    let s = new AnotherTest({ caption: 'test' });
-    expect(s.defs.caption).toBe('test');
-  });
-  it("d", () => {
-    let s = new AnotherTest({ caption: 'test' });
-    expect(s.defs.caption).toBe('test');
-  });
-});
 describe("value list column without id and caption", () => {
   it("works with automatic id", () => {
-    let col = new TestStatusColumn();
+    let col = new InputField<TestStatus>({
+      valueConverter: new ValueListValueConverter(TestStatus),
+      defaultValue: () => TestStatus.open
+    });
+
     col.value = TestStatus.open;
     expect(col.value).toBe(TestStatus.open);
-    expect(col.rawValue).toBe('open');
+    expect(col.inputValue).toBe('open');
     col.value = TestStatus.closed;
-    expect(col.rawValue).toBe('cc');
-    let options = col.getOptions();
+    expect(col.inputValue).toBe('cc');
+    let options = new ValueListValueConverter(TestStatus).getOptions();
     expect(options.length).toBe(3);
     expect(options[2].caption).toBe('hh');
     expect(options[2].id).toBe('hold');
@@ -1236,23 +1423,23 @@ describe("value list column without id and caption", () => {
 describe("relation", () => {
   itAsync("should get values", async () => {
 
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
-    let rows = await r.waitLoad();
+    let rows = await r.load();
     expect(rows.length).toBe(2);
     let n = r.create();
-    expect(n.description.value).toBe("x");
+    expect(n.description).toBe("x");
   });
   itAsync("should have an array and lazy load it", async () => {
-    let c = await insertFourRows();
+    let [c] = await insertFourRows();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
     let arr = r.items;
     expect(arr.length).toBe(0);
-    await r.waitLoad();
+    await r.load();
     expect(arr.length).toBe(2);
 
   });
@@ -1277,15 +1464,50 @@ describe("context", () => {
     expect(c.user.roles.length).toBe(0);
 
   });
-  it("circular reference entity works",()=>{
-    var c= new Context();
-    var r = c.for(EntityA).create();
-  });
 
+
+});
+describe("test grid basics", () => {
+  itAsync("basically works", async () => {
+    let [c] = await insertFourRows();
+    let gs = new GridSettings(c);
+    await gs.reloadData();
+    expect(gs.columns.items.length).toBe(6);
+    expect(gs.columns._getColDisplayValue(gs.columns.items[0], gs.items[0])).toBe("1");
+
+
+  });
+});
+
+@EntityDecorator<TestCategories1>({ key: '123' })
+class TestCategories1 extends newCategories {
+  @ColumnDecorator({
+    validate: Validators.required
+  })
+  a: string;
+}
+describe("test ", () => {
+  itAsync("Test Validation,", async () => {
+    var context = new ServerContext(new InMemoryDataProvider());
+
+    var c = context.for(TestCategories1);
+    var cat = c.create();
+    cat.a = '';
+    var saved = false;
+    try {
+      await c.save(cat);
+      saved = true;
+    }
+    catch (err) {
+      expect(getEntityRef(cat).fields.a.error).toEqual("Should not be empty");
+    }
+    expect(saved).toBe(false);
+
+  });
 });
 
 class myDp extends ArrayEntityDataProvider {
-  constructor(entity: Entity) {
+  constructor(entity: EntityMetadata) {
     super(entity, []);
   }
   public update(id: any, data: any): Promise<any> {
@@ -1294,33 +1516,26 @@ class myDp extends ArrayEntityDataProvider {
 }
 
 
-class testMyColumn extends StringColumn {
-  allowApiUpdate = false;
-}
-class AnotherTest extends StringColumn {
-  constructor(x?: ColumnSettings<string>) {
-    super(x);
-    if (!this.defs.caption)
-      this.defs.caption = 'default';
-  }
-}
-
-class valueList {
-  static firstName = new valueList();
-  static listName = new valueList();
-  constructor(public id?: string, public caption?: string) { }
-}
 
 
-class EntityA extends IdEntity {
-  b = new LookupColumn(this.context.for(EntityB));
-  constructor(private context: Context) {
-    super("a");
+
+
+class mockColumnDefs implements FieldMetadata {
+  constructor(public dbName: string) {
+
   }
-}
-class EntityB extends IdEntity {
-  a = new LookupColumn(this.context.for(EntityA));
-  constructor(private context: Context) {
-    super("b");
-  }
+  options: FieldOptions<any, any>;
+  valueConverter: ValueConverter<any> = DefaultValueConverter;
+  target: ClassType<any>;
+  readonly: boolean;
+  readonly dbReadOnly: boolean;
+  readonly isServerExpression: boolean;
+  readonly key: string;
+  readonly caption: string;
+  readonly inputType: string;
+
+
+  readonly dataType: any;
+  readonly allowNull: boolean;
+  readonly dbType: string;
 }

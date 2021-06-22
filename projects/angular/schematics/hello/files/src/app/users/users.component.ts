@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Users } from './users';
-import { Context, ServerFunction } from '@remult/core';
+import { BackendMethod, Context } from '@remult/core';
 
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';
@@ -19,15 +19,15 @@ export class UsersComponent implements OnInit {
     return this.context.isAllowed(Roles.admin);
   }
 
-  users = new GridSettings(this.context.for(Users),{
+  users = new GridSettings(this.context.for(Users), {
     allowDelete: true,
     allowInsert: true,
     allowUpdate: true,
     numOfColumnsInGrid: 2,
-    get: {
-      orderBy: h => [h.name],
-      limit: 100
-    },
+
+    orderBy: h => [h.name],
+    rowsInPage: 100,
+
     columnSettings: users => [
       users.name,
       users.admin
@@ -36,25 +36,25 @@ export class UsersComponent implements OnInit {
     ],
     rowButtons: [{
       name: 'Reset Password',
-      click:async  () => {
+      click: async () => {
 
-    if (await this.dialog.yesNoQuestion("Are you sure you want to delete the password of " + this.users.currentRow.name.value)) {
-      await UsersComponent.resetPassword(this.users.currentRow.id.value);
-      this.dialog.info("Password deleted");
-    };
+        if (await this.dialog.yesNoQuestion("Are you sure you want to delete the password of " + this.users.currentRow.name)) {
+          await UsersComponent.resetPassword(this.users.currentRow.id);
+          this.dialog.info("Password deleted");
+        };
       }
-  }
+    }
     ],
     confirmDelete: async (h) => {
-      return await this.dialog.confirmDelete(h.name.value)
+      return await this.dialog.confirmDelete(h.name)
     },
   });
-  @ServerFunction({ allowed:Roles.admin })
+  @BackendMethod({ allowed: Roles.admin })
   static async resetPassword(userId: string, context?: Context) {
     let u = await context.for(Users).findId(userId);
-    if (u){
-      u.password.value = '';
-      await u.save();
+    if (u) {
+      u.password = '';
+      await u._.save();
     }
   }
 

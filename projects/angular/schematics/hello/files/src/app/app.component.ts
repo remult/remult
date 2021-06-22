@@ -2,11 +2,11 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, Route,  ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
-import { Context, ServerFunction, StringColumn, UserInfo } from '@remult/core';
+import { BackendMethod, Context,  UserInfo } from '@remult/core';
 
 import { DialogService } from './common/dialog';
-import { openDialog, RouteHelperService } from '@remult/angular';
-import { PasswordColumn, Users } from './users/users';
+import { InputField, openDialog, RouteHelperService } from '@remult/angular';
+import { PasswordControl, Users } from './users/users';
 import { Roles } from './users/roles';
 import { InputAreaComponent } from './common/input-area/input-area.component';
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -30,11 +30,11 @@ export class AppComponent implements OnInit {
   }
 
   async signIn() {
-    let user = new StringColumn({ caption: "User Name" });
-    let password = new PasswordColumn();
+    let user = new InputField<string>({ caption: "User Name" });
+    let password = new PasswordControl();
     openDialog(InputAreaComponent, i => i.args = {
       title: "Sign In",
-      columnSettings: () => [
+      fields: () => [
         user,
         password
       ],
@@ -43,18 +43,18 @@ export class AppComponent implements OnInit {
       }
     });
   }
-  @ServerFunction({ allowed: true })
+  @BackendMethod({ allowed: true })
   static async signIn(user: string, password: string, context?: Context) {
     let result: UserInfo;
     let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
-      if (await u.password.matches(password) ) {
+      if (await u.passwordMatches(password)) {
         result = {
-          id: u.id.value,
+          id: u.id,
           roles: [],
-          name: u.name.value
+          name: u.name
         };
-        if (u.admin.value) {
+        if (u.admin) {
           result.roles.push(Roles.admin);
         }
       }
@@ -84,22 +84,22 @@ export class AppComponent implements OnInit {
   }
   signUp() {
     let user = this.context.for(Users).create();
-    let password = new PasswordColumn();
-    let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
+    let password = new PasswordControl();
+    let confirmPassword = new PasswordControl({ caption: "Confirm Password" });
     openDialog(InputAreaComponent, i => i.args = {
       title: "Sign Up",
-      columnSettings: () => [
-        user.name,
+      fields: () => [
+        user.$.name,
         password,
         confirmPassword
       ],
       ok: async () => {
         if (password.value != confirmPassword.value) {
-          confirmPassword.validationError = "doesn't match password";
-          throw new Error(confirmPassword.defs.caption + " " + confirmPassword.validationError);
+          confirmPassword.error = "doesn't match password";
+          throw new Error(confirmPassword.metadata.caption + " " + confirmPassword.error);
         }
         await user.create(password.value);
-        this.setToken(await AppComponent.signIn(user.name.value, password.value));
+        this.setToken(await AppComponent.signIn(user.name, password.value));
 
       }
     });
@@ -109,31 +109,31 @@ export class AppComponent implements OnInit {
     let user = await this.context.for(Users).findId(this.context.user.id);
     openDialog(InputAreaComponent, i => i.args = {
       title: "Update Info",
-      columnSettings: () => [
-        user.name
+      fields: () => [
+        user.$.name
       ],
       ok: async () => {
-        await user.save();
+        await user._.save();
       }
     });
   }
   async changePassword() {
     let user = await this.context.for(Users).findId(this.context.user.id);
-    let password = new PasswordColumn();
-    let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
+    let password = new PasswordControl();
+    let confirmPassword = new PasswordControl({ caption: "Confirm Password" });
     openDialog(InputAreaComponent, i => i.args = {
       title: "Change Password",
-      columnSettings: () => [
+      fields: () => [
         password,
         confirmPassword
       ],
       ok: async () => {
         if (password.value != confirmPassword.value) {
-          confirmPassword.validationError = "doesn't match password";
-          throw new Error(confirmPassword.defs.caption + " " + confirmPassword.validationError);
+          confirmPassword.error = "doesn't match password";
+          throw new Error(confirmPassword.metadata.caption + " " + confirmPassword.error);
         }
         await user.updatePassword(password.value);
-        await user.save();
+        await user._.save();
       }
     });
 

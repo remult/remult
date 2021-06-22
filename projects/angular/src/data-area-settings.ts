@@ -1,38 +1,39 @@
-import { Entity } from "@remult/core";
-import { ColumnCollection } from "./column-collection";
+import {   Fields, FieldsMetadata } from "@remult/core";
+
+import { FieldCollection } from "./column-collection";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
-export interface IDataAreaSettings<rowType extends Entity = Entity> {
-  columnSettings?: (rowType: rowType) => DataArealColumnSetting<rowType>[];
+export interface IDataAreaSettings<rowType=any > {
+  fields?: (rowType: FieldsMetadata<rowType>) => DataAreaFieldsSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
 }
 
-export class DataAreaSettings<rowType extends Entity = Entity>
+export class DataAreaSettings<rowType =any>
 {
   lines: DataControlSettings[][] = [];
-  constructor(public settings?: IDataAreaSettings<rowType>, public columns?: ColumnCollection<rowType>, entity?: rowType) {
-    if (columns == undefined) {
-      columns = new ColumnCollection<rowType>(() => undefined, () => true, undefined, () => true);
-      columns.numOfColumnsInGrid = 0;
-      this.columns = columns;
+  constructor(public settings?: IDataAreaSettings<rowType>, public fields?: FieldCollection<rowType>, entity?:FieldsMetadata<rowType>) {
+    if (fields == undefined) {
+      fields = new FieldCollection<rowType>(() => undefined, () => true, undefined, () => true,()=>undefined);
+      fields.numOfColumnsInGrid = 0;
+      this.fields = fields;
     }
-    if (settings && settings.columnSettings) {
+    if (settings && settings.fields) {
 
 
-      for (const colSettings of settings.columnSettings(entity)) {
+      for (const colSettings of settings.fields(entity)) {
         if (Array.isArray(colSettings)) {
-          let x = columns.items.length;
+          let x = fields.items.length;
           //@ts-ignore
-          columns.add(...colSettings);
+          fields.add(...colSettings);
           let line = [];
-          for (let index = x; index < columns.items.length; index++) {
-            line.push(columns.items[index]);
+          for (let index = x; index < fields.items.length; index++) {
+            line.push(fields.items[index]);
           }
           this.lines.push(line);
         } else {
-          columns.add(<DataControlSettings<rowType>>colSettings);
-          this.lines.push([columns.items[columns.items.length - 1]]);
+          fields.add(<DataControlSettings<rowType>>colSettings);
+          this.lines.push([fields.items[fields.items.length - 1]]);
 
         }
       }
@@ -44,5 +45,5 @@ export class DataAreaSettings<rowType extends Entity = Entity>
 }
 
 
-export type DataArealColumnSetting<rowType extends Entity> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
+export type DataAreaFieldsSetting<rowType > = DataControlInfo<rowType> | DataControlInfo<rowType>[];
 

@@ -1,5 +1,5 @@
 
-npm run build-docs
+npm run build
 cd .vuepress/dist
 git init
 git add -A

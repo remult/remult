@@ -1,22 +1,21 @@
-import { itAsync } from './testHelper.spec';
-import { ServerContext, EntityClass } from '../context';
-import { Entity } from '../entity';
+import { fitAsync, itAsync } from './testHelper.spec';
+import { Context, ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { NumberColumn } from '../columns/number-column';
+import { Field, Entity, EntityBase } from '../remult3';
 
 
 
-describe("test server expression value", async () => {
+describe("test server expression value",  () => {
     itAsync("test basics create", async () => {
-        
+
         let c = new ServerContext(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.for(testServerExpression).create();
-        r.code.value = 5;
-        await r.save();
-        expect(r.test.value).toBe(1);
-        expect(r.testPromise.value).toBe(11);
+        r.code = 5;
+        await r._.save();
+        expect(r.test).toBe(1);
+        expect(r.testPromise).toBe(11);
         expect(testServerExpression.testVal).toBe(2);
         expect(testServerExpression.testVal2).toBe(12);
     });
@@ -25,41 +24,42 @@ describe("test server expression value", async () => {
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.for(testServerExpression).create();
-        r.code.value = 5;
-        await r.save();
+        r.code = 5;
+        await r._.save();
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         r = (await c.for(testServerExpression).find({}))[0];
-        expect(r.test.value).toBe(1);
-        expect(r.testPromise.value).toBe(11);
+        expect(r.test).toBe(1);
+        expect(r.testPromise).toBe(11);
         expect(testServerExpression.testVal).toBe(2);
         expect(testServerExpression.testVal2).toBe(12);
     });
     itAsync("test doesnt calc on client", async () => {
-        let c = new ServerContext(new InMemoryDataProvider());
-        (<any>c)._onServer = false;
+        let c = new Context();
+        c.setDataProvider(new InMemoryDataProvider());
+        
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.for(testServerExpression).create();
-        r.code.value = 5;
-        await r.save();
-        expect(r.test.value).toBe(undefined);
-        expect(r.testPromise.value).toBe(undefined);
+        r.code = 5;
+        await r._.save();
+        expect(r.test).toBe(undefined);
+        expect(r.testPromise).toBe(undefined);
         expect(testServerExpression.testVal).toBe(1);
         expect(testServerExpression.testVal2).toBe(11);
     });
     itAsync("test basics find doesnt calc on client", async () => {
-        let c = new ServerContext(new InMemoryDataProvider());
-        (<any>c)._onServer = false;
-        
+        let c = new Context();
+        c.setDataProvider(new InMemoryDataProvider());
+
         let r = c.for(testServerExpression).create();
-        r.code.value = 5;
-        await r.save();
+        r.code = 5;
+        await r._.save();
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         r = (await c.for(testServerExpression).find({}))[0];
-        expect(r.test.value).toBe(undefined);
-        expect(r.testPromise.value).toBe(undefined);
+        expect(r.test).toBe(undefined);
+        expect(r.testPromise).toBe(undefined);
         expect(testServerExpression.testVal).toBe(1);
         expect(testServerExpression.testVal2).toBe(11);
     });
@@ -68,14 +68,14 @@ describe("test server expression value", async () => {
 
 });
 
-@EntityClass
-class testServerExpression extends Entity<number>{
+@Entity({ key: 'testServerExpression' })
+class testServerExpression extends EntityBase {
     static testVal = 1;
     static testVal2 = 10;
-    code = new NumberColumn();
-    test = new NumberColumn({ serverExpression: () => testServerExpression.testVal++ });
-    testPromise = new NumberColumn({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) });
-    constructor() {
-        super();
-    }
+    @Field()
+    code: number;
+    @Field({ serverExpression: () => testServerExpression.testVal++ })
+    test: number;
+    @Field({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
+    testPromise :number;
 }

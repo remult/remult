@@ -32,7 +32,7 @@ cd remult-angular-todo
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
 ```sh
-npm i express @remult/core
+npm i express @remult/core@next
 npm i --save-dev @types/express
 ```
 #### The API server project
@@ -616,7 +616,7 @@ async setAll(completed: boolean) {
    await AppComponent.setAll(completed);
    this.loadTasks();
 }
-@ServerFunction({ allowed: true })
+@BackendMethod({ allowed: true })
 static async setAll(completed: boolean, context?: Context) {
    for await (const task of context.for(Tasks).iterate()) {
       task.completed.value = completed;
@@ -625,11 +625,11 @@ static async setAll(completed: boolean, context?: Context) {
 }
 ```
 
-::: danger Import ServerFunction
-Don't forget to import `ServerFunction` from `@remult/core` for this code to work.
+::: danger Import BackendMethod
+Don't forget to import `BackendMethod` from `@remult/core` for this code to work.
 :::
 
-The `@ServerFunction` decorator tells Remult to expose the function as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
+The `@BackendMethod` decorator tells Remult to expose the function as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
 The optional `context` argument of the static `setAll` function is omitted in the client-side calling code, and injected by Remult on the server-side with a server `Context` object. **Unlike the client implementation of the Remult `Context`, the server implementation interacts directly with the database.**
 
@@ -671,11 +671,11 @@ curl -i http://localhost:4200/api/tasks
 ::: danger Authorized server-side code can still modify tasks
 Although client CRUD requests to `tasks` API endpoints now require a signed in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCRUD` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
 
-To fix this, let's implement the same rule using the `@ServerFunction` decorator of the `setAll` method of `AppComponent`.
+To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `AppComponent`.
 
 *src/app/app.component.ts*
 ```ts
-@ServerFunction({ allowed: context => context.isSignedIn() })
+@BackendMethod({ allowed: context => context.isSignedIn() })
 ```
 :::
 ### User authentication
@@ -718,7 +718,7 @@ In this section, we'll be using the following packages:
    The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 
    ```ts
-   @ServerFunction({ allowed: true })
+   @BackendMethod({ allowed: true })
    static async signIn(username: string) {
       let validUsers = [
           { id: "1", name: "Jane", roles: [] },
@@ -866,18 +866,18 @@ Usually, not all application users have the same privileges. Let's define an `ad
    }
    ```
 
-3. Modify the `@ServerFunction` decorator of the AppComponent's `setAll` server function, to reflect the required `admin` role.
+3. Modify the `@BackendMethod` decorator of the AppComponent's `setAll` server function, to reflect the required `admin` role.
 
    *src/app/app.component.ts*
    ```ts
-   @ServerFunction({ allowed: Roles.admin })
+   @BackendMethod({ allowed: Roles.admin })
    ```
 
 4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
 
    *src/app/app.component.ts*
    ```ts{4}
-   @ServerFunction({ allowed: true })
+   @BackendMethod({ allowed: true })
    static async signIn(username: string) {
       let validUsers = {
          ["Jane"]: { id: "1", name: "Jane", roles: [ Roles.admin ] },

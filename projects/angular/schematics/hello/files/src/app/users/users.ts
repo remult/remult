@@ -1,99 +1,76 @@
 
-import { IdEntity, checkForDuplicateValue, StringColumn, BoolColumn, ColumnSettings, ServerMethod, LookupColumn, Filter } from "@remult/core";
-import { changeDate } from '../shared/types';
-import { Context, EntityClass } from '@remult/core';
+import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators } from "@remult/core";
+import { Context, } from '@remult/core';
 import { Roles } from './roles';
-import { extend } from "@remult/angular";
+import { InputField } from "@remult/angular";
+import { InputTypes } from "@remult/core/inputTypes";
 
-@EntityClass
-export class Users extends IdEntity {
-    name = new StringColumn({
-        caption: "name",
-        validate: () => {
+@Entity<Users>({
+    key: "Users",
+    allowApiRead: context => context.isSignedIn(),
+    allowApiDelete: Roles.admin,
+    allowApiUpdate: context => context.isSignedIn(),
+    allowApiInsert: Roles.admin,
+    apiDataFilter: (user, context) => {
+        if (!(context.isAllowed(Roles.admin)))
+            return user.id.isEqualTo(context.user.id);
+        return new Filter(() => { });
+    },
+    saving: async (user) => {
 
-            if (!this.name.value || this.name.value.length < 2)
-                this.name.validationError = 'Name is too short';
+        if (user.context.backend) {
+            if (user._.isNew()) {
+                user.createDate = new Date();
+                if ((await user.context.for(Users).count()) == 0)
+                    user.admin = true;// If it's the first user, make it an admin
+            }
         }
-    });
-    password = new PasswordColumn({
-        includeInApi: false
-    });
-    createDate = new changeDate({ caption: 'Create Date' });
+    }
+})
+export class Users extends IdEntity {
+    @Field({
+        validate: [Validators.required, Validators.unique]
+    })
+    name: string = '';
+    @Field({ includeInApi: false })
+    password: string = '';
+    @Field({
+        allowApiUpdate: false
+    })
+    createDate: Date = new Date();
 
-    admin = new BoolColumn({ allowApiUpdate: Roles.admin });
+    @Field({
+        allowApiUpdate: Roles.admin
+    })
+    admin: Boolean = false;
     constructor(private context: Context) {
 
-        super({
-            name: "Users",
-            allowApiRead: context.isSignedIn(),
-            allowApiDelete: Roles.admin,
-            allowApiUpdate: context.isSignedIn(),
-            allowApiInsert: Roles.admin,
-            saving: async () => {
-                if (context.onServer) {
-
-                    if (this.isNew()) {
-                        this.createDate.value = new Date();
-                        if ((await context.for(Users).count()) == 0)
-                            this.admin.value = true;// If it's the first user, make it an admin
-                    }
-                    await checkForDuplicateValue(this, this.name, this.context.for(Users));
-
-                }
-            },
-            apiDataFilter: () => {
-                if (!(context.isAllowed(Roles.admin)))
-                    return this.id.isEqualTo(this.context.user.id);
-                return new Filter(() => { });
-            }
-        });
+        super();
     }
-    @ServerMethod({ allowed: true })
+    async hashAndSetPassword(password: string) {
+        this.password = (await import('password-hash')).generate(password);
+    }
+    async passwordMatches(password: string) {
+        return !this.password || (await import('password-hash')).verify(password, this.password);
+    }
+    @BackendMethod({ allowed: true })
     async create(password: string) {
-        if (!this.isNew())
+        if (!this._.isNew())
             throw "Invalid Operation";
-        await this.password.hashAndSet(password);
-        await this.save();
+        await this.hashAndSetPassword(password);
+        await this._.save();
     }
-    @ServerMethod({ allowed: context => context.isSignedIn() })
+    @BackendMethod({ allowed: context => context.isSignedIn() })
     async updatePassword(password: string) {
-        if (this.isNew() || this.id.value != this.context.user.id)
+        if (this._.isNew() || this.id != this.context.user.id)
             throw "Invalid Operation";
-        await this.password.hashAndSet(password);
-        await this.save();
+        await this.hashAndSetPassword(password);
+        await this._.save();
     }
 }
-
-
-
-export class UserId extends LookupColumn<Users> {
-
-    constructor(context: Context, settings?: ColumnSettings<string>) {
-        super(context.for(Users), {
-            displayValue: () => this.item.name.value
-            , ...settings
-        });
-        extend(this).dataControl(settings => {
-            settings.getValue = () => this.displayValue;
-            settings.hideDataOnInput = true;
-            settings.width = '200';
-        });
-    }
-
-}
-export class PasswordColumn extends StringColumn {
-
-    constructor(settings?: ColumnSettings<string>) {
-        super({
-            ...{ caption: 'Password', inputType: 'password' },
-            ...settings
-        })
-    }
-    async hashAndSet(password: string) {
-        this.value = (await import('password-hash')).generate(password);
-    }
-    async matches(password: string) {
-        return !this.value || (await import('password-hash')).verify(password, this.value);
+export class PasswordControl extends InputField<string>
+{
+    constructor(settings?: FieldOptions) {
+        super({ ...settings, caption: 'password', inputType: InputTypes.password, defaultValue: () => '' });
     }
 }
-

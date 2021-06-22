@@ -1,27 +1,26 @@
-import { Column } from "./column";
-import { ColumnValidator } from './column-interfaces';
+import { FieldRef } from "./remult3";
 
 export class Validators {
-    static required = Object.assign((col: Column<string>, message = 'Should not be empty') => {
+    static required = Object.assign((entity: any, col: FieldRef<string, any>, message = 'Should not be empty') => {
         if (!col.value || col.value.trim().length == 0)
-            col.validationError = message;
+            col.error = message;
     }, {
         withMessage: (message: string) => {
-            return (col: Column<string>) => Validators.required(col, message)
+            return (entity: any, col: FieldRef<string, any>) => Validators.required(entity, col, message)
         }
     });
-    static unique = Object.assign(async (col: Column<any>, message = 'already exists') => {
-        if (!col.defs.entity)
+    static unique = Object.assign(async (entity: any, col: FieldRef<any, any>, message = 'already exists') => {
+        if (!col.entityRef)
             throw "unique validation may only work on columns that are attached to an entity";
 
 
-        if (col.defs.entity.isNew() || col.wasChanged()) {
-            if (await col.defs.entity.defs.provider.count(e => e.columns.find(col).isEqualTo(col.value)))
-                col.validationError = message;
+        if (col.entityRef.isNew() || col.wasChanged()) {
+            if (await col.entityRef.repository.count(e => e[col.metadata.key].isEqualTo(col.value)))
+                col.error = message;
         }
     }, {
         withMessage: (message: string) => {
-            return (col: Column<any>) => Validators.unique(col, message)
+            return (entity, col: FieldRef<any, any>) => Validators.unique(entity, col, message)
         }
     });
 }

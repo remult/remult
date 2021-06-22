@@ -1,295 +1,15 @@
-import { Allowed, Context, RoleChecker } from './context';
-import { ColumnSettings, valueOrExpressionToValue } from './column-interfaces';
+import { ClassType } from '../classType';
+import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces';
+
+import { AndFilter, Filter } from './filter/filter-interfaces';
+
+
+import {  EntityWhere, FindOptions, getEntityRef, Repository, __updateEntityBasedOnWhere } from './remult3';
 
 
 
 
-import { DefaultStorage } from './columns/storage/default-storage';
-import { Filter } from './filter/filter-interfaces';
-import { ColumnValueProvider } from './__EntityValueProvider';
-import { Entity } from './entity';
 
-export class Column<dataType = any>  {
-  //@internal
-  __setDefaultForNewRow() {
-    if (this.__settings.defaultValue) {
-      this.value = valueOrExpressionToValue(this.__settings.defaultValue);
-    }
-  }
-  //@internal
-  async __calcServerExpression() {
-    if (this.__settings.serverExpression) {
-      let x = this.__settings.serverExpression();
-      x = await x;
-      this.value = x;
-
-    }
-  }
-
-  //@internal
-  __clearErrors(): any {
-    this.validationError = undefined;
-  }
-  //@internal
-  async __performValidation() {
-    if (this.__settings.validate) {
-      if (Array.isArray(this.__settings.validate)) {
-        for (const v of this.__settings.validate) {
-          await v(this);
-        }
-      } else if (typeof this.__settings.validate === 'function')
-        await this.__settings.validate(this);
-    }
-
-  }
-
-
-  private __settings: ColumnSettings<dataType>;
-  private __defs: ColumnDefs;
-
-  get defs() {
-    if (!this.__defs)
-      this.__defs = new ColumnDefs(this.__settings, () => this.__valueProvider.getEntity());
-    return this.__defs;
-  }
-
-
-
-  constructor(settings?: ColumnSettings<dataType>) {
-    this.__settings = settings;
-    if (!this.__settings) {
-      this.__settings = {};
-    }
-  }
-
-
-
-  //@internal
-  __getStorage() {
-    return this.__defaultStorage();
-
-  }
-  //@internal
-  __defaultStorage() {
-    return new DefaultStorage<any>();
-  }
-  validationError: string;
-
-
-
-
-  isEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => {
-      let val = this.__getVal(value);
-      if (val === null)
-        add.isNull(this);
-      else
-        add.isEqualTo(this, val);
-    });
-  }
-
-  isIn(...values: (Column<dataType> | dataType)[]) {
-    return new Filter(add => add.isIn(this, values.map(x => this.__getVal(x))));
-  }
-  isNotIn(...values: (Column<dataType> | dataType)[]) {
-    return new Filter(add => {
-      for (const v of values) {
-        add.isDifferentFrom(this, this.__getVal(v));
-      }
-    });
-  }
-  isDifferentFrom(value: Column<dataType> | dataType) {
-    return new Filter(add => {
-      const val = this.__getVal(value);
-      if (val === null)
-        add.isNotNull(this);
-      else
-        add.isDifferentFrom(this, val)
-    });
-  }
-
-  //@internal
-  __getVal(value: Column<dataType> | dataType): dataType {
-
-
-    if (value instanceof Column)
-      return this.toRawValue(value.value);
-    else
-      return this.toRawValue(value);
-  }
-  //@internal
-  __valueProvider: ColumnValueProvider = new dummyColumnStorage();
-  get value() {
-    return this.fromRawValue(this.rawValue);
-  }
-  set value(value: dataType) {
-    this.rawValue = this.toRawValue(value);
-  }
-  set rawValue(value: any) {
-    this.__valueProvider.setValue(this.defs.key, this.__processValue(value));
-    this.validationError = undefined;
-    if (this.__settings.valueChange)
-      this.__settings.valueChange();
-  }
-  get rawValue() {
-    return this.__valueProvider.getValue(this.defs.key, () => this.__setDefaultForNewRow());
-  }
-  get inputValue() {
-    return this.rawValue;
-  }
-  set inputValue(value: string) {
-    this.rawValue = value;
-  }
-  get displayValue() {
-    if (this.value) {
-      if (this.__settings.displayValue)
-        return this.__settings.displayValue();
-      return this.value.toString();
-    }
-    return '';
-  }
-  get originalValue() {
-    return this.fromRawValue(this.__valueProvider.getOriginalValue(this.defs.key));
-  }
-  wasChanged() {
-    return this.value != this.originalValue;
-  }
-
-  protected __processValue(value: dataType) {
-    return value;
-
-  }
-
-
-  fromRawValue(value: any): dataType {
-    return value;
-  }
-  toRawValue(value: dataType): any {
-    return value;
-  }
-  //@internal
-  __addToPojo(pojo: any, context?: RoleChecker) {
-    if (!context || this.__settings.includeInApi === undefined || context.isAllowed(this.__settings.includeInApi)) {
-      pojo[this.defs.key] = this.rawValue;
-    }
-  }
-  //@internal
-  __loadFromPojo(pojo: any, context?: RoleChecker) {
-    if (!context ||
-      ((this.__settings.includeInApi === undefined || context.isAllowed(this.__settings.includeInApi))
-        && (this.__settings.allowApiUpdate === undefined || context.isAllowed(this.__settings.allowApiUpdate)))
-    ) {
-      let x = pojo[this.defs.key];
-      if (x != undefined)
-        this.rawValue = x;
-    }
-  }
-}
-
-class dummyColumnStorage implements ColumnValueProvider {
-  getEntity(): Entity<any> {
-    return undefined;
-  }
-
-  private _val: string;
-  private _wasSet = false;
-  public getValue(key: string, calcDefaultValue: () => void): any {
-    if (!this._wasSet) {
-      calcDefaultValue();
-    }
-    return this._val;
-  }
-  public getOriginalValue(key: string): any {
-    return this._val;
-  }
-
-
-
-
-  public setValue(key: string, value: string): void {
-    this._val = value;
-    this._wasSet = true;
-  }
-}
-export class ColumnDefs {
-  constructor(private settings: ColumnSettings, private _entity: () => Entity) {
-
-  }
-  get caption(): string {
-    return this.settings.caption;
-  }
-  set caption(v: string) {
-    this.settings.caption = v;
-  }
-  get allowNull() {
-    return !!this.settings.allowNull;
-  }
-  get inputType() {
-    if (this.settings.inputType)
-      return this.settings.inputType;
-    else 'text';
-  }
-  set inputType(inputType: string) {
-    this.settings.inputType = inputType;
-  }
-  get key(): string {
-
-    return this.settings.key;
-  }
-  set key(v: string) {
-    this.settings.key = v;
-  }
-  get entity(): Entity {
-    return this._entity();
-  }
-  get dbName(): string {
-    if (this.settings.sqlExpression) {
-      return valueOrExpressionToValue(this.settings.sqlExpression);
-    }
-    if (this.settings.dbName)
-      return this.settings.dbName;
-    return this.key;
-  }
-  __isVirtual() {
-    if (this.settings.serverExpression)
-      return true;
-    return false;
-
-  }
-  get allowApiUpdate(): Allowed {
-    return this.settings.allowApiUpdate;
-  }
-  set allowApiUpdate(value: Allowed) {
-    this.settings.allowApiUpdate = value;
-  }
-  get dbReadOnly() {
-    if (this.settings.dbReadOnly || this.settings.sqlExpression)
-      return true;
-    return this.__isVirtual();
-  }
-}
-export function getColumnsFromObject(controller: any) {
-  let __columns: Column[] = controller.__columns;;
-  if (!__columns) {
-
-    __columns = [];
-    controller.__columns = __columns;
-    for (const key in controller) {
-      if (Object.prototype.hasOwnProperty.call(controller, key)) {
-        const element = controller[key];
-        if (element instanceof Column) {
-          if (!element.defs.key)
-            element.defs.key = key;
-          if (!element.defs.caption)
-            element.defs.caption = makeTitle(element.defs.key);
-          __columns.push(element);
-        }
-
-      }
-    }
-  }
-  return __columns;
-}
 export function makeTitle(name: string) {
 
   // insert a space before all caps
@@ -299,30 +19,179 @@ export function makeTitle(name: string) {
 
 }
 
-export class ComparableColumn<dataType = any> extends Column<dataType>{
-  isGreaterOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterOrEqualTo(this, this.__getVal(value)));
+
+
+
+
+export class CompoundIdField implements FieldMetadata<string> {
+  fields: FieldMetadata[];
+  constructor(...columns: FieldMetadata[]) {
+    this.fields = columns;
   }
-  isGreaterThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isGreaterThan(this, this.__getVal(value)));
+  getId(instance: any) {
+    let r = "";
+    this.fields.forEach(c => {
+      if (r.length > 0)
+        r += ',';
+      r += instance[c.key];
+    });
+    return r;
   }
-  isLessOrEqualTo(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessOrEqualTo(this, this.__getVal(value)));
+  options: FieldOptions<any, any>;
+  get valueConverter(): ValueConverter<string> {
+    throw new Error("cant get value converter of compound id");
   }
-  isLessThan(value: Column<dataType> | dataType) {
-    return new Filter(add => add.isLessThan(this, this.__getVal(value)));
+
+  target: ClassType<any>;
+  readonly: true;
+
+  allowNull: boolean;
+  dbReadOnly: boolean;
+  isServerExpression: boolean;
+  key: string;
+  caption: string;
+  inputType: string;
+  dbName: string;
+
+  dataType: any
+  isEqualTo(value: FieldMetadata<string> | string): Filter {
+    return new Filter(add => {
+      let val = value.toString();
+      let id = val.split(',');
+      this.fields.forEach((c, i) => {
+        add.isEqualTo(c, id[i]);
+      });
+    });
+  }
+
+
+  resultIdFilter(id: string, data: any) {
+    return new Filter(add => {
+      let idParts: any[] = [];
+      if (id != undefined)
+        idParts = id.split(',');
+      this.fields.forEach((c, i) => {
+        let val = undefined;
+        if (i < idParts.length)
+          val = idParts[i];
+        if (data[c.key] != undefined)
+          val = data[c.key];
+        add.isEqualTo(c, val);
+      });
+
+    });
   }
 }
 
-export function __isGreaterOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isGreaterOrEqualTo(col, col.__getVal(value)));
+
+
+
+
+
+
+export class LookupColumn<T> {
+  setId(val: any) {
+    if (this.repository.metadata.idMetadata.field.dataType == Number)
+      val = +val;
+    this.id = val;
+  }
+  waitLoadOf(id: any) {
+    if (id === undefined || id === null)
+      return null;
+    return this.repository.getCachedByIdAsync(id);
+  }
+  get(id: any): any {
+    if (id === undefined || id === null)
+      return null;
+    return this.repository.getCachedById(id);
+  }
+  set(item: T) {
+    if (item) {
+      if (typeof item === "string" || typeof item === "number")
+        this.id = item as any;
+      else {
+        let eo = getEntityRef(item, false);
+        if (eo) {
+          this.repository.addToCache(item);
+          this.id = eo.getId();
+        }
+        else {
+          this.id = item[this.repository.metadata.idMetadata.field.key];
+        }
+      }
+    }
+    else {
+      this.id = undefined;
+    }
+  }
+
+  constructor(private repository: Repository<T>, public id: string
+  ) { }
+  exists() {
+    return !this.repository.getEntityRef(this.item).isNew();
+  }
+  get item(): T {
+
+    return this.get(this.id);
+  }
+  async waitLoad() {
+    return this.waitLoadOf(this.id);
+  }
 }
-export function __isGreaterThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isGreaterThan(col, col.__getVal(value)));
+
+
+export class ManyToOne<T>{
+  constructor(private repository: Repository<T>,
+    private where: EntityWhere<T>
+  ) { }
+  exists() {
+    return !this.repository.getEntityRef(this.item).isNew();
+  }
+  get item(): T {
+    return this.repository.lookup(this.where);
+  }
+  async load() {
+    return this.repository.lookupAsync(this.where);
+  }
 }
-export function __isLessOrEqualTo<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isLessOrEqualTo(col, col.__getVal(value)));
-}
-export function __isLessThan<dataType>(col: Column<dataType>, value: Column<dataType> | dataType) {
-  return new Filter(add => add.isLessThan(col, col.__getVal(value)));
+
+export class OneToMany<T>{
+  constructor(private provider: Repository<T>,
+    private settings?: {
+      create?: (newItem: T) => void,
+    } & FindOptions<T>) {
+    if (!this.settings)
+      this.settings = {};
+  }
+  private _items: T[];
+  private _currentPromise: Promise<T[]>;
+  get items() {
+    this.load();
+    return this._items;
+  }
+  async load() {
+    if (this._currentPromise != null)
+      return this._currentPromise;
+    if (this._items === undefined)
+      this._items = [];
+    return this._currentPromise = this.find().then(x => {
+      this._items.splice(0);
+      this._items.push(...x);
+      return this._items;
+    });
+  }
+  async reload() {
+    this._currentPromise = undefined;
+    return this.load();
+  }
+  private async find(): Promise<T[]> {
+    return this.provider.find(this.settings)
+  }
+  create(): T {
+    let r = this.provider.create();
+    __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
+    if (this.settings.create)
+      this.settings.create(r);
+    return r;
+  }
 }

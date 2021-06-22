@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { GridSettings } from '@remult/angular';
-import { Context } from '@remult/core';
+import { DataControl, GridSettings } from '@remult/angular';
+import { Context, Field, getFields } from '@remult/core';
 import { Categories } from './categories';
 
 @Component({
@@ -10,9 +10,15 @@ import { Categories } from './categories';
 })
 export class CategoriesComponent implements OnInit {
 
-  constructor(private context:Context) { }
+  constructor(private context: Context) { }
 
-  categories =new GridSettings(this.context.for(Categories));
+  @Field()
+  @DataControl({
+    valueList: [{ id: '1', caption: 'a' }, { id: '2', caption: 'b' },{id:null,caption:'null'}]
+  })
+  something: string = null;
+
+  $ = getFields(this);
   ngOnInit() {
   }
 

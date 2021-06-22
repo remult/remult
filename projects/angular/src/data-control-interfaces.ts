@@ -1,21 +1,26 @@
-import { Column, ColumnSettings, Entity, ValueListColumn, ValueListItem, ValueOrEntityExpression } from "@remult/core";
+import {  FieldRef,  FieldMetadata, Entity, ValueListItem } from "@remult/core";
+import { ValueListValueConverter } from "@remult/core/valueConverters";
+import { InputField } from "./column-collection";
 
-export type DataControlInfo<rowType extends Entity = Entity> = DataControlSettings<rowType> | Column;
-export interface DataControlSettings<entityType extends Entity = Entity> {
 
-    column?: Column;
-    getValue?: (row: entityType) => any;
-    readOnly?: ValueOrEntityExpression<boolean, entityType>;
+
+export type DataControlInfo<rowType> = DataControlSettings<rowType> | FieldRef<any, any>;
+export interface DataControlSettings<entityType = any, fieldType = any> {
+
+    field?: FieldMetadata | FieldRef<any, any>;
+    getValue?: (row: entityType, val: FieldRef<fieldType, entityType>) => any;
+    readonly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType) => boolean;
+    visible?: (row: entityType, val: FieldRef<fieldType, entityType>) => boolean;
 
-    click?: (row: entityType) => void;
-    allowClick?: (row: entityType) => boolean;
+    click?: (row: entityType, val: FieldRef<fieldType, entityType>) => void;
+    valueChange?: (row: entityType, val: FieldRef<fieldType, entityType>) => void;
+    allowClick?: (row: entityType, val: FieldRef<fieldType, entityType>) => boolean;
     clickIcon?: string;
 
-    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | (() => Promise<ValueListItem[]>);
+    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>) | ((context) => ValueListItem[]);
     inputType?: string; //used: password,date,tel,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     forceEqualFilter?: boolean;
@@ -24,103 +29,87 @@ export interface DataControlSettings<entityType extends Entity = Entity> {
 }
 
 
-export function extend<T extends Column>(col: T): {
-    dataControl(set: (settings: DataControlSettings) => void): T;
-} {
-    return {
-        dataControl: (set) => {
-            let configureDataControl: (settings: DataControlSettings) => void = col[configDataControlField];
-            if (configureDataControl) {
-                var existing = configureDataControl;
-                configureDataControl = z => {
-                    existing(z);
-                    set(z);
-                }
-            }
-            else
-                configureDataControl = set;
-            col[configDataControlField] = configureDataControl;
-            return col;
-        }
-    }
-}
 
 
 
 
 export const configDataControlField = Symbol('configDataControlField');
 
-export function decorateDataSettings(col: Column<any>, x: DataControlSettings) {
-    if (!x.caption && col.defs.caption)
-        x.caption = col.defs.caption;
-    if (!x.inputType && col.defs.inputType)
-        x.inputType = col.defs.inputType;
-    let settings: ColumnSettings = col["__settings"];
-    if (x.readOnly == undefined) {
-        if (settings.sqlExpression)
-            x.readOnly = true;
-        else
+export function getFieldDefinition(col: FieldMetadata | FieldRef<any, any>) {
+    if (!col)
+        return undefined;
+    let r = col as FieldMetadata;
+    let c = col as FieldRef<any, any>;
+    if (c.metadata)
+        r = c.metadata;
+    return r;
 
-            if (typeof settings.allowApiUpdate === 'boolean')
-                x.readOnly = !settings.allowApiUpdate;
+}
+export function decorateDataSettings(colInput: FieldMetadata | FieldRef<any, any>, x: DataControlSettings) {
+    if (colInput instanceof InputField) {
 
+        for (const key in colInput.dataControl) {
+            if (Object.prototype.hasOwnProperty.call(colInput.dataControl, key)) {
+                const element = colInput.dataControl[key];
+                if (x[key] === undefined)
+                    x[key] = element;
+            }
 
+        }
     }
 
-
-    col[__displayResult] = __getDataControlSettings(col);
-    if (col[__displayResult]) {
-        if (!x.getValue && col[__displayResult].getValue) {
-            x.getValue = e => {
-                let c: Column = col;
-                if (e)
-                    c = e.columns.find(c) as Column;
-                if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(c);
-                return c[__displayResult].getValue(e);
-            };
-        }
-        if (!x.click && col[__displayResult].click) {
-            x.click = e => {
-                let c: Column = col;
-                if (e)
-                    c = e.columns.find(c) as Column;
-                if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(c);
-                c[__displayResult].click(e);
-            };
-        }
-        if (!x.allowClick && col[__displayResult].allowClick) {
-            x.allowClick = e => {
-                let c: Column = col;
-                if (e)
-                    c = e.columns.find(c) as Column;
-                if (!c[__displayResult])
-                    c[__displayResult] = __getDataControlSettings(c);
-                return c[__displayResult].allowClick(e);
-            };
-        }
-        for (const key in col[__displayResult]) {
-            if (col[__displayResult].hasOwnProperty(key)) {
-                const val = col[__displayResult][key];
-                if (val !== undefined && x[key] === undefined) {
-                    x[key] = val;
+    let col = getFieldDefinition(colInput);
+    if (col.target) {
+        let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);
+        if (settingsOnColumnLevel) {
+            for (const key in settingsOnColumnLevel) {
+                if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
+                    const element = settingsOnColumnLevel[key];
+                    if (x[key] === undefined)
+                        x[key] = element;
                 }
             }
         }
     }
-}
-const __displayResult = Symbol("__displayResult");
-
-export function __getDataControlSettings(col: Column): DataControlSettings {
-    if (col[configDataControlField]) {
-        let r = {};
-        col[configDataControlField](r);
-        return r;
-    } if (col instanceof ValueListColumn) {
-        col[configDataControlField] = (x: DataControlSettings) => {
-            x.valueList = col.getOptions();
-        };
+    if (col.dataType) {
+        let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.dataType);
+        if (settingsOnColumnLevel) {
+            for (const key in settingsOnColumnLevel) {
+                if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {
+                    const element = settingsOnColumnLevel[key];
+                    if (x[key] === undefined)
+                        x[key] = element;
+                }
+            }
+        }
     }
-    return undefined;
+    if (x.valueList === undefined && col && col.valueConverter instanceof ValueListValueConverter)
+        x.valueList = col.valueConverter.getOptions();
+
+
+    if (!x.caption && col.caption)
+        x.caption = col.caption;
+
+    if (!x.inputType && col.inputType)
+        x.inputType = col.inputType;
+
+    if (x.readonly == undefined) {
+        if (col.dbReadOnly)
+            x.readonly = true;
+
+        if (typeof col.options?.allowApiUpdate === 'boolean')
+            x.readonly = !col.options.allowApiUpdate;
+    }
+}
+
+
+export declare type ValueOrEntityExpression<valueType, entityType> = valueType | ((e: entityType) => valueType);
+
+
+export function DataControl<entityType = any, colType = any>(settings: DataControlSettings<entityType, colType>) {
+    return (target, key?) => {
+        Reflect.defineMetadata(configDataControlField, settings, target, key);
+        if (key === undefined)
+            return target;
+    }
 }

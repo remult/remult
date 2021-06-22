@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Column,   Entity, StringColumn, ValueListItem } from '@remult/core';
-import { ColumnCollection } from '../../column-collection';
+import { Entity, ValueListItem,  FieldMetadata,  FieldRef } from '@remult/core';
+
+import { FieldCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
 
 
@@ -12,19 +13,19 @@ import { DataControlSettings, decorateDataSettings } from '../../data-control-in
 })
 export class DataControl2Component {
   @Input() map: DataControlSettings;
-  @Input() set column(value: Column) {
+  @Input() set field(value: FieldMetadata | FieldRef<any, any>) {
     this.map = {
-      column: value
+      field: value
     };
-    decorateDataSettings(this.map.column,this.map);
+    decorateDataSettings(this.map.field, this.map);
   }
   theId: any;
-  @Input() record: Entity;
+  @Input() record: any;
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined);
+  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined, () => undefined);
   showDescription() {
 
-    return (this.map.column) && this.map.getValue || !this._getEditable();
+    return (this.map.field) && this.map.getValue || !this._getEditable();
   }
   getDropDown(): ValueListItem[] {
     return this.map.valueList as ValueListItem[];
@@ -37,7 +38,7 @@ export class DataControl2Component {
     if (this.map.allowClick === undefined) {
       return true;
     }
-    return this.map.allowClick(this.record);
+    return this.settings.allowClick(this.map, this.record);
   }
   click() {
     if (this.showClick())
@@ -52,9 +53,10 @@ export class DataControl2Component {
 
     return this.settings.__dataControlStyle(this.map);
   }
+  dummy = { inputValue: '' };
   _getColumn() {
-    if (!this.map.column)
-      return new StringColumn();
+    if (!this.map.field)
+      return this.dummy;
     return this.settings.__getColumn(this.map, this.record);
 
   }

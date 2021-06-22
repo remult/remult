@@ -1,6 +1,6 @@
 import { Router, Route, CanActivate, ActivatedRouteSnapshot } from '@angular/router';
 import { Injectable, Injector } from '@angular/core';
-import { Context, Allowed, AngularComponent } from '@remult/core';
+import { Context, Allowed } from '@remult/core';
 @Injectable()
 export class RouteHelperService {
     constructor(private router: Router, private injector: Injector) {
@@ -36,6 +36,7 @@ export class RouteHelperService {
         return true;
     }
 }
+export declare type AngularComponent = { new(...args: any[]): any };
 // @dynamic
 @Injectable()
 export class SignedInGuard implements CanActivate {

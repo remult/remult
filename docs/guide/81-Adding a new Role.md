@@ -94,15 +94,29 @@ const routes: Routes = [
 
 ### Step 1 add Column to Users Entity
 Let's add another `BoolColumn` to the `users` entity, in the `users.ts` file:
-```ts{8}
-@EntityClass
+```ts{19-22}
 export class Users extends IdEntity  {
     constructor(private context: Context) {
 ...
-    password = new radweb.StringColumn({ caption: 'password', inputType: 'password', virtualData: () => this.realStoredPassword.value ? Users.emptyPassword : '' });
-    createDate = new changeDate('Create Date');
-    admin = new BoolColumn();
-    productManager = new BoolColumn();
+   @Field({
+        validate: [Validators.required, Validators.unique]
+    })
+    name: string = '';
+    @Field({ includeInApi: false })
+    password: string = '';
+    @Field({
+        allowApiUpdate: false
+    })
+    createDate: Date = new Date();
+
+    @Field({
+        allowApiUpdate: Roles.admin
+    })
+    admin: Boolean = false;
+    @Field({
+        allowApiUpdate: Roles.admin
+    })
+    productManager: Boolean = false;
 ...
 }
 ```
@@ -112,7 +126,7 @@ Let's add that column to the UI in the `users.component.ts`
 ```ts{7,15}
 export class UsersComponent implements OnInit {
  ...
-  users = this.context.for(Users).gridSettings({
+  products = new GridSettings(this.context.for(Users),{
     allowDelete: true,
     allowInsert: true,
     allowUpdate: true,
@@ -126,46 +140,38 @@ export class UsersComponent implements OnInit {
       users.admin,
       users.productManager
     ],
-    confirmDelete: (h, yes) => this.dialog.confirmDelete(h.name.value, yes),
+    confirmDelete: (h, yes) => this.dialog.confirmDelete(h.name, yes),
   });
  ...
 ```
 
 ### Step 3, Set Role on User Sign In
 
-The `server-sign-in.ts` file contains the `signIn` function that signs the user in. In that function we would like to add the `productManager` role if the user has it.
-```ts{21-23}
-import { Roles } from './roles';
-import { JWTCookieAuthorizationHelper } from '@remult/core-server';
-import { ServerFunction } from '@remult/core';
-import { UserInfo, Context } from '@remult/core';
-import { Users } from './users';
-export class ServerSignIn {
-    static helper: JWTCookieAuthorizationHelper;
-    @ServerFunction({ allowed: () => true })
-    static async signIn(user: string, password: string, context?: Context) {
-        let result: UserInfo;
-        await context.for(Users).foreach(h => h.name.isEqualTo(user), async (h) => {
-            if (!h.realStoredPassword.value || Users.passwordHelper.verify(password, h.realStoredPassword.value)) {
-                result = {
-                    id: h.id.value,
-                    roles: [],
-                    name: h.name.value
-                };
-                if (h.admin.value) {
-                    result.roles.push(Roles.admin);
-                }
-                if (h.productManager.value||h.admin.value){
-                    result.roles.push(Roles.productManager);
-                }
-            }
-        });
-        if (result) {
-            return ServerSignIn.helper.createSecuredTokenBasedOn(<any>result);
+The `app.component.ts` file contains the `signIn` function that signs the user in. In that function we would like to add the `productManager` role if the user has it.
+```ts{15-17}
+@BackendMethod({ allowed: true })
+  static async signIn(user: string, password: string, context?: Context) {
+    let result: UserInfo;
+    let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
+    if (u)
+      if (await u.passwordMatches(password)) {
+        result = {
+          id: u.id,
+          roles: [],
+          name: u.name
+        };
+        if (u.admin) {
+          result.roles.push(Roles.admin);
         }
-        return undefined;
+        if (u.productManager||u.admin)
+          result.roles.push(Roles.productManager);
+      }
+
+    if (result) {
+      return (await import('jsonwebtoken')).sign(result, process.env.TOKEN_SIGN_KEY);
     }
-}
+    throw new Error("Invalid Sign In Info");
+  }
 ```
 
 Note that you'll have to sign out and sign back in to have this role.

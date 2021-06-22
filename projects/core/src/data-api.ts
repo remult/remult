@@ -1,39 +1,31 @@
-
-
-
-import { FindOptions, EntityProvider, translateEntityWhere } from './data-interfaces';
-import { Column } from './column';
-import { Entity } from './entity';
-import { Sort } from './sort';
-
+import { EntityOptions } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
-import { StringColumn } from './columns/string-column';
-import { UserInfo, SpecificEntityHelper } from './context';
+import { Context, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { extractWhere, unpackWhere } from './filter/filter-consumer-bridge-to-url-builder';
+import {  FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
+import { SortSegment } from './sort';
+import { ErrorInfo } from './data-interfaces';
 
-export class DataApi<T extends Entity = Entity> {
+export class DataApi<T = any> {
   getRoute() {
-    if (!this.options.name)
-      return this.entityProvider.create().defs.name;
     return this.options.name;
   }
   options: DataApiSettings<T>;
-  constructor(private entityProvider: SpecificEntityHelper<any, T>) {
-    this.options = entityProvider._getApiSettings();
+  constructor(private repository: Repository<T>, private context: Context) {
+    this.options = this._getApiSettings();
   }
 
   async get(response: DataApiResponse, id: any) {
     if (this.options.allowRead == false) {
-      response.methodNotAllowed();
+      response.forbidden();
       return;
     }
-    await this.doOnId(response, id, async row => response.success(this.entityProvider.toApiPojo(row)));
+    await this.doOnId(response, id, async row => response.success(this.repository.getEntityRef(row).toApiJson()));
   }
   async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     try {
 
-      response.success({ count: +await this.entityProvider.count(t => this.buildWhere(t, request, filterBody)) });
+      response.success({ count: +await this.repository.count(t => this.buildWhere(t, request, filterBody)) });
     } catch (err) {
       response.error(err);
     }
@@ -41,7 +33,7 @@ export class DataApi<T extends Entity = Entity> {
 
   async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     if (this.options.allowRead == false) {
-      response.methodNotAllowed();
+      response.forbidden();
       return;
     }
     try {
@@ -52,14 +44,13 @@ export class DataApi<T extends Entity = Entity> {
       findOptions.where = t => this.buildWhere(t, request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        var e = this.entityProvider.create();
-        let w = translateEntityWhere(findOptions.where, e);
+        let w = Filter.translateWhereToFilter(Filter.createFilterFactories(this.repository.metadata), findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {
-              if (col == e.columns.idColumn)
+              if (this.repository.metadata.idMetadata.isIdField(col))
                 hasId = true;
             },
             isGreaterOrEqualTo: () => { },
@@ -74,7 +65,7 @@ export class DataApi<T extends Entity = Entity> {
           });
         }
         if (!hasId) {
-          response.methodNotAllowed();
+          response.forbidden();
           return
         }
       }
@@ -83,49 +74,34 @@ export class DataApi<T extends Entity = Entity> {
         let sort = <string>request.get("_sort");
         if (sort != undefined) {
           let dir = request.get('_order');
-          let dirItems: string[] = [];
-          if (dir)
-            dirItems = dir.split(',');
-          findOptions.orderBy = x => {
-            let r = new Sort();
-            sort.split(',').forEach((name, i) => {
-              let col = x.columns.find(name.trim());
-              if (col) {
-                r.Segments.push({
-                  column: col,
-                  descending: i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d")
-                });
-              }
-            });
-            return r;
-          }
+          findOptions.orderBy = determineSort(sort, dir);
 
         }
         let limit = +request.get("_limit");
         if (!limit)
-          limit = 25;
+          limit = 200;
         findOptions.limit = limit;
         findOptions.page = +request.get("_page");
 
       }
-      await this.entityProvider.find(findOptions)
+      await this.repository.find(findOptions)
         .then(async r => {
-          response.success(await Promise.all(r.map(async y => this.entityProvider.toApiPojo(y))));
+          response.success(await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson())));
         });
     }
     catch (err) {
       response.error(err);
     }
   }
-  private buildWhere(rowType: T, request: DataApiRequest, filterBody: any) {
+  private buildWhere(entity: FilterFactories<T>, request: DataApiRequest, filterBody: any) {
     var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
-      where = translateEntityWhere(this.options.get.where, rowType);
+      where = Filter.translateWhereToFilter(entity, this.options.get.where);
     if (request) {
-      where = new AndFilter(where, extractWhere(rowType, request));
+      where = new AndFilter(where, Filter.extractWhere(this.repository.metadata, request));
     }
     if (filterBody)
-      where = new AndFilter(where, unpackWhere(rowType, filterBody))
+      where = new AndFilter(where, Filter.unpackWhere(this.repository.metadata, filterBody))
     return where;
   }
 
@@ -136,13 +112,8 @@ export class DataApi<T extends Entity = Entity> {
 
 
 
-      await this.entityProvider.find({
-        where: x => {
-          let where: Filter = x.columns.idColumn.isEqualTo(id);
-          if (this.options && this.options.get && this.options.get.where)
-            where = new AndFilter(where, translateEntityWhere(this.options.get.where, x));
-          return where;
-        }
+      await this.repository.find({
+        where: [this.options?.get?.where, x => this.repository.metadata.idMetadata.getIdFilter(id)]
       })
         .then(async r => {
           if (r.length == 0)
@@ -159,23 +130,54 @@ export class DataApi<T extends Entity = Entity> {
   async put(response: DataApiResponse, id: any, body: any) {
 
     await this.doOnId(response, id, async row => {
-      this.entityProvider._updateEntityBasedOnApi(row, body);
-      if (!this.entityProvider._getApiSettings(row).allowUpdate()) {
-        response.methodNotAllowed();
+      (this.repository.getEntityRef(row) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
+      if (!this._getApiSettings().allowUpdate(row)) {
+        response.forbidden();
         return;
       }
-      await row.save();
-      response.success(this.entityProvider.toApiPojo(row));
+      await this.repository.getEntityRef(row).save();
+      response.success(this.repository.getEntityRef(row).toApiJson());
     });
+  }
+   _getApiSettings(): DataApiSettings<T> {
+
+    let options = this.repository.metadata.options;
+    if (options.allowApiCrud !== undefined) {
+      if (options.allowApiDelete === undefined)
+        options.allowApiDelete = options.allowApiCrud;
+      if (options.allowApiInsert === undefined)
+        options.allowApiInsert = options.allowApiCrud;
+      if (options.allowApiUpdate === undefined)
+        options.allowApiUpdate = options.allowApiCrud;
+      if (options.allowApiRead === undefined)
+        options.allowApiRead = options.allowApiCrud;
+    }
+
+    return {
+      name: options.key,
+      allowRead: this.context.isAllowed(options.allowApiRead),
+      allowUpdate: (e) => this.context.isAllowedForInstance(e, options.allowApiUpdate),
+      allowDelete: (e) => this.context.isAllowedForInstance(e, options.allowApiDelete),
+      allowInsert: (e) => this.context.isAllowedForInstance(e, options.allowApiInsert),
+      requireId: this.context.isAllowed(options.apiRequireId),
+      get: {
+        where: x => {
+          if (options.apiDataFilter) {
+            return options.apiDataFilter(x, this.context);
+          }
+          return undefined;
+        }
+      }
+    }
   }
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
 
-      if (!this.entityProvider._getApiSettings(row).allowDelete()) {
-        response.methodNotAllowed();
+      if (!this._getApiSettings().allowDelete(row)) {
+        response.forbidden();
         return;
       }
-      await row.delete();
+      await this.repository.getEntityRef(row).delete();
       response.deleted();
     });
   }
@@ -184,25 +186,25 @@ export class DataApi<T extends Entity = Entity> {
   async post(response: DataApiResponse, body: any) {
 
     try {
-
-      let r = this.entityProvider._updateEntityBasedOnApi(this.entityProvider.create(), body);
-      if (!this.entityProvider._getApiSettings(r).allowInsert()) {
-        response.methodNotAllowed();
+      let newr = this.repository.create();
+      (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
+      if (!this._getApiSettings().allowInsert(newr)) {
+        response.forbidden();
         return;
       }
 
-      await r.save();
-      response.created(this.entityProvider.toApiPojo(r));
+      await this.repository.getEntityRef(newr).save();
+      response.created(this.repository.getEntityRef(newr).toApiJson());
     } catch (err) {
       response.error(err);
     }
   }
 
 }
-export interface DataApiSettings<rowType extends Entity> {
-  allowUpdate: () => boolean,
-  allowInsert: () => boolean,
-  allowDelete: () => boolean,
+export interface DataApiSettings<rowType> {
+  allowUpdate: (row: rowType) => boolean,
+  allowInsert: (row: rowType) => boolean,
+  allowDelete: (row: rowType) => boolean,
   requireId: boolean,
   name?: string,
   allowRead?: boolean,
@@ -215,8 +217,7 @@ export interface DataApiResponse {
   deleted(): void;
   created(data: any): void;
   notFound(): void;
-  error(data: DataApiError): void;
-  methodNotAllowed(): void;
+  error(data: ErrorInfo): void;
   forbidden(): void;
   progress(progress: number): void;
 
@@ -224,14 +225,39 @@ export interface DataApiResponse {
 
 
 
-export interface DataApiError {
-  message: string;
-  stack?:string;
-}
+
 export interface DataApiRequest {
   getBaseUrl(): string;
   get(key: string): any;
   getHeader(key: string): string;
   user: UserInfo;
   clientIp: string;
+}
+export function determineSort(sortUrlParm: string, dirUrlParam: string) {
+  let dirItems: string[] = [];
+  if (dirUrlParam)
+    dirItems = dirUrlParam.split(',');
+  return x => {
+    return sortUrlParm.split(',').map((name, i) => {
+      let r: SortSegment = x[name.trim()];
+      if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
+        return { field: r.field, isDescending: true };
+      return r;
+    });
+
+  };
+}
+
+
+
+export function serializeError(data: ErrorInfo) {
+  if (data instanceof TypeError) {
+    data = { message: data.message, stack: data.stack };
+  }
+  let x = JSON.parse(JSON.stringify(data));
+  if (!x.message && !x.modelState)
+    data = { message: data.message, stack: data.stack };
+  if (typeof x === 'string')
+    data = { message: x };
+  return data;
 }

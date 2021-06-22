@@ -3,8 +3,9 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Column,  Entity, StringColumn, ValueListItem } from '@remult/core';
-import { ColumnCollection } from '../../column-collection';
+import {  FieldMetadata, Entity, ValueListItem } from '@remult/core';
+
+import { FieldCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
 
 @Component({
@@ -14,22 +15,22 @@ import { DataControlSettings, decorateDataSettings } from '../../data-control-in
 })
 export class DataControl3Component {
   @Input() map: DataControlSettings;
-  @Input() set column(value: Column) {
+  @Input() set column(value: FieldMetadata) {
     this.map = {
-      column: value
+      field: value
     };
-    decorateDataSettings(this.map.column,this.map);
+    decorateDataSettings(this.map.field, this.map);
   }
   @Input() rightToLeft = false;
 
   theId: any;
-  @Input() record: Entity;
+  @Input() record: any;
 
   @Input() notReadonly: false;
-  @Input() settings: ColumnCollection = new ColumnCollection(undefined, () => true, undefined, undefined);
+  @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined, () => undefined);
   showDescription() {
 
-    return (this.map.column) && this.map.getValue || !this._getEditable();
+    return (this.map.field) && this.map.getValue || !this._getEditable();
   }
   showClick() {
     if (!this.map.click)
@@ -39,7 +40,7 @@ export class DataControl3Component {
     if (this.map.allowClick === undefined) {
       return true;
     }
-    return this.map.allowClick(this.record);
+    return this.settings.allowClick(this.map, this.record);
   }
   getClickIcon() {
     if (this.map.clickIcon)
@@ -50,9 +51,10 @@ export class DataControl3Component {
 
     return this.settings.__dataControlStyle(this.map);
   }
+  dummy = { inputValue: '' };
   _getColumn() {
-    if (!this.map.column)
-      return new StringColumn();
+    if (!this.map.field)
+      return this.dummy;
     return this.settings.__getColumn(this.map, this.record);
 
   }
@@ -63,23 +65,23 @@ export class DataControl3Component {
   _getEditable() {
     if (this.notReadonly)
       return true;
-    return this.settings._getEditable(this.map,this.record);
+    return this.settings._getEditable(this.map, this.record);
   }
   ngOnChanges(): void {
 
   }
-  getDropDown():ValueListItem[]{
+  getDropDown(): ValueListItem[] {
     return this.map.valueList as ValueListItem[];
   }
   isSelect(): boolean {
-    if (this.map.valueList&&this._getEditable())
+    if (this.map.valueList && this._getEditable())
       return true;
     return false;
   }
   showTextBox() {
-    return !this.isSelect() && !this.showCheckbox()&&this._getEditable();
+    return !this.isSelect() && !this.showCheckbox() && this._getEditable();
   }
-  showReadonlyText(){
+  showReadonlyText() {
     return !this._getEditable();
   }
   showCheckbox() {

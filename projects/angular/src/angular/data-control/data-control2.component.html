@@ -1,8 +1,8 @@
 <div class="data-control2">
-    <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="!showCheckbox()"
+    <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="showTextBox()"
         class="full-width-form-field dense-form-field">
         <mat-label>{{map.caption}}</mat-label>
-        <div style="display:flex;" *ngIf="showTextBox()">
+        <div style="display:flex;">
             <input #theId matInput [(ngModel)]="_getColumn().inputValue" type="{{settings._getColDataType(map)}}"
                 (ngModelChange)="settings._colValueChanged(map,record)" [errorStateMatcher]="ngErrorStateMatches"
                 [ngStyle]="getStyle()" />
@@ -12,20 +12,23 @@
             padding-left:10px;width:100%;" (click)="click()">
                 {{settings._getColDisplayValue(map,record)}}&nbsp;</div>
         </div>
-        <div *ngIf="isSelect()">
-            <select matNativeControl [(ngModel)]="_getColumn().inputValue"
-                (ngModelChange)="settings._colValueChanged(map,record)">
-                <option *ngFor="let v of getDropDown()" value="{{v.id}}">{{v.caption}}</option>
-
-            </select>
-        </div>
-
         <button mat-icon-button matSuffix *ngIf="showClick()" (click)="click()">
             <mat-icon>{{getClickIcon()}} </mat-icon>
         </button>
-
         <mat-error *ngIf="getError()" [id]="theId">{{getError()}}</mat-error>
     </mat-form-field>
+    <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="isSelect()"
+        class="full-width-form-field dense-form-field">
+        <mat-label>{{map.caption}}</mat-label>
+        <div *ngIf="isSelect()">
+            <select matNativeControl [(ngModel)]="_getColumn().inputValue"
+                (ngModelChange)="settings._colValueChanged(map,record)">
+                <option *ngFor="let v of getDropDown()" [ngValue]="v.id">{{v.caption}}</option>
+            </select>
+        </div>
+        <mat-error *ngIf="getError()" [id]="theId">{{getError()}}</mat-error>
+    </mat-form-field>
+
     <div *ngIf="showCheckbox()">
         <mat-checkbox #theId1 [(ngModel)]="_getColumn().inputValue"
             (ngModelChange)="settings._colValueChanged(map,record)" class="fix-label">{{map.caption}}</mat-checkbox>

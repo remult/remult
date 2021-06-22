@@ -1,51 +1,111 @@
 /*
  * Public API Surface of @remult/core
  */
+export {
+    Field,
+    FieldsMetadata,
+    Entity,
+    EntityBase,
+    FieldRef,
+    Fields,
+    EntityMetadata,
+    EntityOrderBy,
+    EntityWhere,
+
+    FindOptions,
+    IterableResult,
+    IterateOptions,
+    Repository,
+    FieldType,
+
+    ComparisonFilterFactory,
+    FilterFactories,
+    FilterFactory,
+    getFields,
+    EntityRef,
+    getEntityRef,
+    SortSegments,
+    ContainsFilterFactory,
+    ValueListFieldType,
+    DateOnlyField,
+    DecimalField,
+    CaptionTransformer
+} from './src/remult3';
+export { EntityOptions } from './src/entity';
+export {
+    DataProvider,
+    EntityDataProvider,
+    EntityDataProviderFindOptions,
+    ErrorInfo,
+    RestDataProviderHttpProvider
+} from './src/data-interfaces';//V
+export {
+    SqlCommand, SqlImplementation, SqlResult
+} from './src/sql-command';//V
+export {
+    FieldMetadata,
+    FieldOptions,
+    FieldValidator,
+    ValueConverter,
+    ValueListItem,// reconsider, maybe it should go to remult angular as the abstraction ?
+    ValueOrExpression
+} from './src/column-interfaces'; // revisit input type
+export {
+    RestDataProvider
+} from './src/data-providers/rest-data-provider'; //V
+export {
+    InMemoryDataProvider
+} from './src/data-providers/in-memory-database'; //V
+export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider';//V
+export {
+    WebSqlDataProvider
+} from './src/data-providers/web-sql-data-provider';//V
+export {
+    SqlDatabase
+} from './src/data-providers/sql-database';//V
+export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-data-provider';//V
+
+//export * from './src/data-api'; //reconsider if to make internal
+export {
+    Controller,
+    BackendMethodOptions,
+    BackendMethod,
+    ProgressListener
+} from './src/server-action';
+
+export {
+    Allowed,
+    Context,
+    DataProviderFactoryBuilder,
+    AllowedForInstance,
+    EventDispatcher,
+    EventSource,
+    HttpProvider,
+    IterateToArrayOptions,
+    Role,
+    Unobserve,
+    UserInfo
+} from './src/context';
+export {
+    IdEntity
+} from './src/id-entity';
+export { SortSegment, Sort } from './src/sort';
 
 
 
-export * from './src/data-interfaces';//V
-export * from './src/sql-command';//V
-export * from './src/column-interfaces'; // revisit input type
-export * from './src/data-providers/rest-data-provider'; //V
-export * from './src/data-providers/in-memory-database'; //V
-export * from './src/data-providers/array-entity-data-provider';//V
-export * from './src/data-providers/web-sql-data-provider';//V
-export * from './src/data-providers/sql-database';//V
-export * from './src/data-providers/json-data-provider';//V
-//export * from './src/cookieBasedJwt'; breaks angular
-export * from './src/data-api';
-export * from './src/dataList';
-export * from './src/lookup';
-export * from './src/server-action';
-
-export * from './src/context';
-export * from './src/id-entity';
-export * from './src/sort';//V
+export { ManyToOne, OneToMany } from './src/column';
 
 
-export * from './src/entity';
-export * from './src/column';
 
-export * from './src/columns/storage/bool-storage';
-export * from './src/columns/storage/char-date-storage';
-export * from './src/columns/storage/datetime-date-storage';
-export * from './src/columns/storage/datetime-storage';
-export * from './src/columns/storage/default-storage';
-export * from './src/columns/value-list-column';
-export * from './src/columns/compound-id-column';
-export * from './src/columns/date-column';
-export * from './src/columns/datetime-column';
-export * from './src/columns/number-column';
-export * from './src/columns/string-column';
-export * from './src/columns/object-column';
+
+
 
 export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 
 
-export * from './src/filter/filter-consumer-bridge-to-sql-request';
-export * from './src/filter/filter-consumer-bridge-to-url-builder';
-export * from './src/filter/filter-helper';
-export * from './src/url-builder';
-export * from './src/validators';
+export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-bridge-to-sql-request';
+
+
+export { UrlBuilder } from './urlBuilder';
+export { Validators } from './src/validators';
 

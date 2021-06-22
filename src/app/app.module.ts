@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 
 import {DialogService} from '../../projects/angular/schematics/hello/files/src/app/common/dialog';
 import {YesNoQuestionComponent} from '../../projects/angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
-import { InputAreaComponent } from '../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
+//import { InputAreaComponent } from '../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
 
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -26,7 +26,7 @@ import { TestComponent } from './test/test.component';
 import { TestDialogComponent } from './test-dialog/test-dialog.component';
 import { ProductsComponent } from './products-test/products.component';
 import { JwtModule } from '@auth0/angular-jwt';
-import { MatMenuModule } from '@angular/material';
+import { MatMenuModule } from '@angular/material/menu';
 
 
 
@@ -40,7 +40,7 @@ import { MatMenuModule } from '@angular/material';
     CategoriesComponent,
     TestComponent,
     YesNoQuestionComponent,
-    InputAreaComponent,
+  //  InputAreaComponent,
     TestDialogComponent
   ],
   providers:[
@@ -69,7 +69,9 @@ import { MatMenuModule } from '@angular/material';
       }
     })
   ],
-  entryComponents:[YesNoQuestionComponent,InputAreaComponent,TestDialogComponent],
+  entryComponents:[YesNoQuestionComponent
+    //,InputAreaComponent
+    ,TestDialogComponent],
   
   bootstrap: [AppComponent]
 })

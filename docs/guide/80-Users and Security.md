@@ -31,17 +31,17 @@ Now that we understand how users can be managed, let's start securing the applic
 
 In the `products.ts` 
 
-<<< @/docs-code/products-batch-operations/products.secure.ts{13-14}
+<<< @/docs-code/products-batch-operations/products.secure.ts{5-6} 
 
-We've changed the `allowApiCRUD` property to only allow it for users that has the role `Roles.admin` (later we'll define new roles)
+We've changed the `allowApiCrud` property to only allow it for users that has the role `Roles.admin` (later we'll define new roles)
 We've kept the `allowApiRead` to true, since even non signed in users can view products in the `home.component.ts`
 
 This step has secured the `API` which means that even someone who is accessing our server directly, without the application can't update the categories if they are not authorized to do so.
 
-Next we'll secure the `updatePriceOnServer` server function we've used in the `products.component.ts`
+Next we'll secure the `updatePriceOnBackend` server function we've used in the `products.component.ts`
 ```ts{1}
-@ServerFunction({allowed:Roles.admin})
-  static async updatePriceOnServer(priceToUpdate:number,context?:Context){
+  @BackendMethod({allowed:Roles.admin})
+  static async updatePriceOnBackend(priceToUpdate: number, context?: Context) {
 ```
 We've set the `allowed` property to the `Roles.admin` role.
 
@@ -56,9 +56,9 @@ const routes: Routes = [
 ];
 ```
 
-We've added the `, canActivate: [AdminGuard]` definition to the `Products` path. This means that a user that does not have the `admin` role, will not be able to access the categories entry in the menu.
+We've added the `, canActivate: [AdminGuard]` definition to the `Products` path. This means that a user that does not have the `admin` role, will not be able to access the products entry in the menu.
 ||| tip
-Create another user, without admin privliges and see  how that works.
+Create another user, without admin privileges and see  how that works.
 |||
 Now that you know about the `canActivate` you can see that several of the prepared routes are using similar guards:
 1. AdminGuard - only users that have the `Admin` role.

@@ -1,8 +1,11 @@
-import { ServerContext, DataProvider, EntityDataProvider, Entity, Column, NumberColumn, DateTimeColumn, BoolColumn, DateColumn, SqlDatabase, SqlCommand, SqlResult, ValueListColumn, allEntities, SqlImplementation } from '@remult/core';
-import { JobsInQueueEntity, EntityQueueStorage, ExpressBridge } from '@remult/core/server';
+import { DataProvider, EntityDataProvider, Entity, SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
+import { ExpressBridge } from '../server';
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
+import { allEntities, Context } from '../src/context';
+import { EntityQueueStorage, JobsInQueueEntity } from '../server/expressBridge';
+import { DateOnlyValueConverter } from '../valueConverters';
 
 
 export interface PostgresPool extends PostgresCommandSource {
@@ -13,7 +16,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
-    async entityIsUsedForTheFirstTime(entity: Entity): Promise<void> {
+    async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> {
 
     }
     getLimitSqlSyntax(limit: number, offset: number) {
@@ -25,9 +28,9 @@ export class PostgresDataProvider implements SqlImplementation {
     }
     constructor(private pool: PostgresPool) {
     }
-    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: Entity<any>) {
+    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityMetadata) {
         let r = await command.execute(insertStatementString);
-        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.defs.dbName + "','" + entity.columns.idColumn.defs.dbName + "'));");
+        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.dbName + "','" + entity.idMetadata.field.dbName + "'));");
         return +r.rows[0].currval;
     }
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
@@ -84,82 +87,87 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
 
 }
 
-export async function verifyStructureOfAllEntities(db:SqlDatabase){
+export async function verifyStructureOfAllEntities(db: SqlDatabase) {
     return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities();
 }
 
 export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities() {
         console.log("start verify structure");
-        let context = new ServerContext();
+        let context = new Context();
         for (const entity of allEntities) {
-            let x = context.for(entity).create();
+            let x = context.for(entity);
             try {
 
-                if (x.defs.dbName.toLowerCase().indexOf('from ') < 0) {
-                    await this.createIfNotExist(x);
-                    await this.verifyAllColumns(x);
+                if (x.metadata.dbName.toLowerCase().indexOf('from ') < 0) {
+                    await this.createIfNotExist(x.metadata);
+                    await this.verifyAllColumns(x.metadata);
                 }
             }
             catch (err) {
-                console.log("failed verify structore of " + x.defs.dbName + " ", err);
+                console.log("failed verify structore of " + x.metadata.dbName + " ", err);
             }
         }
     }
-    async createIfNotExist(e: Entity): Promise<void> {
+    async createIfNotExist(e: EntityMetadata): Promise<void> {
         var c = this.pool.createCommand();
-        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken(e.defs.dbName.toLowerCase()) + this.additionalWhere).then(async r => {
+        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken(e.dbName.toLowerCase()) + this.additionalWhere).then(async r => {
 
             if (r.rows.length == 0) {
                 let result = '';
-                for (const x of e.columns) {
-                    if (!x.defs.dbReadOnly) {
+                for (const x of e.fields) {
+                    if (!x.dbReadOnly && !x.isServerExpression) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
-                        //@ts-ignore
-                        if (x == e.columns.idColumn && e.__options.dbAutoIncrementId)
-                            result += x.defs.dbName + ' serial';
+
+                        if (x == e.idMetadata.field && e.options.dbAutoIncrementId)
+                            result += x.dbName + ' serial';
                         else {
                             result += this.addColumnSqlSyntax(x);
-                            if (x == e.columns.idColumn)
+                            if (x == e.idMetadata.field)
                                 result += ' primary key';
                         }
                     }
                 }
 
-                let sql = 'create table ' + e.defs.dbName + ' (' + result + '\r\n)';
+                let sql = 'create table ' + e.dbName + ' (' + result + '\r\n)';
                 console.log(sql);
                 await this.pool.execute(sql);
             }
         });
     }
-    private addColumnSqlSyntax(x: Column) {
-        let result = x.defs.dbName;
-        if (x instanceof DateTimeColumn)
-            result += " timestamp";
-        else if (x instanceof DateColumn)
-            result += " date";
-        else if (x instanceof BoolColumn)
-            result += " boolean" + (x.defs.allowNull ? "" : " default false not null");
-        else if (x instanceof NumberColumn) {
-            if (x.__numOfDecimalDigits == 0)
-                result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
+    private addColumnSqlSyntax(x: FieldMetadata) {
+        let result = x.dbName;
+        if (x.valueConverter.fieldTypeInDb) {
+            if (x.dataType == Number && x.valueConverter.fieldTypeInDb == "decimal")
+                result += " numeric" + (x.allowNull ? "" : " default 0 not null");
             else
-                result += " numeric" + (x.defs.allowNull ? "" : " default 0 not null");
-        } else if (x instanceof ValueListColumn) {
-            if (x.info.isNumeric)
-                result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
-            else
-                result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
+                result += " " + x.valueConverter.fieldTypeInDb;
         }
+        else if (x.dataType == Date)
+            if (x.valueConverter == DateOnlyValueConverter)
+                result += " date";
+            else
+                result += " timestamp";
+        else if (x.dataType == Boolean)
+            result += " boolean" + (x.allowNull ? "" : " default false not null");
+        else if (x.dataType == Number) {
+            result += " int" + (x.allowNull ? "" : " default 0 not null");
+        }
+        //  else if (x instanceof ValueListColumn) {
+        //     if (x.info.isNumeric)
+        //         result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
+        //     else
+        //         result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
+        // }
         else
-            result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
+            result += " varchar" + (x.allowNull ? "" : " default '' not null ");
         return result;
     }
 
-    async addColumnIfNotExist<T extends Entity>(e: T, c: ((e: T) => Column)) {
-        if (c(e).defs.dbReadOnly)
+    async addColumnIfNotExist<T extends EntityMetadata>(e: T, c: ((e: T) => FieldMetadata)) {
+        if (c(e).dbReadOnly || c(e).isServerExpression)
             return;
         try {
             let cmd = this.pool.createCommand();
@@ -167,9 +175,9 @@ export class PostgresSchemaBuilder {
             if (
                 (await cmd.execute(`select 1   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.defs.dbName.toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken(c(e).defs.dbName.toLocaleLowerCase())}` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken(c(e).dbName.toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
-                let sql = `alter table ${e.defs.dbName} add column ${this.addColumnSqlSyntax(c(e))}`;
+                let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(c(e))}`;
                 console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -178,19 +186,19 @@ export class PostgresSchemaBuilder {
             console.log(err);
         }
     }
-    async verifyAllColumns<T extends Entity>(e: T) {
+    async verifyAllColumns<T extends EntityMetadata>(e: T) {
         try {
             let cmd = this.pool.createCommand();
 
 
             let cols = (await cmd.execute(`select column_name   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.defs.dbName.toLocaleLowerCase())} ` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
-            for (const col of e.columns) {
-                if (!col.defs.dbReadOnly)
-                    if (!cols.includes(col.defs.dbName.toLocaleLowerCase())) {
-                        let sql = `alter table ${e.defs.dbName} add column ${this.addColumnSqlSyntax(col)}`;
+            for (const col of e.fields) {
+                if (!col.dbReadOnly && !col.isServerExpression)
+                    if (!cols.includes(col.dbName.toLocaleLowerCase())) {
+                        let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(col)}`;
                         console.log(sql);
                         await this.pool.execute(sql);
                     }
@@ -210,11 +218,14 @@ export class PostgresSchemaBuilder {
 }
 
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
-    let c = new ServerContext(sql);
+
+    let c = new Context();
+    c.setDataProvider(sql);
     {
-        let e = c.for(JobsInQueueEntity).create();
-        await new PostgresSchemaBuilder(sql).createIfNotExist(e);
-        await new PostgresSchemaBuilder(sql).verifyAllColumns(e);
+
+        let e = c.for(JobsInQueueEntity);
+        await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);
+        await new PostgresSchemaBuilder(sql).verifyAllColumns(e.metadata);
     }
 
     return new EntityQueueStorage(c.for(JobsInQueueEntity));

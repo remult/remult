@@ -6,14 +6,14 @@ Although this can useful for most cases, if you are using an npm package that on
 When you'll build the angular project you'll get errors of `Module not found`.
 In this article we'll walk thorough such a scenario and demonstrate how it can be solved.
 
-For the purpose of this example, our customer would like us to document each call to the `updatePriceOnServer` method in a log fie.
+For the purpose of this example, our customer would like us to document each call to the `updatePriceOnBackend` method in a log fie.
 
 Our first instinct would be to add in the `products.component.ts` file an import to `fs` (Node JS file system component) and write the following code:
 ```ts{1,10}
 import * as fs from 'fs';
 .....
-@ServerFunction({allowed:true})
-static async updatePriceOnServer(priceToUpdate:number,context?:Context){
+@BackendMethod({allowed:true})
+static async updatePriceOnBackend(priceToUpdate:number,context?:Context){
   let products = await context.for(Products).find();
   for (const p of products) {
       p.price.value += priceToUpdate;
@@ -42,8 +42,8 @@ We'll remove the import to `fs` and instead of calling specific `fs` methods we'
 ```ts{1,11,13}
 //import * as fs from 'fs';
 .....
-@ServerFunction({allowed:true})
-static async updatePriceOnServer(priceToUpdate:number,context?:Context){
+@BackendMethod({allowed:true})
+static async updatePriceOnBackend(priceToUpdate:number,context?:Context){
   let products = await context.for(Products).find();
   for (const p of products) {
       p.price.value += priceToUpdate;

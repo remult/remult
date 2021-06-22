@@ -1,11 +1,11 @@
 import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
-import { Entity } from '../entity';
 import { Filter, FilterConsumer } from '../filter/filter-interfaces';
-import { Column } from '../column';
-import { StringColumn } from '../columns/string-column';
+import { FieldMetadata } from '../column-interfaces';
+import { EntityMetadata } from '../remult3';
+
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    constructor(private entity: Entity, private rows?: any[]) {
+    constructor(private entity: EntityMetadata, private rows?: any[]) {
         if (!rows)
             rows = [];
     }
@@ -40,14 +40,14 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                     let r = 0;
                     for (let i = 0; i < options.orderBy.Segments.length; i++) {
                         let seg = options.orderBy.Segments[i];
-                        let left = a[seg.column.defs.key];
-                        let right = b[seg.column.defs.key];
+                        let left = a[seg.field.key];
+                        let right = b[seg.field.key];
                         if (left > right)
                             r = 1;
                         else if (left < right)
                             r = -1;
                         if (r != 0) {
-                            if (seg.descending)
+                            if (seg.isDescending)
                                 r *= -1;
                             return r;
                         }
@@ -59,18 +59,28 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         }
         if (rows)
             return rows.map(i => {
-                return this.map(i);
+                return this.translateFromJson(i);
             });
     }
-    map(i: any): any {
-        let r = JSON.parse(JSON.stringify(i));
-        return r;
+    translateFromJson(row: any) {
+        let result = {};
+        for (const col of this.entity.fields) {
+            result[col.key] = col.valueConverter.fromJson(row[col.key]);
+        }
+        return result;
     }
+    translateToJson(row: any) {
+        let result = {};
+        for (const col of this.entity.fields) {
+            result[col.key] = col.valueConverter.toJson(row[col.key]);
+        }
+        return result;
+    }
+
     private idMatches(id: any): (item: any) => boolean {
-        let f = this.entity.columns.idColumn.isEqualTo(id);
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
-            f.__applyToConsumer(x);
+            this.entity.idMetadata.getIdFilter(id).__applyToConsumer(x);
             return x.ok;
         };
     }
@@ -78,8 +88,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         let idMatches = this.idMatches(id);
         for (let i = 0; i < this.rows.length; i++) {
             if (idMatches(this.rows[i])) {
-                this.rows[i] = Object.assign({}, this.rows[i], data);
-                return Promise.resolve(this.map(this.rows[i]));
+                this.rows[i] = Object.assign({}, this.rows[i], this.translateToJson(data));
+                return Promise.resolve(this.translateFromJson(this.rows[i]));
             }
         }
         throw new Error("couldn't find id to update: " + id);
@@ -100,8 +110,9 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                 if (data.id == i.id)
                     throw Error("id already exists");
             });
-        this.rows.push(JSON.parse(JSON.stringify(data)));
-        return Promise.resolve(JSON.parse(JSON.stringify(data)));
+        let j = this.translateToJson(data);
+        this.rows.push(j);
+        return Promise.resolve(this.translateFromJson(j));
     }
 }
 function pageArray(rows: any[], options?: EntityDataProviderFindOptions) {
@@ -136,56 +147,56 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         }
         this.ok = false;
     }
-    isNull(col: Column<any>): void {
-        if (this.row[col.defs.key] != null)
+    isNull(col: FieldMetadata): void {
+        if (this.row[col.key] != null)
             this.ok = false;
     }
-    isNotNull(col: Column<any>): void {
-        if (this.row[col.defs.key] == null)
+    isNotNull(col: FieldMetadata): void {
+        if (this.row[col.key] == null)
             this.ok = false;
     }
-    isIn(col: Column, val: any[]): void {
+    isIn(col: FieldMetadata, val: any[]): void {
 
         for (const v of val) {
-            if (this.row[col.defs.key] == v) {
+            if (this.row[col.key] == col.valueConverter.toJson(v)) {
                 return;
             }
         }
         this.ok = false;
     }
-    public isEqualTo(col: Column, val: any): void {
+    public isEqualTo(col: FieldMetadata, val: any): void {
 
-        if (this.row[col.defs.key] != val)
+        if (this.row[col.key] != col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isDifferentFrom(col: Column, val: any): void {
-        if (this.row[col.defs.key] == val)
+    public isDifferentFrom(col: FieldMetadata, val: any): void {
+        if (this.row[col.key] == col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isGreaterOrEqualTo(col: Column, val: any): void {
-        if (this.row[col.defs.key] < val)
+    public isGreaterOrEqualTo(col: FieldMetadata, val: any): void {
+        if (this.row[col.key] < col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isGreaterThan(col: Column, val: any): void {
+    public isGreaterThan(col: FieldMetadata, val: any): void {
 
-        if (this.row[col.defs.key] <= val)
+        if (this.row[col.key] <= col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isLessOrEqualTo(col: Column, val: any): void {
-        if (this.row[col.defs.key] > val)
+    public isLessOrEqualTo(col: FieldMetadata, val: any): void {
+        if (this.row[col.key] > col.valueConverter.toJson(val))
             this.ok = false;
     }
 
-    public isLessThan(col: Column, val: any): void {
-        if (this.row[col.defs.key] >= val)
+    public isLessThan(col: FieldMetadata, val: any): void {
+        if (this.row[col.key] >= col.valueConverter.toJson(val))
             this.ok = false;
     }
-    public containsCaseInsensitive(col: StringColumn, val: any): void {
-        let v = this.row[col.defs.key];
+    public containsCaseInsensitive(col: FieldMetadata, val: any): void {
+        let v = this.row[col.key];
         if (!v) {
             this.ok = false;
             return;
@@ -193,19 +204,21 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
         let s = '' + v;
         if (val)
-            val = val.toString().toLowerCase();
+            val = col.valueConverter.toJson(val);
+        if (val)
+            val = val.toString().toLowerCase()
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
-    public startsWith(col: StringColumn, val: any): void {
-        let v = this.row[col.defs.key];
+    public startsWith(col: FieldMetadata, val: any): void {
+        let v = this.row[col.key];
         if (!v) {
             this.ok = false;
             return;
         }
 
         let s = '' + v;
-        if (s.indexOf(val) != 0)
+        if (s.indexOf(col.valueConverter.toJson(val)) != 0)
             this.ok = false;
     }
 }

@@ -1,26 +1,11 @@
 
-import { DataProvider, FindOptions as FindOptions, EntityDataProvider, EntityDataProviderFindOptions, EntityProvider, EntityOrderBy, EntityWhere, entityOrderByToSort, extractSort, translateEntityWhere, updateEntityBasedOnWhere } from "./data-interfaces";
-
-
-
-
-import { DataApiRequest, DataApiSettings } from "./data-api";
-
-
-import { Column, __isGreaterThan, __isLessThan } from "./column";
-import { Entity } from "./entity";
-import { Lookup } from "./lookup";
-
-
-import { AndFilter, Filter, OrFilter } from './filter/filter-interfaces';
-import { Action } from './server-action';
-
-
-import { RestDataProvider, RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { CompoundIdColumn } from "./columns/compound-id-column";
-
-
-
+import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
+import { DataApiRequest } from "./data-api";
+import { Action, actionInfo } from './server-action';
+import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+import { Repository } from "./remult3";
+import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
+import { ClassType } from "../classType";
 
 export interface HttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
@@ -32,8 +17,8 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
     constructor(private http: HttpProvider) {
 
     }
-    post(url: string, data: any): Promise<any> {
-        return toPromise(this.http.post(url, data));
+    async post(url: string, data: any): Promise<any> {
+        return await retry(() => toPromise(this.http.post(url, data)));
     }
     delete(url: string): Promise<void> {
         return toPromise(this.http.delete(url));
@@ -41,10 +26,28 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
     put(url: string, data: any): Promise<any> {
         return toPromise(this.http.put(url, data));
     }
-    get(url: string): Promise<any> {
-        return toPromise(this.http.get(url));
+    async get(url: string): Promise<any> {
+        return await retry(() => toPromise(this.http.get(url)));
+
     }
 
+}
+async function retry<T>(what: () => Promise<T>): Promise<T> {
+    while (true) {
+        try {
+            return await what();
+        } catch (err) {
+            if (err.message?.startsWith("Error occured while trying to proxy")) {
+                await new Promise((res, req) => {
+                    setTimeout(() => {
+                        res({})
+                    }, 250);
+                })
+                continue;
+            }
+            throw err;
+        }
+    }
 }
 export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     let r: Promise<T>;
@@ -55,24 +58,26 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     else r = p;
     return r.catch(async ex => {
         let z = await ex;
-        var error = z.error;
+        var error;
+        if (z.error)
+            error = z.error;
+        else
+            error = z.message;
         if (typeof error === 'string') {
             error = {
                 message: error
             }
         }
         var result = Object.assign(error, {
-       //     exception: ex disabled for now because JSON.stringify crashed with this
+            //     exception: ex disabled for now because JSON.stringify crashed with this
         });
         throw result;
     });
 }
 
-
 export class Context {
     clearAllCache(): any {
-        this.cache.clear();
-        this._lookupCache = [];
+        this.repCache.clear();
     }
 
     isSignedIn() {
@@ -88,7 +93,8 @@ export class Context {
             provider = new RestDataProviderHttpProviderUsingFetch();
         }
         this._dataSource = new RestDataProvider(Context.apiBaseUrl, provider);
-        Action.provider = provider;
+        if (!Action.provider)
+            Action.provider = provider;
     }
 
     getCookie(name: string) {
@@ -98,7 +104,15 @@ export class Context {
         return '';
     }
     getPathInUrl() {
-        return window.location.pathname;
+        if (this.req)
+            return this.req.getBaseUrl();
+        if (!this.backend||typeof (window) != "undefined")
+            return window.location.pathname;
+        return undefined;
+
+    }
+    getOrigin() {
+        return '';
     }
 
 
@@ -106,9 +120,9 @@ export class Context {
     setDataProvider(dataProvider: DataProvider) {
         this._dataSource = dataProvider;
     }
-    protected _onServer = false;
-    get onServer(): boolean {
-        return this._onServer;
+    protected _backend = actionInfo.runningOnServer;
+    get backend(): boolean {
+        return this._backend;
     }
     protected _user: UserInfo;
     get user(): UserInfo {
@@ -126,11 +140,24 @@ export class Context {
     get userChange() {
         return this._userChangeEvent.dispatcher;
     }
-    setUser(info: UserInfo) {
+    async setUser(info: UserInfo) {
         this._user = info;
-        this._userChangeEvent.fire();
+        await this._userChangeEvent.fire();
     }
     static apiBaseUrl = 'api';
+    isAllowedForInstance(instance: any, x: AllowedForInstance<any>) {
+        if (Array.isArray(x)) {
+            {
+                for (const item of x) {
+                    if (this.isAllowedForInstance(instance, item))
+                        return true;
+                }
+            }
+        }
+        else if (typeof (x) === "function") {
+            return x(this, instance)
+        } else return this.isAllowed(x as Allowed);
+    }
 
     isAllowed(roles: Allowed) {
         if (roles == undefined)
@@ -162,43 +189,35 @@ export class Context {
 
         return false;
     }
+    repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    public for<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
+        if (dataProvider === undefined)
+            dataProvider = this._dataSource;
+        let dpCache = this.repCache.get(dataProvider);
+        if (!dpCache)
+            this.repCache.set(dataProvider, dpCache = new Map<ClassType<any>, Repository<any>>());
 
-    cache = new Map<DataProvider, Map<any, SpecificEntityHelper<any, Entity>>>();
-    public for<lookupIdType, T extends Entity<lookupIdType>>(c: { new(...args: any[]): T; }, dataSource?: DataProvider) {
-        if (!dataSource)
-            dataSource = this._dataSource;
-
-        let dsCache = this.cache.get(dataSource);
-        if (!dsCache) {
-            dsCache = new Map<string, SpecificEntityHelper<any, Entity>>();
-            this.cache.set(dataSource, dsCache);
-        }
-
-
-        let r = dsCache.get(c) as SpecificEntityHelper<lookupIdType, T>;
+        let r = dpCache.get(entity);
         if (!r) {
-            r = new SpecificEntityHelper<lookupIdType, T>(() => {
-                let e = new c(this);
-                e.__initColumns((<any>e).id);
 
-                return e;
-            }, this._lookupCache, this, dataSource);
-            dsCache.set(c, r);
+            dpCache.set(entity, r = new RepositoryImplementation(entity, this, dataProvider));
         }
-
-
-
         return r;
+
+    }
+    protected req: DataApiRequest;
+
+    setReq(req: DataApiRequest) {
+        this.req = req;
+        this._user = req.user ? req.user : undefined;
     }
 
-
-    _lookupCache: LookupCache<any>[] = [];
 }
 export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
 export class ServerContext extends Context {
     constructor(dp?: DataProvider) {
         super();
-        this._onServer = true;
+        this._backend = true;
         if (dp)
             this.setDataProvider(dp);
 
@@ -227,12 +246,7 @@ export class ServerContext extends Context {
         }
         return undefined;
     }
-    private req: DataApiRequest;
 
-    setReq(req: DataApiRequest) {
-        this.req = req;
-        this._user = req.user ? req.user : undefined;
-    }
 
     getOrigin() {
         if (!this.req)
@@ -241,369 +255,9 @@ export class ServerContext extends Context {
     }
 }
 
-
-export class SpecificEntityHelper<lookupIdType, T extends Entity<lookupIdType>> implements EntityProvider<T>{
-    _getApiSettings(forEntity?: Entity): DataApiSettings<T> {
-        return (forEntity ? forEntity : this.entity)._getEntityApiSettings(this.context);
-    }
-
-    private __entity: T;
-    private get entity(): T {
-        if (!this.__entity)
-            this.__entity = this._factory(false);
-        return this.__entity;
-    }
-    private ___edp: EntityDataProvider;
-    private get _edp(): EntityDataProvider {
-        if (!this.___edp) {
-            //@ts-ignore
-            this.___edp = {};
-            this.___edp = this.dataSource.getEntityDataProvider(this.entity);
-        }
-        return this.___edp;
-    }
-    private _factory: (newRow: boolean) => T;
-    constructor(
-        /** Creates a new instance of the entity
-         * @example
-         * let p = this.context.for(Products).create();
-         * p.name.value = 'Wine';
-         * await p.save();
-         */
-        public create: () => T
-        , private _lookupCache: LookupCache<any>[], private context: Context, private dataSource: DataProvider) {
-        this._factory = newRow => {
-            let e = create();
-            e.__entityData.dataProvider = this._edp;
-            e.__entityData.entityProvider = this;
-            if (this.context.onServer)
-                e.__entityData.initServerExpressions = async () => {
-                    await Promise.all(e.columns.toArray().map(async c => {
-                        await c.__calcServerExpression();
-                    }));
-                }
-            if (newRow) {
-                e.columns.toArray().forEach(c => { c.__setDefaultForNewRow() });
-            }
-            return e;
-        };
-        this.create = () => {
-            return this._factory(true);
-        };
-
-    }
-
-    /** Returns an array of rows for the specific type 
-    * @example
-    * let products = await context.for(Products).find();
-    * for (const p of products) {
-    *   console.log(p.name.value);
-    * }
-    * @example
-    * this.products = await this.context.for(Products).find({
-    *     orderBy: p => p.name
-    *     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
-    *     p.availableTo.isGreaterOrEqualTo(new Date()))
-    * });
-    * @see
-    * For all the different options see [FindOptions](ref_findoptions)
-    */
-    async find(options?: FindOptions<T>) {
-        let r = await this._edp.find(this.translateOptions(options));
-        return Promise.all(r.map(async i => {
-            let r = this._factory(false);
-            await r.__entityData.setData(i, r);
-            return r;
-        }));
-    }
-    /** returns a single entity based on a filter
-     * @example:
-     * let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7))
-     */
-    async findFirst(options?: EntityWhere<T> | IterateOptions<T>) {
-        return this.iterate(options).first();
-    }
-    /** returns a single entity based on a filter, if it doesn't not exist, it is created with the default values set by the `isEqualTo` filters that were used
-    * @example:
-    * let p = await this.context.for(Products).findOrCreate(p => p.id.isEqualTo(7))
-    */
-    async findOrCreate(options?: EntityWhere<T> | IterateOptions<T>) {
-        let r = await this.iterate(options).first();
-        if (!r) {
-            r = this.create();
-            if (options) {
-                let opts: IterateOptions<T> = {};
-                if (options) {
-                    if (typeof options === 'function')
-                        opts.where = <any>options;
-                    else
-                        opts = <any>options;
-                }
-                if (opts.where) {
-                    updateEntityBasedOnWhere(opts.where, r);
-                }
-            }
-            return r;
-        }
-        return r;
-    }
-    /** returns a single entity based on it's id 
-     * @example
-     * let p = await context.for(Products).findId(productId);
-    */
-    async findId(id: Column<lookupIdType> | lookupIdType) {
-        return this.iterate(x => x.columns.idColumn.isEqualTo(id)).first();
-    }
-
-    /**
-     * Used to get non critical values from the Entity.
-    * The first time this method is called, it'll return a new instance of the Entity.
-    * It'll them call the server to get the actual value and cache it.
-    * Once the value is back from the server, any following call to this method will return the cached row.
-    * 
-    * It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
-    * 
-    * * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
-    * @example
-    * return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
-     */
-    lookup(filter: Column<lookupIdType> | EntityWhere<T>): T {
-
-        let key = this.entity.defs.name;
-        let lookup: Lookup<lookupIdType, T>;
-        this._lookupCache.forEach(l => {
-            if (l.key == key)
-                lookup = l.lookup;
-        });
-        if (!lookup) {
-            lookup = new Lookup(this.entity, this);
-            this._lookupCache.push({ key, lookup });
-        }
-        return lookup.get(filter);
-
-    }
-    /** returns a single row and caches the result for each future call
-     * @example
-     * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
-     */
-    lookupAsync(filter: Column<lookupIdType> | EntityWhere<T>): Promise<T> {
-
-        let key = this.entity.defs.name;
-        let lookup: Lookup<lookupIdType, T>;
-        this._lookupCache.forEach(l => {
-            if (l.key == key)
-                lookup = l.lookup;
-        });
-        if (!lookup) {
-            lookup = new Lookup(this.entity, this);
-            this._lookupCache.push({ key, lookup });
-        }
-        return lookup.whenGet(filter);
-
-    }
-
-    /** returns the number of rows that matches the condition 
-     * @example
-     * let count = await this.context.for(Products).count(p => p.price.isGreaterOrEqualTo(5))
-    */
-    async count(where?: EntityWhere<T>) {
-        return await this._edp.count(this.entity.__decorateWhere(where ? translateEntityWhere(where, this.entity) : undefined));
-    }
-
-
-
-    private translateOptions(options: FindOptions<T>) {
-
-        let getOptions: EntityDataProviderFindOptions = {};
-        if (!options) {
-            options = {};
-        }
-        if (options.where)
-            getOptions.where = translateEntityWhere(options.where, this.entity);
-        if (options.orderBy)
-            getOptions.orderBy = entityOrderByToSort(this.entity, options.orderBy);
-        else if (this.entity.__options.defaultOrderBy)
-            getOptions.orderBy = extractSort(this.entity.__options.defaultOrderBy());
-        if (options.limit)
-            getOptions.limit = options.limit;
-        if (options.page)
-            getOptions.page = options.page;
-        if (options.__customFindData)
-            getOptions.__customFindData = options.__customFindData;
-        getOptions.where = this.entity.__decorateWhere(getOptions.where);
-        return getOptions;
-    }
-
-
-    /** Iterate is a more robust version of Find, that is designed to iterate over a large dataset without loading all the data into an array
-     * It's safer to use Iterate when working with large datasets of data.
-     * 
-     * 
-     * @example
-     * for await (let p of this.context.for(Products).iterate()){
-     *   console.log(p.name.value);
-     * }
-     * @example
-     * for await (let p of this.context.for(Products).iterate({
-     *     orderBy: p => p.name
-     *     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
-     *     p.availableTo.isGreaterOrEqualTo(new Date()))
-        })){
-     *   console.log(p.name.value);
-     * }
-    */
-
-    iterate(options?: EntityWhere<T> | IterateOptions<T>) {
-
-        let opts: IterateOptions<T> = {};
-        if (options) {
-            if (typeof options ==='function')
-                opts.where = <any>options;
-            else
-                opts = <any>options;
-        }
-
-        let cont = this;
-        let _count: number;
-        let r = new class {
-
-            async toArray(options?: IterateToArrayOptions) {
-                if (!options) {
-                    options = {};
-                }
-
-
-                return cont.find({
-                    where: opts.where,
-                    orderBy: opts.orderBy,
-                    limit: options.limit,
-                    page: options.page
-                });
-            }
-            async first() {
-                let r = await cont.find({
-                    where: opts.where,
-                    orderBy: opts.orderBy,
-                    limit: 1
-                });
-                if (r.length == 0)
-                    return undefined;
-                return r[0];
-            }
-
-            async count() {
-                if (_count === undefined)
-                    _count = await cont.count(opts.where);
-                return _count;
-
-            }
-            async forEach(what: (item: T) => Promise<any>) {
-                let i = 0;
-                for await (const x of this) {
-                    await what(x);
-                    i++;
-                }
-                return i;
-            }
-
-            //@ts-ignore
-            [Symbol.asyncIterator]() {
-
-                if (!opts.where) {
-                    opts.where = x => undefined;
-                }
-                if (!opts.orderBy)
-                    if (cont.entity.__options.defaultOrderBy)
-                        opts.orderBy = cont.entity.__options.defaultOrderBy;
-                    else
-                        opts.orderBy = x => x.columns.idColumn;
-                opts.orderBy = createAUniqueSort(opts.orderBy, cont.entity);
-                let pageSize = iterateConfig.pageSize;
-
-
-                let itemIndex = -1;
-                let items: T[];
-
-                let itStrategy: (() => Promise<IteratorResult<T>>);
-                let nextPageFilter: EntityWhere<T> = x => undefined;;
-
-                let j = 0;
-
-                itStrategy = async () => {
-                    if (opts.progress) {
-                        opts.progress.progress(j++ / await this.count());
-                    }
-                    if (items === undefined || itemIndex == items.length) {
-                        if (items && items.length < pageSize)
-                            return { value: <T>undefined, done: true };
-                        items = await cont.find({
-                            where: x => new AndFilter(translateEntityWhere(opts.where, x), translateEntityWhere(nextPageFilter, x)),
-                            orderBy: opts.orderBy,
-                            limit: pageSize
-                        });
-                        itemIndex = 0;
-                        if (items.length == 0) {
-                            return { value: <T>undefined, done: true };
-                        } else {
-                            nextPageFilter = createAfterFilter(opts.orderBy, items[items.length - 1]);
-                        }
-
-                    }
-                    if (itemIndex < items.length)
-                        return { value: items[itemIndex++], done: false };
-
-
-                };
-                return {
-                    next: async () => {
-                        let r = itStrategy();
-                        return r;
-                    }
-                };
-            }
-        }
-        return r;
-    }
-    /** Creates an instance of an entity based on a JSON object */
-    async fromPojo(r: any) {
-        let f = this._factory(false);
-        await f.__entityData.setData(r, f);
-        return f;
-    }
-    /** Creates a JSON object based on an entity */
-    toApiPojo(entity: T): any {
-        let r = {};
-        for (const c of entity.columns) {
-
-            c.__addToPojo(r, this.context)
-        }
-        return r;
-
-    }
-    _updateEntityBasedOnApi(entity: T, body: any) {
-        for (const c of entity.columns) {
-
-            c.__loadFromPojo(body, this.context);
-        }
-        return entity;
-    }
-
-    /** creates an array of JSON objects based on an array of Entities  */
-    toPojoArray(items: T[]) {
-        return items.map(f => this.toApiPojo(f));
-    }
-
-
-
-}
-export interface EntityType<T = any> {
-    new(...args: any[]): Entity<T>;
-}
-export const allEntities: EntityType<any>[] = [];
+export const allEntities: ClassType<any>[] = [];
 export interface ControllerOptions {
-    key: string,
-    allowed: Allowed
-
+    key: string
 }
 
 export const classHelpers = new Map<any, ClassHelper>();
@@ -631,22 +285,7 @@ export function setControllerSettings(target: any, options: ControllerOptions) {
     }
 }
 
-export function EntityClass<T extends EntityType<any>>(theEntityClass: T) {
-    let original = theEntityClass;
-    let f = original;
-    setControllerSettings(theEntityClass, { allowed: false, key: undefined })
-    /*f = class extends theEntityClass {
-        constructor(...args: any[]) {
-            super(...args);
-            this.__initColumns((<any>this).id);
-            if (!this.__options.name) {
-                this.__options.name = original.name;
-            }
-        }
-    }*/
-    allEntities.push(f);
-    return f;
-}
+
 export interface UserInfo {
     id: string;
     name: string;
@@ -663,27 +302,18 @@ export class Role {
         return c => !c.isAllowed(allowed);
     }
 }
-declare type AllowedRule = string | Role | ((c: Context) => boolean) | boolean;;
-export declare type Allowed = AllowedRule | AllowedRule[];
-export declare type AngularComponent = { new(...args: any[]): any };
+
+export declare type Allowed = string | Role | ((c: Context) => boolean) | boolean | Allowed[];
+
+export declare type AllowedForInstance<T> = string | Role | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
 
 
 
 
 
 
-interface LookupCache<T extends Entity> {
-    key: string;
-    lookup: Lookup<any, T>;
-}
-export interface RoleChecker {
-    isAllowed(roles: Allowed): boolean;
-}
-export interface IterateOptions<entityType extends Entity> {
-    where?: EntityWhere<entityType>;
-    orderBy?: EntityOrderBy<entityType>;
-    progress?: { progress: (progress: number) => void };
-}
+
+
 
 
 export interface IterateToArrayOptions {
@@ -693,69 +323,23 @@ export interface IterateToArrayOptions {
 export const iterateConfig = {
     pageSize: 200
 };
-export function createAUniqueSort(orderBy: EntityOrderBy<any>, entity: Entity) {
-    let s = extractSort(orderBy(entity));
-    let criticalColumns = [entity.columns.idColumn];
-    if (entity.columns.idColumn instanceof CompoundIdColumn) {
-        criticalColumns = entity.columns.idColumn.columns;
-    }
-    let columnsToAdd: Column[] = [];
-    for (const c of criticalColumns) {
-        if (!s.Segments.find(x => x.column.defs.key == c.defs.key)) {
-            columnsToAdd.push(c);
-        }
 
-    }
-    if (columnsToAdd.length == 0)
-        return orderBy;
-    return (e: Entity) => {
-        let s = extractSort(orderBy(e));
-        for (const c of columnsToAdd) {
-            s.Segments.push({ column: e.columns.find(c) });
-        }
-        return s;
-    }
-}
-export function createAfterFilter(orderBy: EntityOrderBy<any>, lastRow: Entity): EntityWhere<any> {
-    let values = new Map<string, any>();
 
-    for (const s of extractSort(orderBy(lastRow)).Segments) {
-        values.set(s.column.defs.key, s.column.value);
-    }
-    return x => {
-        let r: Filter = undefined;
-        let equalToColumn: Column[] = [];
-        for (const s of extractSort(orderBy(x)).Segments) {
-            let f: Filter;
-            for (const c of equalToColumn) {
-                f = new AndFilter(f, c.isEqualTo(values.get(c.defs.key)))
-            }
-            equalToColumn.push(s.column);
-            if (s.descending) {
-                f = new AndFilter(f, __isLessThan(s.column, values.get(s.column.defs.key)));
-            }
-            else
-                f = new AndFilter(f, __isGreaterThan(s.column, values.get(s.column.defs.key)));
-            r = new OrFilter(r, f);
-        }
-        return r;
-    }
-}
 export interface EventDispatcher {
-    observe(what: () => any): UnObserve;
+    observe(what: () => any | Promise<any>): Promise<Unobserve>;
 }
-export declare type UnObserve = () => void;
+export declare type Unobserve = () => void;
 export class EventSource {
     listeners: (() => {})[] = []
-    fire() {
+    async fire() {
         for (const l of this.listeners) {
-            l();
+            await l();
         }
     }
     dispatcher: EventDispatcher = {
-        observe: (what) => {
+        observe: async (what) => {
             this.listeners.push(what);
-            what();
+            await what();
             return () => {
                 this.listeners = this.listeners.filter(x => x != what);
             }
@@ -763,5 +347,3 @@ export class EventSource {
     };
 
 }
-
-

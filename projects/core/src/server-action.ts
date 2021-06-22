@@ -2,19 +2,21 @@ import 'reflect-metadata';
 
 
 
-import { Context, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
+import { Context, AllowedForInstance, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
 
 
 
 
 import { DataApiRequest, DataApiResponse } from './data-api';
-import { RestDataProviderHttpProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+
 import { SqlDatabase } from './data-providers/sql-database';
-import { Column, getColumnsFromObject } from './column';
-import { AddModelStateToError, Entity, __getValidationError } from './entity';
+
+
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
-import { DataProvider } from './data-interfaces';
+import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef } from './remult3';
+import { FieldOptions } from './column-interfaces';
 
 
 
@@ -23,13 +25,14 @@ interface inArgs {
 }
 interface result {
     data: any;
+
 }
 export abstract class Action<inParam, outParam>{
     constructor(private actionUrl: string, private queue: boolean) {
 
     }
     static apiUrlForJobStatus = 'jobStatusInQueue';
-    static provider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
+    static provider: RestDataProviderHttpProvider;
     async run(pIn: inParam): Promise<outParam> {
 
         let r = await Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);
@@ -67,9 +70,9 @@ export abstract class Action<inParam, outParam>{
 
 
     }
-    protected abstract execute(info: inParam, req: DataApiRequest, res: DataApiResponse): Promise<outParam>;
+    protected abstract execute(info: inParam, req: ServerContext, res: DataApiResponse): Promise<outParam>;
 
-    __register(reg: (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
+    __register(reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) {
         reg(this.actionUrl, this.queue, async (d, req, res) => {
 
             try {
@@ -87,29 +90,25 @@ export abstract class Action<inParam, outParam>{
 
 export class myServerAction extends Action<inArgs, result>
 {
-    constructor(name: string, private types: any[], private options: ServerFunctionOptions, private originalMethod: (args: any[]) => any) {
+    constructor(name: string, private types: any[], private options: BackendMethodOptions<any>, private originalMethod: (args: any[]) => any) {
         super(name, options.queue)
     }
-    dataProvider: DataProviderFactoryBuilder;
-    protected async execute(info: inArgs, req: DataApiRequest, res: DataApiResponse): Promise<result> {
-        let result = { data: {} };
-        let context = new ServerContext();
-        context.setReq(req);
 
-        let ds = this.dataProvider(context);
+    protected async execute(info: inArgs, context: ServerContext, res: DataApiResponse): Promise<result> {
+        let result = { data: {} };
+        let ds = context._dataSource;
         await ds.transaction(async ds => {
             context.setDataProvider(ds);
-            if (!context.isAllowed(this.options.allowed))
+            if (!context.isAllowedForInstance(undefined, this.options.allowed))
                 throw 'not allowed';
 
-            prepareArgs(this.types, info.args, context, ds, res);
+            info.args = await prepareReceivedArgs(this.types, info.args, context, ds, res);
             try {
                 result.data = await this.originalMethod(info.args);
 
             }
 
             catch (err) {
-                console.error(err);
                 throw err
             }
         });
@@ -119,14 +118,14 @@ export class myServerAction extends Action<inArgs, result>
 
 
 }
-export interface ServerFunctionOptions {
-    allowed: Allowed;
+export interface BackendMethodOptions<type> {
+    allowed: AllowedForInstance<type>;
     blockUser?: boolean;
     queue?: boolean;
 }
 export const actionInfo = {
     allActions: [] as any[],
-    runningOnServer: false,
+    runningOnServer: typeof process !== 'undefined',
     runActionWithoutBlockingUI: (what: () => Promise<any>): Promise<any> => { return what() },
     startBusyWithProgress: () => ({
         progress: (percent: number) => { },
@@ -134,45 +133,7 @@ export const actionInfo = {
     })
 }
 
-export function ServerFunction(options: ServerFunctionOptions) {
-    return (target: any, key: string, descriptor: any) => {
 
-        var originalMethod = descriptor.value;
-        var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
-        // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
-
-        let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
-
-
-
-        descriptor.value = async function (...args: any[]) {
-            if (!actionInfo.runningOnServer) {
-                for (const type of [Context, ServerContext, SqlDatabase]) {
-                    for (let index = 0; index < args.length; index++) {
-                        const element = args[index];
-                        if (element instanceof type) {
-                            args[index] = undefined;
-                        }
-                    }
-                }
-
-                args = args.map(x => x !== undefined ? x : customUndefined);
-                if (options.blockUser === false) {
-                    return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
-                }
-                else
-                    return (await serverAction.run({ args })).data;
-            }
-            else
-                return (await originalMethod.apply(undefined, args));
-        }
-        actionInfo.allActions.push(descriptor.value);
-        descriptor.value[serverActionField] = serverAction;
-
-
-        return descriptor;
-    }
-}
 export const serverActionField = Symbol('serverActionField');
 
 
@@ -181,46 +142,29 @@ export const serverActionField = Symbol('serverActionField');
 
 interface serverMethodInArgs {
     args: any[],
-    columns?: any,
+    fields?: any,
     rowInfo?: packedRowInfo
 
 }
 interface serverMethodOutArgs {
     result: any,
-    columns?: any,
+    fields?: any,
     rowInfo?: packedRowInfo
 }
 
 
 
-function packColumns(self: any) {
-    let columns = self.columns;
-    if (!columns)
-        columns = getColumnsFromObject(self);
-    let packedColumns = {};
-    for (const c of columns) {
-        packedColumns[c.defs.key] = c.rawValue;
-    }
-    return packedColumns;
-}
-function unpackColumns(self: any, data: any) {
-    let columns = self.columns;
-    if (!columns)
-        columns = getColumnsFromObject(self);
-    for (const c of columns) {
-        c.rawValue = data[c.defs.key];
-    }
-}
+
 
 
 
 const methodHelpers = new Map<any, MethodHelper>();
 const classOptions = new Map<any, ControllerOptions>();
-export function ServerController(options: ControllerOptions) {
+export function Controller(key: string) {
     return function (target) {
         let r = target;
-        classOptions.set(r, options);
-        setControllerSettings(target, options);
+        classOptions.set(r, { key });
+        setControllerSettings(target, { key });
 
 
 
@@ -229,8 +173,39 @@ export function ServerController(options: ControllerOptions) {
 }
 
 
-export function ServerMethod(options?: ServerFunctionOptions) {
+export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     return (target: any, key: string, descriptor: any) => {
+        if (target.prototype !== undefined) {
+            var originalMethod = descriptor.value;
+
+            var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
+            // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
+
+            let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
+
+
+
+            descriptor.value = async function (...args: any[]) {
+                if (!actionInfo.runningOnServer) {
+
+
+                    args = prepareArgsToSend(types, args);
+                    if (options.blockUser === false) {
+                        return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
+                    }
+                    else
+                        return (await serverAction.run({ args })).data;
+                }
+                else
+                    return (await originalMethod.apply(undefined, args));
+            }
+            actionInfo.allActions.push(descriptor.value);
+            descriptor.value[serverActionField] = serverAction;
+
+
+            return descriptor;
+        }
+
 
         var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
         let x = classHelpers.get(target.constructor);
@@ -243,8 +218,8 @@ export function ServerMethod(options?: ServerFunctionOptions) {
         x.methods.push(mh);
         var originalMethod = descriptor.value;
         let serverAction = {
-            dataProvider: undefined as DataProviderFactoryBuilder,
-            __register(reg: (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) {
+
+            __register(reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) {
 
                 let c = new ServerContext();
                 for (const constructor of mh.classes.keys()) {
@@ -252,37 +227,38 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
                     if (!controllerOptions.key) {
-                        controllerOptions.key = c.for(constructor).create().defs.name + "_methods";
+                        controllerOptions.key = c.for(constructor).metadata.key + "_methods";
                     }
 
 
                     reg(controllerOptions.key + '/' + key, options ? options.queue : false, async (d: serverMethodInArgs, req, res) => {
 
                         d.args = d.args.map(x => isCustomUndefined(x) ? undefined : x);
-                        let allowed: Allowed = controllerOptions.allowed;
-                        if (options && options.allowed !== undefined)
-                            allowed = options.allowed;
+                        let allowed = options.allowed;
+
 
                         try {
-                            let context = new ServerContext();
-                            context.setReq(req);
-                            let ds = serverAction.dataProvider(context);
-                            if (!context.isAllowed(allowed))
-                                throw 'not allowed';
+                            let context = req;
+
+                            let ds = context._dataSource;
+
                             let r: serverMethodOutArgs;
                             await ds.transaction(async ds => {
                                 context.setDataProvider(ds);
-                                prepareArgs(types, d.args, context, ds, res);
+                                d.args = await prepareReceivedArgs(types, d.args, context, ds, res);
                                 if (allEntities.includes(constructor)) {
+                                    let repo = context.for(constructor);
+                                    let y: any;
 
-                                    let y: Entity;
                                     if (d.rowInfo.isNewRow) {
-                                        y = context.for(constructor)._updateEntityBasedOnApi(context.for(constructor).create(), d.rowInfo.data);
+                                        y = repo.create();
+                                        let rowHelper = repo.getEntityRef(y) as rowHelperImplementation<any>;
+                                        rowHelper._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
                                     else {
-                                        let rows = await context.for(constructor).find({
+                                        let rows = await repo.find({
                                             where: x => {
-                                                let where: Filter = x.columns.idColumn.isEqualTo(d.rowInfo.id);
+                                                let where: Filter = repo.metadata.idMetadata.getIdFilter(d.rowInfo.id);
                                                 if (this.options && this.options.get && this.options.get.where)
                                                     where = new AndFilter(where, this.options.get.where(x));
                                                 return where;
@@ -291,36 +267,42 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                                         if (rows.length != 1)
                                             throw new Error("not found or too many matches");
                                         y = rows[0];
-                                        context.for(constructor)._updateEntityBasedOnApi(y, d.rowInfo.data);
+                                        (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
-
-                                    await y.__validateEntity();
+                                    if (!context.isAllowedForInstance(y, allowed))
+                                        throw 'not allowed';
+                                    let defs = getEntityRef(y) as rowHelperImplementation<any>;
+                                    await defs.__validateEntity();
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
-                                            rowInfo: y.__entityData.getPackedRowInfo()
+                                            rowInfo: {
+                                                data: await defs.toApiJson(),
+                                                isNewRow: defs.isNew(),
+                                                wasChanged: defs.wasChanged(),
+                                                id: defs.getOriginalId()
+                                            }
                                         };
                                     } catch (err) {
-                                        if (typeof err === 'string')
-                                            err = { message: err };
-                                        AddModelStateToError(err, [...y.columns]);
-                                        throw err;
+                                        throw defs.catchSaveErrors(err);
                                     }
                                 }
                                 else {
                                     let y = new constructor(context, ds);
-                                    unpackColumns(y, d.columns);
-                                    await validateObject(y);
+                                    let controllerRef = getControllerRef(y, context);
+                                    controllerRef._updateEntityBasedOnApi(d.fields);
+                                    await Promise.all([...controllerRef.fields].map(x => x.load()));
+                                    if (!context.isAllowedForInstance(y, allowed))
+                                        throw 'not allowed';
+
+                                    await controllerRef.__validateEntity();
                                     try {
                                         r = {
                                             result: await originalMethod.apply(y, d.args),
-                                            columns: packColumns(y)
+                                            fields: await controllerRef.toApiJson()
                                         };
                                     } catch (err) {
-                                        if (typeof err === 'string')
-                                            err = { message: err };
-                                        AddModelStateToError(err, getColumnsFromObject(y));
-                                        throw err;
+                                        throw controllerRef.catchSaveErrors(err);
                                     }
                                 }
 
@@ -338,12 +320,14 @@ export function ServerMethod(options?: ServerFunctionOptions) {
         descriptor.value = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
                 let self = this;
-                args = args.map(x => x !== undefined ? x : customUndefined);
-                if (self instanceof Entity) {
-                    await self.__validateEntity();
+                args = prepareArgsToSend(types, args);
+
+                if (allEntities.includes(target.constructor)) {
+                    let defs = getEntityRef(self) as rowHelperImplementation<any>;
+                    await defs.__validateEntity();
                     let classOptions = mh.classes.get(self.constructor);
                     if (!classOptions.key) {
-                        classOptions.key = self.defs.name + "_methods";
+                        classOptions.key = defs.repository.metadata.key + "_methods";
                     }
                     try {
 
@@ -353,45 +337,40 @@ export function ServerMethod(options?: ServerFunctionOptions) {
                             }
                         }(classOptions.key + "/" + key, options ? options.queue : false).run({
                             args,
-                            rowInfo: self.__entityData.getPackedRowInfo()
+                            rowInfo: {
+                                data: await defs.toApiJson(),
+                                isNewRow: defs.isNew(),
+                                wasChanged: defs.wasChanged(),
+                                id: defs.getOriginalId()
+                            }
 
                         }));
-                        await self.__entityData.updateBasedOnPackedRowInfo(r.rowInfo, this);
+                        await defs._updateEntityBasedOnApi(r.rowInfo.data);
                         return r.result;
                     }
                     catch (err) {
-                        self.catchSaveErrors(err);
+                        defs.catchSaveErrors(err);
                         throw err;
                     }
                 }
 
                 else {
+                    let defs = getControllerRef(self, undefined);
                     try {
-                        await validateObject(self);
+                        await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
                             async execute(a, b): Promise<serverMethodOutArgs> {
                                 throw ('should get here');
                             }
                         }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false).run({
                             args,
-                            columns: packColumns(self)
+                            fields: await defs.toApiJson()
                         }));
-                        unpackColumns(self, r.columns);
+                        defs._updateEntityBasedOnApi(r.fields);
                         return r.result;
                     }
                     catch (e) {
-                        console.error(e);
-                        let s = e.ModelState;
-                        if (!s && e.error)
-                            s = e.error.modelState;
-                        if (s) {
-                            Object.keys(s).forEach(k => {
-                                let c = self[k];
-                                if (c instanceof Column)
-                                    c.validationError = s[k];
-                            });
-                        }
-                        throw e;
+                        throw defs.catchSaveErrors(e);
                     }
                 }
             }
@@ -409,21 +388,9 @@ export function ServerMethod(options?: ServerFunctionOptions) {
 
 
 
-async function validateObject(y: any) {
-    let cols = getColumnsFromObject(y);
-    cols.forEach(x => x.__clearErrors());
-    await Promise.all(cols.map(x => x.__performValidation()));
-    if (cols.find(x => !!x.validationError)) {
-        throw __getValidationError(cols);
-    }
-}
 
-export function controllerAllowed(controller: any, context: Context) {
-    let x = classOptions.get(controller.constructor);
-    if (x)
-        return context.isAllowed(x.allowed);
-    return undefined;
-}
+
+
 const customUndefined = {
     _isUndefined: true
 }
@@ -442,18 +409,45 @@ export interface queuedJobInfoResponse {
     error?: any;
     progress?: number;
 }
-export class ServerProgress {
+export class ProgressListener {
     constructor(private res: DataApiResponse) { }
     progress(progress: number) {
         this.res.progress(progress);
     }
 }
-function prepareArgs(types: any[], args: any[], context: ServerContext, ds: DataProvider, res: DataApiResponse) {
+export function prepareArgsToSend(types: any[], args: any[]) {
+
+    if (types) {
+        for (let index = 0; index < types.length; index++) {
+            const paramType = types[index];
+            for (const type of [Context, ServerContext, SqlDatabase]) {
+                if (paramType instanceof type) {
+                    args[index] = undefined;
+                }
+            }
+            if (args[index] != undefined) {
+                let x: FieldOptions = { dataType: paramType };
+                x = decorateColumnSettings(x);
+                if (x.valueConverter)
+                    args[index] = x.valueConverter.toJson(args[index]);
+                let eo = getEntitySettings(paramType, false);
+                if (eo != null) {
+                    let rh = getEntityRef(args[index]);
+                    args[index] = rh.getId();
+                }
+            }
+        }
+    }
+    return args.map(x => x !== undefined ? x : customUndefined);
+
+}
+export async function prepareReceivedArgs(types: any[], args: any[], context: ServerContext, ds: DataProvider, res: DataApiResponse) {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
         if (isCustomUndefined(element))
             args[index] = undefined;
     }
+
     if (types)
         for (let i = 0; i < types.length; i++) {
             if (args.length < i) {
@@ -464,8 +458,20 @@ function prepareArgs(types: any[], args: any[], context: ServerContext, ds: Data
                 args[i] = context;
             } else if (types[i] == SqlDatabase && ds) {
                 args[i] = ds;
-            } else if (types[i] == ServerProgress) {
-                args[i] = new ServerProgress(res);
+            } else if (types[i] == ProgressListener) {
+                args[i] = new ProgressListener(res);
+            } else {
+                let x: FieldOptions = { dataType: types[i] };
+                x = decorateColumnSettings(x);
+                if (x.valueConverter)
+                    args[i] = x.valueConverter.fromJson(args[i]);
+                let eo = getEntitySettings(types[i], false);
+                if (eo != null) {
+                    args[i] = await context.for(types[i]).getCachedByIdAsync(args[i]);
+                }
+
+
             }
         }
+    return args;
 }

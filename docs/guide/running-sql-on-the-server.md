@@ -1,12 +1,12 @@
 # Running sql on the server
 Sometimes we need to run SQL on the server to do some advanced sql stuff.
 
-We can do that using the `@ServerFunction`
+We can do that using the `@BackendMethod`
 
-To do that we need to add an optional parameter for the `@ServerFunction` of type `SqlDatabase`
+To do that we need to add an optional parameter for the `@BackendMethod` of type `SqlDatabase`
 ```ts{5-9}
-@ServerFunction({ allowed: c => c.isSignedIn() })
-static async updatePriceOnServer(
+@BackendMethod({ allowed: c => c.isSignedIn() })
+static async updatePriceOnBackend(
   priceToUpdate: number,
   context?: Context,
   sql?: SqlDatabase

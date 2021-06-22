@@ -206,6 +206,15 @@
             "group": "build",
             "label": "npm: remult-angular-build",
             "detail": "copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V angular.json dist/build-angular && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/core/** dist/build-angular/node_modules/@remult && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles "
+        },
+        {
+            "type": "npm",
+            "script": "publish-as-next",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "label": "npm: publish-as-next",
+            "detail": "npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next && cd.. "
         }
     ]
 }

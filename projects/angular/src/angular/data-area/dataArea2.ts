@@ -2,8 +2,9 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
-import {  getColumnsFromObject } from '@remult/core';
-import { ColumnCollection } from '../../column-collection';
+import { Context, getFields } from '@remult/core';
+
+import { FieldCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';
 import { DataControlSettings } from '../../data-control-interfaces';
 
@@ -16,20 +17,26 @@ import { DataControlSettings } from '../../data-control-interfaces';
 
 })
 export class DataArea2Component implements OnChanges {
+  constructor(private context: Context) {
 
-  @Input() settings: DataAreaSettings = { columns: new ColumnCollection(() => undefined, () => false, undefined, () => true), lines: undefined };
+  }
+
+  @Input() settings: DataAreaSettings = {
+    fields: new FieldCollection(() => undefined, () => false, undefined, () => true, () => undefined), lines: undefined
+  };
   @Input() object: any;
 
   ngOnChanges(): void {
-    if (this.settings && this.settings.columns) {
-      if (this.object) {
-        //@ts-ignore
-        this.settings = new DataAreaSettings({
-          columnSettings: () => getColumnsFromObject(this.object)
-        });
-      }
+    if (this.object) {
+      this.settings = new DataAreaSettings({
+        fields: () => [...getFields(this.object, this.context)]
+      });
+    }
+    if (this.settings && this.settings.fields) {
+      this.settings.fields.setContext(this.context);
 
-      this.settings.columns.onColListChange(() => this.lastCols = undefined);
+
+      this.settings.fields.onColListChange(() => this.lastCols = undefined);
       let areaSettings = this.settings as DataAreaSettings;
       if (areaSettings.settings) {
         if (areaSettings.settings.numberOfColumnAreas)
@@ -46,8 +53,9 @@ export class DataArea2Component implements OnChanges {
   theColumns(): DataControlSettings[][][] {
 
 
-
-    let cols = this.settings.columns.getNonGridColumns();
+    if (this.settings["columns"] && !this.settings.fields)
+      this.settings.fields = this.settings["columns"]
+    let cols = this.settings.fields.getNonGridColumns();
     if (cols == this.lastAllCols)
       return this.lastCols;
     this.lastAllCols = cols;

@@ -3,13 +3,14 @@ import { Component, OnChanges, Input, ViewChild } from '@angular/core';
 
 
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
-import { Column, Context, Entity } from '@remult/core';
+import {  FieldMetadata, Context, Entity } from '@remult/core';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
 
-import { DataControlSettings } from '../../data-control-interfaces';
+import { DataControlSettings, getFieldDefinition } from '../../data-control-interfaces';
 import { GridButton, GridSettings, RowButton } from '../../grid-settings';
 import { openDialog } from '../remult-core.module';
+
 @Component({
   selector: 'data-grid',
   templateUrl: `./data-grid2.component.html`,
@@ -61,7 +62,7 @@ export class DataGrid2Component implements OnChanges {
     this.tempDragColumn = x;
 
   }
-  dragOver(x: Column, event: any) {
+  dragOver(x: DataControlSettings, event: any) {
     event.preventDefault();
   }
   onDrop(x: DataControlSettings) {
@@ -87,14 +88,16 @@ export class DataGrid2Component implements OnChanges {
 
   @Input() records: any;
   @Input() settings: GridSettings<any>;
-  isFiltered(c: Column) {
+  isFiltered(c: FieldMetadata) {
     return this.settings.columns.filterHelper.isFiltered(c);
   }
   //@ts-ignore
   @ViewChild(DataFilterInfoComponent) dataFilterInfo: DataFilterInfoComponent;
   showFilterColumnDialog(dataControlSettings: DataControlSettings) {
+    if (!dataControlSettings.field)
+      return;
     this.settings.initOrigList();
-    this.dataFilterInfo.editFilter(dataControlSettings.column);
+    this.dataFilterInfo.editFilter(getFieldDefinition(dataControlSettings.field));
   }
 
   getButtonCssClass(b: RowButton<any>, row: any) {
@@ -108,7 +111,7 @@ export class DataGrid2Component implements OnChanges {
   getButtonText(b: RowButton<any>, row: any) {
     if (!b.textInMenu)
       return b.name;
-    if (typeof b.textInMenu ==="function") {
+    if (typeof b.textInMenu === "function") {
       if (!row)
         return '';
       //@ts-ignore
@@ -130,7 +133,7 @@ export class DataGrid2Component implements OnChanges {
   rowButtons: RowButton<any>[] = [];
   gridButtons: GridButton[] = [];
   keys: string[] = [];
-  private addButton(b: RowButton<Entity>) {
+  private addButton(b: RowButton<any>) {
     if (!b.click)
       b.click = (r) => { };
     if (!b.visible)
@@ -162,14 +165,15 @@ export class DataGrid2Component implements OnChanges {
 
 
   showSaveAllButton() {
-    return this.settings.items.find(x => x.wasChanged())
+    return this.settings.items.find(x => this.settings.getRowHelper(x).wasChanged())
   }
   saveAllText() {
-    return this.rightToLeft ? ('שמור ' + this.settings.items.filter(x => x.wasChanged()).length + ' שורות') :
-      ('save ' + this.settings.items.filter(x => x.wasChanged()).length + ' rows');
+    return this.rightToLeft ? ('שמור ' + this.settings.items.filter(x => this.settings.getRowHelper(x).wasChanged()).length + ' שורות') :
+      ('save ' + this.settings.items.filter(x => this.settings.getRowHelper(x).wasChanged()).length + ' rows');
   }
   async saveAllClick() {
-    await Promise.all(this.settings.items.filter(x => x.wasChanged()).map(x => x.save()));
+    await Promise.all(this.settings.items.filter(x => this.settings.getRowHelper(x).wasChanged()).map(x =>
+      this.settings.getRowHelper(x).save()));
   }
 
   ngOnChanges(): void {
@@ -187,6 +191,7 @@ export class DataGrid2Component implements OnChanges {
         await this.saveAllClick();
       }
     });
+    this.settings.columns.setContext(this.context);
     if (this.settings.settings.gridButtons) {
       this.gridButtons.push(...this.settings.settings.gridButtons.map(x => {
         if (!x.visible)
@@ -200,7 +205,7 @@ export class DataGrid2Component implements OnChanges {
         name: "",
         icon: 'check',
         cssClass: "glyphicon glyphicon-ok btn-success",
-        visible: r => r.wasChanged(),
+        visible: r => this.settings.getRowHelper(r).wasChanged(),
         showInLine: true,
         textInMenu: () => this.rightToLeft ? 'שמור' : 'save',
         click: r => {
@@ -212,33 +217,35 @@ export class DataGrid2Component implements OnChanges {
         name: "",
         icon: 'cancel',
         cssClass: "btn btn-danger glyphicon glyphicon-ban-circle",
-        visible: r => r.wasChanged(),
+        visible: r => this.settings.getRowHelper(r).wasChanged(),
         showInLine: true,
         textInMenu: () => this.rightToLeft ? 'בטל שינוים' : 'cancel',
 
         click: r => {
-          r.undoChanges();
+          this.settings.undoChanges(r);
+
         }
       });
 
 
     }
+
     if (this.settings.allowDelete)
       this.addButton({
         name: '',
         visible: (r) => {
-          return r && !r.isNew();
+          return r && !this.settings.getRowHelper(r).isNew();
         }
         , icon: 'delete',
-        showInLine: true,
-        textInMenu: () => this.rightToLeft ? 'מחק' : 'delete',
+        //       showInLine: true,
+        textInMenu: () => this.rightToLeft ? 'מחק' : 'Delete',
         click: async r => {
           if (this.settings.settings.confirmDelete) {
 
             if (!await this.settings.settings.confirmDelete(r))
               return;
           }
-          r.delete();
+          this.settings.getRowHelper(r).delete();
 
         },
 
@@ -249,7 +256,7 @@ export class DataGrid2Component implements OnChanges {
         this.addButton(b);
       }
     if (!this.records && this.settings) {
-      this.settings.getRecords().then((r: any) => {
+      this.settings.reloadData().then((r: any) => {
         this.records = r;
 
       });

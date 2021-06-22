@@ -92,26 +92,26 @@ Now let's adjust the `home.component.html` to use these products, using the `*ng
 ```html{2,4,7}
 <h1>Available Products</h1>
 <mat-card *ngFor="let p of products">
-    <mat-card-title>
-        {{p.name.value}}
-    </mat-card-title>
-    <mat-card-subtitle>
-        {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}
-    </mat-card-subtitle>
+  <mat-card-title>
+    {{p.name}}
+  </mat-card-title>
+  <mat-card-subtitle>
+    {{p.availableFrom | date}} - {{p.availableTo | date}}
+  </mat-card-subtitle>
 </mat-card>
 ```
-* We're using the `displayValue` property of the `DateColumn` to show the date in a friendly way.
+* We're using the `|date` angular pipe to display the dates nicely.
 
 Now let's format the cards to display multiple cards in a row. We'll add a `css` class to the `mat-card` tag
 ```html{2}
 <h1>Available Products</h1>
 <mat-card *ngFor="let p of products" class="product-card">
-    <mat-card-title>
-        {{p.name.value}}
-    </mat-card-title>
-    <mat-card-subtitle>
-        {{p.availableFrom.displayValue}} - {{p.availableTo.displayValue}}
-    </mat-card-subtitle>
+  <mat-card-title>
+    {{p.name}}
+  </mat-card-title>
+  <mat-card-subtitle>
+    {{p.availableFrom | date}} - {{p.availableTo | date}}
+  </mat-card-subtitle>
 </mat-card>
 ```
 

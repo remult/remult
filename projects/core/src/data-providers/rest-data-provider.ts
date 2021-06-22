@@ -1,18 +1,18 @@
 
 
-import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
-import { Entity } from '../entity';
-import { FilterSerializer, packToRawWhere } from '../filter/filter-consumer-bridge-to-url-builder';
-import { UrlBuilder } from '../url-builder';
-import { Filter } from '../filter/filter-interfaces';
+import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
+
+import { UrlBuilder } from '../../urlBuilder';
+import { Filter, packToRawWhere } from '../filter/filter-interfaces';
+import { EntityMetadata } from '../remult3';
 
 
 export class RestDataProvider implements DataProvider {
   constructor(private url: string, private http: RestDataProviderHttpProvider) {
 
   }
-  public getEntityDataProvider(entity: Entity): EntityDataProvider {
-    return new RestEntityDataProvider(this.url + '/' + entity.defs.name, this.http);
+  public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
+    return new RestEntityDataProvider(this.url + '/' + entity.key, this.http, entity);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
@@ -20,8 +20,22 @@ export class RestDataProvider implements DataProvider {
 }
 class RestEntityDataProvider implements EntityDataProvider {
 
-  constructor(private url: string, private http: RestDataProviderHttpProvider) {
+  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityMetadata) {
 
+  }
+  translateFromJson(row: any) {
+    let result = {};
+    for (const col of this.entity.fields) {
+      result[col.key] = col.valueConverter.fromJson(row[col.key]);
+    }
+    return result;
+  }
+  translateToJson(row: any) {
+    let result = {};
+    for (const col of this.entity.fields) {
+      result[col.key] = col.valueConverter.toJson(row[col.key]);
+    }
+    return result;
   }
 
   public async count(where: Filter): Promise<number> {
@@ -54,11 +68,11 @@ class RestEntityDataProvider implements EntityDataProvider {
         let order = '';
         options.orderBy.Segments.forEach(c => {
           if (sort.length > 0) {
-            sort += ", ";
-            order += ", ";
+            sort += ",";
+            order += ",";
           }
-          sort += c.column.defs.key;
-          order += c.descending ? "desc" : "asc";
+          sort += c.field.key;
+          order += c.isDescending ? "desc" : "asc";
 
         });
         url.add('_sort', sort);
@@ -73,14 +87,14 @@ class RestEntityDataProvider implements EntityDataProvider {
     }
     if (filterObject) {
       url.add("__action", "get");
-      return this.http.post(url.url, filterObject);
+      return this.http.post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
     }
     else
-      return this.http.get(url.url);
+      return this.http.get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
   }
 
   public update(id: any, data: any): Promise<any> {
-    return this.http.put(this.url + '/' + encodeURIComponent(id), data);
+    return this.http.put(this.url + '/' + encodeURIComponent(id), this.translateToJson(data)).then(y => this.translateFromJson(y));
 
   }
 
@@ -89,20 +103,14 @@ class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public insert(data: any): Promise<any> {
-    return this.http.post(this.url, data);
+    return this.http.post(this.url, this.translateToJson( data)).then(y => this.translateFromJson(y));
   }
 }
 function JsonContent(add: (name: string, value: string) => void) {
   add('Content-type', "application/json");
 }
 
-export interface RestDataProviderHttpProvider {
-  post(url: string, data: any): Promise<any>;
-  delete(url: string): Promise<void>;
-  put(url: string, data: any): Promise<any>;
-  get(url: string): Promise<any>;
 
-}
 export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderHttpProvider {
   constructor(private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
     if (!addRequestHeader)

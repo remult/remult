@@ -4,15 +4,20 @@ import * as express from 'express';
 import * as cors from 'cors';
 import { initExpress } from '@remult/core/server';
 import * as fs from 'fs';
-import '../app.module';
+//import '../app.module';
 import { serverInit } from './server-init';
 
 
-import { preparePostgresQueueStorage } from '@remult/server-postgres';
+import { preparePostgresQueueStorage } from '@remult/core/postgres';
 
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
+import { Field, Filter } from '../../../projects/core';
+import { Products } from '../products-test/products';
+
+import { isJSDocTypedefTag } from 'typescript';
+
 
 
 
@@ -20,16 +25,20 @@ import * as jwt from 'express-jwt';
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
+
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
+
     let s = initExpress(app, {
-        dataProvider:dataSource,
+        //       dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource),
+
     });
+    console.log('123');
 
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
@@ -45,12 +54,9 @@ serverInit().then(async (dataSource) => {
         }
         else {
             res.send('No Result' + index);
-
         }
     });
 
     let port = process.env.PORT || 3001;
     app.listen(port);
-
-
 });

@@ -11,7 +11,7 @@ import { Products } from './products';
 export class ProductsComponent implements OnInit {
   constructor(private context: Context) { }
   products = new GridSettings(this.context.for(Products), {
-    allowCRUD: true
+    allowCrud: true
   });
   ngOnInit() {
   }
