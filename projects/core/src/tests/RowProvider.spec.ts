@@ -605,6 +605,7 @@ describe("test row provider", () => {
     }
     catch (err) {
       expect(cat._.fields.a.error).toEqual("m");
+      expect(err.message).toBe("A: m");
     }
     expect(saved).toBe(false);
   });

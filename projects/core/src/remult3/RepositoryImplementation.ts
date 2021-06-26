@@ -282,12 +282,12 @@ export class RepositoryImplementation<T> implements Repository<T>{
             return undefined;
         let x = new this.entity(this.context);
         let helper = new rowHelperImplementation(this._info, x, this, this.edp, this.context, false);
-        await helper.loadDataFrom(r);
-        helper.saveOriginalData();
-
         Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.log
             get: () => helper
         })
+        await helper.loadDataFrom(r);
+        helper.saveOriginalData();
+
         return x;
     }
 
@@ -401,7 +401,7 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
     return new EntityFullInfo<T>(prepareColumnInfo(r), info, context);
 }
 
-class rowHelperBase<T>
+abstract class rowHelperBase<T>
 {
     error: string;
     constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
@@ -437,7 +437,7 @@ class rowHelperBase<T>
             if (!error.message) {
                 for (const col of this.columnsInfo) {
                     if (this.errors[col.key]) {
-                        error.message = col.settings.caption + ": " + this.errors[col.key];
+                        error.message = this.fields[col.key].metadata.caption + ": " + this.errors[col.key];
                     }
                 }
 
@@ -447,6 +447,7 @@ class rowHelperBase<T>
 
         }
     }
+    abstract get fields(): Fields<T>;
     catchSaveErrors(err: any): any {
         let e = err;
 
@@ -892,7 +893,7 @@ export class columnImpl<colType, rowType> implements FieldRef<colType, rowType> 
 export function getEntityRef<entityType>(entity: entityType, throwException = true): EntityRef<entityType> {
     let x = entity[entityMember];
     if (!x && throwException)
-        throw new Error("item " + entity + " was not initialized using a context");
+        throw new Error("item " + entity.constructor.name + " was not initialized using a context");
     return x;
 
 }

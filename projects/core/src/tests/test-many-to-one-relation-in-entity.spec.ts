@@ -1,4 +1,4 @@
-import { ServerContext } from '../context';
+import { Context, ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere } from '../remult3';
 import { async, waitForAsync } from '@angular/core/testing';
@@ -8,6 +8,7 @@ import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { itAsync } from './testHelper.spec';
+import { ManyToOne } from '../column';
 
 
 
@@ -42,9 +43,40 @@ class Products extends EntityBase {
     supplier: Suppliers;
 
 }
+@Entity({ key: 'profile' })
+class profile extends EntityBase {
+    @Field()
+    id: string;
+    rel = new ManyToOne(this.context.for(following), f => f.id.isEqualTo('1').and(f.profile.isEqualTo(this)))
+    @Field<profile>({
+        serverExpression: async self => {
+            await self.rel.load();
+            return false;
+        }
+    })
+    following: boolean;
+    constructor(private context: Context) {
+        super();
+    }
+}
+@Entity({ key: 'following' })
+class following extends EntityBase {
+    @Field()
+    id: string;
+    @Field()
+    profile: profile;
+
+}
 
 
 describe("many to one relation", () => {
+    it("xx", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        await context.for(profile).create({ id: '1' }).save();
+        let p = await context.for(profile).findId('1');
+        expect(p.following).toBe(false);
+    }));
 
     it("what", async(async () => {
         let mem = new InMemoryDataProvider();
@@ -397,9 +429,9 @@ describe("many to one relation", () => {
         expect(p.category.id).toBe(cat.id);
         let sqlr = (await db.execute("select category,supplier from products")).rows[0];
         expect(sqlr.category).toEqual('1.0');
-        expect(sqlr.supplier).toBe('sup1');  
-        expect(await context.for(Products).count(p=>p.supplier.isEqualTo(sup))).toBe(1);
-        expect(await context.for(Products).count(p=>p.supplier.isIn([sup]))).toBe(1);
+        expect(sqlr.supplier).toBe('sup1');
+        expect(await context.for(Products).count(p => p.supplier.isEqualTo(sup))).toBe(1);
+        expect(await context.for(Products).count(p => p.supplier.isIn([sup]))).toBe(1);
 
 
     });

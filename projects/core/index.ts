@@ -93,7 +93,7 @@ export { SortSegment, Sort } from './src/sort';
 
 
 
-export { ManyToOne, OneToMany } from './src/column';
+export { ManyToOne, OneToMany, CompoundIdField } from './src/column';
 
 
 

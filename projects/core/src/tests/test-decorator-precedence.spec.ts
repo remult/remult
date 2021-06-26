@@ -33,6 +33,22 @@ describe("test decorator precedence", () => {
         expect(r.metadata.fields.b.caption).toBe('123');
         expect(r.metadata.fields.c.caption).toBe('456');
     });
+    it("testit", () => {
+        let c = new Context();
+        let r = c.for(user).create();
+        expect(r.$.username.metadata.caption).toBe("Username");
+    })
 
 
 });
+
+@Entity({ key: 'profile' })
+class profile extends EntityBase {
+    @Field()
+    username: string;
+}
+@Entity({ key: 'user' })
+class user extends profile {
+    @Field()
+    email: string;
+}

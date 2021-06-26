@@ -67,7 +67,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] support toJSON in entityBase
 [V] support settings of entity values with plain JSON objects, and figuring out their id.
 [V] setting value of entity with a plain id/string should work also.
-
+[] dbAutoIncrementId for Array databases- int and string guid
 [] add code that entity relation can be tested for null - and it'll not perform fetch.
 
 [] instead of row, use entity
@@ -151,6 +151,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ```
 [] talk about $.find('name') vs $['name']
 []c.defs.valueConverter !== DateOnlyValueConverter
+[] fix shit with running on server - it gets it wrong in too many cases (React etc...)
 
 ## context related:
 [] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
@@ -161,6 +162,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider the name FilterFactories to be EntityFilterFactories
 [] add to entity options a lambda that gets context and returns data provider.
 [] talk about isvalid that gives you indication of the data is valid etc....
+[] talk about duplicate value test, should happen only on server?
+
+
 
 
 ## context stuff:
@@ -181,6 +185,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
 [] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
+
+[] fails because author is undefined. allowApiDelete: (context, comment) => comment.author.username == context.user.id,
 
 ## remult angular
 [V] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
