@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema",
-    "id": "HelloSchematics",
+    "$id": "HelloSchematics",
     "title": "Hello Options Schema",
     "type": "object",
     "description": "Says hello to someone",

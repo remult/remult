@@ -69,6 +69,7 @@ export function hello(_options: Schema): Rule {
       , entryComponents: entryComponents
 
     });
+
     var project: string = 'did not find project';
     editJson(tree, "./angular.json", j => {
       for (const p in j.projects) {
@@ -82,16 +83,14 @@ export function hello(_options: Schema): Rule {
       }
     });
 
-
-    tree.delete('./src/app/app.component.html');
-    tree.delete('./src/app/app.component.spec.ts');
-    tree.delete('./src/app/app.component.ts');
-    tree.delete('./src/app/app.component.scss');
-    tree.delete('./src/app/app-routing.module.ts');
-
-
-
-
+    try {
+      tree.delete('./src/app/app.component.html');
+      tree.delete('./src/app/app.component.spec.ts');
+      tree.delete('./src/app/app.component.ts');
+      tree.delete('./src/app/app.component.scss');
+      tree.delete('./src/app/app-routing.module.ts');
+    }
+    catch { }
 
     //    addDeclarationToModule()
     const sourceTemplates = url('./files');
@@ -108,8 +107,6 @@ export function hello(_options: Schema): Rule {
         }
       })
     ]);
-
-
 
     return mergeWith(sourceParametrizedTemplates);
   };
@@ -198,13 +195,9 @@ export function hello(_options: Schema): Rule {
     var options: any = {};
     options.name = "stam";
     const workspace = getWorkspace(tree);
-    if (!options.project) {
-      options.project = Object.keys(workspace.projects)[0];
-    }
-    const project = workspace.projects[options.project];
+    const project = Object.values(workspace.projects)[0];
     if (options.path === undefined) {
-      const projectDirName = project.projectType === 'application' ? 'app' : 'lib';
-      options.path = `/${project.root}/src/${projectDirName}`;
+      options.path = `/${project.root}/${project.sourceRoot}/${project.prefix}`;
     }
     options.module = findModuleFromOptions(tree, options);
 

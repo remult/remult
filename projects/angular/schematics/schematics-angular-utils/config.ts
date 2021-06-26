@@ -5,7 +5,7 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { experimental } from '@angular-devkit/core';
+import { WorkspaceDefinition } from '@angular-devkit/core/src/workspace';
 import { SchematicsException, Tree } from '@angular-devkit/schematics';
 
 
@@ -440,9 +440,6 @@ export interface CliConfig {
   };
 }
 
-export type WorkspaceSchema = experimental.workspace.WorkspaceSchema;
-
-
 export function getWorkspacePath(host: Tree): string {
   const possibleFiles = [ '/angular.json', '/.angular.json' ];
   const path = possibleFiles.filter(path => host.exists(path))[0];
@@ -450,7 +447,7 @@ export function getWorkspacePath(host: Tree): string {
   return path;
 }
 
-export function getWorkspace(host: Tree): WorkspaceSchema {
+export function getWorkspace(host: Tree): WorkspaceDefinition {
   const path = getWorkspacePath(host);
   const configBuffer = host.read(path);
   if (configBuffer === null) {
