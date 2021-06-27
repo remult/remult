@@ -1,10 +1,11 @@
 import { ClassType } from '../classType';
+import { set } from '../set';
 import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces';
 
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import {  EntityWhere, FindOptions, getEntityRef, Repository, __updateEntityBasedOnWhere } from './remult3';
+import { EntityWhere, FindOptions, getEntityRef, Repository, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -187,9 +188,10 @@ export class OneToMany<T>{
   private async find(): Promise<T[]> {
     return this.provider.find(this.settings)
   }
-  create(): T {
+  create(item: Partial<T>): T {
     let r = this.provider.create();
     __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
+    set(r,item);
     if (this.settings.create)
       this.settings.create(r);
     return r;

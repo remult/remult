@@ -120,9 +120,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] consider DbAutoIncrement to decorator
 [] reconsider idColumn - maybe internalize it.
-[] rowHelper naming
+[V] rowHelper naming
 [] reconsider Item and Entity.
-[] ColumnDefinitions vs ColumnOptions and same for entity
+[V] ColumnDefinitions vs ColumnOptions and same for entity
 [] apiDataFilter
 [] fixedFilter
 [] consider a column that is saved to more than one column in the db
@@ -151,7 +151,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ```
 [] talk about $.find('name') vs $['name']
 []c.defs.valueConverter !== DateOnlyValueConverter
-[] fix shit with running on server - it gets it wrong in too many cases (React etc...)
+
 
 ## context related:
 [] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
@@ -162,7 +162,22 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider the name FilterFactories to be EntityFilterFactories
 [] add to entity options a lambda that gets context and returns data provider.
 [] talk about isvalid that gives you indication of the data is valid etc....
+
+[] consider an option of running it all in the browser, for the development start, just like weve done with the json database
+
+
+## things that came up during react:
+[] talk about moving the multiple articles function to articleModel file ,caused a server bug
 [] talk about duplicate value test, should happen only on server?
+[] fix shit with running on server - it gets it wrong in too many cases (React etc...)
+[] rename get cached by id async to findfirst with a second parameter of disable cache.
+[] consider making all entity field, by default automatically loaded - and disable it if wanted - will be easier to understand
+[] talk about the entity field not loaded in allowApiUpdate that broke the code.
+[] talk about typing problem when using entity base - https://github.com/microsoft/TypeScript/issues/34933
+[] es2015  in server config
+[] review wierd typing issue with article payload action that failed for some reason
+
+
 
 
 
@@ -234,7 +249,7 @@ export interface EntityRef<entityType> {
     hasErrors(): boolean;
     undoChanges();
     save(): Promise<entityType>;
-    reload(): Promise<void>;
+    reload(): Promise<entityType>;
     delete(): Promise<void>;
     isNew(): boolean;
     wasChanged(): boolean;

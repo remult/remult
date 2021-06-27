@@ -590,10 +590,12 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         this.loadDataFrom(this.originalValues);
         this.__clearErrors();
     }
-    async reload(): Promise<void> {
-        return this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }).then(async newData => {
+    async reload(): Promise<T> {
+        await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }).then(async newData => {
             await this.loadDataFrom(newData[0]);
+            
         });
+        return this.instance;
     }
 
     private _columns: Fields<T>;
