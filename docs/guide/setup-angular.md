@@ -183,36 +183,36 @@ export class AppModule { }
 
 ## Entities
 
-Now that our starter project is ready, we can start coding the app by defining the `Tasks` entity class.
+Now that our starter project is ready, we can start coding the app by defining the `Task` entity class.
 
-The `Tasks` entity class will be used:
+The `Task` entity class will be used:
 * As a model class for client-side code
 * As a model class for server-side code
 * By `remult` to generate API endpoints and database commands
 
-The `Tasks` entity class we're creating will have an `id` field and a `title` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+The `Task` entity class we're creating will have an `id` field and a `title` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
-Create a file `tasks.ts` in the `src/app/` folder, with the following code:
+Create a file `task.ts` in the `src/app/` folder, with the following code:
 
-*src/app/tasks.ts*
+*src/app/task.ts*
 ```ts
-import { Column, Entity, IdEntity } from "@remult/core";
+import { Field, Entity, IdEntity } from "@remult/core";
 
 @Entity({
     key: "tasks",
     allowApiCrud: true
 })
-export class Tasks extends IdEntity {
-    @Column()
+export class Task extends IdEntity {
+    @Field()
     title: string;
 }
 ```
 
-The `@Entity` decorator tells Remult this class is an entity class, and accepts an argument which implements the `EntityOptions` interface. We use an anonymous object to instantiate it, setting the `key` property (used to name the API route and database collection/table), and the `allowApiCrud` property to `true`. <!-- consider linking to reference -->
+The `@Entity` decorator tells Remult this class is an entity class, and accepts an argument which implements the `EntitySettings` interface. We use an anonymous object to instantiate it, setting the `key` property (used to name the API route and database collection/table), and the `allowApiCrud` property to `true`. <!-- consider linking to reference -->
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The `@Column` decorator tells Remult the `title` property is an entity data field. This decorator is also used to encapsulate field related properties and operations, discussed in the next sections of this tutorial.
+The `@Field` decorator tells Remult the `title` property is an entity data field. This decorator is also used to encapsulate field related properties and operations, discussed in the next sections of this tutorial.
 
 
 ### Create new tasks
@@ -227,7 +227,7 @@ Let's implement this feature within the main `AppComponent` class.
    ```ts{2-3,12-18}
    import { Component } from '@angular/core';
    import { Context } from '@remult/core';
-   import { Tasks } from './tasks';
+   import { Task } from './tasks';
 
    @Component({
       selector: 'app-root',
@@ -238,19 +238,19 @@ Let's implement this feature within the main `AppComponent` class.
       title = 'remult-angular-todo';
       constructor(public context: Context) { 
       }
-      newTask = this.context.for(Tasks).create();
+      newTask = this.context.for(Task).create();
       async createNewTask() {
          await this.newTask.save();
-         this.newTask = this.context.for(Tasks).create();
+         this.newTask = this.context.for(Task).create();
       }
    }
    ```
 
    The `context` field we've add to the `AppComponent` class (using a constructor argument), is a Remult `Context` object which will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on in the tutorial.
 
-   The `newTask` field contains a new, empty, instance of a `Tasks` entity object, instantiated using Remult. 
+   The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
-   The `createNewTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` member is replaced with a new `Tasks` object.
+   The `createNewTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` member is replaced with a new `Task` object.
 
 2. Replace the contents of `app.component.html` with the following HTML:
 
@@ -258,7 +258,7 @@ Let's implement this feature within the main `AppComponent` class.
    ```html
    <title>{{title}}</title>
    <div>
-      <input [(ngModel)]="newTask.title.inputValue" [placeholder]="newTask.title.defs.caption">
+      <input [(ngModel)]="newTask.title" placeholder="Title">
       <button (click)="createNewTask()">Create new task</button>
    </div>
    ```
@@ -280,21 +280,21 @@ If you're using git, it is advisable to exclude the `db` folder from version con
 
 
 ### Display the list of tasks
-To display the list of existing tasks, we'll add a `Tasks` array field to the `AppComponent` class, load data from the server, and display it in an unordered list.
+To display the list of existing tasks, we'll add a `Task` array field to the `AppComponent` class, load data from the server, and display it in an unordered list.
 
 1. Add the following code to the `AppComponent` class:
 
    *src/app/app.component.ts*
    ```ts
-   tasks: Tasks[];
+   tasks: Task[];
    async loadTasks() {
-      this.tasks = await this.context.for(Tasks).find();
+      this.tasks = await this.context.for(Task).find();
    }
    ngOnInit() {
       this.loadTasks();
    }
    ```
-   The `ngOnInit` hook method loads the list of `Tasks` when the component is loaded.
+   The `ngOnInit` hook method loads an array of tasks when the component is loaded.
 
 2. Add the unordered list element to the `app.component.html` file.
 
@@ -302,7 +302,7 @@ To display the list of existing tasks, we'll add a `Tasks` array field to the `A
    ```html
    <ul>
       <li *ngFor="let task of tasks">
-         {{task.title.value}}
+         {{task.title}}
       </li>
    </ul>
    ```
@@ -313,7 +313,7 @@ To display the list of existing tasks, we'll add a `Tasks` array field to the `A
    ```ts{4}
    async createNewTask() {
       await this.newTask.save();
-      this.newTask = this.context.for(Tasks).create();
+      this.newTask = this.context.for(Task).create();
       this.loadTasks();
    }
    ```
@@ -327,7 +327,7 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
 
    *src/app/app.component.ts*
    ```ts
-   async deleteTask(task: Tasks) {
+   async deleteTask(task: Task) {
      await task.delete();
      this.loadTasks();
    }
@@ -353,7 +353,7 @@ Replace the task `title` template expression in `app.component.html` with the hi
 *src/app/app.component.html*
 ```html{2-3}
 <li *ngFor="let task of tasks">
-   <input [(ngModel)]="task.title.inputValue">
+   <input [(ngModel)]="task.title">
    <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
    <button (click)="deleteTask(task)">Delete</button>
 </li>
@@ -362,16 +362,13 @@ Replace the task `title` template expression in `app.component.html` with the hi
 ### Mark tasks as completed
 Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
 
-1. Add a `completed` field to the `Tasks` entity class, and initialize it with a new `BoolColumn` object.
+1. Add a `completed` field of type `boolean` to the `Task` entity class, and decorate it with the `@Field` decorator.
 
-   *src/app/tasks.ts*
+   *src/app/task.ts*
    ```ts
-   readonly completed = new BoolColumn();
+   @Field()
+   completed: boolean;
    ```
-
-   ::: danger Import BoolColumn
-   Don't forget to import `BoolColumn` from `@remult/core` for this code to work.
-   :::
 
 2. Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngmModel` to the `inputValue` property of the task's `completed` field. 
    
@@ -380,11 +377,11 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    *src/app/app.component.html*
    ```html{2-4}
    <li *ngFor="let task of tasks">
-      <input [(ngModel)]="task.completed.inputValue" type="checkbox">
-      <input [(ngModel)]="task.title.inputValue" 
-         [style.textDecoration]="task.completed.value?'line-through':''">
-      <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
-      <button (click)="deleteTask(task)">Delete</button>
+     <input [(ngModel)]="task.completed" type="checkbox">
+     <input [(ngModel)]="task.title" 
+        [style.textDecoration]="task.completed?'line-through':''">
+     <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+     <button (click)="deleteTask(task)">Delete</button>
    </li>
    ```
 
@@ -402,20 +399,19 @@ We've implemented the following features of the todo app:
 
 Here are the code files we've modified to implement these features.
 
-*src/app/tasks.ts*
+*src/app/task.ts*
 ```ts
-import { BoolColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { Field, Entity, IdEntity } from "@remult/core";
 
-@EntityClass
-export class Tasks extends IdEntity {
-   readonly title = new StringColumn();
-   readonly completed = new BoolColumn();
-   constructor() {
-      super({
-            name: 'tasks',
-            allowApiCRUD: true
-      })
-   }
+@Entity({
+    key: "tasks",
+    allowApiCrud: true
+})
+export class Task extends IdEntity {
+    @Field()
+    title: string;
+    @Field()
+    completed: boolean;
 }
 ```
 
@@ -423,7 +419,7 @@ export class Tasks extends IdEntity {
 ```ts{2-3,12-30}
 import { Component } from '@angular/core';
 import { Context } from '@remult/core';
-import { Tasks } from './tasks';
+import { Task } from './tasks';
 
 @Component({
   selector: 'app-root',
@@ -434,20 +430,20 @@ export class AppComponent {
   title = 'remult-angular-todo';
   constructor(public context: Context) {
   }
-  newTask = this.context.for(Tasks).create();
+  newTask = this.context.for(Task).create();
   async createNewTask() {
     await this.newTask.save();
-    this.newTask = this.context.for(Tasks).create();
+    this.newTask = this.context.for(Task).create();
     this.loadTasks();
   }
-  tasks: Tasks[];
+  tasks: Task[];
   async loadTasks() {
-    this.tasks = await this.context.for(Tasks).find();
+    this.tasks = await this.context.for(Task).find();
   }
   ngOnInit() {
     this.loadTasks();
   }
-  async deleteTask(task: Tasks) {
+  async deleteTask(task: Task) {
     await task.delete();
     this.loadTasks();
   }
@@ -458,16 +454,17 @@ export class AppComponent {
 ```html
 <title>{{title}}</title>
 <div>
-  <input [(ngModel)]="newTask.title.inputValue" [placeholder]="newTask.title.defs.caption">
+  <input [(ngModel)]="newTask.title" placeholder="Title">
   <button (click)="createNewTask()">Create new task</button>
 </div>
 <ul>
   <li *ngFor="let task of tasks">
-    <input [(ngModel)]="task.completed.inputValue" type="checkbox">
-    <input [(ngModel)]="task.title.inputValue" [style.textDecoration]="task.completed.value?'line-through':''">
+    <input [(ngModel)]="task.completed" type="checkbox">
+    <input [(ngModel)]="task.title" 
+       [style.textDecoration]="task.completed?'line-through':''">
     <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
     <button (click)="deleteTask(task)">Delete</button>
-  </li>
+ </li>
 </ul>
 ```
 
@@ -477,12 +474,12 @@ The RESTful API create by Remult supports server-side sorting and filtering. Let
 ### Show uncompleted tasks first
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `loadTasks` method of the `AppComponent` class, modify the `find` method call to include an `options` argument which implements the `FindOptions` interface. Implement the interface using an anonymous object and set the object's `orderBy` property to an arrow function which accepts an argument of the `Task` entity class and returns its `completed` column.
+In the `loadTasks` method of the `AppComponent` class, modify the `find` method call to include an `options` argument which implements the `FindOptions` interface. Implement the interface using an anonymous object and set the object's `orderBy` property to an arrow function which accepts an argument of the `Task` entity class and returns its `completed` field.
 
 *src/app/app.component.ts*
 ```ts{2-4}
 async loadTasks() {
-  this.tasks = await this.context.for(Tasks).find({
+  this.tasks = await this.context.for(Task).find({
     orderBy: task => task.completed
   });
 }
@@ -505,7 +502,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    *src/app/app.component.ts*
    ```ts{3}
    async loadTasks() {
-     this.tasks = await this.context.for(Tasks).find({
+     this.tasks = await this.context.for(Task).find({
        where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
        orderBy: task => task.completed
      });
@@ -533,30 +530,28 @@ Validating user entered data is usually required both on the client-side and on 
 
 ### Validate task title length
 
-Task titles should be at least 3 characters long. Let's add a validity check for this rule, and display an appropriate error message in the UI.
+Task titles are required. Let's add a validity check for this rule, and display an appropriate error message in the UI.
 
-1. In the `Tasks` entity class, modify the `StringColumn` constructor call for the `title` field to include an argument which implements the `ColumnOptions` interface. Implement the interface using an anonymous object and set the object's `validate` property to an arrow function containing the validity check.
+1. In the `Task` entity class, modify the `Field` decorator for the `title` field to include an argument which implements the `ColumnOptions` interface. Implement the interface using an anonymous object and set the object's `validate` property to `Validators.required`.
 
-   *src/app/tasks.ts*
-   ```ts
-   readonly title = new StringColumn({
-      validate: () => {
-         if (this.title.value.length < 3)
-            this.title.validationError = 'is too short';
-      }
-   });
+   *src/app/task.ts*
+   ```ts{1-3}
+    @Field({
+        validate: Validators.required
+    })
+    title: string;
    ```
 
-2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.title.validationError` is not `undefined` and place the `validationError` text as its contents.
+2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
 
    *src/app/app.component.html*
    ```html
-   <div *ngIf="newTask.title.validationError">
-      {{newTask.title.defs.caption}} {{newTask.title.validationError}}
-   </div>
+  <div *ngIf="newTask.$.title.error">
+    {{newTask.$.title.error}}
+  </div>
    ```
 
-After the browser refreshes, try creating a new `task` with a title shorter than 3 characters - the "Title is too short" error message is displayed.
+After the browser refreshes, try creating a new `task` without title - the "Should not be empty" error message is displayed.
 
 Attempting to modify titles of existing tasks to invalid values will also fail, but the error message is not displayed because we haven't added the template element to display it.
 
@@ -566,13 +561,13 @@ The validation code we've added is called by Remult on the server-side to valida
 Try making the following `POST` http request to the `http://localhost:4200/api/tasks` API route, providing an invalid title.
 
 ```sh
-curl -i -X POST http://localhost:4200/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"t\"}"
+curl -i -X POST http://localhost:4200/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"\"}"
 ```
 
 An http error is returned and the validation error text is included in the response body,
 
 
-## Server Functions
+## Backend methods
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
 
 ### Set all tasks as un/completed
@@ -583,12 +578,12 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    *src/app/app.component.ts*
    ```ts
    async setAll(completed: boolean) {
-      for await (const task of this.context.for(Tasks).iterate()) {
-         task.completed.value = completed;
-         await task.save();
-      }
-      this.loadTasks();
-   }
+     for await (const task of this.context.for(Task).iterate()) {
+        task.completed = completed;
+        await task.save();
+     }
+     this.loadTasks();
+  }
    ```
 
    The `iterate` method is an alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. The `iterate` method doesn't return an array (as the `find` method) and instead returns an `iteratable` object which supports iterations using the JavaScript `for await` statement.
@@ -618,8 +613,8 @@ async setAll(completed: boolean) {
 }
 @BackendMethod({ allowed: true })
 static async setAll(completed: boolean, context?: Context) {
-   for await (const task of context.for(Tasks).iterate()) {
-      task.completed.value = completed;
+   for await (const task of context.for(Task).iterate()) {
+      task.completed = completed;
       await task.save();
    }
 }
@@ -629,12 +624,12 @@ static async setAll(completed: boolean, context?: Context) {
 Don't forget to import `BackendMethod` from `@remult/core` for this code to work.
 :::
 
-The `@BackendMethod` decorator tells Remult to expose the function as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
+The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
 The optional `context` argument of the static `setAll` function is omitted in the client-side calling code, and injected by Remult on the server-side with a server `Context` object. **Unlike the client implementation of the Remult `Context`, the server implementation interacts directly with the database.**
 
 ::: warning Note
-With Remult server functions, argument types are compile-time checked. :thumbsup:
+With Remult backend methods, argument types are compile-time checked. :thumbsup:
 :::
 
 After the browser refreshed, the "Set all..." buttons function exactly the same, but they will do the work much faster.
@@ -648,16 +643,14 @@ Remult provides a flexible mechanism which enables placing **code-based authoriz
 User authentication remains outside the scope of Remult. In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
 
 ### Tasks CRUD operations require sign in
-This rule is implemented within the `Tasks` entity class constructor, by modifying the `allowApiCRUD` property of the anonymous implementation of the argument sent to `super`, from a `true` value to an arrow function which accepts a Remult `Context` object and returns the result of the context's `isSignedIn` method.
+This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Context` object and returns the result of the context's `isSignedIn` method.
 
-*src/app/tasks.ts*
-```ts{4}
-constructor() {
-   super({
-      name: 'tasks',
-      allowApiCRUD: context => context.isSignedIn()
-   })
-}
+*src/app/task.ts*
+```ts{3}
+@Entity({
+    key: "tasks",
+    allowApiCrud: context => context.isSignedIn()
+})
 ```
 
 After the browser refreshes, the list of tasks disappeared and the user can no longer create new tasks.
@@ -669,7 +662,7 @@ curl -i http://localhost:4200/api/tasks
 :::
 
 ::: danger Authorized server-side code can still modify tasks
-Although client CRUD requests to `tasks` API endpoints now require a signed in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCRUD` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
+Although client CRUD requests to `tasks` API endpoints now require a signed in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `AppComponent`.
 
@@ -713,7 +706,7 @@ In this section, we'll be using the following packages:
    **For this change to take effect, our Angular app's dev server must be restarted by terminating the `dev-ng` script and running it again.**
    :::
 
-4. Add a `signIn` server function to the `AppComponent` class. The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
+4. Add a `signIn` backend method to the `AppComponent` class. The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
    
    The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 
@@ -748,9 +741,7 @@ In this section, we'll be using the following packages:
       secret: "my secret key", 
       credentialsRequired: false, 
       algorithms: ['HS256'] }));
-   initExpress(app, {
-      getUserFromRequest: req => req.user
-   });
+   initExpress(app);
    app.listen(3002, () => console.log("Server started"));
    ```
 
@@ -781,6 +772,7 @@ In this section, we'll be using the following packages:
    signOut() {
       this.context.setUser(undefined);
       sessionStorage.removeItem(AppComponent.AUTH_TOKEN_KEY);
+      this.tasks = [];
    }
    ```
 
@@ -832,37 +824,33 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
    *src/app/roles.ts*
    ```ts
-   export class Roles {
-      static readonly admin = 'admin';
+   export const Roles = {
+      admin: 'admin'
    }
    ```
 
-2. Modify the highlighted lines in the `Tasks` entity class to reflect the top three authorization rules.
+2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
-   *src/app/tasks.ts*
-   ```ts{2,11,17-20}
-   import { EntityClass, IdEntity, StringColumn, BoolColumn } from "@remult/core";
-   import { Roles } from "../roles";
+   *src/app/task.ts*
+   ```ts{2,6-9,14}
+   import { Field, Entity, IdEntity, Validators } from "@remult/core";
+   import { Roles } from "./roles";
 
-   @EntityClass
-   export class Tasks extends IdEntity {
-      readonly title = new StringColumn({
-         validate: () => {
-            if (this.title.value.length < 3)
-               this.title.validationError = 'is too short';
-         },
+   @Entity({
+      key: "tasks",
+      allowApiRead: context => context.isSignedIn(),
+      allowApiUpdate: context => context.isSignedIn(),
+      allowApiInsert: Roles.admin,
+      allowApiDelete: Roles.admin
+   })
+   export class Task extends IdEntity {
+      @Field({
+         validate: Validators.required,
          allowApiUpdate: Roles.admin
-      });
-      readonly completed = new BoolColumn();
-      constructor() {
-         super({
-            name: 'tasks',
-            allowApiRead: context => context.isSignedIn(),
-            allowApiUpdate: context => context.isSignedIn(),
-            allowApiInsert: Roles.admin,
-            allowApiDelete: Roles.admin
-         })
-      }
+      })
+      title: string;
+      @Field()
+      completed: boolean;
    }
    ```
 
@@ -879,13 +867,13 @@ Usually, not all application users have the same privileges. Let's define an `ad
    ```ts{4}
    @BackendMethod({ allowed: true })
    static async signIn(username: string) {
-      let validUsers = {
-         ["Jane"]: { id: "1", name: "Jane", roles: [ Roles.admin ] },
-         ["Steve"]: { id: "2", name: "Steve", roles: [] },
-      };
-      let user = validUsers[username];
+      let validUsers = [
+      { id: "1", name: "Jane", roles: [ Roles.admin] },
+      { id: "2", name: "Steve", roles: [] }
+      ];
+      let user = validUsers.find(user => user.name === username);
       if (!user)
-         throw "Invalid User";
+      throw "Invalid User";
       return jwt.sign(user, "my secret key");
    }
    ```
@@ -897,40 +885,43 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 ::: tip Bonus - store the user who completed the task
 
-Now that our todo app requires a valid, signed in, user, we can easily add a `completedUser` field to the `Tasks` entity class and store the name of the authenticated user who completed each task.
+Now that our todo app requires a valid, signed in, user, we can easily add a `completedUser` field to the `Task` entity class and store the name of the authenticated user who completed each task.
 
-1. Add a `completedUser` field (of type `StringColumn`) to the `Tasks` entity class, and define it with `allowApiUpdate: false` to ensure it is only updated by server-side code.
+1. Add a `completedUser` field (of type `string`) to the `Task` entity class, and define it with `allowApiUpdate: false` to ensure it is only updated by server-side code.
 
-   *src/app/tasks.ts*
+   *src/app/task.ts*
    ```ts
-   readonly completedUser = new StringColumn({
+   @Field({
       allowApiUpdate: false
    })
+   completedUser: string;
    ```
 
-2. Add a `context` argument to the constructor of the `Tasks` entity class, and set the `saving` property of the `EntityOptions` implemented in the constructor to the following arrow function.
+2. Add a `context` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
 
-   *src/app/tasks.ts*
-   ```ts{1,8-12}
-   constructor(context: Context) {
-      super({
-         name: 'tasks',
-         allowApiRead: context => context.isSignedIn(),
-         allowApiUpdate: context => context.isSignedIn(),
-         allowApiInsert: Roles.admin,
-         allowApiDelete: Roles.admin,
-         saving: () => {
-            if (context.onServer && this.completed.wasChanged() && this.completed.value) {
-                  this.completedUser.value = context.user.name;
-            }
-         }
-      })
-   }
+   *src/app/task.ts*
+   ```ts{1,7-11,14-16}
+   @Entity<Task>({
+      key: "tasks",
+      allowApiRead: context => context.isSignedIn(),
+      allowApiUpdate: context => context.isSignedIn(),
+      allowApiInsert: Roles.admin,
+      allowApiDelete: Roles.admin,
+      saving: task => {
+         if (task.context.backend && task.completed && task.$.completed.wasChanged())
+               task.completedUser = task.context.user.name;
+      }
+   })
+   export class Task extends IdEntity {
+      constructor(private context: Context) {
+         super();
+      }
+      ...
    ```
 
 The `context` constructor argument will be injected with either a client-side `Context` implementation or a server-side one, depending on the runtime context of the code.
 
-When the `save` method of a `Tasks` object is called in client-side code, the `saving` function is executed twice. First, it runs in the browser, before the an API `put` request is submitted. Next, when the API request is handled on the API server, the `saving` function is invoked again before the database is updated. The `Context.onServer` property is used here to ensure our code runs only once, on the server-side.
+When the `save` method of a `Task` object is called in client-side code, the `saving` function is executed twice. First, it runs in the browser, before the an API `put` request is submitted. Next, when the API request is handled on the API server, the `saving` function is invoked again before the database is updated. The `Context.onServer` property is used here to ensure our code runs only once, on the server-side.
 
 :::
 
@@ -949,7 +940,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{5-6,9-10,18-22}
+   ```ts{5-6,9-10,19-21}
    import * as express from 'express';
    import { initExpress } from '@remult/core/server';
    import '../app/app.module';
@@ -960,13 +951,12 @@ In addition, to follow a few basic production best practices, we'll use [compres
    let app = express();
    app.use(helmet());
    app.use(compression());
-   app.use(expressJwt({ 
-      secret: "my secret key", 
-      credentialsRequired: false, 
-      algorithms: ['HS256'] }));
-   initExpress(app, {
-      getUserFromRequest: req => req.user
-   });
+   app.use(expressJwt({
+      secret: "my secret key",
+      credentialsRequired: false,
+      algorithms: ['HS256']
+   }));
+   initExpress(app);
    app.use(express.static('dist/remult-angular-todo'));
    app.use('/*', async (req, res) => {
       res.sendFile('./dist/remult-angular-todo/index.html');
@@ -1101,7 +1091,7 @@ Let's replace it with a production PostgreSQL database.
 
 [] reconsider separating the setup code - to something the user can extract from a github template - and only worry about the setup if they want to.
 
-[] document the constructor parameters of column
+[] document the constructor parameters of field
 
 [] verifyStructureOfAllEntities better name (should include the word schema)
 

@@ -167,6 +167,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## things that came up during react:
+[] reflect metadata doesn't work in react
 [] talk about moving the multiple articles function to articleModel file ,caused a server bug
 [] talk about duplicate value test, should happen only on server?
 [] fix shit with running on server - it gets it wrong in too many cases (React etc...)
@@ -175,7 +176,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about the entity field not loaded in allowApiUpdate that broke the code.
 [] talk about typing problem when using entity base - https://github.com/microsoft/TypeScript/issues/34933
 [] es2015  in server config
-[] review wierd typing issue with article payload action that failed for some reason
+[] review weird typing issue with article payload action that failed for some reason
+[] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
 
 
 
