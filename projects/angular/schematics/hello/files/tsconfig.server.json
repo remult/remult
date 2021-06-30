@@ -3,11 +3,10 @@
   "compilerOptions": {
     "outDir": "./dist/server",
     "module": "commonjs",
-    "target": "es5",
     "skipLibCheck": true,
     "emitDecoratorMetadata":true
   },
   "files": [
-    "./src/server/index.ts"
+    "./src/server/*.ts"
   ]
 }
