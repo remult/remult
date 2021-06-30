@@ -546,9 +546,9 @@ Task titles are required. Let's add a validity check for this rule, and display 
 
    *src/app/app.component.html*
    ```html
-  <div *ngIf="newTask.$.title.error">
-    {{newTask.$.title.error}}
-  </div>
+   <div *ngIf="newTask.$.title.error">
+      {{newTask.$.title.error}}
+   </div>
    ```
 
 After the browser refreshes, try creating a new `task` without title - the "Should not be empty" error message is displayed.
@@ -583,7 +583,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
         await task.save();
      }
      this.loadTasks();
-  }
+   }
    ```
 
    The `iterate` method is an alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. The `iterate` method doesn't return an array (as the `find` method) and instead returns an `iteratable` object which supports iterations using the JavaScript `for await` statement.
