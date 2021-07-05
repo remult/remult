@@ -25,9 +25,9 @@ import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
 
 })
 export class ProductsComponent {
-  @Field()
+  @Field({})
   @DataControl({})
-  x: string;
+  x: number;
   @Field()
   @DataControl({})
   y: string;
@@ -43,9 +43,8 @@ export class ProductsComponent {
   area = new DataAreaSettings({
     fields: () => [
       [this.$.x, {
-        field: this.$.y,
+        getValue:()=>this.x
         
-        cssClass:'red'
       }], this.$.z
     ]
   })

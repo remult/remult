@@ -71,7 +71,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] add code that entity relation can be tested for null - and it'll not perform fetch.
 
 [] instead of row, use entity
-[] test data control with number, make sure it updates on blur
+[V] test data control with number, make sure it updates on blur
 
 [V] use helmet instead of force https
 [V] fix timeout by using a repeat mechanism in context.
@@ -109,7 +109,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] sql database, update of row where id is not named id is compromised
 
 ## review with Yoni
-[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
+
 [] "negative decimal" - inputValue
 [] "Number is always a number"
     [] "test number is always number"
@@ -151,6 +151,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ```
 [] talk about $.find('name') vs $['name']
 []c.defs.valueConverter !== DateOnlyValueConverter
+[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
 
 
 ## context related:
