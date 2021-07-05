@@ -46,6 +46,14 @@ export class DataArea2Component implements OnChanges {
 
 
   }
+  getColWidth(map: DataControlSettings) {
+    let x = this.settings.fields.__dataControlStyle(map);
+  
+    return x;
+  }
+  _getRowColumnClass(col: any) {
+    return this.settings.fields._getColumnClass(col, this.settings.fields.currentRow()) + ' dataGridDataCell';
+  }
 
   lastCols: DataControlSettings[][][];
   lastAllCols: DataControlSettings[];

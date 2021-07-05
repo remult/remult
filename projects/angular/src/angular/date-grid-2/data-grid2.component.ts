@@ -57,6 +57,17 @@ export class DataGrid2Component implements OnChanges {
       return 'רבים';
     return 'many';
   }
+  getBottomLine(){
+    if (this.settings.items.length==0)
+    return '';
+    let p = this.settings.page;
+    let firstRow = (p-1)*this.settings.rowsPerPage+1;
+    let lastRow = firstRow+this.settings.items.length-1;
+    return firstRow+" - "+lastRow+(this.rightToLeft?' מתוך ':' of ')+(this.settings.totalRows?this.settings.totalRows:(this.rightToLeft?'רבים':'many'))
+
+
+    //{{rightToLeft?'עמוד':'Page'}} {{settings.page}} {{rightToLeft?' מתוך ':' of '}} {{getTotalRows()}}
+  }
   tempDragColumn: (DataControlSettings);
   dragStart(x: DataControlSettings) {
     this.tempDragColumn = x;

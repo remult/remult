@@ -25,7 +25,7 @@ export class GroupsValue {
   key: "Products",
   allowApiCrud: true,
   dbName: () => {
-    console.log({ module: typeof module !== 'undefined' && !!module.exports });
+    
     return 'Products';
   },
   apiDataFilter: (e, c) => {
