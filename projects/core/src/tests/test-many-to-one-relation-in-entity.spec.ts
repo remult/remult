@@ -8,7 +8,7 @@ import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { itAsync } from './testHelper.spec';
-import { ManyToOne } from '../column';
+
 
 
 
@@ -47,10 +47,17 @@ class Products extends EntityBase {
 class profile extends EntityBase {
     @Field()
     id: string;
-    rel = new ManyToOne(this.context.for(following), f => f.id.isEqualTo('1').and(f.profile.isEqualTo(this)))
+    async rel() {
+        return this.context.for(following).findFirst({
+            where: f => f.id.isEqualTo('1').and(f.profile.isEqualTo(this)),
+            createIfNotFound: true
+        })
+
+
+    }
     @Field<profile>({
         serverExpression: async self => {
-            await self.rel.load();
+            await self.rel();
             return false;
         }
     })

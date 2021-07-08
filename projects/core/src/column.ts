@@ -139,22 +139,7 @@ export class LookupColumn<T> {
     return this.waitLoadOf(this.id);
   }
 }
-
-
-export class ManyToOne<T>{
-  constructor(private repository: Repository<T>,
-    private where: EntityWhere<T>
-  ) { }
-  exists() {
-    return !this.repository.getEntityRef(this.item).isNew();
-  }
-  get item(): T {
-    return this.repository.lookup(this.where);
-  }
-  async load() {
-    return this.repository.lookupAsync(this.where);
-  }
-}
+9000
 
 export class OneToMany<T>{
   constructor(private provider: Repository<T>,
@@ -188,7 +173,7 @@ export class OneToMany<T>{
   private async find(): Promise<T[]> {
     return this.provider.find(this.settings)
   }
-  create(item: Partial<T>): T {
+  create(item?: Partial<T>): T {
     let r = this.provider.create();
     __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
     set(r,item);
