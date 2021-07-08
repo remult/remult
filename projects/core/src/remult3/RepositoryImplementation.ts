@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FilterFactory, FieldRef, Fields, EntityWhere, FilterFactories, FindOptions, Repository, SortSegments, ComparisonFilterFactory, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, ContainsFilterFactory, IdMetadata } from "./remult3";
+import { EntityMetadata, FilterFactory, FieldRef, Fields, EntityWhere, FilterFactories, FindOptions, Repository, SortSegments, ComparisonFilterFactory, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, ContainsFilterFactory, IdMetadata, FindFirstOptionsBase } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Allowed, Context, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
@@ -86,7 +86,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
     }
 
 
-    get metadata(): EntityMetadata { return this._info };
+    get metadata(): EntityMetadata<T> { return this._info };
 
 
     listeners: entityEventListener<T>[];
@@ -125,13 +125,15 @@ export class RepositoryImplementation<T> implements Repository<T>{
                     where: opts.where,
                     orderBy: opts.orderBy,
                     limit: options.limit,
-                    page: options.page
+                    page: options.page,
+                    load: opts.load
                 });
             }
             async first() {
                 let r = await cont.find({
                     where: opts.where,
                     orderBy: opts.orderBy,
+                    load: opts.load,
                     limit: 1
                 });
                 if (r.length == 0)
@@ -183,7 +185,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
                         items = await cont.find({
                             where: [opts.where, nextPageFilter],
                             orderBy: opts.orderBy,
-                            limit: pageSize
+                            limit: pageSize,
+                            load: opts.load
                         });
                         itemIndex = 0;
                         if (items.length == 0) {
@@ -270,14 +273,17 @@ export class RepositoryImplementation<T> implements Repository<T>{
         opt.page = options.page;
 
         let rawRows = await this.edp.find(opt);
+        let loadFields: FieldMetadata[] = undefined;
+        if (options.load)
+            loadFields = options.load(this.metadata.fields);
         let result = await Promise.all(rawRows.map(async r =>
-            await this.mapRawDataToResult(r)
+            await this.mapRawDataToResult(r,loadFields)
         ));
         return result;
 
     }
 
-    private async mapRawDataToResult(r: any) {
+    private async mapRawDataToResult(r: any,loadFields: FieldMetadata[]) {
         if (!r)
             return undefined;
         let x = new this.entity(this.context);
@@ -285,7 +291,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
         Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.log
             get: () => helper
         })
-        await helper.loadDataFrom(r);
+        await helper.loadDataFrom(r,loadFields);
         helper.saveOriginalData();
 
         return x;
@@ -322,11 +328,14 @@ export class RepositoryImplementation<T> implements Repository<T>{
             return r;
         }
         else
-            return this.mapRawDataToResult(obj);
+            return this.mapRawDataToResult(obj,undefined);
 
     }
-    findId(id: any): Promise<T> {
-        return this.iterate(x => this.metadata.idMetadata.getIdFilter(id)).first();
+    findId(id: any, options?: FindFirstOptionsBase<T>): Promise<T> {
+        return this.iterate({
+            where: x => this.metadata.idMetadata.getIdFilter(id),
+            load: options?.load
+        }).first();
     }
 
 
@@ -595,7 +604,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     async reload(): Promise<T> {
         await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }).then(async newData => {
             await this.loadDataFrom(newData[0]);
-            
+
         });
         return this.instance;
     }
@@ -683,13 +692,23 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         }
     }
 
-    async loadDataFrom(data: any) {
+    async loadDataFrom(data: any, loadItems?: FieldMetadata[]) {
         for (const col of this.info.fields) {
             let lu = this.lookups.get(col.key);
-            if (lu)
+            if (lu) {
                 lu.id = data[col.key];
+                if (loadItems === undefined) {
+                    if (!col.options.lazy)
+                        await lu.waitLoad();
+                }
+                else {
+                    if (loadItems.includes(col))
+                        await lu.waitLoad();
+                }
+            }
             else
                 this.instance[col.key] = data[col.key];
+
         }
         await this.calcServerExpression();
         if (this.repository.metadata.idMetadata.field instanceof CompoundIdField) {

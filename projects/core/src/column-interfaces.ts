@@ -30,6 +30,7 @@ export interface FieldOptions<valueType = any, entityType = any> {
 
     includeInApi?: Allowed;
     allowApiUpdate?: AllowedForInstance<entityType>;
+    lazy?:boolean;
 }
 export interface FieldMetadata<T = any> {
     readonly key: string;

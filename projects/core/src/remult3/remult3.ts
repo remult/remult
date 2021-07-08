@@ -91,8 +91,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [X] completed = false; didn't serialize as false to json
 [V] fix shit with running on server - it gets it wrong in too many cases (React etc...)
 [V] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
-[] FieldOptions.Lazy
-[] add load to find and iterate, where you specify the columns you want loaded.
+[V] FieldOptions.Lazy
+[V] add load to find and iterate, where you specify the columns you want loaded.
 [] find id - add useCache second parameter.
 [] FindOne and FindOrCreate should consider cache.
 [] remove lookupid async and lookup async
@@ -339,7 +339,7 @@ export interface Repository<entityType> {
     iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
     count(where?: EntityWhere<entityType>): Promise<number>;
     findFirst(where?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
-    findId(id: any): Promise<entityType>;
+    findId(id: any,options?:FindFirstOptionsBase<entityType>): Promise<entityType>;
     /*to remove*/getCachedByIdAsync(id: any): Promise<entityType>;
 
     /*to remove*/findOrCreate(options?: EntityWhere<entityType> | IterateOptions<entityType>): Promise<entityType>;
@@ -374,8 +374,8 @@ export interface Repository<entityType> {
     delete(item: entityType): Promise<void>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
-export interface FindOptions<entityType> extends FindOptionsBase<entityType>{
-   
+export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
+
     /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
      * @example
      * this.products = await this.context.for(Products).find({
@@ -439,26 +439,32 @@ export type FilterFactories<entityType> = {
     entityType[Properties] extends string ? (ContainsFilterFactory<entityType[Properties]> & ComparisonFilterFactory<entityType[Properties]>) :
     ContainsFilterFactory<entityType[Properties]>
 }
-
-export interface FindOptionsBase<entityType>{
-     /** filters the data
-     * @example
-     * where p => p.price.isGreaterOrEqualTo(5)
-     * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
-     */
-      where?: EntityWhere<entityType>;
-      /** Determines the order in which the result will be sorted in
-       * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
-       */
-      orderBy?: EntityOrderBy<entityType>;
+export interface LoadOptions<entityType> {
+    load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]
 }
-export interface FindFirstOptions<entityType> extends FindOptionsBase<entityType> {
-    /** default true
+export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
+    /** filters the data
+    * @example
+    * where p => p.price.isGreaterOrEqualTo(5)
+    * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
     */
-    useCache?:boolean;
+    where?: EntityWhere<entityType>;
+    /** Determines the order in which the result will be sorted in
+     * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
+     */
+    orderBy?: EntityOrderBy<entityType>;
+}
+export interface FindFirstOptions<entityType> extends FindOptionsBase<entityType>, FindFirstOptionsBase<entityType> {
 
-    createIfNotFound?:boolean;
 
+
+}
+export interface FindFirstOptionsBase<entityType> extends LoadOptions<entityType> {
+    /** default true
+      */
+    useCache?: boolean;
+
+    createIfNotFound?: boolean;
 }
 export interface IterateOptions<entityType> extends FindOptionsBase<entityType> {
     progress?: { progress: (progress: number) => void };

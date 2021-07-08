@@ -37,10 +37,22 @@ class Products extends EntityBase {
     id: number;
     @Field()
     name: string;
-    @Field()
+    @Field({
+        lazy: true
+    })
     category: Categories;
     @Field()
     supplier: Suppliers;
+
+}
+@Entity({ key: 'products' })
+class ProductsEager extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    name: string;
+    @Field()
+    category: Categories;
 
 }
 @Entity({ key: 'profile' })
@@ -83,6 +95,41 @@ describe("many to one relation", () => {
         await context.for(profile).create({ id: '1' }).save();
         let p = await context.for(profile).findId('1');
         expect(p.following).toBe(false);
+    }));
+    it("test that it is loaded to begin with", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
+        await context.for(Products).create({ id: 1, name: 'p1', category }).save();
+        context.clearAllCache();
+        let p = await context.for(ProductsEager).findId(1);
+        expect(p.category.id).toBe(1);
+
+    }));
+    it("test that it is loaded onDemand", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
+        await context.for(Products).create({ id: 1, name: 'p1', category }).save();
+        context.clearAllCache();
+        let p = await context.for(ProductsEager).findId(1, { load: () => [] });
+        expect(p.category).toBe(undefined);
+        await p.$.category.load();
+        expect(p.category.id).toBe(1);
+    }));
+    it("test that it is loaded onDemand", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
+        await context.for(Products).create({ id: 1, name: 'p1', category }).save();
+        context.clearAllCache();
+        let p = await context.for(ProductsEager).findFirst({
+            where:p=>p.id.isEqualTo(1),
+            load: () => []
+        });
+        expect(p.category).toBe(undefined);
+        await p.$.category.load();
+        expect(p.category.id).toBe(1);
     }));
 
     it("what", async(async () => {
