@@ -98,6 +98,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] remove lookupid async and lookup async
 [] add createIfNotFound?:boolean; to FindFirstOptions and delete FindOrCreate
 [] eliminate lookup and get id by making find first cached - move lookup to remult angular
+[] fix react remult demo to loose the load fields
 
 
 ## Server Controller
