@@ -89,7 +89,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] "order by api"
 [X] test default value set in the pojo itself: a=0;
 [X] completed = false; didn't serialize as false to json
-[] fix shit with running on server - it gets it wrong in too many cases (React etc...)
+[V] fix shit with running on server - it gets it wrong in too many cases (React etc...)
 [] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
 [] FieldOptions.Lazy
 [] add load to find and iterate, where you specify the columns you want loaded.

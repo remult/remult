@@ -123,9 +123,11 @@ export interface BackendMethodOptions<type> {
     blockUser?: boolean;
     queue?: boolean;
 }
+var isNode=new Function("try {return this===global;}catch(e){return false;}");
+
 export const actionInfo = {
     allActions: [] as any[],
-    runningOnServer: typeof process !== 'undefined',
+    runningOnServer: isNode(),
     runActionWithoutBlockingUI: (what: () => Promise<any>): Promise<any> => { return what() },
     startBusyWithProgress: () => ({
         progress: (percent: number) => { },
