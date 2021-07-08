@@ -438,6 +438,8 @@ abstract class rowHelperBase<T>
                 for (const col of this.columnsInfo) {
                     if (this.errors[col.key]) {
                         error.message = this.fields[col.key].metadata.caption + ": " + this.errors[col.key];
+                        this.error = error.message;
+                        break;
                     }
                 }
 

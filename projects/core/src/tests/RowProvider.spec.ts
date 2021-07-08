@@ -555,7 +555,9 @@ describe("test row provider", () => {
       saved = true;
     }
     catch (err) {
+      
       expect(cat._.fields.a.error).toEqual("m");
+      expect(cat._.error).toBe("A: m");
     }
     expect(saved).toBe(false);
 
