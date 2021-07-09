@@ -78,5 +78,4 @@ export class lookupRowInfo<type> {
   loading = true;
   value: type = {} as type;
   promise: Promise<lookupRowInfo<type>>
-
 }

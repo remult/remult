@@ -469,7 +469,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Se
                     args[i] = x.valueConverter.fromJson(args[i]);
                 let eo = getEntitySettings(types[i], false);
                 if (eo != null) {
-                    args[i] = await context.for(types[i]).getCachedByIdAsync(args[i]);
+                    args[i] = await context.for(types[i]).findId(args[i]);
                 }
 
 

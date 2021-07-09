@@ -5,7 +5,7 @@ import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import { EntityWhere, FindOptions, getEntityRef, Repository, __updateEntityBasedOnWhere } from './remult3';
+import { EntityWhere, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -126,7 +126,7 @@ export class LookupColumn<T> {
     }
   }
 
-  constructor(private repository: Repository<T>, public id: string
+  constructor(private repository: RepositoryImplementation<T>, public id: string
   ) { }
   exists() {
     return !this.repository.getEntityRef(this.item).isNew();

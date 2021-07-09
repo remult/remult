@@ -788,7 +788,7 @@ describe("test row provider", () => {
     let [c] = await insertFourRows();
 
 
-    let r = await c.lookupAsync(c => c.categoryName.isEqualTo(undefined));
+    let r = await c.findFirst({ createIfNotFound: true, where:c => c.categoryName.isEqualTo(undefined)});
     expect(r.categoryName).toBe(undefined);
 
   });
@@ -828,7 +828,7 @@ describe("test row provider", () => {
     expect(getEntityRef(r).isNew()).toBe(true);
     r.id = 5;
     expect(c.lookup(x => x.id.isEqualTo(nc.value)).id).toBe(5);
-    r = await c.lookupAsync(x => x.id.isEqualTo(nc.value));
+    r = await c.findFirst({ createIfNotFound: true, where:x => x.id.isEqualTo(nc.value)});
     expect(r.id).toBe(5);
 
   });
@@ -837,11 +837,11 @@ describe("test row provider", () => {
     let r = c.lookup(c => c.id.isEqualTo(1));
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
-    r = await c.lookupAsync(c => c.id.isEqualTo(1));
+    r = await c.findFirst({ createIfNotFound: true, where:c => c.id.isEqualTo(1)});
     expect(r._.isNew()).toBe(false);
     await r._.delete();
     expect(await c.count()).toBe(0);
-    r = await c.lookupAsync(c => c.id.isEqualTo(1));
+    r = await c.findFirst({ createIfNotFound: true, where:c => c.id.isEqualTo(1)});
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
     await r._.save();

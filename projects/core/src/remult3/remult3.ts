@@ -93,12 +93,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
 [V] FieldOptions.Lazy
 [V] add load to find and iterate, where you specify the columns you want loaded.
-[] find id - add useCache second parameter.
-[] FindOne and FindOrCreate should consider cache.
+[V] find id - add useCache second parameter.
+[V] FindOne and FindOrCreate should consider cache.
 [] remove lookupid async and lookup async
-[] add createIfNotFound?:boolean; to FindFirstOptions and delete FindOrCreate
+[V] add createIfNotFound?:boolean; to FindFirstOptions and delete FindOrCreate
 [] eliminate lookup and get id by making find first cached - move lookup to remult angular
 [] fix react remult demo to loose the load fields
+
+
 
 
 ## Server Controller
@@ -118,6 +120,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] sql database, update of row where id is not named id is compromised
 
 ## review with Yoni
+[] should save, undo changes and reload load all non lazy fields or based on the load in the original query?
+### questions about find with create
+[] should the new row created when not found enter the cache?
+[] should cache empty results?
+[] find with create and cache, and then find without create and with cache - should return the cache?
 
 [] "negative decimal" - inputValue
 [] "Number is always a number"
@@ -341,9 +348,9 @@ export interface Repository<entityType> {
     count(where?: EntityWhere<entityType>): Promise<number>;
     findFirst(where?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: any,options?:FindFirstOptionsBase<entityType>): Promise<entityType>;
-    /*to remove*/getCachedByIdAsync(id: any): Promise<entityType>;
+    
 
-    /*to remove*/findOrCreate(options?: EntityWhere<entityType> | IterateOptions<entityType>): Promise<entityType>;
+    
     /**
  * Used to get non critical values from the Entity.
 * The first time this method is called, it'll return a new instance of the Entity.
@@ -362,12 +369,12 @@ export interface Repository<entityType> {
   * @example
   * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
   */
-    /*to remove*/lookupAsync(filter: EntityWhere<entityType>): Promise<entityType>;
+    
 
     create(item?: Partial<entityType>): entityType;
 
     /*to remove*/getCachedById(id: any): entityType;
-    /*internalize*/addToCache(item: entityType);
+    
 
 
     getEntityRef(item: entityType): EntityRef<entityType>;

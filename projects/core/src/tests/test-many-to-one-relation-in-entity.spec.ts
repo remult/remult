@@ -427,7 +427,7 @@ describe("many to one relation", () => {
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
-        let p = await context.for(Products).lookupAsync(p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat)));
+        let p = await context.for(Products).findFirst({ createIfNotFound: true, where:p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat))});
         expect(p.isNew()).toBe(true);
         expect(p.id).toBe(10);
         expect((await p.$.category.load()).id).toBe(cat.id);

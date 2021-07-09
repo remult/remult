@@ -2,21 +2,21 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FilterFactory, FieldRef, Fields, EntityWhere, FilterFactories, FindOptions, Repository, SortSegments, ComparisonFilterFactory, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, ContainsFilterFactory, IdMetadata, FindFirstOptionsBase } from "./remult3";
+import { EntityMetadata, FilterFactory, FieldRef, Fields, EntityWhere, FilterFactories, FindOptions, Repository, SortSegments, ComparisonFilterFactory, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, ContainsFilterFactory, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Allowed, Context, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 
-import { Lookup } from "../lookup";
+import { Lookup, lookupRowInfo } from "../lookup";
 import { DataApiSettings } from "../data-api";
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter, ValueListValueConverter } from "../../valueConverters";
 
 
-export class RepositoryImplementation<T> implements Repository<T>{
-    createAfterFilter(orderBy: EntityOrderBy<T>, lastRow: T): EntityWhere<T> {
+export class RepositoryImplementation<entityType> implements Repository<entityType>{
+    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): EntityWhere<entityType> {
         let values = new Map<string, any>();
 
         for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
@@ -42,24 +42,24 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
     }
 
-    private _info: EntityFullInfo<T>;
+    private _info: EntityFullInfo<entityType>;
     private _lookup = new Lookup(this);
     private __edp: EntityDataProvider;
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
     }
-    constructor(private entity: ClassType<T>, private context: Context, private dataProvider: DataProvider) {
+    constructor(private entity: ClassType<entityType>, private context: Context, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity, context);
     }
     idCache = new Map<any, any>();
-    getCachedById(id: any): T {
+    getCachedById(id: any): entityType {
         this.getCachedByIdAsync(id);
         let r = this.idCache.get(id);
         if (r instanceof Promise)
             return undefined;
         return r;
     }
-    async getCachedByIdAsync(id: any): Promise<T> {
+    async getCachedByIdAsync(id: any): Promise<entityType> {
 
         let r = this.idCache.get(id);
         if (r instanceof Promise)
@@ -80,17 +80,17 @@ export class RepositoryImplementation<T> implements Repository<T>{
         this.idCache.set(id, row);
         return await row;
     }
-    addToCache(item: T) {
+    addToCache(item: entityType) {
         if (item)
             this.idCache.set(this.getEntityRef(item).getId(), item);
     }
 
 
-    get metadata(): EntityMetadata<T> { return this._info };
+    get metadata(): EntityMetadata<entityType> { return this._info };
 
 
-    listeners: entityEventListener<T>[];
-    addEventListener(listener: entityEventListener<T>) {
+    listeners: entityEventListener<entityType>[];
+    addEventListener(listener: entityEventListener<entityType>) {
         if (!this.listeners)
             this.listeners = []
         this.listeners.push(listener);
@@ -101,8 +101,8 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 
 
-    iterate(options?: EntityWhere<T> | IterateOptions<T>): IterableResult<T> {
-        let opts: IterateOptions<T> = {};
+    iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType> {
+        let opts: IterateOptions<entityType> = {};
         if (options) {
             if (typeof options === 'function')
                 opts.where = <any>options;
@@ -147,7 +147,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                 return _count;
 
             }
-            async forEach(what: (item: T) => Promise<any>) {
+            async forEach(what: (item: entityType) => Promise<any>) {
                 let i = 0;
                 for await (const x of this) {
                     await what(x);
@@ -168,10 +168,10 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
 
                 let itemIndex = -1;
-                let items: T[];
+                let items: entityType[];
 
-                let itStrategy: (() => Promise<IteratorResult<T>>);
-                let nextPageFilter: EntityWhere<T> = x => undefined;;
+                let itStrategy: (() => Promise<IteratorResult<entityType>>);
+                let nextPageFilter: EntityWhere<entityType> = x => undefined;;
 
                 let j = 0;
 
@@ -181,7 +181,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                     }
                     if (items === undefined || itemIndex == items.length) {
                         if (items && items.length < pageSize)
-                            return { value: <T>undefined, done: true };
+                            return { value: <entityType>undefined, done: true };
                         items = await cont.find({
                             where: [opts.where, nextPageFilter],
                             orderBy: opts.orderBy,
@@ -190,7 +190,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
                         });
                         itemIndex = 0;
                         if (items.length == 0) {
-                            return { value: <T>undefined, done: true };
+                            return { value: <entityType>undefined, done: true };
                         } else {
                             nextPageFilter = self.createAfterFilter(opts.orderBy, items[items.length - 1]);
                         }
@@ -212,34 +212,14 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
         return r;
     }
-    async findOrCreate(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
 
-        let r = await this.iterate(options).first();
-        if (!r) {
-            r = this.create();
-            if (options) {
-                let opts: IterateOptions<T> = {};
-                if (options) {
-                    if (typeof options === 'function')
-                        opts.where = <any>options;
-                    else
-                        opts = <any>options;
-                }
-                if (opts.where) {
-                    __updateEntityBasedOnWhere(this.metadata, opts.where, r);
-                }
-            }
-            return r;
-        }
-        return r;
-    }
-    lookup(filter: EntityWhere<T>): T {
+    lookup(filter: EntityWhere<entityType>): entityType {
         return this._lookup.get(filter);
     }
-    async lookupAsync(filter: EntityWhere<T>): Promise<T> {
+    async lookupAsync(filter: EntityWhere<entityType>): Promise<entityType> {
         return this._lookup.whenGet(filter);
     }
-    getEntityRef(entity: T): EntityRef<T> {
+    getEntityRef(entity: entityType): EntityRef<entityType> {
         let x = entity[entityMember];
         if (!x) {
             x = new rowHelperImplementation(this._info, entity, this, this.edp, this.context, true);
@@ -251,13 +231,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
         return x;
     }
 
-    async delete(entity: T): Promise<void> {
+    async delete(entity: entityType): Promise<void> {
         await this.getEntityRef(entity).delete();
     }
-    async save(entity: T): Promise<T> {
+    async save(entity: entityType): Promise<entityType> {
         return await this.getEntityRef(entity).save();
     }
-    async find(options?: FindOptions<T>): Promise<T[]> {
+    async find(options?: FindOptions<entityType>): Promise<entityType[]> {
         let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
@@ -277,13 +257,13 @@ export class RepositoryImplementation<T> implements Repository<T>{
         if (options.load)
             loadFields = options.load(this.metadata.fields);
         let result = await Promise.all(rawRows.map(async r =>
-            await this.mapRawDataToResult(r,loadFields)
+            await this.mapRawDataToResult(r, loadFields)
         ));
         return result;
 
     }
 
-    private async mapRawDataToResult(r: any,loadFields: FieldMetadata[]) {
+    private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
         if (!r)
             return undefined;
         let x = new this.entity(this.context);
@@ -291,22 +271,69 @@ export class RepositoryImplementation<T> implements Repository<T>{
         Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.log
             get: () => helper
         })
-        await helper.loadDataFrom(r,loadFields);
+        await helper.loadDataFrom(r, loadFields);
         helper.saveOriginalData();
 
         return x;
     }
 
-    async count(where?: EntityWhere<T>): Promise<number> {
+    async count(where?: EntityWhere<entityType>): Promise<number> {
         return this.edp.count(this.translateWhereToFilter(where));
     }
-    async findFirst(options?: EntityWhere<T> | IterateOptions<T>): Promise<T> {
+    private cache = new Map<string, cacheEntityInfo<entityType>>();
+    findFirst(options?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
 
-        return this.iterate(options).first();
+        let opts: FindFirstOptions<entityType> = {};
+        if (options) {
+            if (typeof options === 'function')
+                opts.where = <any>options;
+            else
+                opts = <any>options;
+        }
+
+        let r: Promise<entityType>;
+        let cacheInfo: cacheEntityInfo<entityType>;
+        if (opts.useCache || opts.useCache === undefined) {
+            let f = Filter.packWhere(this.metadata, opts.where);
+            let key = JSON.stringify(f);
+            cacheInfo = this.cache.get(key);
+            if (cacheInfo !== undefined) {
+                if (this.getEntityRef(cacheInfo.value).wasDeleted()) {
+                    cacheInfo = undefined;
+                    this.cache.delete(key);
+                } else
+                    return this.cache.get(key).promise;
+            }
+            else {
+                cacheInfo = {
+                    value: undefined,
+                    promise: undefined
+                };
+                this.cache.set(key, cacheInfo);
+            }
+        }
+
+        r = this.iterate(options).first().then(r => {
+            if (!r && opts.createIfNotFound) {
+                r = this.create();
+                if (opts.where) {
+                    __updateEntityBasedOnWhere(this.metadata, opts.where, r);
+                }
+            }
+            return r;
+        });
+        if (cacheInfo) {
+            cacheInfo.promise = r = r.then(r => {
+                cacheInfo.value = r;
+                return r;
+            });
+
+        }
+        return r;
     }
 
 
-    create(item?: Partial<T>): T {
+    create(item?: Partial<entityType>): entityType {
         let r = new this.entity(this.context);
         let z = this.getEntityRef(r);
         if (item)
@@ -314,7 +341,7 @@ export class RepositoryImplementation<T> implements Repository<T>{
 
         return r;
     }
-    async fromJson(json: any, newRow?: boolean): Promise<T> {
+    async fromJson(json: any, newRow?: boolean): Promise<entityType> {
         let obj = {};
         for (const col of this.metadata.fields) {
             if (json[col.key] !== undefined) {
@@ -323,24 +350,24 @@ export class RepositoryImplementation<T> implements Repository<T>{
         }
         if (newRow) {
             let r = this.create();
-            let helper = this.getEntityRef(r) as rowHelperImplementation<T>;
+            let helper = this.getEntityRef(r) as rowHelperImplementation<entityType>;
             await helper.loadDataFrom(obj);
             return r;
         }
         else
-            return this.mapRawDataToResult(obj,undefined);
+            return this.mapRawDataToResult(obj, undefined);
 
     }
-    findId(id: any, options?: FindFirstOptionsBase<T>): Promise<T> {
-        return this.iterate({
+    findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType> {
+        return this.findFirst({
+            ...options,
             where: x => this.metadata.idMetadata.getIdFilter(id),
-            load: options?.load
-        }).first();
+        });
     }
 
 
 
-    private translateWhereToFilter(where: EntityWhere<T>): Filter {
+    private translateWhereToFilter(where: EntityWhere<entityType>): Filter {
         if (this.metadata.options.fixedFilter)
             where = [where, this.metadata.options.fixedFilter];
         return Filter.translateWhereToFilter(Filter.createFilterFactories(this.metadata), where);
@@ -418,7 +445,7 @@ abstract class rowHelperBase<T>
             let ei = getEntitySettings(col.settings.dataType, false);
 
             if (ei && context) {
-                let lookup = new LookupColumn(context.for(col.settings.dataType), undefined);
+                let lookup = new LookupColumn(context.for(col.settings.dataType) as RepositoryImplementation<T>, undefined);
                 this.lookups.set(col.key, lookup);
                 let val = instance[col.key];
                 Object.defineProperty(instance, col.key, {
@@ -1246,4 +1273,9 @@ export class EntityBase {
     isNew() { return this._.isNew(); }
     wasChanged() { return this._.wasChanged(); }
     get $() { return this._.fields }
+}
+
+class cacheEntityInfo<entityType> {
+    value: entityType = {} as entityType;
+    promise: Promise<entityType>
 }

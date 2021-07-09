@@ -162,11 +162,11 @@ describe('Test basic row functionality', () => {
   });
   itAsync("Find or Create", async () => {
     let [context] = await (await createData());
-    let row = await context.findOrCreate(x => x.id.isEqualTo(1));
+    let row = await context.findFirst({ createIfNotFound: true, where: x => x.id.isEqualTo(1) });
     expect(row._.isNew()).toBe(true);
     expect(row.id).toBe(1);
     await row._.save();
-    let row2 = await context.findOrCreate(x => x.id.isEqualTo(1));
+    let row2 = await context.findFirst({ createIfNotFound: true, where: x => x.id.isEqualTo(1) });
     expect(row2._.isNew()).toBe(false);
     expect(row2.id).toBe(1);
 
@@ -1098,7 +1098,7 @@ describe("data api", () => {
 
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
     let a = await c.findId(1);
-    let b = await c.findId(1);
+    let b = await c.findId(1, { useCache: false });
     a.categoryName = "yael";
     await a._.save();
     expect(b.categoryName).toBe('noam');
@@ -1833,7 +1833,7 @@ describe("test date storage", () => {
   });
   it("works", () => {
 
-    let val = new Date(1976,5,16);
+    let val = new Date(1976, 5, 16);
     expect(DateOnlyValueConverter.toJson(val)).toBe('1976-06-16')
   });
 });
