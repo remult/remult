@@ -1,5 +1,5 @@
-import { Filter } from "./filter/filter-interfaces";
-import { EntityWhere, FindOptions, Repository, __updateEntityBasedOnWhere } from "./remult3";
+import { Filter, EntityWhere, FindOptions, Repository, EntityMetadata } from "@remult/core";
+
 
 export class Lookup<entityType> {
 
@@ -68,7 +68,7 @@ export class Lookup<entityType> {
 
   }
 
-  whenGet(filter: EntityWhere<entityType>) {
+  getAsync(filter: EntityWhere<entityType>) {
     return this.getInternal(filter).promise.then(r => r.value);
   }
 }
@@ -78,4 +78,26 @@ export class lookupRowInfo<type> {
   loading = true;
   value: type = {} as type;
   promise: Promise<lookupRowInfo<type>>
+}
+function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
+  let w = Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
+
+  if (w) {
+      w.__applyToConsumer({
+          containsCaseInsensitive: () => { },
+          isDifferentFrom: () => { },
+          isEqualTo: (col, val) => {
+              r[col.key] = val;
+          },
+          isGreaterOrEqualTo: () => { },
+          isGreaterThan: () => { },
+          isIn: () => { },
+          isLessOrEqualTo: () => { },
+          isLessThan: () => { },
+          isNotNull: () => { },
+          isNull: () => { },
+          startsWith: () => { },
+          or: () => { }
+      });
+  }
 }

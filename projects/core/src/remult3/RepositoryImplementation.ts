@@ -8,8 +8,7 @@ import { allEntities, Allowed, Context, iterateConfig, IterateToArrayOptions, se
 import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 
-import { Lookup, lookupRowInfo } from "../lookup";
-import { DataApiSettings } from "../data-api";
+
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter, ValueListValueConverter } from "../../valueConverters";
@@ -43,7 +42,6 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
     private _info: EntityFullInfo<entityType>;
-    private _lookup = new Lookup(this);
     private __edp: EntityDataProvider;
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
@@ -213,12 +211,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return r;
     }
 
-    lookup(filter: EntityWhere<entityType>): entityType {
-        return this._lookup.get(filter);
-    }
-    async lookupAsync(filter: EntityWhere<entityType>): Promise<entityType> {
-        return this._lookup.whenGet(filter);
-    }
+    
     getEntityRef(entity: entityType): EntityRef<entityType> {
         let x = entity[entityMember];
         if (!x) {
@@ -298,7 +291,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             let key = JSON.stringify(f);
             cacheInfo = this.cache.get(key);
             if (cacheInfo !== undefined) {
-                if (this.getEntityRef(cacheInfo.value).wasDeleted()) {
+                if (cacheInfo.value&& this.getEntityRef(cacheInfo.value).wasDeleted()) {
                     cacheInfo = undefined;
                     this.cache.delete(key);
                 } else

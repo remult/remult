@@ -95,9 +95,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] add load to find and iterate, where you specify the columns you want loaded.
 [V] find id - add useCache second parameter.
 [V] FindOne and FindOrCreate should consider cache.
-[] remove lookupid async and lookup async
+[V] remove lookupid async and lookup async
 [V] add createIfNotFound?:boolean; to FindFirstOptions and delete FindOrCreate
-[] eliminate lookup and get id by making find first cached - move lookup to remult angular
+[V] eliminate lookup and get id by making find first cached - move lookup to remult angular
 [] fix react remult demo to loose the load fields
 
 
@@ -338,45 +338,13 @@ export interface EntityMetadata<entityType = any> {
 }
 export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
-
     metadata: EntityMetadata<entityType>;
-
-
-
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
     iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
-    count(where?: EntityWhere<entityType>): Promise<number>;
     findFirst(where?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
-    findId(id: any,options?:FindFirstOptionsBase<entityType>): Promise<entityType>;
-    
-
-    
-    /**
- * Used to get non critical values from the Entity.
-* The first time this method is called, it'll return a new instance of the Entity.
-* It'll them call the server to get the actual value and cache it.
-* Once the value is back from the server, any following call to this method will return the cached row.
-* 
-* It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
-* 
-* * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
-* @example
-* return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
- */
-    lookup(filter: EntityWhere<entityType>): entityType;
-
-    /** returns a single row and caches the result for each future call
-  * @example
-  * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
-  */
-    
-
+    findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
+    count(where?: EntityWhere<entityType>): Promise<number>;
     create(item?: Partial<entityType>): entityType;
-
-    /*to remove*/getCachedById(id: any): entityType;
-    
-
-
     getEntityRef(item: entityType): EntityRef<entityType>;
     save(item: entityType): Promise<entityType>;
     delete(item: entityType): Promise<void>;
