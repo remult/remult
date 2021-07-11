@@ -22,11 +22,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+
+[] consider removing Input type from field (it exists in metadata)
 [] included display value and input type also in value converter - ias it is relevant to date only, and also value list
 [] add code that entity relation can be tested for null - and it'll not perform fetch.
-[] consider removing Input type from field (it exists in metadata)
 [] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
-
 
 
 [] should save, undo changes and reload load all non lazy fields or based on the load in the original query?
@@ -82,14 +82,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] custom context 
 [] consider the name FilterFactories to be EntityFilterFactories
 [] add to entity options a lambda that gets context and returns data provider.
-[] talk about isvalid that gives you indication of the data is valid etc....
-
 [] consider an option of running it all in the browser, for the development start, just like weve done with the json database
 
 
 ## things that came up during react:
 [] review weird typing issue with article payload action that failed for some reason
 [] talk about invoking client side validation
+[] talk about isvalid that gives you indication of the data is valid etc....
 
 
 
