@@ -370,7 +370,7 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    completed: boolean;
    ```
 
-2. Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngmModel` to the `inputValue` property of the task's `completed` field. 
+2. Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 
    
    Set the `text-decoration` style attribute expression of the task `title` input element to evaluate to `line-through` when the value of `completed` is `true`.
 

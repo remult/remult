@@ -178,7 +178,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] es2015  in server config
 [] review weird typing issue with article payload action that failed for some reason
 [] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
-
+[] in the react todo demo - it's very strict from typescript perspective
+  [] can't assign null to string etc...
 
 
 
