@@ -2,6 +2,7 @@ import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from 
 import { Filter } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from './array-entity-data-provider';
 import { EntityMetadata } from '../remult3';
+import { Sort } from '../sort';
 
 
 export interface JsonEntityStorage {
@@ -57,7 +58,7 @@ class JsonEntityDataProvider implements EntityDataProvider {
       return x;
     })));
   }
-  insert(data: any): Promise<any> {
+  async insert(data: any): Promise<any> {
     return this.p = this.p.then(() => this.loadEntityData((dp, save) => dp.insert(data).then(x => {
       save();
       return x;

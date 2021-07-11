@@ -12,6 +12,15 @@ import { Categories as newCategories } from './remult-3-entities';
 import { Field, Entity, EntityBase } from '../remult3';
 
 
+@Entity({ key: 'entityWithAutoId', dbAutoIncrementId: true })
+class entityWithAutoId extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    name: string;
+}
+
+
 describe("test json database", () => {
     let db = new JsonDataProvider(localStorage);
     let context = new ServerContext();
@@ -21,6 +30,15 @@ describe("test json database", () => {
             await c._.delete();
         }
     }
+    itAsync("test auto increment",async () => {
+        let context = new ServerContext();
+        context.setDataProvider(new InMemoryDataProvider());
+        let p = await context.for(entityWithAutoId).create({name:'a'}).save();
+        expect(p.id).toBe(1);
+        p = await context.for(entityWithAutoId).create({name:'b'}).save();
+        expect(p.id).toBe(2);
+
+    });
 
     itAsync("test basics", async () => {
         await deleteAll();

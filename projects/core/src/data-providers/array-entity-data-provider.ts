@@ -2,6 +2,8 @@ import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-inter
 import { Filter, FilterConsumer } from '../filter/filter-interfaces';
 import { FieldMetadata } from '../column-interfaces';
 import { EntityMetadata } from '../remult3';
+import { CompoundIdField } from '../column';
+import { Sort } from '../sort';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
@@ -104,12 +106,24 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         }
         throw new Error("couldn't find id to delete: " + id);
     }
-    public insert(data: any): Promise<any> {
-        if (data.id)
-            this.rows.forEach(i => {
-                if (data.id == i.id)
-                    throw Error("id already exists");
-            });
+    async insert(data: any): Promise<any> {
+
+        let idf = this.entity.idMetadata.field;
+        if (!(idf instanceof CompoundIdField)) {
+            if (this.entity.options.dbAutoIncrementId) {
+
+                let lastRow = await this.find({ orderBy: new Sort({ field: idf, isDescending: true }) });
+                if (lastRow.length > 0)
+                    data[idf.key] = lastRow[0][idf.key] + 1;
+                else
+                    data[idf.key] = 1;
+            }
+            if (data[idf.key])
+                this.rows.forEach(i => {
+                    if (data[idf.key] == i[idf.key])
+                        throw Error("id already exists");
+                });
+        }
         let j = this.translateToJson(data);
         this.rows.push(j);
         return Promise.resolve(this.translateFromJson(j));
