@@ -17,6 +17,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## TODO
 
 
+# react todo
+[] the null checks are preventing the use of context?:Context in backend methods
+[] In react the running on server check you gave me is true also for the browser.
 
 
 

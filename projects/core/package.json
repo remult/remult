@@ -5,7 +5,7 @@
   "homepage": "https://remult-ts.github.io/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/remult-ts/core"
+    "url": "https://github.com/remult-ts/remult"
   },
   "license": "MIT",
   "author": {
