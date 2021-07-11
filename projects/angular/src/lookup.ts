@@ -14,6 +14,9 @@ export class Lookup<entityType> {
   get(filter: EntityWhere<entityType>): entityType {
     return this.getInternal(filter).value;
   }
+  getId(id: any): entityType {
+    return this.getInternal(() => this.repository.metadata.idMetadata.getIdFilter(id)).value;
+  }
   found(filter: EntityWhere<entityType>): boolean {
     return this.getInternal(filter).found;
   }
@@ -83,21 +86,21 @@ function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: Ent
   let w = Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
 
   if (w) {
-      w.__applyToConsumer({
-          containsCaseInsensitive: () => { },
-          isDifferentFrom: () => { },
-          isEqualTo: (col, val) => {
-              r[col.key] = val;
-          },
-          isGreaterOrEqualTo: () => { },
-          isGreaterThan: () => { },
-          isIn: () => { },
-          isLessOrEqualTo: () => { },
-          isLessThan: () => { },
-          isNotNull: () => { },
-          isNull: () => { },
-          startsWith: () => { },
-          or: () => { }
-      });
+    w.__applyToConsumer({
+      containsCaseInsensitive: () => { },
+      isDifferentFrom: () => { },
+      isEqualTo: (col, val) => {
+        r[col.key] = val;
+      },
+      isGreaterOrEqualTo: () => { },
+      isGreaterThan: () => { },
+      isIn: () => { },
+      isLessOrEqualTo: () => { },
+      isLessThan: () => { },
+      isNotNull: () => { },
+      isNull: () => { },
+      startsWith: () => { },
+      or: () => { }
+    });
   }
 }

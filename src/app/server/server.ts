@@ -13,7 +13,7 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Field, Filter } from '../../../projects/core';
+import { Context, Field, Filter } from '../../../projects/core';
 import { Products } from '../products-test/products';
 
 import { isJSDocTypedefTag } from 'typescript';
@@ -56,6 +56,12 @@ serverInit().then(async (dataSource) => {
             res.send('No Result' + index);
         }
     });
+
+    let c=  new Context();
+    c.setDataProvider(dataSource);
+    let p =  c.for(Products).create({name:'product 1',id:'1'});
+    console.log(JSON.stringify(p));
+    console.log(JSON.stringify(p._.toApiJson()));
 
     let port = process.env.PORT || 3001;
     app.listen(port);

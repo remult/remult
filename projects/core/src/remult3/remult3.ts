@@ -11,138 +11,42 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 /*
 ## Should work
-[] when added DataControl decorator for category id - lost caption
-[V] adapt value converter
-[V] add display value to value converter
-[V] remove readonly from columnDefs - and hijack it in Remult Angular
-[V] make value list return a converter + benefits (Getoptions etc...)
-[V] separate column and defs - defs will be property of column
-[V] fix tests relevant to finding out the relationship between crud and specific apis,"allow api read depends also on api crud"
-[V] "dbname of entity can use column names"
-[V] test-paged-foreach
-[V] fix validate to have the same parameter order as other things
-[V] fix _items, to go away.
-[V] "test make sort unique" - both tests
-[V] fix allowApiUpdate for column to support additional info - so we can do only on new rows etc...
-[V] "apiRequireId"
-[V] return the test that was disabled by moving the server expression to remult 3- "get based on id virtual column async"
-[V] consider sqlExpression where does it get the column name - see "test-sql-expression.spec.ts" line 41,47
-[V] original data should reflect the values after server expressions
-[V] replace method not allowed with forbidden - when something is not allowed
-[V] add reflect metadata to dependencies
-[V] prevent jobsInQueue to register as an api entity - it's not one
-[V] think of id entity.
-[V] rename `name` to `key` in Entity Settings
-[V] replace entitydefs.name = key.
-[V] rename allow api crud
-[V] value converter no longer lambda
-[V] caption - lambda
-[V] storable to field Type
-[V] value list field Type
-[V] upgrade to angular 9 and ts 3.7
-
-[V] column to field
-[V] decimal field
-[V] date only field
-
-[V] remove get set from context
-[V] remove server context from public
-[V] change idfield to idMetadata and move logic in.
-[V] move classType to it's own file and remove it from index.
-[V] move set to it's own file
-[V] move input types to it's own files.
-[V] move url builder to it's own type
-[V] move server function to server method.
-[V] rename terminology from ServerMethod to BackendMethod
-[V] rename onserver to backend
-[V] change server function allowed to be entity allowed
-[V] change entityallowed to InstanceAllowed.
-[V] remove controller Allowed
-[V] move utility functions to utilities. (get value or expression etc...)
-[V] change controller to just recieve a key parameters
-
-
-
-[] ?add tojson and from json to FieldDefinitions
-[] support toJSON in entityBase
-[V] support settings of entity values with plain JSON objects, and figuring out their id.
-[V] setting value of entity with a plain id/string should work also.
-[] dbAutoIncrementId for Array databases- int and string guid
-[] add code that entity relation can be tested for null - and it'll not perform fetch.
-
-[] instead of row, use entity
-[V] test data control with number, make sure it updates on blur
-
-[V] use helmet instead of force https
-[V] fix timeout by using a repeat mechanism in context.
-[X] test dateonly field decorator  on function parameter
-[X] "bool column doesn't need contains, isin and is not in"
-
 
 
 
 ## TODO
-
-[V] "test object column"
-[V] review repository api - and consider moving stuff to defs
-[V] fix extends to be smarter
-[V] "order by api"
-[X] test default value set in the pojo itself: a=0;
-[X] completed = false; didn't serialize as false to json
-[V] fix shit with running on server - it gets it wrong in too many cases (React etc...)
-[V] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
-[V] FieldOptions.Lazy
-[V] add load to find and iterate, where you specify the columns you want loaded.
-[V] find id - add useCache second parameter.
-[V] FindOne and FindOrCreate should consider cache.
-[V] remove lookupid async and lookup async
-[V] add createIfNotFound?:boolean; to FindFirstOptions and delete FindOrCreate
-[V] eliminate lookup and get id by making find first cached - move lookup to remult angular
-[] fix react remult demo to loose the load fields
+[] dbAutoIncrementId for Array databases- int and string guid
 
 
 
 
-## Server Controller
-[V] rebuild validation model for ServerMethod
-
-## closed list column
-[V] "Closed List  column"
-[V] "test value list type"
-[V] value list "works with automatic id"
-[V] revive value list column tests "get array works with filter in body","get array works with filter in body and in array statement","get array works with filter in body and or statement"
-[V]"getArray works with filter and in with closed list columns"
-[V]"getArray works with filter and multiple values with closed list columns"
-
-## compound id column
-[V] "compound id"
-[V] reconsider the IdColumn member - might make sense to remove it
-[] sql database, update of row where id is not named id is compromised
 
 ## review with Yoni
+[] included display value and input type also in value converter - ias it is relevant to date only, and also value list
+[] add code that entity relation can be tested for null - and it'll not perform fetch.
+[] consider removing Input type from field (it exists in metadata)
+[] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
+
+
+
 [] should save, undo changes and reload load all non lazy fields or based on the load in the original query?
 ### questions about find with create
 [] should the new row created when not found enter the cache?
 [] should cache empty results?
 [] find with create and cache, and then find without create and with cache - should return the cache?
 
-[] "negative decimal" - inputValue
+[] talk some more about value change, since in the current implementation, an update through click doesn't fire it
 [] "Number is always a number"
     [] "test number is always number"
     [] test number is always a number - settings value with any string, and then doing math options for it.
 [] consider the setting decimal digits, instead might be useful to determine db storage - replaced with db type
-[V] validationError is now called error
+
 [] the inconsistenacy beyween Date and DateTime - in our naming and also with input management
 
-[] consider DbAutoIncrement to decorator
-[] reconsider idColumn - maybe internalize it.
-[V] rowHelper naming
-[] reconsider Item and Entity.
-[V] ColumnDefinitions vs ColumnOptions and same for entity
 [] apiDataFilter
 [] fixedFilter
 [] consider a column that is saved to more than one column in the db
-[] included display value and input type also in value converter - ias it is relevant to date only, and also value list
+
 [] i make errors with the order of the generic parameters, entity, column and vice versa
 [V] reconsider all the where stuff - just searh references for AndFilter to see the problem
 [] make where awaitable
@@ -151,9 +55,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
 [] consider adding the count value in the response of the array
 [] talk about forgetting the :type on fields - it's dangerous and can lead to debug issues - on the other hand we want some default - not sure if we should scream
-[] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
-[] talk about await Promise.all(existingFamilies.map(f => f.$.distributionCenter.load())); that was needed before checking if the distribution center is allowed for the user
-[] talk some more about value change, since in the current implementation, an update through click doesn't fire it
+
 [] talk about typescript loosing types in a case of self reference - in this sample, the visible that references the grid - breaks the typing
 ```
  grid = new GridSettings(this.context.for(Products), {
@@ -167,7 +69,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 ```
 [] talk about $.find('name') vs $['name']
 []c.defs.valueConverter !== DateOnlyValueConverter
-[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
+[] dependency injection for decorator
+[] current user in any app - not simple enough.
+
 
 
 ## context related:
@@ -184,21 +88,18 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## things that came up during react:
-[V] reflect metadata doesn't work in react
-[V] talk about moving the multiple articles function to articleModel file ,caused a server bug
-[V] talk about duplicate value test, should happen only on server?
-[x] talk about typing problem when using entity base - https://github.com/microsoft/TypeScript/issues/34933
-
-
-[] rename get cached by id async to findfirst with a second parameter of disable cache.
-[V] consider making all entity field, by default automatically loaded - and disable it if wanted - will be easier to understand
-[V] talk about the entity field not loaded in allowApiUpdate that broke the code.
-
-
 [] review weird typing issue with article payload action that failed for some reason
-
 [] talk about invoking client side validation
 
+
+
+## compound id column
+[V] "compound id"
+[V] reconsider the IdColumn member - might make sense to remove it
+[] sql database, update of row where id is not named id is compromised
+[] consider DbAutoIncrement to decorator
+[] reconsider idColumn - maybe internalize it.
+[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
 
 
 
@@ -225,30 +126,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] fails because author is undefined. allowApiDelete: (context, comment) => comment.author.username == context.user.id,
 
-## remult angular
-[V] fix grid filter helper when filtering on a datetime column - to filter between today and tomorrow
-[V] fix grid filter on string to be contains if not force equals - and same for object
-[V] "test column value change"
-[V]"test filter works with user filter"
-[V]"test filter works with selected rows"
-[V]"test select rows in page is not select all"
-[V] "column drop down"
-[V] "column drop down with promise"
-[V] "column drop down with promise"
-[V] "sort is displayed right on start"
-[V] "sort is displayed right"
-[V] "column drop down 1"
-[V] "works ok with filter"
-[V] "uses a saparate column"
-[V] redesign extend 
-[V] fix ignore id in id Entity
-[V] fix sort method on grid settings
-[V] fix getColumnsFromObject and it's usages
-[V] make sure that column will be readonly if allowApiUpdateIsFalse
-[V] data area with local columns "get value function works"
-    [V] "test consolidate"
-    [V] "works without entity"
-    [V] "get value function works"
 
 ## remult angular future
 [] change the getValue - to  displayValue
