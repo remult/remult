@@ -25,33 +25,28 @@ import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
 
 })
 export class ProductsComponent {
+  @Field({})
+  @DataControl({})
+  x: number;
   @Field()
-  @DataControl({ click: () => { } })
-  x: string;
-
+  @DataControl({})
+  y: string;
+  @Field()
+  @DataControl({})
+  z: string;
+  get $() { return getFields(this) }
   constructor(private context: Context) {
-    ProductsComponent.doit();
+
   }
+  products = new GridSettings( this.context.for(Products));
 
   area = new DataAreaSettings({
-    fields: () => [getFields(this).x, {
-      field: getFields(this).x,
-      click: null
-    }]
+    fields: () => [
+      [this.$.x, {
+        getValue:()=>this.x
+        
+      }], this.$.z
+    ]
   })
-  grid = new GridSettings(this.context.for(Products), {
-    allowCrud: true,
-    where: x => x.name.contains("1"),
-    gridButtons: [{
-      name: 'dosomething',
-      visible: () => this.grid.selectedRows.length > 0
-    }]
-  });
-  @BackendMethod({ allowed: true })
-  static async doit(context?: Context) {
-    console.log('doing it', {
-      backend: context.backend
-    });
 
-  }
 }

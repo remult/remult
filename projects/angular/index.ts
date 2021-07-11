@@ -16,4 +16,5 @@ export * from './src/angular/data-control/data-control3.component';
 export * from './src/angular/data-filter-info/data-filter-info.component';
 export * from './src/angular/date-grid-2/data-grid2.component';
 export * from './src/angular/data-area/dataArea2';
+export * from './src/lookup';
 

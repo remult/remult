@@ -4,8 +4,8 @@
         <mat-label>{{map.caption}}</mat-label>
         <div style="display:flex;">
             <input #theId matInput [(ngModel)]="_getColumn().inputValue" type="{{settings._getColDataType(map)}}"
-                (ngModelChange)="settings._colValueChanged(map,record)" [errorStateMatcher]="ngErrorStateMatches"
-                [ngStyle]="getStyle()" />
+                (ngModelChange)="settings._colValueChanged(map,record)" [errorStateMatcher]="ngErrorStateMatches" 
+                [ngStyle]="getStyle()" [ngModelOptions]="{ updateOn: settings._getColDataType(map)=='number'? 'blur':'change' }"/>
             <div *ngIf="showDescription()" style="white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;

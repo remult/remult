@@ -25,7 +25,7 @@ export class GroupsValue {
   key: "Products",
   allowApiCrud: true,
   dbName: () => {
-    console.log({ module: typeof module !== 'undefined' && !!module.exports });
+    
     return 'Products';
   },
   apiDataFilter: (e, c) => {
@@ -35,7 +35,7 @@ export class GroupsValue {
 })
 export class Products extends IdEntity {
   @Field()
-  name: GroupsValue;
+  name: string;
   @Field()
   price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
   @Field() // should be Date

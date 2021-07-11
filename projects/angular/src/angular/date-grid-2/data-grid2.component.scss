@@ -57,7 +57,6 @@
   padding: 4px;
 }
 .dataGridHeaderCell {
-  
 }
 .dataGridDataCell {
   border-top: 1px solid #e0e0e0;
@@ -67,22 +66,21 @@
   border-right: 1px solid #e0e0e0;
   padding-left: 0;
   padding-right: 0;
-  width:18px;
+  width: 18px;
   mat-icon {
     font-size: 16px;
     height: 17px;
     width: 18px;
     line-height: 17px;
   }
-  button{
-    width:auto;
-    height:auto;
+  button {
+    width: auto;
+    height: auto;
     line-height: 18px;
   }
-  
 }
 .data-grid-row-selection {
-  width:18px;
+  width: 18px;
 }
 .dataGridFooterArea {
   border: 1px solid #e0e0e0;
@@ -140,6 +138,11 @@ table input {
 table select {
   min-width: 100px;
 }
-.dataGridFooterArea{
+.dataGridFooterArea {
   box-sizing: border-box;
+}
+.hide-on-narrow {
+  @media (max-width: 500px) {
+    display:none;
+  }
 }

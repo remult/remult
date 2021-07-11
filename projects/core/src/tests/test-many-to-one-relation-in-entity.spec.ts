@@ -8,7 +8,7 @@ import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { itAsync } from './testHelper.spec';
-import { ManyToOne } from '../column';
+
 
 
 
@@ -37,20 +37,39 @@ class Products extends EntityBase {
     id: number;
     @Field()
     name: string;
-    @Field()
+    @Field({
+        lazy: true
+    })
     category: Categories;
     @Field()
     supplier: Suppliers;
+
+}
+@Entity({ key: 'products' })
+class ProductsEager extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    name: string;
+    @Field()
+    category: Categories;
 
 }
 @Entity({ key: 'profile' })
 class profile extends EntityBase {
     @Field()
     id: string;
-    rel = new ManyToOne(this.context.for(following), f => f.id.isEqualTo('1').and(f.profile.isEqualTo(this)))
+    async rel() {
+        return this.context.for(following).findFirst({
+            where: f => f.id.isEqualTo('1').and(f.profile.isEqualTo(this)),
+            createIfNotFound: true
+        })
+
+
+    }
     @Field<profile>({
         serverExpression: async self => {
-            await self.rel.load();
+            await self.rel();
             return false;
         }
     })
@@ -76,6 +95,41 @@ describe("many to one relation", () => {
         await context.for(profile).create({ id: '1' }).save();
         let p = await context.for(profile).findId('1');
         expect(p.following).toBe(false);
+    }));
+    it("test that it is loaded to begin with", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
+        await context.for(Products).create({ id: 1, name: 'p1', category }).save();
+        context.clearAllCache();
+        let p = await context.for(ProductsEager).findId(1);
+        expect(p.category.id).toBe(1);
+
+    }));
+    it("test that it is loaded onDemand", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
+        await context.for(Products).create({ id: 1, name: 'p1', category }).save();
+        context.clearAllCache();
+        let p = await context.for(ProductsEager).findId(1, { load: () => [] });
+        expect(p.category).toBe(undefined);
+        await p.$.category.load();
+        expect(p.category.id).toBe(1);
+    }));
+    it("test that it is loaded onDemand", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
+        await context.for(Products).create({ id: 1, name: 'p1', category }).save();
+        context.clearAllCache();
+        let p = await context.for(ProductsEager).findFirst({
+            where:p=>p.id.isEqualTo(1),
+            load: () => []
+        });
+        expect(p.category).toBe(undefined);
+        await p.$.category.load();
+        expect(p.category.id).toBe(1);
     }));
 
     it("what", async(async () => {
@@ -373,7 +427,7 @@ describe("many to one relation", () => {
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
-        let p = await context.for(Products).lookupAsync(p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat)));
+        let p = await context.for(Products).findFirst({ createIfNotFound: true, where:p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat))});
         expect(p.isNew()).toBe(true);
         expect(p.id).toBe(10);
         expect((await p.$.category.load()).id).toBe(cat.id);

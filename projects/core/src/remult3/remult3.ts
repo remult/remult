@@ -71,7 +71,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] add code that entity relation can be tested for null - and it'll not perform fetch.
 
 [] instead of row, use entity
-[] test data control with number, make sure it updates on blur
+[V] test data control with number, make sure it updates on blur
 
 [V] use helmet instead of force https
 [V] fix timeout by using a repeat mechanism in context.
@@ -89,6 +89,17 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] "order by api"
 [X] test default value set in the pojo itself: a=0;
 [X] completed = false; didn't serialize as false to json
+[V] fix shit with running on server - it gets it wrong in too many cases (React etc...)
+[V] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
+[V] FieldOptions.Lazy
+[V] add load to find and iterate, where you specify the columns you want loaded.
+[V] find id - add useCache second parameter.
+[V] FindOne and FindOrCreate should consider cache.
+[V] remove lookupid async and lookup async
+[V] add createIfNotFound?:boolean; to FindFirstOptions and delete FindOrCreate
+[V] eliminate lookup and get id by making find first cached - move lookup to remult angular
+[] fix react remult demo to loose the load fields
+
 
 
 
@@ -109,7 +120,12 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] sql database, update of row where id is not named id is compromised
 
 ## review with Yoni
-[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
+[] should save, undo changes and reload load all non lazy fields or based on the load in the original query?
+### questions about find with create
+[] should the new row created when not found enter the cache?
+[] should cache empty results?
+[] find with create and cache, and then find without create and with cache - should return the cache?
+
 [] "negative decimal" - inputValue
 [] "Number is always a number"
     [] "test number is always number"
@@ -151,6 +167,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ```
 [] talk about $.find('name') vs $['name']
 []c.defs.valueConverter !== DateOnlyValueConverter
+[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
 
 
 ## context related:
@@ -167,19 +184,24 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## things that came up during react:
-[] reflect metadata doesn't work in react
-[] talk about moving the multiple articles function to articleModel file ,caused a server bug
-[] talk about duplicate value test, should happen only on server?
-[] fix shit with running on server - it gets it wrong in too many cases (React etc...)
+[V] reflect metadata doesn't work in react
+[V] talk about moving the multiple articles function to articleModel file ,caused a server bug
+[V] talk about duplicate value test, should happen only on server?
+[x] talk about typing problem when using entity base - https://github.com/microsoft/TypeScript/issues/34933
+
+
 [] rename get cached by id async to findfirst with a second parameter of disable cache.
-[] consider making all entity field, by default automatically loaded - and disable it if wanted - will be easier to understand
-[] talk about the entity field not loaded in allowApiUpdate that broke the code.
-[] talk about typing problem when using entity base - https://github.com/microsoft/TypeScript/issues/34933
-[] es2015  in server config
+[V] consider making all entity field, by default automatically loaded - and disable it if wanted - will be easier to understand
+[V] talk about the entity field not loaded in allowApiUpdate that broke the code.
+
+
 [] review weird typing issue with article payload action that failed for some reason
 [] make the entity error, include the message of any exception on save - and use it in the angular todo as the error.
 [] in the react todo demo - it's very strict from typescript perspective
   [] can't assign null to string etc...
+
+[] talk about invoking client side validation
+
 
 
 
@@ -319,60 +341,20 @@ export interface EntityMetadata<entityType = any> {
 }
 export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
-
     metadata: EntityMetadata<entityType>;
-
-
-
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
     iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
+    findFirst(where?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
+    findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityWhere<entityType>): Promise<number>;
-    findFirst(where?: EntityWhere<entityType> | IterateOptions<entityType>): Promise<entityType>;
-    findId(id: any): Promise<entityType>;
-    findOrCreate(options?: EntityWhere<entityType> | IterateOptions<entityType>): Promise<entityType>;
-    /**
- * Used to get non critical values from the Entity.
-* The first time this method is called, it'll return a new instance of the Entity.
-* It'll them call the server to get the actual value and cache it.
-* Once the value is back from the server, any following call to this method will return the cached row.
-* 
-* It was designed for displaying a value from a lookup table on the ui - counting on the fact that it'll be called multiple times and eventually return the correct value.
-* 
-* * Note that this method is not called with `await` since it doesn't wait for the value to be fetched from the server.
-* @example
-* return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
- */
-    lookup(filter: EntityWhere<entityType>): entityType;
-
-    /** returns a single row and caches the result for each future call
-  * @example
-  * let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
-  */
-    lookupAsync(filter: EntityWhere<entityType>): Promise<entityType>;
-
     create(item?: Partial<entityType>): entityType;
-
-    getCachedById(id: any): entityType;
-    getCachedByIdAsync(id: any): Promise<entityType>;
-    addToCache(item: entityType);
-
-
     getEntityRef(item: entityType): EntityRef<entityType>;
     save(item: entityType): Promise<entityType>;
     delete(item: entityType): Promise<void>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
-export interface FindOptions<entityType> {
-    /** filters the data
-     * @example
-     * where p => p.price.isGreaterOrEqualTo(5)
-     * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
-     */
-    where?: EntityWhere<entityType>;
-    /** Determines the order in which the result will be sorted in
-     * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
-     */
-    orderBy?: EntityOrderBy<entityType>;
+export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
+
     /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
      * @example
      * this.products = await this.context.for(Products).find({
@@ -436,10 +418,34 @@ export type FilterFactories<entityType> = {
     entityType[Properties] extends string ? (ContainsFilterFactory<entityType[Properties]> & ComparisonFilterFactory<entityType[Properties]>) :
     ContainsFilterFactory<entityType[Properties]>
 }
-
-export interface IterateOptions<entityType> {
+export interface LoadOptions<entityType> {
+    load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]
+}
+export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
+    /** filters the data
+    * @example
+    * where p => p.price.isGreaterOrEqualTo(5)
+    * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
+    */
     where?: EntityWhere<entityType>;
+    /** Determines the order in which the result will be sorted in
+     * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
+     */
     orderBy?: EntityOrderBy<entityType>;
+}
+export interface FindFirstOptions<entityType> extends FindOptionsBase<entityType>, FindFirstOptionsBase<entityType> {
+
+
+
+}
+export interface FindFirstOptionsBase<entityType> extends LoadOptions<entityType> {
+    /** default true
+      */
+    useCache?: boolean;
+
+    createIfNotFound?: boolean;
+}
+export interface IterateOptions<entityType> extends FindOptionsBase<entityType> {
     progress?: { progress: (progress: number) => void };
 }
 export interface IterableResult<T> {

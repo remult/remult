@@ -10,12 +10,12 @@ import { FilterHelper } from '../../../angular/src/filter-helper';
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
 import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings, DataControlInfo } from '../../../angular';
-import { Lookup } from '../lookup';
+import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
-import { EntityBase, EntityMetadata,  Repository, FindOptions } from '../remult3';
+import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
 import { EntityOptions } from '../entity';
 import { async, waitForAsync } from '@angular/core/testing';
@@ -555,7 +555,9 @@ describe("test row provider", () => {
       saved = true;
     }
     catch (err) {
+
       expect(cat._.fields.a.error).toEqual("m");
+      expect(cat._.error).toBe("A: m");
     }
     expect(saved).toBe(false);
 
@@ -786,7 +788,7 @@ describe("test row provider", () => {
     let [c] = await insertFourRows();
 
 
-    let r = await c.lookupAsync(c => c.categoryName.isEqualTo(undefined));
+    let r = await c.findFirst({ createIfNotFound: true, where: c => c.categoryName.isEqualTo(undefined) });
     expect(r.categoryName).toBe(undefined);
 
   });
@@ -809,10 +811,10 @@ describe("test row provider", () => {
     var nc = { value: undefined };
     nc.value = undefined;
     expect(nc.value).toBe(undefined);
-    await l.whenGet(c => c.id.isEqualTo(nc.value));
+    await l.getAsync(c => c.id.isEqualTo(nc.value));
     expect(calledFind).toBe(false, 'expected not to call find');
     nc.value = 1;
-    await l.whenGet(c => c.id.isEqualTo(nc.value));
+    await l.getAsync(c => c.id.isEqualTo(nc.value));
     expect(calledFind).toBe(true);
 
   });
@@ -822,28 +824,40 @@ describe("test row provider", () => {
     let c = cont.for(newCategories);
     var nc = { value: undefined };
     nc.value = 1;
-    let r = c.lookup(x => x.id.isEqualTo(nc.value));
+    let lookup = new Lookup<newCategories>(c);
+    let r = lookup.get(x => x.id.isEqualTo(nc.value));
     expect(getEntityRef(r).isNew()).toBe(true);
     r.id = 5;
-    expect(c.lookup(x => x.id.isEqualTo(nc.value)).id).toBe(5);
-    r = await c.lookupAsync(x => x.id.isEqualTo(nc.value));
+    expect(lookup.get(x => x.id.isEqualTo(nc.value)).id).toBe(5);
+    r = await lookup.getAsync(x => x.id.isEqualTo(nc.value));
     expect(r.id).toBe(5);
 
   });
   itAsync("lookup updates the data", async () => {
     let [c] = await createData(async insert => await insert(1, 'noam'));
-    let r = c.lookup(c => c.id.isEqualTo(1));
+    let lookup = new Lookup<CategoriesForTesting>(c);
+    let r = lookup.get(c => c.id.isEqualTo(1));
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
-    r = await c.lookupAsync(c => c.id.isEqualTo(1));
+    r = await c.findFirst({ createIfNotFound: true, where: c => c.id.isEqualTo(1) });
     expect(r._.isNew()).toBe(false);
     await r._.delete();
     expect(await c.count()).toBe(0);
-    r = await c.lookupAsync(c => c.id.isEqualTo(1));
+    r = await c.findFirst({ createIfNotFound: true, where: c => c.id.isEqualTo(1) });
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
     await r._.save();
     expect(await c.count()).toBe(1);
+
+
+  });
+  itAsync("lookup survives row that doesn't exist", async () => {
+    let [c] = await createData(async insert => await insert(1, 'noam'));
+    let r = await c.findId(5);
+    expect(r).toBeUndefined();
+    r = await c.findId(5);
+    expect(r).toBeUndefined();
+
 
 
   });
