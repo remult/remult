@@ -1074,7 +1074,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
 
 
-export function FieldType<T = any>(settings?: FieldOptions<T, any>) {
+export function FieldType<entityType = any>(settings?: FieldOptions<entityType, any>) {
     return target => {
         if (!settings) {
             settings = {};
@@ -1086,19 +1086,19 @@ export function FieldType<T = any>(settings?: FieldOptions<T, any>) {
     }
 
 }
-export function DateOnlyField<T = any>(settings?: FieldOptions<Date, T>) {
+export function DateOnlyField<entityType = any>(settings?: FieldOptions<Date, entityType>) {
     return Field({
         valueConverter: DateOnlyValueConverter
         , ...settings
     })
 }
-export function DecimalField<T = any>(settings?: FieldOptions<Number, T>) {
+export function DecimalField<entityType = any>(settings?: FieldOptions<Number, entityType>) {
     return Field({
         valueConverter: DecimalValueConverter
         , ...settings
     })
 }
-export function ValueListFieldType<T = any, colType extends ValueListItem = any>(type: ClassType<colType>, settings?: FieldOptions<colType, T>) {
+export function ValueListFieldType<entityType = any, colType extends ValueListItem = any>(type: ClassType<colType>, settings?: FieldOptions<colType, entityType>) {
     return FieldType<colType>({
         valueConverter: new ValueListValueConverter(type),
         displayValue: (item, val) => val.caption
@@ -1106,7 +1106,7 @@ export function ValueListFieldType<T = any, colType extends ValueListItem = any>
     })
 }
 
-export function Field<T = any, colType = any>(settings?: FieldOptions<colType, T>) {
+export function Field<entityType = any, colType = any>(settings?: FieldOptions<colType, entityType>) {
     if (!settings) {
         settings = {};
     }

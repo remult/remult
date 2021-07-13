@@ -11,7 +11,7 @@ import {   EntityMetadata, FieldRef } from './remult3';
 
 export interface FieldOptions<valueType = any, entityType = any> {
     key?: string;
-    target?: ClassType<entityType>;
+    target?: ClassType<entityType>;//confusing
     dataType?: any;
 
 

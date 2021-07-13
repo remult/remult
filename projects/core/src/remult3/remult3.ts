@@ -15,62 +15,71 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
+[] removing Input type from field (it exists in metadata)
+[] add to fieldRef - isnull, to solve all the test if relation column has value
+[] default should be decimal number - should have IntegerField - for the case where you want Integer.
+[] allow Api Update, will not accept true or false.
+[] prepare roles? everyone, authenticated and put them in a class called Roles
+[] rename the isSignedIn method to authenticated
+[] remove Role class.
+[] create axios sample with jwt
+[] all generics should get entity and then value type.
+[] make where awaitable
+[] reconsider the custom filter with the FD
+[] change data type to value type
+[] talk about $.find('name') vs $['name'] - support also key
+[] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
+
+
+translateCustomFilter{
+
+}
+
+FindOptions 
+    x.name.isEqualTo("asdfasd").and(Filter.custom({dasfda}).and(Filter.customForDb({})))
+
+Rest DataProvider - sends it to the Api Filter.
+to the ApiFilter - gets custom as paramter
+SqlGateway - recieves and does something specific.
 
 
 # react todo
-[] the null checks are preventing the use of context?:Context in backend methods
-[] In react the running on server check you gave me is true also for the browser.
+[V] the null checks are preventing the use of context?:Context in backend methods
 
 
 
+## Yoni NAMING!!!
+[] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
+[] apiDataFilter
+[] fixedFilter
+[] Rename Allowed and Allowed for instance
 
 ## review with Yoni
 
-[] consider removing Input type from field (it exists in metadata)
-[] included display value and input type also in value converter - ias it is relevant to date only, and also value list
-[] add code that entity relation can be tested for null - and it'll not perform fetch.
-[] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
+
+[V] included display value and input type also in value converter - ias it is relevant to date only, and also value list
+[V] add code that entity relation can be tested for null - and it'll not perform fetch.
+[V] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
 
 
-[] should save, undo changes and reload load all non lazy fields or based on the load in the original query?
-### questions about find with create
-[] should the new row created when not found enter the cache?
-[] should cache empty results?
-[] find with create and cache, and then find without create and with cache - should return the cache?
+[V] should save, undo changes and reload load all non lazy fields or based on the load in the original query?
 
-[] talk some more about value change, since in the current implementation, an update through click doesn't fire it
-[] "Number is always a number"
-    [] "test number is always number"
-    [] test number is always a number - settings value with any string, and then doing math options for it.
-[] consider the setting decimal digits, instead might be useful to determine db storage - replaced with db type
 
-[] the inconsistenacy beyween Date and DateTime - in our naming and also with input management
+[V] reconsider isSignedIn
 
-[] apiDataFilter
-[] fixedFilter
-[] consider a column that is saved to more than one column in the db
 
-[] i make errors with the order of the generic parameters, entity, column and vice versa
-[V] reconsider all the where stuff - just searh references for AndFilter to see the problem
-[] make where awaitable
-[] reconsider the custom filter with the FD
+
+
+[V] reconsider all the where stuff - just search references for AndFilter to see the problem
+
+
+
 [] talk about allow null for date, object types, etc...
 [] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
-[] consider adding the count value in the response of the array
-[] talk about forgetting the :type on fields - it's dangerous and can lead to debug issues - on the other hand we want some default - not sure if we should scream
 
-[] talk about typescript loosing types in a case of self reference - in this sample, the visible that references the grid - breaks the typing
-```
- grid = new GridSettings(this.context.for(Products), {
-    allowCrud: true,
-    where:x=>x.name.contains("1"),
-    gridButtons:[{
-      name:'dosomething',
-      visible:()=>this.grid.selectedRows.length>0
-    }]
-  });
-```
-[] talk about $.find('name') vs $['name']
+
+
+
 []c.defs.valueConverter !== DateOnlyValueConverter
 [] dependency injection for decorator
 [] current user in any app - not simple enough.
@@ -89,9 +98,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## things that came up during react:
-[] review weird typing issue with article payload action that failed for some reason
 [] talk about invoking client side validation
 [] talk about isvalid that gives you indication of the data is valid etc....
+[] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
+
 
 
 
@@ -121,25 +131,34 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## consider if needed
 
-[] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
-[] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
-[] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
+
+
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
-[] fails because author is undefined. allowApiDelete: (context, comment) => comment.author.username == context.user.id,
 
+
+
+
+
+
+
+
+
+
+## V2
+### questions about find with create
+[] should the new row created when not found enter the cache?
+[] should cache empty results?
+[] find with create and cache, and then find without create and with cache - should return the cache?
+[] talk some more about value change, since in the current implementation, an update through click doesn't fire it
+[] consider a column that is saved to more than one column in the db
+[] consider adding the count value in the response of the array and do it in the response of iterate, to not break api
+[] talk about forgetting the :type on fields - it's dangerous and can lead to debug issues - on the other hand we want some default - not sure if we should scream
+[] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
 
 ## remult angular future
 [] change the getValue - to  displayValue
 [] change the input type to support code+value, displayValueOnly
-
-
-
-
-
-
-
-
 
 
 
@@ -219,8 +238,8 @@ export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     metadata: EntityMetadata<entityType>;
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
-    iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
-    findFirst(where?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
+    iterate(whereOrOptions?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
+    findFirst(whereOrOptions?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityWhere<entityType>): Promise<number>;
     create(item?: Partial<entityType>): entityType;
