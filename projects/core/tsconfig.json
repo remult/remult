@@ -9,7 +9,7 @@
         
         "module": "commonjs",
         "moduleResolution": "node",
-        "target": "es2015",
+        "target": "es5",
         "skipLibCheck": true,
         "lib": [
             "es2018",

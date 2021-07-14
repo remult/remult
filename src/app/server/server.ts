@@ -13,7 +13,7 @@ import { preparePostgresQueueStorage } from '@remult/core/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Context, Field, Filter } from '../../../projects/core';
+import { Context, Field, Filter, Repository } from '../../../projects/core';
 import { Products } from '../products-test/products';
 
 import { isJSDocTypedefTag } from 'typescript';
@@ -62,14 +62,15 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
+
+
 interface r<T, idType> {
     findId(id: idType): T
 }
-interface hasId<idType> {
-    id: idType;
-}
-function test<T extends hasId<number>>(entity: ClassType<T>): r<T, number>;
-function test<T extends hasId<string>>(entity: ClassType<T>): r<T, string>;
+function test(entity: ClassType<any>): r<any, any>;
+function test<T extends { id: number }>(entity: ClassType<T>): r<T, number>;
+function test<T extends { id: string }>(entity: ClassType<T>): r<T, string>;
+function test<T>(entity: ClassType<T>): r<T, any>
 function test<T>(entity: ClassType<T>): r<T, any> {
     return undefined;
 }
@@ -82,9 +83,16 @@ class b {
     id: string;
 }
 class c {
-    
+
 }
-if (false)
+let z:ClassType<any>;
+if (true) {
     test(a).findId(1);
-if (false)
-    test(b).findId("a")
+    test(a).findId("1");
+    test(b).findId(1);
+    test(b).findId("1");
+    test(c).findId(1);
+    test(c).findId("2");
+    test(z).findId("2") //y?
+
+}

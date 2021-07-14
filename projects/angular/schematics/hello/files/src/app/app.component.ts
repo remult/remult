@@ -85,7 +85,7 @@ export class AppComponent implements OnInit {
   signUp() {
     let user = this.context.for(Users).create();
     let password = new PasswordControl();
-    let confirmPassword = new PasswordControl({ caption: "Confirm Password" });
+    let confirmPassword = new PasswordControl("Confirm Password");
     openDialog(InputAreaComponent, i => i.args = {
       title: "Sign Up",
       fields: () => [
@@ -120,7 +120,7 @@ export class AppComponent implements OnInit {
   async changePassword() {
     let user = await this.context.for(Users).findId(this.context.user.id);
     let password = new PasswordControl();
-    let confirmPassword = new PasswordControl({ caption: "Confirm Password" });
+    let confirmPassword = new PasswordControl("Confirm Password");
     openDialog(InputAreaComponent, i => i.args = {
       title: "Change Password",
       fields: () => [

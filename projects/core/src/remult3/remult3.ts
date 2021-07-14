@@ -29,7 +29,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] change data type to value type
 [] talk about $.find('name') vs $['name'] - support also key
 [] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
-
+[] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
 
 translateCustomFilter{
 

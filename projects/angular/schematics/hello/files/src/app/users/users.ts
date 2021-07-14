@@ -70,7 +70,7 @@ export class Users extends IdEntity {
 }
 export class PasswordControl extends InputField<string>
 {
-    constructor(settings?: FieldOptions) {
-        super({ ...settings, caption: 'password', inputType: InputTypes.password, defaultValue: () => '' });
+    constructor(caption = 'password') {
+        super({ caption, inputType: InputTypes.password, defaultValue: () => '' });
     }
 }
