@@ -211,7 +211,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return r;
     }
 
-    
+
     getEntityRef(entity: entityType): EntityRef<entityType> {
         let x = entity[entityMember];
         if (!x) {
@@ -291,7 +291,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             let key = JSON.stringify(f);
             cacheInfo = this.cache.get(key);
             if (cacheInfo !== undefined) {
-                if (cacheInfo.value&& this.getEntityRef(cacheInfo.value).wasDeleted()) {
+                if (cacheInfo.value && this.getEntityRef(cacheInfo.value).wasDeleted()) {
                     cacheInfo = undefined;
                     this.cache.delete(key);
                 } else
@@ -845,6 +845,13 @@ export class columnImpl<colType, rowType> implements FieldRef<colType, rowType> 
     constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<rowType>, private rowBase: rowHelperBase<rowType>) {
 
     }
+    isNull(): boolean {
+        let lu = this.rowBase.lookups.get(this.metadata.key);
+        if (lu) {
+            return lu.id === undefined || lu.id === null;
+        }
+        return this.value === null;
+    }
     async load(): Promise<colType> {
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
@@ -858,7 +865,7 @@ export class columnImpl<colType, rowType> implements FieldRef<colType, rowType> 
     target: ClassType<any> = this.settings.target;
 
 
-    inputType: string = this.settings.inputType;
+
 
     get error(): string {
         if (!this.rowBase.errors)

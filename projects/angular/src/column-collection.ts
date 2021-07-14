@@ -1,5 +1,5 @@
 
-import {  FieldMetadata,   FieldRef,  EntityMetadata,  getEntityRef, IdEntity, ValueListItem,  EntityRef, Allowed,  FieldOptions, Context, ValueConverter } from "@remult/core";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Context, ValueConverter } from "@remult/core";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -395,6 +395,9 @@ export class InputField<T> implements FieldRef<T, any> {
     }
 
 
+  }
+  isNull() {
+    return this.value === null;
   }
   load(): Promise<T> {
     throw new Error("Method not implemented.");

@@ -128,9 +128,7 @@ export class LookupColumn<T> {
 
   constructor(private repository: RepositoryImplementation<T>, public id: string
   ) { }
-  exists() {
-    return !this.repository.getEntityRef(this.item).isNew();
-  }
+  
   get item(): T {
 
     return this.get(this.id);

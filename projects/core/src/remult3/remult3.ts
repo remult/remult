@@ -15,8 +15,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[] removing Input type from field (it exists in metadata)
-[] add to fieldRef - isnull, to solve all the test if relation column has value
+[V] removing Input type from field (it exists in metadata)
+[V] add to fieldRef - isnull, to solve all the test if relation column has value
 [] default should be decimal number - should have IntegerField - for the case where you want Integer.
 [] allow Api Update, will not accept true or false.
 [] prepare roles? everyone, authenticated and put them in a class called Roles
@@ -42,11 +42,10 @@ to the ApiFilter - gets custom as paramter
 SqlGateway - recieves and does something specific.
 
 
-# react todo
-[V] the null checks are preventing the use of context?:Context in backend methods
 
 ## review with yoni
 [] The solution I've found for find id. consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
+[] talk about isNull and original value (I prefer a parameter instead of another method)
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
@@ -205,7 +204,6 @@ export type SortSegments<entityType> = {
 }
 
 export interface FieldRef<valueType, entityType = any> {
-    inputType: string;
     error: string;
     displayValue: string;
     value: valueType;
@@ -216,6 +214,7 @@ export interface FieldRef<valueType, entityType = any> {
     container: entityType;
     metadata: FieldMetadata<entityType>;
     load(): Promise<valueType>;
+    isNull(): boolean;
 }
 export interface IdMetadata<entityType = any> {
 

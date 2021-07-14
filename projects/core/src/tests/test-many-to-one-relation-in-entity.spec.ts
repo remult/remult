@@ -124,7 +124,7 @@ describe("many to one relation", () => {
         await context.for(Products).create({ id: 1, name: 'p1', category }).save();
         context.clearAllCache();
         let p = await context.for(ProductsEager).findFirst({
-            where:p=>p.id.isEqualTo(1),
+            where: p => p.id.isEqualTo(1),
             load: () => []
         });
         expect(p.category).toBe(undefined);
@@ -373,6 +373,36 @@ describe("many to one relation", () => {
         p._.toApiJson();
         expect(fetches).toBe(1);
     }));
+    it("test is null doesn't invoke read", async(async () => {
+        let mem = new InMemoryDataProvider();
+        let context = new ServerContext(mem);
+        let cat = await context.for(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+        let p = await context.for(Products).create({
+            id: 10,
+            name: "prod 10",
+            category: cat
+        }).save();
+        let fetches = 0;
+        context = new ServerContext({
+            transaction: undefined,
+            getEntityDataProvider: e => {
+                let r = mem.getEntityDataProvider(e);
+                return {
+                    find: x => {
+                        fetches++;
+                        return r.find(x);
+                    }, count: r.count, delete: r.delete, insert: r.insert, update: r.update
+                }
+
+            }
+        })
+        p = await context.for(Products).findFirst();
+        expect(fetches).toBe(1);
+        expect(p.$.category.isNull()).toBe(false);
+        expect(fetches).toBe(1);
+    }));
     it("test to and from json ", async(async () => {
         let mem = new InMemoryDataProvider();
         let context = new ServerContext(mem);
@@ -427,7 +457,7 @@ describe("many to one relation", () => {
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
-        let p = await context.for(Products).findFirst({ createIfNotFound: true, where:p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat))});
+        let p = await context.for(Products).findFirst({ createIfNotFound: true, where: p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat)) });
         expect(p.isNew()).toBe(true);
         expect(p.id).toBe(10);
         expect((await p.$.category.load()).id).toBe(cat.id);
