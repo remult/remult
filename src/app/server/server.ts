@@ -67,11 +67,8 @@ serverInit().then(async (dataSource) => {
 interface r<T, idType> {
     findId(id: idType): T
 }
-function test(entity: ClassType<any>): r<any, any>;
-function test<T extends { id: number }>(entity: ClassType<T>): r<T, number>;
-function test<T extends { id: string }>(entity: ClassType<T>): r<T, string>;
-function test<T>(entity: ClassType<T>): r<T, any>
-function test<T>(entity: ClassType<T>): r<T, any> {
+
+function test<T>(entity: ClassType<T>): r<T, T extends { id: number } ? number : T extends { id: string } ? string : any> {
     return undefined;
 }
 
@@ -85,11 +82,11 @@ class b {
 class c {
 
 }
-let z:ClassType<any>;
+let z: ClassType<any>;
 if (true) {
     test(a).findId(1);
-    test(a).findId("1");
-    test(b).findId(1);
+    //test(a).findId("1");
+    //test(b).findId(1);
     test(b).findId("1");
     test(c).findId(1);
     test(c).findId("2");

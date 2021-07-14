@@ -28,7 +28,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] reconsider the custom filter with the FD
 [] change data type to value type
 [] talk about $.find('name') vs $['name'] - support also key
-[] consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
 
 translateCustomFilter{
@@ -46,7 +45,8 @@ SqlGateway - recieves and does something specific.
 # react todo
 [V] the null checks are preventing the use of context?:Context in backend methods
 
-
+## review with yoni
+[] The solution I've found for find id. consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
@@ -240,7 +240,7 @@ export interface Repository<entityType> {
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
     iterate(whereOrOptions?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
     findFirst(whereOrOptions?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
-    findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
+    findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityWhere<entityType>): Promise<number>;
     create(item?: Partial<entityType>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
