@@ -26,7 +26,7 @@ import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
 })
 export class ProductsComponent {
   @Field({})
-  @DataControl({})
+  @DataControl({ width: '50px' })
   x: number;
   @Field()
   @DataControl({})
@@ -38,14 +38,12 @@ export class ProductsComponent {
   constructor(private context: Context) {
 
   }
-  products = new GridSettings( this.context.for(Products));
+  products = new GridSettings(this.context.for(Products));
 
   area = new DataAreaSettings({
-    fields: () => [
-      [this.$.x, {
-        getValue:()=>this.x
-        
-      }], this.$.z
+    fields: () => [this.$.x,
+    [this.$.x, this.$.y],
+    [this.$.x]
     ]
   })
 

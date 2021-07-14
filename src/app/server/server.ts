@@ -17,6 +17,7 @@ import { Context, Field, Filter } from '../../../projects/core';
 import { Products } from '../products-test/products';
 
 import { isJSDocTypedefTag } from 'typescript';
+import { ClassType } from '@remult/core/classType';
 
 
 
@@ -57,12 +58,33 @@ serverInit().then(async (dataSource) => {
         }
     });
 
-    let c=  new Context();
-    c.setDataProvider(dataSource);
-    let p =  c.for(Products).create({name:'product 1',id:'1'});
-    console.log(JSON.stringify(p));
-    console.log(JSON.stringify(p._.toApiJson()));
 
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
+interface r<T, idType> {
+    findId(id: idType): T
+}
+interface hasId<idType> {
+    id: idType;
+}
+function test<T extends hasId<number>>(entity: ClassType<T>): r<T, number>;
+function test<T extends hasId<string>>(entity: ClassType<T>): r<T, string>;
+function test<T>(entity: ClassType<T>): r<T, any> {
+    return undefined;
+}
+
+
+class a {
+    id: number;
+}
+class b {
+    id: string;
+}
+class c {
+    
+}
+if (false)
+    test(a).findId(1);
+if (false)
+    test(b).findId("a")

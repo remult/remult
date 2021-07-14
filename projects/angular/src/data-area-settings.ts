@@ -33,7 +33,9 @@ export class DataAreaSettings<rowType =any>
           this.lines.push(line);
         } else {
           fields.add(<DataControlSettings<rowType>>colSettings);
-          this.lines.push([fields.items[fields.items.length - 1]]);
+          let x = fields.items[fields.items.length - 1];
+          x.width='';
+          this.lines.push([x]);
 
         }
       }
