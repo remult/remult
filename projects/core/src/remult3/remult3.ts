@@ -22,7 +22,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [V] remove Role class.
 [V] change data type to value type
-[] talk about $.find('name') vs $['name'] - support also key
+[V] talk about $.find('name') vs $['name'] - support also key
 [] all generics should get entity and then value type.
 [] create axios sample with jwt
 [] make where awaitable
@@ -192,7 +192,7 @@ export interface EntityRef<entityType> {
 export type Fields<entityType> = {
     [Properties in keyof entityType]: FieldRef<entityType[Properties], entityType>
 } & {
-    find(col: FieldMetadata): FieldRef<any, entityType>,
+    find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<any, entityType>,
     [Symbol.iterator]: () => IterableIterator<FieldRef<any, entityType>>
 
 
@@ -201,7 +201,7 @@ export type Fields<entityType> = {
 export type FieldsMetadata<entityType> = {
     [Properties in keyof entityType]: FieldMetadata
 } & {
-    find(col: FieldMetadata): FieldMetadata,
+    find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata,
     [Symbol.iterator]: () => IterableIterator<FieldMetadata>
 
 

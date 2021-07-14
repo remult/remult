@@ -206,6 +206,8 @@ describe('Test basic row functionality', () => {
     x.categoryName = 'noam';
     y.categoryName = 'yael';
     expect(y._.fields.find(x._.fields.categoryName.metadata).value).toBe('yael');
+    expect(y._.fields.find(x._.fields.categoryName.metadata.key).value).toBe('yael');
+    expect(y._.metadata.fields.find('categoryName').key).toBe('categoryName');
   });
   itAsync("can be saved to a pojo", async () => {
     let ctx = new Context().for(newCategories);
