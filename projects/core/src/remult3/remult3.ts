@@ -54,6 +54,7 @@ SqlGateway - recieves and does something specific.
     I'm not sure I like the word roles here - imagine:
     AllowApiUpdate = Roles.authenticated
     not sure it's cool enough 
+[] restricted id to be number or string
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.

@@ -352,6 +352,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
     }
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType> {
+        if (typeof id !== "string" && typeof id !== "number")
+            throw new Error("id can be either number or string, but got: " + typeof (id))
         return this.findFirst({
             ...options,
             where: x => this.metadata.idMetadata.getIdFilter(id),
