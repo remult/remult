@@ -435,10 +435,10 @@ abstract class rowHelperBase<T>
     error: string;
     constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
         for (const col of columnsInfo) {
-            let ei = getEntitySettings(col.settings.dataType, false);
+            let ei = getEntitySettings(col.settings.valueType, false);
 
             if (ei && context) {
-                let lookup = new LookupColumn(context.for(col.settings.dataType) as RepositoryImplementation<T>, undefined);
+                let lookup = new LookupColumn(context.for(col.settings.valueType) as RepositoryImplementation<T>, undefined);
                 this.lookups.set(col.key, lookup);
                 let val = instance[col.key];
                 Object.defineProperty(instance, col.key, {
@@ -1005,7 +1005,7 @@ export class columnDefsImpl implements FieldMetadata {
         return this.colInfo.settings.dbReadOnly || this.dbName != this.colInfo.settings.dbName
     };
     isServerExpression: boolean;
-    dataType = this.colInfo.settings.dataType;
+    dataType = this.colInfo.settings.valueType;
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
 
@@ -1086,8 +1086,8 @@ export function FieldType<entityType = any>(settings?: FieldOptions<entityType, 
         if (!settings) {
             settings = {};
         }
-        if (!settings.dataType)
-            settings.dataType = target;
+        if (!settings.valueType)
+            settings.valueType = target;
         Reflect.defineMetadata(storableMember, settings, target);
         return target;
     }
@@ -1101,7 +1101,7 @@ export function DateOnlyField<entityType = any>(settings?: FieldOptions<Date, en
 }
 export function IntegerField<entityType = any>(settings?: FieldOptions<Number, entityType>) {
     return Field({
-        dataType: Number,
+        valueType: Number,
         valueConverter: IntegerValueConverter
         , ...settings
     })
@@ -1134,10 +1134,10 @@ export function Field<entityType = any, colType = any>(settings?: FieldOptions<c
             columnsOfType.set(target.constructor, names)
         }
 
-        let type = settings.dataType;
+        let type = settings.valueType;
         if (!type) {
             type = Reflect.getMetadata("design:type", target, key);
-            settings.dataType = type;
+            settings.valueType = type;
         }
         if (!settings.target)
             settings.target = target;
@@ -1161,8 +1161,8 @@ export function Field<entityType = any, colType = any>(settings?: FieldOptions<c
 const storableMember = Symbol("storableMember");
 export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
 
-    if (settings.dataType) {
-        let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.dataType);
+    if (settings.valueType) {
+        let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.valueType);
         if (settingsOnTypeLevel) {
             settings = {
                 ...settingsOnTypeLevel,
@@ -1171,7 +1171,7 @@ export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
         }
     }
 
-    if (settings.dataType == String) {
+    if (settings.valueType == String) {
         let x = settings as unknown as FieldOptions<String>;
         if (!settings.valueConverter)
             x.valueConverter = {
@@ -1180,25 +1180,25 @@ export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
             };
     }
 
-    if (settings.dataType == Number) {
+    if (settings.valueType == Number) {
         let x = settings as unknown as FieldOptions<Number>;
         if (!settings.valueConverter)
             x.valueConverter = NumberValueConverter;
     }
-    if (settings.dataType == Date) {
+    if (settings.valueType == Date) {
         let x = settings as unknown as FieldOptions<Date>;
         if (!settings.valueConverter) {
             x.valueConverter = DateValueConverter;
         }
     }
 
-    if (settings.dataType == Boolean) {
+    if (settings.valueType == Boolean) {
         let x = settings as unknown as FieldOptions<Boolean>;
         if (!x.valueConverter)
             x.valueConverter = BoolValueConverter;
     }
     if (!settings.valueConverter) {
-        let ei = getEntitySettings(settings.dataType, false);
+        let ei = getEntitySettings(settings.valueType, false);
         if (ei) {
             settings.valueConverter = {
                 toDb: x => x,

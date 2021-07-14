@@ -383,7 +383,7 @@ export class InputField<T> implements FieldRef<T, any> {
       caption: settings.caption,
       options: this.options,
       valueConverter: valueConverter,
-      dataType: settings.dataType,
+      dataType: settings.valueType,
       key: settings.key,
       dbName: settings.dbName,
       dbReadOnly: false,

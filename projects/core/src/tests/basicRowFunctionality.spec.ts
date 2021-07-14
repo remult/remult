@@ -1629,9 +1629,9 @@ describe("column validation", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    IntegerField({ dataType: Number })(type.prototype, "id");
+    IntegerField({ valueType: Number })(type.prototype, "id");
     Field()(type.prototype, "name");
-    Field({ dataType: Date })(type.prototype, "c3");
+    Field({ valueType: Date })(type.prototype, "c3");
 
     let f = c.for(type);
     let d = new Date(2020, 1, 2, 3, 4, 5, 6);
@@ -1661,7 +1661,7 @@ describe("test web sql identity", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    IntegerField({ dataType: Number })(type.prototype, "id");
+    IntegerField({ valueType: Number })(type.prototype, "id");
     Field()(type.prototype, "name");
 
 
@@ -1859,7 +1859,7 @@ describe("test date storage", () => {
 });
 describe("test bool value", () => {
   it("should work", () => {
-    let col = decorateColumnSettings<Boolean>({ dataType: Boolean });
+    let col = decorateColumnSettings<Boolean>({ valueType: Boolean });
     expect(col.valueConverter.fromJson(true)).toBe(true);
     expect(col.valueConverter.fromJson(false)).toBe(false);
   });
@@ -1871,9 +1871,9 @@ describe("test bool value", () => {
       }
       Entity({ key: 'asdf' })(type);
       Field({
-        dataType: Number
+        valueType: Number
       })(type.prototype, 'id');
-      Field({ dataType: Boolean })(type.prototype, "ok");
+      Field({ valueType: Boolean })(type.prototype, "ok");
       let r = context.for(type).create();
       r.id = 1;
       r.ok = true;
@@ -1896,9 +1896,9 @@ describe("test bool value", () => {
         }
       })(type);
       Field({
-        dataType: Number
+        valueType: Number
       })(type.prototype, 'id');
-      Field({ dataType: Boolean })(type.prototype, "ok");
+      Field({ valueType: Boolean })(type.prototype, "ok");
       let r = context.for(type).create();
       r.id = 1;
       expect(r.ok).toBe(false);
@@ -1940,8 +1940,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Field({ dataType: Number })(type.prototype, 'a');
-    Field({ dataType: Date })(type.prototype, 'b');
+    Field({ valueType: Number })(type.prototype, 'a');
+    Field({ valueType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let z = new RestDataProvider("", {
@@ -1970,8 +1970,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Field({ dataType: Number })(type.prototype, 'a');
-    Field({ dataType: Date })(type.prototype, 'b');
+    Field({ valueType: Number })(type.prototype, 'a');
+    Field({ valueType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let r = Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
@@ -1983,8 +1983,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity({ key: 'x' })(type);
-    Field({ dataType: Number })(type.prototype, 'a');
-    Field({ dataType: Date })(type.prototype, 'b');
+    Field({ valueType: Number })(type.prototype, 'a');
+    Field({ valueType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
     let done = new Done();

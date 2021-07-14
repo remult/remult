@@ -56,9 +56,9 @@ describe("data api", () => {
             val: string;
         }
         Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
-        Field({ dataType: Number })(type.prototype, 'id');
+        Field({ valueType: Number })(type.prototype, 'id');
         Field<EntityBase, string>({
-            dataType: String,
+            valueType: String,
             allowApiUpdate: (c, x) => x._.isNew()
         })(type.prototype, 'val');
         let context = new ServerContext();
@@ -89,9 +89,9 @@ describe("data api", () => {
             val: string;
         }
         Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
-        Field({ dataType: Number })(type.prototype, 'id');
+        Field({ valueType: Number })(type.prototype, 'id');
         Field<typeof type.prototype, string>({
-            dataType: String,
+            valueType: String,
             allowApiUpdate: (c, x) => x.val != "yael"
         })(type.prototype, 'val');
         let context = new ServerContext();

@@ -21,21 +21,21 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 [V] remove Role class.
-[] create axios sample with jwt
-[] all generics should get entity and then value type.
-[] make where awaitable
-[] reconsider the custom filter with the FD
-[] change data type to value type
+[V] change data type to value type
 [] talk about $.find('name') vs $['name'] - support also key
+[] all generics should get entity and then value type.
+[] create axios sample with jwt
+[] make where awaitable
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
 [] rename the isSignedIn method to authenticated
+[] reconsider the custom filter with the FD
 
 translateCustomFilter{
 
 }
 
 FindOptions 
-    x.name.isEqualTo("asdfasd").and(Filter.custom({dasfda}).and(Filter.customForDb({})))
+x.name.isEqualTo("asdfasd").and(Filter.custom({dasfda}).and(Filter.customForDb({})))
 
 Rest DataProvider - sends it to the Api Filter.
 to the ApiFilter - gets custom as paramter
@@ -59,7 +59,7 @@ SqlGateway - recieves and does something specific.
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
 [] apiDataFilter
 [] fixedFilter
-[] Rename Allowed and Allowed for instance
+[] Rename Allowed and InstanceAllowed
 
 ## review with Yoni
 

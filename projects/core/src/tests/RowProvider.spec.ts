@@ -952,7 +952,7 @@ describe("test row provider", () => {
 
   });
   it("get value function works 1", () => {
-    let a = new InputField<number>({ dataType: Number });
+    let a = new InputField<number>({ valueType: Number });
     a.value = 5;
     var cc = new DataAreaSettings({ fields: () => [a] })
 
@@ -961,7 +961,7 @@ describe("test row provider", () => {
 
   });
   it("get value function works 2", () => {
-    let a = new InputField<number>({ dataType: Number });
+    let a = new InputField<number>({ valueType: Number });
     a.value = 5;
     var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
     cc.add(a);
@@ -969,7 +969,7 @@ describe("test row provider", () => {
 
   });
   it("get value function works 3", () => {
-    let a = new InputField<number>({ dataType: Number });
+    let a = new InputField<number>({ valueType: Number });
     a.value = 5;
     var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
     cc.add({ field: a, getValue: () => a.value * 2 });
@@ -1281,7 +1281,7 @@ describe("order by api", () => {
 describe("test area", () => {
   it("works without entity", () => {
     let n = new InputField<number>({
-      dataType: Number
+      valueType: Number
     });
     n.value = 5;
     let area = new DataAreaSettings({ fields: () => [n] });
@@ -1331,12 +1331,12 @@ describe("test column value change", () => {
 
 describe("test datetime column", () => {
   it("stores well", () => {
-    let col = decorateColumnSettings<Date>({ dataType: Date });
+    let col = decorateColumnSettings<Date>({ valueType: Date });
     let val = col.valueConverter.fromJson(col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
     expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
-    let col = decorateColumnSettings<Date>({ dataType: Date });
+    let col = decorateColumnSettings<Date>({ valueType: Date });
     expect(col.valueConverter.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
@@ -1360,7 +1360,7 @@ describe("test datetime column", () => {
   it("date Storage works 1", () => {
 
     let col = decorateColumnSettings<Date>({
-      dataType: Date,
+      valueType: Date,
       valueConverter: DateOnlyValueConverter
     });
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());

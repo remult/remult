@@ -34,8 +34,8 @@ describe("custom id column", () => {
             id: number;
         }
         Entity({ key: 'custom2' })(type);
-        Field({ dataType: Number })(type.prototype, 'a');
-        Field({ dataType: Number })(type.prototype, 'id');
+        Field({ valueType: Number })(type.prototype, 'a');
+        Field({ valueType: Number })(type.prototype, 'id');
         let c = context.for(type);
         let r = c.create();
         r.a = 1;
