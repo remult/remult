@@ -1,23 +1,23 @@
-import {  FieldRef,  FieldMetadata, Entity, ValueListItem } from "@remult/core";
+import { FieldRef, FieldMetadata, Entity, ValueListItem } from "@remult/core";
 import { ValueListValueConverter } from "@remult/core/valueConverters";
 import { InputField } from "./column-collection";
 
 
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | FieldRef<any, any>;
-export interface DataControlSettings<entityType = any, fieldType = any> {
+export interface DataControlSettings<entityType = any, valueType = any> {
 
     field?: FieldMetadata | FieldRef<any, any>;
-    getValue?: (row: entityType, val: FieldRef<fieldType, entityType>) => any;
+    getValue?: (row: entityType, val: FieldRef<entityType, valueType>) => any;
     readonly?: ValueOrEntityExpression<boolean, entityType>;
     cssClass?: (string | ((row: entityType) => string));
 
     caption?: string;
-    visible?: (row: entityType, val: FieldRef<fieldType, entityType>) => boolean;
+    visible?: (row: entityType, val: FieldRef<entityType, valueType>) => boolean;
 
-    click?: (row: entityType, val: FieldRef<fieldType, entityType>) => void;
-    valueChange?: (row: entityType, val: FieldRef<fieldType, entityType>) => void;
-    allowClick?: (row: entityType, val: FieldRef<fieldType, entityType>) => boolean;
+    click?: (row: entityType, val: FieldRef<entityType, valueType>) => void;
+    valueChange?: (row: entityType, val: FieldRef<entityType, valueType>) => void;
+    allowClick?: (row: entityType, val: FieldRef<entityType, valueType>) => boolean;
     clickIcon?: string;
 
     valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((context) => Promise<ValueListItem[]>) | ((context) => ValueListItem[]);

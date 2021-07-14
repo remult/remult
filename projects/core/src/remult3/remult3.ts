@@ -23,7 +23,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] remove Role class.
 [V] change data type to value type
 [V] talk about $.find('name') vs $['name'] - support also key
-[] all generics should get entity and then value type.
+[V] all generics should get entity and then value type.
 [] create axios sample with jwt
 [] make where awaitable
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
@@ -55,6 +55,7 @@ SqlGateway - recieves and does something specific.
     AllowApiUpdate = Roles.authenticated
     not sure it's cool enough 
 [] restricted id to be number or string
+[] field container type vs entity type vs target
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
@@ -190,10 +191,10 @@ export interface EntityRef<entityType> {
     toApiJson(): any;
 }
 export type Fields<entityType> = {
-    [Properties in keyof entityType]: FieldRef<entityType[Properties], entityType>
+    [Properties in keyof entityType]: FieldRef<entityType, entityType[Properties]>
 } & {
-    find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<any, entityType>,
-    [Symbol.iterator]: () => IterableIterator<FieldRef<any, entityType>>
+    find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>,
+    [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>
 
 
 
@@ -212,7 +213,7 @@ export type SortSegments<entityType> = {
     [Properties in keyof entityType]: SortSegment & { descending(): SortSegment }
 }
 
-export interface FieldRef<valueType, entityType = any> {
+export interface FieldRef<entityType = any, valueType = any> {
     error: string;
     displayValue: string;
     value: valueType;
@@ -351,13 +352,13 @@ export interface FindFirstOptionsBase<entityType> extends LoadOptions<entityType
 export interface IterateOptions<entityType> extends FindOptionsBase<entityType> {
     progress?: { progress: (progress: number) => void };
 }
-export interface IterableResult<T> {
-    toArray(options?: IterateToArrayOptions): Promise<T[]>;
-    first(): Promise<T>;
+export interface IterableResult<entityType> {
+    toArray(options?: IterateToArrayOptions): Promise<entityType[]>;
+    first(): Promise<entityType>;
     count(): Promise<number>;
-    forEach(what: (item: T) => Promise<any>): Promise<number>;
+    forEach(what: (item: entityType) => Promise<any>): Promise<number>;
     [Symbol.asyncIterator](): {
-        next: () => Promise<IteratorResult<T>>;
+        next: () => Promise<IteratorResult<entityType>>;
     };
 }
 

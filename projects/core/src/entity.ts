@@ -1,14 +1,14 @@
 import { Allowed, Context, AllowedForInstance } from "./context";
 
 import { FieldMetadata as FieldMetadata } from './column-interfaces';
-import { EntityOrderBy,  FieldsMetadata, FilterFactories, EntityWhere } from "./remult3";
+import { EntityOrderBy, FieldsMetadata, FilterFactories, EntityWhere } from "./remult3";
 import { Filter } from "./filter/filter-interfaces";
 
 
 
-export interface EntityOptions<T = any> {
+export interface EntityOptions<entityType = any> {
 
-  id?: (entity: FieldsMetadata<T>) => FieldMetadata;
+  id?: (entity: FieldsMetadata<entityType>) => FieldMetadata;
   dbAutoIncrementId?: boolean;
 
   /**
@@ -23,7 +23,7 @@ export interface EntityOptions<T = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: FieldsMetadata<T>, context: Context) => string);
+  dbName?: string | ((entity: FieldsMetadata<entityType>, context: Context) => string);
   /**A human readable name for the entity */
   caption?: string | ((context: Context) => string);
   includeInApi?: boolean;
@@ -32,11 +32,11 @@ export interface EntityOptions<T = any> {
    * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
   allowApiRead?: Allowed;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiUpdate?: AllowedForInstance<T>;
+  allowApiUpdate?: AllowedForInstance<entityType>;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiDelete?: AllowedForInstance<T>;
+  allowApiDelete?: AllowedForInstance<entityType>;
   /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
-  allowApiInsert?: AllowedForInstance<T>;
+  allowApiInsert?: AllowedForInstance<entityType>;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed;
 
@@ -47,13 +47,13 @@ export interface EntityOptions<T = any> {
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */
-  apiDataFilter?: ((entityType: FilterFactories<T>, context: Context) => (Filter | Filter[]));
+  apiDataFilter?: ((entityType: FilterFactories<entityType>, context: Context) => (Filter | Filter[]));
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  fixedFilter?: EntityWhere<T>;
+  fixedFilter?: EntityWhere<entityType>;
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: () => this.name
@@ -64,7 +64,7 @@ export interface EntityOptions<T = any> {
    * @example
    * defaultOrderBy: () => [{ column: this.price, descending: true }, this.name]
    */
-  defaultOrderBy?: EntityOrderBy<T>,
+  defaultOrderBy?: EntityOrderBy<entityType>,
   /** An event that will be fired before the Entity will be saved to the database.
   * If the `validationError` property of the entity or any of it's columns will be set, the save will be aborted and an exception will be thrown.
   * this is the place to run logic that we want to run in any case before an entity is saved. 
@@ -77,15 +77,15 @@ export interface EntityOptions<T = any> {
   *   }
   * }
   */
-  saving?: (row: T, proceedWithoutSavingToDb: () => void) => Promise<any> | any;
+  saving?: (row: entityType, proceedWithoutSavingToDb: () => void) => Promise<any> | any;
   /** will be called after the Entity was saved to the data source. */
-  saved?: (row: T) => Promise<any> | any
+  saved?: (row: entityType) => Promise<any> | any
   /** Will be called before an Entity is deleted. */
-  deleting?: (row: T) => Promise<any> | any
+  deleting?: (row: entityType) => Promise<any> | any
   /** Will be called after an Entity is deleted */
-  deleted?: (row: T) => Promise<any> | any
+  deleted?: (row: entityType) => Promise<any> | any
 
-  validation?: (e: T) => Promise<any> | any;
+  validation?: (e: entityType) => Promise<any> | any;
 
 }
 

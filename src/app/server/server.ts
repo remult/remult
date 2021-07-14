@@ -18,6 +18,7 @@ import { Products } from '../products-test/products';
 
 import { isJSDocTypedefTag } from 'typescript';
 import { ClassType } from '@remult/core/classType';
+import {} from '@remult/core';
 
 
 

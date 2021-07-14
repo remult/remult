@@ -641,7 +641,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
-                _items.push(r[c.key] = new columnImpl(c.settings, this.info.fields[c.key], this.instance, this, this));
+                _items.push(r[c.key] = new FieldRefImplementation(c.settings, this.info.fields[c.key], this.instance, this, this));
             }
 
             this._columns = r as unknown as Fields<T>;
@@ -771,7 +771,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     async __performColumnAndEntityValidations() {
         for (const c of this.columnsInfo) {
             if (c.settings.validate) {
-                let col = new columnImpl(c.settings, this.info.fields[c.key], this.instance, this, this);
+                let col = new FieldRefImplementation(c.settings, this.info.fields[c.key], this.instance, this, this);
                 await col.__performValidation();
             }
         }
@@ -818,13 +818,13 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
 
         let _items = [];
         let r = {
-            find: (c: FieldMetadata< T>|string) => r[typeof c === "string" ? c : c.key],
+            find: (c: FieldMetadata<T> | string) => r[typeof c === "string" ? c : c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator]()
         };
 
         for (const col of columnsInfo) {
             let settings = decorateColumnSettings(col.settings);
-            _items.push(r[col.key] = new columnImpl<any, any>(settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
+            _items.push(r[col.key] = new FieldRefImplementation<any, any>(settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
         }
 
         this.fields = r as unknown as Fields<T>;
@@ -833,7 +833,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
     }
     async __performColumnAndEntityValidations() {
         for (const col of this.fields) {
-            if (col instanceof columnImpl) {
+            if (col instanceof FieldRefImplementation) {
                 await col.__performValidation();
             }
         }
@@ -843,8 +843,8 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
     fields: Fields<T>;
 
 }
-export class columnImpl<colType, rowType> implements FieldRef<colType, rowType> {
-    constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<rowType>, private rowBase: rowHelperBase<rowType>) {
+export class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
+    constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType>, private rowBase: rowHelperBase<entityType>) {
 
     }
     isNull(): boolean {
@@ -854,7 +854,7 @@ export class columnImpl<colType, rowType> implements FieldRef<colType, rowType> 
         }
         return this.value === null;
     }
-    async load(): Promise<colType> {
+    async load(): Promise<valueType> {
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
             if (this.wasChanged()) {
@@ -1018,7 +1018,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
         let _items = [];
         let r = {
-            find: (c: FieldMetadata<any>|string) => r[typeof c === "string" ? c : c.key],
+            find: (c: FieldMetadata<any> | string) => r[typeof c === "string" ? c : c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator](),
 
         };
@@ -1083,7 +1083,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
 
 
-export function FieldType<entityType = any>(settings?: FieldOptions<entityType, any>) {
+export function FieldType<valueType = any>(settings?: FieldOptions<any, valueType>) {
     return target => {
         if (!settings) {
             settings = {};
@@ -1095,28 +1095,28 @@ export function FieldType<entityType = any>(settings?: FieldOptions<entityType, 
     }
 
 }
-export function DateOnlyField<entityType = any>(settings?: FieldOptions<Date, entityType>) {
+export function DateOnlyField<entityType = any>(settings?: FieldOptions<entityType, Date>) {
     return Field({
         valueConverter: DateOnlyValueConverter
         , ...settings
     })
 }
-export function IntegerField<entityType = any>(settings?: FieldOptions<Number, entityType>) {
+export function IntegerField<entityType = any>(settings?: FieldOptions<entityType, Number>) {
     return Field({
         valueType: Number,
         valueConverter: IntegerValueConverter
         , ...settings
     })
 }
-export function ValueListFieldType<entityType = any, colType extends ValueListItem = any>(type: ClassType<colType>, settings?: FieldOptions<colType, entityType>) {
-    return FieldType<colType>({
+export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(type: ClassType<valueType>, settings?: FieldOptions<entityType, valueType>) {
+    return FieldType<valueType>({
         valueConverter: new ValueListValueConverter(type),
         displayValue: (item, val) => val.caption
         , ...settings
     })
 }
 
-export function Field<entityType = any, colType = any>(settings?: FieldOptions<colType, entityType>) {
+export function Field<entityType = any, valueType = any>(settings?: FieldOptions<entityType, valueType>) {
     if (!settings) {
         settings = {};
     }
@@ -1161,7 +1161,7 @@ export function Field<entityType = any, colType = any>(settings?: FieldOptions<c
 
 }
 const storableMember = Symbol("storableMember");
-export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
+export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>) {
 
     if (settings.valueType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.valueType);
@@ -1174,7 +1174,7 @@ export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
     }
 
     if (settings.valueType == String) {
-        let x = settings as unknown as FieldOptions<String>;
+        let x = settings as unknown as FieldOptions<any, String>;
         if (!settings.valueConverter)
             x.valueConverter = {
                 toJson: x => x,
@@ -1183,19 +1183,19 @@ export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
     }
 
     if (settings.valueType == Number) {
-        let x = settings as unknown as FieldOptions<Number>;
+        let x = settings as unknown as FieldOptions<any, Number>;
         if (!settings.valueConverter)
             x.valueConverter = NumberValueConverter;
     }
     if (settings.valueType == Date) {
-        let x = settings as unknown as FieldOptions<Date>;
+        let x = settings as unknown as FieldOptions<any, Date>;
         if (!settings.valueConverter) {
             x.valueConverter = DateValueConverter;
         }
     }
 
     if (settings.valueType == Boolean) {
-        let x = settings as unknown as FieldOptions<Boolean>;
+        let x = settings as unknown as FieldOptions<any, Boolean>;
         if (!x.valueConverter)
             x.valueConverter = BoolValueConverter;
     }
@@ -1241,7 +1241,7 @@ interface columnInfo {
     settings: FieldOptions,
     type: any
 }
-export function Entity<T>(options: EntityOptions<T>) {
+export function Entity<entityType>(options: EntityOptions<entityType>) {
     return target => {
         if (!options.key || options.key == '')
             options.key = target.name;

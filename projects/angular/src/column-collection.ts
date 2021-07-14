@@ -337,11 +337,11 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 }
 
 
-export class InputField<T> implements FieldRef<T, any> {
+export class InputField<valueType> implements FieldRef<any, valueType> {
   private options: FieldOptions;
   dataControl: DataControlSettings;
   constructor(
-    settings: FieldOptions<T, any>
+    settings: FieldOptions<any, valueType>
       & DataControlSettings
       & {
 
@@ -368,7 +368,7 @@ export class InputField<T> implements FieldRef<T, any> {
       settings.key = settings.caption;
     this.inputType = settings.inputType;
     if (settings.defaultValue) {
-      this._value = settings.defaultValue(undefined, undefined) as unknown as T
+      this._value = settings.defaultValue(undefined, undefined) as unknown as valueType
     }
 
     this.originalValue = this._value;
@@ -399,12 +399,12 @@ export class InputField<T> implements FieldRef<T, any> {
   isNull() {
     return this.value === null;
   }
-  load(): Promise<T> {
+  load(): Promise<valueType> {
     throw new Error("Method not implemented.");
   }
   metadata: {
     readonly key: string;
-    readonly target: ClassType<T>;
+    readonly target: ClassType<valueType>;
     readonly dataType: any;
 
     caption: string;
@@ -415,10 +415,10 @@ export class InputField<T> implements FieldRef<T, any> {
     readonly isServerExpression: boolean;
     readonly dbReadOnly: boolean;
     readonly dbName: string;
-    readonly valueConverter: ValueConverter<T>;
+    readonly valueConverter: ValueConverter<valueType>;
     readonly options: FieldOptions;
   };
-  _value: T;
+  _value: valueType;
   inputType: string;
   error: string;
   get displayValue() {
@@ -426,13 +426,13 @@ export class InputField<T> implements FieldRef<T, any> {
       return this.options.displayValue(this.value, undefined);
     return this.value.toString();
   }
-  get value(): T { return this._value; }
-  set value(val: T) {
+  get value(): valueType { return this._value; }
+  set value(val: valueType) {
     this._value = val;
     if (this.dataControl.valueChange)
       this.dataControl.valueChange(undefined, this)
   };
-  originalValue: T;
+  originalValue: valueType;
   get inputValue(): string { return this.metadata.valueConverter.toInput(this.value, this.inputType); }
   set inputValue(val: string) { this.value = this.metadata.valueConverter.fromInput(val, this.inputType); };
   wasChanged(): boolean {

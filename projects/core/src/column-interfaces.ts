@@ -1,6 +1,6 @@
 import { ClassType } from '../classType';
 import { Allowed, Context, AllowedForInstance } from './context';
-import {   EntityMetadata, FieldRef } from './remult3';
+import { EntityMetadata, FieldRef } from './remult3';
 
 
 
@@ -9,16 +9,16 @@ import {   EntityMetadata, FieldRef } from './remult3';
 
 
 
-export interface FieldOptions<valueType = any, entityType = any> {
+export interface FieldOptions<entityType = any, valueType = any> {
     key?: string;
-    target?: ClassType<entityType>;//confusing
+    target?: ClassType<entityType>;//confusing it'll sometime reference an entity/controller and sometype the datatype iteslf
     valueType?: any;
 
 
     caption?: string | ((context: Context) => string);
     displayValue?: (entity: entityType, value: valueType) => string;
     defaultValue?: (entity: entityType, context: Context) => valueType | Promise<valueType>;
-    validate?: FieldValidator<valueType, entityType> | FieldValidator<valueType, entityType>[];
+    validate?: FieldValidator<entityType, valueType> | FieldValidator<entityType, valueType>[];
     inputType?: string;
     allowNull?: boolean;
 
@@ -30,11 +30,11 @@ export interface FieldOptions<valueType = any, entityType = any> {
 
     includeInApi?: Allowed;
     allowApiUpdate?: AllowedForInstance<entityType>;
-    lazy?:boolean;
+    lazy?: boolean;
 }
-export interface FieldMetadata<T = any> {
+export interface FieldMetadata<valueType = any> {
     readonly key: string;
-    readonly target: ClassType<T>;
+    readonly target: ClassType<valueType>;
     readonly dataType: any;
 
     readonly caption: string;
@@ -45,25 +45,25 @@ export interface FieldMetadata<T = any> {
     readonly isServerExpression: boolean;
     readonly dbReadOnly: boolean;
     readonly dbName: string;
-    readonly valueConverter: ValueConverter<T>;
+    readonly valueConverter: ValueConverter<valueType>;
     readonly options: FieldOptions;
 
 }
-export interface ValueConverter<T> {
-    fromJson?(val: any): T;
-    toJson?(val: T): any;
-    fromDb?(val: any): T
-    toDb?(val: T): any;
-    toInput?(val: T, inputType: string): string;
-    fromInput?(val: string, inputType: string): T;
-    displayValue?(val: T): string;
+export interface ValueConverter<valueType> {
+    fromJson?(val: any): valueType;
+    toJson?(val: valueType): any;
+    fromDb?(val: any): valueType
+    toDb?(val: valueType): any;
+    toInput?(val: valueType, inputType: string): string;
+    fromInput?(val: string, inputType: string): valueType;
+    displayValue?(val: valueType): string;
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;
 
 
 }
 
-export declare type FieldValidator<valueType = any, entityType = any> = (entity: entityType, col: FieldRef<valueType, entityType>) => void | Promise<void>;
+export declare type FieldValidator<entityType = any, valueType = any> = (entity: entityType, col: FieldRef<entityType, valueType>) => void | Promise<void>;
 
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 

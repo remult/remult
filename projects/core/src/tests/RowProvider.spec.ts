@@ -358,14 +358,7 @@ describe("Closed List  column", () => {
   })
 });
 
-export function fColumn<T = any, colType = any>(settings?: FieldOptions<colType, T>) {
-  let c = Field(settings);
-  return (target, key) => {
-    debugger;
-    return c(target, key);
-  }
 
-}
 @ValueListFieldType(valueList)
 class valueList {
   static firstName = new valueList();
