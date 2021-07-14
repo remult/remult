@@ -11,7 +11,7 @@ import { Sort, SortSegment } from "../sort";
 
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, DecimalValueConverter, DefaultValueConverter, IntValueConverter, ValueListValueConverter } from "../../valueConverters";
+import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
 
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
@@ -1099,9 +1099,10 @@ export function DateOnlyField<entityType = any>(settings?: FieldOptions<Date, en
         , ...settings
     })
 }
-export function DecimalField<entityType = any>(settings?: FieldOptions<Number, entityType>) {
+export function IntegerField<entityType = any>(settings?: FieldOptions<Number, entityType>) {
     return Field({
-        valueConverter: DecimalValueConverter
+        dataType: Number,
+        valueConverter: IntegerValueConverter
         , ...settings
     })
 }
@@ -1182,7 +1183,7 @@ export function decorateColumnSettings<T>(settings: FieldOptions<T>) {
     if (settings.dataType == Number) {
         let x = settings as unknown as FieldOptions<Number>;
         if (!settings.valueConverter)
-            x.valueConverter = IntValueConverter;
+            x.valueConverter = NumberValueConverter;
     }
     if (settings.dataType == Date) {
         let x = settings as unknown as FieldOptions<Date>;

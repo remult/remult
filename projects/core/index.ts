@@ -28,7 +28,7 @@ export {
     ContainsFilterFactory,
     ValueListFieldType,
     DateOnlyField,
-    DecimalField,
+    IntegerField,
     CaptionTransformer
 } from './src/remult3';
 export { EntityOptions } from './src/entity';

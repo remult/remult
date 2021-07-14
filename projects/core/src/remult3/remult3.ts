@@ -17,7 +17,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## TODO
 [V] removing Input type from field (it exists in metadata)
 [V] add to fieldRef - isnull, to solve all the test if relation column has value
-[] default should be decimal number - should have IntegerField - for the case where you want Integer.
+[V] default should be decimal number - should have IntegerField - for the case where you want Integer.
 [] allow Api Update, will not accept true or false.
 [] prepare roles? everyone, authenticated and put them in a class called Roles
 [] rename the isSignedIn method to authenticated
@@ -46,6 +46,7 @@ SqlGateway - recieves and does something specific.
 ## review with yoni
 [] The solution I've found for find id. consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 [] talk about isNull and original value (I prefer a parameter instead of another method)
+[] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.

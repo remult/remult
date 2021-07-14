@@ -21,7 +21,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../da
 import { Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
 
@@ -125,7 +125,26 @@ describe("test object column stored as string", () => {
 });
 
 
+@Entity({ key: 'testNumbers' })
+class testNumbers extends EntityBase {
+  @IntegerField()
+  id: number;
+  @Field()
+  a: number;
+}
+describe("test numbers", () => {
+  itAsync("test that integer and int work", async () => {
+    await testAllDbs(async ({ context }) => {
+      let e = await context.for(testNumbers).create({
+        id: 1.5,
+        a: 1.5
+      }).save();
+      expect(e.id).toBe(2);
+      expect(e.a).toBe(1.5);
 
+    });
+  })
+});
 
 
 describe('Test basic row functionality', () => {
@@ -1610,7 +1629,7 @@ describe("column validation", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    Field({ dataType: Number })(type.prototype, "id");
+    IntegerField({ dataType: Number })(type.prototype, "id");
     Field()(type.prototype, "name");
     Field({ dataType: Date })(type.prototype, "c3");
 
@@ -1625,6 +1644,7 @@ describe("column validation", () => {
   });
 
 });
+
 describe("test web sql identity", () => {
   itAsync("play", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
@@ -1641,7 +1661,7 @@ describe("test web sql identity", () => {
       key: 't1',
       dbAutoIncrementId: true
     })(type);
-    Field({ dataType: Number })(type.prototype, "id");
+    IntegerField({ dataType: Number })(type.prototype, "id");
     Field()(type.prototype, "name");
 
 

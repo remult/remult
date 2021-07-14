@@ -47,7 +47,7 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
     var d = val as Date;
     if (!d)
       return '';
-    return new Date(val.valueOf() - val.getTimezoneOffset() * 60000).toISOString().substring(0,10)
+    return new Date(val.valueOf() - val.getTimezoneOffset() * 60000).toISOString().substring(0, 10)
   },
   fromJson: (value: string) => {
     if (!value || value == '' || value == '0000-00-00')
@@ -112,17 +112,17 @@ export const BoolValueConverter: ValueConverter<Boolean> = {
   toInput: x => BoolValueConverter.toJson(x)
 }
 
-export const IntValueConverter: ValueConverter<number> =
-{
 
+export const NumberValueConverter: ValueConverter<number> =
+{
   fromDb: value => {
     if (value !== undefined)
       return +value;
     return undefined;
   },
   toDb: value => value,
-  fromJson: value => IntValueConverter.fromDb(value),
-  toJson: value => IntValueConverter.toDb(value),
+  fromJson: value => NumberValueConverter.fromDb(value),
+  toJson: value => NumberValueConverter.toDb(value),
   fromInput: (x, type) => {
     let r = +x;
     if (!x)
@@ -134,16 +134,25 @@ export const IntValueConverter: ValueConverter<number> =
     return x?.toString();
   },
   inputType: InputTypes.number
+
 }
-export const DecimalValueConverter: ValueConverter<Number> =
+export const IntegerValueConverter: ValueConverter<number> =
 {
-  ...IntValueConverter,
-  fieldTypeInDb: 'decimal'
+  ...NumberValueConverter,
+  toJson: value => {
+    let val = NumberValueConverter.toDb(value);
+    if (!val)
+      return val;
+    return +(+val).toFixed(0);
+
+  },
+  toDb: value => IntegerValueConverter.toJson(value),
+  fieldTypeInDb: 'integer'
 }
 export const DefaultValueConverter: ValueConverter<any> = {
   fromJson: x => x,
   toJson: x => x,
-  fromDb: x => x==null?null: x  ? JSON.parse(DefaultValueConverter.fromJson(x)) : undefined,
+  fromDb: x => x == null ? null : x ? JSON.parse(DefaultValueConverter.fromJson(x)) : undefined,
   toDb: x => x != undefined ? JSON.stringify(DefaultValueConverter.toJson(x)) : undefined,
   fromInput: x => DefaultValueConverter.fromJson(x),
   toInput: x => DefaultValueConverter.toJson(x)

@@ -69,12 +69,10 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         else if (x.dataType == Boolean)
             result += " integer default 0 not null";
         else if (x.dataType == Number) {
-            if (x.valueConverter.fieldTypeInDb == "decimal")
+            if (!x.valueConverter.fieldTypeInDb)
                 result += ' real default 0 not null';
-            else if (!x.valueConverter.fieldTypeInDb)
-                result += " integer default 0 not null";
             else
-                x.valueConverter.fieldTypeInDb + ' default 0 not null';
+                result +=' '+ x.valueConverter.fieldTypeInDb + ' default 0 not null';
         }
         else
             result += " text" + (x.allowNull ? " " : " default '' not null ");

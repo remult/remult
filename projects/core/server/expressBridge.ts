@@ -1,6 +1,6 @@
 
 
-import { UserInfo, DataProvider, Context, DataProviderFactoryBuilder,  InMemoryDataProvider, IdEntity } from '../';
+import { UserInfo, DataProvider, Context, DataProviderFactoryBuilder, InMemoryDataProvider, IdEntity } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -9,8 +9,8 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Field, Entity, Repository, DecimalField } from '../src/remult3';
-import { DecimalValueConverter } from '../valueConverters';
+import { Field, Entity, Repository } from '../src/remult3';
+import { NumberValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
@@ -451,7 +451,7 @@ export class JobsInQueueEntity extends IdEntity {
   done: boolean;
   @Field()
   error: boolean;
-  @DecimalField()
+  @Field()
   progress: number;
 }
 

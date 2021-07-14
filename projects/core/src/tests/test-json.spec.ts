@@ -9,12 +9,12 @@ import { IdEntity } from '../id-entity';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
 import { Categories as newCategories } from './remult-3-entities';
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, IntegerField } from '../remult3';
 
 
 @Entity({ key: 'entityWithAutoId', dbAutoIncrementId: true })
 class entityWithAutoId extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number;
     @Field()
     name: string;

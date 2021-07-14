@@ -140,10 +140,10 @@ export class PostgresSchemaBuilder {
     private addColumnSqlSyntax(x: FieldMetadata) {
         let result = x.dbName;
         if (x.valueConverter.fieldTypeInDb) {
-            if (x.dataType == Number && x.valueConverter.fieldTypeInDb == "decimal")
+            if (x.dataType == Number && !x.valueConverter.fieldTypeInDb)
                 result += " numeric" + (x.allowNull ? "" : " default 0 not null");
             else
-                result += " " + x.valueConverter.fieldTypeInDb;
+                result += " " + x.valueConverter.fieldTypeInDb + (x.allowNull ? "" : " default 0 not null");
         }
         else if (x.dataType == Date)
             if (x.valueConverter == DateOnlyValueConverter)
