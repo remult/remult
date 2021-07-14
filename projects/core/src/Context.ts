@@ -176,10 +176,6 @@ export class Context {
         }
         if (typeof roles === 'boolean')
             return roles;
-
-        if (roles instanceof Role) {
-            roles = roles.key;
-        }
         if (!this.user)
             return false;
         if (typeof roles === 'string')
@@ -293,19 +289,10 @@ export interface UserInfo {
 }
 
 
-// @dynamic
-export class Role {
-    constructor(public key: string) {
 
-    }
-    static not(allowed: Allowed): Allowed {
-        return c => !c.isAllowed(allowed);
-    }
-}
+export declare type Allowed = string  | ((c: Context) => boolean) | boolean | Allowed[];
 
-export declare type Allowed = string | Role | ((c: Context) => boolean) | boolean | Allowed[];
-
-export declare type AllowedForInstance<T> = string | Role | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
+export declare type AllowedForInstance<T> = string  | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
 
 
 

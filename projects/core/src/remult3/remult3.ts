@@ -18,10 +18,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] removing Input type from field (it exists in metadata)
 [V] add to fieldRef - isnull, to solve all the test if relation column has value
 [V] default should be decimal number - should have IntegerField - for the case where you want Integer.
-[] allow Api Update, will not accept true or false.
-[] prepare roles? everyone, authenticated and put them in a class called Roles
-[] rename the isSignedIn method to authenticated
-[] remove Role class.
+
+
+[V] remove Role class.
 [] create axios sample with jwt
 [] all generics should get entity and then value type.
 [] make where awaitable
@@ -29,6 +28,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] change data type to value type
 [] talk about $.find('name') vs $['name'] - support also key
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
+[] rename the isSignedIn method to authenticated
 
 translateCustomFilter{
 
@@ -47,6 +47,13 @@ SqlGateway - recieves and does something specific.
 [] The solution I've found for find id. consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
 [] talk about isNull and original value (I prefer a parameter instead of another method)
 [] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
+[] allow Api Update, will not accept true or false. -
+     I dont agree, there are many cases where the default is true or false and it doesn't make sense to not allow setting that value.
+     consider the cases where it's allowApiUpdate of a field, or includeInApi etc.....
+[] prepare roles? everyone, authenticated and put them in a class called Roles
+    I'm not sure I like the word roles here - imagine:
+    AllowApiUpdate = Roles.authenticated
+    not sure it's cool enough 
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
