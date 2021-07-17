@@ -21,7 +21,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 [V] remove Role class.
-[V] change data type to value type
+[] change data type to value type
 [V] talk about $.find('name') vs $['name'] - support also key
 [V] all generics should get entity and then value type.
 [] create axios sample with jwt

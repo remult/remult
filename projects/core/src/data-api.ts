@@ -2,7 +2,7 @@ import { EntityOptions } from './entity';
 import { AndFilter } from './filter/filter-interfaces';
 import { Context, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import {  FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
+import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -53,6 +53,7 @@ export class DataApi<T = any> {
               if (this.repository.metadata.idMetadata.isIdField(col))
                 hasId = true;
             },
+            custom: () => { },
             isGreaterOrEqualTo: () => { },
             isGreaterThan: () => { },
             isIn: () => { },
@@ -139,7 +140,7 @@ export class DataApi<T = any> {
       response.success(this.repository.getEntityRef(row).toApiJson());
     });
   }
-   _getApiSettings(): DataApiSettings<T> {
+  _getApiSettings(): DataApiSettings<T> {
 
     let options = this.repository.metadata.options;
     if (options.allowApiCrud !== undefined) {

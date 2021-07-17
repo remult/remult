@@ -82,7 +82,6 @@ export {
     EventSource,
     HttpProvider,
     IterateToArrayOptions,
-    Role,
     Unobserve,
     UserInfo
 } from './src/context';

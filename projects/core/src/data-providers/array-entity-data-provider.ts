@@ -151,6 +151,9 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
     ok = true;
     constructor(private row: any) { }
+    custom(customItem: any): void {
+        throw new Error('Custom Filter should be translated before it gets here');
+    }
     or(orElements: Filter[]) {
         for (const element of orElements) {
             let filter = new FilterConsumerBridgeToObject(this.row);

@@ -87,6 +87,7 @@ function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: Ent
 
   if (w) {
     w.__applyToConsumer({
+      custom: () => { },
       containsCaseInsensitive: () => { },
       isDifferentFrom: () => { },
       isEqualTo: (col, val) => {

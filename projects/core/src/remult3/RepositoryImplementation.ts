@@ -5,7 +5,7 @@ import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FilterFactory, FieldRef, Fields, EntityWhere, FilterFactories, FindOptions, Repository, SortSegments, ComparisonFilterFactory, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, ContainsFilterFactory, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Allowed, Context, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
-import { AndFilter, Filter, OrFilter } from "../filter/filter-interfaces";
+import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort, SortSegment } from "../sort";
 
 
@@ -365,7 +365,60 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private translateWhereToFilter(where: EntityWhere<entityType>): Filter {
         if (this.metadata.options.fixedFilter)
             where = [where, this.metadata.options.fixedFilter];
-        return Filter.translateWhereToFilter(Filter.createFilterFactories(this.metadata), where);
+        let filterFactories = Filter.createFilterFactories(this.metadata)
+        let r = Filter.translateWhereToFilter(filterFactories, where);
+        if (r && !this.dataProvider.supportsCustomFilter) {
+            let f = r;
+            r = new Filter(add => {
+                f.__applyToConsumer(new customTranslator(add, custom => {
+                    return this.metadata.options.customFilterTranslator.translateFilter(filterFactories, custom);
+                }))
+            });
+        }
+        return r;
+    }
+
+}
+class customTranslator implements FilterConsumer {
+    constructor(private orig: FilterConsumer, private translateCustom: (custom: any) => Filter) { }
+    or(orElements: Filter[]) {
+        this.orig.or(orElements.map(o => new Filter(add => o.__applyToConsumer(new customTranslator(add, this.translateCustom)))));
+    }
+    isEqualTo(col: FieldMetadata<any>, val: any): void {
+        this.orig.isEqualTo(col, val);
+    }
+    isDifferentFrom(col: FieldMetadata<any>, val: any): void {
+        this.orig.isDifferentFrom(col, val);
+    }
+    isNull(col: FieldMetadata<any>): void {
+        this.orig.isNull(col);
+    }
+    isNotNull(col: FieldMetadata<any>): void {
+        this.orig.isNotNull(col);
+    }
+    isGreaterOrEqualTo(col: FieldMetadata<any>, val: any): void {
+        this.orig.isGreaterOrEqualTo(col, val);
+    }
+    isGreaterThan(col: FieldMetadata<any>, val: any): void {
+        this.orig.isGreaterThan(col, val);
+    }
+    isLessOrEqualTo(col: FieldMetadata<any>, val: any): void {
+        this.orig.isLessOrEqualTo(col, val);
+    }
+    isLessThan(col: FieldMetadata<any>, val: any): void {
+        this.orig.isLessThan(col, val);
+    }
+    containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
+        this.orig.containsCaseInsensitive(col, val);
+    }
+    startsWith(col: FieldMetadata<any>, val: any): void {
+        this.orig.startsWith(col, val);
+    }
+    isIn(col: FieldMetadata<any>, val: any[]): void {
+        this.orig.isIn(col, val);
+    }
+    custom(customItem: any): void {
+        this.translateCustom(customItem)?.__applyToConsumer(this);
     }
 
 }
@@ -375,6 +428,7 @@ export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, whe
 
     if (w) {
         w.__applyToConsumer({
+            custom: () => { },
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {

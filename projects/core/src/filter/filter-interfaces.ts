@@ -71,7 +71,7 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
                 return null;
             if (typeof val === "string" || typeof val === "number")
                 return val;
-            return  getEntityRef(val).getId();
+            return getEntityRef(val).getId();
         }
         return val;
     }
@@ -133,6 +133,7 @@ export interface FilterConsumer {
     containsCaseInsensitive(col: FieldMetadata, val: any): void;
     startsWith(col: FieldMetadata, val: any): void;
     isIn(col: FieldMetadata, val: any[]): void;
+    custom(customItem: any): void;
 }
 
 
@@ -167,6 +168,9 @@ export class FilterSerializer implements FilterConsumer {
     result: any = {};
     constructor() {
 
+    }
+    custom(customItem: any): void {
+        this.add("_$custom", customItem);
     }
     hasUndefined = false;
     add(key: string, val: any) {
@@ -318,4 +322,13 @@ export function packToRawWhere(w: Filter) {
     if (w)
         w.__applyToConsumer(r);
     return r.result;
+}
+
+export class CustomFilterBuilder<entityType, customFilterObject> {
+    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject) => Filter) {
+
+    }
+    build(custom: customFilterObject): Filter {
+        return new Filter(x => x.custom(custom));
+    }
 }

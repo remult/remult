@@ -5,6 +5,9 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   where = "";
   private _addWhere = true;
   constructor(private r: SqlCommand) { }
+  custom(customItem: any): void {
+    throw new Error("Custom filter should be translated before it gets here");
+  }
   or(orElements: Filter[]) {
     let statement = '';
     for (const element of orElements) {

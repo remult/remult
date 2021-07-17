@@ -8,7 +8,7 @@ import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './test
 
 import { Status } from './testModel/models';
 
-import { Context, Role, Allowed, ServerContext } from '../context';
+import { Context, Allowed, ServerContext } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider } from '../data-interfaces';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
@@ -2018,9 +2018,9 @@ describe("check allowedDataType", () => {
   let strA = 'roleA',
     strB = 'roleB',
     strC = 'roleC';
-  let roleA = new Role(strA);
-  let roleB = new Role(strB);
-  let roleC = new Role(strC);
+  let roleA = (strA);
+  let roleB = (strB);
+  let roleC = (strC);
   beforeAll(async (done) => {
 
     await c.setUser({ id: 'x', name: 'y', roles: [strA, strB] }
