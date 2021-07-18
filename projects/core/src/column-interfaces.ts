@@ -35,7 +35,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
 export interface FieldMetadata<valueType = any> {
     readonly key: string;
     readonly target: ClassType<valueType>;
-    readonly dataType: any;
+    readonly valueType: any;
 
     readonly caption: string;
     readonly inputType: string;

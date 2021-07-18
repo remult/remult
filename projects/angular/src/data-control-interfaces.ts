@@ -71,8 +71,8 @@ export function decorateDataSettings(colInput: FieldMetadata | FieldRef<any, any
             }
         }
     }
-    if (col.dataType) {
-        let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.dataType);
+    if (col.valueType) {
+        let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.valueType);
         if (settingsOnColumnLevel) {
             for (const key in settingsOnColumnLevel) {
                 if (Object.prototype.hasOwnProperty.call(settingsOnColumnLevel, key)) {

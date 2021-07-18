@@ -54,7 +54,7 @@ export class CompoundIdField implements FieldMetadata<string> {
   inputType: string;
   dbName: string;
 
-  dataType: any
+  valueType: any
   isEqualTo(value: FieldMetadata<string> | string): Filter {
     return new Filter(add => {
       let val = value.toString();
@@ -92,7 +92,7 @@ export class CompoundIdField implements FieldMetadata<string> {
 
 export class LookupColumn<T> {
   setId(val: any) {
-    if (this.repository.metadata.idMetadata.field.dataType == Number)
+    if (this.repository.metadata.idMetadata.field.valueType == Number)
       val = +val;
     this.id = val;
   }

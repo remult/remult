@@ -21,7 +21,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 [V] remove Role class.
-[] change data type to value type
+[V] change data type to value type
 [V] talk about $.find('name') vs $['name'] - support also key
 [V] all generics should get entity and then value type.
 [] create axios sample with jwt
@@ -44,7 +44,7 @@ SqlGateway - recieves and does something specific.
 
 
 ## review with yoni
-[] The solution I've found for find id. consider the previous functionalty of being aware of the id column type of the entity, to allow a short id lookup
+[] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
 [] talk about isNull and original value (I prefer a parameter instead of another method)
 [] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
 [] allow Api Update, will not accept true or false. -

@@ -64,11 +64,11 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
 
     private addColumnSqlSyntax(x: FieldMetadata) {
         let result = x.dbName;
-        if (x.dataType == Date)
+        if (x.valueType == Date)
             result += " integer";
-        else if (x.dataType == Boolean)
+        else if (x.valueType == Boolean)
             result += " integer default 0 not null";
-        else if (x.dataType == Number) {
+        else if (x.valueType == Number) {
             if (!x.valueConverter.fieldTypeInDb)
                 result += ' real default 0 not null';
             else

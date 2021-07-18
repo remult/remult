@@ -270,7 +270,7 @@ export class FieldCollection<rowType = any> {
 
       if (defs) {
         for (const c of defs.fields) {
-          if (!(c.key == 'id' && c.dataType === String))
+          if (!(c.key == 'id' && c.valueType === String))
             this.add(c);
         }
       }
@@ -383,7 +383,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
       caption: settings.caption,
       options: this.options,
       valueConverter: valueConverter,
-      dataType: settings.valueType,
+      valueType: settings.valueType,
       key: settings.key,
       dbName: settings.dbName,
       dbReadOnly: false,
@@ -405,7 +405,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
   metadata: {
     readonly key: string;
     readonly target: ClassType<valueType>;
-    readonly dataType: any;
+    readonly valueType: any;
 
     caption: string;
     readonly inputType: string;

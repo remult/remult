@@ -344,10 +344,10 @@ describe("Closed List  column", () => {
       .for(entityWithValueList);
     let e = c.create();
     e.id = 1;
-    expect(c.metadata.fields.v.dataType).toBe(valueList);
+    expect(c.metadata.fields.v.valueType).toBe(valueList);
     expect(c.metadata.fields.v.valueConverter.fromJson('listName'))
       .toBe(valueList.listName);
-    expect(c.metadata.fields.id.dataType).toBe(Number);
+    expect(c.metadata.fields.id.valueType).toBe(Number);
     expect(e.v).toBe(valueList.firstName);
 
     e.v = valueList.listName;
@@ -1543,7 +1543,7 @@ class mockColumnDefs implements FieldMetadata {
   readonly inputType: string;
 
 
-  readonly dataType: any;
+  readonly valueType: any;
   readonly allowNull: boolean;
   readonly dbType: string;
 }

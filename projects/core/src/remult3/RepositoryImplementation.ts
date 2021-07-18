@@ -1,12 +1,12 @@
 
-import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
+import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FilterFactory, FieldRef, Fields, EntityWhere, FilterFactories, FindOptions, Repository, SortSegments, ComparisonFilterFactory, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, ContainsFilterFactory, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityWhere, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Allowed, Context, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
+import { allEntities, Context, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
-import { Sort, SortSegment } from "../sort";
+import { Sort } from "../sort";
 
 
 import { entityEventListener } from "../__EntityValueProvider";
@@ -1061,7 +1061,7 @@ export class columnDefsImpl implements FieldMetadata {
         return this.colInfo.settings.dbReadOnly || this.dbName != this.colInfo.settings.dbName
     };
     isServerExpression: boolean;
-    dataType = this.colInfo.settings.valueType;
+    valueType = this.colInfo.settings.valueType;
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
 

@@ -65,7 +65,7 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
 
     }
     processVal(val: any) {
-        let ei = getEntitySettings(this.col.dataType, false);
+        let ei = getEntitySettings(this.col.valueType, false);
         if (ei) {
             if (!val)
                 return null;

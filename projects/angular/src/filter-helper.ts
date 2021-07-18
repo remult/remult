@@ -38,9 +38,9 @@ export class FilterHelper<rowType> {
       let w: EntityWhere<rowType> = item => {
         let itemForFilter: ComparisonFilterFactory<any> & ContainsFilterFactory<any> = item[c.key];
         let f: Filter = itemForFilter.isEqualTo(val);
-        if (c.dataType == String && !this.forceEqual.find(x => c.key == x.key))
+        if (c.valueType == String && !this.forceEqual.find(x => c.key == x.key))
           f = itemForFilter.contains(val);
-        else if (c.dataType == Date) {
+        else if (c.valueType == Date) {
           if (val) {
             let v = <Date>val;
             v = new Date(v.getFullYear(), v.getMonth(), v.getDate());

@@ -140,19 +140,19 @@ export class PostgresSchemaBuilder {
     private addColumnSqlSyntax(x: FieldMetadata) {
         let result = x.dbName;
         if (x.valueConverter.fieldTypeInDb) {
-            if (x.dataType == Number && !x.valueConverter.fieldTypeInDb)
+            if (x.valueType == Number && !x.valueConverter.fieldTypeInDb)
                 result += " numeric" + (x.allowNull ? "" : " default 0 not null");
             else
                 result += " " + x.valueConverter.fieldTypeInDb + (x.allowNull ? "" : " default 0 not null");
         }
-        else if (x.dataType == Date)
+        else if (x.valueType == Date)
             if (x.valueConverter == DateOnlyValueConverter)
                 result += " date";
             else
                 result += " timestamp";
-        else if (x.dataType == Boolean)
+        else if (x.valueType == Boolean)
             result += " boolean" + (x.allowNull ? "" : " default false not null");
-        else if (x.dataType == Number) {
+        else if (x.valueType == Number) {
             result += " int" + (x.allowNull ? "" : " default 0 not null");
         }
         //  else if (x instanceof ValueListColumn) {
