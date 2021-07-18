@@ -75,6 +75,7 @@ export {
 
 export {
     Allowed,
+    Allow,
     Context,
     DataProviderFactoryBuilder,
     AllowedForInstance,

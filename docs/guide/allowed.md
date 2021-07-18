@@ -18,7 +18,7 @@ The `Allowed` data type can be set to one of the following value:
 
 * A function that get's a `context` object as a parameter and returns true or false
 ```ts
-{ allowApiRead: c => c.isSignedIn() } }
+{ allowApiRead: Allow.authenticated } }
 ```
 or:
 ```ts

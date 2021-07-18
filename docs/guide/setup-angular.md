@@ -643,13 +643,13 @@ Remult provides a flexible mechanism which enables placing **code-based authoriz
 User authentication remains outside the scope of Remult. In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
 
 ### Tasks CRUD operations require sign in
-This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Context` object and returns the result of the context's `isSignedIn` method.
+This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Context` object and returns the result of the context's `authenticated` method.
 
 *src/app/task.ts*
 ```ts{3}
 @Entity({
     key: "tasks",
-    allowApiCrud: context => context.isSignedIn()
+    allowApiCrud: Allow.authenticated
 })
 ```
 
@@ -668,7 +668,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 
 *src/app/app.component.ts*
 ```ts
-@BackendMethod({ allowed: context => context.isSignedIn() })
+@BackendMethod({ allowed: Allow.authenticated })
 ```
 :::
 ### User authentication
@@ -785,12 +785,12 @@ In this section, we'll be using the following packages:
    *src/app/app.component.html*
    ```html
    <p>
-      <ng-container *ngIf="!context.isSignedIn()">
+      <ng-container *ngIf="!context.authenticated()">
          <input [(ngModel)]="username"> 
          <button (click)="signIn()">Sign in</button>
       </ng-container>
 
-      <ng-container *ngIf="context.isSignedIn()">
+      <ng-container *ngIf="context.authenticated()">
          Hi {{context.user.name}}
          <button (click)="signOut()">Sign out</button>
       </ng-container>
@@ -810,7 +810,7 @@ In this section, we'll be using the following packages:
 
 The todo app now supports signing in and out, with all access restricted to signed in users only.
 
-As there is no point in displaying anything but the sign in area to users who haven't signed in yet, we can move the rest of the template elements into the second `ng-container`, conditioned by `*ngIf="context.isSignedIn()"`.
+As there is no point in displaying anything but the sign in area to users who haven't signed in yet, we can move the rest of the template elements into the second `ng-container`, conditioned by `*ngIf="context.authenticated()"`.
 
 ### Role-based authorization
 Usually, not all application users have the same privileges. Let's define an `admin` role for our todo list, and enforce the following authorization rules:
@@ -838,8 +838,8 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
    @Entity({
       key: "tasks",
-      allowApiRead: context => context.isSignedIn(),
-      allowApiUpdate: context => context.isSignedIn(),
+      allowApiRead: Allow.authenticated,
+      allowApiUpdate: Allow.authenticated,
       allowApiInsert: Roles.admin,
       allowApiDelete: Roles.admin
    })
@@ -903,8 +903,8 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
    ```ts{1,7-11,14-16}
    @Entity<Task>({
       key: "tasks",
-      allowApiRead: context => context.isSignedIn(),
-      allowApiUpdate: context => context.isSignedIn(),
+      allowApiRead: Allow.authenticated,
+      allowApiUpdate: Allow.authenticated,
       allowApiInsert: Roles.admin,
       allowApiDelete: Roles.admin,
       saving: task => {

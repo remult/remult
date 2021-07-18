@@ -80,7 +80,7 @@ export class Context {
         this.repCache.clear();
     }
 
-    isSignedIn() {
+    authenticated() {
         return this.user.id !== undefined;
     }
     constructor(http?: HttpProvider) {
@@ -106,7 +106,7 @@ export class Context {
     getPathInUrl() {
         if (this.req)
             return this.req.getBaseUrl();
-        if (!this.backend||typeof (window) != "undefined")
+        if (!this.backend || typeof (window) != "undefined")
             return window.location.pathname;
         return undefined;
 
@@ -290,9 +290,13 @@ export interface UserInfo {
 
 
 
-export declare type Allowed = string  | ((c: Context) => boolean) | boolean | Allowed[];
+export declare type Allowed = string | ((c: Context) => boolean) | boolean | Allowed[];
 
-export declare type AllowedForInstance<T> = string  | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
+export declare type AllowedForInstance<T> = string | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
+export class Allow {
+    everyone = () => true;
+    authenticated = (context: Context) => context.authenticated();
+}
 
 
 

@@ -1455,7 +1455,7 @@ describe("relation", () => {
 describe("context", () => {
   it("what", () => {
     var c = new Context();
-    expect(c.isSignedIn()).toBe(false);
+    expect(c.authenticated()).toBe(false);
     expect(c.user.id).toBe(undefined);
     expect(c.user.name).toBe("");
     expect(c.user.roles.length).toBe(0);
@@ -1464,16 +1464,14 @@ describe("context", () => {
       name: 'name',
       roles: ["a"]
     });
-    expect(c.isSignedIn()).toBe(true);
+    expect(c.authenticated()).toBe(true); 
     c.setUser(undefined);
-    expect(c.isSignedIn()).toBe(false);
+    expect(c.authenticated()).toBe(false);
     expect(c.user.id).toBe(undefined);
     expect(c.user.name).toBe("");
     expect(c.user.roles.length).toBe(0);
 
   });
-
-
 });
 describe("test grid basics", () => {
   itAsync("basically works", async () => {

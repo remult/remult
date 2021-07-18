@@ -43,7 +43,7 @@ export interface EntityOptions<entityType = any> {
   /** A filter that determines which rows can be queries using the api.
    * @example
    * apiDataFilter: () => {
-   *   if (!context.isSignedIn())
+   *   if (!context.authenticated())
    *      return this.availableTo.isGreaterOrEqualTo(new Date());
    *   }
   */

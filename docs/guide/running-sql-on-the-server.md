@@ -5,7 +5,7 @@ We can do that using the `@BackendMethod`
 
 To do that we need to add an optional parameter for the `@BackendMethod` of type `SqlDatabase`
 ```ts{5-9}
-@BackendMethod({ allowed: c => c.isSignedIn() })
+@BackendMethod({ allowed: authenticated })
 static async updatePriceOnBackend(
   priceToUpdate: number,
   context?: Context,

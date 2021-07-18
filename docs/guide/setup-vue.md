@@ -867,11 +867,11 @@ Now that the users are configured correctly, let's display them in the navigatio
     <nav>
       <router-link to="/users">User List</router-link>
       | <router-link to="/add-user">Add User</router-link> 
-      | <router-link to="/sign-in" v-if="!context.isSignedIn()">
+      | <router-link to="/sign-in" v-if="!context.authenticated()">
         Sign In
       </router-link>
-      <span v-if="context.isSignedIn()"> Hello {{ context.user.name }} </span>
-      <button v-if="context.isSignedIn()" v-on:click="signOut">Sign Out</button>
+      <span v-if="context.authenticated()"> Hello {{ context.user.name }} </span>
+      <button v-if="context.authenticated()" v-on:click="signOut">Sign Out</button>
     </nav>
     <div>
       <router-view />
@@ -930,8 +930,8 @@ export class Users extends IdEntity {
               if (this.isNew())
                   this.createdDate.value = new Date()
           },
-          allowApiCRUD: context => context.isSignedIn(),
-          allowApiRead: context => context.isSignedIn()
+          allowApiCRUD: Allow.authenticated,
+          allowApiRead: Allow.authenticated
       })
   }
 ```
@@ -974,7 +974,7 @@ export class Users extends IdEntity {
                     this.createdDate.value = new Date()
             },
             allowApiCRUD: Roles.canUpdateUsers,
-            allowApiRead: context => context.isSignedIn()
+            allowApiRead: Allow.authenticated
         })
     }
     @ServerFunction({ allowed: true })
@@ -1076,7 +1076,7 @@ import { Users } from '../users/users';
 import { Context, ServerController, ServerMethod, StringColumn } from "@remult/core";
 
 @ServerController({
-    allowed:context=>context.isSignedIn(),
+    allowed:Allow.authenticated,
     key:'updatePassword'
 })
 export class UpdatePasswordController {
@@ -1194,14 +1194,14 @@ const router = new VueRouter({
     <nav>
       <router-link to="/users">User List</router-link>
       | <router-link to="/add-user">Add User</router-link> 
-      | <router-link to="/sign-in" v-if="!context.isSignedIn()">
+      | <router-link to="/sign-in" v-if="!context.authenticated()">
         Sign In
       </router-link>
-      <span v-if="context.isSignedIn()"> Hello {{ context.user.name }} </span>
-      | <router-link to="/update-password" v-if="context.isSignedIn()"> 
+      <span v-if="context.authenticated()"> Hello {{ context.user.name }} </span>
+      | <router-link to="/update-password" v-if="context.authenticated()"> 
           Update Password
         </router-link> |
-      <button v-if="context.isSignedIn()" v-on:click="signOut">Sign Out</button>
+      <button v-if="context.authenticated()" v-on:click="signOut">Sign Out</button>
     </nav>
     <div>
       <router-view />

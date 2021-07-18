@@ -53,7 +53,7 @@ You can control which user is allowed to see which part of the api and `Entity` 
 @Entity({
     key: 'Products',
     allowApiCrud: Roles.admin,
-    allowApiRead: context => context.isSignedIn()
+    allowApiRead: Allow.authenticated
 })
 export class Products extends IdEntity {
     @Field({
@@ -61,7 +61,7 @@ export class Products extends IdEntity {
     })
     name: string;
     @Field({
-        includeInApi: context => context.isSignedIn()
+        includeInApi: Allow.authenticated
     })
     price: number = 0;
     @DateOnlyField()

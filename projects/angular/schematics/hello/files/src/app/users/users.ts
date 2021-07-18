@@ -7,9 +7,9 @@ import { InputTypes } from "@remult/core/inputTypes";
 
 @Entity<Users>({
     key: "Users",
-    allowApiRead: context => context.isSignedIn(),
+    allowApiRead: context => context.authenticated(),
     allowApiDelete: Roles.admin,
-    allowApiUpdate: context => context.isSignedIn(),
+    allowApiUpdate: context => context.authenticated(),
     allowApiInsert: Roles.admin,
     apiDataFilter: (user, context) => {
         if (!(context.isAllowed(Roles.admin)))
@@ -60,7 +60,7 @@ export class Users extends IdEntity {
         await this.hashAndSetPassword(password);
         await this._.save();
     }
-    @BackendMethod({ allowed: context => context.isSignedIn() })
+    @BackendMethod({ allowed: context => context.authenticated() })
     async updatePassword(password: string) {
         if (this._.isNew() || this.id != this.context.user.id)
             throw "Invalid Operation";

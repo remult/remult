@@ -27,7 +27,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] create axios sample with jwt
 [] make where awaitable
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
-[] rename the isSignedIn method to authenticated
+[V] rename the isSignedIn method to authenticated
 [] reconsider the custom filter with the FD
 
 translateCustomFilter{

@@ -49,7 +49,7 @@ export class SignedInGuard implements CanActivate {
     static componentToNavigateIfNotAllowed:AngularComponent;
     
     canActivate(route: ActivatedRouteSnapshot) {
-        if (this.context.isSignedIn()&&this.context.isAllowed(this.isAllowed())) {
+        if (this.context.authenticated()&&this.context.isAllowed(this.isAllowed())) {
             return true;
         }
         
@@ -71,7 +71,7 @@ export class NotSignedInGuard implements CanActivate {
     }
     canActivate(route: ActivatedRouteSnapshot) {
 
-        if (this.context.isSignedIn())
+        if (this.context.authenticated())
             return false;
         return true;
 
