@@ -3,7 +3,7 @@
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
 
 import { UrlBuilder } from '../../urlBuilder';
-import { Filter, packToRawWhere } from '../filter/filter-interfaces';
+import { customUrlToken, Filter, packToRawWhere } from '../filter/filter-interfaces';
 import { EntityMetadata } from '../remult3';
 
 
@@ -17,6 +17,8 @@ export class RestDataProvider implements DataProvider {
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
   }
+  supportsCustomFilter = true;
+
 }
 class RestEntityDataProvider implements EntityDataProvider {
 
@@ -103,7 +105,7 @@ class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public insert(data: any): Promise<any> {
-    return this.http.post(this.url, this.translateToJson( data)).then(y => this.translateFromJson(y));
+    return this.http.post(this.url, this.translateToJson(data)).then(y => this.translateFromJson(y));
   }
 }
 function JsonContent(add: (name: string, value: string) => void) {
@@ -210,11 +212,15 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
       if (Array.isArray(element)) {
         if (key.endsWith("_in"))
           url.add(key, JSON.stringify(element));
+
         else
           element.forEach(e => url.add(key, e));
       }
       else
-        url.add(key, element);
+        if (key==customUrlToken)
+          url.add(key, JSON.stringify(element));
+        else
+          url.add(key, element);
     }
   }
   return true;

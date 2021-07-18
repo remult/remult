@@ -3,7 +3,7 @@ import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from 
 import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
 import { CompoundIdField } from "../column";
 
-import { FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
+import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
 import { EntityMetadata } from "../remult3";
@@ -53,6 +53,11 @@ export class SqlDatabase implements DataProvider {
       }
     });
   }
+  static customFilter(build: CustomSqlFilterBuilderFunction) {
+    return new Filter(x => x.databaseCustom({
+      buildSql: build
+    } as CustomSqlFilterObject));
+  }
   public static LogToConsole = false;
   public static durationThreshold = 0;
   constructor(private sql: SqlImplementation) {
@@ -60,6 +65,7 @@ export class SqlDatabase implements DataProvider {
   }
   private createdEntities: string[] = [];
 }
+
 
 
 

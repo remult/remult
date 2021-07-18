@@ -420,6 +420,7 @@ class customTranslator implements FilterConsumer {
     custom(customItem: any): void {
         this.translateCustom(customItem)?.__applyToConsumer(this);
     }
+    databaseCustom(custom: any) { this.orig.databaseCustom(custom) };
 
 }
 
@@ -429,6 +430,7 @@ export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, whe
     if (w) {
         w.__applyToConsumer({
             custom: () => { },
+            databaseCustom: () => { },
             containsCaseInsensitive: () => { },
             isDifferentFrom: () => { },
             isEqualTo: (col, val) => {

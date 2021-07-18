@@ -61,11 +61,12 @@ export class Filter {
 
 }
 export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory<any>, ContainsFilterFactory<any>  {
-    constructor(private col: FieldMetadata) {
+    constructor(public metadata: FieldMetadata) {
 
     }
+    
     processVal(val: any) {
-        let ei = getEntitySettings(this.col.valueType, false);
+        let ei = getEntitySettings(this.metadata.valueType, false);
         if (ei) {
             if (!val)
                 return null;
@@ -76,47 +77,47 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
         return val;
     }
     startsWith(val: any): Filter {
-        return new Filter(add => add.startsWith(this.col, val));
+        return new Filter(add => add.startsWith(this.metadata, val));
     }
 
     contains(val: string): Filter {
-        return new Filter(add => add.containsCaseInsensitive(this.col, val));
+        return new Filter(add => add.containsCaseInsensitive(this.metadata, val));
 
     }
     isLessThan(val: any): Filter {
-        return new Filter(add => add.isLessThan(this.col, val));
+        return new Filter(add => add.isLessThan(this.metadata, val));
     }
     isGreaterOrEqualTo(val: any): Filter {
-        return new Filter(add => add.isGreaterOrEqualTo(this.col, val));
+        return new Filter(add => add.isGreaterOrEqualTo(this.metadata, val));
     }
     isNotIn(values: any[]): Filter {
         return new Filter(add => {
             for (const v of values) {
-                add.isDifferentFrom(this.col, v);
+                add.isDifferentFrom(this.metadata, v);
             }
         });
     }
     isDifferentFrom(val: any) {
         val = this.processVal(val);
-        if (val === null && this.col.allowNull)
-            return new Filter(add => add.isNotNull(this.col));
-        return new Filter(add => add.isDifferentFrom(this.col, val));
+        if (val === null && this.metadata.allowNull)
+            return new Filter(add => add.isNotNull(this.metadata));
+        return new Filter(add => add.isDifferentFrom(this.metadata, val));
     }
     isLessOrEqualTo(val: any): Filter {
-        return new Filter(add => add.isLessOrEqualTo(this.col, val));
+        return new Filter(add => add.isLessOrEqualTo(this.metadata, val));
     }
     isGreaterThan(val: any): Filter {
-        return new Filter(add => add.isGreaterThan(this.col, val));
+        return new Filter(add => add.isGreaterThan(this.metadata, val));
     }
     isEqualTo(val: any): Filter {
         val = this.processVal(val);
-        if (val === null && this.col.allowNull)
-            return new Filter(add => add.isNull(this.col));
-        return new Filter(add => add.isEqualTo(this.col, val));
+        if (val === null && this.metadata.allowNull)
+            return new Filter(add => add.isNull(this.metadata));
+        return new Filter(add => add.isEqualTo(this.metadata, val));
     }
     isIn(val: any[]): Filter {
         val = val.map(x => this.processVal(x));
-        return new Filter(add => add.isIn(this.col, val));
+        return new Filter(add => add.isIn(this.metadata, val));
     }
 
 }
@@ -134,6 +135,7 @@ export interface FilterConsumer {
     startsWith(col: FieldMetadata, val: any): void;
     isIn(col: FieldMetadata, val: any[]): void;
     custom(customItem: any): void;
+    databaseCustom(databaseCustom: any): void;
 }
 
 
@@ -163,14 +165,17 @@ export class OrFilter extends Filter {
 }
 
 
-
+export const customUrlToken = "_$custom";
 export class FilterSerializer implements FilterConsumer {
     result: any = {};
     constructor() {
 
     }
+    databaseCustom(databaseCustom: any): void {
+        throw new Error("database custom is not allowed with rest calls.");
+    }
     custom(customItem: any): void {
-        this.add("_$custom", customItem);
+        this.add(customUrlToken, customItem);
     }
     hasUndefined = false;
     add(key: string, val: any) {
@@ -244,7 +249,8 @@ export function unpackWhere(columns: FieldMetadata[], packed: any) {
 export function extractWhere(columns: FieldMetadata[], filterInfo: {
     get: (key: string) => any;
 }) {
-    let where: Filter = undefined;
+    let where: Filter[] = [];
+
     columns.forEach(col => {
         function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false, asString = false) {
             let val = filterInfo.get(col.key + operation);
@@ -263,10 +269,7 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
                     }
                     let f = theFilter(theVal);
                     if (f) {
-                        if (where)
-                            where = new AndFilter(where, f);
-                        else
-                            where = f;
+                        where.push(f);
                     }
                 };
                 if (!jsonArray && val instanceof Array) {
@@ -309,11 +312,14 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
     });
     let val = filterInfo.get('OR');
     if (val)
-        where = new AndFilter(where, new OrFilter(...val.map(x =>
+        where.push(new OrFilter(...val.map(x =>
             unpackWhere(columns, x)
 
-        )))
-    return where;
+        )));
+    let custom = filterInfo.get(customUrlToken);
+    if (custom !== undefined)
+        where.push(new Filter(x => x.custom(custom)));
+    return new AndFilter(...where);
 }
 
 

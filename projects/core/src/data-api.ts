@@ -1,5 +1,5 @@
 import { EntityOptions } from './entity';
-import { AndFilter } from './filter/filter-interfaces';
+import { AndFilter, customUrlToken } from './filter/filter-interfaces';
 import { Context, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
@@ -54,6 +54,7 @@ export class DataApi<T = any> {
                 hasId = true;
             },
             custom: () => { },
+            databaseCustom: () => { },
             isGreaterOrEqualTo: () => { },
             isGreaterThan: () => { },
             isIn: () => { },
@@ -99,7 +100,14 @@ export class DataApi<T = any> {
     if (this.options && this.options.get && this.options.get.where)
       where = Filter.translateWhereToFilter(entity, this.options.get.where);
     if (request) {
-      where = new AndFilter(where, Filter.extractWhere(this.repository.metadata, request));
+      where = new AndFilter(where, Filter.extractWhere(this.repository.metadata, {
+        get: key => {
+          let result = request.get(key);
+          if (key == customUrlToken && result)
+            return JSON.parse(result);
+          return result;
+        }
+      }));
     }
     if (filterBody)
       where = new AndFilter(where, Filter.unpackWhere(this.repository.metadata, filterBody))

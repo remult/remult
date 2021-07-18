@@ -56,6 +56,7 @@ SqlGateway - recieves and does something specific.
     not sure it's cool enough 
 [] restricted id to be number or string
 [] field container type vs entity type vs target
+[] consider more parameters to entity where, since there is no way to get to the column key or name etc... from a where statement
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
@@ -275,8 +276,6 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
      * })
     */
     page?: number;
-    __customFindData?: any;
-
 }
 /** Determines the order of rows returned by the query.
  * @example
@@ -303,6 +302,7 @@ export interface FilterFactory<valueType> {
     isDifferentFrom(val: valueType);
     isIn(val: valueType[]): Filter;
     isNotIn(val: valueType[]): Filter;
+    metadata:FieldMetadata;
 }
 
 export interface ComparisonFilterFactory<valueType> extends FilterFactory<valueType> {

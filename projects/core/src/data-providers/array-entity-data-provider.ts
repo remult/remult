@@ -7,6 +7,11 @@ import { Sort } from '../sort';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
+    static customFilter(filter: CustomArrayFilter): Filter {
+        return new Filter(x => x.databaseCustom({
+            arrayFilter: filter
+        } as CustomArrayFilterObject))
+    }
     constructor(private entity: EntityMetadata, private rows?: any[]) {
         if (!rows)
             rows = [];
@@ -151,6 +156,12 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
 
     ok = true;
     constructor(private row: any) { }
+    databaseCustom(databaseCustom: CustomArrayFilterObject): void {
+        if (databaseCustom && databaseCustom.arrayFilter) {
+            if (!databaseCustom.arrayFilter(this.row))
+                this.ok = false;
+        }
+    }
     custom(customItem: any): void {
         throw new Error('Custom Filter should be translated before it gets here');
     }
@@ -240,3 +251,8 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     }
 }
 
+
+export type CustomArrayFilter = (item: any) => boolean
+export interface CustomArrayFilterObject {
+    arrayFilter: CustomArrayFilter
+}
