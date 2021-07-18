@@ -63,7 +63,7 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => SqlDatabase.customFilter(x => x.sql = c.metadata.fields.id.dbName + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
+        expect(await (c.count(e => SqlDatabase.customFilter(x => x.sql = e.id.metadata.dbName + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
         expect(await (c.count(e => entityForCustomFilter.filter.build({ dbOneOrThree: true })))).toBe(2);
     });
@@ -77,6 +77,14 @@ describe("custom filter", () => {
         expect(await (c.count(e => ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))))
             .toBe(2);
         expect(await (c.count(e => entityForCustomFilter.filter.build({ dbOneOrThree: true })))).toBe(2);
+
+    });
+    itAsync("test or and promise in translate", async () => {
+        let c = new ServerContext(new InMemoryDataProvider()).for(entityForCustomFilter);
+        for (let id = 0; id < 5; id++) {
+            await c.create({ id }).save();
+        }
+        expect(await (c.count(e => e.id.isEqualTo(4).or(entityForCustomFilter.filter.build({ dbOneOrThree: true }))))).toBe(3);
     });
     itAsync("test sent in api", async () => {
         let ok = new Done();
@@ -92,7 +100,7 @@ describe("custom filter", () => {
             put: undefined
         });
         let c = new ServerContext(z);
-        c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
+        await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
         ok.test();
     });
     itAsync("test that api reads custom correctly", async () => {
@@ -154,13 +162,12 @@ class entityForCustomFilter extends EntityBase {
     static filter = new CustomFilterBuilder<entityForCustomFilter, {
         oneAndThree?: boolean,
         dbOneOrThree?: boolean
-    }>((e, c) => {
+    }>(async (e, c) => {
         if (c.oneAndThree)
             return e.id.isIn([1, 3]);
         if (c.dbOneOrThree) {
-            e.id.isEqualTo
-            let idcolName = 'id';
-            return SqlDatabase.customFilter(x => x.sql = idcolName + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
+
+            return SqlDatabase.customFilter(x => x.sql = e.id.metadata.dbName + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
                 ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3)
             )
         }
@@ -176,7 +183,7 @@ export interface customFilterTranslator<customerFilterType> extends filterFuncti
 let x: customFilterTranslator<{ oneOrThree: true }>;
 
 
-function CustomFilterBuilderBuilder<entityType, customFilterObject =any>(translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject) => Filter): customFilterTranslator<customFilterObject> {
+function CustomFilterBuilderBuilder<entityType, customFilterObject = any>(translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject) => Filter): customFilterTranslator<customFilterObject> {
     return undefined;
 }
 

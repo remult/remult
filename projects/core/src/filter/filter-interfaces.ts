@@ -1,4 +1,5 @@
 import { FieldMetadata } from "../column-interfaces";
+import { Context } from "../context";
 import { ComparisonFilterFactory, EntityMetadata, EntityWhere, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory } from "../remult3";
 
 
@@ -64,7 +65,7 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
     constructor(public metadata: FieldMetadata) {
 
     }
-    
+
     processVal(val: any) {
         let ei = getEntitySettings(this.metadata.valueType, false);
         if (ei) {
@@ -331,7 +332,7 @@ export function packToRawWhere(w: Filter) {
 }
 
 export class CustomFilterBuilder<entityType, customFilterObject> {
-    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject) => Filter) {
+    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, context: Context) => Filter | Promise<Filter>) {
 
     }
     build(custom: customFilterObject): Filter {

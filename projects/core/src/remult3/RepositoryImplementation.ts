@@ -239,7 +239,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         if (!options.orderBy) {
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
-        opt.where = this.translateWhereToFilter(options.where);
+        opt.where = await this.translateWhereToFilter(options.where);
         opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
 
         opt.limit = options.limit;
@@ -271,7 +271,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
     async count(where?: EntityWhere<entityType>): Promise<number> {
-        return this.edp.count(this.translateWhereToFilter(where));
+        return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
     findFirst(options?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
@@ -362,65 +362,98 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 
-    private translateWhereToFilter(where: EntityWhere<entityType>): Filter {
+    private async translateWhereToFilter(where: EntityWhere<entityType>): Promise<Filter> {
         if (this.metadata.options.fixedFilter)
             where = [where, this.metadata.options.fixedFilter];
         let filterFactories = Filter.createFilterFactories(this.metadata)
         let r = Filter.translateWhereToFilter(filterFactories, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
-            let f = r;
-            r = new Filter(add => {
-                f.__applyToConsumer(new customTranslator(add, custom => {
-                    return this.metadata.options.customFilterTranslator.translateFilter(filterFactories, custom);
-                }))
+            let f = new customTranslator(async custom => {
+                return await this.metadata.options.customFilterTranslator.translateFilter(filterFactories, custom, this.context);
             });
+            r.__applyToConsumer(f);
+
+            await f.resolve();
+            r = new Filter(x => f.applyTo(x));
+
         }
         return r;
     }
 
 }
 class customTranslator implements FilterConsumer {
-    constructor(private orig: FilterConsumer, private translateCustom: (custom: any) => Filter) { }
+    applyTo(x: FilterConsumer): void {
+        this.commands.forEach(y => y(x));
+    }
+    constructor(private translateCustom: (custom: any) => Promise<Filter>) { }
+
+    commands: ((x: FilterConsumer) => void)[] = [];
+    promises: Promise<void>[] = [];
     or(orElements: Filter[]) {
-        this.orig.or(orElements.map(o => new Filter(add => o.__applyToConsumer(new customTranslator(add, this.translateCustom)))));
+        let newOrElements: Filter[];
+        this.promises.push(Promise.all(orElements.map(async element => {
+            let c = new customTranslator(this.translateCustom);
+            element.__applyToConsumer(c);
+            await c.resolve();
+            return new Filter(x => c.applyTo(x));
+        })).then(x => {
+            newOrElements = x;
+        }));
+        this.commands.push(x => x.or(newOrElements));
     }
     isEqualTo(col: FieldMetadata<any>, val: any): void {
-        this.orig.isEqualTo(col, val);
+        this.commands.push(x => x.isEqualTo(col, val));
     }
     isDifferentFrom(col: FieldMetadata<any>, val: any): void {
-        this.orig.isDifferentFrom(col, val);
+        this.commands.push(x => x.isDifferentFrom(col, val));
     }
     isNull(col: FieldMetadata<any>): void {
-        this.orig.isNull(col);
+        this.commands.push(x => x.isNull(col));
     }
     isNotNull(col: FieldMetadata<any>): void {
-        this.orig.isNotNull(col);
+        this.commands.push(x => x.isNotNull(col));
     }
     isGreaterOrEqualTo(col: FieldMetadata<any>, val: any): void {
-        this.orig.isGreaterOrEqualTo(col, val);
+        this.commands.push(x => x.isGreaterOrEqualTo(col, val));
     }
     isGreaterThan(col: FieldMetadata<any>, val: any): void {
-        this.orig.isGreaterThan(col, val);
+        this.commands.push(x => x.isGreaterThan(col, val));
     }
     isLessOrEqualTo(col: FieldMetadata<any>, val: any): void {
-        this.orig.isLessOrEqualTo(col, val);
+        this.commands.push(x => x.isLessOrEqualTo(col, val));
     }
     isLessThan(col: FieldMetadata<any>, val: any): void {
-        this.orig.isLessThan(col, val);
+        this.commands.push(x => x.isLessThan(col, val));
     }
     containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
-        this.orig.containsCaseInsensitive(col, val);
+        this.commands.push(x => x.containsCaseInsensitive(col, val));
     }
     startsWith(col: FieldMetadata<any>, val: any): void {
-        this.orig.startsWith(col, val);
+        this.commands.push(x => x.startsWith(col, val));
     }
     isIn(col: FieldMetadata<any>, val: any[]): void {
-        this.orig.isIn(col, val);
+        this.commands.push(x => x.isIn(col, val));
     }
     custom(customItem: any): void {
-        this.translateCustom(customItem)?.__applyToConsumer(this);
+        this.promises.push(
+            (async () => {
+                let r = await this.translateCustom(customItem);
+                if (r)
+                    r.__applyToConsumer(this);
+            })()
+        )
+
     }
-    databaseCustom(custom: any) { this.orig.databaseCustom(custom) };
+    databaseCustom(custom: any) {
+        this.commands.push(x => x.databaseCustom(custom));
+    }
+    async resolve() {
+        while (this.promises.length > 0) {
+            let p = this.promises;
+            this.promises = [];
+            await Promise.all(p);
+        }
+    }
 
 }
 
