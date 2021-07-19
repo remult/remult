@@ -28,6 +28,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] make where awaitable
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
 [V] rename the isSignedIn method to authenticated
+[] move all projects to github/remult
 [] reconsider the custom filter with the FD
 
 translateCustomFilter{
