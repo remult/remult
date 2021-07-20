@@ -1,27 +1,61 @@
-# remultApp
+# remult
+A fullstack library for developing data oriented application using typescript and node.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.0.5.
+### Remult is based on entities
 
-## Development server
+An Entity object is defined once and is used on the server and in the browser. For example:
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+<<< @/docs-code/products-batch-operations/products.ts 
 
-## Code scaffolding
+Then you query that entity using the following code.
+```ts
+await this.context.for(Products).find({
+    orderBy: p => p.name,
+    where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
+                p.availableTo.isGreaterOrEqualTo(new Date()))
+});
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Build
+This same code can run in the browser and produce http calls to the api that is automatically generated from the `Entity`'s definition, or this code can run on the server and interact with the database of your choice - in both cases returning a fully typed object for you to use.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+### Backend Methods
+You can also easily create functions that run on the server, using the same code and end-to-end type safety.
+```ts
+async updatePrice() {
+    await ProductsComponent.updatePriceOnBackend(Number.parseInt(this.priceInput));
+    this.products.reloadData();
+  }
+  @BackendMethod({ allowed: true })
+  static async updatePriceOnBackend(priceToUpdate: number, context?: Context) {
+    for await (const p of context.for(Products).iterate()) {
+      p.price += priceToUpdate
+      await p.save();
+    }
+  }
+```
+### Fine grained end-to-end security and authorization
+You can control which user is allowed to see which part of the api and `Entity` object, with a built in mechanism.
+```ts{3-4,8,12}
+@Entity({
+    key: 'Products',
+    allowApiCrud: Roles.admin,
+    allowApiRead: Allow.authenticated
+})
+export class Products extends IdEntity {
+    @Field({
+        allowApiUpdate: Roles.admin
+    })
+    name: string;
+    @Field({
+        includeInApi: Allow.authenticated
+    })
+    price: number = 0;
+    @DateOnlyField()
+    availableFrom: Date;
+    @DateOnlyField()
+    availableTo: Date;
+}
+```
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+All api endpoints are secured by design, and were built to resist sql injection, xss etc...
