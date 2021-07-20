@@ -36,6 +36,12 @@ describe("test where stuff", () => {
         };
         expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where, () => undefined])).toBe(2);
     });
+    itAsync("test basics_2_1", async () => {
+        let fo: FindOptions<CategoriesForTesting> = {
+            where: x =>Promise.resolve( x.id.isGreaterOrEqualTo(2))
+        };
+        expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where, () => undefined])).toBe(2);
+    });
     itAsync("test basics_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: [x => x.id.isGreaterOrEqualTo(2), undefined]

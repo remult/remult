@@ -3,7 +3,7 @@
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
 
 import { UrlBuilder } from '../../urlBuilder';
-import { customUrlToken, Filter, packToRawWhere } from '../filter/filter-interfaces';
+import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { EntityMetadata } from '../remult3';
 
 
@@ -46,7 +46,7 @@ class RestEntityDataProvider implements EntityDataProvider {
     let filterObject: any;
 
     if (where) {
-      filterObject = packToRawWhere(where);
+      filterObject = Filter.packToRawWhere(where);
       if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
         filterObject = undefined;
     }
@@ -61,7 +61,7 @@ class RestEntityDataProvider implements EntityDataProvider {
     if (options) {
       if (options.where) {
 
-        filterObject = packToRawWhere(options.where);//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+        filterObject = Filter.packToRawWhere(options.where);//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
         if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
           filterObject = undefined;
       }
@@ -217,7 +217,7 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
           element.forEach(e => url.add(key, e));
       }
       else
-        if (key==customUrlToken)
+        if (key == customUrlToken)
           url.add(key, JSON.stringify(element));
         else
           url.add(key, element);

@@ -25,32 +25,39 @@ export class Filter {
         }
         return r as FilterFactories<T>;
     }
-    static translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityWhere<T>): Filter {
+    static async translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityWhere<T>): Promise<Filter> {
         if (Array.isArray(where)) {
-            return new AndFilter(...where.map(x =>
+            return new AndFilter(...await Promise.all(where.map(x =>
                 Filter.translateWhereToFilter(entity, x)
-            ));
+            )));
         }
         else if (typeof where === 'function') {
             let r = where(entity);
             if (Array.isArray(r))
                 return new AndFilter(
                     //@ts-ignore
-                    ...r.map(x => {
+                    ...await Promise.all( r.map(async x => {
                         if (typeof x === "function")
                             return this.translateWhereToFilter(entity, x);
-                        return x
-                    }));
+                        return await x
+                    })));
             else if (typeof r === 'function')
                 return this.translateWhereToFilter(entity, r);
+
             return r;
         }
     }
-    static packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>) {
+    static async packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>) {
         if (!where)
             return {};
-        return packToRawWhere(this.translateWhereToFilter(this.createFilterFactories(entityDefs), where));
+        return Filter.packToRawWhere(await this.translateWhereToFilter(this.createFilterFactories(entityDefs), where));
 
+    }
+    static packToRawWhere(w: Filter) {
+        let r = new FilterSerializer();
+        if (w)
+            w.__applyToConsumer(r);
+        return r.result;
     }
     static unpackWhere<T>(entityDefs: EntityMetadata<T>, packed: any): Filter {
         return this.extractWhere(entityDefs, { get: (key: string) => packed[key] });
@@ -63,7 +70,7 @@ export class Filter {
         if (entity.options.fixedFilter)
             where = [where, entity.options.fixedFilter];
         let filterFactories = Filter.createFilterFactories(entity)
-        let r = Filter.translateWhereToFilter(filterFactories, where);
+        let r = await Filter.translateWhereToFilter(filterFactories, where);
         if (r && translateCustomFilter) {
             let f = new customTranslator(async custom => {
                 return await entity.options.customFilterTranslator.translateFilter(filterFactories, custom, context);
@@ -341,12 +348,7 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
 }
 
 
-export function packToRawWhere(w: Filter) {
-    let r = new FilterSerializer();
-    if (w)
-        w.__applyToConsumer(r);
-    return r.result;
-}
+
 
 export class CustomFilterBuilder<entityType, customFilterObject> {
     constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, context: Context) => Filter | Promise<Filter>) {

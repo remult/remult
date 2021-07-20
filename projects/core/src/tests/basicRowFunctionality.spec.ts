@@ -1976,7 +1976,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Date })(type.prototype, 'b');
 
     let c = new Context().for(type);
-    let r = Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
+    let r = await Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
   itAsync("put works", async () => {

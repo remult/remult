@@ -18,7 +18,7 @@ import { Products } from '../products-test/products';
 
 import { isJSDocTypedefTag } from 'typescript';
 import { ClassType } from 'remult/classType';
-import {} from 'remult';
+import { } from 'remult';
 
 
 
@@ -40,7 +40,6 @@ serverInit().then(async (dataSource) => {
         queueStorage: await preparePostgresQueueStorage(dataSource),
 
     });
-    console.log('123');
 
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
@@ -62,4 +61,11 @@ serverInit().then(async (dataSource) => {
 
     let port = process.env.PORT || 3001;
     app.listen(port);
+    console.log( doSomething());
 });
+
+
+function doSomething():string|Promise<string>{
+    return Promise.resolve("noam");
+    return "noam";
+}

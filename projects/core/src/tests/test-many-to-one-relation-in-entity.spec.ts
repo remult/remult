@@ -334,13 +334,13 @@ describe("many to one relation", () => {
         }).save();
         async function test(where: EntityWhere<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
-            expect(await repo.count(p => Filter.unpackWhere(repo.metadata, Filter.packWhere(repo.metadata,
+            expect(await repo.count(async p => Filter.unpackWhere(repo.metadata, await Filter.packWhere(repo.metadata,
                 where)))).toBe(expected, "packed where");
         }
 
-        test(p => p.category.isEqualTo(c), 2);
-        test(p => p.category.isEqualTo(null), 3);
-        test(p => p.category.isEqualTo(c2), 1);
+        await test(p => p.category.isEqualTo(c), 2);
+        await test(p => p.category.isEqualTo(null), 3);
+        await test(p => p.category.isEqualTo(c2), 1);
 
     }));
     it("test that not too many reads are made", async(async () => {
@@ -388,7 +388,7 @@ describe("many to one relation", () => {
         context = new ServerContext({
             transaction: undefined,
             getEntityDataProvider: e => {
-                let r = mem.getEntityDataProvider(e); 
+                let r = mem.getEntityDataProvider(e);
                 return {
                     find: x => {
                         fetches++;

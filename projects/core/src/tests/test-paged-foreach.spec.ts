@@ -151,9 +151,9 @@ describe("test paged foreach ", () => {
         e.a = 'a';
         e.b = 'b';
         e.c = 'c';
-        function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityWhere<theTable>) {
-            expect(JSON.stringify(Filter.packWhere(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
-                JSON.stringify(Filter.packWhere(eDefs.metadata, expectedWhere)));
+        async function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityWhere<theTable>) {
+            expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
+                JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere)));
         }
         test(x => x.a, x => x.a.isGreaterThan('a'));
         test(x => [x.a.descending()], x => x.a.isLessThan('a'));
@@ -173,8 +173,8 @@ describe("test paged foreach ", () => {
         let f = eDefs.createAfterFilter(x => [x.a, x.b], e);
         e.a = '1';
         e.b = '2';
-        expect(JSON.stringify(Filter.packWhere(eDefs.metadata, f))).toEqual(
-            JSON.stringify(Filter.packWhere<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
+        expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, f))).toEqual(
+            JSON.stringify(await Filter.packWhere<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
 
     });
     itAsync("serialize filter with or", async () => {
@@ -182,11 +182,11 @@ describe("test paged foreach ", () => {
         let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();
 
-        function test(expectedWhere: EntityWhere<theTable>, expected: any) {
-            expect(JSON.stringify(Filter.packWhere(eDefs.metadata, expectedWhere))).toEqual(
+        async function  test(expectedWhere: EntityWhere<theTable>, expected: any) {
+            expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere))).toEqual(
                 JSON.stringify(expected));
         }
-        test(
+        await test(
             x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')).or(x.a.isGreaterThan('a')),
             {
                 OR: [
@@ -199,13 +199,13 @@ describe("test paged foreach ", () => {
                     }
                 ]
             });
-        test(
+        await test(
             x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')),
             {
                 a: 'a',
                 b_gt: 'b'
             });
-        test(
+        await test(
             x => x.a.isEqualTo('a').or(x.b.isGreaterThan('b')),
             {
                 OR: [

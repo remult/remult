@@ -87,7 +87,7 @@ describe("test object column", () => {
 
         let r = context.for(ObjectColumnTest).metadata;
         expect(await context.for(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
-        expect(await context.for(ObjectColumnTest).count(x => Filter.unpackWhere(r, Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
+        expect(await context.for(ObjectColumnTest).count(async x => Filter.unpackWhere(r, await Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
     });
     itAsync("test basics with json", async () => {
 

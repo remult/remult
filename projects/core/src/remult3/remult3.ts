@@ -294,7 +294,7 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Filter[] | EntityWhere<entityType>)) | EntityWhere<entityType>[];
+export declare type EntityWhere<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]  | EntityWhere<entityType>)) | EntityWhere<entityType>[];
 
 
 
@@ -305,7 +305,7 @@ export interface FilterFactory<valueType> {
     isDifferentFrom(val: valueType);
     isIn(val: valueType[]): Filter;
     isNotIn(val: valueType[]): Filter;
-    metadata:FieldMetadata;
+    metadata: FieldMetadata;
 }
 
 export interface ComparisonFilterFactory<valueType> extends FilterFactory<valueType> {

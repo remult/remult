@@ -274,7 +274,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
-    findFirst(options?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
+    async findFirst(options?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
 
         let opts: FindFirstOptions<entityType> = {};
         if (options) {
@@ -287,7 +287,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let r: Promise<entityType>;
         let cacheInfo: cacheEntityInfo<entityType>;
         if (opts.useCache || opts.useCache === undefined) {
-            let f = Filter.packWhere(this.metadata, opts.where);
+            let f = await Filter.packWhere(this.metadata, opts.where);
             let key = JSON.stringify(f);
             cacheInfo = this.cache.get(key);
             if (cacheInfo !== undefined) {
@@ -369,8 +369,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 }
 
 
-export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
-    let w = Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
+export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
+    let w = await Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
 
     if (w) {
         w.__applyToConsumer({

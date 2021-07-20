@@ -459,17 +459,17 @@ describe("test row provider", () => {
       expect(rows.length).toBe(4);
 
       rows = await r.find({
-        where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
+        where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
 
       });
       expect(rows.length).toBe(2);
-      rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isEqualTo(4))) });
+      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isEqualTo(4))) });
       expect(rows.length).toBe(1);
       expect(rows[0].categoryName).toBe('yael');
-      rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
       expect(rows.length).toBe(1);
       expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
       expect(rows.length).toBe(2);
     })
 
@@ -480,12 +480,12 @@ describe("test row provider", () => {
     expect(rows.length).toBe(4);
 
     rows = await r.find({
-      where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
+      where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
 
     });
-    rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isIn([1, 3]))) });
+    rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: c => Filter.unpackWhere(r.metadata, Filter.packWhere(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });
@@ -1354,7 +1354,7 @@ describe("test datetime column", () => {
     expect(DateOnlyValueConverter.toJson(new Date('1976-6-16'))).toBe('1976-06-16');
   });
   it("date works3", () => {
-    expect(DateOnlyValueConverter.toJson(new Date(1976,5,16))).toBe('1976-06-16');
+    expect(DateOnlyValueConverter.toJson(new Date(1976, 5, 16))).toBe('1976-06-16');
   });
   it("date Storage works 1", () => {
 
@@ -1443,7 +1443,7 @@ describe("relation", () => {
     });
     let rows = await r.load();
     expect(rows.length).toBe(2);
-    let n = r.create();
+    let n = await r.create();
     expect(n.description).toBe("x");
   });
   itAsync("should have an array and lazy load it", async () => {
@@ -1470,7 +1470,7 @@ describe("context", () => {
       name: 'name',
       roles: ["a"]
     });
-    expect(c.authenticated()).toBe(true); 
+    expect(c.authenticated()).toBe(true);
     c.setUser(undefined);
     expect(c.authenticated()).toBe(false);
     expect(c.user.id).toBe(undefined);

@@ -1,4 +1,4 @@
-import { Filter, EntityWhere, FindOptions, Repository, EntityMetadata } from "remult";
+import { Filter, EntityWhere, FindOptions, Repository, EntityMetadata, FilterFactories, AndFilter } from "remult";
 
 
 export class Lookup<entityType> {
@@ -26,8 +26,7 @@ export class Lookup<entityType> {
   }
 
   _internalGetByOptions(find: FindOptions<entityType>): lookupRowInfo<entityType> {
-
-    let f = Filter.packWhere(this.repository.metadata, find.where);
+    let f = Filter.packToRawWhere(translateWhereToFilter(Filter.createFilterFactories(this.repository.metadata), find.where));
     let key = JSON.stringify(f);
     let res = this.cache.get(key);
     if (res !== undefined) {
@@ -83,7 +82,7 @@ export class lookupRowInfo<type> {
   promise: Promise<lookupRowInfo<type>>
 }
 function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
-  let w = Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
+  let w = translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
 
   if (w) {
     w.__applyToConsumer({
@@ -104,5 +103,29 @@ function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: Ent
       startsWith: () => { },
       or: () => { }
     });
+  }
+}
+
+function translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityWhere<T>): Filter {
+  if (Array.isArray(where)) {
+    return new AndFilter(...where.map(x =>
+      translateWhereToFilter(entity, x)
+    ));
+  }
+  else if (typeof where === 'function') {
+    let r = where(entity);
+    if (Array.isArray(r))
+      return new AndFilter(
+        //@ts-ignore
+        ...r.map(x => {
+          if (typeof x === "function")
+            return this.translateWhereToFilter(entity, x);
+          return x
+        }));
+    else if (typeof r === 'function')
+      return this.translateWhereToFilter(entity, r);
+    if (r instanceof Promise)
+      throw "lookup doesn't support where with promise in it"
+    return r;
   }
 }

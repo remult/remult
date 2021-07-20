@@ -171,9 +171,9 @@ export class OneToMany<T>{
   private async find(): Promise<T[]> {
     return this.provider.find(this.settings)
   }
-  create(item?: Partial<T>): T {
+  async create(item?: Partial<T>): Promise<T> {
     let r = this.provider.create();
-    __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
+    await __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
     set(r,item);
     if (this.settings.create)
       this.settings.create(r);
