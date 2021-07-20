@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, Field, Entity, EntityBase, BackendMethod } from '@remult/core';
+import { Context, Field, Entity, EntityBase, BackendMethod } from 'remult';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';

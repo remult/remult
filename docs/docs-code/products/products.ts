@@ -1,4 +1,4 @@
-import { IdEntity, Field, Entity } from '@remult/core';
+import { IdEntity, Field, Entity } from 'remult';
 
 @Entity({
     key: 'Products',

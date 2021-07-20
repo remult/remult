@@ -2,7 +2,7 @@
 import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { openDialog } from '../remult-core.module';
-import {  FieldMetadata, Context } from '@remult/core';
+import {  FieldMetadata, Context } from 'remult';
 import { GridSettings } from '../../grid-settings';
 import { DataControlSettings } from '../../data-control-interfaces';
 

@@ -1,4 +1,4 @@
-import { IdEntity, Field, Entity, DateOnlyField } from '@remult/core';
+import { IdEntity, Field, Entity, DateOnlyField } from 'remult';
 @Entity({
     key: 'Products',
     allowApiCrud: true

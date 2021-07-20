@@ -63,7 +63,7 @@ export default App;
 Now we'll add the server functionality to the same project.
 
 ```sh
-npm i express @types/express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch jsonwebtoken
+npm i express @types/express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg remult @remult/server @remult/server-postgres tsc-watch jsonwebtoken
 ```
 
 
@@ -90,7 +90,7 @@ create a folder called `server` under the `src` folder, and in it add a file cal
 import express from 'express';
 import { initExpress } from '@remult/server';
 import * as fs from 'fs';
-import { SqlDatabase } from '@remult/core';
+import { SqlDatabase } from 'remult';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
 import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
@@ -202,7 +202,7 @@ in the `.gitignore` file add:
 ### Configure the remult context
 Add a file called `src/common.ts`
 ```ts
-import { Context } from "@remult/core";
+import { Context } from "remult";
 export const context = new Context();
 ```
 ## Entities
@@ -213,7 +213,7 @@ Add a folder called `src/tasks` and in it add a file called `tasks.ts`, with the
 
 
 ```ts
-import { EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { EntityClass, IdEntity, StringColumn } from "remult";
 
 @EntityClass
 export class Tasks extends IdEntity {

@@ -2,11 +2,11 @@ import '../app.module';
 
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/core/postgres';
+import { PostgresDataProvider, PostgresSchemaBuilder } from 'remult/postgres';
 import * as passwordHash from 'password-hash';
 
 
-import {  Context,  EntityOptions,  SqlDatabase } from '@remult/core';
+import {  Context,  EntityOptions,  SqlDatabase } from 'remult';
 import { ClassType } from '../../../projects/core/classType';
 
 

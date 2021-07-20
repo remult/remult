@@ -1,4 +1,4 @@
-import { Context, UserInfo } from "@remult/core";
+import { Context, UserInfo } from "remult";
 
 
 const authToken = 'authorization';

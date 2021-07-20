@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Users } from './users';
-import { BackendMethod, Context } from '@remult/core';
+import { BackendMethod, Context } from 'remult';
 
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';

@@ -6,7 +6,7 @@ Let's add a new file under the `Products` folder, called `products.ts`
 <<< @/docs-code/products/products.ts
 
 Let's review:
-1. We've added a `Products` class that extends the `IdEntity` class from `@remult/core`. This will create an `Entity` that will have an `id` field that is unique, and anything else we would like to add to it.
+1. We've added a `Products` class that extends the `IdEntity` class from `remult`. This will create an `Entity` that will have an `id` field that is unique, and anything else we would like to add to it.
 2. On line 5 we've defined a `name` field (the product name)
 3. On line 7 we've called the `super` class's constructor and defined:
    1.  Line 8 - the `name` for our `API` 
@@ -26,7 +26,7 @@ in `products.component.ts`
 
 let's review:
 1. We've added the required imports (those are added automatically when typing the names later on and allowing vscode to add them. See "adding the import statements" note below)
-2. We've added a parameter to the constructor called `context` of type `Context` from `@remult/core`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
+2. We've added a parameter to the constructor called `context` of type `Context` from `remult`. This object will help us get data from the server and more. by tagging it as `private` we make it available throughout the class, by using `this.context`
 3. We've added the definition of `products` in this component. We've asked the context to provide us with `gridSettings` for the `Entity` Products - and we've configured it to allow update insert and delete.
 
 
@@ -38,7 +38,7 @@ let's review:
 
 ![](/2020-01-26_11h45_50.png)
 
- It'll then automatically add the `import { Context } from '@remult/core';` statement to the top of the document.
+ It'll then automatically add the `import { Context } from 'remult';` statement to the top of the document.
 
  The same can be done for any missing `import` statement 
 :::

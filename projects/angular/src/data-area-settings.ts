@@ -1,4 +1,4 @@
-import {   Fields, FieldsMetadata } from "@remult/core";
+import {   Fields, FieldsMetadata } from "remult";
 
 import { FieldCollection } from "./column-collection";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";

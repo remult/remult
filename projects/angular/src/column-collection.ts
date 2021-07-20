@@ -1,11 +1,11 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Context, ValueConverter } from "@remult/core";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Context, ValueConverter } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
-import { decorateColumnSettings } from '@remult/core/src/remult3';
-import { ValueListValueConverter } from "@remult/core/valueConverters";
-import { ClassType } from "@remult/core/classType";
+import { decorateColumnSettings } from 'remult/src/remult3';
+import { ValueListValueConverter } from "remult/valueConverters";
+import { ClassType } from "remult/classType";
 
 
 

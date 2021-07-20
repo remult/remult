@@ -1350,6 +1350,12 @@ describe("test datetime column", () => {
     expect(DateOnlyValueConverter.toJson(new Date('1976-06-16'))).toBe('1976-06-16');
 
   });
+  it("date works2", () => {
+    expect(DateOnlyValueConverter.toJson(new Date('1976-6-16'))).toBe('1976-06-16');
+  });
+  it("date works3", () => {
+    expect(DateOnlyValueConverter.toJson(new Date(1976,5,16))).toBe('1976-06-16');
+  });
   it("date Storage works 1", () => {
 
     let col = decorateColumnSettings<Date>({

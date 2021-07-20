@@ -1,7 +1,7 @@
 
-import { AndFilter, Filter } from '@remult/core';
-import { ComparisonFilterFactory,  FieldRef, EntityWhere, FindOptions, Repository,  ContainsFilterFactory } from "@remult/core";
-import {  FieldMetadata } from "@remult/core";
+import { AndFilter, Filter } from 'remult';
+import { ComparisonFilterFactory,  FieldRef, EntityWhere, FindOptions, Repository,  ContainsFilterFactory } from "remult";
+import {  FieldMetadata } from "remult";
 import { getFieldDefinition } from '..';
 
 export class FilterHelper<rowType> {

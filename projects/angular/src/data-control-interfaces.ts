@@ -1,5 +1,5 @@
-import { FieldRef, FieldMetadata, Entity, ValueListItem } from "@remult/core";
-import { ValueListValueConverter } from "@remult/core/valueConverters";
+import { FieldRef, FieldMetadata, Entity, ValueListItem } from "remult";
+import { ValueListValueConverter } from "remult/valueConverters";
 import { InputField } from "./column-collection";
 
 

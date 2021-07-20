@@ -4,11 +4,11 @@
       <mat-icon>menu</mat-icon>
     </button>
     <span class="toolbar-title">{{currentTitle()}}</span>
-    <ng-container *ngIf="!context.isSignedIn()">
+    <ng-container *ngIf="!context.authenticated()">
       <button mat-flat-button color="primary" (click)="signIn()">Sign In</button>
       <button mat-flat-button color="primary" (click)="signUp()">Sign Up</button>
     </ng-container>
-    <ng-container *ngIf="context.isSignedIn()">
+    <ng-container *ngIf="context.authenticated()">
       <button mat-flat-button color="primary" [matMenuTriggerFor]="menu">{{context.user.name}}</button>
       <mat-menu #menu="matMenu">
         <button mat-menu-item (click)="updateInfo()">Update Info</button>
@@ -23,7 +23,7 @@
       <div style="width:100%;text-align: center">
 
       </div>
-      <h4 *ngIf="context.isSignedIn()">Hello {{context.user.name}}</h4>
+      <h4 *ngIf="context.authenticated()">Hello {{context.user.name}}</h4>
       <mat-nav-list role="list">
         <ng-container *ngFor="let m of router.config">
         <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">

@@ -22,7 +22,7 @@ to do that we'll add a route for it in the `app-routing.module.ts`.
 > pro tip: you can quickly open a file by clicking <kbd>Control</kbd> + <kbd>P</kbd> and typing the name of the file you want to open.
 
 ```ts{11,16}
-import { RemultModule, NotSignedInGuard, SignedInGuard } from '@remult/core';
+import { RemultModule, NotSignedInGuard, SignedInGuard } from 'remult';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route, ActivatedRouteSnapshot } from '@angular/router';
 import { HomeComponent } from './home/home.component';

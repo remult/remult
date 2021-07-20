@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataControl, GridSettings } from '@remult/angular';
-import { Context, Field, getFields } from '@remult/core';
+import { Context, Field, getFields } from 'remult';
 import { Categories } from './categories';
 
 @Component({

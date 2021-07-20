@@ -1,6 +1,6 @@
 import { Injectable, NgZone, ErrorHandler } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { Context } from "@remult/core";
+import { Context } from "remult";
 
 import { YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
 import { openDialog } from "@remult/angular";

@@ -2,7 +2,7 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
-import { Context, getFields } from '@remult/core';
+import { Context, getFields } from 'remult';
 
 import { FieldCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';

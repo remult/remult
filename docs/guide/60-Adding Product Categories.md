@@ -29,7 +29,7 @@ const routes: Routes = [
 ## Step 3, add the Categories Entity
 In the `Categories` folder add a file called `categories.ts`
 ```ts
-import { IdEntity, StringColumn, EntityClass } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass } from 'remult';
 
 @EntityClass
 export class Categories extends IdEntity {
@@ -47,7 +47,7 @@ export class Categories extends IdEntity {
 in `categories.component.ts` 
 ```ts{2-3,11-16}
 import { Component, OnInit } from '@angular/core';
-import { Context } from '@remult/core';
+import { Context } from 'remult';
 import { Categories } from './categories';
 
 @Component({
@@ -79,7 +79,7 @@ In the `categories.component.html`
 ## Adding the Category to the Products Entity
 In the `products.ts` let's add the `category` field to our Entity
 ```ts{27}
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn, IdColumn } from 'remult';
 
 @EntityClass
 export class Products extends IdEntity {

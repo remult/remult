@@ -1,12 +1,12 @@
 //import { CustomModuleLoader } from '../../../../../../repos/radweb/src/app/server/CustomModuleLoader';
 //let moduleLoader = new CustomModuleLoader('/dist-server/repos/radweb/projects/');
 import * as express from 'express';
-import { initExpress } from '@remult/core/server';
+import { initExpress } from 'remult/server';
 import * as fs from 'fs';
-import { DataProvider, SqlDatabase } from '@remult/core';
+import { DataProvider, SqlDatabase } from 'remult';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/core/postgres';
+import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
 import * as helmet from 'helmet';
 import * as jwt from 'express-jwt';
 import * as compression from 'compression';

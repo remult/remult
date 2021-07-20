@@ -1,7 +1,7 @@
 # Adding Validations
 To validate that there is a price for the product, we'll define the `onValidate` event for the price column
 ```ts{6-12}
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'remult';
 
 @EntityClass
 export class Products extends IdEntity {
@@ -44,7 +44,7 @@ If you'll try to do the same update via an external tool you'll get an http stat
 
 Let's add some more validations:
 ```ts{13-25}
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'remult';
 
 @EntityClass
 export class Products extends IdEntity {

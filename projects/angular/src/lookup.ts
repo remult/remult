@@ -1,4 +1,4 @@
-import { Filter, EntityWhere, FindOptions, Repository, EntityMetadata } from "@remult/core";
+import { Filter, EntityWhere, FindOptions, Repository, EntityMetadata } from "remult";
 
 
 export class Lookup<entityType> {

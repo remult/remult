@@ -2,7 +2,7 @@
 We can configure the `DataGrid` to only show the columns that we want with the width we want. In the `products.component.ts` file
 ```ts{18-26}
 import { Component, OnInit } from '@angular/core';
-import { Context } from '@remult/core';
+import { Context } from 'remult';
 import { Products } from './products';
 
 @Component({

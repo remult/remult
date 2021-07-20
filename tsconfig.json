@@ -22,9 +22,15 @@
       "esnext.asynciterable"
     ],
     "paths": {
+      "remult":[
+        "projects/core"
+      ],
+      "remult/*":[
+        "projects/core/*"
+      ],
       "@remult/*": [
         "projects/*"
-      ]
+      ],
     }
   }
 }

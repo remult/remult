@@ -1,5 +1,5 @@
 /*
- * Public API Surface of @remult/core
+ * Public API Surface of remult
  */
 export {
     Field,

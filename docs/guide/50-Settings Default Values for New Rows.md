@@ -3,7 +3,7 @@
 We can use the `GridSettings` `onEnterRow` property to define a function that will be run when ever a row is entered, and set the defaults for a new row there.
 In the `products.ts`
 ```ts{20,28}
-import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from '@remult/core';
+import { IdEntity, StringColumn, EntityClass, NumberColumn, DateColumn } from 'remult';
 
 @EntityClass
 export class Products extends IdEntity {

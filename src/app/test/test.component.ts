@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context,   Entity,  IdEntity, Field, BackendMethod } from '@remult/core';
+import { Context,   Entity,  IdEntity, Field, BackendMethod } from 'remult';
 @Component({
   selector: 'app-test',
   templateUrl: './test.component.html',

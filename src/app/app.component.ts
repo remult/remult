@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, Route, ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
-import { BackendMethod, Context,    UserInfo } from '@remult/core';
+import { BackendMethod, Context,    UserInfo } from 'remult';
 
 
 import { openDialog, RouteHelperService } from '@remult/angular';

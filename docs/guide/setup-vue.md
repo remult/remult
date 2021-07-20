@@ -111,7 +111,7 @@ At this stage, the vue app is ready for our demo
 Now we'll add the server functionality to the same project.
 
 ```sh
-npm i express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg @remult/core @remult/server @remult/server-postgres tsc-watch
+npm i express express-force-https jsonwebtoken compression pg reflect-metadata @types/pg remult @remult/server @remult/server-postgres tsc-watch
 ```
 
 
@@ -138,7 +138,7 @@ create a folder called `server` under the `src` folder, and in it add a file cal
 import express from 'express';
 import { initExpress } from '@remult/server';
 import * as fs from 'fs';
-import { SqlDatabase } from '@remult/core';
+import { SqlDatabase } from 'remult';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
 import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
@@ -243,7 +243,7 @@ module.exports = {
 ### Configure the remult context
 Add a file called `src/common.ts`
 ```ts
-import { Context } from "@remult/core";
+import { Context } from "remult";
 export const context = new Context();
 ```
 
@@ -260,7 +260,7 @@ The Api, Database and communication are all derived from that one definition of 
 Add a folder called `src/users` and in it add a file called `users.ts`, with the following code:
 
 ```ts
-import { EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { EntityClass, IdEntity, StringColumn } from "remult";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -459,7 +459,7 @@ async loadUsers() {
 ## Record the User Create Date
 In the `users.ts` file add the `createdDate` column
 ```ts {6}
-import { DateTimeColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { DateTimeColumn, EntityClass, IdEntity, StringColumn } from "remult";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -484,7 +484,7 @@ alter table users add column createdDate timestamp
 
 Next we'll add the logic to update this column using the `saving` hook.
 ```ts {10-13}
-import { DateTimeColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { DateTimeColumn, EntityClass, IdEntity, StringColumn } from "remult";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -626,7 +626,7 @@ When the users sign's in, we'll want to call a function on the server that will 
 
 In the `users.ts` file:
 ```ts {22-33}
-import { Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "@remult/core";
+import { Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -755,8 +755,8 @@ This way the browser and server can share and trust that user info.
 #### Step 1 
 In the `common.ts` file adjust the following code:
 ```ts {2,4}
-import { Context } from "@remult/core";
-import { CookieBasedJwt } from '@remult/core/src/cookieBasedJwt';
+import { Context } from "remult";
+import { CookieBasedJwt } from 'remult/src/cookieBasedJwt';
 export const context = new Context();
 export const authorization = new CookieBasedJwt(context);
 ```
@@ -777,7 +777,7 @@ in `server.ts`
 import express from 'express';
 import { initExpress } from '@remult/server';
 import * as fs from 'fs';
-import { SqlDatabase } from '@remult/core';
+import { SqlDatabase } from 'remult';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
 import { PostgresDataProvider, PostgresSchemaBuilder } from '@remult/server-postgres';
@@ -800,7 +800,7 @@ initDatabase().then(database => {
 in `users.ts`
 ```ts {33}
 import { authorization } from '../common';
-import { Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "@remult/core";
+import { Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -953,7 +953,7 @@ export class Roles {
 In the `users.ts` file make the following adjustments:
 ```ts {3,14,22,36,37}
 import { authorization } from '../common';
-import { BoolColumn, Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "@remult/core";
+import { BoolColumn, Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
 import { Roles } from './roles';
 
 @EntityClass
@@ -1073,7 +1073,7 @@ export class Users extends IdEntity {
 Next we'll add a new file in the `src/users` folder, called `updatePasswordController.ts`
 ```ts {4-7,9,13-16,18}
 import { Users } from '../users/users';
-import { Context, ServerController, ServerMethod, StringColumn } from "@remult/core";
+import { Context, ServerController, ServerMethod, StringColumn } from "remult";
 
 @ServerController({
     allowed:Allow.authenticated,

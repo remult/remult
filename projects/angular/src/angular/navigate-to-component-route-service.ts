@@ -1,6 +1,6 @@
 import { Router, Route, CanActivate, ActivatedRouteSnapshot } from '@angular/router';
 import { Injectable, Injector } from '@angular/core';
-import { Context, Allowed } from '@remult/core';
+import { Context, Allowed } from 'remult';
 @Injectable()
 export class RouteHelperService {
     constructor(private router: Router, private injector: Injector) {

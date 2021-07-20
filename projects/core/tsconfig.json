@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "../../dist/core",
+        "outDir": "../../dist/remult",
         "baseUrl": ".",
         "declaration": true,
         "stripInternal": true,

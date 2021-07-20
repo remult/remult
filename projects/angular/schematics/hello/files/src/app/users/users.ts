@@ -1,9 +1,9 @@
 
-import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators } from "@remult/core";
-import { Context, } from '@remult/core';
+import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators } from "remult";
+import { Context, } from 'remult';
 import { Roles } from './roles';
 import { InputField } from "@remult/angular";
-import { InputTypes } from "@remult/core/inputTypes";
+import { InputTypes } from "remult/inputTypes";
 
 @Entity<Users>({
     key: "Users",

@@ -12,35 +12,35 @@ export class CustomModuleLoader {
 
         (<any>customModuleLoader)._resolveFilename = (request: string, parent: customModuleLoader, isMain: boolean) => {
             switch (request) {
-                case "@remult/core":
+                case "remult":
                     request = request = process.cwd() + root + '/core';
                     break;
 
                 case "@remult/angular":
                     request = request = process.cwd() + root + '/angular';
                     break;
-                case "@remult/core/server":
+                case "remult/server":
                     request = request = process.cwd() + root + '/core/server';
                     break;
-                case "@remult/core/postgres":
+                case "remult/postgres":
                     request = request = process.cwd() + root + '/core/postgres';
                     break;
-                case "@remult/core/src/context":
+                case "remult/src/context":
                     request = request = process.cwd() + root + '/core/src/context';
                     break;
-                case "@remult/core/src/remult3":
+                case "remult/src/remult3":
                     request = request = process.cwd() + root + '/core/src/remult3';
                     break;
-                case "@remult/core/src/server-action":
+                case "remult/src/server-action":
                     request = request = process.cwd() + root + '/core/src/server-action';
                     break;
-                case "@remult/core/inputTypes":
+                case "remult/inputTypes":
                     request = request = process.cwd() + root + '/core/inputTypes';
                     break;
-                case "@remult/core/src/filter/filter-interfaces":
+                case "remult/src/filter/filter-interfaces":
                     request = request = process.cwd() + root + '/core/src/filter/filter-interfaces';
                     break;
-                case "@remult/core/valueConverters":
+                case "remult/valueConverters":
                     request = request = process.cwd() + root + '/core/valueConverters';
                     break;
             }

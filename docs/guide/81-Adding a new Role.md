@@ -5,7 +5,7 @@ We can easily add roles, and configure our application to use them.
 
 In the `roles.ts` file:
 ```ts{6}
-import { SignedInGuard } from '@remult/core';
+import { SignedInGuard } from 'remult';
 import { Injectable } from '@angular/core';
 
 export const Roles = { 
@@ -27,7 +27,7 @@ Now that we've secured the API we would like to restrict access to the component
 
 We'll start by creating a new `Guard` in the `roles.ts` file:
 ```ts{16-22}
-import { SignedInGuard } from '@remult/core';
+import { SignedInGuard } from 'remult';
 import { Injectable } from '@angular/core';
 
 export const Roles = { 

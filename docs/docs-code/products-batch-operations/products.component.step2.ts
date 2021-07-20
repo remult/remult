@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GridSettings } from '@remult/angular';
-import { Context } from '@remult/core';
+import { Context } from 'remult';
 import { Products } from './products';
 @Component({
   selector: 'app-products',

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context } from '@remult/core';
+import { Context } from 'remult';
 import { GridSettings } from '@remult/angular';
 import { Products } from './products';
 @Component({

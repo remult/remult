@@ -32,7 +32,7 @@ cd remult-angular-todo
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
 ```sh
-npm i express @remult/core@next
+npm i express remult@next
 npm i --save-dev @types/express
 ```
 #### The API server project
@@ -55,7 +55,7 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    *src/server/index.ts*
    ```ts
    import * as express from 'express';
-   import { initExpress } from '@remult/core/server';
+   import { initExpress } from 'remult/server';
    import '../app/app.module';
 
    let app = express();
@@ -161,7 +161,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Context } from '@remult/core';
+import { Context } from 'remult';
 
 @NgModule({
   declarations: [
@@ -196,7 +196,7 @@ Create a file `task.ts` in the `src/app/` folder, with the following code:
 
 *src/app/task.ts*
 ```ts
-import { Field, Entity, IdEntity } from "@remult/core";
+import { Field, Entity, IdEntity } from "remult";
 
 @Entity({
     key: "tasks",
@@ -226,7 +226,7 @@ Let's implement this feature within the main `AppComponent` class.
    *src/app/app.component.ts*
    ```ts{2-3,12-18}
    import { Component } from '@angular/core';
-   import { Context } from '@remult/core';
+   import { Context } from 'remult';
    import { Task } from './tasks';
 
    @Component({
@@ -401,7 +401,7 @@ Here are the code files we've modified to implement these features.
 
 *src/app/task.ts*
 ```ts
-import { Field, Entity, IdEntity } from "@remult/core";
+import { Field, Entity, IdEntity } from "remult";
 
 @Entity({
     key: "tasks",
@@ -418,7 +418,7 @@ export class Task extends IdEntity {
 *src/app/app.component.ts*
 ```ts{2-3,12-30}
 import { Component } from '@angular/core';
-import { Context } from '@remult/core';
+import { Context } from 'remult';
 import { Task } from './tasks';
 
 @Component({
@@ -621,7 +621,7 @@ static async setAll(completed: boolean, context?: Context) {
 ```
 
 ::: danger Import BackendMethod
-Don't forget to import `BackendMethod` from `@remult/core` for this code to work.
+Don't forget to import `BackendMethod` from `remult` for this code to work.
 :::
 
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
@@ -732,7 +732,7 @@ In this section, we'll be using the following packages:
    *src/server/index.ts*
    ```ts{4,7-13}
    import * as express from 'express';
-   import { initExpress } from '@remult/core/server';
+   import { initExpress } from 'remult/server';
    import '../app/app.module';
    import * as expressJwt from 'express-jwt';
 
@@ -777,7 +777,7 @@ In this section, we'll be using the following packages:
    ```
 
    ::: warning Imports
-   This code requires imports for `UserInfo` from `@remult/core` and `JwtHelperService` from `@auth0/angular-jwt`.
+   This code requires imports for `UserInfo` from `remult` and `JwtHelperService` from `@auth0/angular-jwt`.
    :::
 
 7. Add the following `HTML` after the `title` element of the `app.component.html` template.
@@ -833,7 +833,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
    *src/app/task.ts*
    ```ts{2,6-9,14}
-   import { Field, Entity, IdEntity, Validators } from "@remult/core";
+   import { Field, Entity, IdEntity, Validators } from "remult";
    import { Roles } from "./roles";
 
    @Entity({
@@ -942,7 +942,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    *src/server/index.ts*
    ```ts{5-6,9-10,19-21}
    import * as express from 'express';
-   import { initExpress } from '@remult/core/server';
+   import { initExpress } from 'remult/server';
    import '../app/app.module';
    import * as expressJwt from 'express-jwt';
    import * as compression from 'compression';
@@ -1031,12 +1031,12 @@ Let's replace it with a production PostgreSQL database.
    *src/server/index.ts*
    ```ts{7-9,18-25,28}
    import * as express from 'express';
-   import { initExpress } from '@remult/core/server';
+   import { initExpress } from 'remult/server';
    import '../app/app.module';
    import * as expressJwt from 'express-jwt';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
-   import { SqlDatabase } from '@remult/core';
+   import { SqlDatabase } from 'remult';
    import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
    import { Pool } from 'pg';
 
