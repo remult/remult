@@ -294,8 +294,8 @@ export declare type Allowed = string | ((c: Context) => boolean) | boolean | All
 
 export declare type AllowedForInstance<T> = string | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
 export class Allow {
-    everyone = () => true;
-    authenticated = (context: Context) => context.authenticated();
+    static everyone = () => true;
+    static authenticated = (context: Context) => context.authenticated();
 }
 
 

@@ -54,7 +54,7 @@ export interface EntityOptions<entityType = any> {
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
   fixedFilter?: EntityWhere<entityType>;
-  customFilterBuilder?: CustomFilterBuilder<entityType, any>,
+  customFilterBuilder?: () => CustomFilterBuilder<entityType, any>,
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: () => this.name
@@ -87,6 +87,6 @@ export interface EntityOptions<entityType = any> {
   deleted?: (row: entityType) => Promise<any> | any
 
   validation?: (e: entityType) => Promise<any> | any;
-  customFilterTranslator?: CustomFilterBuilder<entityType, any>
+
 }
 

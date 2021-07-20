@@ -17,7 +17,8 @@ import { Roles } from '../../docs/docs-code/users/roles';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+
 })
 export class AppComponent implements OnInit {
 

@@ -160,7 +160,7 @@ describe("custom filter", () => {
 
 @Entity({
     key: 'entityForCustomFilter',
-    customFilterTranslator: entityForCustomFilter.filter
+    customFilterBuilder:()=> entityForCustomFilter.filter
 })
 class entityForCustomFilter extends EntityBase {
     @Field()

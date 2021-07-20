@@ -25,7 +25,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] talk about $.find('name') vs $['name'] - support also key
 [V] all generics should get entity and then value type.
 [] create axios sample with jwt
-[] make where awaitable
+[V] make where awaitable
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
 [V] rename the isSignedIn method to authenticated
 [V] move all projects to github/remult

@@ -73,7 +73,7 @@ export class Filter {
         let r = await Filter.translateWhereToFilter(filterFactories, where);
         if (r && translateCustomFilter) {
             let f = new customTranslator(async custom => {
-                return await entity.options.customFilterTranslator.translateFilter(filterFactories, custom, context);
+                return await entity.options.customFilterBuilder().translateFilter(filterFactories, custom, context);
             });
             r.__applyToConsumer(f);
 
