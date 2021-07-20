@@ -28,8 +28,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] make where awaitable
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
 [V] rename the isSignedIn method to authenticated
-[] move all projects to github/remult
-[] fix version to be 0.1.0
+[V] move all projects to github/remult
+[V] fix version to be 0.1.0
 [] reconsider the custom filter with the FD
 
 translateCustomFilter{
@@ -47,6 +47,7 @@ SqlGateway - recieves and does something specific.
 
 ## review with yoni
 [] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
+[] consider the different wheres of an entity, to see where it takes us.
 [] talk about isNull and original value (I prefer a parameter instead of another method)
 [] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
 [] allow Api Update, will not accept true or false. -
