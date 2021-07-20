@@ -59,6 +59,23 @@ export class Filter {
     static extractWhere<T>(entityDefs: EntityMetadata<T>, filterInfo: { get: (key: string) => any; }): Filter {
         return extractWhere([...entityDefs.fields], filterInfo);
     }
+    static async translateWhereForEntity<T>(entity: EntityMetadata<T>, where: EntityWhere<T>, context: Context, translateCustomFilter: boolean) {
+        if (entity.options.fixedFilter)
+            where = [where, entity.options.fixedFilter];
+        let filterFactories = Filter.createFilterFactories(entity)
+        let r = Filter.translateWhereToFilter(filterFactories, where);
+        if (r && translateCustomFilter) {
+            let f = new customTranslator(async custom => {
+                return await entity.options.customFilterTranslator.translateFilter(filterFactories, custom, context);
+            });
+            r.__applyToConsumer(f);
+
+            await f.resolve();
+            r = new Filter(x => f.applyTo(x));
+
+        }
+        return r;
+    }
 
 }
 export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory<any>, ContainsFilterFactory<any>  {
@@ -338,4 +355,80 @@ export class CustomFilterBuilder<entityType, customFilterObject> {
     build(custom: customFilterObject): Filter {
         return new Filter(x => x.custom(custom));
     }
+}
+
+class customTranslator implements FilterConsumer {
+    applyTo(x: FilterConsumer): void {
+        this.commands.forEach(y => y(x));
+    }
+    constructor(private translateCustom: (custom: any) => Promise<Filter>) { }
+
+    commands: ((x: FilterConsumer) => void)[] = [];
+    promises: Promise<void>[] = [];
+    or(orElements: Filter[]) {
+        let newOrElements: Filter[];
+        this.promises.push(Promise.all(orElements.map(async element => {
+            let c = new customTranslator(this.translateCustom);
+            element.__applyToConsumer(c);
+            await c.resolve();
+            return new Filter(x => c.applyTo(x));
+        })).then(x => {
+            newOrElements = x;
+        }));
+        this.commands.push(x => x.or(newOrElements));
+    }
+    isEqualTo(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.isEqualTo(col, val));
+    }
+    isDifferentFrom(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.isDifferentFrom(col, val));
+    }
+    isNull(col: FieldMetadata<any>): void {
+        this.commands.push(x => x.isNull(col));
+    }
+    isNotNull(col: FieldMetadata<any>): void {
+        this.commands.push(x => x.isNotNull(col));
+    }
+    isGreaterOrEqualTo(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.isGreaterOrEqualTo(col, val));
+    }
+    isGreaterThan(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.isGreaterThan(col, val));
+    }
+    isLessOrEqualTo(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.isLessOrEqualTo(col, val));
+    }
+    isLessThan(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.isLessThan(col, val));
+    }
+    containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.containsCaseInsensitive(col, val));
+    }
+    startsWith(col: FieldMetadata<any>, val: any): void {
+        this.commands.push(x => x.startsWith(col, val));
+    }
+    isIn(col: FieldMetadata<any>, val: any[]): void {
+        this.commands.push(x => x.isIn(col, val));
+    }
+    custom(customItem: any): void {
+        this.promises.push(
+            (async () => {
+                let r = await this.translateCustom(customItem);
+                if (r)
+                    r.__applyToConsumer(this);
+            })()
+        )
+
+    }
+    databaseCustom(custom: any) {
+        this.commands.push(x => x.databaseCustom(custom));
+    }
+    async resolve() {
+        while (this.promises.length > 0) {
+            let p = this.promises;
+            this.promises = [];
+            await Promise.all(p);
+        }
+    }
+
 }
