@@ -1,4 +1,4 @@
-import { SignedInGuard } from '@remult/angular';
+import { AuthenticatedInGuard } from '@remult/angular';
 import { Injectable } from '@angular/core';
 
 
@@ -9,7 +9,7 @@ export const Roles = {
 
 
 @Injectable()
-export class AdminGuard extends SignedInGuard {
+export class AdminGuard extends AuthenticatedInGuard {
 
     isAllowed() {
         return Roles.admin;

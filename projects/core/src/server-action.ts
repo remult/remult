@@ -123,7 +123,7 @@ export interface BackendMethodOptions<type> {
     blockUser?: boolean;
     queue?: boolean;
 }
-var isNode=new Function("try {return this===global;}catch(e){return false;}");
+var isNode = new Function("try {return this===global;}catch(e){return false;}");
 
 export const actionInfo = {
     allActions: [] as any[],
@@ -469,7 +469,8 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Se
                     args[i] = x.valueConverter.fromJson(args[i]);
                 let eo = getEntitySettings(types[i], false);
                 if (eo != null) {
-                    args[i] = await context.for(types[i]).findId(args[i]);
+                    if (!(args[i] === null || args[i] === undefined))
+                        args[i] = await context.for(types[i]).findId(args[i]);
                 }
 
 

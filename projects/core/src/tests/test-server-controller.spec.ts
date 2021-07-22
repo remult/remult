@@ -91,6 +91,8 @@ class testBasics {
     }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
+        if (entity===null)
+        return "null";
         return entity.name;
     }
     @BackendMethod({ allowed: true })
@@ -132,6 +134,10 @@ describe("test Server Controller basics", () => {
     itAsync("send entity to server ", async () => {
         let e = await c.for(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.sendEntityAsParamter(e)).toBe('test');
+    });
+    itAsync("send entity to server ", async () => {
+        
+        expect(await testBasics.sendEntityAsParamter(null)).toBe('null');
     });
     itAsync("send entity to server prepare args to send ", async () => {
         let e = await c.for(testEntity).create({ name: 'test' }).save();

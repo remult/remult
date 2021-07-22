@@ -36,7 +36,7 @@ export class Filter {
             if (Array.isArray(r))
                 return new AndFilter(
                     //@ts-ignore
-                    ...await Promise.all( r.map(async x => {
+                    ...await Promise.all(r.map(async x => {
                         if (typeof x === "function")
                             return this.translateWhereToFilter(entity, x);
                         return await x
@@ -165,27 +165,34 @@ export interface FilterConsumer {
 
 
 export class AndFilter extends Filter {
-
+    readonly filters: Filter[];
     constructor(...filters: Filter[]) {
         super(add => {
-            for (const iterator of filters) {
+            for (const iterator of this.filters) {
                 if (iterator)
                     iterator.__applyToConsumer(add);
             }
         });
+        this.filters = filters;
     }
+    add(filter: Filter) {
+        this.filters.push(filter);
+    }
+
 }
 export class OrFilter extends Filter {
+    readonly filters: Filter[];
 
     constructor(...filters: Filter[]) {
         super(add => {
-            let f = filters.filter(x => x !== undefined);
+            let f = this.filters.filter(x => x !== undefined);
             if (f.length > 1) {
                 add.or(f);
             }
             else if (f.length == 1)
                 f[0].__applyToConsumer(add);
         });
+        this.filters = filters;
     }
 }
 

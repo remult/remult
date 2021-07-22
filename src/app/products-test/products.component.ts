@@ -24,27 +24,24 @@ import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
   height: '1500px'
 
 })
-export class ProductsComponent {
-  @Field({})
-  @DataControl({ width: '50px' })
-  x: number;
-  @Field()
-  @DataControl({})
-  y: string;
-  @Field()
-  @DataControl({})
-  z: string;
-  get $() { return getFields(this) }
+export class ProductsComponent implements OnInit {
+
   constructor(private context: Context) {
 
   }
-  products = new GridSettings(this.context.for(Products));
+  products = new GridSettings(this.context.for(Products), { allowCrud: true });
+  async ngOnInit() {
+    let p = await this.context.for(Products).findFirst();
+    //this.title = p?.name;
+    this.title = await ProductsComponent.doIt(null);
+  }
+  title: string;
 
-  area = new DataAreaSettings({
-    fields: () => [this.$.x,
-    [this.$.x, this.$.y],
-    [this.$.x]
-    ]
-  })
 
+  @BackendMethod({ allowed: true })
+  static async doIt(p:Products) {
+    if (p==null)
+    return 'null';
+    return p.name;
+  }
 }

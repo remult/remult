@@ -27,6 +27,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] create axios sample with jwt
 [V] make where awaitable
 [] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
+[] investigate the error of first area when getting the context for first image
 [V] rename the isSignedIn method to authenticated
 [V] move all projects to github/remult
 [V] fix version to be 0.1.0
@@ -60,6 +61,8 @@ SqlGateway - recieves and does something specific.
 [] restricted id to be number or string
 [] field container type vs entity type vs target
 [] consider more parameters to entity where, since there is no way to get to the column key or name etc... from a where statement
+[] should find id accept null or undefined - or should it throw an exception?
+[] consider making db name awaitable - since it may rely on an sql that relies on an awaitable promise where
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.

@@ -10,7 +10,7 @@ import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 import { Context, FieldMetadata, ValueListItem } from 'remult';
 import { actionInfo } from 'remult/src/server-action';
 
-import { NotSignedInGuard, SignedInGuard, RouteHelperService } from './navigate-to-component-route-service';
+import { NotSignedInGuard, AuthenticatedInGuard, RouteHelperService } from './navigate-to-component-route-service';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BusyService, LoaderInterceptor } from './wait/busy-service';
@@ -52,7 +52,7 @@ import { Repository, EntityOrderBy, EntityWhere, EntityMetadata } from 'remult';
     useFactory: buildContext,
     deps: [HttpClient, MatDialog]
   },
-    NotSignedInGuard, SignedInGuard, RouteHelperService,
+    NotSignedInGuard, AuthenticatedInGuard, RouteHelperService,
     BusyService,
 
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
