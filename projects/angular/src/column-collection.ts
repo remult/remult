@@ -389,7 +389,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
       dbReadOnly: false,
       inputType: settings.inputType,
       isServerExpression: false,
-
+      getDbName: async () => settings.dbName,
       target: undefined
 
     }
@@ -406,6 +406,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
     readonly key: string;
     readonly target: ClassType<valueType>;
     readonly valueType: any;
+    getDbName: () => Promise<string>;
 
     caption: string;
     readonly inputType: string;

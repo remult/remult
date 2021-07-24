@@ -1804,18 +1804,18 @@ describe("test data list", () => {
   });
 
 
-  it("dbname of entity string works", () => {
+  itAsync("dbname of entity string works", async () => {
     let type = class extends Categories {
 
     }
     Entity({ key: 'testName', dbName: 'test' })(type);
     let r = new Context().for(type);
-    expect(r.metadata.dbName).toBe('test');
+    expect((await r.metadata.getDbName())).toBe('test');
   });
-  it("dbname of entity can use column names", () => {
+  itAsync("dbname of entity can use column names", async () => {
 
     let r = new Context().for(EntityWithLateBoundDbName);
-    expect(r.metadata.dbName).toBe('(select CategoryID)');
+    expect((await r.metadata.getDbName())).toBe('(select CategoryID)');
   });
 
 
@@ -2141,7 +2141,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
 }
 @Entity<EntityWithLateBoundDbName>({
   key: 'stam',
-  dbName: t => '(select ' + t.id.dbName + ')'
+  dbName: async (t, c) => '(select ' + await t.id.getDbName() + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
   @Field({ dbName: 'CategoryID' })

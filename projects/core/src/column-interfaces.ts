@@ -23,7 +23,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
     allowNull?: boolean;
 
     dbName?: string;
-    sqlExpression?: string | ((entity: EntityMetadata<entityType>, context: Context) => string);
+    sqlExpression?: string | ((entity: EntityMetadata<entityType>, context: Context) => string | Promise<string>);
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     valueConverter?: ValueConverter<valueType>;
@@ -40,11 +40,10 @@ export interface FieldMetadata<valueType = any> {
     readonly caption: string;
     readonly inputType: string;
     readonly allowNull: boolean;
-
+    getDbName(): Promise<string>;
 
     readonly isServerExpression: boolean;
     readonly dbReadOnly: boolean;
-    readonly dbName: string;
     readonly valueConverter: ValueConverter<valueType>;
     readonly options: FieldOptions;
 

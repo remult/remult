@@ -63,6 +63,8 @@ SqlGateway - recieves and does something specific.
 [] consider more parameters to entity where, since there is no way to get to the column key or name etc... from a where statement
 [] should find id accept null or undefined - or should it throw an exception?
 [] consider making db name awaitable - since it may rely on an sql that relies on an awaitable promise where
+[] api call shouldnt run load on the server probably since it's just returning values - but what if there is a server expression, should it load then? or should it load in any case.
+[] should server expressions wait for the load of all fields and then calculate?
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
@@ -245,10 +247,10 @@ export interface IdMetadata<entityType = any> {
 export interface EntityMetadata<entityType = any> {
     readonly idMetadata: IdMetadata<entityType>;
     readonly key: string,
-    readonly dbName: string,
     readonly fields: FieldsMetadata<entityType>,
     readonly caption: string;
     readonly options: EntityOptions;
+    getDbName():Promise<string>;
 }
 export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
@@ -297,7 +299,7 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]  | EntityWhere<entityType>)) | EntityWhere<entityType>[];
+export declare type EntityWhere<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[] | EntityWhere<entityType>)) | EntityWhere<entityType>[];
 
 
 

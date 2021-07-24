@@ -7,6 +7,8 @@ import { allEntities, Context } from '../src/context';
 import { EntityQueueStorage, JobsInQueueEntity } from '../server/expressBridge';
 import { DateOnlyValueConverter } from '../valueConverters';
 
+import { isDbReadonly } from '../src/data-providers/sql-database';
+
 
 export interface PostgresPool extends PostgresCommandSource {
     connect(): Promise<PostgresClient>;
@@ -30,7 +32,8 @@ export class PostgresDataProvider implements SqlImplementation {
     }
     async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityMetadata) {
         let r = await command.execute(insertStatementString);
-        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + entity.dbName + "','" + entity.idMetadata.field.dbName + "'));");
+
+        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + await entity.getDbName() + "','" + await entity.idMetadata.field.getDbName() + "'));");
         return +r.rows[0].currval;
     }
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
@@ -96,49 +99,51 @@ export class PostgresSchemaBuilder {
         console.log("start verify structure");
         let context = new Context();
         for (const entity of allEntities) {
-            let x = context.for(entity);
+            let metadata = context.for(entity).metadata;
+
             try {
 
-                if (x.metadata.dbName.toLowerCase().indexOf('from ') < 0) {
-                    await this.createIfNotExist(x.metadata);
-                    await this.verifyAllColumns(x.metadata);
+                if ((await metadata.getDbName()).toLowerCase().indexOf('from ') < 0) {
+                    await this.createIfNotExist(metadata);
+                    await this.verifyAllColumns(metadata);
                 }
             }
             catch (err) {
-                console.log("failed verify structore of " + x.metadata.dbName + " ", err);
+                console.log("failed verify structore of " + await metadata.getDbName() + " ", err);
             }
         }
     }
     async createIfNotExist(e: EntityMetadata): Promise<void> {
         var c = this.pool.createCommand();
-        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken(e.dbName.toLowerCase()) + this.additionalWhere).then(async r => {
+
+        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken((await e.getDbName()).toLowerCase()) + this.additionalWhere).then(async r => {
 
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of e.fields) {
-                    if (!x.dbReadOnly && !x.isServerExpression) {
+                    if (!await isDbReadonly(x)) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
 
                         if (x == e.idMetadata.field && e.options.dbAutoIncrementId)
-                            result += x.dbName + ' serial';
+                            result += await x.getDbName() + ' serial';
                         else {
-                            result += this.addColumnSqlSyntax(x);
+                            result += this.addColumnSqlSyntax(x, await x.getDbName());
                             if (x == e.idMetadata.field)
                                 result += ' primary key';
                         }
                     }
                 }
 
-                let sql = 'create table ' + e.dbName + ' (' + result + '\r\n)';
+                let sql = 'create table ' + await e.getDbName() + ' (' + result + '\r\n)';
                 console.log(sql);
                 await this.pool.execute(sql);
             }
         });
     }
-    private addColumnSqlSyntax(x: FieldMetadata) {
-        let result = x.dbName;
+    private addColumnSqlSyntax(x: FieldMetadata, dbName: string) {
+        let result = dbName;
         if (x.valueConverter.fieldTypeInDb) {
             if (x.valueType == Number && !x.valueConverter.fieldTypeInDb)
                 result += " numeric" + (x.allowNull ? "" : " default 0 not null");
@@ -167,7 +172,7 @@ export class PostgresSchemaBuilder {
     }
 
     async addColumnIfNotExist<T extends EntityMetadata>(e: T, c: ((e: T) => FieldMetadata)) {
-        if (c(e).dbReadOnly || c(e).isServerExpression)
+        if (await isDbReadonly(c(e)))
             return;
         try {
             let cmd = this.pool.createCommand();
@@ -175,9 +180,9 @@ export class PostgresSchemaBuilder {
             if (
                 (await cmd.execute(`select 1   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken(c(e).dbName.toLocaleLowerCase())}` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken((await e.getDbName()).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((await c(e).getDbName()).toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
-                let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(c(e))}`;
+                let sql = `alter table ${await e.getDbName()} add column ${this.addColumnSqlSyntax(c(e), await c(e).getDbName())}`;
                 console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -193,12 +198,12 @@ export class PostgresSchemaBuilder {
 
             let cols = (await cmd.execute(`select column_name   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken(e.dbName.toLocaleLowerCase())} ` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken((await e.getDbName()).toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
             for (const col of e.fields) {
-                if (!col.dbReadOnly && !col.isServerExpression)
-                    if (!cols.includes(col.dbName.toLocaleLowerCase())) {
-                        let sql = `alter table ${e.dbName} add column ${this.addColumnSqlSyntax(col)}`;
+                if (!await isDbReadonly(col))
+                    if (!cols.includes((await col.getDbName()).toLocaleLowerCase())) {
+                        let sql = `alter table ${await e.getDbName()} add column ${this.addColumnSqlSyntax(col, await col.getDbName())}`;
                         console.log(sql);
                         await this.pool.execute(sql);
                     }

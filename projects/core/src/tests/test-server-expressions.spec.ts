@@ -5,7 +5,7 @@ import { Field, Entity, EntityBase } from '../remult3';
 
 
 
-describe("test server expression value",  () => {
+describe("test server expression value", () => {
     itAsync("test basics create", async () => {
 
         let c = new ServerContext(new InMemoryDataProvider());
@@ -37,7 +37,7 @@ describe("test server expression value",  () => {
     itAsync("test doesnt calc on client", async () => {
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
-        
+
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.for(testServerExpression).create();
@@ -63,6 +63,7 @@ describe("test server expression value",  () => {
         expect(testServerExpression.testVal).toBe(1);
         expect(testServerExpression.testVal2).toBe(11);
     });
+  
 
 
 
@@ -77,5 +78,5 @@ class testServerExpression extends EntityBase {
     @Field({ serverExpression: () => testServerExpression.testVal++ })
     test: number;
     @Field({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
-    testPromise :number;
+    testPromise: number;
 }

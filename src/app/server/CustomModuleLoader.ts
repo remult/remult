@@ -15,7 +15,6 @@ export class CustomModuleLoader {
                 case "remult":
                     request = request = process.cwd() + root + '/core';
                     break;
-
                 case "@remult/angular":
                     request = request = process.cwd() + root + '/angular';
                     break;

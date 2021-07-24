@@ -7,7 +7,7 @@ import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
-import { itAsync } from './testHelper.spec';
+import { fitAsync, itAsync } from './testHelper.spec';
 
 
 

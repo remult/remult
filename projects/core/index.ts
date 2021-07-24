@@ -11,7 +11,7 @@ export {
     EntityMetadata,
     EntityOrderBy,
     EntityWhere,
-
+    
     FindOptions,
     IterableResult,
     IterateOptions,

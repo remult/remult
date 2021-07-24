@@ -188,31 +188,31 @@ describe("grid filter stuff", () => {
     expect(await c.count(w)).toBe(1);
 
   });
-  it("filter with contains", () => {
+  itAsync("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
-    expect(x.where).toBe(" where lower (col) like lower ('%no''am%')");
+    expect(await x.resolveWhere()).toBe(" where lower (col) like lower ('%no''am%')");
   });
-  it("filter with contains", () => {
+  itAsync("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
-    expect(x.where).toBe(" where lower (col) like lower ('%no''a''m%')");
+    expect(await x.resolveWhere()).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
-  it("filter with start with", () => {
+  itAsync("filter with start with", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "?",
       execute: () => { throw "rr" }
     });
     x.startsWith(new mockColumnDefs("col"), "no'am");
-    expect(x.where).toBe(" where col like ?");
+    expect(await x.resolveWhere()).toBe(" where col like ?");
   });
 
   itAsync("test filter works with selected rows", async () => {
@@ -1216,15 +1216,15 @@ class typeB extends typeA {
 
 }
 describe("decorator inheritance", () => {
-  it("entity extends", () => {
+  itAsync("entity extends", async () => {
 
     let c = new ServerContext();
     let defsA = c.for(typeA).metadata;
     expect(defsA.key).toBe('typeA');
-    expect(defsA.dbName).toBe('dbnameA');
+    expect((await defsA.getDbName())).toBe('dbnameA');
     let defsB = c.for(typeB).metadata;
     expect(defsB.key).toBe("typeB");
-    expect(defsB.dbName).toBe("dbnameA");;
+    expect((await defsB.getDbName())).toBe("dbnameA");;
 
   });
 
@@ -1535,6 +1535,9 @@ class myDp extends ArrayEntityDataProvider {
 class mockColumnDefs implements FieldMetadata {
   constructor(public dbName: string) {
 
+  }
+  async getDbName(): Promise<string> {
+    return this.dbName;
   }
   options: FieldOptions<any, any>;
   valueConverter: ValueConverter<any> = DefaultValueConverter;

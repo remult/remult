@@ -23,7 +23,7 @@ export interface EntityOptions<entityType = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: FieldsMetadata<entityType>, context: Context) => string);
+  dbName?: string | ((entity: FieldsMetadata<entityType>, context: Context) => string | Promise<string>);
   /**A human readable name for the entity */
   caption?: string | ((context: Context) => string);
   includeInApi?: boolean;

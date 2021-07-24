@@ -5,7 +5,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories } from './remult-3-entities';
 
 
-describe("test sql database",  () => {
+describe("test sql database", () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
     let context = new ServerContext();
     context.setDataProvider(db);
@@ -14,19 +14,19 @@ describe("test sql database",  () => {
             await c._.delete();
         }
     }
-     itAsync("test basics", async () => {
+    itAsync("test basics", async () => {
         await deleteAll();
-        expect (await context.for(Categories).count()).toBe(0);
+        expect(await context.for(Categories).count()).toBe(0);
         let c = context.for(Categories).create();
-        c.id=1;
+        c.id = 1;
         c.categoryName = "noam";
         await c._.save();
-        expect (await context.for(Categories).count()).toBe(1);
+        expect(await context.for(Categories).count()).toBe(1);
         let cats = await context.for(Categories).find();
         expect(cats.length).toBe(1);
         expect(cats[0].id).toBe(1);
         expect(cats[0].categoryName).toBe("noam");
     });
-    
+
 
 });

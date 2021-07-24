@@ -39,7 +39,7 @@ describe("test object column", () => {
         expect(x.phone1).toBeNull();
         expect(x.phone2).toBeNull();
         expect(x.phone3).toBeNull();
-        let sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.metadata.dbName)).rows[0];
+        let sqlr = (await db.execute('select phone1,phone2,phone3 from ' + (await x._.repository.metadata.getDbName()))).rows[0];
         expect(sqlr.phone1).toBe('');
         expect(sqlr.phone2).toBeNull();
         expect(sqlr.phone3).toBe('');
@@ -49,7 +49,7 @@ describe("test object column", () => {
             phone3: new Phone("789")
         });
         await x.save();
-        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.metadata.dbName)).rows[0];
+        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + (await x._.repository.metadata.getDbName()))).rows[0];
         expect(sqlr.phone1).toBe('123');
         expect(sqlr.phone2).toBe('456');
         expect(sqlr.phone3).toBe('789');
@@ -61,7 +61,7 @@ describe("test object column", () => {
 
 
 
-        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + x._.repository.metadata.dbName)).rows[0];
+        sqlr = (await db.execute('select phone1,phone2,phone3 from ' + (await x._.repository.metadata.getDbName()))).rows[0];
         expect(sqlr.phone1).toBe('');
         expect(sqlr.phone2).toBeNull();
         expect(sqlr.phone3).toBe('');
@@ -121,7 +121,7 @@ describe("test object column", () => {
         x.tags = ["a", "b"];
         await x.save();
         expect(x.tags).toEqual(["a", "b"]);
-        let sqlr = (await db.execute('select tags,tags2 from ' + x._.repository.metadata.dbName)).rows[0];
+        let sqlr = (await db.execute('select tags,tags2 from ' + (await x._.repository.metadata.getDbName()))).rows[0];
         expect(sqlr.tags).toBe(JSON.stringify(["a", "b"]));
         expect(sqlr.tags2).toBeNull();
     });

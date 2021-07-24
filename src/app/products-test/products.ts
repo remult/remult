@@ -24,10 +24,10 @@ export class GroupsValue {
 @Entity({
   key: "Products",
   allowApiCrud: true,
-  dbName: () => {
-    
-    return 'Products';
-  },
+  dbName: async () =>
+    new Promise(res => setTimeout(() => {
+      res('Products')
+    }, 10)),
   apiDataFilter: (e, c) => {
 
     return new Filter();

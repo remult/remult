@@ -5,16 +5,17 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, IntegerField } from '../remult3';
 
-describe("test sql database", () => {
-    let db = new SqlDatabase(new WebSqlDataProvider("test"));
+describe("test sql database expressions", () => {
+    let web = new WebSqlDataProvider("test");
+    let db = new SqlDatabase(web);
     let context = new ServerContext();
     context.setDataProvider(db);
     async function deleteAll() {
-        for (const c of await context.for(testSqlExpression).find()) {
-            await c._.delete();
-        }
+        await web.dropTable(context.for(testSqlExpression).metadata);
+        await web.dropTable(context.for(expressionEntity).metadata);
+
     }
     itAsync("test basics", async () => {
         await deleteAll();
@@ -28,23 +29,32 @@ describe("test sql database", () => {
 
         expect(x.testExpression).toBe(15);
     });
-    it("test undefined behaves as a column", () => {
+    itAsync("test undefined behaves as a column", async () => {
+        await deleteAll();
         let x = context.for(expressionEntity);
-        expect(x.metadata.fields.col.dbName).toBe('col');
-        expect(x.metadata.fields.col.dbReadOnly).toBe(false);
-        let c=  new ServerContext();
-        expressionEntity.yes= true;
-         x = context.for(expressionEntity);
-        expect(x.metadata.fields.col.dbName).toBe('name');
-        expect(x.metadata.fields.col.dbReadOnly).toBe(true);
+        expect((await x.metadata.fields.col.getDbName())).toBe('col');
+        expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
+        //expect(x.metadata.fields.col.dbReadOnly).toBe(false);
+        let c = new ServerContext(db);
+        expressionEntity.yes = true;
+        x = c.for(expressionEntity);
+        expect(await x.metadata.fields.col.getDbName()).toBe("'1+1'");
+        expect((await x.create({ col: 'abc', id: 2 }).save()).col).toBe('1+1');
+        //expect(x.metadata.fields.col.dbReadOnly).toBe(true);
+    });
+    itAsync("test asyync dbname", async () => {
+        let z = await context.for(testServerExpression1).metadata.getDbName();
+        expect(z).toBe('testServerExpression1');
     });
 
 });
 @Entity({ key: 'expressionEntity' })
 class expressionEntity extends EntityBase {
+    @IntegerField()
+    id: number;
     static yes: boolean;
     @Field({
-        sqlExpression: () => expressionEntity.yes ? 'name' : undefined
+        sqlExpression: async () => expressionEntity.yes ? "'1+1'" : undefined
     })
     col: string;
 }
@@ -58,11 +68,23 @@ class testSqlExpression extends EntityBase {
     code: number;
     @Field<testSqlExpression>(
         {
-            sqlExpression: (x) => {
-                return x.fields.code.dbName + ' * 5';
+            sqlExpression: async (x) => {
+                return await x.fields.code.getDbName() + ' * 5';
             }
         }
     )
     testExpression: number;
+
+}
+
+@Entity({
+    key: 'testServerExpression1', dbName: async () => new Promise(res => setTimeout(() => {
+        res('testServerExpression1');
+    }, 30))
+})
+class testServerExpression1 extends EntityBase {
+
+    @Field()
+    code: number;
 
 }

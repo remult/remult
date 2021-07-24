@@ -66,21 +66,13 @@ export class Filter {
     static extractWhere<T>(entityDefs: EntityMetadata<T>, filterInfo: { get: (key: string) => any; }): Filter {
         return extractWhere([...entityDefs.fields], filterInfo);
     }
-    static async translateWhereForEntity<T>(entity: EntityMetadata<T>, where: EntityWhere<T>, context: Context, translateCustomFilter: boolean) {
-        if (entity.options.fixedFilter)
-            where = [where, entity.options.fixedFilter];
-        let filterFactories = Filter.createFilterFactories(entity)
-        let r = await Filter.translateWhereToFilter(filterFactories, where);
-        if (r && translateCustomFilter) {
-            let f = new customTranslator(async custom => {
-                return await entity.options.customFilterBuilder().translateFilter(filterFactories, custom, context);
-            });
-            r.__applyToConsumer(f);
-
-            await f.resolve();
-            r = new Filter(x => f.applyTo(x));
-
-        }
+    static async translateCustomWhere<T>(entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, r: Filter, context: Context) {
+        let f = new customTranslator(async custom => {
+            return await entity.options.customFilterBuilder().translateFilter(filterFactories, custom, context);
+        });
+        r.__applyToConsumer(f);
+        await f.resolve();
+        r = new Filter(x => f.applyTo(x));
         return r;
     }
 

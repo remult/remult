@@ -20,8 +20,9 @@ export class SqlDatabase implements DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async () => {
-      if (this.createdEntities.indexOf(entity.dbName) < 0) {
-        this.createdEntities.push(entity.dbName);
+
+      if (this.createdEntities.indexOf(await entity.getDbName()) < 0) {
+        this.createdEntities.push(await entity.getDbName());
         await this.sql.entityIsUsedForTheFirstTime(entity);
       }
     }, this.sql);
@@ -115,12 +116,13 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
   async count(where: Filter): Promise<number> {
     await this.iAmUsed();
-    let select = 'select count(*) count from ' + this.entity.dbName;
+
+    let select = 'select count(*) count from ' + await this.entity.getDbName();
     let r = this.sql.createCommand();
     if (where) {
       let wc = new FilterConsumerBridgeToSqlRequest(r);
       where.__applyToConsumer(wc);
-      select += wc.where;
+      select += await wc.resolveWhere();
     }
 
     return r.execute(select).then(r => {
@@ -130,6 +132,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   }
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     await this.iAmUsed();
+
     let select = 'select ';
     let colKeys: FieldMetadata[] = [];
     for (const x of this.entity.fields) {
@@ -139,18 +142,18 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       else {
         if (colKeys.length > 0)
           select += ', ';
-        select += x.dbName;
+        select += await x.getDbName();
         colKeys.push(x);
       }
     }
 
-    select += '\n from ' + this.entity.dbName;
+    select += '\n from ' + await this.entity.getDbName();
     let r = this.sql.createCommand();
     if (options) {
       if (options.where) {
         let where = new FilterConsumerBridgeToSqlRequest(r);
         options.where.__applyToConsumer(where);
-        select += where.where;
+        select += await where.resolveWhere();
       }
       if (options.limit) {
         options.orderBy = Sort.createUniqueSort(this.entity, x => options.orderBy?.Segments);
@@ -164,7 +167,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           }
           else segs.push(s);
         }
-        segs.forEach(c => {
+        for (const c of segs) {
           if (first) {
             select += ' Order By ';
             first = false;
@@ -172,11 +175,10 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             select += ', ';
 
-          select += c.field.dbName;
+          select += await c.field.getDbName();
           if (c.isDescending)
             select += ' desc';
-        });
-
+        }
       }
 
       if (options.limit) {
@@ -206,6 +208,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       });
     });
   }
+
   async update(id: any, data: any): Promise<any> {
     await this.iAmUsed();
 
@@ -213,7 +216,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let f = new FilterConsumerBridgeToSqlRequest(r);
     this.entity.idMetadata.getIdFilter(id).__applyToConsumer(f);
 
-    let statement = 'update ' + this.entity.dbName + ' set ';
+    let statement = 'update ' + await this.entity.getDbName() + ' set ';
     let added = false;
     let resultFilter = this.entity.idMetadata.getIdFilter(id);
     if (data.id != undefined)
@@ -221,7 +224,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
         resultFilter = x.resultIdFilter(id, data);
-      } if (x.dbReadOnly || x.isServerExpression) { }
+      } if (await isDbReadonly(x)) { }
       else {
         let v = x.valueConverter.toDb(data[x.key]);
         if (v !== undefined) {
@@ -230,12 +233,12 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             statement += ', ';
 
-          statement += x.dbName + ' = ' + r.addParameterAndReturnSqlToken(v);
+          statement += await x.getDbName() + ' = ' + r.addParameterAndReturnSqlToken(v);
         }
       }
     }
 
-    statement += f.where;
+    statement += await f.resolveWhere();
 
     return r.execute(statement).then(() => {
       return this.find({ where: resultFilter }).then(y => y[0]);
@@ -245,15 +248,17 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   }
   async delete(id: any): Promise<void> {
     await this.iAmUsed();
+
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
     this.entity.idMetadata.getIdFilter(id).__applyToConsumer(f);
-    let statement = 'delete from ' + this.entity.dbName;
-    statement += f.where;
+    let statement = 'delete from ' + await this.entity.getDbName();
+    statement += await f.resolveWhere();
     return r.execute(statement).then(() => { });
   }
   async insert(data: any): Promise<any> {
     await this.iAmUsed();
+
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
     let cols = '';
@@ -266,7 +271,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       resultFilter = this.entity.idMetadata.getIdFilter(data[this.entity.idMetadata.field.key]);
     for (const x of this.entity.fields) {
 
-      if (x.dbReadOnly || x.isServerExpression) { }
+      if (await isDbReadonly(x)) { }
 
       else {
         let v = x.valueConverter.toDb(data[x.key]);
@@ -278,14 +283,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
             vals += ', ';
           }
 
-          cols += x.dbName;
+          cols += await x.getDbName();
           vals += r.addParameterAndReturnSqlToken(v);
         }
       }
     }
 
 
-    let statement = `insert into ${this.entity.dbName} (${cols}) values (${vals})`;
+    let statement = `insert into ${await this.entity.getDbName()} (${cols}) values (${vals})`;
     if (this.entity.options.dbAutoIncrementId) {
       let newId = await this.strategy.insertAndReturnAutoIncrementId(r, statement, this.entity);
       resultFilter = new Filter(x => x.isEqualTo(this.entity.idMetadata.field, newId));
@@ -297,4 +302,8 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
   }
 
+}
+
+export async function isDbReadonly(x: FieldMetadata) {
+  return (x.dbReadOnly || x.isServerExpression || await x.getDbName() != x.options.dbName)
 }

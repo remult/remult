@@ -38,7 +38,7 @@ describe("test where stuff", () => {
     });
     itAsync("test basics_2_1", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x =>Promise.resolve( x.id.isGreaterOrEqualTo(2))
+            where: x => Promise.resolve(x.id.isGreaterOrEqualTo(2))
         };
         expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where, () => undefined])).toBe(2);
     });
@@ -65,11 +65,11 @@ describe("custom filter", () => {
         let w = new WebSqlDataProvider("testWithFilter");
 
         let c = new ServerContext(new SqlDatabase(w)).for(entityForCustomFilter);
-        w.dropTable(c.metadata);
+        await w.dropTable(c.metadata);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => SqlDatabase.customFilter(x => x.sql = e.id.metadata.dbName + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
+        expect(await (c.count(e => SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
         expect(await (c.count(e => entityForCustomFilter.filter.build({ dbOneOrThree: true })))).toBe(2);
     });
@@ -160,7 +160,7 @@ describe("custom filter", () => {
 
 @Entity({
     key: 'entityForCustomFilter',
-    customFilterBuilder:()=> entityForCustomFilter.filter
+    customFilterBuilder: () => entityForCustomFilter.filter
 })
 class entityForCustomFilter extends EntityBase {
     @Field()
@@ -173,7 +173,7 @@ class entityForCustomFilter extends EntityBase {
             return e.id.isIn([1, 3]);
         if (c.dbOneOrThree) {
 
-            return SqlDatabase.customFilter(x => x.sql = e.id.metadata.dbName + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
+            return SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
                 ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3)
             )
         }

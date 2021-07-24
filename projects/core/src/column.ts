@@ -29,6 +29,9 @@ export class CompoundIdField implements FieldMetadata<string> {
   constructor(...columns: FieldMetadata[]) {
     this.fields = columns;
   }
+  getDbName(): Promise<string> {
+    return Promise.resolve("");
+  }
   getId(instance: any) {
     let r = "";
     this.fields.forEach(c => {
@@ -128,7 +131,7 @@ export class LookupColumn<T> {
 
   constructor(private repository: RepositoryImplementation<T>, public id: string
   ) { }
-  
+
   get item(): T {
 
     return this.get(this.id);
@@ -174,7 +177,7 @@ export class OneToMany<T>{
   async create(item?: Partial<T>): Promise<T> {
     let r = this.provider.create();
     await __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
-    set(r,item);
+    set(r, item);
     if (this.settings.create)
       this.settings.create(r);
     return r;

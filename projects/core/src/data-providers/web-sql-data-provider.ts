@@ -4,7 +4,7 @@ import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 import { EntityMetadata } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
-import { SqlDatabase } from "./sql-database";
+import { isDbReadonly, SqlDatabase } from "./sql-database";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
@@ -31,16 +31,19 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     }
 
     async dropTable(entity: EntityMetadata) {
-        await this.createCommand().execute('drop  table if exists ' + entity.dbName);
+        let sql = 'drop  table if exists ' + await entity.getDbName();
+        if (SqlDatabase.LogToConsole)
+            console.log(sql);
+        await this.createCommand().execute(sql);
     }
     async createTable(entity: EntityMetadata<any>) {
         let result = '';
         for (const x of entity.fields) {
-            if (!x.dbReadOnly) {
+            if (!await isDbReadonly(x)) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
-                result += this.addColumnSqlSyntax(x);
+                result += this.addColumnSqlSyntax(x, await x.getDbName());
                 if (x.key == entity.idMetadata.field.key) {
                     result += ' primary key';
                     if (entity.options.dbAutoIncrementId)
@@ -48,7 +51,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 }
             }
         }
-        let sql = 'create table if not exists ' + entity.dbName + ' (' + result + '\r\n)';
+        let sql = 'create table if not exists ' + await entity.getDbName() + ' (' + result + '\r\n)';
         if (SqlDatabase.LogToConsole)
             console.log(sql);
         await this.createCommand().execute(sql);
@@ -62,8 +65,8 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         throw new Error("Method not implemented.");
     }
 
-    private addColumnSqlSyntax(x: FieldMetadata) {
-        let result = x.dbName;
+    private addColumnSqlSyntax(x: FieldMetadata, dbName: string) {
+        let result = dbName;
         if (x.valueType == Date)
             result += " integer";
         else if (x.valueType == Boolean)
@@ -72,7 +75,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
             if (!x.valueConverter.fieldTypeInDb)
                 result += ' real default 0 not null';
             else
-                result +=' '+ x.valueConverter.fieldTypeInDb + ' default 0 not null';
+                result += ' ' + x.valueConverter.fieldTypeInDb + ' default 0 not null';
         }
         else
             result += " text" + (x.allowNull ? " " : " default '' not null ");

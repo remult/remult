@@ -363,7 +363,15 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
     private async translateWhereToFilter(where: EntityWhere<entityType>): Promise<Filter> {
-        return Filter.translateWhereForEntity(this.metadata, where, this.context, !this.dataProvider.supportsCustomFilter)
+        if (this.metadata.options.fixedFilter)
+            where = [where, this.metadata.options.fixedFilter];
+        let filterFactories = Filter.createFilterFactories(this.metadata)
+        let r = await Filter.translateWhereToFilter(filterFactories, where);
+        if (r && !this.dataProvider.supportsCustomFilter) {
+            r = await Filter.translateCustomWhere(this.metadata, filterFactories, r, this.context);
+        }
+        return r;
+
     }
 
 }
@@ -981,6 +989,30 @@ export class columnDefsImpl implements FieldMetadata {
 
 
     }
+    dbNamePromise: Promise<string>;
+    getDbName(): Promise<string> {
+        if (this.dbNamePromise)
+            return this.dbNamePromise;
+        this.dbNamePromise = (async () => {
+
+            if (this.colInfo.settings.sqlExpression) {
+                if (typeof this.colInfo.settings.sqlExpression === "function") {
+                    return this.colInfo.settings.sqlExpression(this.entityDefs, this.context);
+                } else
+                    return this.colInfo.settings.sqlExpression;
+            }
+            return this.colInfo.settings.dbName;
+
+        })().then(x => {
+            if (x)
+                return x;
+            return this.colInfo.settings.dbName;
+
+        });
+        return this.dbNamePromise;
+
+
+    }
     options: FieldOptions<any, any> = this.colInfo.settings;
     target: ClassType<any> = this.colInfo.settings.target;
     readonly: boolean;
@@ -1005,7 +1037,7 @@ export class columnDefsImpl implements FieldMetadata {
     inputType = this.colInfo.settings.inputType;
     key = this.colInfo.settings.key;
     get dbReadOnly() {
-        return this.colInfo.settings.dbReadOnly || this.dbName != this.colInfo.settings.dbName
+        return this.colInfo.settings.dbReadOnly;
     };
     isServerExpression: boolean;
     valueType = this.colInfo.settings.valueType;
@@ -1033,10 +1065,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;
         this.caption = buildCaption(entityInfo.caption, entityInfo.key, context);
-        if (typeof entityInfo.dbName === "string")
-            this.dbName = entityInfo.dbName;
-        else if (typeof entityInfo.dbName === "function")
-            this.dbName = entityInfo.dbName(this.fields, context);
+
         if (entityInfo.id) {
             this.idMetadata.field = entityInfo.id(this.fields)
         } else {
@@ -1046,6 +1075,25 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.idMetadata.field = [...this.fields][0];
         }
     }
+
+    dbNamePromise: Promise<string>;
+    getDbName(): Promise<string> {
+        if (this.dbNamePromise)
+            return this.dbNamePromise;
+        if (typeof this.options.dbName === "string")
+            this.dbNamePromise = Promise.resolve(this.options.dbName);
+        else if (typeof this.options.dbName === "function") {
+
+            let r = this.options.dbName(this.fields, this.context);
+            if (r instanceof Promise)
+                this.dbNamePromise = r;
+            else if (r)
+                this.dbNamePromise = Promise.resolve(r);
+        }
+        return this.dbNamePromise;
+
+    }
+
     idMetadata: IdMetadata<T> = {
         field: undefined,
         createIdInFilter: (items: T[]): Filter => {
