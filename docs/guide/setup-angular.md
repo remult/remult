@@ -32,7 +32,7 @@ cd remult-angular-todo
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
 ```sh
-npm i express remult@next
+npm i express remult
 npm i --save-dev @types/express
 ```
 #### The API server project
@@ -682,6 +682,7 @@ In this section, we'll be using the following packages:
 1. Open a terminal and run the following command to install the required packages:
    ```sh
    npm i jsonwebtoken @auth0/angular-jwt express-jwt
+   npm i --save-dev  @types/jsonwebtoken @types/express-jwt 
    ```
 
 2. Import `jsonwebtoken` into a `jwt` variable in `app.component.ts`.
@@ -715,7 +716,7 @@ In this section, we'll be using the following packages:
    static async signIn(username: string) {
       let validUsers = [
           { id: "1", name: "Jane", roles: [] },
-         { id: "2", name: "Steve", roles: [] }
+          { id: "2", name: "Steve", roles: [] }
       ];
       let user = validUsers.find(user => user.name === username);
       if (!user)
@@ -727,14 +728,14 @@ In this section, we'll be using the following packages:
    ::: warning Note
    The secret key used to sign the JWT should be kept secret (dah) 
 
-5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. Then, provide the `UserInfo` JWT payload (stored by `express-jwt` in `req.user`) to Remult.
+5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{4,7-13}
+   ```ts{3,7-10}
    import * as express from 'express';
    import { initExpress } from 'remult/server';
-   import '../app/app.module';
    import * as expressJwt from 'express-jwt';
+   import '../app/app.module';
 
    let app = express();
    app.use(expressJwt({ 
@@ -900,7 +901,7 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
 2. Add a `context` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
 
    *src/app/task.ts*
-   ```ts{1,7-11,14-16}
+   ```ts{1,7-10,13-15}
    @Entity<Task>({
       key: "tasks",
       allowApiRead: Allow.authenticated,
@@ -935,18 +936,19 @@ In addition, to follow a few basic production best practices, we'll use [compres
 
    ```sh
    npm i compression helmet
+   npm i @types/compression --save-dev
    ```
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{5-6,9-10,19-21}
+   ```ts{4-5,9-10,17-21}
    import * as express from 'express';
    import { initExpress } from 'remult/server';
-   import '../app/app.module';
    import * as expressJwt from 'express-jwt';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
+   import '../app/app.module';
 
    let app = express();
    app.use(helmet());
@@ -1020,25 +1022,26 @@ While the simple backend JSON database provided by `remult` is nice for developm
 
 Let's replace it with a production PostgreSQL database.
 
-1. Install `pg` and `@remult/server-postgres`.
+1. Install `pg`.
 
    ```sh
-   npm i pg @remult/server-postgres
+   npm i pg 
+   npm i --save-dev @types/pg
    ```
 
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{7-9,18-25,28}
+   ```ts{6-8,18-33}
    import * as express from 'express';
    import { initExpress } from 'remult/server';
-   import '../app/app.module';
    import * as expressJwt from 'express-jwt';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
    import { SqlDatabase } from 'remult';
-   import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
+   import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
    import { Pool } from 'pg';
+   import '../app/app.module';
 
    let app = express();
    app.use(helmet());
@@ -1049,14 +1052,18 @@ Let's replace it with a production PostgreSQL database.
       algorithms: ['HS256'] }));
    let getDatabase = () => {
       if (process.env.NODE_ENV === "production") {
-         const db = new SqlDatabase(new PostgresDataProvider(new Pool()));
+         const db = new SqlDatabase(new PostgresDataProvider(new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: {
+                rejectUnauthorized: false
+            }
+         })));
          verifyStructureOfAllEntities(db);
          return db;
       }
       return undefined;
    }
    initExpress(app, {
-      getUserFromRequest: req => req.user,
       dataProvider: getDatabase()
    });
    app.use(express.static('dist/remult-angular-todo'));
@@ -1066,10 +1073,15 @@ Let's replace it with a production PostgreSQL database.
    app.listen(process.env.PORT || 3002, () => console.log("Server started"));
    ```
 
-3. Deploy to Heroku using `git push`:
+3. Commit and deploy to Heroku using `git push`:
 
    ```sh
+   git commit -m "Added Postgres"
    git push heroku master
+   ```
+4. Provision a dev postgres database on Heroku
+   ```sh
+   heroku addons:create heroku-postgresql:hobby-dev
    ```
 
 4. Run the production app using `heroku apps:open` command: 
@@ -1077,39 +1089,3 @@ Let's replace it with a production PostgreSQL database.
    ```sh
    heroku apps:open
    ```
-
-## todo
-[V] finish release of remult after jwt changes introduced in v2.2.1
-
-[V] don't forget to add .env to the .gitignore
-
-[V] Reconsider the Context Injection to use angular http client instead of nothing is it does right now. maybe even consider creating an AppContext and do something with it~~
-
-[V] extract from init express the usage of compression, secure etc... and make the JwtAuthentication recieve a authenticate provider interface that is simple and is implemented with the jwt. make JWTCookieAuthorizationHelper internal and only get sign and validate in the interface.
-
-[] reconsider the find limit - currently it's set by default to 25 and that can cause problems.
-
-[] reconsider separating the setup code - to something the user can extract from a github template - and only worry about the setup if they want to.
-
-[] document the constructor parameters of field
-
-[] verifyStructureOfAllEntities better name (should include the word schema)
-
-[] consider more code reviews
-
-[] code sections prevent scrollbar
-
-[] "set all..." buttons hidden for Steve
-
-[] reflect-metadata should be a dependency of remult core
-
-[] setAuthToken from ngOnInit()
-
-[] add dotenv before secret key
-
-[] upgrade vuepress for code groups
-
-[] check ng new strict 
-
-[] check angular cli versions / node versions
-

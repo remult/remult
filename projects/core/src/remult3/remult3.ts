@@ -26,27 +26,17 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] all generics should get entity and then value type.
 [] create axios sample with jwt
 [V] make where awaitable
-[] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
-[] investigate the error of first area when getting the context for first image
+[V] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
+[V] investigate the error of first area when getting the context for first image
 [V] rename the isSignedIn method to authenticated
 [V] move all projects to github/remult
 [V] fix version to be 0.1.0
-[] reconsider the custom filter with the FD
-
-translateCustomFilter{
-
-}
-
-FindOptions 
-x.name.isEqualTo("asdfasd").and(Filter.custom({dasfda}).and(Filter.customForDb({})))
-
-Rest DataProvider - sends it to the Api Filter.
-to the ApiFilter - gets custom as paramter
-SqlGateway - recieves and does something specific.
+[V] reconsider the custom filter with the FD
 
 
 
 ## review with yoni
+[] switched back to es5 - since react scripts default is es5 and it breaks things
 [] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
 [] consider the different wheres of an entity, to see where it takes us.
 [] talk about isNull and original value (I prefer a parameter instead of another method)
