@@ -34,10 +34,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] reconsider the custom filter with the FD
 [V] investigate unnecessary select for helpers in entity backend method getFamilyImages
 [V] _updateEntityBasedOnApi does not load the values - it should - it is used in server action etc... need to create tests for that.
-[] avoid going to the database in cases, where the value is actually null - for example courier in family deliveries, when it is null.
+[V] avoid going to the database in cases, where the value is actually null - for example courier in family deliveries, when it is null.
 [V] controller field serialization should respect inheritance like entity.
 [] solve issue with bridge from family deliveries to family actions doesn't work.
 [] kill uber context with adding properties to the context like done in vue .
+[] disable the github.io - remult-ts
 
 
 

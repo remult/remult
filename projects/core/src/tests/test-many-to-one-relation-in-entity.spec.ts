@@ -1,13 +1,15 @@
 import { Context, ServerContext } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere } from '../remult3';
+import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere, FieldType } from '../remult3';
 import { async, waitForAsync } from '@angular/core/testing';
 import { Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
-import { fitAsync, itAsync } from './testHelper.spec';
+import { Done, fitAsync, itAsync } from './testHelper.spec';
+import { DataApi } from '../data-api';
+import { TestDataApiResponse } from './basicRowFunctionality.spec';
 
 
 
@@ -533,3 +535,79 @@ z = {
     id: 3,
     name: 'noam'
 }
+
+
+@FieldType<h>({
+    valueConverter: {
+        toJson: x => x != undefined ? x : '',
+        fromJson: x => x ? x : null
+    },
+})
+@Entity<h>({
+    key: 'h',
+    saving: self => {
+        if (self.refH)
+            self.refHId = self.refH.id;
+        else
+            self.refHId = '';
+    },
+    allowApiCrud:true
+
+})
+class h extends EntityBase {
+    @Field()
+    id: string;
+    @Field()
+    refH: h;
+    @Field()
+    refHId: string;
+}
+
+describe("Test entity relation and count finds", () => {
+    itAsync("test it", async () => {
+        let mem = new InMemoryDataProvider();
+        let c = new ServerContext(mem);
+        await c.for(h).create({ id: '1' }).save();
+        expect(mem.rows['h'][0]).toEqual({ id: '1', refH: '', refHId: '' });
+        let countFind = 0;
+        c = new ServerContext({
+            transaction: mem.transaction,
+            getEntityDataProvider: x => {
+                let r = mem.getEntityDataProvider(x);
+                return {
+                    count: r.count,
+                    delete: r.delete,
+                    insert: r.insert,
+                    update: r.update,
+                    find: (o) => {
+                        countFind++;
+                        return r.find(o)
+                    }
+                }
+            }
+        });
+        let h1 = await c.for(h).findId('1');
+        await h1.$.refH.load();
+        expect(countFind).toBe(1);
+    });
+    itAsync("test api", async () => {
+        let mem = new InMemoryDataProvider();
+        let c = new ServerContext(mem);
+        let a = await c.for(h).create({ id: 'a' }).save();
+        let b = await c.for(h).create({ id: 'b' }).save();
+        await c.for(h).create({ id: 'd', refH: a }).save();
+        c = new ServerContext(mem)//clear the cache;
+        let api = new DataApi(c.for(h), c);
+        let t = new TestDataApiResponse();
+        let done = new Done();
+        t.success=d=>{
+            expect(d.id).toBe('d');
+            expect(d.refH).toBe('b');
+            expect(d.refHId).toBe('b');
+            done.ok();
+        }
+        await api.put(t, 'd', { refH: 'b' });
+        done.test();
+    });
+
+});
