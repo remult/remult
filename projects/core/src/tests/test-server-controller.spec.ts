@@ -1,6 +1,6 @@
 import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
-import { prepareArgsToSend, prepareReceivedArgs, Controller,  BackendMethod, BackendMethodOptions } from '../server-action';
+import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
 import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remult3';
 
 import { IdEntity } from '../id-entity';
@@ -91,8 +91,8 @@ class testBasics {
     }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
-        if (entity===null)
-        return "null";
+        if (entity === null)
+            return "null";
         return entity.name;
     }
     @BackendMethod({ allowed: true })
@@ -136,7 +136,7 @@ describe("test Server Controller basics", () => {
         expect(await testBasics.sendEntityAsParamter(e)).toBe('test');
     });
     itAsync("send entity to server ", async () => {
-        
+
         expect(await testBasics.sendEntityAsParamter(null)).toBe('null');
     });
     itAsync("send entity to server prepare args to send ", async () => {
@@ -220,4 +220,32 @@ describe("test Server Controller basics", () => {
 
 
     });
+
 });
+describe("controller with extends ", () => {
+    itAsync("test inheritance in controllers", async () => {
+        let c = new child()
+        c.childField = 'c';
+        c.parentField = 'p';
+        let r = await c.run();
+        expect(r.c).toBe('c');
+        expect(r.p).toBe('p');
+    });
+});
+
+
+@Controller("parent")
+class parent {
+    @Field()
+    parentField: string;
+}
+@Controller("child")
+class child extends parent {
+    @Field()
+    childField: string;
+
+    @BackendMethod({ allowed: true })
+    run() {
+        return { p: this.parentField, c: this.childField };
+    }
+}

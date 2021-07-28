@@ -814,6 +814,16 @@ export function getControllerRef<fieldsContainerType>(container: fieldsContainer
         let columnSettings: columnInfo[] = columnsOfType.get(container.constructor);
         if (!columnSettings)
             columnsOfType.set(container.constructor, columnSettings = []);
+        let base = Object.getPrototypeOf(container.constructor);
+        while (base != null) {
+
+            let baseCols = columnsOfType.get(base);
+            if (baseCols) {
+                columnSettings.unshift(...baseCols.filter(x => !columnSettings.find(y => y.key == x.key)));
+            }
+            base = Object.getPrototypeOf(base);
+        }
+
         container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings), container, context);
     }
     return result;

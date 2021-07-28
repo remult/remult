@@ -24,7 +24,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] change data type to value type
 [V] talk about $.find('name') vs $['name'] - support also key
 [V] all generics should get entity and then value type.
-[] create axios sample with jwt
+[V] create axios sample with jwt
 [V] make where awaitable
 [V] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
 [V] investigate the error of first area when getting the context for first image
@@ -32,6 +32,12 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] move all projects to github/remult
 [V] fix version to be 0.1.0
 [V] reconsider the custom filter with the FD
+[] investigate unnecessary select for helpers in entity backend method getFamilyImages
+[] _updateEntityBasedOnApi does not load the values - it should - it is used in server action etc... need to create tests for that.
+[] avoid going to the database in cases, where the value is actually null - for example courier in family deliveries, when it is null.
+[V] controller field serialization should respect inheritance like entity.
+[] solve issue with bridge from family deliveries to family actions doesn't work.
+[] kill uber context with adding properties to the context like done in vue .
 
 
 
@@ -41,6 +47,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider the different wheres of an entity, to see where it takes us.
 [] talk about isNull and original value (I prefer a parameter instead of another method)
 [] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
+[] Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
+
 [] allow Api Update, will not accept true or false. -
      I dont agree, there are many cases where the default is true or false and it doesn't make sense to not allow setting that value.
      consider the cases where it's allowApiUpdate of a field, or includeInApi etc.....
