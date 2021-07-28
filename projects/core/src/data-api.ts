@@ -139,7 +139,7 @@ export class DataApi<T = any> {
   async put(response: DataApiResponse, id: any, body: any) {
 
     await this.doOnId(response, id, async row => {
-      (this.repository.getEntityRef(row) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
+      await (this.repository.getEntityRef(row) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings().allowUpdate(row)) {
         response.forbidden();
         return;
@@ -196,7 +196,7 @@ export class DataApi<T = any> {
 
     try {
       let newr = this.repository.create();
-      (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
+      await (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
       if (!this._getApiSettings().allowInsert(newr)) {
         response.forbidden();
         return;

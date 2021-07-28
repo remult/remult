@@ -32,8 +32,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] move all projects to github/remult
 [V] fix version to be 0.1.0
 [V] reconsider the custom filter with the FD
-[] investigate unnecessary select for helpers in entity backend method getFamilyImages
-[] _updateEntityBasedOnApi does not load the values - it should - it is used in server action etc... need to create tests for that.
+[V] investigate unnecessary select for helpers in entity backend method getFamilyImages
+[V] _updateEntityBasedOnApi does not load the values - it should - it is used in server action etc... need to create tests for that.
 [] avoid going to the database in cases, where the value is actually null - for example courier in family deliveries, when it is null.
 [V] controller field serialization should respect inheritance like entity.
 [] solve issue with bridge from family deliveries to family actions doesn't work.

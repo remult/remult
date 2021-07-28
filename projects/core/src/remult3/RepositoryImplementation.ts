@@ -571,7 +571,7 @@ abstract class rowHelperBase<T>
         return result;
     }
 
-    _updateEntityBasedOnApi(body: any) {
+    async _updateEntityBasedOnApi(body: any) {
         for (const col of this.columnsInfo) {
             if (body[col.key] !== undefined)
                 if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
@@ -585,6 +585,7 @@ abstract class rowHelperBase<T>
 
                 }
         }
+        await Promise.all([...this.fields].map(x => x.load()));
 
     }
 }

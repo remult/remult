@@ -1,4 +1,4 @@
-import { itAsync, Done, fitAsync } from './testHelper.spec';
+import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
 import { Context, ServerContext } from '../context';
 import { BackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
@@ -65,7 +65,7 @@ class testBoolCreate123 extends EntityBase {
     ok123: Boolean = false;
     @BackendMethod({ allowed: true })
     async testIt() {
-        
+
         await this._.save();
 
     }
@@ -146,4 +146,94 @@ describe("test Server method in entity", () => {
 });
 
 
+@Entity({ key: 'a' })
+class a extends EntityBase {
+    @Field()
+    id: number;
+}
+@Entity({ key: 'b' })
+class b extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    a: a;
+}
+@Entity({ key: 'c' })
+class c extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    b: b;
+    @BackendMethod({ allowed: true })
+    async doIt() {
+        expect(this.b.id).toBe(11);
+        expect(this.b.a.id).toBe(1);
+        this.b = await this.context.for(b).findId(12);
+        expect(this.b.id).toBe(12);
+        expect(this.b.a.id).toBe(2);
+        await this.save();
+        return this.b.a.id;
+    }
+    @BackendMethod({ allowed: true })
+    async doIt2() {
+        expect(this.b.id).toBe(12);
+        expect(this.b.a.id).toBe(2);
+        await this.save();
+        return this.b.a.id;
+    }
+    constructor(private context: Context) {
+        super();
+    }
+}
+
+
+describe("complex entity relations on server entity and backend method", () => {
+    beforeEach(()=>{
+        ActionTestConfig.db.rows=[];
+    });
+    itAsync("fix it", async () => {
+        let context = new ServerContext(ActionTestConfig.db);
+        let a1 = await context.for(a).create({ id: 1 }).save();
+        let a2 = await context.for(a).create({ id: 2 }).save();
+        let b1 = await context.for(b).create({ id: 11, a: a1 }).save();
+        let b2 = await context.for(b).create({ id: 12, a: a2 }).save();
+        let c1 = await context.for(c).create({ id: 21, b: b1 }).save();
+        context = new ServerContext(ActionTestConfig.db);//clear the cache;
+
+        let r = await c1.doIt();
+        expect(r).toBe(2);
+        expect(c1.b.id).toBe(12);
+        expect(c1.b.a.id).toBe(2);
+    });
+    itAsync("fix it new row", async () => {
+        let context = new ServerContext(ActionTestConfig.db);
+        let a1 = await context.for(a).create({ id: 1 }).save();
+        let a2 = await context.for(a).create({ id: 2 }).save();
+        let b1 = await context.for(b).create({ id: 11, a: a1 }).save();
+        let b2 = await context.for(b).create({ id: 12, a: a2 }).save();
+        
+        context = new ServerContext(ActionTestConfig.db);//clear the cache;
+        let c1 = await context.for(c).create({ id: 21, b: b1 })
+        let r = await c1.doIt();
+        expect(r).toBe(2);
+        expect(c1.b.id).toBe(12);
+        expect(c1.b.a.id).toBe(2);
+    });
+    itAsync("fix it change value", async () => {
+        let context = new ServerContext(ActionTestConfig.db);
+        let a1 = await context.for(a).create({ id: 1 }).save();
+        let a2 = await context.for(a).create({ id: 2 }).save();
+        let b1 = await context.for(b).create({ id: 11, a: a1 }).save();
+        let b2 = await context.for(b).create({ id: 12, a: a2 }).save();
+        let c1 = await context.for(c).create({ id: 21, b: b1 }).save();
+        context = new ServerContext(ActionTestConfig.db);//clear the cache;
+        c1 = await context.for(c).findId(21);
+        c1.b = b2;
+        let r = await c1.doIt2();
+        expect(r).toBe(2);
+        expect(c1.b.id).toBe(12);
+        expect(c1.b.a.id).toBe(2);
+    });
+
+});
 

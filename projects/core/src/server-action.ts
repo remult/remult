@@ -255,7 +255,8 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                     if (d.rowInfo.isNewRow) {
                                         y = repo.create();
                                         let rowHelper = repo.getEntityRef(y) as rowHelperImplementation<any>;
-                                        rowHelper._updateEntityBasedOnApi(d.rowInfo.data);
+                                        await rowHelper._updateEntityBasedOnApi(d.rowInfo.data);
+                                        
                                     }
                                     else {
                                         let rows = await repo.find({
@@ -269,7 +270,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                         if (rows.length != 1)
                                             throw new Error("not found or too many matches");
                                         y = rows[0];
-                                        (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
+                                        await (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
                                     if (!context.isAllowedForInstance(y, allowed))
                                         throw 'not allowed';
@@ -292,8 +293,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                 else {
                                     let y = new constructor(context, ds);
                                     let controllerRef = getControllerRef(y, context);
-                                    controllerRef._updateEntityBasedOnApi(d.fields);
-                                    await Promise.all([...controllerRef.fields].map(x => x.load()));
+                                    await controllerRef._updateEntityBasedOnApi(d.fields);
                                     if (!context.isAllowedForInstance(y, allowed))
                                         throw 'not allowed';
 
@@ -368,7 +368,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             args,
                             fields: await defs.toApiJson()
                         }));
-                        defs._updateEntityBasedOnApi(r.fields);
+                        await defs._updateEntityBasedOnApi(r.fields);
                         return r.result;
                     }
                     catch (e) {
