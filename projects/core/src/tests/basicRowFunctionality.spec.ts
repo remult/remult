@@ -1126,6 +1126,11 @@ describe("data api", () => {
     await b._.reload();
     expect(b.categoryName).toBe('yael');
   });
+  itAsync("Find null works",async()=>{
+    let [c, context] = await createData(async insert => await insert(1, 'noam'));
+    expect(await c.findId(null)).toBeNull();
+    expect(await c.findId(undefined)).toBeNull();
+  });
 
   itAsync("put updates", async () => {
     let [c, context] = await createData(async insert => await insert(1, 'noam'));

@@ -109,6 +109,33 @@ describe("custom filter", () => {
         await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
         ok.test();
     });
+    itAsync("test sent in api", async () => {
+        let ok = new Done();
+        let z = new RestDataProvider("", {
+            delete: undefined,
+            post: async (url, data) => {
+                ok.ok();
+                expect(data).toEqual({
+                    "_$custom": [
+                        {
+                            "oneAndThree": true
+                        },
+                        {
+                            "two": true
+                        }
+                    ]
+                }
+                );
+                return { count: 0 }
+
+            },
+            get: undefined,
+            put: undefined
+        });
+        let c = new ServerContext(z);
+        await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }).and(entityForCustomFilter.filter.build({ two: true })));
+        ok.test();
+    });
     itAsync("test that api reads custom correctly", async () => {
         let context = new ServerContext(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
@@ -129,6 +156,66 @@ describe("custom filter", () => {
                 return undefined;
             }, clientIp: '', user: undefined, getHeader: x => ""
             , getBaseUrl: () => ''
+        });
+        d.test();
+    });
+    itAsync("test that api reads custom correctly 2", async () => {
+        let context = new ServerContext(new InMemoryDataProvider());
+        let c = context.for(entityForCustomFilter);
+        for (let id = 0; id < 5; id++) {
+            await c.create({ id }).save();
+        }
+        var api = new DataApi(c, context);
+        let t = new TestDataApiResponse();
+        let d = new Done();
+        t.success = data => {
+            expect(data.count).toBe(2);
+            d.ok();
+        };
+        await api.count(t, {
+            get: x => {
+                if (x == customUrlToken)
+                    return ;
+                return undefined;
+            }, clientIp: '', user: undefined, getHeader: x => ""
+            , getBaseUrl: () => ''
+        },{
+            "_$custom": 
+                {
+                    "oneAndThree": true
+                }
+        });
+        d.test();
+    });
+    itAsync("test that api reads custom correctly 3", async () => {
+        let context = new ServerContext(new InMemoryDataProvider());
+        let c = context.for(entityForCustomFilter);
+        for (let id = 0; id < 5; id++) {
+            await c.create({ id }).save();
+        }
+        var api = new DataApi(c, context);
+        let t = new TestDataApiResponse();
+        let d = new Done();
+        t.success = data => {
+            expect(data.count).toBe(0);
+            d.ok();
+        };
+        await api.count(t, {
+            get: x => {
+                if (x == customUrlToken)
+                    return ;
+                return undefined;
+            }, clientIp: '', user: undefined, getHeader: x => ""
+            , getBaseUrl: () => ''
+        },{
+            "_$custom": [
+                {
+                    "oneAndThree": true
+                },
+                {
+                    "two": true
+                }
+            ]
         });
         d.test();
     });
@@ -155,6 +242,7 @@ describe("custom filter", () => {
         });
         d.test();
     });
+
 });
 
 
@@ -167,29 +255,20 @@ class entityForCustomFilter extends EntityBase {
     id: number;
     static filter = new CustomFilterBuilder<entityForCustomFilter, {
         oneAndThree?: boolean,
-        dbOneOrThree?: boolean
+        dbOneOrThree?: boolean,
+        two?: boolean
     }>(async (e, c) => {
+        let r: Filter[] = [];
         if (c.oneAndThree)
-            return e.id.isIn([1, 3]);
+            r.push(e.id.isIn([1, 3]));
+        if (c.two)
+            r.push(e.id.isEqualTo(2));
         if (c.dbOneOrThree) {
 
-            return SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
+            r.push(SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
                 ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3)
-            )
+            ))
         }
+        return r;
     });
 }
-
-
-declare type filterFunction<customFilterType> = (args: customFilterType) => Filter;
-export interface customFilterTranslator<customerFilterType> extends filterFunction<customerFilterType> {
-    translateFilter: (customerFilterType: customerFilterType) => Filter;
-}
-
-let x: customFilterTranslator<{ oneOrThree: true }>;
-
-
-function CustomFilterBuilderBuilder<entityType, customFilterObject = any>(translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject) => Filter): customFilterTranslator<customFilterObject> {
-    return undefined;
-}
-

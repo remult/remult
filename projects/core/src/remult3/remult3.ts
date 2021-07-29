@@ -36,13 +36,16 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] _updateEntityBasedOnApi does not load the values - it should - it is used in server action etc... need to create tests for that.
 [V] avoid going to the database in cases, where the value is actually null - for example courier in family deliveries, when it is null.
 [V] controller field serialization should respect inheritance like entity.
-[] solve issue with bridge from family deliveries to family actions doesn't work.
-[] kill uber context with adding properties to the context like done in vue .
+[V] solve issue with bridge from family deliveries to family actions doesn't work.
+[V] kill uber context with adding properties to the context like done in vue .
 [] disable the github.io - remult-ts
 
 
 
+
 ## review with yoni
+[] reconsider custom part in filter, to include the entity key - to prevent conflicts
+[] talk about the case where postgres created a context, to build the database - and it didn't have our special methods created in init context,
 [] switched back to es5 - since react scripts default is es5 and it breaks things
 [] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
 [] consider the different wheres of an entity, to see where it takes us.
@@ -64,6 +67,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider making db name awaitable - since it may rely on an sql that relies on an awaitable promise where
 [] api call shouldnt run load on the server probably since it's just returning values - but what if there is a server expression, should it load then? or should it load in any case.
 [] should server expressions wait for the load of all fields and then calculate?
+[] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.

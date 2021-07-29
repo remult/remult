@@ -341,8 +341,11 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
 
         )));
     let custom = filterInfo.get(customUrlToken);
-    if (custom !== undefined)
-        where.push(new Filter(x => x.custom(custom)));
+    if (custom !== undefined) {
+        if (!Array.isArray(custom))
+            custom = [custom];
+        where.push(...custom.map(y => new Filter(x => x.custom(y))));
+    }
     return new AndFilter(...where);
 }
 
@@ -350,7 +353,7 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
 
 
 export class CustomFilterBuilder<entityType, customFilterObject> {
-    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, context: Context) => Filter | Promise<Filter>) {
+    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, context: Context) => Filter | Filter[] | Promise<Filter | Filter[]>) {
 
     }
     build(custom: customFilterObject): Filter {
@@ -362,7 +365,7 @@ class customTranslator implements FilterConsumer {
     applyTo(x: FilterConsumer): void {
         this.commands.forEach(y => y(x));
     }
-    constructor(private translateCustom: (custom: any) => Promise<Filter>) { }
+    constructor(private translateCustom: (custom: any) => Promise<Filter | Filter[]>) { }
 
     commands: ((x: FilterConsumer) => void)[] = [];
     promises: Promise<void>[] = [];
@@ -416,7 +419,10 @@ class customTranslator implements FilterConsumer {
             (async () => {
                 let r = await this.translateCustom(customItem);
                 if (r)
-                    r.__applyToConsumer(this);
+                    if (Array.isArray(r))
+                        r.forEach(x => x.__applyToConsumer(this));
+                    else
+                        r.__applyToConsumer(this);
             })()
         )
 
