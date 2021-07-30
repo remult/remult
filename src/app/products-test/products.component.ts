@@ -29,19 +29,36 @@ export class ProductsComponent implements OnInit {
   constructor(private context: Context) {
 
   }
+
+  @DataControl<ProductsComponent>({
+    valueList: c => getValueList(c.for(Products)),
+    valueChange: (row) => {
+      console.log({ val: row.p, prod: row.p instanceof Products })
+      row.$.p.load().then(() => console.log("loaded", row.p));
+    }
+  })
+  @Field()
+  p: Products;
+
+  get $() { return getFields(this, this.context) };
+  area = new DataAreaSettings({
+    fields: () => [this.$.p]
+  });
   products = new GridSettings(this.context.for(Products), { allowCrud: true });
   async ngOnInit() {
     let p = await this.context.for(Products).findFirst();
+    
     //this.title = p?.name;
     this.title = await ProductsComponent.doIt(null);
+
   }
   title: string;
 
 
   @BackendMethod({ allowed: true })
-  static async doIt(p:Products) {
-    if (p==null)
-    return 'null';
+  static async doIt(p: Products) {
+    if (p == null)
+      return 'null';
     return p.name;
   }
 }

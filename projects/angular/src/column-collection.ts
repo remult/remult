@@ -6,6 +6,7 @@ import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings } from 'remult/src/remult3';
 import { ValueListValueConverter } from "remult/valueConverters";
 import { ClassType } from "remult/classType";
+import { ExtendedValueListItem } from "./angular/remult-core.module";
 
 
 
@@ -288,10 +289,19 @@ export class FieldCollection<rowType = any> {
     col.width = width;
   }
   _colValueChanged(col: DataControlSettings, row: any) {
-    if (!col.valueChange)
-      return false;
 
-    return this.getRowColumn({ col, row }, (c, row) => col.valueChange(row, c));
+    return this.getRowColumn({ col, row }, (c, row) => {
+      if (col.valueList) {
+        let item = (col.valueList as ExtendedValueListItem[]).find(x => x.id == c.inputValue);
+        if (item?.entity) {
+          c.value = item.entity;
+        }
+      }
+
+      if (!col.valueChange)
+        return false;
+      col.valueChange(row, c);
+    });
 
 
   }

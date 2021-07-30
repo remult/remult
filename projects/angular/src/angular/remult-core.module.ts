@@ -108,7 +108,7 @@ export async function getValueList<T>(repository: Repository<T>, args?: {
   captionField?: (e: EntityMetadata<T>) => FieldMetadata
   orderBy?: EntityOrderBy<T>,
   where?: EntityWhere<T>
-}): Promise<ValueListItem[]> {
+}): Promise<ExtendedValueListItem[]> {
   if (!args) {
     args = {};
   }
@@ -132,8 +132,12 @@ export async function getValueList<T>(repository: Repository<T>, args?: {
     return {
       id: repository.getEntityRef(x).fields.find(args.idField(repository.metadata)).value,
       caption: repository.getEntityRef(x).fields.find(args.captionField(repository.metadata)).value,
+      entity: x
     }
   });
   return r;
 
+}
+export interface ExtendedValueListItem extends ValueListItem {
+  entity?: any;
 }

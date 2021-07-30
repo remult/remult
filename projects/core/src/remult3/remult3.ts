@@ -39,6 +39,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] solve issue with bridge from family deliveries to family actions doesn't work.
 [V] kill uber context with adding properties to the context like done in vue .
 [] disable the github.io - remult-ts
+[] rename AuthenticatedInGuard and not signed in guard
 
 
 
@@ -52,6 +53,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about isNull and original value (I prefer a parameter instead of another method)
 [] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
 [] Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
+[] reconsider input value as id - it causes an  update that then reads from the server again - which causes problems sometime :)
 
 [] allow Api Update, will not accept true or false. -
      I dont agree, there are many cases where the default is true or false and it doesn't make sense to not allow setting that value.
