@@ -70,6 +70,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] api call shouldnt run load on the server probably since it's just returning values - but what if there is a server expression, should it load then? or should it load in any case.
 [] should server expressions wait for the load of all fields and then calculate?
 [] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
+[] test why date is equal to null - didn't work
+[] handle circular reference  - like I had with helper and escort
+[]  checkbox shouldn't display text true false on grid
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
