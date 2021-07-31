@@ -201,7 +201,7 @@ export class Context {
         return r;
 
     }
-    protected req: DataApiRequest;
+     req: DataApiRequest;
 
     setReq(req: DataApiRequest) {
         this.req = req;

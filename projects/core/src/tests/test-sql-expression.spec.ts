@@ -1,11 +1,15 @@
 import { fitAsync, itAsync } from './testHelper.spec';
-import { ServerContext } from '../context';
+import { Context, ServerContext } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase, IntegerField } from '../remult3';
+import { Field, Entity, EntityBase, IntegerField, DateOnlyField, ValueListFieldType } from '../remult3';
+
+import { IdEntity } from '../id-entity';
+import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
+import { ValueListValueConverter } from '../../valueConverters';
 
 describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
@@ -87,4 +91,51 @@ class testServerExpression1 extends EntityBase {
     @Field()
     code: number;
 
+}
+describe("Postgres create db", () => {
+
+    let c = new Context()
+    it("what", () => {
+        let e = c.for(testCreate);
+        expect(postgresColumnSyntax(e.metadata.fields.theDate, "x")).toBe("x date");
+        expect(postgresColumnSyntax(e.metadata.fields.i, "x")).toBe("x integer default 0 not null");
+        expect(postgresColumnSyntax(e.metadata.fields.s, "x")).toBe("x varchar default '' not null", "s");
+        expect(postgresColumnSyntax(e.metadata.fields.s2, "x")).toBe("x varchar default '' not null", "s2");
+    });
+  
+
+});
+
+@ValueListFieldType(intId)
+class intId {
+    static z = new intId(0, '');
+    constructor(public id: number, public caption: string) {
+
+    }
+}
+@ValueListFieldType(stringId)
+class stringId {
+    static z = new stringId('0', '');
+    constructor(public id: string, public caption: string) {
+
+    }
+}
+@ValueListFieldType(stringId2)
+class stringId2 {
+    static z = new stringId2();
+    constructor(public id?: string, public caption?: string) {
+
+    }
+}
+@Entity({ key: 'testCreate' })
+class testCreate extends IdEntity {
+
+    @DateOnlyField()
+    theDate: Date;
+    @Field()
+    i: intId;
+    @Field()
+    s: stringId;
+    @Field()
+    s2: stringId2;
 }

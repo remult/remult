@@ -122,7 +122,7 @@ describe("data api", () => {
 
     it("test value list type", () => {
         let x = new ValueListValueConverter(Status);
-        expect(x.fieldTypeInDb).toBe("int");
+        expect(x.fieldTypeInDb).toBe("integer");
     });
 
 });

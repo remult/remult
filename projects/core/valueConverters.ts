@@ -161,7 +161,7 @@ export class ValueListValueConverter<T extends ValueListItem> implements ValueCo
   private info = ValueListInfo.get(this.type);
   constructor(private type: ClassType<T>) {
     if (this.info.isNumeric) {
-      this.fieldTypeInDb = 'int';
+      this.fieldTypeInDb = 'integer';
     }
   }
   fromJson(val: any): T {

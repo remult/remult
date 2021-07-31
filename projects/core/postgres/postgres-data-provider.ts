@@ -1,13 +1,13 @@
 import { DataProvider, EntityDataProvider, Entity, SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
-import { ExpressBridge } from '../server';
+
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
 import { allEntities, Context } from '../src/context';
-import { EntityQueueStorage, JobsInQueueEntity } from '../server/expressBridge';
-import { DateOnlyValueConverter } from '../valueConverters';
+
 
 import { isDbReadonly } from '../src/data-providers/sql-database';
+import { postgresColumnSyntax } from './postgresColumnSyntax';
 
 
 export interface PostgresPool extends PostgresCommandSource {
@@ -129,7 +129,7 @@ export class PostgresSchemaBuilder {
                         if (x == e.idMetadata.field && e.options.dbAutoIncrementId)
                             result += await x.getDbName() + ' serial';
                         else {
-                            result += this.addColumnSqlSyntax(x, await x.getDbName());
+                            result += postgresColumnSyntax(x, await x.getDbName());
                             if (x == e.idMetadata.field)
                                 result += ' primary key';
                         }
@@ -142,34 +142,7 @@ export class PostgresSchemaBuilder {
             }
         });
     }
-    private addColumnSqlSyntax(x: FieldMetadata, dbName: string) {
-        let result = dbName;
-        if (x.valueConverter.fieldTypeInDb) {
-            if (x.valueType == Number && !x.valueConverter.fieldTypeInDb)
-                result += " numeric" + (x.allowNull ? "" : " default 0 not null");
-            else
-                result += " " + x.valueConverter.fieldTypeInDb + (x.allowNull ? "" : " default 0 not null");
-        }
-        else if (x.valueType == Date)
-            if (x.valueConverter == DateOnlyValueConverter)
-                result += " date";
-            else
-                result += " timestamp";
-        else if (x.valueType == Boolean)
-            result += " boolean" + (x.allowNull ? "" : " default false not null");
-        else if (x.valueType == Number) {
-            result += " int" + (x.allowNull ? "" : " default 0 not null");
-        }
-        //  else if (x instanceof ValueListColumn) {
-        //     if (x.info.isNumeric)
-        //         result += " int" + (x.defs.allowNull ? "" : " default 0 not null");
-        //     else
-        //         result += " varchar" + (x.defs.allowNull ? "" : " default '' not null ");
-        // }
-        else
-            result += " varchar" + (x.allowNull ? "" : " default '' not null ");
-        return result;
-    }
+  
 
     async addColumnIfNotExist<T extends EntityMetadata>(e: T, c: ((e: T) => FieldMetadata)) {
         if (await isDbReadonly(c(e)))
@@ -182,7 +155,7 @@ export class PostgresSchemaBuilder {
         FROM information_schema.columns 
         WHERE table_name=${cmd.addParameterAndReturnSqlToken((await e.getDbName()).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((await c(e).getDbName()).toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
-                let sql = `alter table ${await e.getDbName()} add column ${this.addColumnSqlSyntax(c(e), await c(e).getDbName())}`;
+                let sql = `alter table ${await e.getDbName()} add column ${postgresColumnSyntax(c(e), await c(e).getDbName())}`;
                 console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -203,7 +176,7 @@ export class PostgresSchemaBuilder {
             for (const col of e.fields) {
                 if (!await isDbReadonly(col))
                     if (!cols.includes((await col.getDbName()).toLocaleLowerCase())) {
-                        let sql = `alter table ${await e.getDbName()} add column ${this.addColumnSqlSyntax(col, await col.getDbName())}`;
+                        let sql = `alter table ${await e.getDbName()} add column ${postgresColumnSyntax(col, await col.getDbName())}`;
                         console.log(sql);
                         await this.pool.execute(sql);
                     }
@@ -226,13 +199,11 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 
     let c = new Context();
     c.setDataProvider(sql);
-    {
+    let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
+    let e = c.for(JobsInQueueEntity);
+    await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);
+    await new PostgresSchemaBuilder(sql).verifyAllColumns(e.metadata);
 
-        let e = c.for(JobsInQueueEntity);
-        await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);
-        await new PostgresSchemaBuilder(sql).verifyAllColumns(e.metadata);
-    }
-
-    return new EntityQueueStorage(c.for(JobsInQueueEntity));
+    return new (await import('../server/expressBridge')).EntityQueueStorage(c.for(JobsInQueueEntity));
 
 }
