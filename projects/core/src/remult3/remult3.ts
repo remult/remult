@@ -40,6 +40,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] kill uber context with adding properties to the context like done in vue .
 [] disable the github.io - remult-ts
 [] rename AuthenticatedInGuard and not signed in guard
+[] fix bug in select group, where it updated the entity even though the field itself was a string field and not an entity field
+[]  checkbox shouldn't display text true false on grid
 
 
 
@@ -47,12 +49,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## review with yoni
 [] reconsider custom part in filter, to include the entity key - to prevent conflicts
 [] talk about the case where postgres created a context, to build the database - and it didn't have our special methods created in init context,
-[] switched back to es5 - since react scripts default is es5 and it breaks things
+
 [] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
 [] consider the different wheres of an entity, to see where it takes us.
 [] talk about isNull and original value (I prefer a parameter instead of another method)
-[] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
+[V] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
+
 [] Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
+
 [] reconsider input value as id - it causes an  update that then reads from the server again - which causes problems sometime :)
 
 [] allow Api Update, will not accept true or false. -
@@ -62,7 +66,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     I'm not sure I like the word roles here - imagine:
     AllowApiUpdate = Roles.authenticated
     not sure it's cool enough 
-[] restricted id to be number or string
+[V] restricted id to be number or string
 [] field container type vs entity type vs target
 [] consider more parameters to entity where, since there is no way to get to the column key or name etc... from a where statement
 [] should find id accept null or undefined - or should it throw an exception?
@@ -72,7 +76,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 [] test why date is equal to null - didn't work
 [] handle circular reference  - like I had with helper and escort
-[]  checkbox shouldn't display text true false on grid
+
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
@@ -181,6 +185,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider adding the count value in the response of the array and do it in the response of iterate, to not break api
 [] talk about forgetting the :type on fields - it's dangerous and can lead to debug issues - on the other hand we want some default - not sure if we should scream
 [] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
+[] switched back to es5 - since react scripts default is es5 and it breaks things
 
 ## remult angular future
 [] change the getValue - to  displayValue

@@ -1849,13 +1849,13 @@ describe("test data list", () => {
 
 });
 describe("test date storage", () => {
-  it("works", () => {
-
+  it("works", () => { 
     let val = "1976-06-16";
+    /** */
     var d: Date = DateOnlyValueConverter.fromJson(val);
-    expect(d.getFullYear()).toBe(1976);
-    expect(d.getMonth()).toBe(5);
-    expect(d.getDate()).toBe(16);
+    expect(d.getUTCFullYear()).toBe(1976);
+    expect(d.getUTCMonth()).toBe(5);
+    expect(d.getUTCDate()).toBe(16);
 
   });
   it("works", () => {

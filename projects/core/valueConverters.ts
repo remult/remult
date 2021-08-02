@@ -47,7 +47,10 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
     var d = val as Date;
     if (!d)
       return '';
-    return new Date(val.valueOf() - val.getTimezoneOffset() * 60000).toISOString().substring(0, 10)
+    if (val.getHours() == 0)
+      return new Date(val.valueOf() - val.getTimezoneOffset() * 60000).toISOString().substring(0, 10)
+    else
+      return val.toISOString().substring(0, 10);
   },
   fromJson: (value: string) => {
     if (!value || value == '' || value == '0000-00-00')
