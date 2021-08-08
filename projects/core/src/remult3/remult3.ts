@@ -42,6 +42,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] rename AuthenticatedInGuard and not signed in guard
 [] fix bug in select group, where it updated the entity even though the field itself was a string field and not an entity field
 []  checkbox shouldn't display text true false on grid
+[] remove recursive types with array (Where etc...) Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
 
 
 
@@ -55,7 +56,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about isNull and original value (I prefer a parameter instead of another method)
 [V] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
 
-[] Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
+
 
 [] reconsider input value as id - it causes an  update that then reads from the server again - which causes problems sometime :)
 
@@ -76,6 +77,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 [] test why date is equal to null - didn't work
 [] handle circular reference  - like I had with helper and escort
+[] consider exclude a table from table creation
 
 
 ## Yoni NAMING!!!

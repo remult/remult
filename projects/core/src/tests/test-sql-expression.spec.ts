@@ -10,6 +10,8 @@ import { Field, Entity, EntityBase, IntegerField, DateOnlyField, ValueListFieldT
 import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
 import { ValueListValueConverter } from '../../valueConverters';
+import { SqlCommand, SqlResult } from '../sql-command';
+import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 
 describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
@@ -92,6 +94,35 @@ class testServerExpression1 extends EntityBase {
     code: number;
 
 }
+export class myDummySQLCommand implements SqlCommand {
+
+    execute(sql: string): Promise<SqlResult> {
+        throw new Error("Method not implemented.");
+    }
+    addParameterAndReturnSqlToken(val: any): string {
+        if (val === null)
+            return "null";
+        if (val instanceof Date)
+            val = val.toISOString();
+        if (typeof (val) == "string") {
+            return '\'' + val.replace(/'/g, '\'\'') + '\'';
+        }
+        return val.toString();
+    }
+
+
+}
+describe("test filter for date", () => {
+    itAsync("filter",async () => {
+        let c = new Context()
+        let e = c.for(testCreate);
+        var d = new myDummySQLCommand();
+        let f = new FilterConsumerBridgeToSqlRequest(d);
+        f.isGreaterOrEqualTo(e.metadata.fields.theDate,new Date("2021-08-06T05:05:25.440Z"));
+        expect (await f.resolveWhere()).toBe(" where theDate >= '2021-08-05T21:00:00.000Z'");
+    });
+});
+
 describe("Postgres create db", () => {
 
     let c = new Context()
@@ -102,7 +133,7 @@ describe("Postgres create db", () => {
         expect(postgresColumnSyntax(e.metadata.fields.s, "x")).toBe("x varchar default '' not null", "s");
         expect(postgresColumnSyntax(e.metadata.fields.s2, "x")).toBe("x varchar default '' not null", "s2");
     });
-  
+
 
 });
 

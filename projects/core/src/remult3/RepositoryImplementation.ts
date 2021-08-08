@@ -638,6 +638,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     async reload(): Promise<T> {
         await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }).then(async newData => {
             await this.loadDataFrom(newData[0]);
+            this.saveOriginalData();
 
         });
         return this.instance;

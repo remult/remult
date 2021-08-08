@@ -1125,6 +1125,8 @@ describe("data api", () => {
     expect(b.categoryName).toBe('noam');
     await b._.reload();
     expect(b.categoryName).toBe('yael');
+    expect(b._.wasChanged()).toBe(false);
+    expect(b.$.categoryName.originalValue).toBe('yael');
   });
   itAsync("Find null works",async()=>{
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
@@ -1853,9 +1855,9 @@ describe("test date storage", () => {
     let val = "1976-06-16";
     /** */
     var d: Date = DateOnlyValueConverter.fromJson(val);
-    expect(d.getUTCFullYear()).toBe(1976);
-    expect(d.getUTCMonth()).toBe(5);
-    expect(d.getUTCDate()).toBe(16);
+    expect(d.getFullYear()).toBe(1976);
+    expect(d.getMonth()).toBe(5);
+    expect(d.getDate()).toBe(16);
 
   });
   it("works", () => {

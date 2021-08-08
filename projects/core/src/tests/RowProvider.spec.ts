@@ -1365,13 +1365,6 @@ describe("test datetime column", () => {
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
 
-    let toDb = col.valueConverter.toDb(col.valueConverter.fromJson('2021-04-26'));
-    if (toDb.getTimezoneOffset() < 0)
-      expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-25');
-    else
-      expect(toDb.toISOString().substr(0, 10)).toBe('2021-04-26');
-
-    //
 
   });
 

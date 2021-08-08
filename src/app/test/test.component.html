@@ -1,24 +1,9 @@
-<title>{{title}}</title>
-<div>
-    <input [(ngModel)]="newTask._.columns.title.inputValue" [placeholder]="newTask._.columns.title.caption">
-    <button (click)="createNewTask()">Create new task</button>
-</div>
-<div *ngIf="newTask._.columns.title.error">
-    {{newTask._.columns.title.caption}} {{newTask._.columns.title.error}}
-</div>
+<mat-form-field appearance="outline" class="full-width-form-field dense-form-field">
+    <mat-label>family groups</mat-label>
+    <select matNativeControl class="form-control" #lang (change)="refreshBaskets()" [(ngModel)]="filterGroup">
 
-<p>
-    <input type="checkbox" [(ngModel)]="hideCompleted" (change)="loadTasks()">Hide completed
-</p>
-
-<ul>
-    <li *ngFor="let task of tasks">
-        <input [(ngModel)]="task._.columns.completed.inputValue" type="checkbox">
-        <input [(ngModel)]="task._.columns.title.inputValue" [style.textDecoration]="task.completed?'line-through':''">
-
-        <button (click)="task._.save()" [disabled]="!task._.wasChanged()">Save</button>
-        <button (click)="deleteTask(task)">Delete</button>
-    </li>
-</ul>
-<button (click)="setAll(true)">Set all as completed</button> 
-<button (click)="setAll(false)">Set all as uncompleted</button>
+        <option *ngFor="let g of groups" [value]="g.name">{{g.name}} - {{g.familiesCount}}
+        </option>
+    </select>
+</mat-form-field>
+{{filterGroup|json}}

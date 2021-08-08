@@ -55,21 +55,23 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
   fromJson: (value: string) => {
     if (!value || value == '' || value == '0000-00-00')
       return undefined;
-    return new Date(Date.parse(value));
+    let d = new Date(Date.parse(value));
+    return new Date(d.valueOf() + d.getTimezoneOffset() * 60000);
   },
   inputType: InputTypes.date,
   toDb: (val: Date) => {
-
+    
     if (!val)
       return undefined;
-    return new Date(val.valueOf() + val.getTimezoneOffset() * 60000);
+    return DateOnlyValueConverter.fromJson(DateOnlyValueConverter.toJson( val));
 
   }//when using date storage,  the database expects and returns a date local and every where else we reflect on date iso
   , fromDb: (val: Date) => {
+    
     var d = val as Date;
     if (!d)
       return undefined;
-    return new Date(val.valueOf() - val.getTimezoneOffset() * 60000);
+    return val;
 
   },
   fieldTypeInDb: 'date',
