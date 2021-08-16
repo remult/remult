@@ -4,7 +4,7 @@ import { UserInfo, DataProvider, Context, DataProviderFactoryBuilder, InMemoryDa
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
-import { registerEntitiesOnServer } from './register-entities-on-server';
+import {  registerEntitiesOnServer } from './register-entities-on-server';
 
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
@@ -14,7 +14,7 @@ import { NumberValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { ServerContext } from '../src/context';
+import { ExcludeEntityFromApi, ServerContext } from '../src/context';
 
 
 
@@ -432,9 +432,10 @@ export class EntityQueueStorage implements QueueStorage {
 }
 
 
+@ExcludeEntityFromApi()
 @Entity({
-  key: 'jobsInQueue',
-  includeInApi: false
+  key: 'jobsInQueue'
+  
 })
 export class JobsInQueueEntity extends IdEntity {
   @Field()

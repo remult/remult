@@ -338,3 +338,12 @@ export class EventSource {
     };
 
 }
+
+
+export const excludeFromApi = Symbol("excludeFromApi");
+export function ExcludeEntityFromApi() {
+    return (target) => {
+        Reflect.defineMetadata(excludeFromApi, true, target);
+        return target;
+    }
+}

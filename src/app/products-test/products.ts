@@ -28,7 +28,7 @@ export class GroupsValue {
     new Promise(res => setTimeout(() => {
       res('Products')
     }, 10)),
-  apiDataFilter: (e, c) => {
+  apiDataFilter: (e) => {
 
     return new Filter();
   }

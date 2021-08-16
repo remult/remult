@@ -42,6 +42,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## review with yoni
 [] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
 [] require key in entity function parameters, instead of a mandatory key member
+[] @ExcludeEntityFromApi()
 
 [] consider the different wheres of an entity, to see where it takes us.
 [] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.

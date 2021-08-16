@@ -11,7 +11,7 @@ export {
     EntityMetadata,
     EntityOrderBy,
     EntityWhere,
-    
+
     FindOptions,
     IterableResult,
     IterateOptions,
@@ -84,7 +84,8 @@ export {
     HttpProvider,
     IterateToArrayOptions,
     Unobserve,
-    UserInfo
+    UserInfo,
+    ExcludeEntityFromApi
 } from './src/context';
 export {
     IdEntity
