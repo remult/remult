@@ -16,34 +16,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[V] removing Input type from field (it exists in metadata)
-[V] add to fieldRef - isnull, to solve all the test if relation column has value
-[V] default should be decimal number - should have IntegerField - for the case where you want Integer.
 
+[V] remove recursive types with array (Where etc...) Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
 
-[V] remove Role class.
-[V] change data type to value type
-[V] talk about $.find('name') vs $['name'] - support also key
-[V] all generics should get entity and then value type.
-[V] create axios sample with jwt
-[V] make where awaitable
-[V] see why change to es2015 of remult, caused hugmoms google maps not to work anymore.
-[V] investigate the error of first area when getting the context for first image
-[V] rename the isSignedIn method to authenticated
-[V] move all projects to github/remult
-[V] fix version to be 0.1.0
-[V] reconsider the custom filter with the FD
-[V] investigate unnecessary select for helpers in entity backend method getFamilyImages
-[V] _updateEntityBasedOnApi does not load the values - it should - it is used in server action etc... need to create tests for that.
-[V] avoid going to the database in cases, where the value is actually null - for example courier in family deliveries, when it is null.
-[V] controller field serialization should respect inheritance like entity.
-[V] solve issue with bridge from family deliveries to family actions doesn't work.
-[V] kill uber context with adding properties to the context like done in vue .
-[V] disable the github.io - remult-ts
-[] rename AuthenticatedInGuard and not signed in guard
-[V] fix bug in select group, where it updated the entity even though the field itself was a string field and not an entity field
-[]  checkbox shouldn't display text true false on grid
-[] remove recursive types with array (Where etc...) Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
 [] introduce the context based factory for EntityOptions and FieldOptions
     @Entity({},(o,c)=>{
         o.
@@ -59,6 +34,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
 [] talk about the case where postgres created a context, to build the database - and it didn't have our special methods created in init context, - send context for  create all entities
 [] fix readonly checkbox on grid.
+[]  checkbox shouldn't display text true false on grid
+[] rename AuthenticatedInGuard and not signed in guard
 
 
 
@@ -96,6 +73,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] field container type vs entity type vs target
 
 ## review with Yoni
+[] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
 
 
 [V] included display value and input type also in value converter - ias it is relevant to date only, and also value list
@@ -313,7 +291,8 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[] | EntityWhere<entityType>)) | EntityWhere<entityType>[];
+export declare type EntityWhere<entityType> = EntityWhereItem<entityType>|EntityWhereItem<entityType>[];
+export declare type EntityWhereItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]) );
 
 
 

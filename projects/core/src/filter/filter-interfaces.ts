@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Context } from "../context";
-import { ComparisonFilterFactory, EntityMetadata, EntityWhere, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory } from "../remult3";
+import { ComparisonFilterFactory, EntityMetadata, EntityWhere, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, EntityWhereItem } from "../remult3";
 
 
 export class Filter {
@@ -24,6 +24,11 @@ export class Filter {
             r[c.key] = new filterHelper(c);
         }
         return r as FilterFactories<T>;
+    }
+    static toItem<entityType>(...where: EntityWhere<entityType>[]) {
+        return async entityFilterFactory => {
+            return new AndFilter(...(await Promise.all(where.map(w => Filter.translateWhereToFilter(entityFilterFactory, w)))));
+        }
     }
     static async translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityWhere<T>): Promise<Filter> {
         if (Array.isArray(where)) {

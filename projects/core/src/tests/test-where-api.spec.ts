@@ -4,7 +4,7 @@ import { ServerContext } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, EntityWhere, Field, FilterFactories, FindOptions, Repository } from '../remult3';
+import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, EntityWhere, EntityWhereItem, Field, FilterFactories, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Context } from 'vm';
 import { CustomFilterBuilder, customUrlToken, Filter } from '../filter/filter-interfaces';
@@ -28,7 +28,7 @@ describe("test where stuff", () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count([y => y.id.isLessOrEqualTo(3), fo.where])).toBe(2);
+        expect(await repo.count([y => y.id.isLessOrEqualTo(3), Filter.toItem(fo.where)])).toBe(2);
     });
     itAsync("test basics_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
@@ -46,11 +46,13 @@ describe("test where stuff", () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: [x => x.id.isGreaterOrEqualTo(2), undefined]
         };
-        expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where])).toBe(2);
+        expect(await repo.count([y => y.id.isLessOrEqualTo(3), Filter.toItem(fo.where)])).toBe(2);
     });
 
 
 });
+
+
 
 describe("custom filter", () => {
     itAsync("test that it works", async () => {
@@ -175,15 +177,15 @@ describe("custom filter", () => {
         await api.count(t, {
             get: x => {
                 if (x == customUrlToken)
-                    return ;
+                    return;
                 return undefined;
             }, clientIp: '', user: undefined, getHeader: x => ""
             , getBaseUrl: () => ''
-        },{
-            "_$custom": 
-                {
-                    "oneAndThree": true
-                }
+        }, {
+            "_$custom":
+            {
+                "oneAndThree": true
+            }
         });
         d.test();
     });
@@ -203,11 +205,11 @@ describe("custom filter", () => {
         await api.count(t, {
             get: x => {
                 if (x == customUrlToken)
-                    return ;
+                    return;
                 return undefined;
             }, clientIp: '', user: undefined, getHeader: x => ""
             , getBaseUrl: () => ''
-        },{
+        }, {
             "_$custom": [
                 {
                     "oneAndThree": true
@@ -272,3 +274,23 @@ class entityForCustomFilter extends EntityBase {
         return r;
     });
 }
+
+declare type Draft<T> = WritableDraft<T>;
+declare type WritableDraft<T> = {
+    -readonly [K in keyof T]: Draft<T[K]>;
+};
+declare type SliceCaseReducers<State> = {
+
+    [K: string]: (state: Draft<State>) => State;
+};
+function x<CaseReducers extends SliceCaseReducers<{ test?: WritableDraft<entityForCustomFilter>[]; }>>(what: CaseReducers) {
+}
+//reproduce typescript bug with recursive types
+x<{
+    addComment: (state: WritableDraft<{
+        test?: entityForCustomFilter[];
+    }>) => {
+        test: WritableDraft<entityForCustomFilter>[];
+    };
+}>({} as any);
+

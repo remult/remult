@@ -181,7 +181,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                         if (items && items.length < pageSize)
                             return { value: <entityType>undefined, done: true };
                         items = await cont.find({
-                            where: [opts.where, nextPageFilter],
+                            where: Filter.toItem(opts.where, nextPageFilter),
                             orderBy: opts.orderBy,
                             limit: pageSize,
                             load: opts.load
@@ -366,7 +366,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
     private async translateWhereToFilter(where: EntityWhere<entityType>): Promise<Filter> {
         if (this.metadata.options.fixedFilter)
-            where = [where, this.metadata.options.fixedFilter];
+            where = Filter.toItem(where, this.metadata.options.fixedFilter);
         let filterFactories = Filter.createFilterFactories(this.metadata)
         let r = await Filter.translateWhereToFilter(filterFactories, where);
         if (r && !this.dataProvider.supportsCustomFilter) {

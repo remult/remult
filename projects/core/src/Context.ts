@@ -201,7 +201,7 @@ export class Context {
         return r;
 
     }
-     req: DataApiRequest;
+    req: DataApiRequest;
 
     setReq(req: DataApiRequest) {
         this.req = req;
@@ -289,10 +289,10 @@ export interface UserInfo {
 }
 
 
+export declare type AllowedItem = string | ((c: Context) => boolean) | boolean;
+export declare type Allowed = AllowedItem | AllowedItem[];
 
-export declare type Allowed = string | ((c: Context) => boolean) | boolean | Allowed[];
-
-export declare type AllowedForInstance<T> = string | ((c: Context, entity: T) => boolean) | boolean | AllowedForInstance<T>[];
+export declare type AllowedForInstance<T> = string | ((c: Context, entity: T) => boolean) | boolean | Allowed;
 export class Allow {
     static everyone = () => true;
     static authenticated = (context: Context) => context.authenticated();

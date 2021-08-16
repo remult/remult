@@ -1,7 +1,7 @@
 
 import { AndFilter, Filter } from 'remult';
-import { ComparisonFilterFactory,  FieldRef, EntityWhere, FindOptions, Repository,  ContainsFilterFactory } from "remult";
-import {  FieldMetadata } from "remult";
+import { ComparisonFilterFactory, FieldRef, EntityWhere, FindOptions, Repository, ContainsFilterFactory } from "remult";
+import { FieldMetadata } from "remult";
 import { getFieldDefinition } from '..';
 
 export class FilterHelper<rowType> {
@@ -51,11 +51,11 @@ export class FilterHelper<rowType> {
         return f;
 
       }
-     
+
 
       if (opt.where) {
         let x = opt.where;
-        opt.where = [x, w];
+        opt.where = Filter.toItem(x, w);
       }
       else opt.where = w;
     });

@@ -122,7 +122,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: [this.options?.get?.where, x => this.repository.metadata.idMetadata.getIdFilter(id)]
+        where: Filter.toItem(this.options?.get?.where, x => this.repository.metadata.idMetadata.getIdFilter(id))
       })
         .then(async r => {
           if (r.length == 0)
