@@ -40,10 +40,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with yoni
-[] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.
+[] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
+
 [] consider the different wheres of an entity, to see where it takes us.
-
-
+[] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.
 [V] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
 
 [V] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
@@ -73,7 +73,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] field container type vs entity type vs target
 
 ## review with Yoni
-[] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
+
 
 
 [V] included display value and input type also in value converter - ias it is relevant to date only, and also value list
