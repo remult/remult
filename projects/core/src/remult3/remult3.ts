@@ -58,6 +58,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] test why date is equal to null - didn't work
 [] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
 [] talk about the case where postgres created a context, to build the database - and it didn't have our special methods created in init context, - send context for  create all entities
+[] fix readonly checkbox on grid.
 
 
 
