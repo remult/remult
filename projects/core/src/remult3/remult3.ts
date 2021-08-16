@@ -3,6 +3,7 @@ import { FieldMetadata } from "../column-interfaces";
 import { IterateToArrayOptions, Unobserve } from "../context";
 import { EntityOptions as EntityOptions } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
+import { BackendMethod } from "../server-action";
 import { Sort, SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 
@@ -38,53 +39,60 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] controller field serialization should respect inheritance like entity.
 [V] solve issue with bridge from family deliveries to family actions doesn't work.
 [V] kill uber context with adding properties to the context like done in vue .
-[] disable the github.io - remult-ts
+[V] disable the github.io - remult-ts
 [] rename AuthenticatedInGuard and not signed in guard
-[] fix bug in select group, where it updated the entity even though the field itself was a string field and not an entity field
+[V] fix bug in select group, where it updated the entity even though the field itself was a string field and not an entity field
 []  checkbox shouldn't display text true false on grid
 [] remove recursive types with array (Where etc...) Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
-
+[] introduce the context based factory for EntityOptions and FieldOptions
+    @Entity({},(o,c)=>{
+        o.
+    })
+[] remove info about request from context
+[] change context.for to remult.repo
+[] remove backend member from context and create isBackend method.
+[] api find array should load nothing :) (check server methods)
+[] isnull should be valueIsNull, and originalValueIsNull
+[] valueChanged instead of was changed.
+[] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
+[] test why date is equal to null - didn't work
+[] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
+[] talk about the case where postgres created a context, to build the database - and it didn't have our special methods created in init context, - send context for  create all entities
 
 
 
 ## review with yoni
-[] reconsider custom part in filter, to include the entity key - to prevent conflicts
-[] talk about the case where postgres created a context, to build the database - and it didn't have our special methods created in init context,
-
-[] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
+[] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.
 [] consider the different wheres of an entity, to see where it takes us.
-[] talk about isNull and original value (I prefer a parameter instead of another method)
+
+
+[V] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
+
 [V] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
-
-
 
 [] reconsider input value as id - it causes an  update that then reads from the server again - which causes problems sometime :)
 
-[] allow Api Update, will not accept true or false. -
-     I dont agree, there are many cases where the default is true or false and it doesn't make sense to not allow setting that value.
-     consider the cases where it's allowApiUpdate of a field, or includeInApi etc.....
-[] prepare roles? everyone, authenticated and put them in a class called Roles
-    I'm not sure I like the word roles here - imagine:
-    AllowApiUpdate = Roles.authenticated
-    not sure it's cool enough 
+
 [V] restricted id to be number or string
-[] field container type vs entity type vs target
-[] consider more parameters to entity where, since there is no way to get to the column key or name etc... from a where statement
-[] should find id accept null or undefined - or should it throw an exception?
-[] consider making db name awaitable - since it may rely on an sql that relies on an awaitable promise where
-[] api call shouldnt run load on the server probably since it's just returning values - but what if there is a server expression, should it load then? or should it load in any case.
-[] should server expressions wait for the load of all fields and then calculate?
-[] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
-[] test why date is equal to null - didn't work
-[] handle circular reference  - like I had with helper and escort
-[] consider exclude a table from table creation
+
+
+[V] should find id accept null or undefined - or should it throw an exception?
+[V] consider making db name awaitable - since it may rely on an sql that relies on an awaitable promise where
+
+
+
+
+
+
+
 
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
 [] apiDataFilter
 [] fixedFilter
-[] Rename Allowed and InstanceAllowed
+[] Rename Allowed and InstanceAllowed, and Allow
+[] field container type vs entity type vs target
 
 ## review with Yoni
 
@@ -149,17 +157,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 
-## context stuff:
-    * repository for
-    * current user
-        *  is signed in
-        * is allowed
-        * basic current user info
-        * setuser
-        * add listener to user
-    * map (getter and setter of stuff)
-    * onServer (let's you know you're on the server)
-    * Info about request
+    
 
 ## consider if needed
 
@@ -384,4 +382,5 @@ export interface IterableResult<entityType> {
         next: () => Promise<IteratorResult<entityType>>;
     };
 }
+
 
