@@ -23,9 +23,9 @@ export interface EntityOptions<entityType = any> {
    * @example
    * dbName = () => 'select distinct name from Products`
    */
-  dbName?: string | ((entity: FieldsMetadata<entityType>, context: Context) => string | Promise<string>);
+  dbName?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
   /**A human readable name for the entity */
-  caption?: string | ((context: Context) => string);
+  caption?: string ;
   includeInApi?: boolean;
   /**
    * Determines if this Entity is available for get requests using Rest Api 
@@ -41,13 +41,9 @@ export interface EntityOptions<entityType = any> {
   allowApiCrud?: Allowed;
 
   /** A filter that determines which rows can be queries using the api.
-   * @example
-   * apiDataFilter: () => {
-   *   if (!context.authenticated())
-   *      return this.availableTo.isGreaterOrEqualTo(new Date());
-   *   }
+
   */
-  apiDataFilter?: ((entityType: FilterFactories<entityType>, context: Context) => (Filter | Filter[]));
+  apiDataFilter?: EntityWhere<entityType>;
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
@@ -71,7 +67,7 @@ export interface EntityOptions<entityType = any> {
   * this is the place to run logic that we want to run in any case before an entity is saved. 
   * @example
   * saving: async () => {
-  *   if (context.onServer) {
+  *   if (isBackend()) {
   *     if (this.isNew()) {
   *         this.createDate.value = new Date();
   *     }

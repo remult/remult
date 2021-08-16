@@ -2148,7 +2148,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
 }
 @Entity<EntityWithLateBoundDbName>({
   key: 'stam',
-  dbName: async (t, c) => '(select ' + await t.id.getDbName() + ')'
+  dbName: async (t) => '(select ' + await t.id.getDbName() + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
   @Field({ dbName: 'CategoryID' })

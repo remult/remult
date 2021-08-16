@@ -603,7 +603,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
                 if (col.defaultValue) {
                     if (typeof col.defaultValue === "function") {
-                        instance[col.key] = col.defaultValue(instance, context);
+                        instance[col.key] = col.defaultValue(instance);
                     }
                     else if (!instance[col.key])
                         instance[col.key] = col.defaultValue;
@@ -1006,7 +1006,7 @@ export class columnDefsImpl implements FieldMetadata {
 
             if (this.settings.sqlExpression) {
                 if (typeof this.settings.sqlExpression === "function") {
-                    return this.settings.sqlExpression(this.entityDefs, this.context);
+                    return this.settings.sqlExpression(this.entityDefs);
                 } else
                     return this.settings.sqlExpression;
             }
@@ -1034,7 +1034,7 @@ export class columnDefsImpl implements FieldMetadata {
         let result;
         if (this.settings.sqlExpression) {
             if (typeof this.settings.sqlExpression === "function") {
-                result = this.settings.sqlExpression(this.entityDefs, this.context);
+                result = this.settings.sqlExpression(this.entityDefs);
             } else
                 result = this.settings.sqlExpression;
         }
@@ -1093,7 +1093,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
             this.dbNamePromise = Promise.resolve(this.options.dbName);
         else if (typeof this.options.dbName === "function") {
 
-            let r = this.options.dbName(this.fields, this.context);
+            let r = this.options.dbName(this.fields);
             if (r instanceof Promise)
                 this.dbNamePromise = r;
             else if (r)

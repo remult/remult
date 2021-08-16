@@ -15,15 +15,15 @@ export interface FieldOptions<entityType = any, valueType = any> {
     valueType?: any;
 
 
-    caption?: string | ((context: Context) => string);
+    caption?: string ;
     displayValue?: (entity: entityType, value: valueType) => string;
-    defaultValue?: (entity: entityType, context: Context) => valueType | Promise<valueType>;
+    defaultValue?: (entity: entityType) => valueType | Promise<valueType>;
     validate?: FieldValidator<entityType, valueType> | FieldValidator<entityType, valueType>[];
     inputType?: string;
     allowNull?: boolean;
 
     dbName?: string;
-    sqlExpression?: string | ((entity: EntityMetadata<entityType>, context: Context) => string | Promise<string>);
+    sqlExpression?: string | ((entity: EntityMetadata<entityType>) => string | Promise<string>);
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     dbReadOnly?: boolean;
     valueConverter?: ValueConverter<valueType>;

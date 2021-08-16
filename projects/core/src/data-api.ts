@@ -170,12 +170,8 @@ export class DataApi<T = any> {
       allowInsert: (e) => this.context.isAllowedForInstance(e, options.allowApiInsert),
       requireId: this.context.isAllowed(options.apiRequireId),
       get: {
-        where: x => {
-          if (options.apiDataFilter) {
-            return options.apiDataFilter(x, this.context);
-          }
-          return undefined;
-        }
+        where: options.apiDataFilter
+        
       }
     }
   }

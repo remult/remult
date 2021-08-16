@@ -368,9 +368,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
       this.dataControl.valueList = this.options.valueConverter.getOptions();
     }
 
-    if (settings.caption)
-      if (typeof this.options.caption === "function")
-        settings.caption = this.options.caption(settings.context);
+    
     if (!settings.caption)
       settings.caption = 'caption';
 
@@ -378,7 +376,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
       settings.key = settings.caption;
     this.inputType = settings.inputType;
     if (settings.defaultValue) {
-      this._value = settings.defaultValue(undefined, undefined) as unknown as valueType
+      this._value = settings.defaultValue(undefined) as unknown as valueType
     }
 
     this.originalValue = this._value;

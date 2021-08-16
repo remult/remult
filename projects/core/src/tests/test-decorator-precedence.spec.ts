@@ -16,7 +16,7 @@ class myEntity extends EntityBase {
     @Field({ caption: '123' })
     @Field()
     b: string;
-    @Field({ caption: context => "456" })
+    @Field((o, c) => o.caption = "456")
     c: string;
 
 }
