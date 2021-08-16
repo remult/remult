@@ -362,7 +362,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
     if (!settings.dbName)
       settings.dbName = settings.key;
 
-    this.options = decorateColumnSettings(settings);
+    this.options = decorateColumnSettings(settings, settings.context);
     this.dataControl = settings;
     if (!this.dataControl.valueList && this.options.valueConverter instanceof ValueListValueConverter) {
       this.dataControl.valueList = this.options.valueConverter.getOptions();

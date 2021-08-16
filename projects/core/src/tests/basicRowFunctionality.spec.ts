@@ -1868,7 +1868,7 @@ describe("test date storage", () => {
 });
 describe("test bool value", () => {
   it("should work", () => {
-    let col = decorateColumnSettings<Boolean>({ valueType: Boolean });
+    let col = decorateColumnSettings<Boolean>({ valueType: Boolean },new Context());
     expect(col.valueConverter.fromJson(true)).toBe(true);
     expect(col.valueConverter.fromJson(false)).toBe(false);
   });

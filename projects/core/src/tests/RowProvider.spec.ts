@@ -1324,12 +1324,12 @@ describe("test column value change", () => {
 
 describe("test datetime column", () => {
   it("stores well", () => {
-    let col = decorateColumnSettings<Date>({ valueType: Date });
+    let col = decorateColumnSettings<Date>({ valueType: Date },new Context());
     let val = col.valueConverter.fromJson(col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
     expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
-    let col = decorateColumnSettings<Date>({ valueType: Date });
+    let col = decorateColumnSettings<Date>({ valueType: Date },new Context());
     expect(col.valueConverter.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
@@ -1361,7 +1361,7 @@ describe("test datetime column", () => {
     let col = decorateColumnSettings<Date>({
       valueType: Date,
       valueConverter: DateOnlyValueConverter
-    });
+    },new Context());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
 

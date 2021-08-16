@@ -440,18 +440,18 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
     }
 
 
-    return new EntityFullInfo<T>(prepareColumnInfo(r), info(context), context);
+    return new EntityFullInfo<T>(prepareColumnInfo(r, context), info(context), context);
 }
 
 abstract class rowHelperBase<T>
 {
     error: string;
-    constructor(protected columnsInfo: columnInfo[], protected instance: T, protected context: Context) {
+    constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected context: Context) {
         for (const col of columnsInfo) {
-            let ei = getEntitySettings(col.settings.valueType, false);
+            let ei = getEntitySettings(col.valueType, false);
 
             if (ei && context) {
-                let lookup = new LookupColumn(context.for(col.settings.valueType) as RepositoryImplementation<T>, undefined);
+                let lookup = new LookupColumn(context.for(col.valueType) as RepositoryImplementation<T>, undefined);
                 this.lookups.set(col.key, lookup);
                 let val = instance[col.key];
                 Object.defineProperty(instance, col.key, {
@@ -551,7 +551,7 @@ abstract class rowHelperBase<T>
     toApiJson() {
         let result: any = {};
         for (const col of this.columnsInfo) {
-            if (!this.context || col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
+            if (!this.context || col.includeInApi === undefined || this.context.isAllowed(col.includeInApi)) {
                 let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
@@ -567,7 +567,7 @@ abstract class rowHelperBase<T>
                         }
                     }
                 }
-                result[col.key] = col.settings.valueConverter.toJson(val);
+                result[col.key] = col.valueConverter.toJson(val);
             }
         }
         return result;
@@ -576,13 +576,13 @@ abstract class rowHelperBase<T>
     async _updateEntityBasedOnApi(body: any) {
         for (const col of this.columnsInfo) {
             if (body[col.key] !== undefined)
-                if (col.settings.includeInApi === undefined || this.context.isAllowed(col.settings.includeInApi)) {
-                    if (!this.context || col.settings.allowApiUpdate === undefined || this.context.isAllowedForInstance(this.instance, col.settings.allowApiUpdate)) {
+                if (col.includeInApi === undefined || this.context.isAllowed(col.includeInApi)) {
+                    if (!this.context || col.allowApiUpdate === undefined || this.context.isAllowedForInstance(this.instance, col.allowApiUpdate)) {
                         let lu = this.lookups.get(col.key);
                         if (lu)
                             lu.id = body[col.key];
                         else
-                            this.instance[col.key] = col.settings.valueConverter.fromJson(body[col.key]);
+                            this.instance[col.key] = col.valueConverter.fromJson(body[col.key]);
                     }
 
                 }
@@ -601,12 +601,12 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         if (_isNew) {
             for (const col of info.columnsInfo) {
 
-                if (col.settings.defaultValue) {
-                    if (typeof col.settings.defaultValue === "function") {
-                        instance[col.key] = col.settings.defaultValue(instance, context);
+                if (col.defaultValue) {
+                    if (typeof col.defaultValue === "function") {
+                        instance[col.key] = col.defaultValue(instance, context);
                     }
                     else if (!instance[col.key])
-                        instance[col.key] = col.settings.defaultValue;
+                        instance[col.key] = col.defaultValue;
                 }
 
             }
@@ -654,7 +654,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 [Symbol.iterator]: () => _items[Symbol.iterator]()
             };
             for (const c of this.info.columnsInfo) {
-                _items.push(r[c.key] = new FieldRefImplementation(c.settings, this.info.fields[c.key], this.instance, this, this));
+                _items.push(r[c.key] = new FieldRefImplementation(c, this.info.fields[c.key], this.instance, this, this));
             }
 
             this._columns = r as unknown as Fields<T>;
@@ -759,8 +759,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     private async calcServerExpression() {
         if (this.context.backend)
             for (const col of this.info.columnsInfo) {
-                if (col.settings.serverExpression) {
-                    this.instance[col.key] = await col.settings.serverExpression(this.instance);
+                if (col.serverExpression) {
+                    this.instance[col.key] = await col.serverExpression(this.instance);
                 }
             }
     }
@@ -783,8 +783,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
     async __performColumnAndEntityValidations() {
         for (const c of this.columnsInfo) {
-            if (c.settings.validate) {
-                let col = new FieldRefImplementation(c.settings, this.info.fields[c.key], this.instance, this, this);
+            if (c.validate) {
+                let col = new FieldRefImplementation(c, this.info.fields[c.key], this.instance, this, this);
                 await col.__performValidation();
             }
         }
@@ -798,12 +798,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 }
 const controllerColumns = Symbol("controllerColumns");
-function prepareColumnInfo(r: columnInfo[]): columnInfo[] {
-    return r.map(x => ({
-        key: x.key,
-        type: x.type,
-        settings: decorateColumnSettings(x.settings)
-    }));
+function prepareColumnInfo(r: columnInfo[], context: Context): FieldOptions[] {
+    return r.map(x => decorateColumnSettings(x.settings(context), context));
 }
 
 export function getFields<fieldsContainerType>(container: fieldsContainerType, context?: Context): Fields<fieldsContainerType> {
@@ -828,14 +824,14 @@ export function getControllerRef<fieldsContainerType>(container: fieldsContainer
             base = Object.getPrototypeOf(base);
         }
 
-        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings), container, context);
+        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings, context), container, context);
     }
     return result;
 }
 
 
 export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
-    constructor(columnsInfo: columnInfo[], instance: any, context: Context) {
+    constructor(columnsInfo: FieldOptions[], instance: any, context: Context) {
         super(columnsInfo, instance, context);
 
 
@@ -846,8 +842,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
         };
 
         for (const col of columnsInfo) {
-            let settings = decorateColumnSettings(col.settings);
-            _items.push(r[col.key] = new FieldRefImplementation<any, any>(settings, new columnDefsImpl(col, undefined, context), instance, undefined, this));
+            _items.push(r[col.key] = new FieldRefImplementation<any, any>(col, new columnDefsImpl(col, undefined, context), instance, undefined, this));
         }
 
         this.fields = r as unknown as Fields<T>;
@@ -990,14 +985,14 @@ export function buildCaption(caption: string | ((context: Context) => string), k
 }
 
 export class columnDefsImpl implements FieldMetadata {
-    constructor(private colInfo: columnInfo, private entityDefs: EntityFullInfo<any>, private context: Context) {
-        if (colInfo.settings.serverExpression)
+    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private context: Context) {
+        if (settings.serverExpression)
             this.isServerExpression = true;
-        if (typeof (this.colInfo.settings.allowApiUpdate) === "boolean")
-            this.readonly = this.colInfo.settings.allowApiUpdate;
+        if (typeof (this.settings.allowApiUpdate) === "boolean")
+            this.readonly = this.settings.allowApiUpdate;
         if (!this.inputType)
             this.inputType = this.valueConverter.inputType;
-        this.caption = buildCaption(colInfo.settings.caption, colInfo.key, context);
+        this.caption = buildCaption(settings.caption, settings.key, context);
 
 
 
@@ -1009,58 +1004,58 @@ export class columnDefsImpl implements FieldMetadata {
             return this.dbNamePromise;
         this.dbNamePromise = (async () => {
 
-            if (this.colInfo.settings.sqlExpression) {
-                if (typeof this.colInfo.settings.sqlExpression === "function") {
-                    return this.colInfo.settings.sqlExpression(this.entityDefs, this.context);
+            if (this.settings.sqlExpression) {
+                if (typeof this.settings.sqlExpression === "function") {
+                    return this.settings.sqlExpression(this.entityDefs, this.context);
                 } else
-                    return this.colInfo.settings.sqlExpression;
+                    return this.settings.sqlExpression;
             }
-            return this.colInfo.settings.dbName;
+            return this.settings.dbName;
 
         })().then(x => {
             if (x)
                 return x;
-            return this.colInfo.settings.dbName;
+            return this.settings.dbName;
 
         });
         return this.dbNamePromise;
 
 
     }
-    options: FieldOptions<any, any> = this.colInfo.settings;
-    target: ClassType<any> = this.colInfo.settings.target;
+    options: FieldOptions<any, any> = this.settings;
+    target: ClassType<any> = this.settings.target;
     readonly: boolean;
 
-    valueConverter = this.colInfo.settings.valueConverter;
-    allowNull = !!this.colInfo.settings.allowNull;
+    valueConverter = this.settings.valueConverter;
+    allowNull = !!this.settings.allowNull;
 
     caption: string;
     get dbName() {
         let result;
-        if (this.colInfo.settings.sqlExpression) {
-            if (typeof this.colInfo.settings.sqlExpression === "function") {
-                result = this.colInfo.settings.sqlExpression(this.entityDefs, this.context);
+        if (this.settings.sqlExpression) {
+            if (typeof this.settings.sqlExpression === "function") {
+                result = this.settings.sqlExpression(this.entityDefs, this.context);
             } else
-                result = this.colInfo.settings.sqlExpression;
+                result = this.settings.sqlExpression;
         }
         if (result)
             return result;
-        return this.colInfo.settings.dbName;
+        return this.settings.dbName;
 
     }
-    inputType = this.colInfo.settings.inputType;
-    key = this.colInfo.settings.key;
+    inputType = this.settings.inputType;
+    key = this.settings.key;
     get dbReadOnly() {
-        return this.colInfo.settings.dbReadOnly;
+        return this.settings.dbReadOnly;
     };
     isServerExpression: boolean;
-    valueType = this.colInfo.settings.valueType;
+    valueType = this.settings.valueType;
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
 
     options = this.entityInfo;
 
-    constructor(public columnsInfo: columnInfo[], public entityInfo: EntityOptions, private context: Context) {
+    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private context: Context) {
 
 
         let _items = [];
@@ -1146,76 +1141,77 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
 
 
-export function FieldType<valueType = any>(settings?: FieldOptions<any, valueType>) {
+export function FieldType<valueType = any>(...options: OptionsFactory<FieldOptions<any, valueType>>) {
     return target => {
-        if (!settings) {
-            settings = {};
+        if (!options) {
+            options = [];
         }
-        if (!settings.valueType)
-            settings.valueType = target;
-        Reflect.defineMetadata(storableMember, settings, target);
+        options.splice(0, 0, { valueType: target });
+
+        Reflect.defineMetadata(storableMember, options, target);
         return target;
     }
 
 }
-export function DateOnlyField<entityType = any>(settings?: FieldOptions<entityType, Date>) {
+export function DateOnlyField<entityType = any>(...options: OptionsFactory<FieldOptions<entityType, Date>>) {
     return Field({
         valueConverter: DateOnlyValueConverter
-        , ...settings
-    })
+    }, ...options);
 }
-export function IntegerField<entityType = any>(settings?: FieldOptions<entityType, Number>) {
+export function IntegerField<entityType = any>(...options: OptionsFactory<FieldOptions<entityType, Number>>) {
     return Field({
         valueType: Number,
         valueConverter: IntegerValueConverter
-        , ...settings
-    })
+    }, ...options)
 }
-export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(type: ClassType<valueType>, settings?: FieldOptions<entityType, valueType>) {
+export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(type: ClassType<valueType>, ...options: OptionsFactory<FieldOptions<entityType, valueType>>) {
     return FieldType<valueType>({
         valueConverter: new ValueListValueConverter(type),
         displayValue: (item, val) => val.caption
-        , ...settings
-    })
+    }, ...options)
 }
 
-export function Field<entityType = any, valueType = any>(settings?: FieldOptions<entityType, valueType>) {
-    if (!settings) {
-        settings = {};
-    }
+export function Field<entityType = any, valueType = any>(...options: OptionsFactory<FieldOptions<entityType, valueType>>) {
+
 
 
     return (target, key, c?) => {
-        if (!settings.key) {
-            settings.key = key;
+        let factory = (context: Context) => {
+            let r = buildOptions(options, context);
+            if (!r.key) {
+                r.key = key;
+            }
+            if (!r.dbName)
+                r.dbName = r.key;
+            let type = r.valueType;
+            if (!type) {
+                type = Reflect.getMetadata("design:type", target, key);
+                r.valueType = type;
+            }
+            if (!r.target)
+                r.target = target;
+            return r;
+
         }
-
-        if (!settings.dbName)
-            settings.dbName = settings.key;
-
         let names: columnInfo[] = columnsOfType.get(target.constructor);
         if (!names) {
             names = [];
             columnsOfType.set(target.constructor, names)
         }
 
-        let type = settings.valueType;
-        if (!type) {
-            type = Reflect.getMetadata("design:type", target, key);
-            settings.valueType = type;
-        }
-        if (!settings.target)
-            settings.target = target;
-
         let set = names.find(x => x.key == key);
         if (!set)
             names.push({
                 key,
-                settings,
-                type
+                settings: factory,
             });
         else {
-            Object.assign(set.settings, settings);
+            let prev = set.settings;
+            set.settings = (c) => {
+                let prevO = prev(c);
+                let curr = factory(c);
+                return Object.assign(prevO, curr);
+            };
         }
 
     }
@@ -1224,13 +1220,27 @@ export function Field<entityType = any, valueType = any>(settings?: FieldOptions
 
 }
 const storableMember = Symbol("storableMember");
-export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>) {
+function buildOptions<entityType = any, valueType = any>(options: OptionsFactory<FieldOptions<entityType, valueType>>, context: Context) {
+    let r = {} as FieldOptions<entityType, valueType>;
+    for (const o of options) {
+        if (o) {
+            if (typeof o === "function")
+                o(r, context);
+
+            else
+                Object.assign(r, o);
+        }
+    }
+    return r;
+}
+
+export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, context: Context) {
 
     if (settings.valueType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.valueType);
         if (settingsOnTypeLevel) {
             settings = {
-                ...settingsOnTypeLevel,
+                ...buildOptions(settingsOnTypeLevel, context),
                 ...settings
             }
         }
@@ -1301,10 +1311,11 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
 
 interface columnInfo {
     key: string;
-    settings: FieldOptions,
-    type: any
+    settings: (context: Context) => FieldOptions
+
 }
-export function Entity<entityType>(...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, context: Context) => void))[]) {
+export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, context: Context) => void))[];
+export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
     return target => {
 
         let factory: EntityOptionsFactory = context => {
@@ -1324,7 +1335,7 @@ export function Entity<entityType>(...options: (EntityOptions<entityType> | ((op
                 r.key = target.name;
             let base = Object.getPrototypeOf(target);
             if (base) {
-                let baseFactory = getEntitySettings(base,false);
+                let baseFactory = getEntitySettings(base, false);
                 if (baseFactory) {
                     let opt = baseFactory(context);
                     if (opt) {

@@ -429,7 +429,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
             }
             if (args[index] != undefined) {
                 let x: FieldOptions = { valueType: paramType };
-                x = decorateColumnSettings(x);
+                x = decorateColumnSettings(x,new Context());
                 if (x.valueConverter)
                     args[index] = x.valueConverter.toJson(args[index]);
                 let eo = getEntitySettings(paramType, false);
@@ -464,7 +464,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Se
                 args[i] = new ProgressListener(res);
             } else {
                 let x: FieldOptions = { valueType: types[i] };
-                x = decorateColumnSettings(x);
+                x = decorateColumnSettings(x,context);
                 if (x.valueConverter)
                     args[i] = x.valueConverter.fromJson(args[i]);
                 let eo = getEntitySettings(types[i], false);
