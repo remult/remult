@@ -5,6 +5,7 @@ import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
+import { set } from '../../set';
 
 @Entity({ key: 'testServerMethodOnEntity' })
 class testServerMethodOnEntity extends EntityBase {
@@ -43,7 +44,7 @@ class testServerMethodOnEntity extends EntityBase {
 
 }
 
-@Entity<testBoolCreate123>({
+@Entity<testBoolCreate123>((o,c)=>set(o,{
     key: 'testBoolCreate123',
     allowApiCrud: true,
     saving: async t => {
@@ -57,7 +58,7 @@ class testServerMethodOnEntity extends EntityBase {
         }
 
     }
-})
+}))
 class testBoolCreate123 extends EntityBase {
     @Field()
     id: number;

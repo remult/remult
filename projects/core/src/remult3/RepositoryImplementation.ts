@@ -404,17 +404,17 @@ export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T
     }
 }
 
-
+export type EntityOptionsFactory = (context: Context) => EntityOptions;
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
-export function getEntitySettings<T>(entity: ClassType<T>, throwError = true) {
+export function getEntitySettings<T>(entity: ClassType<T>, throwError = true): EntityOptionsFactory {
     if (entity === undefined)
         if (throwError) {
             throw new Error("Undefined is not an entity :)")
         }
         else return undefined;
-    let info: EntityOptions = Reflect.getMetadata(entityInfo, entity);
+    let info: EntityOptionsFactory = Reflect.getMetadata(entityInfo, entity);
     if (!info && throwError)
         throw new Error(entity.prototype.constructor.name + " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?")
 
@@ -440,7 +440,7 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
     }
 
 
-    return new EntityFullInfo<T>(prepareColumnInfo(r), info, context);
+    return new EntityFullInfo<T>(prepareColumnInfo(r), info(context), context);
 }
 
 abstract class rowHelperBase<T>
@@ -1304,25 +1304,45 @@ interface columnInfo {
     settings: FieldOptions,
     type: any
 }
-export function Entity<entityType>(options: EntityOptions<entityType>) {
+export function Entity<entityType>(...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, context: Context) => void))[]) {
     return target => {
-        if (!options.key || options.key == '')
-            options.key = target.name;
-        let base = Object.getPrototypeOf(target);
-        if (base) {
-            let opt = Reflect.getMetadata(entityInfo, target);
-            if (opt) {
-                options = {
-                    ...opt,
-                    ...options
+
+        let factory: EntityOptionsFactory = context => {
+            let r = {} as EntityOptions<entityType>;
+            for (const o of options) {
+                if (o) {
+                    if (typeof o === "function")
+                        o(r, context);
+                    else
+                        Object.assign(r, o);
                 }
             }
-        }
-        if (!options.dbName)
-            options.dbName = options.key;
+
+
+
+            if (!r.key || r.key == '')
+                r.key = target.name;
+            let base = Object.getPrototypeOf(target);
+            if (base) {
+                let baseFactory = getEntitySettings(base,false);
+                if (baseFactory) {
+                    let opt = baseFactory(context);
+                    if (opt) {
+                        r = {
+                            ...opt,
+                            ...r
+                        }
+                    }
+                }
+            }
+            if (!r.dbName)
+                r.dbName = r.key;
+            return r;
+        };
+
         allEntities.push(target);
         setControllerSettings(target, { key: undefined })
-        Reflect.defineMetadata(entityInfo, options, target);
+        Reflect.defineMetadata(entityInfo, factory, target);
         return target;
     }
 }
