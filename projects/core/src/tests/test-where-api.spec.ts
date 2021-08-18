@@ -1,12 +1,11 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { ServerContext } from '../context';
+import { Context } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
 import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, EntityWhere, EntityWhereItem, Field, FilterFactories, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Context } from 'vm';
 import { CustomFilterBuilder, customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
 import { DataApi } from '../data-api';
@@ -56,7 +55,7 @@ describe("test where stuff", () => {
 
 describe("custom filter", () => {
     itAsync("test that it works", async () => {
-        let c = new ServerContext(new InMemoryDataProvider()).for(entityForCustomFilter);
+        let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -66,7 +65,7 @@ describe("custom filter", () => {
     itAsync("test that it works with sql", async () => {
         let w = new WebSqlDataProvider("testWithFilter");
 
-        let c = new ServerContext(new SqlDatabase(w)).for(entityForCustomFilter);
+        let c = new Context().for(entityForCustomFilter, new SqlDatabase(w));
         await w.dropTable(c.metadata);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -78,7 +77,7 @@ describe("custom filter", () => {
     itAsync("test that it works with arrayFilter", async () => {
 
 
-        let c = new ServerContext(new InMemoryDataProvider()).for(entityForCustomFilter);
+        let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -88,7 +87,7 @@ describe("custom filter", () => {
 
     });
     itAsync("test or and promise in translate", async () => {
-        let c = new ServerContext(new InMemoryDataProvider()).for(entityForCustomFilter);
+        let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -107,7 +106,8 @@ describe("custom filter", () => {
             post: undefined,
             put: undefined
         });
-        let c = new ServerContext(z);
+        let c = new Context();
+        c.setDataProvider(z);
         await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
         ok.test();
     });
@@ -134,12 +134,14 @@ describe("custom filter", () => {
             get: undefined,
             put: undefined
         });
-        let c = new ServerContext(z);
+        let c = new Context();
+        c.setDataProvider(z);
         await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }).and(entityForCustomFilter.filter.build({ two: true })));
         ok.test();
     });
     itAsync("test that api reads custom correctly", async () => {
-        let context = new ServerContext(new InMemoryDataProvider());
+        let context = new Context();
+        context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -161,7 +163,8 @@ describe("custom filter", () => {
         d.test();
     });
     itAsync("test that api reads custom correctly 2", async () => {
-        let context = new ServerContext(new InMemoryDataProvider());
+        let context = new Context();
+        context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -188,7 +191,8 @@ describe("custom filter", () => {
         d.test();
     });
     itAsync("test that api reads custom correctly 3", async () => {
-        let context = new ServerContext(new InMemoryDataProvider());
+        let context = new Context();
+        context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -219,7 +223,8 @@ describe("custom filter", () => {
         d.test();
     });
     itAsync("test that api reads custom correctly and translates to db", async () => {
-        let context = new ServerContext(new InMemoryDataProvider());
+        let context = new Context();
+        context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();

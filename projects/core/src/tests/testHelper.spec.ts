@@ -1,6 +1,6 @@
 
 
-import { Context, ServerContext } from "../context";
+import { Context } from "../context";
 import { DataApiRequest, DataApiResponse, serializeError } from "../data-api";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Action, actionInfo, serverActionField } from "../server-action";
@@ -85,16 +85,22 @@ Action.provider = {
 
         action[serverActionField].
           __register(
-            (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => {
+            (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => {
 
               if (Context.apiBaseUrl + '/' + url == urlreq) {
                 found = true;
                 let t = new TestDataApiResponse();
-                t.success = data =>
+                actionInfo.runningOnServer = true;
+                t.success = data => {
                   res(data);
-                t.error = data =>
+                  actionInfo.runningOnServer = false
+                }
+                t.error = data => {
                   r(JSON.parse(JSON.stringify(serializeError(data))));
-                let context = new ServerContext(ActionTestConfig.db);
+                  actionInfo.runningOnServer = false
+                }
+                let context = new Context();
+                context.setDataProvider(ActionTestConfig.db);
 
 
                 what(JSON.parse(JSON.stringify(data)), context, t);

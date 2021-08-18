@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Context, AllowedForInstance, ServerContext, Allowed,  allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
+import { Context, AllowedForInstance,  Allowed,  allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
 
 
 
@@ -70,9 +70,9 @@ export abstract class Action<inParam, outParam>{
 
 
     }
-    protected abstract execute(info: inParam, req: ServerContext, res: DataApiResponse): Promise<outParam>;
+    protected abstract execute(info: inParam, req: Context, res: DataApiResponse): Promise<outParam>;
 
-    __register(reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) {
+    __register(reg: (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => void) {
         reg(this.actionUrl, this.queue, async (d, req, res) => {
 
             try {
@@ -94,7 +94,7 @@ export class myServerAction extends Action<inArgs, result>
         super(name, options.queue)
     }
 
-    protected async execute(info: inArgs, context: ServerContext, res: DataApiResponse): Promise<result> {
+    protected async execute(info: inArgs, context: Context, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
         let ds = context._dataSource;
         await ds.transaction(async ds => {
@@ -221,9 +221,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         var originalMethod = descriptor.value;
         let serverAction = {
 
-            __register(reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) {
+            __register(reg: (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => void) {
 
-                let c = new ServerContext();
+                let c = new Context();
                 for (const constructor of mh.classes.keys()) {
                     let controllerOptions = mh.classes.get(constructor);
 
@@ -422,7 +422,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
     if (types) {
         for (let index = 0; index < types.length; index++) {
             const paramType = types[index];
-            for (const type of [Context, ServerContext, SqlDatabase]) {
+            for (const type of [Context, Context, SqlDatabase]) {
                 if (paramType instanceof type) {
                     args[index] = undefined;
                 }
@@ -443,7 +443,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
     return args.map(x => x !== undefined ? x : customUndefined);
 
 }
-export async function prepareReceivedArgs(types: any[], args: any[], context: ServerContext, ds: DataProvider, res: DataApiResponse) {
+export async function prepareReceivedArgs(types: any[], args: any[], context: Context, ds: DataProvider, res: DataApiResponse) {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
         if (isCustomUndefined(element))
@@ -455,7 +455,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Se
             if (args.length < i) {
                 args.push(undefined);
             }
-            if (types[i] == Context || types[i] == ServerContext) {
+            if (types[i] == Context || types[i] == Context) {
 
                 args[i] = context;
             } else if (types[i] == SqlDatabase && ds) {

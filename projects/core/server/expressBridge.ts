@@ -14,7 +14,7 @@ import { NumberValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { ExcludeEntityFromApi, ServerContext } from '../src/context';
+import { ExcludeEntityFromApi } from '../src/context';
 
 
 
@@ -25,7 +25,7 @@ export function initExpress(app: express.Express,
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
-      initRequest?: (context: ServerContext, origReq: express.Request) => Promise<void>
+      initRequest?: (context: Context, origReq: express.Request) => Promise<void>
     }) {
 
   if (!options) {
@@ -69,7 +69,7 @@ export class ExpressBridge {
 
 
 
-  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (context: ServerContext, origReq: express.Request) => Promise<void>,
+  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (context: Context, origReq: express.Request) => Promise<void>,
     public dataProvider: DataProvider) {
 
   }
@@ -107,12 +107,12 @@ export class SiteArea {
 
 
 
-  add(entityOrDataApiFactory: ((req: ServerContext) => DataApi)) {
+  add(entityOrDataApiFactory: ((req: Context) => DataApi)) {
 
 
-    let api: ((req: ServerContext) => DataApi);
+    let api: ((req: Context) => DataApi);
     api = entityOrDataApiFactory;
-    let contextForRouteExtraction = new ServerContext();
+    let contextForRouteExtraction = new Context();
 
     let myRoute = api(contextForRouteExtraction).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
@@ -148,11 +148,11 @@ export class SiteArea {
 
 
   }
-  process(what: (context: ServerContext, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
+  process(what: (context: Context, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
-      let context = new ServerContext();
+      let context = new Context();
       context.setDataProvider(this.bridge.dataProvider);
       let user = req['user'];
       if (user)
@@ -165,7 +165,7 @@ export class SiteArea {
     }
   };
   async getValidContext(req: express.Request) {
-    let context: ServerContext;
+    let context: Context;
     await this.process(async (c) => {
       context = c;
     })(req, undefined);
@@ -191,9 +191,9 @@ export class SiteArea {
     this.initQueue = () => { };
   }
   addAction(action: {
-    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: ServerContext, res: DataApiResponse) => void)) => void) => void
+    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => void) => void
   }) {
-    action.__register((url: string, queue: boolean, what: (data: any, r: ServerContext, res: DataApiResponse) => void) => {
+    action.__register((url: string, queue: boolean, what: (data: any, r: Context, res: DataApiResponse) => void) => {
       let myUrl = this.rootUrl + '/' + url;
       if (this.logApiEndpoints)
         console.log(myUrl);
@@ -270,7 +270,7 @@ class inProcessQueueHandler {
   constructor(private storage: QueueStorage) {
 
   }
-  async submitJob(url: string, req: ServerContext, body: any): Promise<string> {
+  async submitJob(url: string, req: Context, body: any): Promise<string> {
     let id = await this.storage.createJob(url, req.user ? req.user.id : undefined);
     let job = await this.storage.getJobInfo(id);
 
@@ -283,10 +283,10 @@ class inProcessQueueHandler {
     });
     return id;
   }
-  mapQueuedAction(url: string, what: (data: any, r: ServerContext, res: ApiActionResponse) => void) {
+  mapQueuedAction(url: string, what: (data: any, r: Context, res: ApiActionResponse) => void) {
     this.actions.set(url, what);
   }
-  actions = new Map<string, ((data: any, r: ServerContext, res: ApiActionResponse) => void)>();
+  actions = new Map<string, ((data: any, r: Context, res: ApiActionResponse) => void)>();
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
     return await this.storage.getJobInfo(queuedJobId);
   }

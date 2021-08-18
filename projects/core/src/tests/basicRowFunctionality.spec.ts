@@ -8,7 +8,7 @@ import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './test
 
 import { Status } from './testModel/models';
 
-import { Context, Allowed, ServerContext } from '../context';
+import { Context, Allowed } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider } from '../data-interfaces';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
@@ -24,6 +24,7 @@ import { Categories, Categories as newCategories, CategoriesForTesting } from '.
 import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
+import { actionInfo } from '../server-action';
 
 //SqlDatabase.LogToConsole = true;
 
@@ -110,7 +111,8 @@ class tableWithPhone extends EntityBase {
 }
 describe("test object column stored as string", () => {
   itAsync("was changed should work correctly", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
+    var context = new Context();
+    context.setDataProvider(new InMemoryDataProvider());
     let repo = context.for(tableWithPhone);
     let r = repo.create();
     r.id = 1;
@@ -263,6 +265,8 @@ class myTestEntity extends EntityBase {
 }
 
 describe("data api", () => {
+  beforeEach(() => actionInfo.runningOnServer = true);
+  afterEach(() => actionInfo.runningOnServer = false);
   itAsync("get based on id", async () => {
 
 
@@ -332,7 +336,8 @@ describe("data api", () => {
   ctx.setDataProvider(new InMemoryDataProvider());
   itWithDataProvider("put with validations on entity fails",
     async (dataProvider) => {
-      let ctx = new ServerContext(dataProvider);
+      let ctx = new Context();
+      ctx.setDataProvider(dataProvider);
       let s = ctx.for(entityWithValidations);
       let c = s.create();
       c.myId = 1;
@@ -369,7 +374,8 @@ describe("data api", () => {
     });
 
   itWithDataProvider("put with validations on column fails", async (dp) => {
-    ctx = new ServerContext(dp);
+    ctx = new Context();
+    ctx.setDataProvider(dp);
     var s = ctx.for(entityWithValidationsOnColumn);
     let c = s.create();
 
@@ -392,7 +398,8 @@ describe("data api", () => {
 
   });
   itWithDataProvider("put with validations on entity fails", async (dp) => {
-    ctx = new ServerContext(dp);
+    ctx = new Context();
+    ctx.setDataProvider(dp);
     var s = ctx.for(entityWithValidations);
     let c = s.create();
 
@@ -414,7 +421,8 @@ describe("data api", () => {
 
   });
   itWithDataProvider("entity with different id column still works well", async (dp) => {
-    ctx = new ServerContext(dp);
+    ctx = new Context();
+    ctx.setDataProvider(dp);
     let s = ctx.for(entityWithValidations);
     let c = s.create();
 
@@ -428,7 +436,7 @@ describe("data api", () => {
 
   });
   itWithDataProvider("empty find works", async (dp) => {
-    let ctx = new ServerContext();
+    let ctx = new Context();
     ctx.setDataProvider(dp);
     let c = ctx.for(newCategories).create();
     c.id = 5;
@@ -480,7 +488,7 @@ describe("data api", () => {
     expect(r.length).toBe(0);
   });
   itAsync("delete falis nicely ", async () => {
-    let ctx = new ServerContext();
+    let ctx = new Context();
     ctx.setDataProvider({
       getEntityDataProvider: (x) => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }]);
@@ -1033,7 +1041,7 @@ describe("data api", () => {
 
 
     let startTest = false;
-    let context = new ServerContext();
+    let context = new Context();
     let mem = new InMemoryDataProvider();
     context.setDataProvider(mem);
     let type = class extends newCategories {
@@ -1307,7 +1315,7 @@ describe("data api", () => {
   });
 
   itAsync("allow api read depends also on api crud", async () => {
-    let sc = new ServerContext();
+    let sc = new Context();
     let type = class extends EntityBase {
 
     }
@@ -1315,7 +1323,7 @@ describe("data api", () => {
     expect(new DataApi(sc.for(type), sc)._getApiSettings().allowRead).toBe(false);
   });
   itAsync("allow api read depends also on api crud", async () => {
-    let sc = new ServerContext();
+    let sc = new Context();
     let type = class extends EntityBase {
 
     }
@@ -1549,7 +1557,7 @@ describe("data api", () => {
 
 
   itWithDataProvider("count", async (dp) => {
-    let ctx = new ServerContext();
+    let ctx = new Context();
     ctx.setDataProvider(dp);
     expect(await ctx.for(newCategories).count()).toBe(0);
     let c = ctx.for(newCategories).create();
@@ -1700,7 +1708,9 @@ describe("compound id", () => {
   const ctx = new Context();
   itAsync("start", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new ServerContext(mem);
+    let ctx = new Context();
+    ctx.setDataProvider(mem);
+
     let s = ctx.for(CompoundIdEntity);
 
     mem.rows[s.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -1719,7 +1729,8 @@ describe("compound id", () => {
 
   itAsync("update", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new ServerContext(mem);
+    let ctx = new Context();
+    ctx.setDataProvider(mem);
     let c = ctx.for(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1739,7 +1750,8 @@ describe("compound id", () => {
   });
   itAsync("update2", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new ServerContext(mem);
+    let ctx = new Context();
+    ctx.setDataProvider(mem);
     let c = ctx.for(CompoundIdEntity);
 
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -1757,7 +1769,8 @@ describe("compound id", () => {
   });
   itAsync("insert", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new ServerContext(mem);
+    let ctx = new Context();
+    ctx.setDataProvider(mem);
     let c = ctx.for(CompoundIdEntity).create();
     mem.rows[ctx.for(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
@@ -1772,7 +1785,8 @@ describe("compound id", () => {
   });
   itAsync("delete", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new ServerContext(mem);
+    let ctx = new Context();
+    ctx.setDataProvider(mem);
     let c = ctx.for(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1815,7 +1829,7 @@ describe("test data list", () => {
 
   itAsync("delete fails nicely", async () => {
 
-    let cont = new ServerContext();
+    let cont = new Context();
     cont.setDataProvider({
       getEntityDataProvider: x => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
@@ -2144,7 +2158,8 @@ export class EntityWithLateBoundDbName extends EntityBase {
 }
 
 async function create4RowsInDp(ctx: Context, dataProvider: DataProvider) {
-  ctx = new ServerContext(dataProvider);
+  ctx = new Context();
+  ctx.setDataProvider(dataProvider);
   let s = ctx.for(entityWithValidations);
   let c = s.create();
   c.myId = 1;

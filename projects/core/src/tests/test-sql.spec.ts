@@ -1,13 +1,13 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { ServerContext } from '../context';
+import { Context } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories } from './remult-3-entities';
 
 
 describe("test sql database", () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
-    let context = new ServerContext();
+    let context = new Context();
     context.setDataProvider(db);
     async function deleteAll() {
         for (const c of await context.for(Categories).find()) {

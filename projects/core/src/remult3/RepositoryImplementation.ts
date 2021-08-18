@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, Fields, EntityWhere, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Context, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
+import { allEntities, Context, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
@@ -757,7 +757,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 
     private async calcServerExpression() {
-        if (this.context.backend)
+        if (isBackend())
             for (const col of this.info.columnsInfo) {
                 if (col.serverExpression) {
                     this.instance[col.key] = await col.serverExpression(this.instance);

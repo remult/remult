@@ -75,6 +75,10 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     });
 }
 
+export function isBackend() {
+    return actionInfo.runningOnServer;
+}
+
 export class Context {
     clearAllCache(): any {
         this.repCache.clear();
@@ -102,10 +106,7 @@ export class Context {
     setDataProvider(dataProvider: DataProvider) {
         this._dataSource = dataProvider;
     }
-    protected _backend = actionInfo.runningOnServer;
-    get backend(): boolean {
-        return this._backend;
-    }
+
     protected _user: UserInfo;
     get user(): UserInfo {
         if (this._user === undefined) {
@@ -187,21 +188,6 @@ export class Context {
 
 }
 
-export class ServerContext extends Context {
-    constructor(dp?: DataProvider) {
-        super();
-        this._backend = true;
-        if (dp)
-            this.setDataProvider(dp);
-
-
-    }
-
-
-
-
-
-}
 
 export const allEntities: ClassType<any>[] = [];
 export interface ControllerOptions {

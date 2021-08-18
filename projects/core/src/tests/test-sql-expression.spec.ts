@@ -1,5 +1,5 @@
 import { fitAsync, itAsync } from './testHelper.spec';
-import { Context, ServerContext } from '../context';
+import { Context } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
@@ -16,7 +16,7 @@ import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-brid
 describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
     let db = new SqlDatabase(web);
-    let context = new ServerContext();
+    let context = new Context();
     context.setDataProvider(db);
     async function deleteAll() {
         await web.dropTable(context.for(testSqlExpression).metadata);
@@ -41,7 +41,8 @@ describe("test sql database expressions", () => {
         expect((await x.metadata.fields.col.getDbName())).toBe('col');
         expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
         //expect(x.metadata.fields.col.dbReadOnly).toBe(false);
-        let c = new ServerContext(db);
+        let c = new Context();
+        c.setDataProvider(db);
         expressionEntity.yes = true;
         x = c.for(expressionEntity);
         expect(await x.metadata.fields.col.getDbName()).toBe("'1+1'");

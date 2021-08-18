@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
-import { Allowed, Context, ServerContext } from '../context';
+import { Context } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../../../angular/src/filter-helper';
 
@@ -70,7 +70,8 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
   ]) {
     if (!db)
       throw new Error("you forget to set a db for the test");
-    let context = new ServerContext(db);
+    let context = new Context();
+    context.setDataProvider(db);
 
     let createData = async (doInsert, entity?) => {
       if (!entity)
@@ -109,8 +110,8 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
 }
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting
-}): Promise<[Repository<CategoriesForTesting>, ServerContext]> {
-  let context = new ServerContext();
+}): Promise<[Repository<CategoriesForTesting>, Context]> {
+  let context = new Context();
   context.setDataProvider(new InMemoryDataProvider());
   if (!entity)
     entity = newCategories;
@@ -328,8 +329,8 @@ describe("Closed List  column", () => {
     expect(valueList.firstName.caption).toBe('First Name');
   });
   itAsync("test with entity", async () => {
-    let c = new ServerContext(new InMemoryDataProvider())
-      .for(entityWithValueList);
+    let c = new Context()
+      .for(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
     expect(e.l).toBe(Language.Hebrew);
@@ -340,8 +341,8 @@ describe("Closed List  column", () => {
     expect(e._.toApiJson().l).toBe(10);
   })
   itAsync("test with entity and data defined on type", async () => {
-    let c = new ServerContext(new InMemoryDataProvider())
-      .for(entityWithValueList);
+    let c = new Context()
+      .for(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
     expect(c.metadata.fields.v.valueType).toBe(valueList);
@@ -530,7 +531,8 @@ describe("test row provider", () => {
   });
 
   itAsync("Test Validation 2", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
+    var context = new Context();
+    context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -556,7 +558,8 @@ describe("test row provider", () => {
 
   });
   itAsync("Test Validation 2_1", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
+    var context = new Context();
+    context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -582,7 +585,8 @@ describe("test row provider", () => {
 
   });
   itAsync("Test Validation 3", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
+    var context = new Context();
+    context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -669,7 +673,8 @@ describe("test row provider", () => {
 
   });
   itAsync("Test unique Validation and is not empty", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
+    var context = new Context();
+    context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -707,7 +712,7 @@ describe("test row provider", () => {
   });
 
   itAsync("test grid update and validation cycle", async () => {
-    var context = new ServerContext();
+    var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       categoryName: string
@@ -762,7 +767,7 @@ describe("test row provider", () => {
     expect(c.categoryName).toBe('bla bla');
   });
   itAsync("update should fail nicely", async () => {
-    let cont = new ServerContext();
+    let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.for(newCategories).create();
     c.id = 1;
@@ -787,7 +792,7 @@ describe("test row provider", () => {
   });
   itAsync("lookup with undefined doesn't fetch", async () => {
 
-    let cont = new ServerContext();
+    let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.for(newCategories);
 
@@ -812,7 +817,7 @@ describe("test row provider", () => {
 
   });
   itAsync("lookup return the same new row", async () => {
-    let cont = new ServerContext();
+    let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.for(newCategories);
     var nc = { value: undefined };
@@ -1218,7 +1223,7 @@ class typeB extends typeA {
 describe("decorator inheritance", () => {
   itAsync("entity extends", async () => {
 
-    let c = new ServerContext();
+    let c = new Context();
     let defsA = c.for(typeA).metadata;
     expect(defsA.key).toBe('typeA');
     expect((await defsA.getDbName())).toBe('dbnameA');
@@ -1231,7 +1236,7 @@ describe("decorator inheritance", () => {
 });
 describe("order by api", () => {
   it("works with sort", () => {
-    let c = new ServerContext().for(Categories);
+    let c = new Context().for(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(1);
@@ -1242,7 +1247,7 @@ describe("order by api", () => {
 
 
   it("works with columns array", () => {
-    let c = new ServerContext().for(Categories);
+    let c = new Context().for(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(2);
@@ -1324,12 +1329,12 @@ describe("test column value change", () => {
 
 describe("test datetime column", () => {
   it("stores well", () => {
-    let col = decorateColumnSettings<Date>({ valueType: Date },new Context());
+    let col = decorateColumnSettings<Date>({ valueType: Date }, new Context());
     let val = col.valueConverter.fromJson(col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
     expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
-    let col = decorateColumnSettings<Date>({ valueType: Date },new Context());
+    let col = decorateColumnSettings<Date>({ valueType: Date }, new Context());
     expect(col.valueConverter.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
@@ -1361,7 +1366,7 @@ describe("test datetime column", () => {
     let col = decorateColumnSettings<Date>({
       valueType: Date,
       valueConverter: DateOnlyValueConverter
-    },new Context());
+    }, new Context());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
 
@@ -1493,7 +1498,8 @@ class TestCategories1 extends newCategories {
 }
 describe("test ", () => {
   itAsync("Test Validation,", async () => {
-    var context = new ServerContext(new InMemoryDataProvider());
+    var context = new Context();
+    context.setDataProvider(new InMemoryDataProvider());
 
     var c = context.for(TestCategories1);
     var cat = c.create();

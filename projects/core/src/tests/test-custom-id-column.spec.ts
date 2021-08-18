@@ -1,4 +1,4 @@
-import { ServerContext } from '../context';
+import { Context } from '../context';
 import { itWithDataProvider } from './basicRowFunctionality.spec';
 import { Field, Entity, EntityBase } from '../remult3';
 
@@ -6,7 +6,8 @@ import { Field, Entity, EntityBase } from '../remult3';
 
 describe("custom id column", () => {
     itWithDataProvider("basic test", async (dpf) => {
-        let context = new ServerContext(dpf);
+        let context = new Context();
+        context.setDataProvider(dpf);
         let type = class extends EntityBase {
             a: number;
             b: number;
@@ -28,7 +29,8 @@ describe("custom id column", () => {
 
     });
     itWithDataProvider("basic test id column not first column", async (dpf) => {
-        let context = new ServerContext(dpf);
+        let context = new Context();
+        context.setDataProvider(dpf);
         let type = class extends EntityBase {
             a: number;
             id: number;

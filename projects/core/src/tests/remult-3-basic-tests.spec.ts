@@ -3,13 +3,14 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { fitAsync, itAsync } from "./testHelper.spec";
 import { Products } from './remult-3-entities';
 import { createOldEntity, getEntityRef } from "../remult3";
-import { ServerContext } from "../context";
+import { Context } from "../context";
 
 
 describe("remult-3-basics", () => {
     itAsync("test the very basics", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new ServerContext(mem);
+        let c = new Context();
+        c.setDataProvider(mem);
         expect(await c.for(Products).count()).toBe(0);
         let p = c.for(Products).create();
         p.id = 1;

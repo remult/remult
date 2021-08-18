@@ -1,14 +1,18 @@
 import { fitAsync, itAsync } from './testHelper.spec';
-import { Context, ServerContext } from '../context';
+import { Context } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase } from '../remult3';
+import { actionInfo } from '../server-action';
 
 
 
 describe("test server expression value", () => {
+    beforeEach(() => actionInfo.runningOnServer = true);
+    afterEach(() => actionInfo.runningOnServer = false);
     itAsync("test basics create", async () => {
 
-        let c = new ServerContext(new InMemoryDataProvider());
+        let c = new Context();
+        c.setDataProvider(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.for(testServerExpression).create();
@@ -20,7 +24,8 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal2).toBe(12);
     });
     itAsync("test basics find", async () => {
-        let c = new ServerContext(new InMemoryDataProvider());
+        let c = new Context();
+        c.setDataProvider(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.for(testServerExpression).create();
@@ -35,6 +40,7 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal2).toBe(12);
     });
     itAsync("test doesnt calc on client", async () => {
+        actionInfo.runningOnServer = false;
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
 
@@ -49,6 +55,7 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal2).toBe(11);
     });
     itAsync("test basics find doesnt calc on client", async () => {
+        actionInfo.runningOnServer = false;
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
 
@@ -63,7 +70,7 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal).toBe(1);
         expect(testServerExpression.testVal2).toBe(11);
     });
-  
+
 
 
 

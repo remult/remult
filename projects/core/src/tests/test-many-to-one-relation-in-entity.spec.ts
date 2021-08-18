@@ -1,4 +1,4 @@
-import { Context, ServerContext } from '../context';
+import { Context } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere, FieldType } from '../remult3';
 import { async, waitForAsync } from '@angular/core/testing';
@@ -10,6 +10,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { Done, fitAsync, itAsync } from './testHelper.spec';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
+import { actionInfo } from '../server-action';
 
 
 
@@ -91,16 +92,20 @@ class following extends EntityBase {
 
 
 describe("many to one relation", () => {
-    it("xx", async(async () => {
+    beforeEach(() => actionInfo.runningOnServer = true);
+    afterEach(() => actionInfo.runningOnServer = false);
+    it("xx", async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         await context.for(profile).create({ id: '1' }).save();
         let p = await context.for(profile).findId('1');
         expect(p.following).toBe(false);
-    }));
+    });
     it("test that it is loaded to begin with", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
         await context.for(Products).create({ id: 1, name: 'p1', category }).save();
         context.clearAllCache();
@@ -110,7 +115,8 @@ describe("many to one relation", () => {
     }));
     it("test that it is loaded onDemand", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
         await context.for(Products).create({ id: 1, name: 'p1', category }).save();
         context.clearAllCache();
@@ -121,7 +127,8 @@ describe("many to one relation", () => {
     }));
     it("test that it is loaded onDemand", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let category = await context.for(Categories).create({ id: 1, name: 'cat 1' }).save();
         await context.for(Products).create({ id: 1, name: 'p1', category }).save();
         context.clearAllCache();
@@ -136,7 +143,8 @@ describe("many to one relation", () => {
 
     it("what", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = context.for(Categories).create();
         cat.id = 1;
         cat.name = "cat 1";
@@ -188,7 +196,8 @@ describe("many to one relation", () => {
 
     it("test wait load", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = context.for(Categories).create();
         cat.id = 1;
         cat.name = "cat 1";
@@ -202,7 +211,8 @@ describe("many to one relation", () => {
         p.name = "prod 10";
         p.category = cat;
         await p.save();
-        context = new ServerContext(mem);
+        context = new Context();
+        context.setDataProvider(mem);
         p = await context.for(Products).findFirst();
         p.category = c2;
         await p.$.category.load();
@@ -215,7 +225,8 @@ describe("many to one relation", () => {
     }));
     it("test null", waitForAsync(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
 
         let p = context.for(Products).create();
         p.id = 10;
@@ -235,7 +246,8 @@ describe("many to one relation", () => {
     }));
     it("test stages", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
 
         let p = context.for(Products).create();
         p.id = 10;
@@ -247,7 +259,8 @@ describe("many to one relation", () => {
         await c.save();
         p.category = c;
         await p.save();
-        context = new ServerContext(mem);
+        context = new Context();
+        context.setDataProvider(mem);
         p = await context.for(Products).findFirst();
         expect(p.category).toBeUndefined();
         expect(p.category === undefined).toBe(true);
@@ -258,7 +271,8 @@ describe("many to one relation", () => {
     }));
     it("test update from api", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
 
         let p = context.for(Products).create();
         p.id = 10;
@@ -277,7 +291,8 @@ describe("many to one relation", () => {
     }));
     it("test easy create", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
 
         let c = await context.for(Categories).create({
             id: 1,
@@ -297,7 +312,8 @@ describe("many to one relation", () => {
     }));
     it("test filter create", waitForAsync(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let c = await context.for(Categories).create({
             id: 1,
             name: 'cat 1'
@@ -347,7 +363,8 @@ describe("many to one relation", () => {
     }));
     it("test that not too many reads are made", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -357,7 +374,8 @@ describe("many to one relation", () => {
             category: cat
         }).save();
         let fetches = 0;
-        context = new ServerContext({
+        context = new Context();
+        context.setDataProvider({
             transaction: undefined,
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
@@ -369,7 +387,7 @@ describe("many to one relation", () => {
                 }
 
             }
-        })
+        });
         p = await context.for(Products).findFirst();
         expect(fetches).toBe(1);
         p._.toApiJson();
@@ -377,7 +395,8 @@ describe("many to one relation", () => {
     }));
     it("test is null doesn't invoke read", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -387,7 +406,8 @@ describe("many to one relation", () => {
             category: cat
         }).save();
         let fetches = 0;
-        context = new ServerContext({
+        context = new Context();
+        context.setDataProvider({
             transaction: undefined,
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
@@ -399,7 +419,8 @@ describe("many to one relation", () => {
                 }
 
             }
-        })
+        });
+
         p = await context.for(Products).findFirst();
         expect(fetches).toBe(1);
         expect(p.$.category.isNull()).toBe(false);
@@ -407,7 +428,8 @@ describe("many to one relation", () => {
     }));
     it("test to and from json ", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2', language: Language.Russian
         }).save();
@@ -425,7 +447,8 @@ describe("many to one relation", () => {
     }));
     it("test to and from json 2", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -446,7 +469,8 @@ describe("many to one relation", () => {
     }));
     it("test to and from json 2", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await (await context.for(Categories).fromJson({
             id: 1, name: 'cat 2'
         }, true)).save();
@@ -455,7 +479,8 @@ describe("many to one relation", () => {
     }));
     it("test lookup with create", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -466,7 +491,8 @@ describe("many to one relation", () => {
     }));
     it("test set with id", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -480,7 +506,8 @@ describe("many to one relation", () => {
     }));
     it("test set with json object", async(async () => {
         let mem = new InMemoryDataProvider();
-        let context = new ServerContext(mem);
+        let context = new Context();
+        context.setDataProvider(mem);
         let cat = await context.for(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -496,7 +523,7 @@ describe("many to one relation", () => {
     itAsync("test relation in sql", async () => {
         var wsql = new WebSqlDataProvider("test2");
         let db = new SqlDatabase(wsql);
-        let context = new ServerContext();
+        let context = new Context();
         context.setDataProvider(db);
         for (const x of [Categories, Products, Suppliers] as any[]) {
             let e = context.for(x).metadata;
@@ -551,7 +578,7 @@ z = {
         else
             self.refHId = '';
     },
-    allowApiCrud:true
+    allowApiCrud: true
 
 })
 class h extends EntityBase {
@@ -566,11 +593,13 @@ class h extends EntityBase {
 describe("Test entity relation and count finds", () => {
     itAsync("test it", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new ServerContext(mem);
+        let c = new Context();
+        c.setDataProvider(mem);
         await c.for(h).create({ id: '1' }).save();
         expect(mem.rows['h'][0]).toEqual({ id: '1', refH: '', refHId: '' });
         let countFind = 0;
-        c = new ServerContext({
+        c = new Context();
+        c.setDataProvider({
             transaction: mem.transaction,
             getEntityDataProvider: x => {
                 let r = mem.getEntityDataProvider(x);
@@ -592,15 +621,17 @@ describe("Test entity relation and count finds", () => {
     });
     itAsync("test api", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new ServerContext(mem);
+        let c = new Context();
+        c.setDataProvider(mem);
         let a = await c.for(h).create({ id: 'a' }).save();
         let b = await c.for(h).create({ id: 'b' }).save();
         await c.for(h).create({ id: 'd', refH: a }).save();
-        c = new ServerContext(mem)//clear the cache;
+        c = new Context()//clear the cache;
+        c.setDataProvider(mem);
         let api = new DataApi(c.for(h), c);
         let t = new TestDataApiResponse();
         let done = new Done();
-        t.success=d=>{
+        t.success = d => {
             expect(d.id).toBe('d');
             expect(d.refH).toBe('b');
             expect(d.refHId).toBe('b');

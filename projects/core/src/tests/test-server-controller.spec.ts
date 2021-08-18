@@ -1,5 +1,5 @@
 import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
-import { Context, ServerContext } from '../context';
+import { Context, isBackend } from '../context';
 import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
 import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remult3';
 
@@ -54,7 +54,7 @@ class testBasics {
             if (y.a == "errorc") {
                 x.error = "error on client";
             }
-            else if (y.a == "error on server" && y.context.backend) {
+            else if (y.a == "error on server" && isBackend()) {
                 x.error = "error on server";
             }
         }
@@ -65,14 +65,14 @@ class testBasics {
         let result = 'hello ' + this.a;
         this.a = 'yael';
         return {
-            onServer: this.context.backend,
+            onServer: isBackend(),
             result
         }
     }
     @BackendMethod({ allowed: true })
     static async sf(name: string, context?: Context) {
         return {
-            onServer: context.backend,
+            onServer: isBackend(),
             result: 'hello ' + name
         }
     }
@@ -109,7 +109,8 @@ class testBasics {
 
 
 describe("test Server Controller basics", () => {
-    let c = new ServerContext(ActionTestConfig.db);
+    let c = new Context();
+    c.setDataProvider(ActionTestConfig.db);
     beforeEach(async done => {
 
         await Promise.all((await c.for(testEntity).find()).map(x => x.delete()));

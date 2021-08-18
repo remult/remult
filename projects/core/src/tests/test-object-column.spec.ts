@@ -1,6 +1,6 @@
 import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { ServerContext } from '../context';
+import { Context } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, FieldType } from '../remult3';
@@ -11,7 +11,7 @@ import { set } from '../../set';
 describe("test object column", () => {
     var wsql = new WebSqlDataProvider("test");
     let db = new SqlDatabase(wsql);
-    let context = new ServerContext();
+    let context = new Context();
     context.setDataProvider(db);
     async function deleteAll() {
         let e = context.for(ObjectColumnTest).metadata;
@@ -92,7 +92,8 @@ describe("test object column", () => {
     itAsync("test basics with json", async () => {
 
         var mem = new InMemoryDataProvider();
-        var c = new ServerContext(mem);
+        var c = new Context();
+        c.setDataProvider(mem);
 
         var x = c.for(ObjectColumnTest).create();
         x.id = 1;

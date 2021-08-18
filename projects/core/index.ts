@@ -77,6 +77,7 @@ export {
     Allowed,
     Allow,
     Context,
+    isBackend,
     AllowedForInstance,
     EventDispatcher,
     EventSource,
