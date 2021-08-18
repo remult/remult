@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Entity, ValueListItem,  FieldMetadata,  FieldRef } from 'remult';
+import { FloatLabelType } from '@angular/material/form-field';
+import { Entity, ValueListItem, FieldMetadata, FieldRef } from 'remult';
 
 import { FieldCollection } from '../../column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
@@ -21,7 +22,7 @@ export class DataControl2Component {
   }
   theId: any;
   @Input() record: any;
-  @Input() notReadonly: false;
+  @Input() notReadonly = false;
   @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined, () => undefined);
   showDescription() {
 
@@ -91,12 +92,12 @@ export class DataControl2Component {
     }
     return {};
   }
-  getFloatLabel() {
+  getFloatLabel(): FloatLabelType {
     if (this.showDescription()) {
       if (this.settings._getColDisplayValue(this.map, this.record))
         return 'always';
     }
-    return '';
+    return 'auto';
   }
 
 

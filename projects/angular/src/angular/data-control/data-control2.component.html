@@ -15,7 +15,7 @@
         <button mat-icon-button matSuffix *ngIf="showClick()" (click)="click()">
             <mat-icon>{{getClickIcon()}} </mat-icon>
         </button>
-        <mat-error *ngIf="getError()" [id]="theId">{{getError()}}</mat-error>
+        <mat-error *ngIf="getError()" [id]="'theId'">{{getError()}}</mat-error>
     </mat-form-field>
     <mat-form-field appearance="outline" [floatLabel]="getFloatLabel()" *ngIf="isSelect()"
         class="full-width-form-field dense-form-field">
@@ -32,7 +32,7 @@
     <div *ngIf="showCheckbox()">
         <mat-checkbox #theId1 [(ngModel)]="_getColumn().inputValue"
             (ngModelChange)="settings._colValueChanged(map,record)" class="fix-label">{{map.caption}}</mat-checkbox>
-        <mat-error *ngIf="getError()" [id]="theId1">{{getError()}}</mat-error>
+        <mat-error *ngIf="getError()" [id]="'theId1'">{{getError()}}</mat-error>
     </div>
 
 </div>
