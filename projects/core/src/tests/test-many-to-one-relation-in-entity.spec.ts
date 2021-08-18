@@ -423,7 +423,7 @@ describe("many to one relation", () => {
 
         p = await remult.repo(Products).findFirst();
         expect(fetches).toBe(1);
-        expect(p.$.category.isNull()).toBe(false);
+        expect(p.$.category.valueIsNull()).toBe(false);
         expect(fetches).toBe(1);
     });
     it("test to and from json ", async () => {

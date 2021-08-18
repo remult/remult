@@ -368,7 +368,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
       this.dataControl.valueList = this.options.valueConverter.getOptions();
     }
 
-    
+
     if (!settings.caption)
       settings.caption = 'caption';
 
@@ -404,8 +404,11 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
 
 
   }
-  isNull() {
+  valueIsNull() {
     return this.value === null;
+  }
+  originalValueIsNull() {
+    return this.originalValue === null;
   }
   load(): Promise<valueType> {
     throw new Error("Method not implemented.");

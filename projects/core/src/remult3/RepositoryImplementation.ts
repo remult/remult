@@ -865,12 +865,16 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType>, private rowBase: rowHelperBase<entityType>) {
 
     }
-    isNull(): boolean {
+    valueIsNull(): boolean {
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
             return lu.id === undefined || lu.id === null;
         }
         return this.value === null;
+    }
+    originalValueIsNull(): boolean {
+        let lu = this.rowBase.lookups.get(this.metadata.key);
+        return this.rawOriginalValue() === null;
     }
     async load(): Promise<valueType> {
         let lu = this.rowBase.lookups.get(this.metadata.key);

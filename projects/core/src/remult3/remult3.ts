@@ -27,7 +27,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] remove backend member from context and create isBackend method.
 [V] change remult.for to remult.repo
 [V] api find array should load nothing :) (check server methods)
-[] isnull should be valueIsNull, and originalValueIsNull
+[V] isnull should be valueIsNull, and originalValueIsNull
 [] valueChanged instead of was changed.
 [] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 [] test why date is equal to null - didn't work
@@ -243,7 +243,8 @@ export interface FieldRef<entityType = any, valueType = any> {
     container: entityType;
     metadata: FieldMetadata<entityType>;
     load(): Promise<valueType>;
-    isNull(): boolean;
+    valueIsNull(): boolean;
+    originalValueIsNull(): boolean;
 }
 export interface IdMetadata<entityType = any> {
 
