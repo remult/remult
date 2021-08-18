@@ -44,7 +44,7 @@ export class Language {
 
 
 export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper: {
-  context: Remult,
+  remult: Remult,
   createData: (doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>,
     entity?: {
       new(): CategoriesForTesting
@@ -70,13 +70,13 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
   ]) {
     if (!db)
       throw new Error("you forget to set a db for the test");
-    let context = new Remult();
-    context.setDataProvider(db);
+    let remult = new Remult();
+    remult.setDataProvider(db);
 
     let createData = async (doInsert, entity?) => {
       if (!entity)
         entity = newCategories;
-      let rep = context.repo(entity) as Repository<T>;
+      let rep = remult.repo(entity) as Repository<T>;
       if (doInsert)
         await doInsert(async (id, name, description, status) => {
 
@@ -94,7 +94,7 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
     };
 
     await doTest({
-      context,
+      remult,
       createData,
       insertFourRows: async () => {
         return createData(async i => {
@@ -111,11 +111,11 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting
 }): Promise<[Repository<CategoriesForTesting>, Remult]> {
-  let context = new Remult();
-  context.setDataProvider(new InMemoryDataProvider());
+  let remult = new Remult();
+  remult.setDataProvider(new InMemoryDataProvider());
   if (!entity)
     entity = newCategories;
-  let rep = context.repo(entity);
+  let rep = remult.repo(entity);
   if (doInsert)
     await doInsert(async (id, name, description, status) => {
 
@@ -128,7 +128,7 @@ export async function createData(doInsert?: (insert: (id: number, name: string, 
       await rep.save(c);
 
     });
-  return [rep, context];
+  return [rep, remult];
 }
 
 export async function insertFourRows() {
@@ -531,8 +531,8 @@ describe("test row provider", () => {
   });
 
   it("Test Validation 2", async () => {
-    var context = new Remult();
-    context.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult();
+    remult.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -541,7 +541,7 @@ describe("test row provider", () => {
       validate: (entity, col) =>
         Validators.required(entity, col, "m")
     })(type.prototype, "a");
-    var c = context.repo(type);
+    var c = remult.repo(type);
     var cat = c.create();
     cat.a = '';
     var saved = false;
@@ -558,8 +558,8 @@ describe("test row provider", () => {
 
   });
   it("Test Validation 2_1", async () => {
-    var context = new Remult();
-    context.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult();
+    remult.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -570,7 +570,7 @@ describe("test row provider", () => {
           col.error = "m";
       }
     })(type.prototype, "a");
-    var c = context.repo(type);
+    var c = remult.repo(type);
     var cat = c.create();
     cat.a = '';
     var saved = false;
@@ -585,8 +585,8 @@ describe("test row provider", () => {
 
   });
   it("Test Validation 3", async () => {
-    var context = new Remult();
-    context.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult();
+    remult.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -594,7 +594,7 @@ describe("test row provider", () => {
     ColumnDecorator({
       validate: Validators.required.withMessage("m")
     })(type.prototype, "a");
-    var c = context.repo(type);
+    var c = remult.repo(type);
     var cat = c.create();
     cat.a = '';
     var saved = false;
@@ -609,7 +609,7 @@ describe("test row provider", () => {
     expect(saved).toBe(false);
   });
   it("Test unique Validation,", async () => {
-    await testAllDbs(async ({ context }) => {
+    await testAllDbs(async ({ remult }) => {
       let type = class extends newCategories {
         a: string
       };
@@ -622,7 +622,7 @@ describe("test row provider", () => {
           }
         }
       })(type.prototype, "a");
-      var c = context.repo(type);
+      var c = remult.repo(type);
 
       var cat = c.create();
       cat.a = '12';
@@ -644,7 +644,7 @@ describe("test row provider", () => {
 
   });
   it("Test unique Validation 2", async () => {
-    await testAllDbs(async ({ context }) => {
+    await testAllDbs(async ({ remult }) => {
       let type = class extends newCategories {
         a: string
       };
@@ -652,7 +652,7 @@ describe("test row provider", () => {
       ColumnDecorator<typeof type.prototype, string>({
         validate: Validators.unique
       })(type.prototype, "a");
-      var c = context.repo(type);
+      var c = remult.repo(type);
       var cat = c.create();
       cat.a = '12';
 
@@ -673,8 +673,8 @@ describe("test row provider", () => {
 
   });
   it("Test unique Validation and is not empty", async () => {
-    var context = new Remult();
-    context.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult();
+    remult.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -682,7 +682,7 @@ describe("test row provider", () => {
     ColumnDecorator<typeof type.prototype, string>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
-    var c = context.repo(type);
+    var c = remult.repo(type);
     var cat = c.create();
     var saved = false;
     cat.a = '';
@@ -712,8 +712,8 @@ describe("test row provider", () => {
   });
 
   it("test grid update and validation cycle", async () => {
-    var context = new Remult();
-    context.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult();
+    remult.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       categoryName: string
 
@@ -728,7 +728,7 @@ describe("test row provider", () => {
     ColumnDecorator({
       validate: () => { orderOfOperation += "ColumnValidate," }
     })(type.prototype, "categoryName")
-    var c = context.repo(type);
+    var c = remult.repo(type);
     var newC = c.create();
     newC.categoryName = 'noam';
     newC.id = 1;
@@ -1498,10 +1498,10 @@ class TestCategories1 extends newCategories {
 }
 describe("test ", () => {
   it("Test Validation,", async () => {
-    var context = new Remult();
-    context.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult();
+    remult.setDataProvider(new InMemoryDataProvider());
 
-    var c = context.repo(TestCategories1);
+    var c = remult.repo(TestCategories1);
     var cat = c.create();
     cat.a = '';
     var saved = false;

@@ -233,7 +233,7 @@ export declare type Allowed = AllowedItem | AllowedItem[];
 export declare type AllowedForInstance<T> = string | ((c: Remult, entity: T) => boolean) | boolean | Allowed;
 export class Allow {
     static everyone = () => true;
-    static authenticated = (context: Remult) => context.authenticated();
+    static authenticated = (remult: Remult) => remult.authenticated();
 }
 
 

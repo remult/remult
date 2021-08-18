@@ -23,36 +23,36 @@ class entityWithAutoId extends EntityBase {
 
 describe("test json database", () => {
     let db = new JsonDataProvider(localStorage);
-    let context = new Remult();
-    context.setDataProvider(db);
+    let remult = new Remult();
+    remult.setDataProvider(db);
     async function deleteAll() {
-        for (const c of await context.repo(newCategories).find()) {
+        for (const c of await remult.repo(newCategories).find()) {
             await c._.delete();
         }
     }
     it("test auto increment",async () => {
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let p = await context.repo(entityWithAutoId).create({name:'a'}).save();
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let p = await remult.repo(entityWithAutoId).create({name:'a'}).save();
         expect(p.id).toBe(1);
-        p = await context.repo(entityWithAutoId).create({name:'b'}).save();
+        p = await remult.repo(entityWithAutoId).create({name:'b'}).save();
         expect(p.id).toBe(2);
 
     });
 
     it("test basics", async () => {
         await deleteAll();
-        expect(await context.repo(newCategories).count()).toBe(0);
+        expect(await remult.repo(newCategories).count()).toBe(0);
         let promisis = [];
         for (let index = 1; index < 4; index++) {
-            let c = context.repo(newCategories).create();
+            let c = remult.repo(newCategories).create();
             c.id = index;
             c.categoryName = "noam" + index;
             promisis.push(c._.save());
         }
         await Promise.all(promisis);
-        expect(await context.repo(newCategories).count()).toBe(3, 'count');
-        let cats = await context.repo(newCategories).find();
+        expect(await remult.repo(newCategories).count()).toBe(3, 'count');
+        let cats = await remult.repo(newCategories).find();
         expect(cats.length).toBe(3);
         expect(cats[0].id).toBe(1);
         expect(cats[0].categoryName).toBe("noam1");

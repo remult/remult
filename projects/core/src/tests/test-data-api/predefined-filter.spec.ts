@@ -13,16 +13,16 @@ import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3';
 
 
 describe("data api", () => {
-  let context = new Remult();
+  let remult = new Remult();
   it("getArray works with predefined filter", async () => {
 
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
 
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -36,12 +36,12 @@ describe("data api", () => {
 
   });
   it("get works with predefined filter", async () => {
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     });
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {
@@ -54,12 +54,12 @@ describe("data api", () => {
     d.test();
   });
   it("get id  works with predefined filterand shouldnt return anything", async () => {
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -69,12 +69,12 @@ describe("data api", () => {
     d.test();
   });
   it("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -84,12 +84,12 @@ describe("data api", () => {
     d.test();
   });
   it("delete id  works with predefined filterand shouldnt return anything", async () => {
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.deleted = () => {
@@ -99,12 +99,12 @@ describe("data api", () => {
     d.test();
   });
   it("put id  works with predefined filterand shouldnt return anything", async () => {
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = () => {
@@ -114,12 +114,12 @@ describe("data api", () => {
     d.test();
   });
   it("put id 1 works with predefined filterand shouldnt return anything", async () => {
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.notFound = () => {
@@ -129,12 +129,12 @@ describe("data api", () => {
     d.test();
   });
   it("getArray works with predefined filter", async () => {
-    let [c, context] = await createData(async (i) => {
+    let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     }, CategoriesForThisTest);
-    var api = new DataApi(c, context);
+    var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.success = data => {

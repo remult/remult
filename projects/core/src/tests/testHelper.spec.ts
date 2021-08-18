@@ -78,11 +78,11 @@ Action.provider = {
                   r(JSON.parse(JSON.stringify(serializeError(data))));
                   actionInfo.runningOnServer = false
                 }
-                let context = new Remult();
-                context.setDataProvider(ActionTestConfig.db);
+                let remult = new Remult();
+                remult.setDataProvider(ActionTestConfig.db);
 
 
-                what(JSON.parse(JSON.stringify(data)), context, t);
+                what(JSON.parse(JSON.stringify(data)), remult, t);
               }
             }
           )

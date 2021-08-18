@@ -25,7 +25,7 @@ export function initExpress(app: express.Express,
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
-      initRequest?: (context: Remult, origReq: express.Request) => Promise<void>
+      initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>
     }) {
 
   if (!options) {
@@ -69,7 +69,7 @@ export class ExpressBridge {
 
 
 
-  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (context: Remult, origReq: express.Request) => Promise<void>,
+  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
     public dataProvider: DataProvider) {
 
   }
@@ -148,28 +148,28 @@ export class SiteArea {
 
 
   }
-  process(what: (context: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
+  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
-      let context = new Remult();
-      context.setDataProvider(this.bridge.dataProvider);
+      let remult = new Remult();
+      remult.setDataProvider(this.bridge.dataProvider);
       let user = req['user'];
       if (user)
-        context.setUser(user);
+        remult.setUser(user);
       if (this.bridge.initRequest) {
-        await this.bridge.initRequest(context, req);
+        await this.bridge.initRequest(remult, req);
       }
 
-      what(context, myReq, myRes, req);
+      what(remult, myReq, myRes, req);
     }
   };
   async getValidContext(req: express.Request) {
-    let context: Remult;
+    let remult: Remult;
     await this.process(async (c) => {
-      context = c;
+      remult = c;
     })(req, undefined);
-    return context;
+    return remult;
   }
   initQueue() {
     this.addAction({
@@ -202,16 +202,16 @@ export class SiteArea {
         this.bridge.queue.mapQueuedAction(myUrl, what);
       }
       this.app.route(myUrl).post(this.process(
-        async (context, req, res, orig) => {
+        async (remult, req, res, orig) => {
 
           if (queue) {
             let r: jobWasQueuedResult = {
-              queuedJobId: await this.bridge.queue.submitJob(myUrl, context, orig.body)
+              queuedJobId: await this.bridge.queue.submitJob(myUrl, remult, orig.body)
             };
 
             res.success(r);
           } else
-            return what(orig.body, context, res)
+            return what(orig.body, remult, res)
         }
       ));
     });
@@ -345,7 +345,7 @@ export interface QueueStorage {
 }
 let test = 0;
 export class EntityQueueStorage implements QueueStorage {
-  constructor(private context: Repository<JobsInQueueEntity>) {
+  constructor(private repo: Repository<JobsInQueueEntity>) {
 
   }
   sync: Promise<any> = Promise.resolve();
@@ -354,7 +354,7 @@ export class EntityQueueStorage implements QueueStorage {
   }
 
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
-    let q = await this.context.findId(queuedJobId);
+    let q = await this.repo.findId(queuedJobId);
     let lastProgress: Date = undefined;
     return {
       userId: q.userId,
@@ -399,7 +399,7 @@ export class EntityQueueStorage implements QueueStorage {
   }
 
   async createJob(url: string, userId: string): Promise<string> {
-    let q = this.context.create();
+    let q = this.repo.create();
     q.userId = userId;
     q.submitTime = new Date();
     q.url = url;

@@ -140,13 +140,13 @@ describe("custom filter", () => {
         ok.test();
     });
     it("test that api reads custom correctly", async () => {
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let c = context.repo(entityForCustomFilter);
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = data => {
@@ -163,13 +163,13 @@ describe("custom filter", () => {
         d.test();
     });
     it("test that api reads custom correctly 2", async () => {
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let c = context.repo(entityForCustomFilter);
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = data => {
@@ -191,13 +191,13 @@ describe("custom filter", () => {
         d.test();
     });
     it("test that api reads custom correctly 3", async () => {
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let c = context.repo(entityForCustomFilter);
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = data => {
@@ -223,13 +223,13 @@ describe("custom filter", () => {
         d.test();
     });
     it("test that api reads custom correctly and translates to db", async () => {
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let c = context.repo(entityForCustomFilter);
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = data => {

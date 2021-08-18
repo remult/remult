@@ -29,7 +29,7 @@ export class DialogService {
         return this.mediaMatcher.matches;
     }
 
-    constructor(private context: Remult, zone: NgZone, private snackBar: MatSnackBar) {
+    constructor(private remult: Remult, zone: NgZone, private snackBar: MatSnackBar) {
         this.mediaMatcher.addListener(mql => zone.run(() => /*this.mediaMatcher = mql*/"".toString()));
 
 

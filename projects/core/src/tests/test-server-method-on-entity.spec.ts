@@ -9,7 +9,7 @@ import { set } from '../../set';
 
 @Entity({ key: 'testServerMethodOnEntity' })
 class testServerMethodOnEntity extends EntityBase {
-    constructor(private context: Remult) {
+    constructor(private remult: Remult) {
         super();
     }
     @Field<testServerMethodOnEntity, string>({
@@ -35,10 +35,10 @@ class testServerMethodOnEntity extends EntityBase {
     }
     @BackendMethod({ allowed: true })
     async doItAgain() {
-        expect(await this.context.repo(testServerMethodOnEntity).count()).toBe(0);
+        expect(await this.remult.repo(testServerMethodOnEntity).count()).toBe(0);
         await this._.save();
-        expect(await this.context.repo(testServerMethodOnEntity).count()).toBe(1);
-        return (await this.context.repo(testServerMethodOnEntity).findFirst()).a
+        expect(await this.remult.repo(testServerMethodOnEntity).count()).toBe(1);
+        return (await this.remult.repo(testServerMethodOnEntity).findFirst()).a
     }
 
 
@@ -122,10 +122,10 @@ describe("test Server method in entity", () => {
     it("saves correctly to db", async () => {
 
         actionInfo.runningOnServer = true;
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let r = context.repo(testBoolCreate123);
-        let dataApi = new DataApi(r, context);
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let r = remult.repo(testBoolCreate123);
+        let dataApi = new DataApi(r, remult);
         let t = new TestDataApiResponse();
         t.created = x => {
             expect(x.ok123).toBe(true);
@@ -166,7 +166,7 @@ class c extends EntityBase {
     async doIt() {
         expect(this.b.id).toBe(11);
         expect(this.b.a.id).toBe(1);
-        this.b = await this.context.repo(b).findId(12);
+        this.b = await this.remult.repo(b).findId(12);
         expect(this.b.id).toBe(12);
         expect(this.b.a.id).toBe(2);
         await this.save();
@@ -179,7 +179,7 @@ class c extends EntityBase {
         await this.save();
         return this.b.a.id;
     }
-    constructor(private context: Remult) {
+    constructor(private remult: Remult) {
         super();
     }
 }
@@ -190,15 +190,15 @@ describe("complex entity relations on server entity and backend method", () => {
         ActionTestConfig.db.rows = [];
     });
     it("fix it", async () => {
-        let context = new Remult();
-        context.setDataProvider(ActionTestConfig.db);
-        let a1 = await context.repo(a).create({ id: 1 }).save();
-        let a2 = await context.repo(a).create({ id: 2 }).save();
-        let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
-        let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
-        let c1 = await context.repo(c).create({ id: 21, b: b1 }).save();
-        context = new Remult();//clear the cache;
-        context.setDataProvider(ActionTestConfig.db);
+        let remult = new Remult();
+        remult.setDataProvider(ActionTestConfig.db);
+        let a1 = await remult.repo(a).create({ id: 1 }).save();
+        let a2 = await remult.repo(a).create({ id: 2 }).save();
+        let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
+        let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
+        let c1 = await remult.repo(c).create({ id: 21, b: b1 }).save();
+        remult = new Remult();//clear the cache;
+        remult.setDataProvider(ActionTestConfig.db);
 
         let r = await c1.doIt();
         expect(r).toBe(2);
@@ -206,32 +206,32 @@ describe("complex entity relations on server entity and backend method", () => {
         expect(c1.b.a.id).toBe(2);
     });
     it("fix it new row", async () => {
-        let context = new Remult();
-        context.setDataProvider(ActionTestConfig.db);
-        let a1 = await context.repo(a).create({ id: 1 }).save();
-        let a2 = await context.repo(a).create({ id: 2 }).save();
-        let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
-        let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
+        let remult = new Remult();
+        remult.setDataProvider(ActionTestConfig.db);
+        let a1 = await remult.repo(a).create({ id: 1 }).save();
+        let a2 = await remult.repo(a).create({ id: 2 }).save();
+        let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
+        let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
 
-        context = new Remult();//clear the cache;
-        context.setDataProvider(ActionTestConfig.db);
-        let c1 = await context.repo(c).create({ id: 21, b: b1 })
+        remult = new Remult();//clear the cache;
+        remult.setDataProvider(ActionTestConfig.db);
+        let c1 = await remult.repo(c).create({ id: 21, b: b1 })
         let r = await c1.doIt();
         expect(r).toBe(2);
         expect(c1.b.id).toBe(12);
         expect(c1.b.a.id).toBe(2);
     });
     it("fix it change value", async () => {
-        let context = new Remult();
-        context.setDataProvider(ActionTestConfig.db);
-        let a1 = await context.repo(a).create({ id: 1 }).save();
-        let a2 = await context.repo(a).create({ id: 2 }).save();
-        let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
-        let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
-        let c1 = await context.repo(c).create({ id: 21, b: b1 }).save();
-        context = new Remult();//clear the cache;
-        context.setDataProvider(ActionTestConfig.db);
-        c1 = await context.repo(c).findId(21);
+        let remult = new Remult();
+        remult.setDataProvider(ActionTestConfig.db);
+        let a1 = await remult.repo(a).create({ id: 1 }).save();
+        let a2 = await remult.repo(a).create({ id: 2 }).save();
+        let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
+        let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
+        let c1 = await remult.repo(c).create({ id: 21, b: b1 }).save();
+        remult = new Remult();//clear the cache;
+        remult.setDataProvider(ActionTestConfig.db);
+        c1 = await remult.repo(c).findId(21);
         c1.b = b2;
         let r = await c1.doIt2();
         expect(r).toBe(2);

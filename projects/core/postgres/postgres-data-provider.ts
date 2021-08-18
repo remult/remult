@@ -97,9 +97,9 @@ export async function verifyStructureOfAllEntities(db: SqlDatabase) {
 export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities() {
         console.log("start verify structure");
-        let context = new Remult();
+        let remult = new Remult();
         for (const entity of allEntities) {
-            let metadata = context.repo(entity).metadata;
+            let metadata = remult.repo(entity).metadata;
 
             try {
 

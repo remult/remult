@@ -10,7 +10,7 @@ import { Categories } from './categories';
 })
 export class CategoriesComponent implements OnInit {
 
-  constructor(private context: Remult) { }
+  constructor(private remult: Remult) { }
 
   @Field()
   @DataControl({

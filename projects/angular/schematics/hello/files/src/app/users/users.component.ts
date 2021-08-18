@@ -13,13 +13,13 @@ import { GridSettings } from '@remult/angular';
   styleUrls: ['./users.component.css']
 })
 export class UsersComponent implements OnInit {
-  constructor(private dialog: DialogService, public context: Remult) {
+  constructor(private dialog: DialogService, public remult: Remult) {
   }
   isAdmin() {
-    return this.context.isAllowed(Roles.admin);
+    return this.remult.isAllowed(Roles.admin);
   }
 
-  users = new GridSettings(this.context.for(Users), {
+  users = new GridSettings(this.remult.for(Users), {
     allowDelete: true,
     allowInsert: true,
     allowUpdate: true,
@@ -50,8 +50,8 @@ export class UsersComponent implements OnInit {
     },
   });
   @BackendMethod({ allowed: Roles.admin })
-  static async resetPassword(userId: string, context?: Remult) {
-    let u = await context.for(Users).findId(userId);
+  static async resetPassword(userId: string, remult?: Remult) {
+    let u = await remult.for(Users).findId(userId);
     if (u) {
       u.password = '';
       await u._.save();

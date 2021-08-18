@@ -46,8 +46,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
     }
-    constructor(private entity: ClassType<entityType>, private context: Remult, private dataProvider: DataProvider) {
-        this._info = createOldEntity(entity, context);
+    constructor(private entity: ClassType<entityType>, private remult: Remult, private dataProvider: DataProvider) {
+        this._info = createOldEntity(entity, remult);
     }
     idCache = new Map<any, any>();
     getCachedById(id: any): entityType {
@@ -215,7 +215,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     getEntityRef(entity: entityType): EntityRef<entityType> {
         let x = entity[entityMember];
         if (!x) {
-            x = new rowHelperImplementation(this._info, entity, this, this.edp, this.context, true);
+            x = new rowHelperImplementation(this._info, entity, this, this.edp, this.remult, true);
             Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.log
                 get: () => x
             })
@@ -259,8 +259,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
         if (!r)
             return undefined;
-        let x = new this.entity(this.context);
-        let helper = new rowHelperImplementation(this._info, x, this, this.edp, this.context, false);
+        let x = new this.entity(this.remult);
+        let helper = new rowHelperImplementation(this._info, x, this, this.edp, this.remult, false);
         Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.log
             get: () => helper
         })
@@ -327,7 +327,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
     create(item?: Partial<entityType>): entityType {
-        let r = new this.entity(this.context);
+        let r = new this.entity(this.remult);
         let z = this.getEntityRef(r);
         if (item)
             Object.assign(r, item);
@@ -370,7 +370,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let filterFactories = Filter.createFilterFactories(this.metadata)
         let r = await Filter.translateWhereToFilter(filterFactories, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
-            r = await Filter.translateCustomWhere(this.metadata, filterFactories, r, this.context);
+            r = await Filter.translateCustomWhere(this.metadata, filterFactories, r, this.remult);
         }
         return r;
 
@@ -404,7 +404,7 @@ export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T
     }
 }
 
-export type EntityOptionsFactory = (context: Remult) => EntityOptions;
+export type EntityOptionsFactory = (remult: Remult) => EntityOptions;
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
@@ -421,7 +421,7 @@ export function getEntitySettings<T>(entity: ClassType<T>, throwError = true): E
     return info;
 }
 export const columnsOfType = new Map<any, columnInfo[]>();
-export function createOldEntity<T>(entity: ClassType<T>, context: Remult) {
+export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
     let r: columnInfo[] = columnsOfType.get(entity);
     if (!r)
         columnsOfType.set(entity, r = []);
@@ -440,18 +440,18 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Remult) {
     }
 
 
-    return new EntityFullInfo<T>(prepareColumnInfo(r, context), info(context), context);
+    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info(remult), remult);
 }
 
 abstract class rowHelperBase<T>
 {
     error: string;
-    constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected context: Remult) {
+    constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected remult: Remult) {
         for (const col of columnsInfo) {
             let ei = getEntitySettings(col.valueType, false);
 
-            if (ei && context) {
-                let lookup = new LookupColumn(context.repo(col.valueType) as RepositoryImplementation<T>, undefined);
+            if (ei && remult) {
+                let lookup = new LookupColumn(remult.repo(col.valueType) as RepositoryImplementation<T>, undefined);
                 this.lookups.set(col.key, lookup);
                 let val = instance[col.key];
                 Object.defineProperty(instance, col.key, {
@@ -551,14 +551,14 @@ abstract class rowHelperBase<T>
     toApiJson() {
         let result: any = {};
         for (const col of this.columnsInfo) {
-            if (!this.context || col.includeInApi === undefined || this.context.isAllowed(col.includeInApi)) {
+            if (!this.remult || col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
                 let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
                     val = lu.id;
                 else {
                     val = this.instance[col.key];
-                    if (!this.context) {
+                    if (!this.remult) {
                         if (val) {
                             let eo = getEntitySettings(val.constructor, false);
                             if (eo) {
@@ -576,8 +576,8 @@ abstract class rowHelperBase<T>
     async _updateEntityBasedOnApi(body: any) {
         for (const col of this.columnsInfo) {
             if (body[col.key] !== undefined)
-                if (col.includeInApi === undefined || this.context.isAllowed(col.includeInApi)) {
-                    if (!this.context || col.allowApiUpdate === undefined || this.context.isAllowedForInstance(this.instance, col.allowApiUpdate)) {
+                if (col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
+                    if (!this.remult || col.allowApiUpdate === undefined || this.remult.isAllowedForInstance(this.instance, col.allowApiUpdate)) {
                         let lu = this.lookups.get(col.key);
                         if (lu)
                             lu.id = body[col.key];
@@ -595,8 +595,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
 
-    constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, context: Remult, private _isNew: boolean) {
-        super(info.columnsInfo, instance, context);
+    constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, remult: Remult, private _isNew: boolean) {
+        super(info.columnsInfo, instance, remult);
         this.metadata = info;
         if (_isNew) {
             for (const col of info.columnsInfo) {
@@ -798,14 +798,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 }
 const controllerColumns = Symbol("controllerColumns");
-function prepareColumnInfo(r: columnInfo[], context: Remult): FieldOptions[] {
-    return r.map(x => decorateColumnSettings(x.settings(context), context));
+function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
+    return r.map(x => decorateColumnSettings(x.settings(remult), remult));
 }
 
-export function getFields<fieldsContainerType>(container: fieldsContainerType, context?: Remult): Fields<fieldsContainerType> {
-    return getControllerRef(container, context).fields;
+export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): Fields<fieldsContainerType> {
+    return getControllerRef(container, remult).fields;
 }
-export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, context?: Remult): controllerRefImpl<fieldsContainerType> {
+export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): controllerRefImpl<fieldsContainerType> {
 
     let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
@@ -824,15 +824,15 @@ export function getControllerRef<fieldsContainerType>(container: fieldsContainer
             base = Object.getPrototypeOf(base);
         }
 
-        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings, context), container, context);
+        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings, remult), container, remult);
     }
     return result;
 }
 
 
 export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
-    constructor(columnsInfo: FieldOptions[], instance: any, context: Remult) {
-        super(columnsInfo, instance, context);
+    constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult) {
+        super(columnsInfo, instance, remult);
 
 
         let _items = [];
@@ -842,7 +842,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
         };
 
         for (const col of columnsInfo) {
-            _items.push(r[col.key] = new FieldRefImplementation<any, any>(col, new columnDefsImpl(col, undefined, context), instance, undefined, this));
+            _items.push(r[col.key] = new FieldRefImplementation<any, any>(col, new columnDefsImpl(col, undefined, remult), instance, undefined, this));
         }
 
         this.fields = r as unknown as Fields<T>;
@@ -968,31 +968,31 @@ export function getEntityRef<entityType>(entity: entityType, throwException = tr
 
 }
 export const CaptionTransformer = {
-    transformCaption: (context: Remult, key: string, caption: string) => caption
+    transformCaption: (remult: Remult, key: string, caption: string) => caption
 }
-export function buildCaption(caption: string | ((context: Remult) => string), key: string, context: Remult): string {
+export function buildCaption(caption: string | ((remult: Remult) => string), key: string, remult: Remult): string {
     let result: string;
     if (typeof (caption) === "function") {
-        if (context)
-            result = caption(context);
+        if (remult)
+            result = caption(remult);
     }
     else if (caption)
         result = caption;
-    result = CaptionTransformer.transformCaption(context, key, result);
+    result = CaptionTransformer.transformCaption(remult, key, result);
     if (result)
         return result;
     return makeTitle(key);
 }
 
 export class columnDefsImpl implements FieldMetadata {
-    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private context: Remult) {
+    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private remult: Remult) {
         if (settings.serverExpression)
             this.isServerExpression = true;
         if (typeof (this.settings.allowApiUpdate) === "boolean")
             this.readonly = this.settings.allowApiUpdate;
         if (!this.inputType)
             this.inputType = this.valueConverter.inputType;
-        this.caption = buildCaption(settings.caption, settings.key, context);
+        this.caption = buildCaption(settings.caption, settings.key, remult);
 
 
 
@@ -1055,7 +1055,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     options = this.entityInfo;
 
-    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private context: Remult) {
+    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private remult: Remult) {
 
 
         let _items = [];
@@ -1066,14 +1066,14 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         };
 
         for (const x of columnsInfo) {
-            _items.push(r[x.key] = new columnDefsImpl(x, this, context));
+            _items.push(r[x.key] = new columnDefsImpl(x, this, remult));
         }
 
         this.fields = r as unknown as FieldsMetadata<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
         this.key = entityInfo.key;
-        this.caption = buildCaption(entityInfo.caption, entityInfo.key, context);
+        this.caption = buildCaption(entityInfo.caption, entityInfo.key, remult);
 
         if (entityInfo.id) {
             this.idMetadata.field = entityInfo.id(this.fields)
@@ -1176,8 +1176,8 @@ export function Field<entityType = any, valueType = any>(...options: OptionsFact
 
 
     return (target, key, c?) => {
-        let factory = (context: Remult) => {
-            let r = buildOptions(options, context);
+        let factory = (remult: Remult) => {
+            let r = buildOptions(options, remult);
             if (!r.key) {
                 r.key = key;
             }
@@ -1220,12 +1220,12 @@ export function Field<entityType = any, valueType = any>(...options: OptionsFact
 
 }
 const storableMember = Symbol("storableMember");
-function buildOptions<entityType = any, valueType = any>(options: OptionsFactory<FieldOptions<entityType, valueType>>, context: Remult) {
+function buildOptions<entityType = any, valueType = any>(options: OptionsFactory<FieldOptions<entityType, valueType>>, remult: Remult) {
     let r = {} as FieldOptions<entityType, valueType>;
     for (const o of options) {
         if (o) {
             if (typeof o === "function")
-                o(r, context);
+                o(r, remult);
 
             else
                 Object.assign(r, o);
@@ -1234,13 +1234,13 @@ function buildOptions<entityType = any, valueType = any>(options: OptionsFactory
     return r;
 }
 
-export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, context: Remult) {
+export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult) {
 
     if (settings.valueType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.valueType);
         if (settingsOnTypeLevel) {
             settings = {
-                ...buildOptions(settingsOnTypeLevel, context),
+                ...buildOptions(settingsOnTypeLevel, remult),
                 ...settings
             }
         }
@@ -1311,19 +1311,19 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
 
 interface columnInfo {
     key: string;
-    settings: (context: Remult) => FieldOptions
+    settings: (remult: Remult) => FieldOptions
 
 }
-export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, context: Remult) => void))[];
+export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, remult: Remult) => void))[];
 export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
     return target => {
 
-        let factory: EntityOptionsFactory = context => {
+        let factory: EntityOptionsFactory = remult => {
             let r = {} as EntityOptions<entityType>;
             for (const o of options) {
                 if (o) {
                     if (typeof o === "function")
-                        o(r, context);
+                        o(r, remult);
                     else
                         Object.assign(r, o);
                 }
@@ -1337,7 +1337,7 @@ export function Entity<entityType>(...options: OptionsFactory<EntityOptions<enti
             if (base) {
                 let baseFactory = getEntitySettings(base, false);
                 if (baseFactory) {
-                    let opt = baseFactory(context);
+                    let opt = baseFactory(remult);
                     if (opt) {
                         r = {
                             ...opt,

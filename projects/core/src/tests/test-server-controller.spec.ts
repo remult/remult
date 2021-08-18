@@ -23,7 +23,7 @@ class testEntity extends IdEntity {
 
 @Controller('1')
 class testBasics {
-    constructor(private context: Remult) {
+    constructor(private remult: Remult) {
 
     }
 
@@ -70,7 +70,7 @@ class testBasics {
         }
     }
     @BackendMethod({ allowed: true })
-    static async sf(name: string, context?: Remult) {
+    static async sf(name: string, remult?: Remult) {
         return {
             onServer: isBackend(),
             result: 'hello ' + name
@@ -86,8 +86,8 @@ class testBasics {
         return d.what(n);
     }
     @BackendMethod({ allowed: true })
-    static async getValFromServer(context?: Remult) {
-        return (await context.repo(testEntity).findFirst()).name;
+    static async getValFromServer(remult?: Remult) {
+        return (await remult.repo(testEntity).findFirst()).name;
     }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {

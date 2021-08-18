@@ -8,8 +8,8 @@ import { Products } from './products';
   styleUrls: ['./products.component.scss']
 })
 export class ProductsComponent implements OnInit {
-  constructor(private context: Remult) { }
-  products = new GridSettings(this.context.for(Products), {
+  constructor(private remult: Remult) { }
+  products = new GridSettings(this.remult.for(Products), {
     allowCrud: true
   });
   ngOnInit() {

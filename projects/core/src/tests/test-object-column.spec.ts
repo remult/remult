@@ -10,29 +10,29 @@ import { set } from '../../set';
 describe("test object column", () => {
     var wsql = new WebSqlDataProvider("test");
     let db = new SqlDatabase(wsql);
-    let context = new Remult();
-    context.setDataProvider(db);
+    let remult = new Remult();
+    remult.setDataProvider(db);
     async function deleteAll() {
-        let e = context.repo(ObjectColumnTest).metadata;
+        let e = remult.repo(ObjectColumnTest).metadata;
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
 
     it("test basics with wsql", async () => {
         await deleteAll();
-        var x = context.repo(ObjectColumnTest).create();
+        var x = remult.repo(ObjectColumnTest).create();
         x.id = 1;
         x.col = {
             firstName: 'noam',
             lastName: 'honig'
         }
         await x.save();
-        x = await context.repo(ObjectColumnTest).findFirst();
+        x = await remult.repo(ObjectColumnTest).findFirst();
         expect(x.col.firstName).toBe('noam');
 
-        x = await context.repo(ObjectColumnTest).findFirst(x => x.col.contains("yael"));
+        x = await remult.repo(ObjectColumnTest).findFirst(x => x.col.contains("yael"));
         expect(x).toBeUndefined();
-        x = await context.repo(ObjectColumnTest).findFirst(x => x.col.contains("noam"));
+        x = await remult.repo(ObjectColumnTest).findFirst(x => x.col.contains("noam"));
         expect(x.id).toBe(1);
 
         expect(x.phone1).toBeNull();
@@ -71,22 +71,22 @@ describe("test object column", () => {
 
     it("test contains on custom type", async () => {
         await deleteAll();
-        await context.repo(ObjectColumnTest).create({
+        await remult.repo(ObjectColumnTest).create({
             id: 1,
             col: { firstName: 'noam', lastName: 'honig' },
             phone1: new Phone("1234")
 
         }).save();
-        await context.repo(ObjectColumnTest).create({
+        await remult.repo(ObjectColumnTest).create({
             id: 2,
             col: { firstName: 'noam', lastName: 'honig' },
             phone1: new Phone("5678")
 
         }).save();
 
-        let r = context.repo(ObjectColumnTest).metadata;
-        expect(await context.repo(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
-        expect(await context.repo(ObjectColumnTest).count(async x => Filter.unpackWhere(r, await Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
+        let r = remult.repo(ObjectColumnTest).metadata;
+        expect(await remult.repo(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
+        expect(await remult.repo(ObjectColumnTest).count(async x => Filter.unpackWhere(r, await Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
     });
     it("test basics with json", async () => {
 
@@ -112,7 +112,7 @@ describe("test object column", () => {
     });
     it("test string[]", async () => {
         await deleteAll();
-        let x = await context.repo(ObjectColumnTest).create({
+        let x = await remult.repo(ObjectColumnTest).create({
             id: 1,
             col: { firstName: 'noam', lastName: 'honig' }
         }).save();

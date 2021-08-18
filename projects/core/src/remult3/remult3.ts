@@ -25,14 +25,14 @@ import { entityEventListener } from "../__EntityValueProvider";
     })
 [V] remove info about request from context
 [V] remove backend member from context and create isBackend method.
-[V] change context.for to remult.repo
+[V] change remult.for to remult.repo
 [] api find array should load nothing :) (check server methods)
 [] isnull should be valueIsNull, and originalValueIsNull
 [] valueChanged instead of was changed.
 [] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 [] test why date is equal to null - didn't work
 [] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
-[] talk about the case where postgres created a context, to build the database - and it didn't have our special methods created in init context, - send context for  create all entities
+[] talk about the case where postgres created a remult, to build the database - and it didn't have our special methods created in init remult, - send context for  create all entities
 [] fix readonly checkbox on grid.
 []  checkbox shouldn't display text true false on grid
 [] rename AuthenticatedInGuard and not signed in guard
@@ -51,11 +51,11 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] require key in entity function parameters, instead of a mandatory key member
     [] let myRoute = api(contextForRouteExtraction).getRoute();
 
-[] reconsider factory, instead of (options,context), to be (set,context).
+[] reconsider factory, instead of (options,remult), to be (set,remult).
 ```
-(options,context)=>options.dbName = async ()=>"bla bla"
+(options,remult)=>options.dbName = async ()=>"bla bla"
 vs
-(set,context)=>set ({dbName : async ()=>"bla bla"})
+(set,remult)=>set ({dbName : async ()=>"bla bla"})
 ```
 
 
@@ -127,7 +127,7 @@ vs
 [] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
 [] rename context to remult
 [] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
-[] consider the case when initing context, and cashing rows between requests, you might get a save to a context of a request two hours ago.
+[] consider the case when initing remult, and cashing rows between requests, you might get a save to a context of a request two hours ago.
 [] custom context 
 [] consider the name FilterFactories to be EntityFilterFactories
 [] add to entity options a lambda that gets context and returns data provider.
@@ -280,7 +280,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 
     /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
      * @example
-     * this.products = await this.context.for(Products).find({
+     * this.products = await this.remult.for(Products).find({
      *  limit:10,
      *  page:2
      * })
@@ -288,7 +288,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
     limit?: number;
     /** Determines the page number that will be used to extract the data 
      * @example
-     * this.products = await this.context.for(Products).find({
+     * this.products = await this.remult.for(Products).find({
      *  limit:10,
      *  page:2
      * })
@@ -297,11 +297,11 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 }
 /** Determines the order of rows returned by the query.
  * @example
- * await this.context.for(Products).find({ orderBy: p => p.name })
+ * await this.remult.for(Products).find({ orderBy: p => p.name })
  * @example
- * await this.context.for(Products).find({ orderBy: p => [p.price, p.name])
+ * await this.remult.for(Products).find({ orderBy: p => [p.price, p.name])
  * @example
- * await this.context.for(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
+ * await this.remult.for(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
  */
 export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType>) => SortSegment[] | SortSegment;
 

@@ -7,21 +7,21 @@ import { InputTypes } from "remult/inputTypes";
 
 @Entity<Users>({
     key: "Users",
-    allowApiRead: context => context.authenticated(),
+    allowApiRead: remult => remult.authenticated(),
     allowApiDelete: Roles.admin,
-    allowApiUpdate: context => context.authenticated(),
+    allowApiUpdate: remult => remult.authenticated(),
     allowApiInsert: Roles.admin,
-    apiDataFilter: (user, context) => {
+    apiDataFilter: (user, remult) => {
         if (!(context.isAllowed(Roles.admin)))
             return user.id.isEqualTo(context.user.id);
         return new Filter(() => { });
     },
     saving: async (user) => {
 
-        if (user.context.backend) {
+        if (user.remult.backend) {
             if (user._.isNew()) {
                 user.createDate = new Date();
-                if ((await user.context.for(Users).count()) == 0)
+                if ((await user.remult.for(Users).count()) == 0)
                     user.admin = true;// If it's the first user, make it an admin
             }
         }
@@ -43,7 +43,7 @@ export class Users extends IdEntity {
         allowApiUpdate: Roles.admin
     })
     admin: Boolean = false;
-    constructor(private context: Remult) {
+    constructor(private remult: Remult) {
 
         super();
     }
@@ -60,9 +60,9 @@ export class Users extends IdEntity {
         await this.hashAndSetPassword(password);
         await this._.save();
     }
-    @BackendMethod({ allowed: context => context.authenticated() })
+    @BackendMethod({ allowed: remult => remult.authenticated() })
     async updatePassword(password: string) {
-        if (this._.isNew() || this.id != this.context.user.id)
+        if (this._.isNew() || this.id != this.remult.user.id)
             throw "Invalid Operation";
         await this.hashAndSetPassword(password);
         await this._.save();

@@ -11,7 +11,7 @@ export class DataApi<T = any> {
     return this.options.name;
   }
   options: DataApiSettings<T>;
-  constructor(private repository: Repository<T>, private context: Remult) {
+  constructor(private repository: Repository<T>, private remult: Remult) {
     this.options = this._getApiSettings();
   }
 
@@ -164,11 +164,11 @@ export class DataApi<T = any> {
 
     return {
       name: options.key,
-      allowRead: this.context.isAllowed(options.allowApiRead),
-      allowUpdate: (e) => this.context.isAllowedForInstance(e, options.allowApiUpdate),
-      allowDelete: (e) => this.context.isAllowedForInstance(e, options.allowApiDelete),
-      allowInsert: (e) => this.context.isAllowedForInstance(e, options.allowApiInsert),
-      requireId: this.context.isAllowed(options.apiRequireId),
+      allowRead: this.remult.isAllowed(options.allowApiRead),
+      allowUpdate: (e) => this.remult.isAllowedForInstance(e, options.allowApiUpdate),
+      allowDelete: (e) => this.remult.isAllowedForInstance(e, options.allowApiDelete),
+      allowInsert: (e) => this.remult.isAllowedForInstance(e, options.allowApiInsert),
+      requireId: this.remult.isAllowed(options.apiRequireId),
       get: {
         where: options.apiDataFilter
         

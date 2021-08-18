@@ -6,8 +6,8 @@ import { Field, Entity, EntityBase } from '../remult3';
 
 describe("custom id column", () => {
     itWithDataProvider("basic test", async (dpf) => {
-        let context = new Remult();
-        context.setDataProvider(dpf);
+        let remult = new Remult();
+        remult.setDataProvider(dpf);
         let type = class extends EntityBase {
             a: number;
             b: number;
@@ -15,7 +15,7 @@ describe("custom id column", () => {
         Entity({ key: 'custom' })(type);
         Field()(type.prototype, 'a');
         Field()(type.prototype, 'b');
-        let c = context.repo(type);
+        let c = remult.repo(type);
         let r = c.create();
         r.a = 1;
         r.b = 1;
@@ -29,8 +29,8 @@ describe("custom id column", () => {
 
     });
     itWithDataProvider("basic test id column not first column", async (dpf) => {
-        let context = new Remult();
-        context.setDataProvider(dpf);
+        let remult = new Remult();
+        remult.setDataProvider(dpf);
         let type = class extends EntityBase {
             a: number;
             id: number;
@@ -38,7 +38,7 @@ describe("custom id column", () => {
         Entity({ key: 'custom2' })(type);
         Field({ valueType: Number })(type.prototype, 'a');
         Field({ valueType: Number })(type.prototype, 'id');
-        let c = context.repo(type);
+        let c = remult.repo(type);
         let r = c.create();
         r.a = 1;
         r.id = 5;

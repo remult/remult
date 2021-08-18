@@ -15,28 +15,28 @@ import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-brid
 describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
     let db = new SqlDatabase(web);
-    let context = new Remult();
-    context.setDataProvider(db);
+    let remult = new Remult();
+    remult.setDataProvider(db);
     async function deleteAll() {
-        await web.dropTable(context.repo(testSqlExpression).metadata);
-        await web.dropTable(context.repo(expressionEntity).metadata);
+        await web.dropTable(remult.repo(testSqlExpression).metadata);
+        await web.dropTable(remult.repo(expressionEntity).metadata);
 
     }
     it("test basics", async () => {
         await deleteAll();
-        let x = context.repo(testSqlExpression).create();
+        let x = remult.repo(testSqlExpression).create();
         x.code = 3;
         await x._.save();
         expect(x.code).toBe(3);
         expect(x.testExpression).toBe(15, "after save");
         expect(x._.fields.testExpression.originalValue).toBe(15, "after save");
-        x = await context.repo(testSqlExpression).findFirst();
+        x = await remult.repo(testSqlExpression).findFirst();
 
         expect(x.testExpression).toBe(15);
     });
     it("test undefined behaves as a column", async () => {
         await deleteAll();
-        let x = context.repo(expressionEntity);
+        let x = remult.repo(expressionEntity);
         expect((await x.metadata.fields.col.getDbName())).toBe('col');
         expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
         //expect(x.metadata.fields.col.dbReadOnly).toBe(false);
@@ -49,7 +49,7 @@ describe("test sql database expressions", () => {
         //expect(x.metadata.fields.col.dbReadOnly).toBe(true);
     });
     it("test asyync dbname", async () => {
-        let z = await context.repo(testServerExpression1).metadata.getDbName();
+        let z = await remult.repo(testServerExpression1).metadata.getDbName();
         expect(z).toBe('testServerExpression1');
     });
 

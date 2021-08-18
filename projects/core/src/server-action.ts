@@ -94,15 +94,15 @@ export class myServerAction extends Action<inArgs, result>
         super(name, options.queue)
     }
 
-    protected async execute(info: inArgs, context: Remult, res: DataApiResponse): Promise<result> {
+    protected async execute(info: inArgs, remult: Remult, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
-        let ds = context._dataSource;
+        let ds = remult._dataSource;
         await ds.transaction(async ds => {
-            context.setDataProvider(ds);
-            if (!context.isAllowedForInstance(undefined, this.options.allowed))
+            remult.setDataProvider(ds);
+            if (!remult.isAllowedForInstance(undefined, this.options.allowed))
                 throw 'not allowed';
 
-            info.args = await prepareReceivedArgs(this.types, info.args, context, ds, res);
+            info.args = await prepareReceivedArgs(this.types, info.args, remult, ds, res);
             try {
                 result.data = await this.originalMethod(info.args);
 
@@ -240,16 +240,16 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
 
                         try {
-                            let context = req;
+                            let remult = req;
 
-                            let ds = context._dataSource;
+                            let ds = remult._dataSource;
 
                             let r: serverMethodOutArgs;
                             await ds.transaction(async ds => {
-                                context.setDataProvider(ds);
-                                d.args = await prepareReceivedArgs(types, d.args, context, ds, res);
+                                remult.setDataProvider(ds);
+                                d.args = await prepareReceivedArgs(types, d.args, remult, ds, res);
                                 if (allEntities.includes(constructor)) {
-                                    let repo = context.repo(constructor);
+                                    let repo = remult.repo(constructor);
                                     let y: any;
 
                                     if (d.rowInfo.isNewRow) {
@@ -272,7 +272,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                         y = rows[0];
                                         await (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
-                                    if (!context.isAllowedForInstance(y, allowed))
+                                    if (!remult.isAllowedForInstance(y, allowed))
                                         throw 'not allowed';
                                     let defs = getEntityRef(y) as rowHelperImplementation<any>;
                                     await defs.__validateEntity();
@@ -291,10 +291,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                     }
                                 }
                                 else {
-                                    let y = new constructor(context, ds);
-                                    let controllerRef = getControllerRef(y, context);
+                                    let y = new constructor(remult, ds);
+                                    let controllerRef = getControllerRef(y, remult);
                                     await controllerRef._updateEntityBasedOnApi(d.fields);
-                                    if (!context.isAllowedForInstance(y, allowed))
+                                    if (!remult.isAllowedForInstance(y, allowed))
                                         throw 'not allowed';
 
                                     await controllerRef.__validateEntity();
@@ -443,7 +443,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
     return args.map(x => x !== undefined ? x : customUndefined);
 
 }
-export async function prepareReceivedArgs(types: any[], args: any[], context: Remult, ds: DataProvider, res: DataApiResponse) {
+export async function prepareReceivedArgs(types: any[], args: any[], remult: Remult, ds: DataProvider, res: DataApiResponse) {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
         if (isCustomUndefined(element))
@@ -457,20 +457,20 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Re
             }
             if (types[i] == Remult || types[i] == Remult) {
 
-                args[i] = context;
+                args[i] = remult;
             } else if (types[i] == SqlDatabase && ds) {
                 args[i] = ds;
             } else if (types[i] == ProgressListener) {
                 args[i] = new ProgressListener(res);
             } else {
                 let x: FieldOptions = { valueType: types[i] };
-                x = decorateColumnSettings(x,context);
+                x = decorateColumnSettings(x,remult);
                 if (x.valueConverter)
                     args[i] = x.valueConverter.fromJson(args[i]);
                 let eo = getEntitySettings(types[i], false);
                 if (eo != null) {
                     if (!(args[i] === null || args[i] === undefined))
-                        args[i] = await context.repo(types[i]).findId(args[i]);
+                        args[i] = await remult.repo(types[i]).findId(args[i]);
                 }
 
 

@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
     public activeRoute: ActivatedRoute,
     private routeHelper: RouteHelperService,
     public dialogService: DialogService,
-    public context: Remult) {
+    public remult: Remult) {
 
 
   }
@@ -44,9 +44,9 @@ export class AppComponent implements OnInit {
     });
   }
   @BackendMethod({ allowed: true })
-  static async signIn(user: string, password: string, context?: Remult) {
+  static async signIn(user: string, password: string, remult?: Remult) {
     let result: UserInfo;
-    let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
+    let u = await remult.for(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
       if (await u.passwordMatches(password)) {
         result = {
@@ -66,11 +66,11 @@ export class AppComponent implements OnInit {
   }
   setToken(token: string) {
     if (token) {
-      this.context.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
+      this.remult.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
       sessionStorage.setItem("auth_token", token);
     }
     else {
-      this.context.setUser(undefined);
+      this.remult.setUser(undefined);
       sessionStorage.removeItem("auth_token");
     }
   }
@@ -83,7 +83,7 @@ export class AppComponent implements OnInit {
     this.router.navigate(['/']);
   }
   signUp() {
-    let user = this.context.for(Users).create();
+    let user = this.remult.for(Users).create();
     let password = new PasswordControl();
     let confirmPassword = new PasswordControl("Confirm Password");
     openDialog(InputAreaComponent, i => i.args = {
@@ -106,7 +106,7 @@ export class AppComponent implements OnInit {
   }
 
   async updateInfo() {
-    let user = await this.context.for(Users).findId(this.context.user.id);
+    let user = await this.remult.for(Users).findId(this.remult.user.id);
     openDialog(InputAreaComponent, i => i.args = {
       title: "Update Info",
       fields: () => [
@@ -118,7 +118,7 @@ export class AppComponent implements OnInit {
     });
   }
   async changePassword() {
-    let user = await this.context.for(Users).findId(this.context.user.id);
+    let user = await this.remult.for(Users).findId(this.remult.user.id);
     let password = new PasswordControl();
     let confirmPassword = new PasswordControl("Confirm Password");
     openDialog(InputAreaComponent, i => i.args = {

@@ -60,7 +60,7 @@ class entityDecorator<T> {
 
 
 class productsDecorator extends entityDecorator<Products> {
-  constructor(private context: Remult) {
+  constructor(private remult: Remult) {
     super({
       key: 'asdf',
       apiDataFilter: (p) => {

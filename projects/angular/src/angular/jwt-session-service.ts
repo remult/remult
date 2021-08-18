@@ -7,7 +7,7 @@ export class JwtSessionService {
         return this.currentToken;
     }
     constructor(
-        private context: Remult
+        private remult: Remult
     ) {
       
     }
@@ -81,7 +81,7 @@ export class JwtSessionService {
                 catch (err) { console.log(err); }
             }
         }
-        this.context.setUser(user);
+        this.remult.setUser(user);
         if (this.tokenInfoChanged)
             this.tokenInfoChanged();
     }

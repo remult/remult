@@ -15,9 +15,9 @@ describe("data api", () => {
 
     it("put with validations fails", async () => {
 
-        let [c, context] = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
+        let [c, remult] = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
 
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.error = async (data: any) => {
@@ -36,9 +36,9 @@ describe("data api", () => {
     it("post with validation fails", async () => {
 
 
-        let [c, context] = await createData(async () => { }, CategoriesForThisTest);
+        let [c, remult] = await createData(async () => { }, CategoriesForThisTest);
 
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         let d = new Done();
         t.error = async (data: any) => {
@@ -61,11 +61,11 @@ describe("data api", () => {
             valueType: String,
             allowApiUpdate: (c, x) => x._.isNew()
         })(type.prototype, 'val');
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let c = context.repo(type);
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let c = remult.repo(type);
 
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         t.success = () => { };
         t.created = () => { };
@@ -94,11 +94,11 @@ describe("data api", () => {
             valueType: String,
             allowApiUpdate: (c, x) => x.val != "yael"
         })(type.prototype, 'val');
-        let context = new Remult();
-        context.setDataProvider(new InMemoryDataProvider());
-        let c = context.repo(type);
+        let remult = new Remult();
+        remult.setDataProvider(new InMemoryDataProvider());
+        let c = remult.repo(type);
 
-        var api = new DataApi(c, context);
+        var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();
         t.success = () => { };
         t.created = () => { };

@@ -26,7 +26,7 @@ import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
 })
 export class ProductsComponent implements OnInit {
 
-  constructor(private context: Remult) {
+  constructor(private remult: Remult) {
 
   }
 
@@ -40,13 +40,13 @@ export class ProductsComponent implements OnInit {
   @Field()
   p: Products;
 
-  get $() { return getFields(this, this.context) };
+  get $() { return getFields(this, this.remult) };
   area = new DataAreaSettings({
     fields: () => [this.$.p]
   });
-  products = new GridSettings(this.context.for(Products), { allowCrud: true });
+  products = new GridSettings(this.remult.repo(Products), { allowCrud: true });
   async ngOnInit() {
-    let p = await this.context.for(Products).findFirst();
+    let p = await this.remult.repo(Products).findFirst();
     
     //this.title = p?.name;
     this.title = await ProductsComponent.doIt(null);

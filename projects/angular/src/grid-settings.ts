@@ -506,7 +506,7 @@ export interface IDataSettings<rowType> {
   orderBy?: EntityOrderBy<rowType>;
   /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
    * @example
-   * this.products = await this.context.for(Products).gridSettings({
+   * this.products = await this.remult.for(Products).gridSettings({
    *  rowsInPage:10,
    *  page:2
   * })
@@ -514,7 +514,7 @@ export interface IDataSettings<rowType> {
   rowsInPage?: number;
   /** Determines the page number that will be used to extract the data 
    * @example
-   * this.products = await this.context.for(Products).gridSettings({
+   * this.products = await this.remult.for(Products).gridSettings({
    *  rowsInPage:10,
    *  page:2
    * })

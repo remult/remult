@@ -110,11 +110,11 @@ export class FieldCollection<rowType = any> {
     return Promise.resolve();
   }
   private doWhenWeHaveContext: ((c: Remult) => Promise<any>)[] = [];
-  private context: Remult;
-  setContext(context: Remult) {
-    this.context = context;
+  private remult: Remult;
+  setContext(remult: Remult) {
+    this.remult = remult;
     for (const what of this.doWhenWeHaveContext) {
-      what(context);
+      what(remult);
     }
   }
   async buildDropDown(s: DataControlSettings) {
@@ -137,20 +137,20 @@ export class FieldCollection<rowType = any> {
         }
       }
       else if (typeof orig === "function") {
-        let theFunc = orig as ((context: Remult) => Promise<ValueListItem[]>);
-        let todo = async (context: Remult) => {
-          let x = await theFunc(context);
+        let theFunc = orig as ((remult: Remult) => Promise<ValueListItem[]>);
+        let todo = async (remult: Remult) => {
+          let x = await theFunc(remult);
           if (x === undefined)
             s.valueList = undefined;
           else
             result.push(...x);
 
         }
-        if (this.context) {
-          todo(this.context);
+        if (this.remult) {
+          todo(this.remult);
         }
         else
-          this.doWhenWeHaveContext.push(async context => todo(context));
+          this.doWhenWeHaveContext.push(async remult => todo(remult));
 
       }
       else {
@@ -356,13 +356,13 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
       & {
 
 
-        context?: Remult
+        remult?: Remult
       }) {
 
     if (!settings.dbName)
       settings.dbName = settings.key;
 
-    this.options = decorateColumnSettings(settings, settings.context);
+    this.options = decorateColumnSettings(settings, settings.remult);
     this.dataControl = settings;
     if (!this.dataControl.valueList && this.options.valueConverter instanceof ValueListValueConverter) {
       this.dataControl.valueList = this.options.valueConverter.getOptions();

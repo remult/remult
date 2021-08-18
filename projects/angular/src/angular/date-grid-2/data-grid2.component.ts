@@ -21,7 +21,7 @@ import { openDialog } from '../remult-core.module';
 
 
 export class DataGrid2Component implements OnChanges {
-  constructor(private context: Remult, dir: Directionality) {
+  constructor(private remult: Remult, dir: Directionality) {
     this.rightToLeft = dir.value === 'rtl';
   }
 
@@ -202,7 +202,7 @@ export class DataGrid2Component implements OnChanges {
         await this.saveAllClick();
       }
     });
-    this.settings.columns.setContext(this.context);
+    this.settings.columns.setContext(this.remult);
     if (this.settings.settings.gridButtons) {
       this.gridButtons.push(...this.settings.settings.gridButtons.map(x => {
         if (!x.visible)

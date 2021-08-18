@@ -17,7 +17,7 @@ import { DataControlSettings } from '../../data-control-interfaces';
 
 })
 export class DataArea2Component implements OnChanges {
-  constructor(private context: Remult) {
+  constructor(private remult: Remult) {
 
   }
 
@@ -29,11 +29,11 @@ export class DataArea2Component implements OnChanges {
   ngOnChanges(): void {
     if (this.object) {
       this.settings = new DataAreaSettings({
-        fields: () => [...getFields(this.object, this.context)]
+        fields: () => [...getFields(this.object, this.remult)]
       });
     }
     if (this.settings && this.settings.fields) {
-      this.settings.fields.setContext(this.context);
+      this.settings.fields.setContext(this.remult);
 
 
       this.settings.fields.onColListChange(() => this.lastCols = undefined);

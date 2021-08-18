@@ -71,9 +71,9 @@ export class Filter {
     static extractWhere<T>(entityDefs: EntityMetadata<T>, filterInfo: { get: (key: string) => any; }): Filter {
         return extractWhere([...entityDefs.fields], filterInfo);
     }
-    static async translateCustomWhere<T>(entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, r: Filter, context: Remult) {
+    static async translateCustomWhere<T>(entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, r: Filter, remult: Remult) {
         let f = new customTranslator(async custom => {
-            return await entity.options.customFilterBuilder().translateFilter(filterFactories, custom, context);
+            return await entity.options.customFilterBuilder().translateFilter(filterFactories, custom, remult);
         });
         r.__applyToConsumer(f);
         await f.resolve();
@@ -358,7 +358,7 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
 
 
 export class CustomFilterBuilder<entityType, customFilterObject> {
-    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, context: Remult) => Filter | Filter[] | Promise<Filter | Filter[]>) {
+    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, remult: Remult) => Filter | Filter[] | Promise<Filter | Filter[]>) {
 
     }
     build(custom: customFilterObject): Filter {
