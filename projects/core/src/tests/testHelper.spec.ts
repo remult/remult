@@ -10,30 +10,9 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 999999;
 //actionInfo.runningOnServer = false;
 
 
-export function itAsync(name: string, runAsync: () => Promise<any>) {
-  it(name, (done: DoneFn) => {
-    runAsync().catch(e => {
-      fail(e);
-      done();
-    }).then(done, e => {
-      fail(e);
-      done();
-    });
-  });
-}
-export function fitAsync(name: string, runAsync: () => Promise<any>) {
-  fit(name, (done: DoneFn) => {
-    runAsync().catch(e => {
-      fail(e);
-      done();
-    }).then(done, e => {
-      fail(e);
-      done();
-    });
-  });
-}
 
-export function itAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>) {
+
+export function itForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>) {
   arrayOfT.forEach(i => {
     it(name + ' - ' + i, (done: DoneFn) => {
       runAsync(i).catch(e => {
@@ -46,7 +25,7 @@ export function itAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item: 
     });
   });
 }
-export function fitAsyncForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>) {
+export function fitForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>) {
   arrayOfT.forEach(i => {
     fit(name + ' - ' + i, (done: DoneFn) => {
       runAsync(i).catch(e => {

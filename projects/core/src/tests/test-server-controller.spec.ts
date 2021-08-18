@@ -1,4 +1,4 @@
-import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
+import {  ActionTestConfig } from './testHelper.spec';
 import { Context, isBackend } from '../context';
 import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
 import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remult3';
@@ -116,7 +116,7 @@ describe("test Server Controller basics", () => {
         await Promise.all((await c.for(testEntity).find()).map(x => x.delete()));
         done();
     });
-    itAsync("test error", async () => {
+    it("test error", async () => {
         try {
             await testBasics.syntaxError();
         }
@@ -124,7 +124,7 @@ describe("test Server Controller basics", () => {
             expect(err.message).toBe("Cannot read property 'toString' of undefined")
         }
     });
-    itAsync("test error server method", async () => {
+    it("test error server method", async () => {
         try {
             await new testBasics(c).syntaxError();
         }
@@ -132,53 +132,53 @@ describe("test Server Controller basics", () => {
             expect(err.message).toBe("Cannot read property 'toString' of undefined")
         }
     });
-    itAsync("send entity to server ", async () => {
+    it("send entity to server ", async () => {
         let e = await c.for(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.sendEntityAsParamter(e)).toBe('test');
     });
-    itAsync("send entity to server ", async () => {
+    it("send entity to server ", async () => {
 
         expect(await testBasics.sendEntityAsParamter(null)).toBe('null');
     });
-    itAsync("send entity to server prepare args to send ", async () => {
+    it("send entity to server prepare args to send ", async () => {
         let e = await c.for(testEntity).create({ name: 'test' }).save();
         expect(prepareArgsToSend([testEntity], [e])[0]).toBe(e.id);
     });
-    itAsync("data is saved on server", async () => {
+    it("data is saved on server", async () => {
         await c.for(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.getValFromServer()).toBe('test');
     });
-    itAsync("test server function", async () => {
+    it("test server function", async () => {
 
         let r = await testBasics.sf("noam");
         expect(r.onServer).toBe(true);
         expect(r.result).toBe('hello noam');
     });
-    itAsync("test server Method Date", async () => {
+    it("test server Method Date", async () => {
         let tb = new testBasics(c);
         tb.theDate = new Date(1976, 6, 16);
         expect(await tb.testDate()).toBe(1976);
     });
-    itAsync("test server Method myType", async () => {
+    it("test server Method myType", async () => {
         let tb = new testBasics(c);
         tb.myType = myType.y;
         expect(await tb.testDataType(7)).toBe('y7');
     });
-    itAsync("test server method entity", async () => {
+    it("test server method entity", async () => {
         let e = await c.for(testEntity).create({ name: 'test3' }).save();
         let tb = new testBasics(c);
         tb.myEntity = e;
         expect(await tb.sendEntityAsParamter()).toBe('test3');
     });
-    itAsync("test server function Date", async () => {
+    it("test server function Date", async () => {
         let r = await testBasics.testDate(new Date(1976, 6, 16));
         expect(r).toBe(1976);
     });
-    itAsync("test server function custom type", async () => {
+    it("test server function custom type", async () => {
         let r = await testBasics.testDataType(myType.y, 2);
         expect(r).toBe('y2');
     });
-    itAsync("test server method", async () => {
+    it("test server method", async () => {
 
         let x = new testBasics(new Context());
         x.a = 'Noam';
@@ -187,7 +187,7 @@ describe("test Server Controller basics", () => {
         expect(r.result).toBe('hello Noam');
         expect(x.a).toBe("yael");
     });
-    itAsync("test validation method", async () => {
+    it("test validation method", async () => {
         let x = new testBasics(new Context());
         x.a = 'errorc';
         let happened = false;
@@ -204,7 +204,7 @@ describe("test Server Controller basics", () => {
 
 
     });
-    itAsync("test validation on server", async () => {
+    it("test validation on server", async () => {
         let x = new testBasics(new Context());
         x.a = "error on server";
         let happened = false;
@@ -224,7 +224,7 @@ describe("test Server Controller basics", () => {
 
 });
 describe("controller with extends ", () => {
-    itAsync("test inheritance in controllers", async () => {
+    it("test inheritance in controllers", async () => {
         let c = new child()
         c.childField = 'c';
         c.parentField = 'p';

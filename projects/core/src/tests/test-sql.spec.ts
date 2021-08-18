@@ -1,4 +1,3 @@
-import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Context } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
@@ -14,7 +13,7 @@ describe("test sql database", () => {
             await c._.delete();
         }
     }
-    itAsync("test basics", async () => {
+    it("test basics", async () => {
         await deleteAll();
         expect(await context.for(Categories).count()).toBe(0);
         let c = context.for(Categories).create();

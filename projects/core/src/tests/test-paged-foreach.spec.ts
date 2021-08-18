@@ -1,7 +1,6 @@
 
 
 import { createData, } from './RowProvider.spec';
-import { fitAsync, itAsync } from './testHelper.spec';
 import { Context, iterateConfig } from '../context';
 import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityWhere } from '../remult3';
 import { Categories } from './remult-3-entities';
@@ -14,7 +13,7 @@ import { Filter } from '../filter/filter-interfaces';
 describe("test paged foreach ", () => {
     iterateConfig.pageSize = 2;
 
-    itAsync("basic foreach with where", async () => {
+    it("basic foreach with where", async () => {
         let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
@@ -28,7 +27,7 @@ describe("test paged foreach ", () => {
         }
         expect(i).toBe(4);
     });
-    itAsync("basic foreach with where 2", async () => {
+    it("basic foreach with where 2", async () => {
         let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
@@ -45,7 +44,7 @@ describe("test paged foreach ", () => {
         }
         expect(i).toBe(4);
     });
-    itAsync("basic foreach with order by", async () => {
+    it("basic foreach with order by", async () => {
         let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
@@ -67,7 +66,7 @@ describe("test paged foreach ", () => {
 
     });
 
-    itAsync("basic foreach with order by desc", async () => {
+    it("basic foreach with order by desc", async () => {
         let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
@@ -84,7 +83,7 @@ describe("test paged foreach ", () => {
 
         expect(i).toBe(5);
     });
-    itAsync("iterate", async () => {
+    it("iterate", async () => {
         let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
@@ -99,7 +98,7 @@ describe("test paged foreach ", () => {
 
         expect(i).toBe(5);
     });
-    itAsync("test toArray", async () => {
+    it("test toArray", async () => {
         let [c] = await createData(async insert => {
             await insert(1, 'noam');
             await insert(2, 'yael');
@@ -115,7 +114,7 @@ describe("test paged foreach ", () => {
         }
         expect(i).toBe(5);
     });
-    itAsync("test make sort unique", async () => {
+    it("test make sort unique", async () => {
         let context = new Context();
         let e = context.for(Categories) as RepositoryImplementation<Categories>;
         function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldMetadata[]) {
@@ -126,7 +125,7 @@ describe("test paged foreach ", () => {
         test(x => x.categoryName, e.metadata.fields.categoryName, e.metadata.fields.id);
     });
 
-    itAsync("unique sort and  compound id", async () => {
+    it("unique sort and  compound id", async () => {
         let context = new Context();
 
         let eDefs = context.for(theTable).metadata;
@@ -142,7 +141,7 @@ describe("test paged foreach ", () => {
         test(x => x.b, e.b, e.a);
         test(x => x.c, e.c, e.a, e.b);
     });
-    itAsync("create rows after filter compound id", async () => {
+    it("create rows after filter compound id", async () => {
         let context = new Context();
 
 
@@ -160,7 +159,7 @@ describe("test paged foreach ", () => {
         test(x => [x.a, x.b], x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))));
 
     });
-    itAsync("create rows after filter, values are frozen when filter is created", async () => {
+    it("create rows after filter, values are frozen when filter is created", async () => {
         let context = new Context();
 
 
@@ -177,7 +176,7 @@ describe("test paged foreach ", () => {
             JSON.stringify(await Filter.packWhere<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
 
     });
-    itAsync("serialize filter with or", async () => {
+    it("serialize filter with or", async () => {
         let context = new Context();
         let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();

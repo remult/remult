@@ -1,4 +1,3 @@
-import { fitAsync, itAsync } from './testHelper.spec';
 import { Context } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
@@ -23,7 +22,7 @@ describe("test sql database expressions", () => {
         await web.dropTable(context.for(expressionEntity).metadata);
 
     }
-    itAsync("test basics", async () => {
+    it("test basics", async () => {
         await deleteAll();
         let x = context.for(testSqlExpression).create();
         x.code = 3;
@@ -35,7 +34,7 @@ describe("test sql database expressions", () => {
 
         expect(x.testExpression).toBe(15);
     });
-    itAsync("test undefined behaves as a column", async () => {
+    it("test undefined behaves as a column", async () => {
         await deleteAll();
         let x = context.for(expressionEntity);
         expect((await x.metadata.fields.col.getDbName())).toBe('col');
@@ -49,7 +48,7 @@ describe("test sql database expressions", () => {
         expect((await x.create({ col: 'abc', id: 2 }).save()).col).toBe('1+1');
         //expect(x.metadata.fields.col.dbReadOnly).toBe(true);
     });
-    itAsync("test asyync dbname", async () => {
+    it("test asyync dbname", async () => {
         let z = await context.for(testServerExpression1).metadata.getDbName();
         expect(z).toBe('testServerExpression1');
     });
@@ -114,7 +113,7 @@ export class myDummySQLCommand implements SqlCommand {
 
 }
 describe("test filter for date", () => {
-    itAsync("filter",async () => {
+    it("filter",async () => {
         let c = new Context()
         let e = c.for(testCreate);
         var d = new myDummySQLCommand();

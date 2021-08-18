@@ -1,4 +1,3 @@
-import { itAsync, Done, fitAsync } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Context } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
@@ -19,7 +18,7 @@ describe("test object column", () => {
         await wsql.createTable(e);
     }
 
-    itAsync("test basics with wsql", async () => {
+    it("test basics with wsql", async () => {
         await deleteAll();
         var x = context.for(ObjectColumnTest).create();
         x.id = 1;
@@ -70,7 +69,7 @@ describe("test object column", () => {
 
     });
 
-    itAsync("test contains on custom type", async () => {
+    it("test contains on custom type", async () => {
         await deleteAll();
         await context.for(ObjectColumnTest).create({
             id: 1,
@@ -89,7 +88,7 @@ describe("test object column", () => {
         expect(await context.for(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
         expect(await context.for(ObjectColumnTest).count(async x => Filter.unpackWhere(r, await Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
     });
-    itAsync("test basics with json", async () => {
+    it("test basics with json", async () => {
 
         var mem = new InMemoryDataProvider();
         var c = new Context();
@@ -111,7 +110,7 @@ describe("test object column", () => {
             lastName: 'honig'
         });
     });
-    itAsync("test string[]", async () => {
+    it("test string[]", async () => {
         await deleteAll();
         let x = await context.for(ObjectColumnTest).create({
             id: 1,

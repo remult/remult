@@ -1,4 +1,3 @@
-import { fitAsync, itAsync } from './testHelper.spec';
 import { Context } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
@@ -10,7 +9,7 @@ import { EntityBase, Entity, Field } from '../remult3';
 
 describe("test default value", () => {
 
-    itAsync("test basics", async () => {
+    it("test basics", async () => {
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
@@ -18,7 +17,7 @@ describe("test default value", () => {
         expect(r.test).toBe(1);
         expect(testDefaultValue.testVal).toBe(2);
     });
-    itAsync("test create without querying the value", async () => {
+    it("test create without querying the value", async () => {
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;

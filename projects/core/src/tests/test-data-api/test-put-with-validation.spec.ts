@@ -1,4 +1,4 @@
-import { itAsync, Done, fitAsync } from "../testHelper.spec";
+import { Done } from "../testHelper.spec";
 import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
@@ -13,7 +13,7 @@ import { ValueListValueConverter } from "../../../valueConverters";
 
 describe("data api", () => {
 
-    itAsync("put with validations fails", async () => {
+    it("put with validations fails", async () => {
 
         let [c, context] = await createData(async insert => insert(1, 'noam'), CategoriesForThisTest);
 
@@ -33,7 +33,7 @@ describe("data api", () => {
         expect(x[0].categoryName).toBe('noam');
 
     });
-    itAsync("post with validation fails", async () => {
+    it("post with validation fails", async () => {
 
 
         let [c, context] = await createData(async () => { }, CategoriesForThisTest);
@@ -49,7 +49,7 @@ describe("data api", () => {
         d.test();
         expect((await c.find()).length).toBe(0);
     });
-    itAsync("allow column update based on new row only", async () => {
+    it("allow column update based on new row only", async () => {
 
         let type = class extends EntityBase {
             id: number;
@@ -82,7 +82,7 @@ describe("data api", () => {
         expect(x[0].val).toBe('noam');
 
     });
-    itAsync("allow column update based on specific value", async () => {
+    it("allow column update based on specific value", async () => {
 
         let type = class extends EntityBase {
             id: number;

@@ -4,7 +4,7 @@ import { createData, testAllDbs } from './RowProvider.spec';
 import { DataApi, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { itAsync, itAsyncForEach, Done, fitAsync, fitAsyncForEach } from './testHelper.spec';
+import {  itForEach, Done,  fitForEach } from './testHelper.spec';
 
 import { Status } from './testModel/models';
 
@@ -31,7 +31,7 @@ import { actionInfo } from '../server-action';
 
 export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
-  itAsyncForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
+  itForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
     (dp) => new Promise((res, rej) => {
       webSql.db.transaction(t => {
         t.executeSql("select name from sqlite_master where type='table'", null,
@@ -49,7 +49,7 @@ export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, r
 }
 export function fitWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
   let webSql = new WebSqlDataProvider('test');
-  fitAsyncForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
+  fitForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
     (dp) => new Promise((res, rej) => {
       webSql.db.transaction(t => {
         t.executeSql("select name from sqlite_master where type='table'", null,
@@ -110,7 +110,7 @@ class tableWithPhone extends EntityBase {
   phone: Phone;
 }
 describe("test object column stored as string", () => {
-  itAsync("was changed should work correctly", async () => {
+  it("was changed should work correctly", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
     let repo = context.for(tableWithPhone);
@@ -135,7 +135,7 @@ class testNumbers extends EntityBase {
   a: number;
 }
 describe("test numbers", () => {
-  itAsync("test that integer and int work", async () => {
+  it("test that integer and int work", async () => {
     await testAllDbs(async ({ context }) => {
       let e = await context.for(testNumbers).create({
         id: 1.5,
@@ -169,7 +169,7 @@ describe('Test basic row functionality', () => {
     expect(b.info).toBe(3);
 
   });
-  itAsync("Original values update correctly", async () => {
+  it("Original values update correctly", async () => {
     let c = await (await createData(async insert => await insert(1, 'noam')))[0].findFirst();
     expect(c.categoryName).toBe('noam');
     expect(c._.fields.categoryName.originalValue).toBe('noam');
@@ -181,7 +181,7 @@ describe('Test basic row functionality', () => {
     expect(c._.fields.categoryName.originalValue).toBe('yael');
 
   });
-  itAsync("Find or Create", async () => {
+  it("Find or Create", async () => {
     let [context] = await (await createData());
     let row = await context.findFirst({ createIfNotFound: true, where: x => x.id.isEqualTo(1) });
     expect(row._.isNew()).toBe(true);
@@ -211,7 +211,7 @@ describe('Test basic row functionality', () => {
     expect(y._.fields.find(x._.fields.categoryName.metadata.key).value).toBe('yael');
     expect(y._.metadata.fields.find('categoryName').key).toBe('categoryName');
   });
-  itAsync("can be saved to a pojo", async () => {
+  it("can be saved to a pojo", async () => {
     let ctx = new Context().for(newCategories);
     let x = ctx.create();
     x.id = 1;
@@ -220,7 +220,7 @@ describe('Test basic row functionality', () => {
     expect(y.id).toBe(1);
     expect(y.categoryName).toBe('noam');
   });
-  // itAsync("json name is important", async () => {
+  // it("json name is important", async () => {
   //   let ctx = new Context().for(newCategories);
   //   let x = ctx.create();
   //   x.id = 1;
@@ -230,7 +230,7 @@ describe('Test basic row functionality', () => {
   //   expect(y.id).toBe(1);
   //   expect(y.xx).toBe('noam');
   // });
-  // itAsync("json name is important 1", async () => {
+  // it("json name is important 1", async () => {
   //   let ctx = new Context().for_old(myTestEntity);
   //   let x = ctx.create();
   //   x.id.value = 1;
@@ -267,7 +267,7 @@ class myTestEntity extends EntityBase {
 describe("data api", () => {
   beforeEach(() => actionInfo.runningOnServer = true);
   afterEach(() => actionInfo.runningOnServer = false);
-  itAsync("get based on id", async () => {
+  it("get based on id", async () => {
 
 
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
@@ -285,7 +285,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("get based on id virtual column", async () => {
+  it("get based on id virtual column", async () => {
 
 
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
@@ -302,7 +302,7 @@ describe("data api", () => {
     await api.get(t, 1)
     d.test();
   });
-  itAsync("get based on id virtual column async", async () => {
+  it("get based on id virtual column async", async () => {
 
 
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
@@ -320,7 +320,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("get based on id can fail", async () => {
+  it("get based on id can fail", async () => {
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
     var api = new DataApi(c, context);
     let t = new TestDataApiResponse();
@@ -448,7 +448,7 @@ describe("data api", () => {
 
 
   });
-  // itAsync("test number is always number", async () => {
+  // it("test number is always number", async () => {
   //   let amount = new NumberColumn();
   //   let total = new NumberColumn();
   //   total.value = 10;
@@ -465,7 +465,7 @@ describe("data api", () => {
 
 
 
-  itAsync("delete fails when not found", async () => {
+  it("delete fails when not found", async () => {
 
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
     var api = new DataApi(c, context);
@@ -475,7 +475,7 @@ describe("data api", () => {
     await api.delete(t, 2);
     d.test();
   });
-  itAsync("delete works ", async () => {
+  it("delete works ", async () => {
 
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
     var api = new DataApi(c, context);
@@ -487,7 +487,7 @@ describe("data api", () => {
     let r = await c.find();
     expect(r.length).toBe(0);
   });
-  itAsync("delete falis nicely ", async () => {
+  it("delete falis nicely ", async () => {
     let ctx = new Context();
     ctx.setDataProvider({
       getEntityDataProvider: (x) => {
@@ -505,7 +505,7 @@ describe("data api", () => {
 
     d.test();
   });
-  itAsync("post works", async () => {
+  it("post works", async () => {
 
 
 
@@ -523,7 +523,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("post with logic works and max in entity", async () => {
+  it("post with logic works and max in entity", async () => {
     await testAllDbs(async ({ context }) => {
       let c = context.for(entityWithValidations);
 
@@ -542,7 +542,7 @@ describe("data api", () => {
     })
   });
 
-  itAsync("post fails on duplicate index", async () => {
+  it("post fails on duplicate index", async () => {
 
 
     let [c, context] = await createData(async (i) => { await i(1, 'noam'); });
@@ -559,7 +559,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("getArray works", async () => {
+  it("getArray works", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam');
       await i(2, 'yael');
@@ -576,7 +576,7 @@ describe("data api", () => {
     await api.getArray(t, undefined);
     d.test();
   });
-  itAsync("getArray works with filter", async () => {
+  it("getArray works with filter", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam');
       await i(2, 'yael');
@@ -598,7 +598,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  itAsync("getArray works with filter and multiple values", async () => {
+  it("getArray works with filter and multiple values", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam');
       await i(2, 'yael');
@@ -621,7 +621,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  itAsync("getArray works with filter and multiple values with closed list columns", async () => {
+  it("getArray works with filter and multiple values with closed list columns", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', undefined, Status.open);
       await i(2, 'yael', undefined, Status.closed);
@@ -645,7 +645,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("getArray works with filter and in with closed list columns", async () => {
+  it("getArray works with filter and in with closed list columns", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', undefined, Status.open);
       await i(2, 'yael', undefined, Status.closed);
@@ -669,7 +669,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  itAsync("get array works with filter in body", async () => {
+  it("get array works with filter in body", async () => {
     await testAllDbs(async ({ createData, context }) => {
       let c = await createData(async (i) => {
         await i(1, 'noam', undefined, Status.open);
@@ -695,7 +695,7 @@ describe("data api", () => {
       d.test();
     });
   });
-  itAsync("get array works with filter in body and in array statement", async () => {
+  it("get array works with filter in body and in array statement", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', undefined, Status.open);
       await i(2, 'yael', undefined, Status.closed);
@@ -719,7 +719,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  itAsync("get array works with filter in body and or statement", async () => {
+  it("get array works with filter in body and or statement", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', undefined, Status.open);
       await i(2, 'yael', undefined, Status.closed);
@@ -746,7 +746,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  itAsync("entity order by works", async () => {
+  it("entity order by works", async () => {
 
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
@@ -767,7 +767,7 @@ describe("data api", () => {
       expect(x[2].id).toBe(2);
     })
   });
-  itAsync("delete with validation fails", async () => {
+  it("delete with validation fails", async () => {
 
     var deleting = new Done();
     let happend = false;
@@ -798,7 +798,7 @@ describe("data api", () => {
     var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName).toBe('noam');
   });
-  itAsync("delete with validation exception fails", async () => {
+  it("delete with validation exception fails", async () => {
 
     var deleting = new Done();
     let happend = false;
@@ -830,7 +830,7 @@ describe("data api", () => {
     var x = await c.find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName).toBe('noam');
   });
-  itAsync("delete with validation exception fails - no data api", async () => {
+  it("delete with validation exception fails - no data api", async () => {
     var deleting = new Done();
     let happend = false;
     let type = class extends newCategories {
@@ -860,7 +860,7 @@ describe("data api", () => {
     expect(h3).toBe(true);
 
   });
-  itAsync("delete works", async () => {
+  it("delete works", async () => {
     var deleting = new Done();
     let happend = false;
     let type = class extends newCategories { };
@@ -892,7 +892,7 @@ describe("data api", () => {
     expect(x.length).toBe(0);
   });
 
-  itAsync("put with validation fails", async () => {
+  it("put with validation fails", async () => {
 
     let count = 0;
     let type = class extends newCategories { };
@@ -923,7 +923,7 @@ describe("data api", () => {
     expect(count).toBe(1);
 
   });
-  itAsync("put with validation works", async () => {
+  it("put with validation works", async () => {
     await testAllDbs(async ({ createData, context }) => {
       let count = 0;
       let type = class extends newCategories { };
@@ -956,7 +956,7 @@ describe("data api", () => {
       expect(count).toBe(1);
     });
   });
-  itAsync("afterSave works", async () => {
+  it("afterSave works", async () => {
 
     let count = 0;
     let startTest = false;
@@ -997,7 +997,7 @@ describe("data api", () => {
     expect(count).toBe(1);
 
   });
-  itAsync("afterSave works on insert", async () => {
+  it("afterSave works on insert", async () => {
 
     let type = class extends newCategories { };
     Entity<typeof type.prototype>({
@@ -1037,7 +1037,7 @@ describe("data api", () => {
 
 
   });
-  itAsync("put with disable save still works", async () => {
+  it("put with disable save still works", async () => {
 
 
     let startTest = false;
@@ -1092,7 +1092,7 @@ describe("data api", () => {
 
 
   });
-  itAsync("get based on id with excluded columns", async () => {
+  it("get based on id with excluded columns", async () => {
 
 
     let type = class extends newCategories {
@@ -1116,7 +1116,7 @@ describe("data api", () => {
     d.test();
 
   });
-  itAsync("row reload", async () => {
+  it("row reload", async () => {
 
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
     let a = await c.findId(1);
@@ -1129,13 +1129,13 @@ describe("data api", () => {
     expect(b._.wasChanged()).toBe(false);
     expect(b.$.categoryName.originalValue).toBe('yael');
   });
-  itAsync("Find null works", async () => {
+  it("Find null works", async () => {
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
     expect(await c.findId(null)).toBeNull();
     expect(await c.findId(undefined)).toBeNull();
   });
 
-  itAsync("put updates", async () => {
+  it("put updates", async () => {
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
 
     var api = new DataApi(c, context);
@@ -1154,7 +1154,7 @@ describe("data api", () => {
     expect(x[0].categoryName).toBe('noam 1');
 
   });
-  itAsync("put updates and readonly columns", async () => {
+  it("put updates and readonly columns", async () => {
     let type = class extends newCategories {
 
       categoryName: string;
@@ -1179,7 +1179,7 @@ describe("data api", () => {
     expect(x[0].categoryName).toBe('noam');
 
   });
-  itAsync("put fails when not found", async () => {
+  it("put fails when not found", async () => {
 
     let [c, context] = await createData(async insert => insert(1, 'noam'));
 
@@ -1191,7 +1191,7 @@ describe("data api", () => {
     d.test();
 
   });
-  itAsync("put updates", async () => {
+  it("put updates", async () => {
     let type = class extends newCategories {
 
       categoryName: string;
@@ -1217,7 +1217,7 @@ describe("data api", () => {
     expect(x[0].categoryName).toBe('noam');
 
   });
-  itAsync("post with syntax error fails well", async () => {
+  it("post with syntax error fails well", async () => {
     let type = class extends newCategories { };
     Entity<newCategories>({
 
@@ -1240,7 +1240,7 @@ describe("data api", () => {
     expect((await c.find()).length).toBe(0);
 
   });
-  itAsync("getArray works with filter contains", async () => {
+  it("getArray works with filter contains", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam');
       await i(2, 'yael');
@@ -1264,7 +1264,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  itAsync("getArray works with filter startsWith", async () => {
+  it("getArray works with filter startsWith", async () => {
     await testAllDbs(async ({ createData, context }) => {
       let c = await createData(async (i) => {
         await i(1, 'noam');
@@ -1290,7 +1290,7 @@ describe("data api", () => {
       d.test();
     })
   });
-  itAsync("getArray works with predefined filter", async () => {
+  it("getArray works with predefined filter", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -1314,7 +1314,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("allow api read depends also on api crud", async () => {
+  it("allow api read depends also on api crud", async () => {
     let sc = new Context();
     let type = class extends EntityBase {
 
@@ -1322,7 +1322,7 @@ describe("data api", () => {
     Entity({ allowApiCrud: false, key: 'a' })(type);
     expect(new DataApi(sc.for(type), sc)._getApiSettings().allowRead).toBe(false);
   });
-  itAsync("allow api read depends also on api crud", async () => {
+  it("allow api read depends also on api crud", async () => {
     let sc = new Context();
     let type = class extends EntityBase {
 
@@ -1335,7 +1335,7 @@ describe("data api", () => {
 
 
 
-  itAsync("delete id  not Allowed", async () => {
+  it("delete id  not Allowed", async () => {
     let type = class extends newCategories {
 
     };
@@ -1360,7 +1360,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("apiRequireId", async () => {
+  it("apiRequireId", async () => {
     let type = class extends newCategories {
 
     };
@@ -1413,7 +1413,7 @@ describe("data api", () => {
     d.test();
 
   });
-  itAsync("delete id  not Allowed for specific row", async () => {
+  it("delete id  not Allowed for specific row", async () => {
     let type = class extends newCategories {
 
     };
@@ -1444,7 +1444,7 @@ describe("data api", () => {
     await api.delete(t, 1);
     d.test();
   });
-  itAsync("update id  not Allowed for specific row", async () => {
+  it("update id  not Allowed for specific row", async () => {
     let type = class extends newCategories {
 
     };
@@ -1480,7 +1480,7 @@ describe("data api", () => {
       });
     d.test();
   });
-  itAsync("insert id  not Allowed for specific row", async () => {
+  it("insert id  not Allowed for specific row", async () => {
     let type = class extends newCategories {
 
     };
@@ -1518,7 +1518,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("getArray works with sort", async () => {
+  it("getArray works with sort", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'a');
       await i(2, 'c');
@@ -1619,7 +1619,7 @@ describe("column validation", () => {
     //expect(c._.isValid()).toBe(true);
     //expect(c._.columns.id.error).toBe(undefined);
   });
-  itAsync("test date filter and values", async () => {
+  it("test date filter and values", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Context();
     await sql.execute("drop table if exists t1");
@@ -1650,7 +1650,7 @@ describe("column validation", () => {
 });
 
 describe("test web sql identity", () => {
-  itAsync("play", async () => {
+  it("play", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Context();
     await sql.execute("drop table if exists t1");
@@ -1685,7 +1685,7 @@ describe("compound id", () => {
     let ctx = new Context();
     expect(ctx.for(CompoundIdEntity).metadata.idMetadata.field instanceof CompoundIdField).toBe(true);
   });
-  itAsync("compound sql",
+  it("compound sql",
     async () => {
       let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
       let ctx = new Context();
@@ -1706,7 +1706,7 @@ describe("compound id", () => {
 
     });
   const ctx = new Context();
-  itAsync("start", async () => {
+  it("start", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
@@ -1727,7 +1727,7 @@ describe("compound id", () => {
   });
 
 
-  itAsync("update", async () => {
+  it("update", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
@@ -1748,7 +1748,7 @@ describe("compound id", () => {
     expect(mem.rows[c.metadata.key][0].id).toBe(undefined);
     expect(r[0]._.getId()).toBe('1,11');
   });
-  itAsync("update2", async () => {
+  it("update2", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
@@ -1767,7 +1767,7 @@ describe("compound id", () => {
 
     expect(r[0]._.getId()).toBe('1,55');
   });
-  itAsync("insert", async () => {
+  it("insert", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
@@ -1783,7 +1783,7 @@ describe("compound id", () => {
     expect(mem.rows[ctx.for(CompoundIdEntity).metadata.key][2].id).toBe(undefined);
     expect(c._.getId()).toBe('3,33');
   });
-  itAsync("delete", async () => {
+  it("delete", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
@@ -1798,7 +1798,7 @@ describe("compound id", () => {
 
 });
 describe("test data list", () => {
-  itAsync("delete works", async () => {
+  it("delete works", async () => {
     let [c] = await createData(async i => {
       await i(1, 'a');
       await i(2, 'b');
@@ -1812,7 +1812,7 @@ describe("test data list", () => {
   });
 
 
-  itAsync("dbname of entity string works", async () => {
+  it("dbname of entity string works", async () => {
     let type = class extends Categories {
 
     }
@@ -1820,14 +1820,14 @@ describe("test data list", () => {
     let r = new Context().for(type);
     expect((await r.metadata.getDbName())).toBe('test');
   });
-  itAsync("dbname of entity can use column names", async () => {
+  it("dbname of entity can use column names", async () => {
 
     let r = new Context().for(EntityWithLateBoundDbName);
     expect((await r.metadata.getDbName())).toBe('(select CategoryID)');
   });
 
 
-  itAsync("delete fails nicely", async () => {
+  it("delete fails nicely", async () => {
 
     let cont = new Context();
     cont.setDataProvider({
@@ -1873,7 +1873,7 @@ describe("test bool value", () => {
     expect(col.valueConverter.fromJson(true)).toBe(true);
     expect(col.valueConverter.fromJson(false)).toBe(false);
   });
-  itAsync("saves correctoly to db", async () => {
+  it("saves correctoly to db", async () => {
     await testAllDbs(async ({ context }) => {
       let type = class extends EntityBase {
         id: number;
@@ -1894,7 +1894,7 @@ describe("test bool value", () => {
       expect(r.ok).toBe(false);
     });
   });
-  itAsync("saves correctly to db", async () => {
+  it("saves correctly to db", async () => {
     await testAllDbs(async ({ context }) => {
       let type = class extends EntityBase {
         id: number;
@@ -1944,7 +1944,7 @@ describe("test number negative", () => {
 });
 
 describe("test rest data provider translates data correctly", () => {
-  itAsync("get works", async () => {
+  it("get works", async () => {
     let type = class extends EntityBase {
       a: number;
       b: Date;
@@ -1974,7 +1974,7 @@ describe("test rest data provider translates data correctly", () => {
     expect(r[0].b.valueOf()).toBe(new Date("2021-05-16T08:32:19.905Z").valueOf());
     expect(r[0].b instanceof Date).toBe(true);
   })
-  itAsync("put works", async () => {
+  it("put works", async () => {
     let type = class extends EntityBase {
       a: number;
       b: Date;
@@ -1987,7 +1987,7 @@ describe("test rest data provider translates data correctly", () => {
     let r = await Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
-  itAsync("put works", async () => {
+  it("put works", async () => {
     let type = class extends EntityBase {
       a: number;
       b: Date;

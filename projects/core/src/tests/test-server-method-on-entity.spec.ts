@@ -1,4 +1,4 @@
-import { itAsync, Done, fitAsync, ActionTestConfig } from './testHelper.spec';
+import {  ActionTestConfig } from './testHelper.spec';
 import { Context, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
@@ -71,7 +71,7 @@ class testBoolCreate123 extends EntityBase {
 }
 describe("test Server method in entity", () => {
     let c = new Context();
-    itAsync("test server method on Entity", async () => {
+    it("test server method on Entity", async () => {
         let x = c.for(testServerMethodOnEntity).create();
         x.a = 'Noam';
         let r = await x.doIt1();
@@ -79,13 +79,13 @@ describe("test Server method in entity", () => {
         expect(r.result).toBe('hello Noam');
         expect(x.a).toBe("yael");
     });
-    itAsync("test server method on Entity", async () => {
+    it("test server method on Entity", async () => {
         let x = c.for(testServerMethodOnEntity).create();
         x.a = 'Noam';
         expect(await x.doItAgain()).toBe("Noam");
 
     });
-    itAsync("test validation method", async () => {
+    it("test validation method", async () => {
         let x = c.for(testServerMethodOnEntity).create();
         x.a = 'errorc';
         let happened = false;
@@ -102,7 +102,7 @@ describe("test Server method in entity", () => {
 
 
     });
-    itAsync("test validation on server", async () => {
+    it("test validation on server", async () => {
         let x = c.for(testServerMethodOnEntity).create();
         x.a = "error on server";
         let happened = false;
@@ -189,7 +189,7 @@ describe("complex entity relations on server entity and backend method", () => {
     beforeEach(() => {
         ActionTestConfig.db.rows = [];
     });
-    itAsync("fix it", async () => {
+    it("fix it", async () => {
         let context = new Context();
         context.setDataProvider(ActionTestConfig.db);
         let a1 = await context.for(a).create({ id: 1 }).save();
@@ -205,7 +205,7 @@ describe("complex entity relations on server entity and backend method", () => {
         expect(c1.b.id).toBe(12);
         expect(c1.b.a.id).toBe(2);
     });
-    itAsync("fix it new row", async () => {
+    it("fix it new row", async () => {
         let context = new Context();
         context.setDataProvider(ActionTestConfig.db);
         let a1 = await context.for(a).create({ id: 1 }).save();
@@ -221,7 +221,7 @@ describe("complex entity relations on server entity and backend method", () => {
         expect(c1.b.id).toBe(12);
         expect(c1.b.a.id).toBe(2);
     });
-    itAsync("fix it change value", async () => {
+    it("fix it change value", async () => {
         let context = new Context();
         context.setDataProvider(ActionTestConfig.db);
         let a1 = await context.for(a).create({ id: 1 }).save();

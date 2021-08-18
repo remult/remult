@@ -1,4 +1,3 @@
-import { fitAsync, itAsync } from './testHelper.spec';
 import { Context } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase } from '../remult3';
@@ -9,7 +8,7 @@ import { actionInfo } from '../server-action';
 describe("test server expression value", () => {
     beforeEach(() => actionInfo.runningOnServer = true);
     afterEach(() => actionInfo.runningOnServer = false);
-    itAsync("test basics create", async () => {
+    it("test basics create", async () => {
 
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
@@ -23,7 +22,7 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal).toBe(2);
         expect(testServerExpression.testVal2).toBe(12);
     });
-    itAsync("test basics find", async () => {
+    it("test basics find", async () => {
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
@@ -39,7 +38,7 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal).toBe(2);
         expect(testServerExpression.testVal2).toBe(12);
     });
-    itAsync("test doesnt calc on client", async () => {
+    it("test doesnt calc on client", async () => {
         actionInfo.runningOnServer = false;
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
@@ -54,7 +53,7 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal).toBe(1);
         expect(testServerExpression.testVal2).toBe(11);
     });
-    itAsync("test basics find doesnt calc on client", async () => {
+    it("test basics find doesnt calc on client", async () => {
         actionInfo.runningOnServer = false;
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());

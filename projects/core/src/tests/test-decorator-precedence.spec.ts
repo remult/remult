@@ -1,4 +1,4 @@
-import { itAsync, Done, fitAsync } from './testHelper.spec';
+
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Context } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
@@ -25,7 +25,7 @@ describe("test decorator precedence", () => {
 
 
 
-    itAsync("test basics", async () => {
+    it("test basics", async () => {
         let c = new Context();
         let r = c.for(myEntity);
         expect([...r.metadata.fields].length).toBe(3);

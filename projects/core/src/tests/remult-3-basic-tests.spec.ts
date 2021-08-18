@@ -1,13 +1,12 @@
 
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
-import { fitAsync, itAsync } from "./testHelper.spec";
 import { Products } from './remult-3-entities';
 import { createOldEntity, getEntityRef } from "../remult3";
 import { Context } from "../context";
 
 
 describe("remult-3-basics", () => {
-    itAsync("test the very basics", async () => {
+    it("test the very basics", async () => {
         let mem = new InMemoryDataProvider();
         let c = new Context();
         c.setDataProvider(mem);

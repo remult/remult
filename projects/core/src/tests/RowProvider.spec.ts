@@ -1,7 +1,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { itAsync, Done, fitAsync } from './testHelper.spec';
+import {  Done } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Context } from '../context';
 import { OneToMany } from '../column';
@@ -18,7 +18,7 @@ import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
 import { EntityOptions } from '../entity';
-import { async, waitForAsync } from '@angular/core/testing';
+
 import { Filter } from '../filter/filter-interfaces';
 import { ClassType } from '../../classType';
 
@@ -142,7 +142,7 @@ export async function insertFourRows() {
 };
 
 describe("grid filter stuff", () => {
-  itAsync("test filter works", async () => {
+  it("test filter works", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
 
@@ -158,7 +158,7 @@ describe("grid filter stuff", () => {
 
 
   });
-  itAsync("test filter works without the get statement", async () => {
+  it("test filter works without the get statement", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
 
@@ -174,7 +174,7 @@ describe("grid filter stuff", () => {
 
   });
 
-  itAsync("test filter works with user filter", async () => {
+  it("test filter works with user filter", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
       orderBy: c => c.id,
@@ -189,7 +189,7 @@ describe("grid filter stuff", () => {
     expect(await c.count(w)).toBe(1);
 
   });
-  itAsync("filter with contains", async () => {
+  it("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
@@ -198,7 +198,7 @@ describe("grid filter stuff", () => {
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
     expect(await x.resolveWhere()).toBe(" where lower (col) like lower ('%no''am%')");
   });
-  itAsync("filter with contains", async () => {
+  it("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
@@ -207,7 +207,7 @@ describe("grid filter stuff", () => {
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
     expect(await x.resolveWhere()).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
-  itAsync("filter with start with", async () => {
+  it("filter with start with", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "?",
       execute: () => { throw "rr" }
@@ -216,7 +216,7 @@ describe("grid filter stuff", () => {
     expect(await x.resolveWhere()).toBe(" where col like ?");
   });
 
-  itAsync("test filter works with selected rows", async () => {
+  it("test filter works with selected rows", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
       orderBy: c => c.id,
@@ -232,11 +232,11 @@ describe("grid filter stuff", () => {
     expect(await c.count(w)).toBe(2);
     expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
-  itAsync("test in statement", async () => {
+  it("test in statement", async () => {
     let [c] = await insertFourRows();
     expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
   });
-  itAsync("test all rows selected when some rows are outside the scope", async () => {
+  it("test all rows selected when some rows are outside the scope", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
       orderBy: c => c.id,
@@ -251,7 +251,7 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
     expect(await c.count(w)).toBe(4);
   });
-  it("test context change event", async(async () => {
+  it("test context change event",async () => {
     let d = new Done();
     let c = new Context();
     let r = await c.userChange.observe(() => d.ok());
@@ -272,9 +272,9 @@ describe("grid filter stuff", () => {
     });
     expect(d.happened).toBe(false, "should not have fired because unsubscribe has happened");
 
-  }));
+  });
 
-  itAsync("test select rows in page is not select all", async () => {
+  it("test select rows in page is not select all", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
       orderBy: c => c.id,
@@ -292,7 +292,7 @@ describe("grid filter stuff", () => {
 
     expect(await c.count(w)).toBe(3, 'rows in count');
   });
-  itAsync("select select row by row when all rows are in view", async () => {
+  it("select select row by row when all rows are in view", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
       knowTotalRows: true,
@@ -328,7 +328,7 @@ describe("Closed List  column", () => {
     let val = new ValueListValueConverter(valueList);
     expect(valueList.firstName.caption).toBe('First Name');
   });
-  itAsync("test with entity", async () => {
+  it("test with entity", async () => {
     let c = new Context()
       .for(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
@@ -340,7 +340,7 @@ describe("Closed List  column", () => {
     expect(e.l).toBe(Language.Russian);
     expect(e._.toApiJson().l).toBe(10);
   })
-  itAsync("test with entity and data defined on type", async () => {
+  it("test with entity and data defined on type", async () => {
     let c = new Context()
       .for(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
@@ -386,7 +386,7 @@ describe("test row provider", () => {
     var cat = new Context().for(newCategories).create();
     expect(cat._.repository.metadata.key).toBe('Categories');
   });
-  itAsync("Insert", async () => {
+  it("Insert", async () => {
     await testAllDbs(async ({ createData }) => {
       let forCat = await createData(async x => { });
       let rows = await forCat.find();
@@ -404,7 +404,7 @@ describe("test row provider", () => {
 
 
 
-  itAsync("test delete", async () => {
+  it("test delete", async () => {
 
     await testAllDbs(async ({ createData }) => {
       let c = await createData(async insert => await insert(5, 'noam'));
@@ -419,7 +419,7 @@ describe("test row provider", () => {
 
 
   });
-  itAsync("test update", async () => {
+  it("test update", async () => {
     let [c] = await createData(async insert => await insert(5, 'noam'));
     let r = await c.find();
     expect(r[0].categoryName).toBe('noam');
@@ -429,7 +429,7 @@ describe("test row provider", () => {
     expect(r[0].categoryName).toBe('yael');
   });
 
-  itAsync("test filter", async () => {
+  it("test filter", async () => {
     let [c] = await insertFourRows();
 
     let rows = await c.find();
@@ -453,7 +453,7 @@ describe("test row provider", () => {
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(2);
   });
-  itAsync("test filter packer", async () => {
+  it("test filter packer", async () => {
     await testAllDbs(async ({ insertFourRows }) => {
       let r = await insertFourRows();
       let rows = await r.find();
@@ -475,7 +475,7 @@ describe("test row provider", () => {
     })
 
   });
-  itAsync("test in filter packer", async () => {
+  it("test in filter packer", async () => {
     let [r] = await insertFourRows();
     let rows = await r.find();
     expect(rows.length).toBe(4);
@@ -490,7 +490,7 @@ describe("test row provider", () => {
     expect(rows.length).toBe(1);
 
   });
-  itAsync("sort", async () => {
+  it("sort", async () => {
     let [c] = await insertFourRows();
     let rows = await c.find({ orderBy: c => c.id });
     expect(rows[0].id).toBe(1);
@@ -507,17 +507,17 @@ describe("test row provider", () => {
     expect(rows[2].id).toBe(1);
     expect(rows[3].id).toBe(3);
   });
-  itAsync("counts", async () => {
+  it("counts", async () => {
     let [c] = await insertFourRows();
     let count = await c.count();
     expect(count).toBe(4);
   });
-  itAsync("counts with filter", async () => {
+  it("counts with filter", async () => {
     let [c] = await insertFourRows();
     let count = await c.count(c => c.id.isLessOrEqualTo(2));
     expect(count).toBe(2);
   });
-  itAsync("test grid update", async () => {
+  it("test grid update", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
       orderBy: c => c.id
@@ -530,7 +530,7 @@ describe("test row provider", () => {
     expect(ds.items[0].categoryName).toBe('noam honig');
   });
 
-  itAsync("Test Validation 2", async () => {
+  it("Test Validation 2", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
@@ -557,7 +557,7 @@ describe("test row provider", () => {
     expect(saved).toBe(false);
 
   });
-  itAsync("Test Validation 2_1", async () => {
+  it("Test Validation 2_1", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
@@ -584,7 +584,7 @@ describe("test row provider", () => {
     expect(saved).toBe(false);
 
   });
-  itAsync("Test Validation 3", async () => {
+  it("Test Validation 3", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
@@ -608,7 +608,7 @@ describe("test row provider", () => {
     }
     expect(saved).toBe(false);
   });
-  itAsync("Test unique Validation,", async () => {
+  it("Test unique Validation,", async () => {
     await testAllDbs(async ({ context }) => {
       let type = class extends newCategories {
         a: string
@@ -643,7 +643,7 @@ describe("test row provider", () => {
     });
 
   });
-  itAsync("Test unique Validation 2", async () => {
+  it("Test unique Validation 2", async () => {
     await testAllDbs(async ({ context }) => {
       let type = class extends newCategories {
         a: string
@@ -672,7 +672,7 @@ describe("test row provider", () => {
     });
 
   });
-  itAsync("Test unique Validation and is not empty", async () => {
+  it("Test unique Validation and is not empty", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
@@ -711,7 +711,7 @@ describe("test row provider", () => {
 
   });
 
-  itAsync("test grid update and validation cycle", async () => {
+  it("test grid update and validation cycle", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
@@ -753,7 +753,7 @@ describe("test row provider", () => {
     expect(ds.items[0].categoryName).toBe('noam honig');
     expect(orderOfOperation).toBe("ColumnValidate,EntityValidate,GridValidate,GridOnSavingRow,EntityOnSavingRow,");
   });
-  itAsync("test that it fails nicely", async () => {
+  it("test that it fails nicely", async () => {
     let c = (await insertFourRows())[0].create();
     c.id = 1;
     c.categoryName = 'bla bla';
@@ -766,7 +766,7 @@ describe("test row provider", () => {
     }
     expect(c.categoryName).toBe('bla bla');
   });
-  itAsync("update should fail nicely", async () => {
+  it("update should fail nicely", async () => {
     let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.for(newCategories).create();
@@ -781,7 +781,7 @@ describe("test row provider", () => {
       expect(c.categoryName).toBe('yael');
     }
   });
-  itAsync("filter should return none", async () => {
+  it("filter should return none", async () => {
 
     let [c] = await insertFourRows();
 
@@ -790,7 +790,7 @@ describe("test row provider", () => {
     expect(r.categoryName).toBe(undefined);
 
   });
-  itAsync("lookup with undefined doesn't fetch", async () => {
+  it("lookup with undefined doesn't fetch", async () => {
 
     let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
@@ -816,7 +816,7 @@ describe("test row provider", () => {
     expect(calledFind).toBe(true);
 
   });
-  itAsync("lookup return the same new row", async () => {
+  it("lookup return the same new row", async () => {
     let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.for(newCategories);
@@ -831,7 +831,7 @@ describe("test row provider", () => {
     expect(r.id).toBe(5);
 
   });
-  itAsync("lookup updates the data", async () => {
+  it("lookup updates the data", async () => {
     let [c] = await createData(async insert => await insert(1, 'noam'));
     let lookup = new Lookup<CategoriesForTesting>(c);
     let r = lookup.get(c => c.id.isEqualTo(1));
@@ -849,7 +849,7 @@ describe("test row provider", () => {
 
 
   });
-  itAsync("lookup survives row that doesn't exist", async () => {
+  it("lookup survives row that doesn't exist", async () => {
     let [c] = await createData(async insert => await insert(1, 'noam'));
     let r = await c.findId(5);
     expect(r).toBeUndefined();
@@ -860,7 +860,7 @@ describe("test row provider", () => {
 
   });
 
-  itAsync("column drop down", async () => {
+  it("column drop down", async () => {
     let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
@@ -878,7 +878,7 @@ describe("test row provider", () => {
 
   });
 
-  itAsync("column drop down with promise", async () => {
+  it("column drop down with promise", async () => {
     let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
@@ -896,7 +896,7 @@ describe("test row provider", () => {
 
   });
 
-  itAsync("column drop down with promise", async () => {
+  it("column drop down with promise", async () => {
     let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
@@ -913,7 +913,7 @@ describe("test row provider", () => {
     expect(xx[1].caption).toBe('yael');
 
   });
-  itAsync("column drop down with items", async () => {
+  it("column drop down with items", async () => {
     let c = new Categories();
 
     let cc = new FieldCollection(() => c, () => true, undefined, () => true, undefined);
@@ -928,7 +928,7 @@ describe("test row provider", () => {
 
   });
 
-  itAsync("column drop down 1", async () => {
+  it("column drop down 1", async () => {
     let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
@@ -1076,7 +1076,7 @@ describe("column collection", () => {
   let ctx = new Context();
   ctx.setDataProvider(new InMemoryDataProvider());
 
-  itAsync("uses a saparate column", async () => {
+  it("uses a saparate column", async () => {
     let type = class extends newCategories {
       categoryName: string;
     }
@@ -1096,7 +1096,7 @@ describe("column collection", () => {
 
   })
 
-  itAsync("works ok with filter", async () => {
+  it("works ok with filter", async () => {
     let c = ctx.for(newCategories);
     var cc = new FieldCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
     await cc.add(c.metadata.fields.id);
@@ -1104,27 +1104,27 @@ describe("column collection", () => {
     expect(cc.filterHelper.isFiltered(cc.items[0].field)).toBe(true);
 
   });
-  it("test caption etc...", waitForAsync(async () => {
+  it("test caption etc...", async () => {
     let c = ctx.for(newCategories);
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
     cc.add(c.metadata.fields.id);
     expect(cc.items[0].caption).toBe('Id');
 
-  }))
-  it("test caption etc...", waitForAsync(async () => {
+  })
+  it("test caption etc...", async () => {
     let c = ctx.for(newCategories);
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
     cc.add({ field: c.metadata.fields.id });
     expect(cc.items[0].caption).toBe('Id');
 
-  }))
-  it("test caption etc...", waitForAsync(async () => {
+  })
+  it("test caption etc...", async () => {
     let c = ctx.for(newCategories);
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
     cc.add({ field: c.metadata.fields.id, width: '100' });
     expect(cc.items[0].caption).toBe('Id');
 
-  }))
+  })
 });
 describe("grid settings ",
   () => {
@@ -1221,7 +1221,7 @@ class typeB extends typeA {
 
 }
 describe("decorator inheritance", () => {
-  itAsync("entity extends", async () => {
+  it("entity extends", async () => {
 
     let c = new Context();
     let defsA = c.for(typeA).metadata;
@@ -1256,7 +1256,7 @@ describe("order by api", () => {
   });
 
 
-  itAsync("test several sort options", async () => {
+  it("test several sort options", async () => {
     let [c] = await createData(async i => {
       await i(1, 'z');
       await i(2, 'y');
@@ -1433,7 +1433,7 @@ describe("value list column without id and caption", () => {
   })
 })
 describe("relation", () => {
-  itAsync("should get values", async () => {
+  it("should get values", async () => {
 
     let [c] = await insertFourRows();
     let r = new OneToMany(c, {
@@ -1444,7 +1444,7 @@ describe("relation", () => {
     let n = await r.create();
     expect(n.description).toBe("x");
   });
-  itAsync("should have an array and lazy load it", async () => {
+  it("should have an array and lazy load it", async () => {
     let [c] = await insertFourRows();
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
@@ -1478,7 +1478,7 @@ describe("context", () => {
   });
 });
 describe("test grid basics", () => {
-  itAsync("basically works", async () => {
+  it("basically works", async () => {
     let [c] = await insertFourRows();
     let gs = new GridSettings(c);
     await gs.reloadData();
@@ -1497,7 +1497,7 @@ class TestCategories1 extends newCategories {
   a: string;
 }
 describe("test ", () => {
-  itAsync("Test Validation,", async () => {
+  it("Test Validation,", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
 

@@ -1,4 +1,4 @@
-import { itAsync, Done, fitAsync } from "../testHelper.spec";
+import { Done } from "../testHelper.spec";
 import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
@@ -14,7 +14,7 @@ import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3';
 
 describe("data api", () => {
   let context = new Context();
-  itAsync("getArray works with predefined filter", async () => {
+  it("getArray works with predefined filter", async () => {
 
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
@@ -35,7 +35,7 @@ describe("data api", () => {
     d.test();
 
   });
-  itAsync("get works with predefined filter", async () => {
+  it("get works with predefined filter", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -53,7 +53,7 @@ describe("data api", () => {
     await api.get(t, 2);
     d.test();
   });
-  itAsync("get id  works with predefined filterand shouldnt return anything", async () => {
+  it("get id  works with predefined filterand shouldnt return anything", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -68,7 +68,7 @@ describe("data api", () => {
     await api.get(t, 1);
     d.test();
   });
-  itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
+  it("delete id  works with predefined filterand shouldnt return anything", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -83,7 +83,7 @@ describe("data api", () => {
     await api.delete(t, 1);
     d.test();
   });
-  itAsync("delete id  works with predefined filterand shouldnt return anything", async () => {
+  it("delete id  works with predefined filterand shouldnt return anything", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -98,7 +98,7 @@ describe("data api", () => {
     await api.delete(t, 2);
     d.test();
   });
-  itAsync("put id  works with predefined filterand shouldnt return anything", async () => {
+  it("put id  works with predefined filterand shouldnt return anything", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -113,7 +113,7 @@ describe("data api", () => {
     await api.put(t, 2, { name: 'YAEL' });
     d.test();
   });
-  itAsync("put id 1 works with predefined filterand shouldnt return anything", async () => {
+  it("put id 1 works with predefined filterand shouldnt return anything", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -128,7 +128,7 @@ describe("data api", () => {
     await api.put(t, 1, { name: 'YAEL' });
     d.test();
   });
-  itAsync("getArray works with predefined filter", async () => {
+  it("getArray works with predefined filter", async () => {
     let [c, context] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -152,7 +152,7 @@ describe("data api", () => {
     d.test();
   });
 
-  itAsync("works with predefined Entity Filter", async () => {
+  it("works with predefined Entity Filter", async () => {
     let [c] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');
@@ -175,7 +175,7 @@ class stam1 extends newCategories {
 
 }
 describe("", () => {
-  itAsync("works with predefined Entity Filter", async () => {
+  it("works with predefined Entity Filter", async () => {
     let [c] = await createData(async (i) => {
       await i(1, 'noam', 'a');
       await i(2, 'yael', 'b');

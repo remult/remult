@@ -1,4 +1,4 @@
-import { itAsync, Done, fitAsync } from './testHelper.spec';
+import { Done } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Context } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
@@ -23,25 +23,25 @@ describe("test where stuff", () => {
         done();
     });
 
-    itAsync("test basics", async () => {
+    it("test basics", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
         expect(await repo.count([y => y.id.isLessOrEqualTo(3), Filter.toItem(fo.where)])).toBe(2);
     });
-    itAsync("test basics_2", async () => {
+    it("test basics_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
         expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where, () => undefined])).toBe(2);
     });
-    itAsync("test basics_2_1", async () => {
+    it("test basics_2_1", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => Promise.resolve(x.id.isGreaterOrEqualTo(2))
         };
         expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where, () => undefined])).toBe(2);
     });
-    itAsync("test basics_3", async () => {
+    it("test basics_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: [x => x.id.isGreaterOrEqualTo(2), undefined]
         };
@@ -54,7 +54,7 @@ describe("test where stuff", () => {
 
 
 describe("custom filter", () => {
-    itAsync("test that it works", async () => {
+    it("test that it works", async () => {
         let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -62,7 +62,7 @@ describe("custom filter", () => {
         expect(await (c.count(e => entityForCustomFilter.filter.build({ oneAndThree: true }))))
             .toBe(2);
     });
-    itAsync("test that it works with sql", async () => {
+    it("test that it works with sql", async () => {
         let w = new WebSqlDataProvider("testWithFilter");
 
         let c = new Context().for(entityForCustomFilter, new SqlDatabase(w));
@@ -74,7 +74,7 @@ describe("custom filter", () => {
             .toBe(2);
         expect(await (c.count(e => entityForCustomFilter.filter.build({ dbOneOrThree: true })))).toBe(2);
     });
-    itAsync("test that it works with arrayFilter", async () => {
+    it("test that it works with arrayFilter", async () => {
 
 
         let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
@@ -86,14 +86,14 @@ describe("custom filter", () => {
         expect(await (c.count(e => entityForCustomFilter.filter.build({ dbOneOrThree: true })))).toBe(2);
 
     });
-    itAsync("test or and promise in translate", async () => {
+    it("test or and promise in translate", async () => {
         let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
         expect(await (c.count(e => e.id.isEqualTo(4).or(entityForCustomFilter.filter.build({ dbOneOrThree: true }))))).toBe(3);
     });
-    itAsync("test sent in api", async () => {
+    it("test sent in api", async () => {
         let ok = new Done();
         let z = new RestDataProvider("", {
             delete: undefined,
@@ -111,7 +111,7 @@ describe("custom filter", () => {
         await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
         ok.test();
     });
-    itAsync("test sent in api", async () => {
+    it("test sent in api", async () => {
         let ok = new Done();
         let z = new RestDataProvider("", {
             delete: undefined,
@@ -139,7 +139,7 @@ describe("custom filter", () => {
         await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }).and(entityForCustomFilter.filter.build({ two: true })));
         ok.test();
     });
-    itAsync("test that api reads custom correctly", async () => {
+    it("test that api reads custom correctly", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
@@ -162,7 +162,7 @@ describe("custom filter", () => {
         });
         d.test();
     });
-    itAsync("test that api reads custom correctly 2", async () => {
+    it("test that api reads custom correctly 2", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
@@ -190,7 +190,7 @@ describe("custom filter", () => {
         });
         d.test();
     });
-    itAsync("test that api reads custom correctly 3", async () => {
+    it("test that api reads custom correctly 3", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
@@ -222,7 +222,7 @@ describe("custom filter", () => {
         });
         d.test();
     });
-    itAsync("test that api reads custom correctly and translates to db", async () => {
+    it("test that api reads custom correctly and translates to db", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.for(entityForCustomFilter);
