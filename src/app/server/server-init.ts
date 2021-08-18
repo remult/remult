@@ -6,7 +6,7 @@ import { PostgresDataProvider, PostgresSchemaBuilder } from 'remult/postgres';
 import * as passwordHash from 'password-hash';
 
 
-import {  Context,  EntityOptions,  SqlDatabase } from 'remult';
+import {  Remult,  EntityOptions,  SqlDatabase } from 'remult';
 import { ClassType } from '../../../projects/core/classType';
 
 
@@ -63,7 +63,7 @@ function Entity3<T>(a: any, b: any) {
     class {
         constructor(
 
-            private context: Context) {
+            private context: Remult) {
             let p: Products;
             p.a;
         }
@@ -98,7 +98,7 @@ if (false)
     })
 
 var x = {
-    context: Context
+    context: Remult
 }
 export type kuku<Type> = {
     [Properties in keyof Type]: Type[Properties] extends ClassType<infer Z> ? Z : never
@@ -110,7 +110,7 @@ function entity8<Args>(type: Args, doSomething: (z: kuku<Args>) => Partial<Entit
     return a => a;
 }
 
-entity7({ context: Context }, (x, y) => {
+entity7({ context: Remult }, (x, y) => {
     y({ key: x.context.user.name });
 });
 
@@ -119,12 +119,12 @@ entity7({ context: Context }, (x, y) => {
 
 
 @Entity2(
-    [Context], (c: Context) => ({
+    [Context], (c: Remult) => ({
         fixedFilter: p => p.a.isEqualTo(""),
         allowApiCrudDDD: false
     })
 )
-@entity7({ context: Context }, (x, y) => y({ apiDataFilter: p => p.a.isEqualTo(x.context.user.id) }))
+@entity7({ context: Remult }, (x, y) => y({ apiDataFilter: p => p.a.isEqualTo(x.context.user.id) }))
 class Products {
     a: string;
     private b: string;

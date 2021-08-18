@@ -1,5 +1,5 @@
 import { ClassType } from '../classType';
-import { Allowed, Context, AllowedForInstance } from './context';
+import { Allowed, Remult, AllowedForInstance } from './context';
 import { EntityMetadata, FieldRef } from './remult3';
 
 

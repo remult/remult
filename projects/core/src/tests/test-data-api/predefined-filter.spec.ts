@@ -5,7 +5,7 @@ import { DataApi } from '../../data-api';
 
 
 
-import { Context } from '../../context';
+import { Remult } from '../../context';
 import { Categories as newCategories } from '../remult-3-entities';
 import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3';
 
@@ -13,7 +13,7 @@ import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3';
 
 
 describe("data api", () => {
-  let context = new Context();
+  let context = new Remult();
   it("getArray works with predefined filter", async () => {
 
     let [c, context] = await createData(async (i) => {

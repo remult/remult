@@ -1,6 +1,6 @@
 
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Context } from '../context';
+import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
@@ -26,7 +26,7 @@ describe("test decorator precedence", () => {
 
 
     it("test basics", async () => {
-        let c = new Context();
+        let c = new Remult();
         let r = c.repo(myEntity);
         expect([...r.metadata.fields].length).toBe(3);
         expect(r.metadata.fields.a.caption).toBe('123');
@@ -34,7 +34,7 @@ describe("test decorator precedence", () => {
         expect(r.metadata.fields.c.caption).toBe('456');
     });
     it("testit", () => {
-        let c = new Context();
+        let c = new Remult();
         let r = c.repo(user).create();
         expect(r.$.username.metadata.caption).toBe("Username");
     })

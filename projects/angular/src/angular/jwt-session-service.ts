@@ -1,4 +1,4 @@
-import { Context, UserInfo } from "remult";
+import { Remult, UserInfo } from "remult";
 
 
 const authToken = 'authorization';
@@ -7,7 +7,7 @@ export class JwtSessionService {
         return this.currentToken;
     }
     constructor(
-        private context: Context
+        private context: Remult
     ) {
       
     }

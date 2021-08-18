@@ -1,5 +1,5 @@
 import {  ActionTestConfig } from './testHelper.spec';
-import { Context, isBackend } from '../context';
+import { Remult, isBackend } from '../context';
 import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
 import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remult3';
 
@@ -23,7 +23,7 @@ class testEntity extends IdEntity {
 
 @Controller('1')
 class testBasics {
-    constructor(private context: Context) {
+    constructor(private context: Remult) {
 
     }
 
@@ -70,7 +70,7 @@ class testBasics {
         }
     }
     @BackendMethod({ allowed: true })
-    static async sf(name: string, context?: Context) {
+    static async sf(name: string, context?: Remult) {
         return {
             onServer: isBackend(),
             result: 'hello ' + name
@@ -86,7 +86,7 @@ class testBasics {
         return d.what(n);
     }
     @BackendMethod({ allowed: true })
-    static async getValFromServer(context?: Context) {
+    static async getValFromServer(context?: Remult) {
         return (await context.repo(testEntity).findFirst()).name;
     }
     @BackendMethod({ allowed: true })
@@ -109,7 +109,7 @@ class testBasics {
 
 
 describe("test Server Controller basics", () => {
-    let c = new Context();
+    let c = new Remult();
     c.setDataProvider(ActionTestConfig.db);
     beforeEach(async done => {
 
@@ -180,7 +180,7 @@ describe("test Server Controller basics", () => {
     });
     it("test server method", async () => {
 
-        let x = new testBasics(new Context());
+        let x = new testBasics(new Remult());
         x.a = 'Noam';
         let r = await x.doIt();
         expect(r.onServer).toBe(true);
@@ -188,7 +188,7 @@ describe("test Server Controller basics", () => {
         expect(x.a).toBe("yael");
     });
     it("test validation method", async () => {
-        let x = new testBasics(new Context());
+        let x = new testBasics(new Remult());
         x.a = 'errorc';
         let happened = false;
         try {
@@ -205,7 +205,7 @@ describe("test Server Controller basics", () => {
 
     });
     it("test validation on server", async () => {
-        let x = new testBasics(new Context());
+        let x = new testBasics(new Remult());
         x.a = "error on server";
         let happened = false;
         try {

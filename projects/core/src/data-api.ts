@@ -1,6 +1,6 @@
 import { EntityOptions } from './entity';
 import { AndFilter, customUrlToken } from './filter/filter-interfaces';
-import { Context, UserInfo } from './context';
+import { Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
 import { SortSegment } from './sort';
@@ -11,7 +11,7 @@ export class DataApi<T = any> {
     return this.options.name;
   }
   options: DataApiSettings<T>;
-  constructor(private repository: Repository<T>, private context: Context) {
+  constructor(private repository: Repository<T>, private context: Remult) {
     this.options = this._getApiSettings();
   }
 

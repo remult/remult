@@ -2,7 +2,7 @@
 
 
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
-import { Context, getFields } from 'remult';
+import { Remult, getFields } from 'remult';
 
 import { FieldCollection } from '../../column-collection';
 import { DataAreaSettings } from '../../data-area-settings';
@@ -17,7 +17,7 @@ import { DataControlSettings } from '../../data-control-interfaces';
 
 })
 export class DataArea2Component implements OnChanges {
-  constructor(private context: Context) {
+  constructor(private context: Remult) {
 
   }
 

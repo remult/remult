@@ -1,5 +1,5 @@
 import {  Done } from './testHelper.spec';
-import { Context } from '../context';
+import { Remult } from '../context';
 
 import { JsonDataProvider } from '../data-providers/json-data-provider';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
@@ -23,7 +23,7 @@ class entityWithAutoId extends EntityBase {
 
 describe("test json database", () => {
     let db = new JsonDataProvider(localStorage);
-    let context = new Context();
+    let context = new Remult();
     context.setDataProvider(db);
     async function deleteAll() {
         for (const c of await context.repo(newCategories).find()) {
@@ -31,7 +31,7 @@ describe("test json database", () => {
         }
     }
     it("test auto increment",async () => {
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(new InMemoryDataProvider());
         let p = await context.repo(entityWithAutoId).create({name:'a'}).save();
         expect(p.id).toBe(1);
@@ -76,7 +76,7 @@ describe("test tasks", () => {
             getItem: () => storage,
             setItem: (x, y) => storage = y
         });
-        let cont = new Context();
+        let cont = new Remult();
         cont.setDataProvider(db);
         let c = cont.repo(tasks);
         let t = c.create();

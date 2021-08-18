@@ -3,7 +3,7 @@ import { DataProvider, EntityDataProvider, Entity, SqlDatabase, SqlCommand, SqlR
 import { Pool, QueryResult } from 'pg';
 
 import { connect } from 'net';
-import { allEntities, Context } from '../src/context';
+import { allEntities, Remult } from '../src/context';
 
 
 import { isDbReadonly } from '../src/data-providers/sql-database';
@@ -97,7 +97,7 @@ export async function verifyStructureOfAllEntities(db: SqlDatabase) {
 export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities() {
         console.log("start verify structure");
-        let context = new Context();
+        let context = new Remult();
         for (const entity of allEntities) {
             let metadata = context.repo(entity).metadata;
 
@@ -197,7 +197,7 @@ export class PostgresSchemaBuilder {
 
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 
-    let c = new Context();
+    let c = new Remult();
     c.setDataProvider(sql);
     let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
     let e = c.repo(JobsInQueueEntity);

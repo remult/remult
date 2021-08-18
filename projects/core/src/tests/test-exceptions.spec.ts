@@ -1,5 +1,5 @@
 import {  Done } from './testHelper.spec';
-import { Context, toPromise } from '../context';
+import { Remult, toPromise } from '../context';
 
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
@@ -9,7 +9,7 @@ import { Field, Entity, EntityBase } from '../remult3';
 describe("test exception", () => {
     it("test save exception", async () => {
         var mem = new InMemoryDataProvider();
-        var c = new Context();
+        var c = new Remult();
         c.setDataProvider({
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);

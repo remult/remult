@@ -13,7 +13,7 @@ import { preparePostgresQueueStorage } from 'remult/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Context, Field, FieldMetadata, FieldsMetadata, Filter, Repository } from '../../../projects/core';
+import { Remult, Field, FieldMetadata, FieldsMetadata, Filter, Repository } from '../../../projects/core';
 import { Products } from '../products-test/products';
 
 import { isJSDocTypedefTag } from 'typescript';

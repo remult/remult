@@ -1,5 +1,5 @@
 import {  ActionTestConfig } from './testHelper.spec';
-import { Context, isBackend } from '../context';
+import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
@@ -9,7 +9,7 @@ import { set } from '../../set';
 
 @Entity({ key: 'testServerMethodOnEntity' })
 class testServerMethodOnEntity extends EntityBase {
-    constructor(private context: Context) {
+    constructor(private context: Remult) {
         super();
     }
     @Field<testServerMethodOnEntity, string>({
@@ -70,7 +70,7 @@ class testBoolCreate123 extends EntityBase {
     }
 }
 describe("test Server method in entity", () => {
-    let c = new Context();
+    let c = new Remult();
     it("test server method on Entity", async () => {
         let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'Noam';
@@ -122,7 +122,7 @@ describe("test Server method in entity", () => {
     it("saves correctly to db", async () => {
 
         actionInfo.runningOnServer = true;
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(new InMemoryDataProvider());
         let r = context.repo(testBoolCreate123);
         let dataApi = new DataApi(r, context);
@@ -179,7 +179,7 @@ class c extends EntityBase {
         await this.save();
         return this.b.a.id;
     }
-    constructor(private context: Context) {
+    constructor(private context: Remult) {
         super();
     }
 }
@@ -190,14 +190,14 @@ describe("complex entity relations on server entity and backend method", () => {
         ActionTestConfig.db.rows = [];
     });
     it("fix it", async () => {
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(ActionTestConfig.db);
         let a1 = await context.repo(a).create({ id: 1 }).save();
         let a2 = await context.repo(a).create({ id: 2 }).save();
         let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
         let c1 = await context.repo(c).create({ id: 21, b: b1 }).save();
-        context = new Context();//clear the cache;
+        context = new Remult();//clear the cache;
         context.setDataProvider(ActionTestConfig.db);
 
         let r = await c1.doIt();
@@ -206,14 +206,14 @@ describe("complex entity relations on server entity and backend method", () => {
         expect(c1.b.a.id).toBe(2);
     });
     it("fix it new row", async () => {
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(ActionTestConfig.db);
         let a1 = await context.repo(a).create({ id: 1 }).save();
         let a2 = await context.repo(a).create({ id: 2 }).save();
         let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
 
-        context = new Context();//clear the cache;
+        context = new Remult();//clear the cache;
         context.setDataProvider(ActionTestConfig.db);
         let c1 = await context.repo(c).create({ id: 21, b: b1 })
         let r = await c1.doIt();
@@ -222,14 +222,14 @@ describe("complex entity relations on server entity and backend method", () => {
         expect(c1.b.a.id).toBe(2);
     });
     it("fix it change value", async () => {
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(ActionTestConfig.db);
         let a1 = await context.repo(a).create({ id: 1 }).save();
         let a2 = await context.repo(a).create({ id: 2 }).save();
         let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
         let c1 = await context.repo(c).create({ id: 21, b: b1 }).save();
-        context = new Context();//clear the cache;
+        context = new Remult();//clear the cache;
         context.setDataProvider(ActionTestConfig.db);
         c1 = await context.repo(c).findId(21);
         c1.b = b2;

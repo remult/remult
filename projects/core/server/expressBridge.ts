@@ -1,6 +1,6 @@
 
 
-import { UserInfo, DataProvider, Context, IdEntity } from '../';
+import { UserInfo, DataProvider, Remult, IdEntity } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -25,7 +25,7 @@ export function initExpress(app: express.Express,
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
-      initRequest?: (context: Context, origReq: express.Request) => Promise<void>
+      initRequest?: (context: Remult, origReq: express.Request) => Promise<void>
     }) {
 
   if (!options) {
@@ -48,7 +48,7 @@ export function initExpress(app: express.Express,
   }
 
   let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, options.dataProvider);
-  let apiArea = result.addArea('/' + Context.apiBaseUrl);
+  let apiArea = result.addArea('/' + Remult.apiBaseUrl);
 
 
 
@@ -69,7 +69,7 @@ export class ExpressBridge {
 
 
 
-  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (context: Context, origReq: express.Request) => Promise<void>,
+  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (context: Remult, origReq: express.Request) => Promise<void>,
     public dataProvider: DataProvider) {
 
   }
@@ -107,12 +107,12 @@ export class SiteArea {
 
 
 
-  add(entityOrDataApiFactory: ((req: Context) => DataApi)) {
+  add(entityOrDataApiFactory: ((req: Remult) => DataApi)) {
 
 
-    let api: ((req: Context) => DataApi);
+    let api: ((req: Remult) => DataApi);
     api = entityOrDataApiFactory;
-    let contextForRouteExtraction = new Context();
+    let contextForRouteExtraction = new Remult();
 
     let myRoute = api(contextForRouteExtraction).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
@@ -148,11 +148,11 @@ export class SiteArea {
 
 
   }
-  process(what: (context: Context, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
+  process(what: (context: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
-      let context = new Context();
+      let context = new Remult();
       context.setDataProvider(this.bridge.dataProvider);
       let user = req['user'];
       if (user)
@@ -165,7 +165,7 @@ export class SiteArea {
     }
   };
   async getValidContext(req: express.Request) {
-    let context: Context;
+    let context: Remult;
     await this.process(async (c) => {
       context = c;
     })(req, undefined);
@@ -191,9 +191,9 @@ export class SiteArea {
     this.initQueue = () => { };
   }
   addAction(action: {
-    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => void) => void
+    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) => void
   }) {
-    action.__register((url: string, queue: boolean, what: (data: any, r: Context, res: DataApiResponse) => void) => {
+    action.__register((url: string, queue: boolean, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
       let myUrl = this.rootUrl + '/' + url;
       if (this.logApiEndpoints)
         console.log(myUrl);
@@ -270,7 +270,7 @@ class inProcessQueueHandler {
   constructor(private storage: QueueStorage) {
 
   }
-  async submitJob(url: string, req: Context, body: any): Promise<string> {
+  async submitJob(url: string, req: Remult, body: any): Promise<string> {
     let id = await this.storage.createJob(url, req.user ? req.user.id : undefined);
     let job = await this.storage.getJobInfo(id);
 
@@ -283,10 +283,10 @@ class inProcessQueueHandler {
     });
     return id;
   }
-  mapQueuedAction(url: string, what: (data: any, r: Context, res: ApiActionResponse) => void) {
+  mapQueuedAction(url: string, what: (data: any, r: Remult, res: ApiActionResponse) => void) {
     this.actions.set(url, what);
   }
-  actions = new Map<string, ((data: any, r: Context, res: ApiActionResponse) => void)>();
+  actions = new Map<string, ((data: any, r: Remult, res: ApiActionResponse) => void)>();
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
     return await this.storage.getJobInfo(queuedJobId);
   }

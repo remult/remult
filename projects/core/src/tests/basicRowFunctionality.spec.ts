@@ -8,7 +8,7 @@ import {  itForEach, Done,  fitForEach } from './testHelper.spec';
 
 import { Status } from './testModel/models';
 
-import { Context, Allowed } from '../context';
+import { Remult, Allowed } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { DataProvider } from '../data-interfaces';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
@@ -111,7 +111,7 @@ class tableWithPhone extends EntityBase {
 }
 describe("test object column stored as string", () => {
   it("was changed should work correctly", async () => {
-    var context = new Context();
+    var context = new Remult();
     context.setDataProvider(new InMemoryDataProvider());
     let repo = context.repo(tableWithPhone);
     let r = repo.create();
@@ -154,7 +154,7 @@ describe('Test basic row functionality', () => {
 
   });
   it("finds its id column", () => {
-    let c = new Context().repo(newCategories);
+    let c = new Remult().repo(newCategories);
     expect(c.metadata.idMetadata.field.key).toBe("id");
     let n = c.create();
     n.id = 5;
@@ -195,16 +195,16 @@ describe('Test basic row functionality', () => {
   });
 
   it("object is autonemous", () => {
-    let x = new Context().repo(newCategories).create();
-    let y = new Context().repo(newCategories).create();
+    let x = new Remult().repo(newCategories).create();
+    let y = new Remult().repo(newCategories).create();
     x.categoryName = 'noam';
     y.categoryName = 'yael';
     expect(x.categoryName).toBe('noam');
     expect(y.categoryName).toBe('yael');
   })
   it("find the col value", () => {
-    let x = new Context().repo(newCategories).create();
-    let y = new Context().repo(newCategories).create();
+    let x = new Remult().repo(newCategories).create();
+    let y = new Remult().repo(newCategories).create();
     x.categoryName = 'noam';
     y.categoryName = 'yael';
     expect(y._.fields.find(x._.fields.categoryName.metadata).value).toBe('yael');
@@ -212,7 +212,7 @@ describe('Test basic row functionality', () => {
     expect(y._.metadata.fields.find('categoryName').key).toBe('categoryName');
   });
   it("can be saved to a pojo", async () => {
-    let ctx = new Context().repo(newCategories);
+    let ctx = new Remult().repo(newCategories);
     let x = ctx.create();
     x.id = 1;
     x.categoryName = 'noam';
@@ -221,7 +221,7 @@ describe('Test basic row functionality', () => {
     expect(y.categoryName).toBe('noam');
   });
   // it("json name is important", async () => {
-  //   let ctx = new Context().for(newCategories);
+  //   let ctx = new Remult().for(newCategories);
   //   let x = ctx.create();
   //   x.id = 1;
   //   x.categoryName.defs.key = 'xx';
@@ -231,7 +231,7 @@ describe('Test basic row functionality', () => {
   //   expect(y.xx).toBe('noam');
   // });
   // it("json name is important 1", async () => {
-  //   let ctx = new Context().for_old(myTestEntity);
+  //   let ctx = new Remult().for_old(myTestEntity);
   //   let x = ctx.create();
   //   x.id.value = 1;
   //   expect(x.name1.defs.key).toBe('name');
@@ -240,7 +240,7 @@ describe('Test basic row functionality', () => {
   //   expect(y.id).toBe(1);
   //   expect(y.name).toBe('noam', JSON.stringify(y));
   //   y.name = 'yael';
-  //   new Context().for_old(myTestEntity)._updateEntityBasedOnApi(x, y);
+  //   new Remult().for_old(myTestEntity)._updateEntityBasedOnApi(x, y);
 
   //   expect(x.name1.value).toBe('yael');
 
@@ -332,11 +332,11 @@ describe("data api", () => {
 
 
 
-  let ctx = new Context();
+  let ctx = new Remult();
   ctx.setDataProvider(new InMemoryDataProvider());
   itWithDataProvider("put with validations on entity fails",
     async (dataProvider) => {
-      let ctx = new Context();
+      let ctx = new Remult();
       ctx.setDataProvider(dataProvider);
       let s = ctx.repo(entityWithValidations);
       let c = s.create();
@@ -374,7 +374,7 @@ describe("data api", () => {
     });
 
   itWithDataProvider("put with validations on column fails", async (dp) => {
-    ctx = new Context();
+    ctx = new Remult();
     ctx.setDataProvider(dp);
     var s = ctx.repo(entityWithValidationsOnColumn);
     let c = s.create();
@@ -398,7 +398,7 @@ describe("data api", () => {
 
   });
   itWithDataProvider("put with validations on entity fails", async (dp) => {
-    ctx = new Context();
+    ctx = new Remult();
     ctx.setDataProvider(dp);
     var s = ctx.repo(entityWithValidations);
     let c = s.create();
@@ -421,7 +421,7 @@ describe("data api", () => {
 
   });
   itWithDataProvider("entity with different id column still works well", async (dp) => {
-    ctx = new Context();
+    ctx = new Remult();
     ctx.setDataProvider(dp);
     let s = ctx.repo(entityWithValidations);
     let c = s.create();
@@ -436,7 +436,7 @@ describe("data api", () => {
 
   });
   itWithDataProvider("empty find works", async (dp) => {
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(dp);
     let c = ctx.repo(newCategories).create();
     c.id = 5;
@@ -488,7 +488,7 @@ describe("data api", () => {
     expect(r.length).toBe(0);
   });
   it("delete falis nicely ", async () => {
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider({
       getEntityDataProvider: (x) => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }]);
@@ -1041,7 +1041,7 @@ describe("data api", () => {
 
 
     let startTest = false;
-    let context = new Context();
+    let context = new Remult();
     let mem = new InMemoryDataProvider();
     context.setDataProvider(mem);
     let type = class extends newCategories {
@@ -1315,7 +1315,7 @@ describe("data api", () => {
   });
 
   it("allow api read depends also on api crud", async () => {
-    let sc = new Context();
+    let sc = new Remult();
     let type = class extends EntityBase {
 
     }
@@ -1323,7 +1323,7 @@ describe("data api", () => {
     expect(new DataApi(sc.repo(type), sc)._getApiSettings().allowRead).toBe(false);
   });
   it("allow api read depends also on api crud", async () => {
-    let sc = new Context();
+    let sc = new Remult();
     let type = class extends EntityBase {
 
     }
@@ -1549,7 +1549,7 @@ describe("data api", () => {
   });
 
   it("columnsAreOk", () => {
-    let c = new Context().repo(newCategories).create();
+    let c = new Remult().repo(newCategories).create();
     expect([...c._.fields].length).toBe(6);
 
   });
@@ -1557,7 +1557,7 @@ describe("data api", () => {
 
 
   itWithDataProvider("count", async (dp) => {
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(dp);
     expect(await ctx.repo(newCategories).count()).toBe(0);
     let c = ctx.repo(newCategories).create();
@@ -1600,7 +1600,7 @@ describe("rest call use url get or fallback to post", () => {
 });
 describe("column validation", () => {
   it("validation clears on reset", () => {
-    let c = new Context().repo(newCategories).create();
+    let c = new Remult().repo(newCategories).create();
     expect(c._.hasErrors()).toBe(true);
     c._.fields.id.error = "x";
     expect(c._.fields.id.error).toBe("x");
@@ -1610,7 +1610,7 @@ describe("column validation", () => {
     expect(c._.hasErrors()).toBe(true);
   });
   it("validation clears on change", () => {
-    let c = new Context().repo(newCategories).create();
+    let c = new Remult().repo(newCategories).create();
     expect(c._.hasErrors()).toBe(true);
     c._.fields.id.error = "x";
     expect(c._.hasErrors()).toBe(false);
@@ -1621,7 +1621,7 @@ describe("column validation", () => {
   });
   it("test date filter and values", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Context();
+    let c = new Remult();
     await sql.execute("drop table if exists t1");
     c.setDataProvider(sql);
     let type = class extends EntityBase {
@@ -1652,7 +1652,7 @@ describe("column validation", () => {
 describe("test web sql identity", () => {
   it("play", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Context();
+    let c = new Remult();
     await sql.execute("drop table if exists t1");
     c.setDataProvider(sql);
 
@@ -1682,13 +1682,13 @@ describe("test web sql identity", () => {
 });
 describe("compound id", () => {
   it("id field is comound", () => {
-    let ctx = new Context();
+    let ctx = new Remult();
     expect(ctx.repo(CompoundIdEntity).metadata.idMetadata.field instanceof CompoundIdField).toBe(true);
   });
   it("compound sql",
     async () => {
       let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
-      let ctx = new Context();
+      let ctx = new Remult();
       ctx.setDataProvider(sql);
 
       let cod = ctx.repo(CompoundIdEntity);
@@ -1705,10 +1705,10 @@ describe("compound id", () => {
       await od._.delete();
 
     });
-  const ctx = new Context();
+  const ctx = new Remult();
   it("start", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(mem);
 
     let s = ctx.repo(CompoundIdEntity);
@@ -1729,7 +1729,7 @@ describe("compound id", () => {
 
   it("update", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -1750,7 +1750,7 @@ describe("compound id", () => {
   });
   it("update2", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(mem);
     let c = ctx.repo(CompoundIdEntity);
 
@@ -1769,7 +1769,7 @@ describe("compound id", () => {
   });
   it("insert", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(mem);
     let c = ctx.repo(CompoundIdEntity).create();
     mem.rows[ctx.repo(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
@@ -1785,7 +1785,7 @@ describe("compound id", () => {
   });
   it("delete", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -1817,19 +1817,19 @@ describe("test data list", () => {
 
     }
     Entity({ key: 'testName', dbName: 'test' })(type);
-    let r = new Context().repo(type);
+    let r = new Remult().repo(type);
     expect((await r.metadata.getDbName())).toBe('test');
   });
   it("dbname of entity can use column names", async () => {
 
-    let r = new Context().repo(EntityWithLateBoundDbName);
+    let r = new Remult().repo(EntityWithLateBoundDbName);
     expect((await r.metadata.getDbName())).toBe('(select CategoryID)');
   });
 
 
   it("delete fails nicely", async () => {
 
-    let cont = new Context();
+    let cont = new Remult();
     cont.setDataProvider({
       getEntityDataProvider: x => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
@@ -1869,7 +1869,7 @@ describe("test date storage", () => {
 });
 describe("test bool value", () => {
   it("should work", () => {
-    let col = decorateColumnSettings<Boolean>({ valueType: Boolean }, new Context());
+    let col = decorateColumnSettings<Boolean>({ valueType: Boolean }, new Remult());
     expect(col.valueConverter.fromJson(true)).toBe(true);
     expect(col.valueConverter.fromJson(false)).toBe(false);
   });
@@ -1953,7 +1953,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
-    let c = new Context().repo(type);
+    let c = new Remult().repo(type);
     let z = new RestDataProvider("", {
       delete: undefined,
       get: async () => {
@@ -1983,7 +1983,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
-    let c = new Context().repo(type);
+    let c = new Remult().repo(type);
     let r = await Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
@@ -1996,7 +1996,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
-    let c = new Context().repo(type);
+    let c = new Remult().repo(type);
     let done = new Done();
     let z = new RestDataProvider("", {
       delete: undefined,
@@ -2021,7 +2021,7 @@ describe("test rest data provider translates data correctly", () => {
   })
 });
 describe("check allowedDataType", () => {
-  let c = new Context();
+  let c = new Remult();
   c.setDataProvider(new InMemoryDataProvider());
   let strA = 'roleA',
     strB = 'roleB',
@@ -2063,7 +2063,7 @@ describe("check allowedDataType", () => {
   myIt(false, false);
   myIt(undefined, undefined);
   it("no context", () => {
-    let c = new Context();
+    let c = new Remult();
     c.setDataProvider(new InMemoryDataProvider());
     c.setUser(undefined);
     expect(c.isAllowed(true)).toBe(true);
@@ -2117,7 +2117,7 @@ export class entityWithValidations extends EntityBase {
   @Field()
   name: string;
   static savingRowCount = 0;
-  constructor(private context: Context) {
+  constructor(private context: Remult) {
     super();
   }
 }
@@ -2157,8 +2157,8 @@ export class EntityWithLateBoundDbName extends EntityBase {
 
 }
 
-async function create4RowsInDp(ctx: Context, dataProvider: DataProvider) {
-  ctx = new Context();
+async function create4RowsInDp(ctx: Remult, dataProvider: DataProvider) {
+  ctx = new Remult();
   ctx.setDataProvider(dataProvider);
   let s = ctx.repo(entityWithValidations);
   let c = s.create();

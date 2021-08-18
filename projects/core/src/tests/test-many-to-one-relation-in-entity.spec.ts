@@ -1,4 +1,4 @@
-import { Context } from '../context';
+import { Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere, FieldType } from '../remult3';
 
@@ -77,7 +77,7 @@ class profile extends EntityBase {
         }
     })
     following: boolean;
-    constructor(private context: Context) {
+    constructor(private context: Remult) {
         super();
     }
 }
@@ -96,7 +96,7 @@ describe("many to one relation", () => {
     afterEach(() => actionInfo.runningOnServer = false);
     it("xx", async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         await context.repo(profile).create({ id: '1' }).save();
         let p = await context.repo(profile).findId('1');
@@ -104,7 +104,7 @@ describe("many to one relation", () => {
     });
     it("test that it is loaded to begin with",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let category = await context.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         await context.repo(Products).create({ id: 1, name: 'p1', category }).save();
@@ -115,7 +115,7 @@ describe("many to one relation", () => {
     });
     it("test that it is loaded onDemand",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let category = await context.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         await context.repo(Products).create({ id: 1, name: 'p1', category }).save();
@@ -127,7 +127,7 @@ describe("many to one relation", () => {
     });
     it("test that it is loaded onDemand",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let category = await context.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         await context.repo(Products).create({ id: 1, name: 'p1', category }).save();
@@ -143,7 +143,7 @@ describe("many to one relation", () => {
 
     it("what",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = context.repo(Categories).create();
         cat.id = 1;
@@ -196,7 +196,7 @@ describe("many to one relation", () => {
 
     it("test wait load",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = context.repo(Categories).create();
         cat.id = 1;
@@ -211,7 +211,7 @@ describe("many to one relation", () => {
         p.name = "prod 10";
         p.category = cat;
         await p.save();
-        context = new Context();
+        context = new Remult();
         context.setDataProvider(mem);
         p = await context.repo(Products).findFirst();
         p.category = c2;
@@ -225,7 +225,7 @@ describe("many to one relation", () => {
     });
     it("test null", async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
 
         let p = context.repo(Products).create();
@@ -246,7 +246,7 @@ describe("many to one relation", () => {
     });
     it("test stages",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
 
         let p = context.repo(Products).create();
@@ -259,7 +259,7 @@ describe("many to one relation", () => {
         await c.save();
         p.category = c;
         await p.save();
-        context = new Context();
+        context = new Remult();
         context.setDataProvider(mem);
         p = await context.repo(Products).findFirst();
         expect(p.category).toBeUndefined();
@@ -271,7 +271,7 @@ describe("many to one relation", () => {
     });
     it("test update from api",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
 
         let p = context.repo(Products).create();
@@ -291,7 +291,7 @@ describe("many to one relation", () => {
     });
     it("test easy create",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
 
         let c = await context.repo(Categories).create({
@@ -312,7 +312,7 @@ describe("many to one relation", () => {
     });
     it("test filter create", async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let c = await context.repo(Categories).create({
             id: 1,
@@ -363,7 +363,7 @@ describe("many to one relation", () => {
     });
     it("test that not too many reads are made",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await context.repo(Categories).create({
             id: 1, name: 'cat 2'
@@ -374,7 +374,7 @@ describe("many to one relation", () => {
             category: cat
         }).save();
         let fetches = 0;
-        context = new Context();
+        context = new Remult();
         context.setDataProvider({
             transaction: undefined,
             getEntityDataProvider: e => {
@@ -395,7 +395,7 @@ describe("many to one relation", () => {
     });
     it("test is null doesn't invoke read",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await context.repo(Categories).create({
             id: 1, name: 'cat 2'
@@ -406,7 +406,7 @@ describe("many to one relation", () => {
             category: cat
         }).save();
         let fetches = 0;
-        context = new Context();
+        context = new Remult();
         context.setDataProvider({
             transaction: undefined,
             getEntityDataProvider: e => {
@@ -428,7 +428,7 @@ describe("many to one relation", () => {
     });
     it("test to and from json ",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await context.repo(Categories).create({
             id: 1, name: 'cat 2', language: Language.Russian
@@ -447,7 +447,7 @@ describe("many to one relation", () => {
     });
     it("test to and from json 2",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await context.repo(Categories).create({
             id: 1, name: 'cat 2'
@@ -469,7 +469,7 @@ describe("many to one relation", () => {
     });
     it("test to and from json 2",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await (await context.repo(Categories).fromJson({
             id: 1, name: 'cat 2'
@@ -479,7 +479,7 @@ describe("many to one relation", () => {
     });
     it("test lookup with create",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await context.repo(Categories).create({
             id: 1, name: 'cat 2'
@@ -491,7 +491,7 @@ describe("many to one relation", () => {
     });
     it("test set with id",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await context.repo(Categories).create({
             id: 1, name: 'cat 2'
@@ -506,7 +506,7 @@ describe("many to one relation", () => {
     });
     it("test set with json object",async () => {
         let mem = new InMemoryDataProvider();
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(mem);
         let cat = await context.repo(Categories).create({
             id: 1, name: 'cat 2'
@@ -523,7 +523,7 @@ describe("many to one relation", () => {
     it("test relation in sql", async () => {
         var wsql = new WebSqlDataProvider("test2");
         let db = new SqlDatabase(wsql);
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(db);
         for (const x of [Categories, Products, Suppliers] as any[]) {
             let e = context.repo(x).metadata;
@@ -593,12 +593,12 @@ class h extends EntityBase {
 describe("Test entity relation and count finds", () => {
     it("test it", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new Context();
+        let c = new Remult();
         c.setDataProvider(mem);
         await c.repo(h).create({ id: '1' }).save();
         expect(mem.rows['h'][0]).toEqual({ id: '1', refH: '', refHId: '' });
         let countFind = 0;
-        c = new Context();
+        c = new Remult();
         c.setDataProvider({
             transaction: mem.transaction,
             getEntityDataProvider: x => {
@@ -621,12 +621,12 @@ describe("Test entity relation and count finds", () => {
     });
     it("test api", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new Context();
+        let c = new Remult();
         c.setDataProvider(mem);
         let a = await c.repo(h).create({ id: 'a' }).save();
         let b = await c.repo(h).create({ id: 'b' }).save();
         await c.repo(h).create({ id: 'd', refH: a }).save();
-        c = new Context()//clear the cache;
+        c = new Remult()//clear the cache;
         c.setDataProvider(mem);
         let api = new DataApi(c.repo(h), c);
         let t = new TestDataApiResponse();

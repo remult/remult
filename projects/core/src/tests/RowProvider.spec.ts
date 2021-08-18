@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import {  Done } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
-import { Context } from '../context';
+import { Remult } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../../../angular/src/filter-helper';
 
@@ -44,7 +44,7 @@ export class Language {
 
 
 export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper: {
-  context: Context,
+  context: Remult,
   createData: (doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>,
     entity?: {
       new(): CategoriesForTesting
@@ -70,7 +70,7 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
   ]) {
     if (!db)
       throw new Error("you forget to set a db for the test");
-    let context = new Context();
+    let context = new Remult();
     context.setDataProvider(db);
 
     let createData = async (doInsert, entity?) => {
@@ -110,8 +110,8 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
 }
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting
-}): Promise<[Repository<CategoriesForTesting>, Context]> {
-  let context = new Context();
+}): Promise<[Repository<CategoriesForTesting>, Remult]> {
+  let context = new Remult();
   context.setDataProvider(new InMemoryDataProvider());
   if (!entity)
     entity = newCategories;
@@ -253,7 +253,7 @@ describe("grid filter stuff", () => {
   });
   it("test context change event",async () => {
     let d = new Done();
-    let c = new Context();
+    let c = new Remult();
     let r = await c.userChange.observe(() => d.ok());
     d.test("first fire");
     d = new Done();
@@ -329,7 +329,7 @@ describe("Closed List  column", () => {
     expect(valueList.firstName.caption).toBe('First Name');
   });
   it("test with entity", async () => {
-    let c = new Context()
+    let c = new Remult()
       .repo(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
@@ -341,7 +341,7 @@ describe("Closed List  column", () => {
     expect(e._.toApiJson().l).toBe(10);
   })
   it("test with entity and data defined on type", async () => {
-    let c = new Context()
+    let c = new Remult()
       .repo(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
@@ -383,7 +383,7 @@ class entityWithValueList extends EntityBase {
 
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Context().repo(newCategories).create();
+    var cat = new Remult().repo(newCategories).create();
     expect(cat._.repository.metadata.key).toBe('Categories');
   });
   it("Insert", async () => {
@@ -531,7 +531,7 @@ describe("test row provider", () => {
   });
 
   it("Test Validation 2", async () => {
-    var context = new Context();
+    var context = new Remult();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
@@ -558,7 +558,7 @@ describe("test row provider", () => {
 
   });
   it("Test Validation 2_1", async () => {
-    var context = new Context();
+    var context = new Remult();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
@@ -585,7 +585,7 @@ describe("test row provider", () => {
 
   });
   it("Test Validation 3", async () => {
-    var context = new Context();
+    var context = new Remult();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
@@ -673,7 +673,7 @@ describe("test row provider", () => {
 
   });
   it("Test unique Validation and is not empty", async () => {
-    var context = new Context();
+    var context = new Remult();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
@@ -712,7 +712,7 @@ describe("test row provider", () => {
   });
 
   it("test grid update and validation cycle", async () => {
-    var context = new Context();
+    var context = new Remult();
     context.setDataProvider(new InMemoryDataProvider());
     let type = class extends newCategories {
       categoryName: string
@@ -767,7 +767,7 @@ describe("test row provider", () => {
     expect(c.categoryName).toBe('bla bla');
   });
   it("update should fail nicely", async () => {
-    let cont = new Context();
+    let cont = new Remult();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories).create();
     c.id = 1;
@@ -792,7 +792,7 @@ describe("test row provider", () => {
   });
   it("lookup with undefined doesn't fetch", async () => {
 
-    let cont = new Context();
+    let cont = new Remult();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories);
 
@@ -817,7 +817,7 @@ describe("test row provider", () => {
 
   });
   it("lookup return the same new row", async () => {
-    let cont = new Context();
+    let cont = new Remult();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories);
     var nc = { value: undefined };
@@ -1056,7 +1056,7 @@ describe("field display stuff", () => {
 });
 describe("api test", () => {
   it("can build", () => {
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(new InMemoryDataProvider());
 
     let gs = new GridSettings(ctx.repo(newCategories));
@@ -1073,7 +1073,7 @@ describe("api test", () => {
 
 });
 describe("column collection", () => {
-  let ctx = new Context();
+  let ctx = new Remult();
   ctx.setDataProvider(new InMemoryDataProvider());
 
   it("uses a saparate column", async () => {
@@ -1128,7 +1128,7 @@ describe("column collection", () => {
 });
 describe("grid settings ",
   () => {
-    let ctx = new Context();
+    let ctx = new Remult();
     ctx.setDataProvider(new InMemoryDataProvider());
 
     it("sort is displayed right", () => {
@@ -1223,7 +1223,7 @@ class typeB extends typeA {
 describe("decorator inheritance", () => {
   it("entity extends", async () => {
 
-    let c = new Context();
+    let c = new Remult();
     let defsA = c.repo(typeA).metadata;
     expect(defsA.key).toBe('typeA');
     expect((await defsA.getDbName())).toBe('dbnameA');
@@ -1236,7 +1236,7 @@ describe("decorator inheritance", () => {
 });
 describe("order by api", () => {
   it("works with sort", () => {
-    let c = new Context().repo(Categories);
+    let c = new Remult().repo(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(1);
@@ -1247,7 +1247,7 @@ describe("order by api", () => {
 
 
   it("works with columns array", () => {
-    let c = new Context().repo(Categories);
+    let c = new Remult().repo(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(2);
@@ -1329,12 +1329,12 @@ describe("test column value change", () => {
 
 describe("test datetime column", () => {
   it("stores well", () => {
-    let col = decorateColumnSettings<Date>({ valueType: Date }, new Context());
+    let col = decorateColumnSettings<Date>({ valueType: Date }, new Remult());
     let val = col.valueConverter.fromJson(col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)));
     expect(val.toISOString()).toBe(new Date(1976, 11, 16, 8, 55, 31, 65).toISOString());
   });
   it("stores well undefined", () => {
-    let col = decorateColumnSettings<Date>({ valueType: Date }, new Context());
+    let col = decorateColumnSettings<Date>({ valueType: Date }, new Remult());
     expect(col.valueConverter.toJson(undefined)).toBe('');
   });
   it("displays empty date well", () => {
@@ -1366,7 +1366,7 @@ describe("test datetime column", () => {
     let col = decorateColumnSettings<Date>({
       valueType: Date,
       valueConverter: DateOnlyValueConverter
-    }, new Context());
+    }, new Remult());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
 
@@ -1458,7 +1458,7 @@ describe("relation", () => {
 });
 describe("context", () => {
   it("what", () => {
-    var c = new Context();
+    var c = new Remult();
     expect(c.authenticated()).toBe(false);
     expect(c.user.id).toBe(undefined);
     expect(c.user.name).toBe("");
@@ -1498,7 +1498,7 @@ class TestCategories1 extends newCategories {
 }
 describe("test ", () => {
   it("Test Validation,", async () => {
-    var context = new Context();
+    var context = new Remult();
     context.setDataProvider(new InMemoryDataProvider());
 
     var c = context.repo(TestCategories1);

@@ -1,6 +1,6 @@
 
 
-import { Context } from "../context";
+import { Remult } from "../context";
 import { DataApiRequest, DataApiResponse, serializeError } from "../data-api";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Action, actionInfo, serverActionField } from "../server-action";
@@ -64,9 +64,9 @@ Action.provider = {
 
         action[serverActionField].
           __register(
-            (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => {
+            (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => {
 
-              if (Context.apiBaseUrl + '/' + url == urlreq) {
+              if (Remult.apiBaseUrl + '/' + url == urlreq) {
                 found = true;
                 let t = new TestDataApiResponse();
                 actionInfo.runningOnServer = true;
@@ -78,7 +78,7 @@ Action.provider = {
                   r(JSON.parse(JSON.stringify(serializeError(data))));
                   actionInfo.runningOnServer = false
                 }
-                let context = new Context();
+                let context = new Remult();
                 context.setDataProvider(ActionTestConfig.db);
 
 

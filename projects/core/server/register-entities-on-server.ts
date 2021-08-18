@@ -1,7 +1,7 @@
 import { SiteArea } from "./expressBridge";
 
 import { createOldEntity, getEntitySettings } from "../src/remult3";
-import { allEntities, Context,excludeFromApi } from "../src/context";
+import { allEntities, Remult,excludeFromApi } from "../src/context";
 import { DataApi } from "../src/data-api";
 import { ClassType } from "../classType";
 

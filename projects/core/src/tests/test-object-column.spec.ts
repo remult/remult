@@ -1,5 +1,5 @@
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Context } from '../context';
+import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, FieldType } from '../remult3';
@@ -10,7 +10,7 @@ import { set } from '../../set';
 describe("test object column", () => {
     var wsql = new WebSqlDataProvider("test");
     let db = new SqlDatabase(wsql);
-    let context = new Context();
+    let context = new Remult();
     context.setDataProvider(db);
     async function deleteAll() {
         let e = context.repo(ObjectColumnTest).metadata;
@@ -91,7 +91,7 @@ describe("test object column", () => {
     it("test basics with json", async () => {
 
         var mem = new InMemoryDataProvider();
-        var c = new Context();
+        var c = new Remult();
         c.setDataProvider(mem);
 
         var x = c.repo(ObjectColumnTest).create();

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context } from 'remult';
+import { Remult } from 'remult';
 import { GridSettings } from '@remult/angular';
 import { Products } from './products';
 
@@ -9,7 +9,7 @@ import { Products } from './products';
   styleUrls: ['./products.component.scss']
 })
 export class ProductsComponent implements OnInit {
-  constructor(private context: Context) { }
+  constructor(private context: Remult) { }
   products = new GridSettings(this.context.for(Products), {
     allowCrud: true
   });

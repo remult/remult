@@ -2,13 +2,13 @@
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Products } from './remult-3-entities';
 import { createOldEntity, getEntityRef } from "../remult3";
-import { Context } from "../context";
+import { Remult } from "../context";
 
 
 describe("remult-3-basics", () => {
     it("test the very basics", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new Context();
+        let c = new Remult();
         c.setDataProvider(mem);
         expect(await c.repo(Products).count()).toBe(0);
         let p = c.repo(Products).create();

@@ -79,7 +79,7 @@ export function isBackend() {
     return actionInfo.runningOnServer;
 }
 
-export class Context {
+export class Remult {
     clearAllCache(): any {
         this.repCache.clear();
     }
@@ -96,7 +96,7 @@ export class Context {
         if (!provider) {
             provider = new RestDataProviderHttpProviderUsingFetch();
         }
-        this._dataSource = new RestDataProvider(Context.apiBaseUrl, provider);
+        this._dataSource = new RestDataProvider(Remult.apiBaseUrl, provider);
         if (!Action.provider)
             Action.provider = provider;
     }
@@ -227,13 +227,13 @@ export interface UserInfo {
 }
 
 
-export declare type AllowedItem = string | ((c: Context) => boolean) | boolean;
+export declare type AllowedItem = string | ((c: Remult) => boolean) | boolean;
 export declare type Allowed = AllowedItem | AllowedItem[];
 
-export declare type AllowedForInstance<T> = string | ((c: Context, entity: T) => boolean) | boolean | Allowed;
+export declare type AllowedForInstance<T> = string | ((c: Remult, entity: T) => boolean) | boolean | Allowed;
 export class Allow {
     static everyone = () => true;
-    static authenticated = (context: Context) => context.authenticated();
+    static authenticated = (context: Remult) => context.authenticated();
 }
 
 

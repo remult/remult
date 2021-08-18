@@ -1,6 +1,6 @@
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { Context } from 'remult';
+import { Remult } from 'remult';
 
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';

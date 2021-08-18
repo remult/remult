@@ -1,12 +1,12 @@
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Context } from '../context';
+import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories } from './remult-3-entities';
 
 
 describe("test sql database", () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
-    let context = new Context();
+    let context = new Remult();
     context.setDataProvider(db);
     async function deleteAll() {
         for (const c of await context.repo(Categories).find()) {

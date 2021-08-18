@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { Context, FieldMetadata, ValueListItem } from 'remult';
+import { Remult, FieldMetadata, ValueListItem } from 'remult';
 import { actionInfo } from 'remult/src/server-action';
 
 import { NotSignedInGuard, AuthenticatedInGuard, RouteHelperService } from './navigate-to-component-route-service';
@@ -48,7 +48,7 @@ import { Repository, EntityOrderBy, EntityWhere, EntityMetadata } from 'remult';
     MatTooltipModule,
     MatInputModule, MatIconModule, ReactiveFormsModule, MatCheckboxModule, MatMenuModule, BidiModule],
   providers: [{
-    provide: Context,
+    provide: Remult,
     useFactory: buildContext,
     deps: [HttpClient, MatDialog]
   },
@@ -71,7 +71,7 @@ const dialogConfigMember = Symbol("dialogConfigMember");
 var _matDialog: MatDialog;
 export function buildContext(http: HttpClient, _dialog: MatDialog) {
 
-  let r = new Context(http);
+  let r = new Remult(http);
   _matDialog = _dialog;
 
 

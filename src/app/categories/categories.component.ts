@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataControl, GridSettings } from '@remult/angular';
-import { Context, Field, getFields } from 'remult';
+import { Remult, Field, getFields } from 'remult';
 import { Categories } from './categories';
 
 @Component({
@@ -10,7 +10,7 @@ import { Categories } from './categories';
 })
 export class CategoriesComponent implements OnInit {
 
-  constructor(private context: Context) { }
+  constructor(private context: Remult) { }
 
   @Field()
   @DataControl({

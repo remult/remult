@@ -1,6 +1,6 @@
 import { Injectable, NgZone, ErrorHandler } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { Context } from "remult";
+import { Remult } from "remult";
 
 import { YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
 import { openDialog } from "@remult/angular";
@@ -29,7 +29,7 @@ export class DialogService {
         return this.mediaMatcher.matches;
     }
 
-    constructor(private context: Context, zone: NgZone, private snackBar: MatSnackBar) {
+    constructor(private context: Remult, zone: NgZone, private snackBar: MatSnackBar) {
         this.mediaMatcher.addListener(mql => zone.run(() => /*this.mediaMatcher = mql*/"".toString()));
 
 

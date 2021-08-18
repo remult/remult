@@ -1,5 +1,5 @@
 import { FieldMetadata } from "../column-interfaces";
-import { Context } from "../context";
+import { Remult } from "../context";
 import { ComparisonFilterFactory, EntityMetadata, EntityWhere, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, EntityWhereItem } from "../remult3";
 
 
@@ -71,7 +71,7 @@ export class Filter {
     static extractWhere<T>(entityDefs: EntityMetadata<T>, filterInfo: { get: (key: string) => any; }): Filter {
         return extractWhere([...entityDefs.fields], filterInfo);
     }
-    static async translateCustomWhere<T>(entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, r: Filter, context: Context) {
+    static async translateCustomWhere<T>(entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, r: Filter, context: Remult) {
         let f = new customTranslator(async custom => {
             return await entity.options.customFilterBuilder().translateFilter(filterFactories, custom, context);
         });
@@ -358,7 +358,7 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
 
 
 export class CustomFilterBuilder<entityType, customFilterObject> {
-    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, context: Context) => Filter | Filter[] | Promise<Filter | Filter[]>) {
+    constructor(public readonly translateFilter: (entityType: FilterFactories<entityType>, customFilter: customFilterObject, context: Remult) => Filter | Filter[] | Promise<Filter | Filter[]>) {
 
     }
     build(custom: customFilterObject): Filter {

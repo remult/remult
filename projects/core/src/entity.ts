@@ -1,4 +1,4 @@
-import { Allowed, Context, AllowedForInstance } from "./context";
+import { Allowed, Remult, AllowedForInstance } from "./context";
 
 import { FieldMetadata as FieldMetadata } from './column-interfaces';
 import { EntityOrderBy, FieldsMetadata, FilterFactories, EntityWhere } from "./remult3";

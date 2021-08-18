@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, Fields, EntityWhere, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Context, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
+import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
@@ -46,7 +46,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
     }
-    constructor(private entity: ClassType<entityType>, private context: Context, private dataProvider: DataProvider) {
+    constructor(private entity: ClassType<entityType>, private context: Remult, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity, context);
     }
     idCache = new Map<any, any>();
@@ -404,7 +404,7 @@ export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T
     }
 }
 
-export type EntityOptionsFactory = (context: Context) => EntityOptions;
+export type EntityOptionsFactory = (context: Remult) => EntityOptions;
 
 export const entityInfo = Symbol("entityInfo");
 const entityMember = Symbol("entityMember");
@@ -421,7 +421,7 @@ export function getEntitySettings<T>(entity: ClassType<T>, throwError = true): E
     return info;
 }
 export const columnsOfType = new Map<any, columnInfo[]>();
-export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
+export function createOldEntity<T>(entity: ClassType<T>, context: Remult) {
     let r: columnInfo[] = columnsOfType.get(entity);
     if (!r)
         columnsOfType.set(entity, r = []);
@@ -446,7 +446,7 @@ export function createOldEntity<T>(entity: ClassType<T>, context: Context) {
 abstract class rowHelperBase<T>
 {
     error: string;
-    constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected context: Context) {
+    constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected context: Remult) {
         for (const col of columnsInfo) {
             let ei = getEntitySettings(col.valueType, false);
 
@@ -595,7 +595,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
 
-    constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, context: Context, private _isNew: boolean) {
+    constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, context: Remult, private _isNew: boolean) {
         super(info.columnsInfo, instance, context);
         this.metadata = info;
         if (_isNew) {
@@ -798,14 +798,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 }
 const controllerColumns = Symbol("controllerColumns");
-function prepareColumnInfo(r: columnInfo[], context: Context): FieldOptions[] {
+function prepareColumnInfo(r: columnInfo[], context: Remult): FieldOptions[] {
     return r.map(x => decorateColumnSettings(x.settings(context), context));
 }
 
-export function getFields<fieldsContainerType>(container: fieldsContainerType, context?: Context): Fields<fieldsContainerType> {
+export function getFields<fieldsContainerType>(container: fieldsContainerType, context?: Remult): Fields<fieldsContainerType> {
     return getControllerRef(container, context).fields;
 }
-export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, context?: Context): controllerRefImpl<fieldsContainerType> {
+export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, context?: Remult): controllerRefImpl<fieldsContainerType> {
 
     let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
@@ -831,7 +831,7 @@ export function getControllerRef<fieldsContainerType>(container: fieldsContainer
 
 
 export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
-    constructor(columnsInfo: FieldOptions[], instance: any, context: Context) {
+    constructor(columnsInfo: FieldOptions[], instance: any, context: Remult) {
         super(columnsInfo, instance, context);
 
 
@@ -968,9 +968,9 @@ export function getEntityRef<entityType>(entity: entityType, throwException = tr
 
 }
 export const CaptionTransformer = {
-    transformCaption: (context: Context, key: string, caption: string) => caption
+    transformCaption: (context: Remult, key: string, caption: string) => caption
 }
-export function buildCaption(caption: string | ((context: Context) => string), key: string, context: Context): string {
+export function buildCaption(caption: string | ((context: Remult) => string), key: string, context: Remult): string {
     let result: string;
     if (typeof (caption) === "function") {
         if (context)
@@ -985,7 +985,7 @@ export function buildCaption(caption: string | ((context: Context) => string), k
 }
 
 export class columnDefsImpl implements FieldMetadata {
-    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private context: Context) {
+    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private context: Remult) {
         if (settings.serverExpression)
             this.isServerExpression = true;
         if (typeof (this.settings.allowApiUpdate) === "boolean")
@@ -1055,7 +1055,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     options = this.entityInfo;
 
-    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private context: Context) {
+    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private context: Remult) {
 
 
         let _items = [];
@@ -1176,7 +1176,7 @@ export function Field<entityType = any, valueType = any>(...options: OptionsFact
 
 
     return (target, key, c?) => {
-        let factory = (context: Context) => {
+        let factory = (context: Remult) => {
             let r = buildOptions(options, context);
             if (!r.key) {
                 r.key = key;
@@ -1220,7 +1220,7 @@ export function Field<entityType = any, valueType = any>(...options: OptionsFact
 
 }
 const storableMember = Symbol("storableMember");
-function buildOptions<entityType = any, valueType = any>(options: OptionsFactory<FieldOptions<entityType, valueType>>, context: Context) {
+function buildOptions<entityType = any, valueType = any>(options: OptionsFactory<FieldOptions<entityType, valueType>>, context: Remult) {
     let r = {} as FieldOptions<entityType, valueType>;
     for (const o of options) {
         if (o) {
@@ -1234,7 +1234,7 @@ function buildOptions<entityType = any, valueType = any>(options: OptionsFactory
     return r;
 }
 
-export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, context: Context) {
+export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, context: Remult) {
 
     if (settings.valueType) {
         let settingsOnTypeLevel = Reflect.getMetadata(storableMember, settings.valueType);
@@ -1311,10 +1311,10 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
 
 interface columnInfo {
     key: string;
-    settings: (context: Context) => FieldOptions
+    settings: (context: Remult) => FieldOptions
 
 }
-export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, context: Context) => void))[];
+export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, context: Remult) => void))[];
 export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
     return target => {
 

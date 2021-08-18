@@ -3,7 +3,7 @@ import { Component, OnChanges, Input, ViewChild } from '@angular/core';
 
 
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
-import {  FieldMetadata, Context, Entity } from 'remult';
+import {  FieldMetadata, Remult, Entity } from 'remult';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
 
@@ -21,7 +21,7 @@ import { openDialog } from '../remult-core.module';
 
 
 export class DataGrid2Component implements OnChanges {
-  constructor(private context: Context, dir: Directionality) {
+  constructor(private context: Remult, dir: Directionality) {
     this.rightToLeft = dir.value === 'rtl';
   }
 

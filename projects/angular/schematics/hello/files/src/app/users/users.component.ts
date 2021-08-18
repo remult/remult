@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Users } from './users';
-import { BackendMethod, Context } from 'remult';
+import { BackendMethod, Remult } from 'remult';
 
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';
@@ -13,7 +13,7 @@ import { GridSettings } from '@remult/angular';
   styleUrls: ['./users.component.css']
 })
 export class UsersComponent implements OnInit {
-  constructor(private dialog: DialogService, public context: Context) {
+  constructor(private dialog: DialogService, public context: Remult) {
   }
   isAdmin() {
     return this.context.isAllowed(Roles.admin);
@@ -50,7 +50,7 @@ export class UsersComponent implements OnInit {
     },
   });
   @BackendMethod({ allowed: Roles.admin })
-  static async resetPassword(userId: string, context?: Context) {
+  static async resetPassword(userId: string, context?: Remult) {
     let u = await context.for(Users).findId(userId);
     if (u) {
       u.password = '';

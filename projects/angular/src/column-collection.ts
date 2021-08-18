@@ -1,5 +1,5 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Context, ValueConverter } from "remult";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -109,9 +109,9 @@ export class FieldCollection<rowType = any> {
     await Promise.all(promises);
     return Promise.resolve();
   }
-  private doWhenWeHaveContext: ((c: Context) => Promise<any>)[] = [];
-  private context: Context;
-  setContext(context: Context) {
+  private doWhenWeHaveContext: ((c: Remult) => Promise<any>)[] = [];
+  private context: Remult;
+  setContext(context: Remult) {
     this.context = context;
     for (const what of this.doWhenWeHaveContext) {
       what(context);
@@ -137,8 +137,8 @@ export class FieldCollection<rowType = any> {
         }
       }
       else if (typeof orig === "function") {
-        let theFunc = orig as ((context: Context) => Promise<ValueListItem[]>);
-        let todo = async (context: Context) => {
+        let theFunc = orig as ((context: Remult) => Promise<ValueListItem[]>);
+        let todo = async (context: Remult) => {
           let x = await theFunc(context);
           if (x === undefined)
             s.valueList = undefined;
@@ -356,7 +356,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
       & {
 
 
-        context?: Context
+        context?: Remult
       }) {
 
     if (!settings.dbName)

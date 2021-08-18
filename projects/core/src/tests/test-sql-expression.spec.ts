@@ -1,4 +1,4 @@
-import { Context } from '../context';
+import { Remult } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
@@ -15,7 +15,7 @@ import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-brid
 describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
     let db = new SqlDatabase(web);
-    let context = new Context();
+    let context = new Remult();
     context.setDataProvider(db);
     async function deleteAll() {
         await web.dropTable(context.repo(testSqlExpression).metadata);
@@ -40,7 +40,7 @@ describe("test sql database expressions", () => {
         expect((await x.metadata.fields.col.getDbName())).toBe('col');
         expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
         //expect(x.metadata.fields.col.dbReadOnly).toBe(false);
-        let c = new Context();
+        let c = new Remult();
         c.setDataProvider(db);
         expressionEntity.yes = true;
         x = c.repo(expressionEntity);
@@ -114,7 +114,7 @@ export class myDummySQLCommand implements SqlCommand {
 }
 describe("test filter for date", () => {
     it("filter",async () => {
-        let c = new Context()
+        let c = new Remult()
         let e = c.repo(testCreate);
         var d = new myDummySQLCommand();
         let f = new FilterConsumerBridgeToSqlRequest(d);
@@ -125,7 +125,7 @@ describe("test filter for date", () => {
 
 describe("Postgres create db", () => {
 
-    let c = new Context()
+    let c = new Remult()
     it("what", () => {
         let e = c.repo(testCreate);
         expect(postgresColumnSyntax(e.metadata.fields.theDate, "x")).toBe("x date");

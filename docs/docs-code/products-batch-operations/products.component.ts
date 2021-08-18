@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GridSettings } from '@remult/angular';
-import { BackendMethod, Context } from 'remult';
+import { BackendMethod, Remult } from 'remult';
 import { Products } from './products';
 @Component({
   selector: 'app-products',
@@ -9,7 +9,7 @@ import { Products } from './products';
 })
 export class ProductsComponent implements OnInit {
 
-  constructor(private context: Context) { }
+  constructor(private context: Remult) { }
   products = new GridSettings(this.context.for(Products), {
     allowCrud: true
   });
@@ -25,7 +25,7 @@ export class ProductsComponent implements OnInit {
     this.products.reloadData();
   }
   @BackendMethod({ allowed: true })
-  static async updatePriceOnBackend(priceToUpdate: number, context?: Context) {
+  static async updatePriceOnBackend(priceToUpdate: number, context?: Remult) {
     for await (const p of context.for(Products).iterate()) {
       p.price += priceToUpdate
       await p.save();

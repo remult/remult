@@ -1,6 +1,6 @@
 
 import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators } from "remult";
-import { Context, } from 'remult';
+import { Remult, } from 'remult';
 import { Roles } from './roles';
 import { InputField } from "@remult/angular";
 import { InputTypes } from "remult/inputTypes";
@@ -43,7 +43,7 @@ export class Users extends IdEntity {
         allowApiUpdate: Roles.admin
     })
     admin: Boolean = false;
-    constructor(private context: Context) {
+    constructor(private context: Remult) {
 
         super();
     }

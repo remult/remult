@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, Route,  ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
-import { BackendMethod, Context,  UserInfo } from 'remult';
+import { BackendMethod, Remult,  UserInfo } from 'remult';
 
 import { DialogService } from './common/dialog';
 import { InputField, openDialog, RouteHelperService } from '@remult/angular';
@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
     public activeRoute: ActivatedRoute,
     private routeHelper: RouteHelperService,
     public dialogService: DialogService,
-    public context: Context) {
+    public context: Remult) {
 
 
   }
@@ -44,7 +44,7 @@ export class AppComponent implements OnInit {
     });
   }
   @BackendMethod({ allowed: true })
-  static async signIn(user: string, password: string, context?: Context) {
+  static async signIn(user: string, password: string, context?: Remult) {
     let result: UserInfo;
     let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)

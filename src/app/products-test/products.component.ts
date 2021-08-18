@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Context, Field, Entity, EntityBase, BackendMethod } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod } from 'remult';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
@@ -26,7 +26,7 @@ import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
 })
 export class ProductsComponent implements OnInit {
 
-  constructor(private context: Context) {
+  constructor(private context: Remult) {
 
   }
 

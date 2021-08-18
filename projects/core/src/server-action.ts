@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Context, AllowedForInstance,  Allowed,  allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
+import { Remult, AllowedForInstance,  Allowed,  allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
 
 
 
@@ -35,7 +35,7 @@ export abstract class Action<inParam, outParam>{
     static provider: RestDataProviderHttpProvider;
     async run(pIn: inParam): Promise<outParam> {
 
-        let r = await Action.provider.post(Context.apiBaseUrl + '/' + this.actionUrl, pIn);
+        let r = await Action.provider.post(Remult.apiBaseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
         if (p && p.queuedJobId) {
 
@@ -48,7 +48,7 @@ export abstract class Action<inParam, outParam>{
                             await new Promise(res => setTimeout(() => {
                                 res(undefined);
                             }, 200));
-                        runningJob = await Action.provider.post(Context.apiBaseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
+                        runningJob = await Action.provider.post(Remult.apiBaseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
                         if (runningJob.progress) {
                             progress.progress(runningJob.progress);
                         }
@@ -70,9 +70,9 @@ export abstract class Action<inParam, outParam>{
 
 
     }
-    protected abstract execute(info: inParam, req: Context, res: DataApiResponse): Promise<outParam>;
+    protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
 
-    __register(reg: (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => void) {
+    __register(reg: (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
         reg(this.actionUrl, this.queue, async (d, req, res) => {
 
             try {
@@ -94,7 +94,7 @@ export class myServerAction extends Action<inArgs, result>
         super(name, options.queue)
     }
 
-    protected async execute(info: inArgs, context: Context, res: DataApiResponse): Promise<result> {
+    protected async execute(info: inArgs, context: Remult, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
         let ds = context._dataSource;
         await ds.transaction(async ds => {
@@ -221,9 +221,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         var originalMethod = descriptor.value;
         let serverAction = {
 
-            __register(reg: (url: string, queue: boolean, what: ((data: any, req: Context, res: DataApiResponse) => void)) => void) {
+            __register(reg: (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
 
-                let c = new Context();
+                let c = new Remult();
                 for (const constructor of mh.classes.keys()) {
                     let controllerOptions = mh.classes.get(constructor);
 
@@ -422,14 +422,14 @@ export function prepareArgsToSend(types: any[], args: any[]) {
     if (types) {
         for (let index = 0; index < types.length; index++) {
             const paramType = types[index];
-            for (const type of [Context, Context, SqlDatabase]) {
+            for (const type of [Remult, Remult, SqlDatabase]) {
                 if (paramType instanceof type) {
                     args[index] = undefined;
                 }
             }
             if (args[index] != undefined) {
                 let x: FieldOptions = { valueType: paramType };
-                x = decorateColumnSettings(x,new Context());
+                x = decorateColumnSettings(x,new Remult());
                 if (x.valueConverter)
                     args[index] = x.valueConverter.toJson(args[index]);
                 let eo = getEntitySettings(paramType, false);
@@ -443,7 +443,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
     return args.map(x => x !== undefined ? x : customUndefined);
 
 }
-export async function prepareReceivedArgs(types: any[], args: any[], context: Context, ds: DataProvider, res: DataApiResponse) {
+export async function prepareReceivedArgs(types: any[], args: any[], context: Remult, ds: DataProvider, res: DataApiResponse) {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
         if (isCustomUndefined(element))
@@ -455,7 +455,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Co
             if (args.length < i) {
                 args.push(undefined);
             }
-            if (types[i] == Context || types[i] == Context) {
+            if (types[i] == Remult || types[i] == Remult) {
 
                 args[i] = context;
             } else if (types[i] == SqlDatabase && ds) {

@@ -2,7 +2,7 @@ import { Done } from "../testHelper.spec";
 import { createData } from '../RowProvider.spec';
 import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
-import { Context } from '../../context';
+import { Remult } from '../../context';
 import { Categories } from "../remult-3-entities";
 import { Field, Entity, EntityBase } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
@@ -61,7 +61,7 @@ describe("data api", () => {
             valueType: String,
             allowApiUpdate: (c, x) => x._.isNew()
         })(type.prototype, 'val');
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.repo(type);
 
@@ -94,7 +94,7 @@ describe("data api", () => {
             valueType: String,
             allowApiUpdate: (c, x) => x.val != "yael"
         })(type.prototype, 'val');
-        let context = new Context();
+        let context = new Remult();
         context.setDataProvider(new InMemoryDataProvider());
         let c = context.repo(type);
 

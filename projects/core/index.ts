@@ -76,7 +76,7 @@ export {
 export {
     Allowed,
     Allow,
-    Context,
+    Remult,
     isBackend,
     AllowedForInstance,
     EventDispatcher,

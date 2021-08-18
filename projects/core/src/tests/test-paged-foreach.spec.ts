@@ -1,7 +1,7 @@
 
 
 import { createData, } from './RowProvider.spec';
-import { Context, iterateConfig } from '../context';
+import { Remult, iterateConfig } from '../context';
 import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityWhere } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldMetadata } from '../column-interfaces';
@@ -115,7 +115,7 @@ describe("test paged foreach ", () => {
         expect(i).toBe(5);
     });
     it("test make sort unique", async () => {
-        let context = new Context();
+        let context = new Remult();
         let e = context.repo(Categories) as RepositoryImplementation<Categories>;
         function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldMetadata[]) {
             let s = Sort.createUniqueSort(e.metadata, orderBy);
@@ -126,7 +126,7 @@ describe("test paged foreach ", () => {
     });
 
     it("unique sort and  compound id", async () => {
-        let context = new Context();
+        let context = new Remult();
 
         let eDefs = context.repo(theTable).metadata;
         let e = eDefs.fields;
@@ -142,7 +142,7 @@ describe("test paged foreach ", () => {
         test(x => x.c, e.c, e.a, e.b);
     });
     it("create rows after filter compound id", async () => {
-        let context = new Context();
+        let context = new Remult();
 
 
         let eDefs = context.repo(theTable) as RepositoryImplementation<theTable>;
@@ -160,7 +160,7 @@ describe("test paged foreach ", () => {
 
     });
     it("create rows after filter, values are frozen when filter is created", async () => {
-        let context = new Context();
+        let context = new Remult();
 
 
         let eDefs = context.repo(theTable) as RepositoryImplementation<theTable>;
@@ -177,7 +177,7 @@ describe("test paged foreach ", () => {
 
     });
     it("serialize filter with or", async () => {
-        let context = new Context();
+        let context = new Remult();
         let eDefs = context.repo(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();
 

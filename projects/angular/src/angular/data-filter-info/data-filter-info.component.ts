@@ -2,7 +2,7 @@
 import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { openDialog } from '../remult-core.module';
-import {  FieldMetadata, Context } from 'remult';
+import {  FieldMetadata, Remult } from 'remult';
 import { GridSettings } from '../../grid-settings';
 import { DataControlSettings } from '../../data-control-interfaces';
 
@@ -35,7 +35,7 @@ export class DataFilterInfoComponent {
 
 
     }
-    constructor(private context: Context, dir: Directionality) {
+    constructor(private context: Remult, dir: Directionality) {
         this.rightToLeft = dir.value === 'rtl';
     }
 
