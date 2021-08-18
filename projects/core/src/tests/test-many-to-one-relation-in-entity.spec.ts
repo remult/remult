@@ -174,15 +174,15 @@ describe("many to one relation", () => {
         c2.name = "cat 2";
         await c2.save();
         expect(p.wasChanged()).toBe(false, "x");
-        expect(p.$.category.wasChanged()).toBe(false, "y");
+        expect(p.$.category.valueChanged()).toBe(false, "y");
         p.category = c2;
         expect(p.wasChanged()).toBe(true);
-        expect(p.$.category.wasChanged()).toBe(true);
+        expect(p.$.category.valueChanged()).toBe(true);
         expect(p.$.category.value.id).toBe(2);
         expect(p.$.category.originalValue.id).toBe(1);
         await p.save();
         expect(p.wasChanged()).toBe(false, "a");
-        expect(p.$.category.wasChanged()).toBe(false);
+        expect(p.$.category.valueChanged()).toBe(false);
         expect(p.$.category.value.id).toBe(2);
         expect(p.$.category.originalValue.id).toBe(2);
         p.category = null;

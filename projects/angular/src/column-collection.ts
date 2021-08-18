@@ -447,7 +447,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
   originalValue: valueType;
   get inputValue(): string { return this.metadata.valueConverter.toInput(this.value, this.inputType); }
   set inputValue(val: string) { this.value = this.metadata.valueConverter.fromInput(val, this.inputType); };
-  wasChanged(): boolean {
+  valueChanged(): boolean {
     return this.originalValue != this.value;
   }
   entityRef: EntityRef<any>;

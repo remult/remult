@@ -119,7 +119,7 @@ describe("test object column stored as string", () => {
     r.phone = new Phone("123");
     await r.save();
     r.phone = new Phone("123");
-    expect(r.$.phone.wasChanged()).toBe(false);
+    expect(r.$.phone.valueChanged()).toBe(false);
     expect(r._.wasChanged()).toBe(false);
 
 

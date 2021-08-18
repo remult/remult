@@ -28,7 +28,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] change remult.for to remult.repo
 [V] api find array should load nothing :) (check server methods)
 [V] isnull should be valueIsNull, and originalValueIsNull
-[] valueChanged instead of was changed.
+[V] valueChanged instead of was changed.
 [] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 [] test why date is equal to null - didn't work
 [] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
@@ -238,7 +238,7 @@ export interface FieldRef<entityType = any, valueType = any> {
     value: valueType;
     originalValue: valueType;
     inputValue: string;
-    wasChanged(): boolean;
+    valueChanged(): boolean;
     entityRef: EntityRef<entityType>;
     container: entityType;
     metadata: FieldMetadata<entityType>;

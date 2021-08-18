@@ -879,7 +879,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     async load(): Promise<valueType> {
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
-            if (this.wasChanged()) {
+            if (this.valueChanged()) {
                 await lu.waitLoadOf(this.rawOriginalValue());
             }
             return await lu.waitLoad();
@@ -938,7 +938,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         else
             this.value = this.metadata.valueConverter.fromInput(val, this.settings.inputType);
     };
-    wasChanged(): boolean {
+    valueChanged(): boolean {
         let val = this.value;
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {

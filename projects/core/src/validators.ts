@@ -14,7 +14,7 @@ export class Validators {
             throw "unique validation may only work on columns that are attached to an entity";
 
 
-        if (col.entityRef.isNew() || col.wasChanged()) {
+        if (col.entityRef.isNew() || col.valueChanged()) {
             if (await col.entityRef.repository.count(e => e[col.metadata.key].isEqualTo(col.value)))
                 col.error = message;
         }
