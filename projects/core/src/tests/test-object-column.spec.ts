@@ -13,26 +13,26 @@ describe("test object column", () => {
     let context = new Context();
     context.setDataProvider(db);
     async function deleteAll() {
-        let e = context.for(ObjectColumnTest).metadata;
+        let e = context.repo(ObjectColumnTest).metadata;
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
 
     it("test basics with wsql", async () => {
         await deleteAll();
-        var x = context.for(ObjectColumnTest).create();
+        var x = context.repo(ObjectColumnTest).create();
         x.id = 1;
         x.col = {
             firstName: 'noam',
             lastName: 'honig'
         }
         await x.save();
-        x = await context.for(ObjectColumnTest).findFirst();
+        x = await context.repo(ObjectColumnTest).findFirst();
         expect(x.col.firstName).toBe('noam');
 
-        x = await context.for(ObjectColumnTest).findFirst(x => x.col.contains("yael"));
+        x = await context.repo(ObjectColumnTest).findFirst(x => x.col.contains("yael"));
         expect(x).toBeUndefined();
-        x = await context.for(ObjectColumnTest).findFirst(x => x.col.contains("noam"));
+        x = await context.repo(ObjectColumnTest).findFirst(x => x.col.contains("noam"));
         expect(x.id).toBe(1);
 
         expect(x.phone1).toBeNull();
@@ -71,22 +71,22 @@ describe("test object column", () => {
 
     it("test contains on custom type", async () => {
         await deleteAll();
-        await context.for(ObjectColumnTest).create({
+        await context.repo(ObjectColumnTest).create({
             id: 1,
             col: { firstName: 'noam', lastName: 'honig' },
             phone1: new Phone("1234")
 
         }).save();
-        await context.for(ObjectColumnTest).create({
+        await context.repo(ObjectColumnTest).create({
             id: 2,
             col: { firstName: 'noam', lastName: 'honig' },
             phone1: new Phone("5678")
 
         }).save();
 
-        let r = context.for(ObjectColumnTest).metadata;
-        expect(await context.for(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
-        expect(await context.for(ObjectColumnTest).count(async x => Filter.unpackWhere(r, await Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
+        let r = context.repo(ObjectColumnTest).metadata;
+        expect(await context.repo(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
+        expect(await context.repo(ObjectColumnTest).count(async x => Filter.unpackWhere(r, await Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
     });
     it("test basics with json", async () => {
 
@@ -94,7 +94,7 @@ describe("test object column", () => {
         var c = new Context();
         c.setDataProvider(mem);
 
-        var x = c.for(ObjectColumnTest).create();
+        var x = c.repo(ObjectColumnTest).create();
         x.id = 1;
         x.col = {
             firstName: 'noam',
@@ -102,7 +102,7 @@ describe("test object column", () => {
         }
         await x.save();
 
-        x = await c.for(ObjectColumnTest).findFirst();
+        x = await c.repo(ObjectColumnTest).findFirst();
 
         expect(x.col.firstName).toBe('noam');
         expect(mem.rows[x._.repository.metadata.key][0].col).toEqual({
@@ -112,7 +112,7 @@ describe("test object column", () => {
     });
     it("test string[]", async () => {
         await deleteAll();
-        let x = await context.for(ObjectColumnTest).create({
+        let x = await context.repo(ObjectColumnTest).create({
             id: 1,
             col: { firstName: 'noam', lastName: 'honig' }
         }).save();

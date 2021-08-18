@@ -35,10 +35,10 @@ class testServerMethodOnEntity extends EntityBase {
     }
     @BackendMethod({ allowed: true })
     async doItAgain() {
-        expect(await this.context.for(testServerMethodOnEntity).count()).toBe(0);
+        expect(await this.context.repo(testServerMethodOnEntity).count()).toBe(0);
         await this._.save();
-        expect(await this.context.for(testServerMethodOnEntity).count()).toBe(1);
-        return (await this.context.for(testServerMethodOnEntity).findFirst()).a
+        expect(await this.context.repo(testServerMethodOnEntity).count()).toBe(1);
+        return (await this.context.repo(testServerMethodOnEntity).findFirst()).a
     }
 
 
@@ -50,7 +50,7 @@ class testServerMethodOnEntity extends EntityBase {
     saving: async t => {
         if (isBackend() && t._.isNew()) {
 
-            await c.for(testBoolCreate123).count();
+            await c.repo(testBoolCreate123).count();
             await new Promise((res, rej) => setTimeout(() => {
                 res({})
             }, 20));
@@ -72,7 +72,7 @@ class testBoolCreate123 extends EntityBase {
 describe("test Server method in entity", () => {
     let c = new Context();
     it("test server method on Entity", async () => {
-        let x = c.for(testServerMethodOnEntity).create();
+        let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'Noam';
         let r = await x.doIt1();
         expect(r.onServer).toBe(true);
@@ -80,13 +80,13 @@ describe("test Server method in entity", () => {
         expect(x.a).toBe("yael");
     });
     it("test server method on Entity", async () => {
-        let x = c.for(testServerMethodOnEntity).create();
+        let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'Noam';
         expect(await x.doItAgain()).toBe("Noam");
 
     });
     it("test validation method", async () => {
-        let x = c.for(testServerMethodOnEntity).create();
+        let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'errorc';
         let happened = false;
         try {
@@ -103,7 +103,7 @@ describe("test Server method in entity", () => {
 
     });
     it("test validation on server", async () => {
-        let x = c.for(testServerMethodOnEntity).create();
+        let x = c.repo(testServerMethodOnEntity).create();
         x.a = "error on server";
         let happened = false;
         try {
@@ -124,7 +124,7 @@ describe("test Server method in entity", () => {
         actionInfo.runningOnServer = true;
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
-        let r = context.for(testBoolCreate123);
+        let r = context.repo(testBoolCreate123);
         let dataApi = new DataApi(r, context);
         let t = new TestDataApiResponse();
         t.created = x => {
@@ -166,7 +166,7 @@ class c extends EntityBase {
     async doIt() {
         expect(this.b.id).toBe(11);
         expect(this.b.a.id).toBe(1);
-        this.b = await this.context.for(b).findId(12);
+        this.b = await this.context.repo(b).findId(12);
         expect(this.b.id).toBe(12);
         expect(this.b.a.id).toBe(2);
         await this.save();
@@ -192,11 +192,11 @@ describe("complex entity relations on server entity and backend method", () => {
     it("fix it", async () => {
         let context = new Context();
         context.setDataProvider(ActionTestConfig.db);
-        let a1 = await context.for(a).create({ id: 1 }).save();
-        let a2 = await context.for(a).create({ id: 2 }).save();
-        let b1 = await context.for(b).create({ id: 11, a: a1 }).save();
-        let b2 = await context.for(b).create({ id: 12, a: a2 }).save();
-        let c1 = await context.for(c).create({ id: 21, b: b1 }).save();
+        let a1 = await context.repo(a).create({ id: 1 }).save();
+        let a2 = await context.repo(a).create({ id: 2 }).save();
+        let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
+        let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
+        let c1 = await context.repo(c).create({ id: 21, b: b1 }).save();
         context = new Context();//clear the cache;
         context.setDataProvider(ActionTestConfig.db);
 
@@ -208,14 +208,14 @@ describe("complex entity relations on server entity and backend method", () => {
     it("fix it new row", async () => {
         let context = new Context();
         context.setDataProvider(ActionTestConfig.db);
-        let a1 = await context.for(a).create({ id: 1 }).save();
-        let a2 = await context.for(a).create({ id: 2 }).save();
-        let b1 = await context.for(b).create({ id: 11, a: a1 }).save();
-        let b2 = await context.for(b).create({ id: 12, a: a2 }).save();
+        let a1 = await context.repo(a).create({ id: 1 }).save();
+        let a2 = await context.repo(a).create({ id: 2 }).save();
+        let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
+        let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
 
         context = new Context();//clear the cache;
         context.setDataProvider(ActionTestConfig.db);
-        let c1 = await context.for(c).create({ id: 21, b: b1 })
+        let c1 = await context.repo(c).create({ id: 21, b: b1 })
         let r = await c1.doIt();
         expect(r).toBe(2);
         expect(c1.b.id).toBe(12);
@@ -224,14 +224,14 @@ describe("complex entity relations on server entity and backend method", () => {
     it("fix it change value", async () => {
         let context = new Context();
         context.setDataProvider(ActionTestConfig.db);
-        let a1 = await context.for(a).create({ id: 1 }).save();
-        let a2 = await context.for(a).create({ id: 2 }).save();
-        let b1 = await context.for(b).create({ id: 11, a: a1 }).save();
-        let b2 = await context.for(b).create({ id: 12, a: a2 }).save();
-        let c1 = await context.for(c).create({ id: 21, b: b1 }).save();
+        let a1 = await context.repo(a).create({ id: 1 }).save();
+        let a2 = await context.repo(a).create({ id: 2 }).save();
+        let b1 = await context.repo(b).create({ id: 11, a: a1 }).save();
+        let b2 = await context.repo(b).create({ id: 12, a: a2 }).save();
+        let c1 = await context.repo(c).create({ id: 21, b: b1 }).save();
         context = new Context();//clear the cache;
         context.setDataProvider(ActionTestConfig.db);
-        c1 = await context.for(c).findId(21);
+        c1 = await context.repo(c).findId(21);
         c1.b = b2;
         let r = await c1.doIt2();
         expect(r).toBe(2);

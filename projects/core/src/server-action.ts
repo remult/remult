@@ -229,7 +229,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
 
                     if (!controllerOptions.key) {
-                        controllerOptions.key = c.for(constructor).metadata.key + "_methods";
+                        controllerOptions.key = c.repo(constructor).metadata.key + "_methods";
                     }
 
 
@@ -249,7 +249,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                 context.setDataProvider(ds);
                                 d.args = await prepareReceivedArgs(types, d.args, context, ds, res);
                                 if (allEntities.includes(constructor)) {
-                                    let repo = context.for(constructor);
+                                    let repo = context.repo(constructor);
                                     let y: any;
 
                                     if (d.rowInfo.isNewRow) {
@@ -470,7 +470,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], context: Co
                 let eo = getEntitySettings(types[i], false);
                 if (eo != null) {
                     if (!(args[i] === null || args[i] === undefined))
-                        args[i] = await context.for(types[i]).findId(args[i]);
+                        args[i] = await context.repo(types[i]).findId(args[i]);
                 }
 
 

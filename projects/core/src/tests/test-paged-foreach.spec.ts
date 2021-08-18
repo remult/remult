@@ -116,7 +116,7 @@ describe("test paged foreach ", () => {
     });
     it("test make sort unique", async () => {
         let context = new Context();
-        let e = context.for(Categories) as RepositoryImplementation<Categories>;
+        let e = context.repo(Categories) as RepositoryImplementation<Categories>;
         function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldMetadata[]) {
             let s = Sort.createUniqueSort(e.metadata, orderBy);
             expect(s.Segments.map(x => x.field)).toEqual(sort);
@@ -128,7 +128,7 @@ describe("test paged foreach ", () => {
     it("unique sort and  compound id", async () => {
         let context = new Context();
 
-        let eDefs = context.for(theTable).metadata;
+        let eDefs = context.repo(theTable).metadata;
         let e = eDefs.fields;
 
         function test(orderBy: EntityOrderBy<theTable>, ...sort: FieldMetadata[]) {
@@ -145,7 +145,7 @@ describe("test paged foreach ", () => {
         let context = new Context();
 
 
-        let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
+        let eDefs = context.repo(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();
         e.a = 'a';
         e.b = 'b';
@@ -163,7 +163,7 @@ describe("test paged foreach ", () => {
         let context = new Context();
 
 
-        let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
+        let eDefs = context.repo(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();
         e.a = 'a';
         e.b = 'b';
@@ -178,7 +178,7 @@ describe("test paged foreach ", () => {
     });
     it("serialize filter with or", async () => {
         let context = new Context();
-        let eDefs = context.for(theTable) as RepositoryImplementation<theTable>;
+        let eDefs = context.repo(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();
 
         async function  test(expectedWhere: EntityWhere<theTable>, expected: any) {

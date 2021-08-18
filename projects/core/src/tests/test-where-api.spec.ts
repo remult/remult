@@ -55,7 +55,7 @@ describe("test where stuff", () => {
 
 describe("custom filter", () => {
     it("test that it works", async () => {
-        let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
+        let c = new Context().repo(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -65,7 +65,7 @@ describe("custom filter", () => {
     it("test that it works with sql", async () => {
         let w = new WebSqlDataProvider("testWithFilter");
 
-        let c = new Context().for(entityForCustomFilter, new SqlDatabase(w));
+        let c = new Context().repo(entityForCustomFilter, new SqlDatabase(w));
         await w.dropTable(c.metadata);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -77,7 +77,7 @@ describe("custom filter", () => {
     it("test that it works with arrayFilter", async () => {
 
 
-        let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
+        let c = new Context().repo(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -87,7 +87,7 @@ describe("custom filter", () => {
 
     });
     it("test or and promise in translate", async () => {
-        let c = new Context().for(entityForCustomFilter, new InMemoryDataProvider());
+        let c = new Context().repo(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -108,7 +108,7 @@ describe("custom filter", () => {
         });
         let c = new Context();
         c.setDataProvider(z);
-        await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
+        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
         ok.test();
     });
     it("test sent in api", async () => {
@@ -136,13 +136,13 @@ describe("custom filter", () => {
         });
         let c = new Context();
         c.setDataProvider(z);
-        await c.for(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }).and(entityForCustomFilter.filter.build({ two: true })));
+        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }).and(entityForCustomFilter.filter.build({ two: true })));
         ok.test();
     });
     it("test that api reads custom correctly", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
-        let c = context.for(entityForCustomFilter);
+        let c = context.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -165,7 +165,7 @@ describe("custom filter", () => {
     it("test that api reads custom correctly 2", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
-        let c = context.for(entityForCustomFilter);
+        let c = context.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -193,7 +193,7 @@ describe("custom filter", () => {
     it("test that api reads custom correctly 3", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
-        let c = context.for(entityForCustomFilter);
+        let c = context.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -225,7 +225,7 @@ describe("custom filter", () => {
     it("test that api reads custom correctly and translates to db", async () => {
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
-        let c = context.for(entityForCustomFilter);
+        let c = context.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }

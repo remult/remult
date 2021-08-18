@@ -38,7 +38,7 @@ describe("test exception", () => {
         }
         Entity({key:'test'})(type);
         Field()(type.prototype,"id");
-        var x = c.for(type).create();
+        var x = c.repo(type).create();
         try {
             await x._.save();
         } catch (err) {

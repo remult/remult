@@ -15,7 +15,7 @@ describe("custom id column", () => {
         Entity({ key: 'custom' })(type);
         Field()(type.prototype, 'a');
         Field()(type.prototype, 'b');
-        let c = context.for(type);
+        let c = context.repo(type);
         let r = c.create();
         r.a = 1;
         r.b = 1;
@@ -38,7 +38,7 @@ describe("custom id column", () => {
         Entity({ key: 'custom2' })(type);
         Field({ valueType: Number })(type.prototype, 'a');
         Field({ valueType: Number })(type.prototype, 'id');
-        let c = context.for(type);
+        let c = context.repo(type);
         let r = c.create();
         r.a = 1;
         r.id = 5;

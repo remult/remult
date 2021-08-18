@@ -451,7 +451,7 @@ abstract class rowHelperBase<T>
             let ei = getEntitySettings(col.valueType, false);
 
             if (ei && context) {
-                let lookup = new LookupColumn(context.for(col.valueType) as RepositoryImplementation<T>, undefined);
+                let lookup = new LookupColumn(context.repo(col.valueType) as RepositoryImplementation<T>, undefined);
                 this.lookups.set(col.key, lookup);
                 let val = instance[col.key];
                 Object.defineProperty(instance, col.key, {

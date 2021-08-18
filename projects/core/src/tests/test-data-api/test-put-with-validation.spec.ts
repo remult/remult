@@ -63,7 +63,7 @@ describe("data api", () => {
         })(type.prototype, 'val');
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
-        let c = context.for(type);
+        let c = context.repo(type);
 
         var api = new DataApi(c, context);
         let t = new TestDataApiResponse();
@@ -96,7 +96,7 @@ describe("data api", () => {
         })(type.prototype, 'val');
         let context = new Context();
         context.setDataProvider(new InMemoryDataProvider());
-        let c = context.for(type);
+        let c = context.repo(type);
 
         var api = new DataApi(c, context);
         let t = new TestDataApiResponse();

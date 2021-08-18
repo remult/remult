@@ -27,7 +27,7 @@ describe("test decorator precedence", () => {
 
     it("test basics", async () => {
         let c = new Context();
-        let r = c.for(myEntity);
+        let r = c.repo(myEntity);
         expect([...r.metadata.fields].length).toBe(3);
         expect(r.metadata.fields.a.caption).toBe('123');
         expect(r.metadata.fields.b.caption).toBe('123');
@@ -35,7 +35,7 @@ describe("test decorator precedence", () => {
     });
     it("testit", () => {
         let c = new Context();
-        let r = c.for(user).create();
+        let r = c.repo(user).create();
         expect(r.$.username.metadata.caption).toBe("Username");
     })
 

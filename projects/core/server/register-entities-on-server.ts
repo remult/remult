@@ -12,7 +12,7 @@ export function registerEntitiesOnServer(area: SiteArea) {
     allEntities.forEach(e => {
         if (!(Reflect.getMetadata(excludeFromApi, e)))
             area.add(c => {
-                return new DataApi(c.for(e), c);
+                return new DataApi(c.repo(e), c);
             });
     });
     if (errors.length > 0) {

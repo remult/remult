@@ -76,7 +76,7 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
     let createData = async (doInsert, entity?) => {
       if (!entity)
         entity = newCategories;
-      let rep = context.for(entity) as Repository<T>;
+      let rep = context.repo(entity) as Repository<T>;
       if (doInsert)
         await doInsert(async (id, name, description, status) => {
 
@@ -115,7 +115,7 @@ export async function createData(doInsert?: (insert: (id: number, name: string, 
   context.setDataProvider(new InMemoryDataProvider());
   if (!entity)
     entity = newCategories;
-  let rep = context.for(entity);
+  let rep = context.repo(entity);
   if (doInsert)
     await doInsert(async (id, name, description, status) => {
 
@@ -330,7 +330,7 @@ describe("Closed List  column", () => {
   });
   it("test with entity", async () => {
     let c = new Context()
-      .for(entityWithValueList,new InMemoryDataProvider());
+      .repo(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
     expect(e.l).toBe(Language.Hebrew);
@@ -342,7 +342,7 @@ describe("Closed List  column", () => {
   })
   it("test with entity and data defined on type", async () => {
     let c = new Context()
-      .for(entityWithValueList,new InMemoryDataProvider());
+      .repo(entityWithValueList,new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
     expect(c.metadata.fields.v.valueType).toBe(valueList);
@@ -383,7 +383,7 @@ class entityWithValueList extends EntityBase {
 
 describe("test row provider", () => {
   it("auto name", () => {
-    var cat = new Context().for(newCategories).create();
+    var cat = new Context().repo(newCategories).create();
     expect(cat._.repository.metadata.key).toBe('Categories');
   });
   it("Insert", async () => {
@@ -541,7 +541,7 @@ describe("test row provider", () => {
       validate: (entity, col) =>
         Validators.required(entity, col, "m")
     })(type.prototype, "a");
-    var c = context.for(type);
+    var c = context.repo(type);
     var cat = c.create();
     cat.a = '';
     var saved = false;
@@ -570,7 +570,7 @@ describe("test row provider", () => {
           col.error = "m";
       }
     })(type.prototype, "a");
-    var c = context.for(type);
+    var c = context.repo(type);
     var cat = c.create();
     cat.a = '';
     var saved = false;
@@ -594,7 +594,7 @@ describe("test row provider", () => {
     ColumnDecorator({
       validate: Validators.required.withMessage("m")
     })(type.prototype, "a");
-    var c = context.for(type);
+    var c = context.repo(type);
     var cat = c.create();
     cat.a = '';
     var saved = false;
@@ -622,7 +622,7 @@ describe("test row provider", () => {
           }
         }
       })(type.prototype, "a");
-      var c = context.for(type);
+      var c = context.repo(type);
 
       var cat = c.create();
       cat.a = '12';
@@ -652,7 +652,7 @@ describe("test row provider", () => {
       ColumnDecorator<typeof type.prototype, string>({
         validate: Validators.unique
       })(type.prototype, "a");
-      var c = context.for(type);
+      var c = context.repo(type);
       var cat = c.create();
       cat.a = '12';
 
@@ -682,7 +682,7 @@ describe("test row provider", () => {
     ColumnDecorator<typeof type.prototype, string>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
-    var c = context.for(type);
+    var c = context.repo(type);
     var cat = c.create();
     var saved = false;
     cat.a = '';
@@ -728,7 +728,7 @@ describe("test row provider", () => {
     ColumnDecorator({
       validate: () => { orderOfOperation += "ColumnValidate," }
     })(type.prototype, "categoryName")
-    var c = context.for(type);
+    var c = context.repo(type);
     var newC = c.create();
     newC.categoryName = 'noam';
     newC.id = 1;
@@ -769,13 +769,13 @@ describe("test row provider", () => {
   it("update should fail nicely", async () => {
     let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(newCategories).create();
+    let c = cont.repo(newCategories).create();
     c.id = 1;
     c.categoryName = 'noam';
-    await cont.for(newCategories).save(c);
+    await cont.repo(newCategories).save(c);
     c.categoryName = 'yael';
     try {
-      await cont.for(newCategories).save(c);
+      await cont.repo(newCategories).save(c);
       fail("shouldnt be here");
     } catch (err) {
       expect(c.categoryName).toBe('yael');
@@ -794,7 +794,7 @@ describe("test row provider", () => {
 
     let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(newCategories);
+    let c = cont.repo(newCategories);
 
     let calledFind = false;
     var l = new Lookup({
@@ -819,7 +819,7 @@ describe("test row provider", () => {
   it("lookup return the same new row", async () => {
     let cont = new Context();
     cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
-    let c = cont.for(newCategories);
+    let c = cont.repo(newCategories);
     var nc = { value: undefined };
     nc.value = 1;
     let lookup = new Lookup<newCategories>(c);
@@ -1059,7 +1059,7 @@ describe("api test", () => {
     let ctx = new Context();
     ctx.setDataProvider(new InMemoryDataProvider());
 
-    let gs = new GridSettings(ctx.for(newCategories));
+    let gs = new GridSettings(ctx.repo(newCategories));
     gs.addArea({
       fields: x => [
         x.categoryName,
@@ -1084,7 +1084,7 @@ describe("column collection", () => {
     ColumnDecorator({
       allowApiUpdate: false
     })(type.prototype, "categoryName");
-    let c = ctx.for(type);
+    let c = ctx.repo(type);
 
 
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
@@ -1097,7 +1097,7 @@ describe("column collection", () => {
   })
 
   it("works ok with filter", async () => {
-    let c = ctx.for(newCategories);
+    let c = ctx.repo(newCategories);
     var cc = new FieldCollection(() => c, () => false, new FilterHelper(() => { }, c), () => true, () => undefined);
     await cc.add(c.metadata.fields.id);
     cc.filterHelper.filterColumn(cc.items[0].field, false, false);
@@ -1105,21 +1105,21 @@ describe("column collection", () => {
 
   });
   it("test caption etc...", async () => {
-    let c = ctx.for(newCategories);
+    let c = ctx.repo(newCategories);
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
     cc.add(c.metadata.fields.id);
     expect(cc.items[0].caption).toBe('Id');
 
   })
   it("test caption etc...", async () => {
-    let c = ctx.for(newCategories);
+    let c = ctx.repo(newCategories);
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
     cc.add({ field: c.metadata.fields.id });
     expect(cc.items[0].caption).toBe('Id');
 
   })
   it("test caption etc...", async () => {
-    let c = ctx.for(newCategories);
+    let c = ctx.repo(newCategories);
     var cc = new FieldCollection(() => c, () => false, undefined, () => true, () => undefined);
     cc.add({ field: c.metadata.fields.id, width: '100' });
     expect(cc.items[0].caption).toBe('Id');
@@ -1132,7 +1132,7 @@ describe("grid settings ",
     ctx.setDataProvider(new InMemoryDataProvider());
 
     it("sort is displayed right", () => {
-      let s = ctx.for(newCategories);
+      let s = ctx.repo(newCategories);
 
 
       let gs = new GridSettings(s);
@@ -1146,7 +1146,7 @@ describe("grid settings ",
       expect(gs.sortedDescending(s.metadata.fields.id)).toBe(true);
     });
     it("sort is displayed right on start", () => {
-      let s = ctx.for(newCategories);
+      let s = ctx.repo(newCategories);
 
 
       let gs = new GridSettings(s, { orderBy: c => c.categoryName });
@@ -1224,10 +1224,10 @@ describe("decorator inheritance", () => {
   it("entity extends", async () => {
 
     let c = new Context();
-    let defsA = c.for(typeA).metadata;
+    let defsA = c.repo(typeA).metadata;
     expect(defsA.key).toBe('typeA');
     expect((await defsA.getDbName())).toBe('dbnameA');
-    let defsB = c.for(typeB).metadata;
+    let defsB = c.repo(typeB).metadata;
     expect(defsB.key).toBe("typeB");
     expect((await defsB.getDbName())).toBe("dbnameA");;
 
@@ -1236,7 +1236,7 @@ describe("decorator inheritance", () => {
 });
 describe("order by api", () => {
   it("works with sort", () => {
-    let c = new Context().for(Categories);
+    let c = new Context().repo(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => c.id };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(1);
@@ -1247,7 +1247,7 @@ describe("order by api", () => {
 
 
   it("works with columns array", () => {
-    let c = new Context().for(Categories);
+    let c = new Context().repo(Categories);
     let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(2);
@@ -1501,7 +1501,7 @@ describe("test ", () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
 
-    var c = context.for(TestCategories1);
+    var c = context.repo(TestCategories1);
     var cat = c.create();
     cat.a = '';
     var saved = false;

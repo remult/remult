@@ -87,7 +87,7 @@ class testBasics {
     }
     @BackendMethod({ allowed: true })
     static async getValFromServer(context?: Context) {
-        return (await context.for(testEntity).findFirst()).name;
+        return (await context.repo(testEntity).findFirst()).name;
     }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
@@ -113,7 +113,7 @@ describe("test Server Controller basics", () => {
     c.setDataProvider(ActionTestConfig.db);
     beforeEach(async done => {
 
-        await Promise.all((await c.for(testEntity).find()).map(x => x.delete()));
+        await Promise.all((await c.repo(testEntity).find()).map(x => x.delete()));
         done();
     });
     it("test error", async () => {
@@ -133,7 +133,7 @@ describe("test Server Controller basics", () => {
         }
     });
     it("send entity to server ", async () => {
-        let e = await c.for(testEntity).create({ name: 'test' }).save();
+        let e = await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.sendEntityAsParamter(e)).toBe('test');
     });
     it("send entity to server ", async () => {
@@ -141,11 +141,11 @@ describe("test Server Controller basics", () => {
         expect(await testBasics.sendEntityAsParamter(null)).toBe('null');
     });
     it("send entity to server prepare args to send ", async () => {
-        let e = await c.for(testEntity).create({ name: 'test' }).save();
+        let e = await c.repo(testEntity).create({ name: 'test' }).save();
         expect(prepareArgsToSend([testEntity], [e])[0]).toBe(e.id);
     });
     it("data is saved on server", async () => {
-        await c.for(testEntity).create({ name: 'test' }).save();
+        await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.getValFromServer()).toBe('test');
     });
     it("test server function", async () => {
@@ -165,7 +165,7 @@ describe("test Server Controller basics", () => {
         expect(await tb.testDataType(7)).toBe('y7');
     });
     it("test server method entity", async () => {
-        let e = await c.for(testEntity).create({ name: 'test3' }).save();
+        let e = await c.repo(testEntity).create({ name: 'test3' }).save();
         let tb = new testBasics(c);
         tb.myEntity = e;
         expect(await tb.sendEntityAsParamter()).toBe('test3');

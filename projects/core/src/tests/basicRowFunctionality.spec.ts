@@ -113,7 +113,7 @@ describe("test object column stored as string", () => {
   it("was changed should work correctly", async () => {
     var context = new Context();
     context.setDataProvider(new InMemoryDataProvider());
-    let repo = context.for(tableWithPhone);
+    let repo = context.repo(tableWithPhone);
     let r = repo.create();
     r.id = 1;
     r.phone = new Phone("123");
@@ -137,7 +137,7 @@ class testNumbers extends EntityBase {
 describe("test numbers", () => {
   it("test that integer and int work", async () => {
     await testAllDbs(async ({ context }) => {
-      let e = await context.for(testNumbers).create({
+      let e = await context.repo(testNumbers).create({
         id: 1.5,
         a: 1.5
       }).save();
@@ -154,7 +154,7 @@ describe('Test basic row functionality', () => {
 
   });
   it("finds its id column", () => {
-    let c = new Context().for(newCategories);
+    let c = new Context().repo(newCategories);
     expect(c.metadata.idMetadata.field.key).toBe("id");
     let n = c.create();
     n.id = 5;
@@ -195,16 +195,16 @@ describe('Test basic row functionality', () => {
   });
 
   it("object is autonemous", () => {
-    let x = new Context().for(newCategories).create();
-    let y = new Context().for(newCategories).create();
+    let x = new Context().repo(newCategories).create();
+    let y = new Context().repo(newCategories).create();
     x.categoryName = 'noam';
     y.categoryName = 'yael';
     expect(x.categoryName).toBe('noam');
     expect(y.categoryName).toBe('yael');
   })
   it("find the col value", () => {
-    let x = new Context().for(newCategories).create();
-    let y = new Context().for(newCategories).create();
+    let x = new Context().repo(newCategories).create();
+    let y = new Context().repo(newCategories).create();
     x.categoryName = 'noam';
     y.categoryName = 'yael';
     expect(y._.fields.find(x._.fields.categoryName.metadata).value).toBe('yael');
@@ -212,7 +212,7 @@ describe('Test basic row functionality', () => {
     expect(y._.metadata.fields.find('categoryName').key).toBe('categoryName');
   });
   it("can be saved to a pojo", async () => {
-    let ctx = new Context().for(newCategories);
+    let ctx = new Context().repo(newCategories);
     let x = ctx.create();
     x.id = 1;
     x.categoryName = 'noam';
@@ -338,7 +338,7 @@ describe("data api", () => {
     async (dataProvider) => {
       let ctx = new Context();
       ctx.setDataProvider(dataProvider);
-      let s = ctx.for(entityWithValidations);
+      let s = ctx.repo(entityWithValidations);
       let c = s.create();
       c.myId = 1;
       c.name = 'noam';
@@ -376,7 +376,7 @@ describe("data api", () => {
   itWithDataProvider("put with validations on column fails", async (dp) => {
     ctx = new Context();
     ctx.setDataProvider(dp);
-    var s = ctx.for(entityWithValidationsOnColumn);
+    var s = ctx.repo(entityWithValidationsOnColumn);
     let c = s.create();
 
     c.myId = 1;
@@ -400,7 +400,7 @@ describe("data api", () => {
   itWithDataProvider("put with validations on entity fails", async (dp) => {
     ctx = new Context();
     ctx.setDataProvider(dp);
-    var s = ctx.for(entityWithValidations);
+    var s = ctx.repo(entityWithValidations);
     let c = s.create();
 
     c.myId = 1; c.name = 'noam';
@@ -423,7 +423,7 @@ describe("data api", () => {
   itWithDataProvider("entity with different id column still works well", async (dp) => {
     ctx = new Context();
     ctx.setDataProvider(dp);
-    let s = ctx.for(entityWithValidations);
+    let s = ctx.repo(entityWithValidations);
     let c = s.create();
 
     c.myId = 1; c.name = 'noam';
@@ -438,11 +438,11 @@ describe("data api", () => {
   itWithDataProvider("empty find works", async (dp) => {
     let ctx = new Context();
     ctx.setDataProvider(dp);
-    let c = ctx.for(newCategories).create();
+    let c = ctx.repo(newCategories).create();
     c.id = 5;
     c.categoryName = 'test';
     await c._.save();
-    let l = await ctx.for(newCategories).find();
+    let l = await ctx.repo(newCategories).find();
     expect(l.length).toBe(1);
     expect(l[0].categoryName).toBe('test');
 
@@ -497,7 +497,7 @@ describe("data api", () => {
       }, transaction: undefined
     });
 
-    var api = new DataApi(ctx.for(newCategories), ctx);
+    var api = new DataApi(ctx.repo(newCategories), ctx);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = () => d.ok();
@@ -525,7 +525,7 @@ describe("data api", () => {
 
   it("post with logic works and max in entity", async () => {
     await testAllDbs(async ({ context }) => {
-      let c = context.for(entityWithValidations);
+      let c = context.repo(entityWithValidations);
 
       var api = new DataApi(c, context);
       let t = new TestDataApiResponse();
@@ -1063,7 +1063,7 @@ describe("data api", () => {
 
     {
 
-      let c = context.for(type).create();
+      let c = context.repo(type).create();
       c.id = 1;
       c.categoryName = 'name';
       c.description = "noam";
@@ -1072,7 +1072,7 @@ describe("data api", () => {
     };
 
 
-    var api = new DataApi(context.for(type), context);
+    var api = new DataApi(context.repo(type), context);
     let t = new TestDataApiResponse();
     let d = new Done();
 
@@ -1087,7 +1087,7 @@ describe("data api", () => {
     });
 
     d.test();
-    var x = await context.for(type).find({ where: c => c.id.isEqualTo(1) });
+    var x = await context.repo(type).find({ where: c => c.id.isEqualTo(1) });
     expect(x[0].categoryName).toBe('kuku');
 
 
@@ -1320,7 +1320,7 @@ describe("data api", () => {
 
     }
     Entity({ allowApiCrud: false, key: 'a' })(type);
-    expect(new DataApi(sc.for(type), sc)._getApiSettings().allowRead).toBe(false);
+    expect(new DataApi(sc.repo(type), sc)._getApiSettings().allowRead).toBe(false);
   });
   it("allow api read depends also on api crud", async () => {
     let sc = new Context();
@@ -1328,7 +1328,7 @@ describe("data api", () => {
 
     }
     Entity({ allowApiCrud: false, allowApiRead: true, key: 'a' })(type);
-    expect(new DataApi(sc.for(type), sc)._getApiSettings().allowRead).toBe(true);
+    expect(new DataApi(sc.repo(type), sc)._getApiSettings().allowRead).toBe(true);
 
   });
 
@@ -1549,7 +1549,7 @@ describe("data api", () => {
   });
 
   it("columnsAreOk", () => {
-    let c = new Context().for(newCategories).create();
+    let c = new Context().repo(newCategories).create();
     expect([...c._.fields].length).toBe(6);
 
   });
@@ -1559,12 +1559,12 @@ describe("data api", () => {
   itWithDataProvider("count", async (dp) => {
     let ctx = new Context();
     ctx.setDataProvider(dp);
-    expect(await ctx.for(newCategories).count()).toBe(0);
-    let c = ctx.for(newCategories).create();
+    expect(await ctx.repo(newCategories).count()).toBe(0);
+    let c = ctx.repo(newCategories).create();
     c.id = 5;
     c.categoryName = 'test';
     await c._.save();
-    expect(await ctx.for(newCategories).count()).toBe(1);
+    expect(await ctx.repo(newCategories).count()).toBe(1);
   });
 
 });
@@ -1600,7 +1600,7 @@ describe("rest call use url get or fallback to post", () => {
 });
 describe("column validation", () => {
   it("validation clears on reset", () => {
-    let c = new Context().for(newCategories).create();
+    let c = new Context().repo(newCategories).create();
     expect(c._.hasErrors()).toBe(true);
     c._.fields.id.error = "x";
     expect(c._.fields.id.error).toBe("x");
@@ -1610,7 +1610,7 @@ describe("column validation", () => {
     expect(c._.hasErrors()).toBe(true);
   });
   it("validation clears on change", () => {
-    let c = new Context().for(newCategories).create();
+    let c = new Context().repo(newCategories).create();
     expect(c._.hasErrors()).toBe(true);
     c._.fields.id.error = "x";
     expect(c._.hasErrors()).toBe(false);
@@ -1637,7 +1637,7 @@ describe("column validation", () => {
     Field()(type.prototype, "name");
     Field({ valueType: Date })(type.prototype, "c3");
 
-    let f = c.for(type);
+    let f = c.repo(type);
     let d = new Date(2020, 1, 2, 3, 4, 5, 6);
     let p = f.create();
     p.name = '1';
@@ -1669,7 +1669,7 @@ describe("test web sql identity", () => {
     Field()(type.prototype, "name");
 
 
-    let f = c.for(type);
+    let f = c.repo(type);
     let t = f.create();
     t.name = 'a';
     await t._.save();
@@ -1683,7 +1683,7 @@ describe("test web sql identity", () => {
 describe("compound id", () => {
   it("id field is comound", () => {
     let ctx = new Context();
-    expect(ctx.for(CompoundIdEntity).metadata.idMetadata.field instanceof CompoundIdField).toBe(true);
+    expect(ctx.repo(CompoundIdEntity).metadata.idMetadata.field instanceof CompoundIdField).toBe(true);
   });
   it("compound sql",
     async () => {
@@ -1691,7 +1691,7 @@ describe("compound id", () => {
       let ctx = new Context();
       ctx.setDataProvider(sql);
 
-      let cod = ctx.for(CompoundIdEntity);
+      let cod = ctx.repo(CompoundIdEntity);
       for (const od of await cod.find({ where: od => od.a.isEqualTo(99) })) {
         await od._.delete();
       }
@@ -1711,7 +1711,7 @@ describe("compound id", () => {
     let ctx = new Context();
     ctx.setDataProvider(mem);
 
-    let s = ctx.for(CompoundIdEntity);
+    let s = ctx.repo(CompoundIdEntity);
 
     mem.rows[s.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1731,7 +1731,7 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
-    let c = ctx.for(CompoundIdEntity);
+    let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
 
@@ -1752,7 +1752,7 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
-    let c = ctx.for(CompoundIdEntity);
+    let c = ctx.repo(CompoundIdEntity);
 
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1771,23 +1771,23 @@ describe("compound id", () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
-    let c = ctx.for(CompoundIdEntity).create();
-    mem.rows[ctx.for(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
+    let c = ctx.repo(CompoundIdEntity).create();
+    mem.rows[ctx.repo(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
 
     c.a = 3;
     c.b = 33;
     c.c = 3333;
     await c._.save();
-    expect(mem.rows[ctx.for(CompoundIdEntity).metadata.key][2].b).toBe(33);
-    expect(mem.rows[ctx.for(CompoundIdEntity).metadata.key][2].id).toBe(undefined);
+    expect(mem.rows[ctx.repo(CompoundIdEntity).metadata.key][2].b).toBe(33);
+    expect(mem.rows[ctx.repo(CompoundIdEntity).metadata.key][2].id).toBe(undefined);
     expect(c._.getId()).toBe('3,33');
   });
   it("delete", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Context();
     ctx.setDataProvider(mem);
-    let c = ctx.for(CompoundIdEntity);
+    let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
     let r = await c.find();
@@ -1817,12 +1817,12 @@ describe("test data list", () => {
 
     }
     Entity({ key: 'testName', dbName: 'test' })(type);
-    let r = new Context().for(type);
+    let r = new Context().repo(type);
     expect((await r.metadata.getDbName())).toBe('test');
   });
   it("dbname of entity can use column names", async () => {
 
-    let r = new Context().for(EntityWithLateBoundDbName);
+    let r = new Context().repo(EntityWithLateBoundDbName);
     expect((await r.metadata.getDbName())).toBe('(select CategoryID)');
   });
 
@@ -1837,7 +1837,7 @@ describe("test data list", () => {
         return r;
       }, transaction: undefined
     });
-    let rl = new DataList<newCategories>(cont.for(newCategories));
+    let rl = new DataList<newCategories>(cont.repo(newCategories));
     await rl.get();
     expect(rl.items.length).toBe(3);
     try {
@@ -1884,7 +1884,7 @@ describe("test bool value", () => {
         valueType: Number
       })(type.prototype, 'id');
       Field({ valueType: Boolean })(type.prototype, "ok");
-      let r = context.for(type).create();
+      let r = context.repo(type).create();
       r.id = 1;
       r.ok = true;
       await r._.save();
@@ -1909,7 +1909,7 @@ describe("test bool value", () => {
         valueType: Number
       })(type.prototype, 'id');
       Field({ valueType: Boolean })(type.prototype, "ok");
-      let r = context.for(type).create();
+      let r = context.repo(type).create();
       r.id = 1;
       expect(r.ok).toBe(false);
       await r._.save();
@@ -1953,7 +1953,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
-    let c = new Context().for(type);
+    let c = new Context().repo(type);
     let z = new RestDataProvider("", {
       delete: undefined,
       get: async () => {
@@ -1983,7 +1983,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
-    let c = new Context().for(type);
+    let c = new Context().repo(type);
     let r = await Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
@@ -1996,7 +1996,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
-    let c = new Context().for(type);
+    let c = new Context().repo(type);
     let done = new Done();
     let z = new RestDataProvider("", {
       delete: undefined,
@@ -2099,7 +2099,7 @@ class CompoundIdEntity extends EntityBase {
       t._.fields.name.error = 'invalid';
 
     if (t._.isNew() && (!t.myId || t.myId == 0)) {
-      let e = await t.context.for(entityWithValidations).find({
+      let e = await t.context.repo(entityWithValidations).find({
         orderBy: x => x.myId.descending(),
         limit: 1
       });
@@ -2160,7 +2160,7 @@ export class EntityWithLateBoundDbName extends EntityBase {
 async function create4RowsInDp(ctx: Context, dataProvider: DataProvider) {
   ctx = new Context();
   ctx.setDataProvider(dataProvider);
-  let s = ctx.for(entityWithValidations);
+  let s = ctx.repo(entityWithValidations);
   let c = s.create();
   c.myId = 1;
   c.name = 'noam';

@@ -13,7 +13,7 @@ describe("test default value", () => {
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
-        let r = c.for(testDefaultValue).create();
+        let r = c.repo(testDefaultValue).create();
         expect(r.test).toBe(1);
         expect(testDefaultValue.testVal).toBe(2);
     });
@@ -21,9 +21,9 @@ describe("test default value", () => {
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
-        let r = c.for(testDefaultValue).create();
+        let r = c.repo(testDefaultValue).create();
         await r._.save();
-        let res = await c.for(testDefaultValue).find({});
+        let res = await c.repo(testDefaultValue).find({});
         expect(res.length).toBe(1);
         expect(testDefaultValue.testVal).toBe(2);
         expect(res[0].test).toBe(1);

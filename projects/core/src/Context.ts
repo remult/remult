@@ -169,7 +169,7 @@ export class Context {
         return false;
     }
     repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
-    public for<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
+    public repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
         if (dataProvider === undefined)
             dataProvider = this._dataSource;
         let dpCache = this.repCache.get(dataProvider);

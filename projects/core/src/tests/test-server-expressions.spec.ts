@@ -14,7 +14,7 @@ describe("test server expression value", () => {
         c.setDataProvider(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        let r = c.for(testServerExpression).create();
+        let r = c.repo(testServerExpression).create();
         r.code = 5;
         await r._.save();
         expect(r.test).toBe(1);
@@ -27,12 +27,12 @@ describe("test server expression value", () => {
         c.setDataProvider(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        let r = c.for(testServerExpression).create();
+        let r = c.repo(testServerExpression).create();
         r.code = 5;
         await r._.save();
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        r = (await c.for(testServerExpression).find({}))[0];
+        r = (await c.repo(testServerExpression).find({}))[0];
         expect(r.test).toBe(1);
         expect(r.testPromise).toBe(11);
         expect(testServerExpression.testVal).toBe(2);
@@ -45,7 +45,7 @@ describe("test server expression value", () => {
 
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        let r = c.for(testServerExpression).create();
+        let r = c.repo(testServerExpression).create();
         r.code = 5;
         await r._.save();
         expect(r.test).toBe(undefined);
@@ -58,12 +58,12 @@ describe("test server expression value", () => {
         let c = new Context();
         c.setDataProvider(new InMemoryDataProvider());
 
-        let r = c.for(testServerExpression).create();
+        let r = c.repo(testServerExpression).create();
         r.code = 5;
         await r._.save();
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
-        r = (await c.for(testServerExpression).find({}))[0];
+        r = (await c.repo(testServerExpression).find({}))[0];
         expect(r.test).toBe(undefined);
         expect(r.testPromise).toBe(undefined);
         expect(testServerExpression.testVal).toBe(1);

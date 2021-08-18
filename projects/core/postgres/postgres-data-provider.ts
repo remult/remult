@@ -99,7 +99,7 @@ export class PostgresSchemaBuilder {
         console.log("start verify structure");
         let context = new Context();
         for (const entity of allEntities) {
-            let metadata = context.for(entity).metadata;
+            let metadata = context.repo(entity).metadata;
 
             try {
 
@@ -200,10 +200,10 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
     let c = new Context();
     c.setDataProvider(sql);
     let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
-    let e = c.for(JobsInQueueEntity);
+    let e = c.repo(JobsInQueueEntity);
     await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);
     await new PostgresSchemaBuilder(sql).verifyAllColumns(e.metadata);
 
-    return new (await import('../server/expressBridge')).EntityQueueStorage(c.for(JobsInQueueEntity));
+    return new (await import('../server/expressBridge')).EntityQueueStorage(c.repo(JobsInQueueEntity));
 
 }

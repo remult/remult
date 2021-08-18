@@ -18,38 +18,38 @@ describe("test sql database expressions", () => {
     let context = new Context();
     context.setDataProvider(db);
     async function deleteAll() {
-        await web.dropTable(context.for(testSqlExpression).metadata);
-        await web.dropTable(context.for(expressionEntity).metadata);
+        await web.dropTable(context.repo(testSqlExpression).metadata);
+        await web.dropTable(context.repo(expressionEntity).metadata);
 
     }
     it("test basics", async () => {
         await deleteAll();
-        let x = context.for(testSqlExpression).create();
+        let x = context.repo(testSqlExpression).create();
         x.code = 3;
         await x._.save();
         expect(x.code).toBe(3);
         expect(x.testExpression).toBe(15, "after save");
         expect(x._.fields.testExpression.originalValue).toBe(15, "after save");
-        x = await context.for(testSqlExpression).findFirst();
+        x = await context.repo(testSqlExpression).findFirst();
 
         expect(x.testExpression).toBe(15);
     });
     it("test undefined behaves as a column", async () => {
         await deleteAll();
-        let x = context.for(expressionEntity);
+        let x = context.repo(expressionEntity);
         expect((await x.metadata.fields.col.getDbName())).toBe('col');
         expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
         //expect(x.metadata.fields.col.dbReadOnly).toBe(false);
         let c = new Context();
         c.setDataProvider(db);
         expressionEntity.yes = true;
-        x = c.for(expressionEntity);
+        x = c.repo(expressionEntity);
         expect(await x.metadata.fields.col.getDbName()).toBe("'1+1'");
         expect((await x.create({ col: 'abc', id: 2 }).save()).col).toBe('1+1');
         //expect(x.metadata.fields.col.dbReadOnly).toBe(true);
     });
     it("test asyync dbname", async () => {
-        let z = await context.for(testServerExpression1).metadata.getDbName();
+        let z = await context.repo(testServerExpression1).metadata.getDbName();
         expect(z).toBe('testServerExpression1');
     });
 
@@ -115,7 +115,7 @@ export class myDummySQLCommand implements SqlCommand {
 describe("test filter for date", () => {
     it("filter",async () => {
         let c = new Context()
-        let e = c.for(testCreate);
+        let e = c.repo(testCreate);
         var d = new myDummySQLCommand();
         let f = new FilterConsumerBridgeToSqlRequest(d);
         f.isGreaterOrEqualTo(e.metadata.fields.theDate,new Date("2021-08-06T05:05:25.440Z"));
@@ -127,7 +127,7 @@ describe("Postgres create db", () => {
 
     let c = new Context()
     it("what", () => {
-        let e = c.for(testCreate);
+        let e = c.repo(testCreate);
         expect(postgresColumnSyntax(e.metadata.fields.theDate, "x")).toBe("x date");
         expect(postgresColumnSyntax(e.metadata.fields.i, "x")).toBe("x integer default 0 not null");
         expect(postgresColumnSyntax(e.metadata.fields.s, "x")).toBe("x varchar default '' not null", "s");
