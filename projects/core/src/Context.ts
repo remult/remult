@@ -97,24 +97,6 @@ export class Context {
             Action.provider = provider;
     }
 
-    getCookie(name: string) {
-        return '';
-    }
-    getHost() {
-        return '';
-    }
-    getPathInUrl() {
-        if (this.req)
-            return this.req.getBaseUrl();
-        if (!this.backend || typeof (window) != "undefined")
-            return window.location.pathname;
-        return undefined;
-
-    }
-    getOrigin() {
-        return '';
-    }
-
 
     _dataSource: DataProvider;
     setDataProvider(dataProvider: DataProvider) {
@@ -201,15 +183,10 @@ export class Context {
         return r;
 
     }
-    req: DataApiRequest;
 
-    setReq(req: DataApiRequest) {
-        this.req = req;
-        this._user = req.user ? req.user : undefined;
-    }
 
 }
-export declare type DataProviderFactoryBuilder = (req: Context) => DataProvider;
+
 export class ServerContext extends Context {
     constructor(dp?: DataProvider) {
         super();
@@ -219,36 +196,11 @@ export class ServerContext extends Context {
 
 
     }
-    getHost() {
-        if (!this.req)
-            return undefined;
-        return this.req.getHeader('host');
-    }
-    getPathInUrl() {
-        if (!this.req)
-            return undefined;
-        return this.req.getBaseUrl();
-    }
-    getCookie(name: string) {
-        if (this.req) {
-            let cookie = this.req.getHeader('cookie');
-            if (cookie)
-                for (const iterator of cookie.split(';')) {
-                    let itemInfo = iterator.split('=');
-                    if (itemInfo && itemInfo[0].trim() == name) {
-                        return itemInfo[1];
-                    }
-                }
-        }
-        return undefined;
-    }
 
 
-    getOrigin() {
-        if (!this.req)
-            return undefined;
-        return this.req.getHeader('origin')
-    }
+
+
+
 }
 
 export const allEntities: ClassType<any>[] = [];

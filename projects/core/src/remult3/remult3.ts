@@ -19,13 +19,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [V] remove recursive types with array (Where etc...) Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
 
-[] introduce the context based factory for EntityOptions and FieldOptions
+[V] introduce the context based factory for EntityOptions and FieldOptions
     @Entity({},(o,c)=>{
         o.
     })
-[] remove info about request from context
-[] change context.for to remult.repo
+[V] remove info about request from context
 [] remove backend member from context and create isBackend method.
+[] change context.for to remult.repo
 [] api find array should load nothing :) (check server methods)
 [] isnull should be valueIsNull, and originalValueIsNull
 [] valueChanged instead of was changed.
@@ -36,13 +36,29 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] fix readonly checkbox on grid.
 []  checkbox shouldn't display text true false on grid
 [] rename AuthenticatedInGuard and not signed in guard
+[] insert filter into the grid button
+[] insert the column selection into the grid button.
+[] change grid button icon to COG
+
 
 
 
 ## review with yoni
 [] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
-[] require key in entity function parameters, instead of a mandatory key member
+* maybe not do the array stuff, and instead do a Filter Join to build an array, that way to filter itself stays simple - just a method call
+
 [] @ExcludeEntityFromApi()
+    [] require key in entity function parameters, instead of a mandatory key member
+    [] let myRoute = api(contextForRouteExtraction).getRoute();
+
+[] reconsider factory, instead of (options,context), to be (set,context).
+```
+(options,context)=>options.dbName = async ()=>"bla bla"
+vs
+(set,context)=>set ({dbName : async ()=>"bla bla"})
+```
+
+
 
 [] consider the different wheres of an entity, to see where it takes us.
 [] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.
@@ -244,7 +260,7 @@ export interface EntityMetadata<entityType = any> {
     readonly fields: FieldsMetadata<entityType>,
     readonly caption: string;
     readonly options: EntityOptions;
-    getDbName():Promise<string>;
+    getDbName(): Promise<string>;
 }
 export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
@@ -293,8 +309,8 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = EntityWhereItem<entityType>|EntityWhereItem<entityType>[];
-export declare type EntityWhereItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]) );
+export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
+export declare type EntityWhereItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]));
 
 
 

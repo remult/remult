@@ -156,8 +156,7 @@ describe("custom filter", () => {
                 if (x == customUrlToken)
                     return "{\"oneAndThree\":true}";
                 return undefined;
-            }, clientIp: '', user: undefined, getHeader: x => ""
-            , getBaseUrl: () => ''
+            }
         });
         d.test();
     });
@@ -179,8 +178,7 @@ describe("custom filter", () => {
                 if (x == customUrlToken)
                     return;
                 return undefined;
-            }, clientIp: '', user: undefined, getHeader: x => ""
-            , getBaseUrl: () => ''
+            }
         }, {
             "_$custom":
             {
@@ -207,8 +205,7 @@ describe("custom filter", () => {
                 if (x == customUrlToken)
                     return;
                 return undefined;
-            }, clientIp: '', user: undefined, getHeader: x => ""
-            , getBaseUrl: () => ''
+            }
         }, {
             "_$custom": [
                 {
@@ -239,8 +236,7 @@ describe("custom filter", () => {
                 if (x == customUrlToken)
                     return "{\"dbOneOrThree\":true}";
                 return undefined;
-            }, clientIp: '', user: undefined, getHeader: x => ""
-            , getBaseUrl: () => ''
+            }
         });
         d.test();
     });

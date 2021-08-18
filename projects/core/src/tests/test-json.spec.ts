@@ -105,8 +105,7 @@ describe("test tasks", () => {
                 if (x == 'completed_ne')
                     return 'true';
                 return undefined;
-            }, clientIp: '', user: undefined, getHeader: x => ""
-            , getBaseUrl: () => ''
+            }
         });
         d.test();
     });

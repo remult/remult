@@ -11,7 +11,7 @@ export {
     EntityMetadata,
     EntityOrderBy,
     EntityWhere,
-
+    OptionsFactory,
     FindOptions,
     IterableResult,
     IterateOptions,
@@ -77,7 +77,6 @@ export {
     Allowed,
     Allow,
     Context,
-    DataProviderFactoryBuilder,
     AllowedForInstance,
     EventDispatcher,
     EventSource,

@@ -586,8 +586,7 @@ describe("data api", () => {
         if (x == "id")
           return "2";
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });
@@ -610,8 +609,7 @@ describe("data api", () => {
         if (x == "id_ne")
           return ["1", "3"];
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });
@@ -634,8 +632,7 @@ describe("data api", () => {
         if (x == "status_ne")
           return ["0", "2"];
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });
@@ -660,8 +657,7 @@ describe("data api", () => {
         if (x == "status_in")
           return '[1, 2]';
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });
@@ -684,8 +680,7 @@ describe("data api", () => {
       await api.getArray(t, {
         get: x => {
           return undefined;
-        }, clientIp: '', user: undefined, getHeader: x => ""
-        , getBaseUrl: () => ''
+        }
       }, {
         status_in: '[1, 2]'
       });
@@ -710,8 +705,7 @@ describe("data api", () => {
     await api.getArray(t, {
       get: x => {
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     }, {
       status_in: [1, 2]
     });
@@ -735,8 +729,7 @@ describe("data api", () => {
     await api.getArray(t, {
       get: x => {
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     }, {
       OR: [
         { status: 1 },
@@ -1128,7 +1121,7 @@ describe("data api", () => {
     expect(b._.wasChanged()).toBe(false);
     expect(b.$.categoryName.originalValue).toBe('yael');
   });
-  itAsync("Find null works",async()=>{
+  itAsync("Find null works", async () => {
     let [c, context] = await createData(async insert => await insert(1, 'noam'));
     expect(await c.findId(null)).toBeNull();
     expect(await c.findId(undefined)).toBeNull();
@@ -1259,8 +1252,7 @@ describe("data api", () => {
         if (x == c.create()._.fields.categoryName.metadata.key + '_contains')
           return "a";
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });
@@ -1285,8 +1277,7 @@ describe("data api", () => {
           if (x == c.create()._.fields.categoryName.metadata.key + '_st')
             return "y";
           return undefined;
-        }, clientIp: '', user: undefined, getHeader: x => ""
-        , getBaseUrl: () => ''
+        }
       });
       d.test();
     })
@@ -1310,8 +1301,7 @@ describe("data api", () => {
         if (x == c.create()._.fields.description.metadata.key)
           return "a";
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });
@@ -1388,8 +1378,7 @@ describe("data api", () => {
         if (x == "categoryName")
           return "a";
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
 
@@ -1403,8 +1392,7 @@ describe("data api", () => {
         if (x == "id")
           return "1";
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
 
@@ -1547,8 +1535,7 @@ describe("data api", () => {
         if (x == "_order")
           return "asc,desc";
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });
@@ -1851,7 +1838,7 @@ describe("test data list", () => {
 
 });
 describe("test date storage", () => {
-  it("works", () => { 
+  it("works", () => {
     let val = "1976-06-16";
     /** */
     var d: Date = DateOnlyValueConverter.fromJson(val);
@@ -1868,7 +1855,7 @@ describe("test date storage", () => {
 });
 describe("test bool value", () => {
   it("should work", () => {
-    let col = decorateColumnSettings<Boolean>({ valueType: Boolean },new Context());
+    let col = decorateColumnSettings<Boolean>({ valueType: Boolean }, new Context());
     expect(col.valueConverter.fromJson(true)).toBe(true);
     expect(col.valueConverter.fromJson(false)).toBe(false);
   });

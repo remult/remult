@@ -95,13 +95,7 @@ Action.provider = {
                 t.error = data =>
                   r(JSON.parse(JSON.stringify(serializeError(data))));
                 let context = new ServerContext(ActionTestConfig.db);
-                context.setReq({
-                  get: x => {
-                    ;
-                    return undefined;
-                  }, clientIp: '', user: undefined, getHeader: x => ""
-                  , getBaseUrl: () => ''
-                });
+
 
                 what(JSON.parse(JSON.stringify(data)), context, t);
               }

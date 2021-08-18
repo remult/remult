@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Context, AllowedForInstance, ServerContext, Allowed, DataProviderFactoryBuilder, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
+import { Context, AllowedForInstance, ServerContext, Allowed,  allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
 
 
 

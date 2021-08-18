@@ -232,11 +232,7 @@ export interface DataApiResponse {
 
 
 export interface DataApiRequest {
-  getBaseUrl(): string;
   get(key: string): any;
-  getHeader(key: string): string;
-  user: UserInfo;
-  clientIp: string;
 }
 export function determineSort(sortUrlParm: string, dirUrlParam: string) {
   let dirItems: string[] = [];

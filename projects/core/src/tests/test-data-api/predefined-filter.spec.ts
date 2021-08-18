@@ -147,8 +147,7 @@ describe("data api", () => {
         if (x == c.create()._.fields.description.metadata.key)
           return "a";
         return undefined;
-      }, clientIp: '', user: undefined, getHeader: x => ""
-      , getBaseUrl: () => ''
+      }
     });
     d.test();
   });

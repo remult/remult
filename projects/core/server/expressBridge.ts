@@ -1,10 +1,10 @@
 
 
-import { UserInfo, DataProvider, Context, DataProviderFactoryBuilder, InMemoryDataProvider, IdEntity } from '../';
+import { UserInfo, DataProvider, Context, IdEntity } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
-import {  registerEntitiesOnServer } from './register-entities-on-server';
+import { registerEntitiesOnServer } from './register-entities-on-server';
 
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
@@ -21,20 +21,17 @@ import { ExcludeEntityFromApi, ServerContext } from '../src/context';
 export function initExpress(app: express.Express,
   options?:
     {
-      dataProvider?: DataProvider | DataProviderFactoryBuilder,
+      dataProvider?: DataProvider,
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
-      getUserFromRequest?: (origReq: express.Request) => Promise<UserInfo>,
-      initRequest?: (context: ServerContext) => Promise<void>
+      initRequest?: (context: ServerContext, origReq: express.Request) => Promise<void>
     }) {
 
   if (!options) {
     options = {};
   }
-  if (!options.getUserFromRequest) {
-    options.getUserFromRequest = x => x['user'];
-  }
+
   if (options.bodySizeLimit === undefined) {
     options.bodySizeLimit = '10mb';
   }
@@ -46,19 +43,11 @@ export function initExpress(app: express.Express,
   app.use(bodyParser.json({ limit: options.bodySizeLimit }));
   app.use(bodyParser.urlencoded({ extended: true, limit: options.bodySizeLimit }));
 
-  let builder: DataProviderFactoryBuilder;
-  if (options.dataProvider) {
-    let dataProvider = options.dataProvider;
-    if (typeof dataProvider === 'function')
-      builder = <DataProviderFactoryBuilder>dataProvider;
-    else
-      builder = () => <DataProvider>dataProvider;
-  }
-  else {
-    builder = () => new JsonDataProvider(new JsonEntityFileStorage('./db'));
+  if (!options.dataProvider) {
+    options.dataProvider = new JsonDataProvider(new JsonEntityFileStorage('./db'));
   }
 
-  let result = new ExpressBridge(app, options.getUserFromRequest, new inProcessQueueHandler(options.queueStorage), options.initRequest, builder);
+  let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, options.dataProvider);
   let apiArea = result.addArea('/' + Context.apiBaseUrl);
 
 
@@ -80,18 +69,17 @@ export class ExpressBridge {
 
 
 
-  constructor(private app: express.Express, public getUserFromRequest: (origReq: express.Request) => Promise<UserInfo>, public queue: inProcessQueueHandler, public initRequest: (context: ServerContext) => Promise<void>,
-    public _dataProviderFactory: DataProviderFactoryBuilder) {
+  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (context: ServerContext, origReq: express.Request) => Promise<void>,
+    public dataProvider: DataProvider) {
 
   }
   logApiEndPoints = true;
   private firstArea: SiteArea;
 
   addArea(
-    rootUrl: string,
-    isUserValidForArea?: (origReq: DataApiRequest) => boolean
+    rootUrl: string
   ) {
-    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints, isUserValidForArea);
+    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints);
     if (!this.firstArea) {
       this.firstArea = r;
 
@@ -110,8 +98,7 @@ export class SiteArea {
     private bridge: ExpressBridge,
     private app: express.Express,
     private rootUrl: string,
-    private logApiEndpoints: boolean,
-    private isUserValidForArea: (origReq: DataApiRequest) => boolean) {
+    private logApiEndpoints: boolean) {
 
 
   }
@@ -126,7 +113,7 @@ export class SiteArea {
     let api: ((req: ServerContext) => DataApi);
     api = entityOrDataApiFactory;
     let contextForRouteExtraction = new ServerContext();
-    contextForRouteExtraction.setReq({ clientIp: 'onServer', user: undefined, get: (r: any) => '', getHeader: (x: any) => "", getBaseUrl: () => '' })
+
     let myRoute = api(contextForRouteExtraction).getRoute();
     myRoute = this.rootUrl + '/' + myRoute;
     if (this.logApiEndpoints)
@@ -165,16 +152,15 @@ export class SiteArea {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res);
-      myReq.user = await this.bridge.getUserFromRequest(req);
-      if (this.isUserValidForArea)
-        if (!this.isUserValidForArea(myReq))
-          myReq.user = null;
       let context = new ServerContext();
-      context.setReq(myReq);
-      context.setDataProvider(this.bridge._dataProviderFactory(context));
+      context.setDataProvider(this.bridge.dataProvider);
+      let user = req['user'];
+      if (user)
+        context.setUser(user);
       if (this.bridge.initRequest) {
-        await this.bridge.initRequest(context);
+        await this.bridge.initRequest(context, req);
       }
+
       what(context, myReq, myRes, req);
     }
   };
@@ -235,16 +221,9 @@ export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): any {
     return this.r.query[key];
   }
-  getBaseUrl() {
-    if (this.r.originalUrl)
-      return this.r.originalUrl
-    return this.r.path;
-  }
-  getHeader(key: string) { return this.r.headers[key] as string };
-  user: UserInfo = undefined;
-  clientIp: string;
+
   constructor(private r: express.Request) {
-    this.clientIp = r.ip;
+
   }
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
@@ -435,7 +414,7 @@ export class EntityQueueStorage implements QueueStorage {
 @ExcludeEntityFromApi()
 @Entity({
   key: 'jobsInQueue'
-  
+
 })
 export class JobsInQueueEntity extends IdEntity {
   @Field()
