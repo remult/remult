@@ -37,7 +37,7 @@ export class DataApi<T = any> {
       return;
     }
     try {
-      let findOptions: FindOptions<T> = {};
+      let findOptions: FindOptions<T> = {load:()=>[]};
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }

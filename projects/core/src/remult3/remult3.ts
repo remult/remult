@@ -26,7 +26,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] remove info about request from context
 [V] remove backend member from context and create isBackend method.
 [V] change remult.for to remult.repo
-[] api find array should load nothing :) (check server methods)
+[V] api find array should load nothing :) (check server methods)
 [] isnull should be valueIsNull, and originalValueIsNull
 [] valueChanged instead of was changed.
 [] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
