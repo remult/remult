@@ -1,4 +1,4 @@
-import {  RemultModule, NotSignedInGuard, AuthenticatedInGuard } from '@remult/angular';
+import {  RemultModule, NotAuthenticatedGuard, AuthenticatedInGuard } from '@remult/angular';
 import { NgModule, ErrorHandler } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './home/home.component';

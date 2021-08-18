@@ -24,8 +24,8 @@ import { entityEventListener } from "../__EntityValueProvider";
         o.
     })
 [V] remove info about request from context
-[] remove backend member from context and create isBackend method.
-[] change context.for to remult.repo
+[V] remove backend member from context and create isBackend method.
+[V] change context.for to remult.repo
 [] api find array should load nothing :) (check server methods)
 [] isnull should be valueIsNull, and originalValueIsNull
 [] valueChanged instead of was changed.

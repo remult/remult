@@ -40,7 +40,7 @@ export declare type AngularComponent = { new(...args: any[]): any };
 // @dynamic
 @Injectable()
 export class AuthenticatedInGuard implements CanActivate {
-    constructor(protected context: Remult, private router: Router, private helper: RouteHelperService) {
+    constructor(protected remult: Remult, private router: Router, private helper: RouteHelperService) {
 
     }
     isAllowed(): Allowed {
@@ -49,7 +49,7 @@ export class AuthenticatedInGuard implements CanActivate {
     static componentToNavigateIfNotAllowed:AngularComponent;
     
     canActivate(route: ActivatedRouteSnapshot) {
-        if (this.context.authenticated()&&this.context.isAllowed(this.isAllowed())) {
+        if (this.remult.authenticated()&&this.remult.isAllowed(this.isAllowed())) {
             return true;
         }
         
@@ -66,12 +66,12 @@ export class AuthenticatedInGuard implements CanActivate {
 
 
 @Injectable()
-export class NotSignedInGuard implements CanActivate {
-    constructor(private context: Remult, private router: Router) {
+export class NotAuthenticatedGuard implements CanActivate {
+    constructor(private remult: Remult, private router: Router) {
     }
     canActivate(route: ActivatedRouteSnapshot) {
 
-        if (this.context.authenticated())
+        if (this.remult.authenticated())
             return false;
         return true;
 
