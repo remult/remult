@@ -449,16 +449,15 @@ describe("data api", () => {
 
   });
   itWithDataProvider("parial updates", async (dp) => {
-    SqlDatabase.LogToConsole=true;
     let remult = new Remult();
     remult.setDataProvider(dp);
     let c = remult.repo(newCategories).create({
-      id: 5, categoryName: 'test',description:'desc'
+      id: 5, categoryName: 'test', description: 'desc'
     });
     await c._.save();
     let l = await remult.repo(newCategories).findId(5);
-    c.categoryName='newname';
-    l.description='new desc';
+    c.categoryName = 'newname';
+    l.description = 'new desc';
     await c.save();
     await l.save();
     expect(l.categoryName).toBe('newname');
@@ -2154,7 +2153,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
 }
 @Entity<EntityWithLateBoundDbName>({
   key: 'stam',
-  dbName: async (t) => '(select ' + await t.id.getDbName() + ')'
+  sqlExpression: async (t) => '(select ' + await t.id.getDbName() + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
   @Field({ dbName: 'CategoryID' })

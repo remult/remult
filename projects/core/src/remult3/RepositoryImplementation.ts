@@ -1100,18 +1100,27 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {
+
         if (this.dbNamePromise)
             return this.dbNamePromise;
-        if (typeof this.options.dbName === "string")
+        if (!this.options.sqlExpression) {
             this.dbNamePromise = Promise.resolve(this.options.dbName);
-        else if (typeof this.options.dbName === "function") {
+        }
+        if (typeof this.options.sqlExpression === "string")
+            this.dbNamePromise = Promise.resolve(this.options.sqlExpression);
+        else if (typeof this.options.sqlExpression === "function") {
 
-            let r = this.options.dbName(this.fields);
+            let r = this.options.sqlExpression(this.fields);
             if (r instanceof Promise)
                 this.dbNamePromise = r;
             else if (r)
                 this.dbNamePromise = Promise.resolve(r);
         }
+        this.dbNamePromise = this.dbNamePromise.then(x => {
+            if (!x)
+                return this.options.dbName;
+            return x;
+        });
         return this.dbNamePromise;
 
     }

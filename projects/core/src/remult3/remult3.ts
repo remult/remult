@@ -30,16 +30,16 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] isnull should be valueIsNull, and originalValueIsNull
 [V] valueChanged instead of was changed.
 [V] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
-[] test why date is equal to null - didn't work
-[] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
-[] talk about the case where postgres created a remult, to build the database - and it didn't have our special methods created in init remult, - send context for  create all entities
+[V] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
+[V] talk about the case where postgres created a remult, to build the database - and it didn't have our special methods created in init remult, - send context for  create all entities
 [] fix readonly checkbox on grid.
 []  checkbox shouldn't display text true false on grid
 [] rename AuthenticatedInGuard and not signed in guard
 [] insert filter into the grid button
 [] insert the column selection into the grid button.
-[] change grid button icon to COG
+[] change grid button icon to something else
 
+[] test why date is equal to null - didn't work
 
 
 

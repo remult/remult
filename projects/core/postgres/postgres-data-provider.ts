@@ -90,22 +90,22 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
 
 }
 
-export async function verifyStructureOfAllEntities(db: SqlDatabase) {
-    return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities();
+export async function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remult) {
+    return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities(remult);
 }
 
 export class PostgresSchemaBuilder {
-    async verifyStructureOfAllEntities() {
+    async verifyStructureOfAllEntities(remult: Remult) {
         console.log("start verify structure");
-        let remult = new Remult();
         for (const entity of allEntities) {
             let metadata = remult.repo(entity).metadata;
 
             try {
-
-                if ((await metadata.getDbName()).toLowerCase().indexOf('from ') < 0) {
-                    await this.createIfNotExist(metadata);
-                    await this.verifyAllColumns(metadata);
+                if (!metadata.options.sqlExpression) {
+                    if ((await metadata.getDbName()).toLowerCase().indexOf('from ') < 0) {
+                        await this.createIfNotExist(metadata);
+                        await this.verifyAllColumns(metadata);
+                    }
                 }
             }
             catch (err) {
@@ -142,7 +142,7 @@ export class PostgresSchemaBuilder {
             }
         });
     }
-  
+
 
     async addColumnIfNotExist<T extends EntityMetadata>(e: T, c: ((e: T) => FieldMetadata)) {
         if (await isDbReadonly(c(e)))

@@ -84,7 +84,7 @@ class testSqlExpression extends EntityBase {
 }
 
 @Entity({
-    key: 'testServerExpression1', dbName: async () => new Promise(res => setTimeout(() => {
+    key: 'testServerExpression1', sqlExpression: async () => new Promise(res => setTimeout(() => {
         res('testServerExpression1');
     }, 30))
 })

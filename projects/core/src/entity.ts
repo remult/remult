@@ -17,15 +17,15 @@ export interface EntityOptions<entityType = any> {
   key: string;
   /**
    * The name of the table in the database that holds the data for this entity.
-   * If no name is set, the `name` will be used instead.
+   * If no name is set, the `key` will be used instead.
    * @example
    * dbName = 'myProducts'
-   * @example
-   * dbName = () => 'select distinct name from Products`
+   
    */
-  dbName?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
+  dbName?: string;
+  sqlExpression?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
   /**A human readable name for the entity */
-  caption?: string ;
+  caption?: string;
   /**
    * Determines if this Entity is available for get requests using Rest Api 
    * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
