@@ -4,7 +4,7 @@ import { createData, testAllDbs } from './RowProvider.spec';
 import { DataApi, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import {  itForEach, Done,  fitForEach } from './testHelper.spec';
+import { itForEach, Done, fitForEach } from './testHelper.spec';
 
 import { Status } from './testModel/models';
 
@@ -448,20 +448,25 @@ describe("data api", () => {
 
 
   });
-  // it("test number is always number", async () => {
-  //   let amount = new NumberColumn();
-  //   let total = new NumberColumn();
-  //   total.value = 10;
-  //   amount.__valueProvider = {
-  //     getValue: (a, b) => '15',
-  //     getOriginalValue: () => '15',
+  itWithDataProvider("parial updates", async (dp) => {
+    SqlDatabase.LogToConsole=true;
+    let remult = new Remult();
+    remult.setDataProvider(dp);
+    let c = remult.repo(newCategories).create({
+      id: 5, categoryName: 'test',description:'desc'
+    });
+    await c._.save();
+    let l = await remult.repo(newCategories).findId(5);
+    c.categoryName='newname';
+    l.description='new desc';
+    await c.save();
+    await l.save();
+    expect(l.categoryName).toBe('newname');
+    expect(l.description).toBe('new desc');
 
-  //     setValue: (a, b) => { }
-  //   };
-  //   total.value += amount.value;
-  //   expect(total.value).toBe(25);
 
-  // });
+  });
+
 
 
 

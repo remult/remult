@@ -124,6 +124,9 @@ export class LookupColumn<T> {
         }
       }
     }
+    else if (item === null) {
+      this.id = null;
+    }
     else {
       this.id = undefined;
     }

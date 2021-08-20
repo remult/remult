@@ -684,8 +684,17 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 if (doNotSave) {
                     updatedRow = (await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }))[0];
                 }
-                else
-                    updatedRow = await this.edp.update(this.id, d);
+                else {
+                    let changesOnly = {};
+                    for (const key in d) {
+                        if (Object.prototype.hasOwnProperty.call(d, key)) {
+                            const element = d[key];
+                            if (element !== this.originalValues[key])
+                                changesOnly[key] = element;
+                        }
+                    }
+                    updatedRow = await this.edp.update(this.id, changesOnly);
+                }
             }
             await this.loadDataFrom(updatedRow);
             if (this.info.entityInfo.saved)

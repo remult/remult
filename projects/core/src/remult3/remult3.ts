@@ -29,7 +29,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] api find array should load nothing :) (check server methods)
 [V] isnull should be valueIsNull, and originalValueIsNull
 [V] valueChanged instead of was changed.
-[] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
+[V] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 [] test why date is equal to null - didn't work
 [] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
 [] talk about the case where postgres created a remult, to build the database - and it didn't have our special methods created in init remult, - send context for  create all entities

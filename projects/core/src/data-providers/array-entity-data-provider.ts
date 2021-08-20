@@ -94,8 +94,17 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     public update(id: any, data: any): Promise<any> {
         let idMatches = this.idMatches(id);
         for (let i = 0; i < this.rows.length; i++) {
-            if (idMatches(this.rows[i])) {
-                this.rows[i] = Object.assign({}, this.rows[i], this.translateToJson(data));
+            let r = this.rows[i];
+            if (idMatches(r)) {
+                let newR = { ...r };
+                for (const f of this.entity.fields) {
+                    if (!f.dbReadOnly && !f.isServerExpression) {
+                        if (data[f.key] !== undefined) {
+                            newR[f.key] = f.valueConverter.toJson(data[f.key]);
+                        }
+                    }
+                }
+                this.rows[i] = newR;
                 return Promise.resolve(this.translateFromJson(this.rows[i]));
             }
         }

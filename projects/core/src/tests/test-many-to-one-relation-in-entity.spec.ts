@@ -187,7 +187,7 @@ describe("many to one relation", () => {
         expect(p.$.category.originalValue.id).toBe(2);
         p.category = null;
         await p.save();
-        expect(p.$.category.inputValue).toBeNull(null);
+        expect(p.$.category.inputValue).toBeNull();
         p.category = cat;
         expect(p.$.category.inputValue).toBe("1");
         p.$.category.inputValue = "2";
@@ -392,6 +392,40 @@ describe("many to one relation", () => {
         expect(fetches).toBe(1);
         p._.toApiJson();
         expect(fetches).toBe(1);
+    });
+    it("test update only updates what's needed", async () => {
+        let mem = new InMemoryDataProvider();
+        let remult = new Remult();
+        remult.setDataProvider(mem);
+        let cat = await remult.repo(Categories).create({
+            id: 1, name: 'cat 2'
+        }).save();
+        let p = await remult.repo(Products).create({
+            id: 10,
+            name: "prod 10",
+            category: cat
+        }).save();
+
+        remult = new Remult();
+        let d = new Done();
+        remult.setDataProvider({
+            transaction: undefined,
+            getEntityDataProvider: e => {
+                let r = mem.getEntityDataProvider(e);
+                return {
+                    find: x=>r.find(x), count: r.count, delete: r.delete, insert: r.insert, update: (id, data) => {
+                        d.ok();
+                        expect(data).toEqual({ name: "prod 11" });
+                        return r.update(id, data)
+                    }
+                }
+
+            }
+        });
+        p = await remult.repo(Products).findFirst();
+        p.name = "prod 11";
+        await p.save();
+        d.test();
     });
     it("test is null doesn't invoke read", async () => {
         let mem = new InMemoryDataProvider();
@@ -677,7 +711,7 @@ describe("Test entity relation and count finds", () => {
             }
         });
         done.test();
-        expect (fetches).toBe(1);
+        expect(fetches).toBe(1);
     });
 
 });
