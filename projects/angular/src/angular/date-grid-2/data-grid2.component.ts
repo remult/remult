@@ -3,7 +3,7 @@ import { Component, OnChanges, Input, ViewChild } from '@angular/core';
 
 
 import { DataFilterInfoComponent } from '../data-filter-info/data-filter-info.component';
-import {  FieldMetadata, Remult, Entity } from 'remult';
+import { FieldMetadata, Remult, Entity } from 'remult';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
 
@@ -57,13 +57,13 @@ export class DataGrid2Component implements OnChanges {
       return 'רבים';
     return 'many';
   }
-  getBottomLine(){
-    if (this.settings.items.length==0)
-    return '';
+  getBottomLine() {
+    if (this.settings.items.length == 0)
+      return '';
     let p = this.settings.page;
-    let firstRow = (p-1)*this.settings.rowsPerPage+1;
-    let lastRow = firstRow+this.settings.items.length-1;
-    return firstRow+" - "+lastRow+(this.rightToLeft?' מתוך ':' of ')+(this.settings.totalRows?this.settings.totalRows:(this.rightToLeft?'רבים':'many'))
+    let firstRow = (p - 1) * this.settings.rowsPerPage + 1;
+    let lastRow = firstRow + this.settings.items.length - 1;
+    return firstRow + " - " + lastRow + (this.rightToLeft ? ' מתוך ' : ' of ') + (this.settings.totalRows ? this.settings.totalRows : (this.rightToLeft ? 'רבים' : 'many'))
 
 
     //{{rightToLeft?'עמוד':'Page'}} {{settings.page}} {{rightToLeft?' מתוך ':' of '}} {{getTotalRows()}}
@@ -202,6 +202,12 @@ export class DataGrid2Component implements OnChanges {
         await this.saveAllClick();
       }
     });
+    this.gridButtons.push({
+      icon: 'filter_alt',
+      textInMenu: () => this.rightToLeft ? 'סינון' : 'Filter',
+      click: () => this.dataFilterInfo.showAddAnotherFilterDialog(),
+      visible: () => true
+    })
     this.settings.columns.setContext(this.remult);
     if (this.settings.settings.gridButtons) {
       this.gridButtons.push(...this.settings.settings.gridButtons.map(x => {

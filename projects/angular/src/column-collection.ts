@@ -183,11 +183,10 @@ export class FieldCollection<rowType = any> {
   }
 
   filterRows(col: DataControlSettings) {
+    if (col.valueList)
+      col.useContainsFilter = false;
 
-    let forceEqual = col.forceEqualFilter;
-    if (forceEqual === undefined)
-      forceEqual = (col.valueList != undefined)
-    this.filterHelper.filterColumn(col.field, false, forceEqual);
+    this.filterHelper.filterColumn(col.field, false, col.useContainsFilter);
   }
   clearFilter(col: DataControlSettings) {
 

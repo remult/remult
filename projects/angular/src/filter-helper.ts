@@ -3,6 +3,7 @@ import { AndFilter, Filter } from 'remult';
 import { ComparisonFilterFactory, FieldRef, EntityWhere, FindOptions, Repository, ContainsFilterFactory } from "remult";
 import { FieldMetadata } from "remult";
 import { getFieldDefinition } from '..';
+import { getEntityRef, getEntitySettings } from '../../core/src/remult3';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
@@ -15,7 +16,7 @@ export class FilterHelper<rowType> {
 
     return this.filterColumns.indexOf(getFieldDefinition(columnInput)) >= 0;
   }
-  filterColumn(columnInput: FieldMetadata | FieldRef<any, any>, clearFilter: boolean, forceEqual: boolean) {
+  filterColumn(columnInput: FieldMetadata | FieldRef<any, any>, clearFilter: boolean, useContainsFilter: boolean) {
     let column = getFieldDefinition(columnInput);
     if (!column)
       return;
@@ -25,7 +26,7 @@ export class FilterHelper<rowType> {
     }
     else if (this.filterColumns.indexOf(column) < 0) {
       this.filterColumns.push(column);
-      if (forceEqual)
+      if (useContainsFilter === false)
         this.forceEqual.push(column);
     }
     this.reloadData();
@@ -38,8 +39,12 @@ export class FilterHelper<rowType> {
       let w: EntityWhere<rowType> = item => {
         let itemForFilter: ComparisonFilterFactory<any> & ContainsFilterFactory<any> = item[c.key];
         let f: Filter = itemForFilter.isEqualTo(val);
-        if (c.valueType == String && !this.forceEqual.find(x => c.key == x.key))
-          f = itemForFilter.contains(val);
+        if (c.valueType != Number &&
+          c.valueType != Date &&
+          c.valueType != Boolean &&
+          getEntitySettings(c.valueType, false) == undefined &&
+          !this.forceEqual.find(x => c.key == x.key))
+          f = itemForFilter.contains(getEntityRef(this.filterRow).fields[c.key].inputValue);
         else if (c.valueType == Date) {
           if (val) {
             let v = <Date>val;

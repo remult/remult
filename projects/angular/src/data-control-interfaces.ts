@@ -23,7 +23,7 @@ export interface DataControlSettings<entityType = any, valueType = any> {
     valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((remult) => Promise<ValueListItem[]>) | ((remult) => ValueListItem[]);
     inputType?: string; //used: password,date,tel,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
-    forceEqualFilter?: boolean;
+    useContainsFilter?: boolean;
 
     width?: string;
 }

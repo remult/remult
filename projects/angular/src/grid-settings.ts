@@ -483,7 +483,6 @@ export interface IDataSettings<rowType> {
   allowCrud?: boolean,
   showDataArea?: boolean,
   showPagination?: boolean,
-  showFilter?: boolean,
   allowSelection?: boolean,
   confirmDelete?: (r: rowType) => Promise<boolean>;
 
