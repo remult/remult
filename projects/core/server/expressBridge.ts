@@ -151,7 +151,7 @@ export class SiteArea {
   process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
-      let myRes = new ExpressResponseBridgeToDataApiResponse(res);
+      let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
       remult.setDataProvider(this.bridge.dataProvider);
       let user = req['user'];
@@ -230,7 +230,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
     this.r.sendStatus(403);
   }
-  constructor(private r: express.Response) {
+  constructor(private r: express.Response, private req: express.Request) {
 
   }
   progress(progress: number): void {
@@ -258,7 +258,9 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     data = serializeError(data);
     console.error({
       message: data.message,
-      stack: data.stack?.split('\n')
+      stack: data.stack?.split('\n'),
+      url: this.req.originalUrl ?? this.req.path,
+      method: this.req.method
     });
     this.r.status(400).json(data);
   }
