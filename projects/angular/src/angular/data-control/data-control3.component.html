@@ -28,7 +28,8 @@
     <div *ngIf="showCheckbox()">
         <mat-checkbox *ngIf="!showReadonlyText()" #theId1 [(ngModel)]="_getColumn().inputValue"
             (ngModelChange)="settings._colValueChanged(map,record)" class="fix-label"></mat-checkbox>
-        <mat-icon style="font-size:18px;height:20px" *ngIf="showReadonlyText()&&_getColumn().value">check</mat-icon>
+        <mat-icon style="font-size:18px;height:20px" *ngIf="showReadonlyText()&&_getColumn().inputValue">check
+        </mat-icon>
     </div>
 
 </div>
