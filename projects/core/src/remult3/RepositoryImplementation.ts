@@ -681,18 +681,22 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 updatedRow = await this.edp.insert(d);
             }
             else {
-                if (doNotSave) {
+                let changesOnly = {};
+                let wasChanged = false;
+                for (const key in d) {
+                    if (Object.prototype.hasOwnProperty.call(d, key)) {
+                        const element = d[key];
+                        if (element !== this.originalValues[key]) {
+                            changesOnly[key] = element;
+                            wasChanged = true;
+                        }
+                    }
+                }
+                if (doNotSave || !wasChanged) {
                     updatedRow = (await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }))[0];
                 }
                 else {
-                    let changesOnly = {};
-                    for (const key in d) {
-                        if (Object.prototype.hasOwnProperty.call(d, key)) {
-                            const element = d[key];
-                            if (element !== this.originalValues[key])
-                                changesOnly[key] = element;
-                        }
-                    }
+
                     updatedRow = await this.edp.update(this.id, changesOnly);
                 }
             }

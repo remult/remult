@@ -96,7 +96,13 @@ class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public update(id: any, data: any): Promise<any> {
-    return this.http.put(this.url + '/' + encodeURIComponent(id), this.translateToJson(data)).then(y => this.translateFromJson(y));
+    let result = {};
+    for (const col of this.entity.fields) {
+      if (data[col.key] !== undefined)
+        result[col.key] = col.valueConverter.toJson(data[col.key]);
+    }
+
+    return this.http.put(this.url + '/' + encodeURIComponent(id), result).then(y => this.translateFromJson(y));
 
   }
 

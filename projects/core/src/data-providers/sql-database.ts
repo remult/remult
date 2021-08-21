@@ -225,7 +225,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       if (x instanceof CompoundIdField) {
         resultFilter = x.resultIdFilter(id, data);
       } if (await isDbReadonly(x)) { }
-      else {
+      else if (data[x.key] !== undefined) {
         let v = x.valueConverter.toDb(data[x.key]);
         if (v !== undefined) {
           if (!added)

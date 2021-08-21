@@ -24,7 +24,7 @@ export class GroupsValue {
 @Entity({
   key: "Products",
   allowApiCrud: true,
-  dbName: async () =>
+  sqlExpression: async () =>
     new Promise(res => setTimeout(() => {
       res('Products')
     }, 10)),
