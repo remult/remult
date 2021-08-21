@@ -168,7 +168,7 @@ export class Remult {
 
         return false;
     }
-    repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    private repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
     public repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
         if (dataProvider === undefined)
             dataProvider = this._dataSource;

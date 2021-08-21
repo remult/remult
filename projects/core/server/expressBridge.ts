@@ -255,8 +255,11 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public error(data: ErrorInfo): void {
-
     data = serializeError(data);
+    console.error({
+      message: data.message,
+      stack: data.stack?.split('\n')
+    });
     this.r.status(400).json(data);
   }
 }
