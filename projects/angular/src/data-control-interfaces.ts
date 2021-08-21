@@ -1,4 +1,4 @@
-import { FieldRef, FieldMetadata, Entity, ValueListItem } from "remult";
+import { FieldRef, FieldMetadata, Entity, ValueListItem, Remult } from "remult";
 import { ValueListValueConverter } from "remult/valueConverters";
 import { InputField } from "./column-collection";
 
@@ -20,7 +20,7 @@ export interface DataControlSettings<entityType = any, valueType = any> {
     allowClick?: (row: entityType, val: FieldRef<entityType, valueType>) => boolean;
     clickIcon?: string;
 
-    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((remult) => Promise<ValueListItem[]>) | ((remult) => ValueListItem[]);
+    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((remult:Remult) => Promise<ValueListItem[]>) | ((remult) => ValueListItem[]);
     inputType?: string; //used: password,date,tel,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     useContainsFilter?: boolean;

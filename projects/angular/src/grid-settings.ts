@@ -1,4 +1,4 @@
-import { AndFilter,  FieldMetadata, Sort,  FieldsMetadata, EntityOrderBy, EntityWhere, FindOptions,  getEntityRef, Repository, Filter } from "remult";
+import { AndFilter, FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityWhere, FindOptions, getEntityRef, Repository, Filter } from "remult";
 import { DataList } from "./angular/dataList";
 
 import { FieldCollection } from "./column-collection";
@@ -406,9 +406,15 @@ export class GridSettings<rowType>  {
   reloadData() {
     let opt: FindOptions<rowType> = this._internalBuildFindOptions();
     this.columns.autoGenerateColumnsBasedOnData(this.repository.metadata);
-    let result = this.restList.get(opt).then(() => {
-      this.selectedRows.splice(0);
-      this._selectedAll = false;
+    let result = this.restList.get(opt).then((rows) => {
+
+      this.selectedRows = this.selectedRows.map(s => {
+        let id = getEntityRef(s).getId();
+        let r = rows.find(r => getEntityRef(r).getId() == id);
+        if (r !== undefined)
+          return r;
+        return s;
+      });
 
       if (this.restList.items.length == 0) {
         this.setCurrentRow(undefined);

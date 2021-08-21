@@ -6,7 +6,7 @@ import { PostgresDataProvider, PostgresSchemaBuilder } from 'remult/postgres';
 import * as passwordHash from 'password-hash';
 
 
-import {  Remult,  EntityOptions,  SqlDatabase } from 'remult';
+import { Remult, EntityOptions, SqlDatabase } from 'remult';
 import { ClassType } from '../../../projects/core/classType';
 
 
@@ -36,8 +36,11 @@ export async function serverInit() {
         connectionString: dbUrl,
         ssl: ssl
     });
+
     var r = new SqlDatabase(new PostgresDataProvider(pool));
-    await new PostgresSchemaBuilder(r).verifyStructureOfAllEntities();
+    let remult = new Remult();
+    remult.setDataProvider(r);
+    await new PostgresSchemaBuilder(r).verifyStructureOfAllEntities(remult);
 
     return r;
 

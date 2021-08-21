@@ -31,7 +31,7 @@ export class ProductsComponent implements OnInit {
   }
 
   @DataControl<ProductsComponent>({
-    valueList: c => getValueList(c.for(Products)),
+    valueList: c => getValueList(c.repo(Products)),
     valueChange: (row) => {
       console.log({ val: row.p, prod: row.p instanceof Products })
       row.$.p.load().then(() => console.log("loaded", row.p));
@@ -44,10 +44,10 @@ export class ProductsComponent implements OnInit {
   area = new DataAreaSettings({
     fields: () => [this.$.p]
   });
-  products = new GridSettings(this.remult.repo(Products), { allowCrud: true });
+  products = new GridSettings(this.remult.repo(Products), { allowCrud: true, allowSelection: true });
   async ngOnInit() {
     let p = await this.remult.repo(Products).findFirst();
-    
+
     //this.title = p?.name;
     this.title = await ProductsComponent.doIt(null);
 

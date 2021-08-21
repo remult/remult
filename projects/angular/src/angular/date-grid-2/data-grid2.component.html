@@ -15,7 +15,8 @@
           <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
 
             <mat-checkbox [indeterminate]="settings.selectAllIntermitent()" [checked]="settings.selectAllChecked()"
-              (change)="settings.selectAllChanged($event)"></mat-checkbox>
+              [matTooltip]="settings.selectedRows.length" (change)="settings.selectAllChanged($event)">
+            </mat-checkbox>
 
           </div>
           <mat-menu #updatedRowOptions="matMenu">
@@ -121,7 +122,7 @@
         <mat-icon>{{rightToLeft?'chevron_right':'chevron_left'}}</mat-icon>
       </button>
       {{getBottomLine()}}
-      
+
       <button mat-icon-button [disabled]="!(records.items&& records.items.length>0)" (click)="settings.nextPage()">
         <mat-icon>{{!rightToLeft?'chevron_right':'chevron_left'}}</mat-icon>
       </button>
