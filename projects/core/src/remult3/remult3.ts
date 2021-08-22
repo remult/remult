@@ -32,12 +32,12 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
 [V] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
 [V] talk about the case where postgres created a remult, to build the database - and it didn't have our special methods created in init remult, - send context for  create all entities
-[] fix readonly checkbox on grid.
-[]  checkbox shouldn't display text true false on grid
-[] rename AuthenticatedInGuard and not signed in guard
-[] insert filter into the grid button
+[V] fix readonly checkbox on grid.
+[V]  checkbox shouldn't display text true false on grid
+[V] rename AuthenticatedInGuard and not signed in guard
+[V] insert filter into the grid button
 [] insert the column selection into the grid button.
-[] change grid button icon to something else
+[V] change grid button icon to something else
 
 [] test why date is equal to null - didn't work
 
