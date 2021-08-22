@@ -3,14 +3,14 @@
 saves the changes made to this instance to the data source
 ### example
 ```ts
-let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
+let p = await this.remult.repo(Products).findFirst(p => p.id.isEqualTo(7));
 p.price.value = 10;
 await p.save();
 ```
 
 ### example
 ```ts
-let p = this.context.for(Products).create();
+let p = this.remult.repo(Products).create();
 p.name.value = 'Wine';
 await p.save();
 ```
@@ -19,7 +19,7 @@ await p.save();
 Delete a specific entity instance
 ### example
 ```ts
-let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7));
+let p = await this.remult.repo(Products).findFirst(p => p.id.isEqualTo(7));
 await p.delete();
 ```
 

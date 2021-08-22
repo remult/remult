@@ -56,16 +56,16 @@ My first priority is to configure the `displayValue` property of the `CategoryId
 In the `CategoryId.ts` file:
 ```ts
 export class CategoryId extends IdColumn {
-    constructor(private context: Context) {
+    constructor(private remult: Remult) {
         super();
      }
     get displayValue() {
-        return this.context.for(Categories).lookup(this).name.value;
+        return this.remult.repo(Categories).lookup(this).name.value;
     }
 }
 ```
 Let's review:
-1. In line 2, we've added a constructor that receives the `context` object that we'll use to get data from the server.
+1. In line 2, we've added a constructor that receives the `remult` object that we'll use to get data from the server.
 2. In line 3 we've called the base class's constructor - since CategoryId extends IdColumn we are required to call it's constructor in ours, this is done by calling the `super()` method.
 3. On lines 5-7 we've overwritten the `displayValue` property, to return the Category name instead if it's id.
 
@@ -96,8 +96,8 @@ export class Products extends IdEntity {
             }
         }
     });
-    category = new CategoryId(this.context);
-    constructor(private context:Context) {
+    category = new CategoryId(this.remult);
+    constructor(private remult:Remult) {
         super({
             name: "Products",
             allowApiCRUD: true,
@@ -113,10 +113,10 @@ in `home.component.ts`
 ```ts{13-15}
 export class HomeComponent implements OnInit {
 
-  constructor(private context: Context) { }
+  constructor(private remult: Remult) { }
   products: Products[] = [];
   async ngOnInit() {
-    this.products = await this.context.for(Products).find({
+    this.products = await this.remult.repo(Products).find({
       orderBy: p => p.name,
       where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
         p.availableTo.isGreaterOrEqualTo(new Date()))
@@ -124,7 +124,7 @@ export class HomeComponent implements OnInit {
   }
   
   //getProductCategory(p: Products) {
-  //  return this.context.for(Categories).lookup(p.category).name.value;
+  //  return this.remult.repo(Categories).lookup(p.category).name.value;
   //}
 }
 ```

@@ -19,7 +19,7 @@ export class UsersComponent implements OnInit {
     return this.remult.isAllowed(Roles.admin);
   }
 
-  users = new GridSettings(this.remult.for(Users), {
+  users = new GridSettings(this.remult.repo(Users), {
     allowDelete: true,
     allowInsert: true,
     allowUpdate: true,
@@ -51,7 +51,7 @@ export class UsersComponent implements OnInit {
   });
   @BackendMethod({ allowed: Roles.admin })
   static async resetPassword(userId: string, remult?: Remult) {
-    let u = await remult.for(Users).findId(userId);
+    let u = await remult.repo(Users).findId(userId);
     if (u) {
       u.password = '';
       await u._.save();

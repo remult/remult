@@ -1,5 +1,5 @@
 
-import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators } from "remult";
+import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators, isBackend } from "remult";
 import { Remult, } from 'remult';
 import { Roles } from './roles';
 import { InputField } from "@remult/angular";
@@ -10,23 +10,25 @@ import { InputTypes } from "remult/inputTypes";
     allowApiRead: remult => remult.authenticated(),
     allowApiDelete: Roles.admin,
     allowApiUpdate: remult => remult.authenticated(),
-    allowApiInsert: Roles.admin,
-    apiDataFilter: (user, remult) => {
-        if (!(context.isAllowed(Roles.admin)))
-            return user.id.isEqualTo(context.user.id);
-        return new Filter(() => { });
-    },
-    saving: async (user) => {
-
-        if (user.remult.backend) {
-            if (user._.isNew()) {
-                user.createDate = new Date();
-                if ((await user.remult.for(Users).count()) == 0)
-                    user.admin = true;// If it's the first user, make it an admin
+    allowApiInsert: Roles.admin
+},
+    (options, remult) => {
+        options.apiDataFilter = (user) => {
+            if (!(remult.isAllowed(Roles.admin)))
+                return user.id.isEqualTo(remult.user.id);
+            return new Filter(() => { });
+        };
+        options.saving = async (user) => {
+            if (isBackend()) {
+                if (user._.isNew()) {
+                    user.createDate = new Date();
+                    if ((await remult.repo(Users).count()) == 0)
+                        user.admin = true;// If it's the first user, make it an admin
+                }
             }
         }
     }
-})
+)
 export class Users extends IdEntity {
     @Field({
         validate: [Validators.required, Validators.unique]
@@ -44,7 +46,6 @@ export class Users extends IdEntity {
     })
     admin: Boolean = false;
     constructor(private remult: Remult) {
-
         super();
     }
     async hashAndSetPassword(password: string) {

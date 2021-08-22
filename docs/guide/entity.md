@@ -5,9 +5,9 @@ It'll be automatically created in the db, and will have an automatic rest api th
 
 And `Entity` will be decorated by the `EntityClass` decorator, and extend the `IdEntity` base class (in most cases)
 
-If it's constructor receives a `Context` parameter, one will be automatically injected to it.
+If it's constructor receives a `Remult` parameter, one will be automatically injected to it.
 
-And `Entity` will always be created by the `context` object.
+And `Entity` will always be created by the `remult` object.
 
 ## Here's a sample entity:
 
@@ -18,13 +18,13 @@ The Entity configuration can be determined by the `settings` object that is bein
 
 See the [EntitySettings](ref_entitysettings) docs for all the different options.
 
-##  The Context class
-Most of the work with entity will be done using the `Context` object.
-The `Context` object is responsible for providing Entity instances with their data already populated. Here are a a few usage examples:
+##  The Remult class
+Most of the work with entity will be done using the `Remult` object.
+The `Remult` object is responsible for providing Entity instances with their data already populated. Here are a a few usage examples:
 
 ## find
 ```ts
-let products = await context.for(Products).find();
+let products = await remult.repo(Products).find();
 for (const p of products) {
     console.log(p.name);
 }
@@ -34,7 +34,7 @@ in this example we get an array of products and write their names to the console
 The find method can also be used with a where and order by:
 
 ```ts
-this.products = await this.context.for(Products).find({
+this.products = await this.remult.repo(Products).find({
     orderBy: p => p.name
     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
     p.availableTo.isGreaterOrEqualTo(new Date()))
@@ -47,7 +47,7 @@ For more methods see the docs for [SpecificEntityHelper](ref_specificentityhelpe
 When we get a result set of entities, we can perform actions on them, update them, save them etc...
 
 ```ts
-for await (let p of this.context.for(Products).iterate()){
+for await (let p of this.remult.repo(Products).iterate()){
     p.price += 5;
     await p.save();
 }

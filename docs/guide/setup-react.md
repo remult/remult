@@ -199,11 +199,11 @@ in the `.gitignore` file add:
   },
   "proxy": "http://localhost:3002",
 ```
-### Configure the remult context
+### Configure the remult remult
 Add a file called `src/common.ts`
 ```ts
-import { Context } from "remult";
-export const context = new Context();
+import { Remult } from "remult";
+export const remult = new Remult();
 ```
 ## Entities
 The first advantage that `remult` provides is the ability to define an entity once, and use the same code both on the server and in the browser.

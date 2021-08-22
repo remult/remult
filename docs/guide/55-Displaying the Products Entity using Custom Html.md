@@ -42,21 +42,21 @@ Let's start with the basic card:
 ```
 
 Next we would like to use the actual data from the `products` entity.
-In the `home.component.ts` file, the first step would be to get the `context` object in. As used before, the `context` object helps us with comunicating with the server and figuring out our context
+In the `home.component.ts` file, the first step would be to get the `remult` object in. As used before, the `remult` object helps us with comunicating with the server and figuring out our remult
 ```ts{2}
 export class HomeComponent implements OnInit {
-  constructor(private context:Context) { }
+  constructor(private remult:Remult) { }
   ngOnInit() {
   }
 }
 ```
 :::tip NOTE
- If the `Context` class is highlighted in red, add it to the `import` statement using the "light bulb" icon in visual studio
+ If the `Remult` class is highlighted in red, add it to the `import` statement using the "light bulb" icon in visual studio
 :::
 Next let's define a list of products:
 ```ts{3}
 export class HomeComponent implements OnInit {
-  constructor(private context:Context) { }
+  constructor(private remult:Remult) { }
   products : Products[] = [];
   ngOnInit() {
   }
@@ -72,10 +72,10 @@ We've defined a member called `products` of type `Products[]` (an Array of produ
 Now let's populate the array with products from our db:
 ```ts{4-6}
 export class HomeComponent implements OnInit {
-  constructor(private context: Context) { }
+  constructor(private remult: Remult) { }
   products: Products[] = [];
   async ngOnInit() {
-    this.products = await this.context.for(Products).find();
+    this.products = await this.remult.repo(Products).find();
   }
 }
 ```
@@ -128,7 +128,7 @@ and in the `home.component.scss` file we'll define that class:
 Now let's sort the cards by name. In the `home.component.ts` file, let's start by sending an object to the `find` method:
 ```ts{2-3}
   async ngOnInit() {
-    this.products = await this.context.for(Products).find({
+    this.products = await this.remult.repo(Products).find({
     });
   }
 ```
@@ -136,7 +136,7 @@ Now let's sort the cards by name. In the `home.component.ts` file, let's start b
 Next let's add the `orderBy` property:
 ```ts{3}
   async ngOnInit() {
-    this.products = await this.context.for(Products).find({
+    this.products = await this.remult.repo(Products).find({
       orderBy: p => p.name
     });
   }
@@ -153,7 +153,7 @@ In our case we'll stick to simply sorting by the Product Name.
 Since we only want to show products that are available, let's filter the products to indicate that:
 ```ts{4-5}
   async ngOnInit() {
-    this.products = await this.context.for(Products).find({
+    this.products = await this.remult.repo(Products).find({
       orderBy: p => p.name
       , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
           p.availableTo.isGreaterOrEqualTo(new Date()))

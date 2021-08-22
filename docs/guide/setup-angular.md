@@ -145,11 +145,11 @@ If you are using Visual Studio Code and would like to run both `dev-node` and `d
 :::
 
 #### Setting up an Angular DI Provider for Remult
-Our Angular starter project is almost ready. All that's left is to add a dependency injection provider for the `Remult` `Context` object. The `Context` object provided will be used to communicate with the API server.
+Our Angular starter project is almost ready. All that's left is to add a dependency injection provider for the `Remult` `Remult` object. The `Remult` object provided will be used to communicate with the API server.
 
 This requires making the following changes to `app.module.ts`:
 1. Import Angular's [HttpClientModule](https://angular.io/api/common/http/HttpClientModule)
-2. Add an Angular `provider` for the `Context` object, which depends on Angular's `HttpClient` object
+2. Add an Angular `provider` for the `Remult` object, which depends on Angular's `HttpClient` object
 
 While we're editing the root Angular module, we can also import the `FormsModule` which we'll need later in order to use the [ngModel](https://angular.io/api/forms/NgModel) two-way binding directive.
 
@@ -161,7 +161,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Context } from 'remult';
+import { Remult } from 'remult';
 
 @NgModule({
   declarations: [
@@ -173,7 +173,7 @@ import { Context } from 'remult';
     FormsModule
   ],
   providers: [
-    { provide: Context, useClass: Context, deps: [HttpClient] }
+    { provide: Remult, useClass: Remult, deps: [HttpClient] }
   ],
   bootstrap: [AppComponent]
 })
@@ -226,7 +226,7 @@ Let's implement this feature within the main `AppComponent` class.
    *src/app/app.component.ts*
    ```ts{2-3,12-18}
    import { Component } from '@angular/core';
-   import { Context } from 'remult';
+   import { Remult } from 'remult';
    import { Task } from './tasks';
 
    @Component({
@@ -236,17 +236,17 @@ Let's implement this feature within the main `AppComponent` class.
    })
    export class AppComponent {
       title = 'remult-angular-todo';
-      constructor(public context: Context) { 
+      constructor(public remult: Remult) { 
       }
-      newTask = this.context.for(Task).create();
+      newTask = this.remult.repo(Task).create();
       async createNewTask() {
          await this.newTask.save();
-         this.newTask = this.context.for(Task).create();
+         this.newTask = this.remult.repo(Task).create();
       }
    }
    ```
 
-   The `context` field we've add to the `AppComponent` class (using a constructor argument), is a Remult `Context` object which will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on in the tutorial.
+   The `remult` field we've add to the `AppComponent` class (using a constructor argument), is a Remult `Remult` object which will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on in the tutorial.
 
    The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
@@ -288,7 +288,7 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
    ```ts
    tasks: Task[];
    async loadTasks() {
-      this.tasks = await this.context.for(Task).find();
+      this.tasks = await this.remult.repo(Task).find();
    }
    ngOnInit() {
       this.loadTasks();
@@ -313,7 +313,7 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
    ```ts{4}
    async createNewTask() {
       await this.newTask.save();
-      this.newTask = this.context.for(Task).create();
+      this.newTask = this.remult.repo(Task).create();
       this.loadTasks();
    }
    ```
@@ -418,7 +418,7 @@ export class Task extends IdEntity {
 *src/app/app.component.ts*
 ```ts{2-3,12-30}
 import { Component } from '@angular/core';
-import { Context } from 'remult';
+import { Remult } from 'remult';
 import { Task } from './tasks';
 
 @Component({
@@ -428,17 +428,17 @@ import { Task } from './tasks';
 })
 export class AppComponent {
   title = 'remult-angular-todo';
-  constructor(public context: Context) {
+  constructor(public remult: Remult) {
   }
-  newTask = this.context.for(Task).create();
+  newTask = this.remult.repo(Task).create();
   async createNewTask() {
     await this.newTask.save();
-    this.newTask = this.context.for(Task).create();
+    this.newTask = this.remult.repo(Task).create();
     this.loadTasks();
   }
   tasks: Task[];
   async loadTasks() {
-    this.tasks = await this.context.for(Task).find();
+    this.tasks = await this.remult.repo(Task).find();
   }
   ngOnInit() {
     this.loadTasks();
@@ -479,7 +479,7 @@ In the `loadTasks` method of the `AppComponent` class, modify the `find` method 
 *src/app/app.component.ts*
 ```ts{2-4}
 async loadTasks() {
-  this.tasks = await this.context.for(Task).find({
+  this.tasks = await this.remult.repo(Task).find({
     orderBy: task => task.completed
   });
 }
@@ -502,7 +502,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    *src/app/app.component.ts*
    ```ts{3}
    async loadTasks() {
-     this.tasks = await this.context.for(Task).find({
+     this.tasks = await this.remult.repo(Task).find({
        where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
        orderBy: task => task.completed
      });
@@ -578,7 +578,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    *src/app/app.component.ts*
    ```ts
    async setAll(completed: boolean) {
-     for await (const task of this.context.for(Task).iterate()) {
+     for await (const task of this.remult.repo(Task).iterate()) {
         task.completed = completed;
         await task.save();
      }
@@ -612,8 +612,8 @@ async setAll(completed: boolean) {
    this.loadTasks();
 }
 @BackendMethod({ allowed: true })
-static async setAll(completed: boolean, context?: Context) {
-   for await (const task of context.for(Task).iterate()) {
+static async setAll(completed: boolean, remult?: Remult) {
+   for await (const task of remult.repo(Task).iterate()) {
       task.completed = completed;
       await task.save();
    }
@@ -626,7 +626,7 @@ Don't forget to import `BackendMethod` from `remult` for this code to work.
 
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
-The optional `context` argument of the static `setAll` function is omitted in the client-side calling code, and injected by Remult on the server-side with a server `Context` object. **Unlike the client implementation of the Remult `Context`, the server implementation interacts directly with the database.**
+The optional `remult` argument of the static `setAll` function is omitted in the client-side calling code, and injected by Remult on the server-side with a server `Remult` object. **Unlike the client implementation of the Remult `Remult`, the server implementation interacts directly with the database.**
 
 ::: warning Note
 With Remult backend methods, argument types are compile-time checked. :thumbsup:
@@ -643,7 +643,7 @@ Remult provides a flexible mechanism which enables placing **code-based authoriz
 User authentication remains outside the scope of Remult. In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
 
 ### Tasks CRUD operations require sign in
-This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Context` object and returns the result of the context's `authenticated` method.
+This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Remult` object and returns the result of the remult's `authenticated` method.
 
 *src/app/task.ts*
 ```ts{3}
@@ -759,7 +759,7 @@ In this section, we'll be using the following packages:
    static readonly AUTH_TOKEN_KEY = "authToken";
 
    setAuthToken(token: string) {
-      this.context.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
+      this.remult.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
       sessionStorage.setItem(AppComponent.AUTH_TOKEN_KEY, token);
    }
 
@@ -771,7 +771,7 @@ In this section, we'll be using the following packages:
    }
 
    signOut() {
-      this.context.setUser(undefined);
+      this.remult.setUser(undefined);
       sessionStorage.removeItem(AppComponent.AUTH_TOKEN_KEY);
       this.tasks = [];
    }
@@ -786,13 +786,13 @@ In this section, we'll be using the following packages:
    *src/app/app.component.html*
    ```html
    <p>
-      <ng-container *ngIf="!context.authenticated()">
+      <ng-container *ngIf="!remult.authenticated()">
          <input [(ngModel)]="username"> 
          <button (click)="signIn()">Sign in</button>
       </ng-container>
 
-      <ng-container *ngIf="context.authenticated()">
-         Hi {{context.user.name}}
+      <ng-container *ngIf="remult.authenticated()">
+         Hi {{remult.user.name}}
          <button (click)="signOut()">Sign out</button>
       </ng-container>
    </p>
@@ -811,7 +811,7 @@ In this section, we'll be using the following packages:
 
 The todo app now supports signing in and out, with all access restricted to signed in users only.
 
-As there is no point in displaying anything but the sign in area to users who haven't signed in yet, we can move the rest of the template elements into the second `ng-container`, conditioned by `*ngIf="context.authenticated()"`.
+As there is no point in displaying anything but the sign in area to users who haven't signed in yet, we can move the rest of the template elements into the second `ng-container`, conditioned by `*ngIf="remult.authenticated()"`.
 
 ### Role-based authorization
 Usually, not all application users have the same privileges. Let's define an `admin` role for our todo list, and enforce the following authorization rules:
@@ -898,7 +898,7 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
    completedUser: string;
    ```
 
-2. Add a `context` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
+2. Add a `remult` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
 
    *src/app/task.ts*
    ```ts{1,7-10,13-15}
@@ -909,20 +909,20 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
       allowApiInsert: Roles.admin,
       allowApiDelete: Roles.admin,
       saving: task => {
-         if (task.context.backend && task.completed && task.$.completed.wasChanged())
-               task.completedUser = task.context.user.name;
+         if (isBackend() && task.completed && task.$.completed.wasChanged())
+               task.completedUser = task.remult.user.name;
       }
    })
    export class Task extends IdEntity {
-      constructor(private context: Context) {
+      constructor(private remult: Remult) {
          super();
       }
       ...
    ```
 
-The `context` constructor argument will be injected with either a client-side `Context` implementation or a server-side one, depending on the runtime context of the code.
+The `remult` constructor argument will be injected with either a client-side `Remult` implementation or a server-side one, depending on the runtime remult of the code.
 
-When the `save` method of a `Task` object is called in client-side code, the `saving` function is executed twice. First, it runs in the browser, before the an API `put` request is submitted. Next, when the API request is handled on the API server, the `saving` function is invoked again before the database is updated. The `Context.onServer` property is used here to ensure our code runs only once, on the server-side.
+When the `save` method of a `Task` object is called in client-side code, the `saving` function is executed twice. First, it runs in the browser, before the an API `put` request is submitted. Next, when the API request is handled on the API server, the `saving` function is invoked again before the database is updated. The `Remult.onServer` property is used here to ensure our code runs only once, on the server-side.
 
 :::
 
@@ -1058,7 +1058,9 @@ Let's replace it with a production PostgreSQL database.
                 rejectUnauthorized: false
             }
          })));
-         verifyStructureOfAllEntities(db);
+         let remult = new Remult();
+         remult.setDataProvider(db);
+         verifyStructureOfAllEntities(db, remult);
          return db;
       }
       return undefined;

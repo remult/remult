@@ -25,7 +25,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     })
 [V] remove info about request from context
 [V] remove backend member from context and create isBackend method.
-[V] change remult.for to remult.repo
+[V] change remult.repo to remult.repo
 [V] api find array should load nothing :) (check server methods)
 [V] isnull should be valueIsNull, and originalValueIsNull
 [V] valueChanged instead of was changed.
@@ -281,7 +281,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 
     /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
      * @example
-     * this.products = await this.remult.for(Products).find({
+     * this.products = await this.remult.repo(Products).find({
      *  limit:10,
      *  page:2
      * })
@@ -289,7 +289,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
     limit?: number;
     /** Determines the page number that will be used to extract the data 
      * @example
-     * this.products = await this.remult.for(Products).find({
+     * this.products = await this.remult.repo(Products).find({
      *  limit:10,
      *  page:2
      * })
@@ -298,11 +298,11 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 }
 /** Determines the order of rows returned by the query.
  * @example
- * await this.remult.for(Products).find({ orderBy: p => p.name })
+ * await this.remult.repo(Products).find({ orderBy: p => p.name })
  * @example
- * await this.remult.for(Products).find({ orderBy: p => [p.price, p.name])
+ * await this.remult.repo(Products).find({ orderBy: p => [p.price, p.name])
  * @example
- * await this.remult.for(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
+ * await this.remult.repo(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
  */
 export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType>) => SortSegment[] | SortSegment;
 

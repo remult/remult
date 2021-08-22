@@ -9,7 +9,7 @@ import { Products } from './products';
 })
 export class ProductsComponent implements OnInit {
   constructor(private remult: Remult) { }
-  products = new GridSettings(this.remult.for(Products), {
+  products = new GridSettings(this.remult.repo(Products), {
     allowCrud: true
   });
   ngOnInit() {

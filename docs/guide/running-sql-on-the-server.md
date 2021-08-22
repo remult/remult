@@ -8,7 +8,7 @@ To do that we need to add an optional parameter for the `@BackendMethod` of type
 @BackendMethod({ allowed: authenticated })
 static async updatePriceOnBackend(
   priceToUpdate: number,
-  context?: Context,
+  remult?: Remult,
   sql?: SqlDatabase
 ) {
   let command = sql.createCommand();

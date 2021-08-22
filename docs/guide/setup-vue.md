@@ -240,11 +240,11 @@ module.exports = {
 }
 ```
 
-### Configure the remult context
+### Configure the remult remult
 Add a file called `src/common.ts`
 ```ts
-import { Context } from "remult";
-export const context = new Context();
+import { Remult } from "remult";
+export const remult = new Remult();
 ```
 
 ### Run the Project
@@ -310,7 +310,7 @@ Add a new file called `components/UserList.vue` with the following code:
 </template>
 
 <script lang="ts">
-import { context } from "@/common";
+import { remult } from "@/common";
 import { Users } from "@/users/users";
 import { Component, Vue } from "vue-property-decorator";
 @Component
@@ -318,7 +318,7 @@ export default class UserList extends Vue {
   users: Users[] = [];
   async loadUsers() {
     try {
-      this.users = await context.for(Users).find();
+      this.users = await remult.repo(Users).find();
     } catch (err) {
       alert(err.message);
     }
@@ -331,7 +331,7 @@ export default class UserList extends Vue {
 ```
 
 * we've defined a `users` array, of type `Users`
-* we've created a `loadUsers` method that uses the `context` object, to retrieve the users from the server and place them in the `this.users` member.
+* we've created a `loadUsers` method that uses the `remult` object, to retrieve the users from the server and place them in the `this.users` member.
 * we've called the `loadUsers` method from the `mounted` Vue method.
 
 #### Add users route
@@ -384,13 +384,13 @@ Add a new file called `components/AddUser.vue` with the following code:
 </template>
 
 <script lang="ts">
-import { context } from '@/common';
+import { remult } from '@/common';
 import router from "@/router";
 import { Users } from "@/users/users";
 import { Component, Vue } from "vue-property-decorator";
 @Component
 export default class AddUser extends Vue {
-  newUser = context.for(Users).create();
+  newUser = remult.repo(Users).create();
   async addTheUser() {
     await this.newUser.save();
     router.push({ path: "/users" });
@@ -398,7 +398,7 @@ export default class AddUser extends Vue {
 }
 </script>
 ```
-* We'll define a member called `newUser` with a new instance of the `Users` Entity, created by the `context` object
+* We'll define a member called `newUser` with a new instance of the `Users` Entity, created by the `remult` object
 * Once the users clicks on Add User, we'll call the `save` method of the `Users` entity to save that user to the database.
 * After the user is saved, we'll use the `router.push` method to navigate to the users list
 
@@ -447,7 +447,7 @@ In the `UserList.vue` file, change the `loadUsers` method:
 ```ts {3-5}
 async loadUsers() {
   try {
-    this.users = await context.for(Users).find({
+    this.users = await remult.repo(Users).find({
       orderBy: (u) => u.name,
     });
   } catch (err) {
@@ -539,7 +539,7 @@ Let's add the functionality to delete users to the `UserList.vue` file
 </template>
 
 <script lang="ts">
-import { context } from "@/common";
+import { remult } from "@/common";
 import { Users } from "@/users/users";
 import { Component, Vue } from "vue-property-decorator";
 @Component
@@ -547,7 +547,7 @@ export default class UserList extends Vue {
   users: Users[] = [];
   async loadUsers() {
     try {
-      this.users = await context.for(Users).find({
+      this.users = await remult.repo(Users).find({
         orderBy: (u) => u.name,
       });
     } catch (err) {
@@ -626,7 +626,7 @@ When the users sign's in, we'll want to call a function on the server that will 
 
 In the `users.ts` file:
 ```ts {22-33}
-import { Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
+import { Remult, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -648,8 +648,8 @@ export class Users extends IdEntity {
         })
     }
     @ServerFunction({ allowed: true })
-    static async signIn(name: string, context?: Context) {
-        const u = await context?.for(Users).findFirst(user => user.name.isEqualTo(name));
+    static async signIn(name: string, remult?: Remult) {
+        const u = await remult?.for(Users).findFirst(user => user.name.isEqualTo(name));
         if (!u)
             throw "user does not exist";
         const user: UserInfo = {
@@ -662,7 +662,7 @@ export class Users extends IdEntity {
 }
 ```
 * By decorating the `signIn` method with the `@ServerFunction` decorator, we declare that we want this `function` to run on the server.
-* The function receives the optional `context?` parameter. This parameter will be automatically populated on the server with the relevant `Context` for operating on the server.
+* The function receives the optional `remult?` parameter. This parameter will be automatically populated on the server with the relevant `Remult` for operating on the server.
 
 ### Create the sign in vue
 Add a new file called `components/SignIn.vue` with the following code:
@@ -748,17 +748,17 @@ Here's how it's going to work:
 
 This way the browser and server can share and trust that user info.
 
-* In vue, you can access the user info, using the `user` property of the `context`.
+* In vue, you can access the user info, using the `user` property of the `remult`.
 
 
 ### Introducing JWT authorization to the project
 #### Step 1 
 In the `common.ts` file adjust the following code:
 ```ts {2,4}
-import { Context } from "remult";
+import { Remult } from "remult";
 import { CookieBasedJwt } from 'remult/src/cookieBasedJwt';
-export const context = new Context();
-export const authorization = new CookieBasedJwt(context);
+export const remult = new Remult();
+export const authorization = new CookieBasedJwt(remult);
 ```
 
 #### Step 2, add the secret hash key to .env
@@ -800,7 +800,7 @@ initDatabase().then(database => {
 in `users.ts`
 ```ts {33}
 import { authorization } from '../common';
-import { Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
+import { Remult, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -822,8 +822,8 @@ export class Users extends IdEntity {
         })
     }
     @ServerFunction({ allowed: true })
-    static async signIn(name: string, context?: Context) {
-        const u = await context?.for(Users).findFirst(user => user.name.isEqualTo(name));
+    static async signIn(name: string, remult?: Remult) {
+        const u = await remult?.for(Users).findFirst(user => user.name.isEqualTo(name));
         if (!u)
             throw "user does not exist";
         const user: UserInfo = {
@@ -840,7 +840,7 @@ export class Users extends IdEntity {
 In the `SignIn.vue` file:
 ```vue {2,11-14}
 <script lang="ts">
-import { authorization, context } from "@/common";
+import { authorization, remult } from "@/common";
 import router from "@/router";
 import { Users } from "@/users/users";
 import { Component, Vue } from "vue-property-decorator";
@@ -851,7 +851,7 @@ export default class SignIn extends Vue {
   async signIn() {
     const jwt = await Users.signIn(this.name);
     authorization.afterSignIn(jwt, true);
-    alert("Hello " + context.user.name); //use this just for testing, remove it once you're happy
+    alert("Hello " + remult.user.name); //use this just for testing, remove it once you're happy
     router.push({ path: "/users" });// navigate to the users list after a successful sign in
   }
 }
@@ -867,11 +867,11 @@ Now that the users are configured correctly, let's display them in the navigatio
     <nav>
       <router-link to="/users">User List</router-link>
       | <router-link to="/add-user">Add User</router-link> 
-      | <router-link to="/sign-in" v-if="!context.authenticated()">
+      | <router-link to="/sign-in" v-if="!remult.authenticated()">
         Sign In
       </router-link>
-      <span v-if="context.authenticated()"> Hello {{ context.user.name }} </span>
-      <button v-if="context.authenticated()" v-on:click="signOut">Sign Out</button>
+      <span v-if="remult.authenticated()"> Hello {{ remult.user.name }} </span>
+      <button v-if="remult.authenticated()" v-on:click="signOut">Sign Out</button>
     </nav>
     <div>
       <router-view />
@@ -881,12 +881,12 @@ Now that the users are configured correctly, let's display them in the navigatio
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { authorization, context } from "./common";
+import { authorization, remult } from "./common";
 import router from "./router";
 
 @Component
 export default class App extends Vue {
-  context = context;
+  remult = remult;
   async errorCaptured(err: any) {
     alert(err.message);
   }
@@ -953,7 +953,7 @@ export class Roles {
 In the `users.ts` file make the following adjustments:
 ```ts {3,14,22,36,37}
 import { authorization } from '../common';
-import { BoolColumn, Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
+import { BoolColumn, Remult, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn, UserInfo } from "remult";
 import { Roles } from './roles';
 
 @EntityClass
@@ -978,8 +978,8 @@ export class Users extends IdEntity {
         })
     }
     @ServerFunction({ allowed: true })
-    static async signIn(name: string, context?: Context) {
-        const u = await context?.for(Users).findFirst(user => user.name.isEqualTo(name));
+    static async signIn(name: string, remult?: Remult) {
+        const u = await remult?.for(Users).findFirst(user => user.name.isEqualTo(name));
         if (!u)
             throw "user does not exist";
         const user: UserInfo = {
@@ -1023,8 +1023,8 @@ Try updating the users, **you'll probably fail**, this is because your not an ad
 So, first sign out, and change the `signIn` logic to make every one admins by making the following change:
 ```ts {11}
   @ServerFunction({ allowed: true })
-  static async signIn(name: string, context?: Context) {
-      const u = await context?.for(Users).findFirst(user => user.name.isEqualTo(name));
+  static async signIn(name: string, remult?: Remult) {
+      const u = await remult?.for(Users).findFirst(user => user.name.isEqualTo(name));
       if (!u)
           throw "user does not exist";
       const user: UserInfo = {
@@ -1050,7 +1050,7 @@ The update password, is an interesting process, since it has several challenges:
 
 To do that we'll use something called `@ServerController`. 
 
-Server controllers are classes that move between the browser and the server, with their context, when executed.
+Server controllers are classes that move between the browser and the server, with their remult, when executed.
 
 First, we'll add the `password` column to the `users.ts`
 ```ts {11-13}
@@ -1073,14 +1073,14 @@ export class Users extends IdEntity {
 Next we'll add a new file in the `src/users` folder, called `updatePasswordController.ts`
 ```ts {4-7,9,13-16,18}
 import { Users } from '../users/users';
-import { Context, ServerController, ServerMethod, StringColumn } from "remult";
+import { Remult, ServerController, ServerMethod, StringColumn } from "remult";
 
 @ServerController({
     allowed:Allow.authenticated,
     key:'updatePassword'
 })
 export class UpdatePasswordController {
-    constructor(private context: Context) {
+    constructor(private remult: Remult) {
     }
     password = new StringColumn();
     confirmPassword = new StringColumn({
@@ -1091,14 +1091,14 @@ export class UpdatePasswordController {
     });
     @ServerMethod()
     async SavePassword() {
-        const u = await this.context.for(Users).findId(this.context.user.id);
+        const u = await this.remult.repo(Users).findId(this.remult.user.id);
         u.password.value = this.password.value;
         await u.save();
     }
 }
 ```
 * Note the `@ServerController` decorator, the determines the `key` that'll be used in the api, and the rule for who is allowed to run this.
-* Note that the `context` object is passed in as a parameter to the constructor - on the server, it'll be injected with the server context object.
+* Note that the `remult` object is passed in as a parameter to the constructor - on the server, it'll be injected with the server remult object.
 * Note that the validation logic will be executed both on the server and in the browser
 * Note the `@ServerMethod` decorators, that determines which methods will be executed on the server
 
@@ -1141,14 +1141,14 @@ in the `src/components` folder add a file called `UpdatePassword.vue`
 </template>
 
 <script lang="ts">
-import { context } from "@/common";
+import { remult } from "@/common";
 import router from "@/router";
 import { Component, Vue } from "vue-property-decorator";
 import { UpdatePasswordController } from "../users/updatePasswordController";
 
 @Component
 export default class UpdatePasswordView extends Vue {
-  controller = new UpdatePasswordController(context);
+  controller = new UpdatePasswordController(remult);
   async updatePassword() {
     await this.controller.SavePassword();
     alert("Password saved");
@@ -1194,14 +1194,14 @@ const router = new VueRouter({
     <nav>
       <router-link to="/users">User List</router-link>
       | <router-link to="/add-user">Add User</router-link> 
-      | <router-link to="/sign-in" v-if="!context.authenticated()">
+      | <router-link to="/sign-in" v-if="!remult.authenticated()">
         Sign In
       </router-link>
-      <span v-if="context.authenticated()"> Hello {{ context.user.name }} </span>
-      | <router-link to="/update-password" v-if="context.authenticated()"> 
+      <span v-if="remult.authenticated()"> Hello {{ remult.user.name }} </span>
+      | <router-link to="/update-password" v-if="remult.authenticated()"> 
           Update Password
         </router-link> |
-      <button v-if="context.authenticated()" v-on:click="signOut">Sign Out</button>
+      <button v-if="remult.authenticated()" v-on:click="signOut">Sign Out</button>
     </nav>
     <div>
       <router-view />

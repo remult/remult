@@ -30,7 +30,7 @@ Simply open a browser with the url `http://localhost:4200` and you'll see your a
 
 
 ## A little more information
-* the task `npm:dev-node` build the code that will run on the NodeJS server and runs it. 
+* the task `npm:dev-node` builds the code that will run on the NodeJS server and runs it. 
 
   Whenever a code file changes, it'll automatically rebuild the project and restart it.
 

@@ -3,7 +3,7 @@
 import * as express from 'express';
 import { initExpress } from 'remult/server';
 import * as fs from 'fs';
-import { DataProvider, SqlDatabase } from 'remult';
+import { DataProvider, Remult, SqlDatabase } from 'remult';
 import { Pool } from 'pg';
 import { config } from 'dotenv';
 import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
@@ -23,7 +23,9 @@ async function startup() {
             ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
         });
         let database = new SqlDatabase(new PostgresDataProvider(pool));
-        await verifyStructureOfAllEntities(database);
+        var remult = new Remult();
+        remult.setDataProvider(database);
+        await verifyStructureOfAllEntities(database, remult);
         dataProvider = database;
     }
 

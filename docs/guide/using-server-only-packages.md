@@ -1,7 +1,7 @@
 # Using Node JS Packages (server only)
 One of the core advantages of remult is that you write your code once and it runs both on the server and in the browser.
 
-Although this can useful for most cases, if you are using an npm package that only makes sense in the context of the Node JS Server and wouldn't work in a browser, the fact that the same code "compiles" both to the server and the client can cause problems.
+Although this can useful for most cases, if you are using an npm package that only makes sense in the remult of the Node JS Server and wouldn't work in a browser, the fact that the same code "compiles" both to the server and the client can cause problems.
 
 When you'll build the angular project you'll get errors of `Module not found`.
 In this article we'll walk thorough such a scenario and demonstrate how it can be solved.
@@ -13,13 +13,13 @@ Our first instinct would be to add in the `products.component.ts` file an import
 import * as fs from 'fs';
 .....
 @BackendMethod({allowed:true})
-static async updatePriceOnBackend(priceToUpdate:number,context?:Context){
-  let products = await context.for(Products).find();
+static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
+  let products = await remult.repo(Products).find();
   for (const p of products) {
       p.price.value += priceToUpdate;
       await p.save();
   }
-  fs.appendFileSync('./logs/log.txt', new Date() + " " + context.user.name + " update price\n");
+  fs.appendFileSync('./logs/log.txt', new Date() + " " + remult.user.name + " update price\n");
 }
 ```
 
@@ -32,7 +32,7 @@ i ｢wdm｣: Failed to compile.
  ```
 :::
 
-The reason we get this error is that the `fs` module on which we rely here, is only relevant in the context of a `Node JS` server and not in the context of the browser.
+The reason we get this error is that the `fs` module on which we rely here, is only relevant in the remult of a `Node JS` server and not in the remult of the browser.
 
 To solve this problem, we'll `abstract` the call to `fs` and `inject` it only when we are running on the server.
 
@@ -43,19 +43,19 @@ We'll remove the import to `fs` and instead of calling specific `fs` methods we'
 //import * as fs from 'fs';
 .....
 @BackendMethod({allowed:true})
-static async updatePriceOnBackend(priceToUpdate:number,context?:Context){
-  let products = await context.for(Products).find();
+static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
+  let products = await remult.repo(Products).find();
   for (const p of products) {
       p.price.value += priceToUpdate;
       await p.save();
   }
-  //fs.appendFileSync('./logs/log.txt', new Date() + " " + context.user.name + " update price\n");
-  ProductsComponent.writeToLog(new Date() + " " + context.user.name + " update price\n");
+  //fs.appendFileSync('./logs/log.txt', new Date() + " " + remult.user.name + " update price\n");
+  ProductsComponent.writeToLog(new Date() + " " + remult.user.name + " update price\n");
 }
 static writeToLog:(textToWrite:string)=>void;
 ```
 
-The method `writeToLog` that we've defined serves as a place holder which we'll assign to in the context of the server.
+The method `writeToLog` that we've defined serves as a place holder which we'll assign to in the remult of the server.
 It receives one parameter of type `string` and returns `void`
 
 ## Step 2, implement the method

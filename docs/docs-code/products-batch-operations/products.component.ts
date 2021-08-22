@@ -10,7 +10,7 @@ import { Products } from './products';
 export class ProductsComponent implements OnInit {
 
   constructor(private remult: Remult) { }
-  products = new GridSettings(this.remult.for(Products), {
+  products = new GridSettings(this.remult.repo(Products), {
     allowCrud: true
   });
   ngOnInit(): void {
@@ -18,7 +18,7 @@ export class ProductsComponent implements OnInit {
   priceInput: string;
   async updatePrice() {
     await ProductsComponent.updatePriceOnBackend(Number.parseInt(this.priceInput));
-    // for await (const p of this.remult.for(Products).iterate()) {
+    // for await (const p of this.remult.repo(Products).iterate()) {
     //   p.price += Number.parseInt(this.priceInput);
     //   await p.save();
     // }
@@ -26,7 +26,7 @@ export class ProductsComponent implements OnInit {
   }
   @BackendMethod({ allowed: true })
   static async updatePriceOnBackend(priceToUpdate: number, remult?: Remult) {
-    for await (const p of remult.for(Products).iterate()) {
+    for await (const p of remult.repo(Products).iterate()) {
       p.price += priceToUpdate
       await p.save();
     }

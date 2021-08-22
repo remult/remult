@@ -47,7 +47,7 @@ export class Categories extends IdEntity {
 in `categories.component.ts` 
 ```ts{2-3,11-16}
 import { Component, OnInit } from '@angular/core';
-import { Context } from 'remult';
+import { Remult } from 'remult';
 import { Categories } from './categories';
 
 @Component({
@@ -56,8 +56,8 @@ import { Categories } from './categories';
   styleUrls: ['./categories.component.scss']
 })
 export class CategoriesComponent implements OnInit {
-  constructor(private context: Context) { }
-  categories = this.context.for(Categories).gridSettings({
+  constructor(private remult: Remult) { }
+  categories = this.remult.repo(Categories).gridSettings({
     allowUpdate: true,
     allowInsert: true,
     allowDelete: true
@@ -118,7 +118,7 @@ export class Products extends IdEntity {
 ## Allowing the user to Easily select a category for a product
 in the `products.component.ts`
 ```ts{11-14,18}
-products = this.context.for(Products).gridSettings({
+products = this.remult.repo(Products).gridSettings({
   allowInsert: true,
   allowUpdate: true,
   allowDelete: true,
@@ -130,7 +130,7 @@ products = this.context.for(Products).gridSettings({
     },
 +   {
 +     column: p.category,
-+     valueList: this.context.for(Categories).getValueList()
++     valueList: this.remult.repo(Categories).getValueList()
 +   },
     p.availableFrom,
     p.availableTo
@@ -148,24 +148,24 @@ In the `home.component.ts` let's add the following method:
 ```ts{12-14}
 export class HomeComponent implements OnInit {
 
-  constructor(private context: Context) { }
+  constructor(private remult: Remult) { }
   products: Products[] = [];
   async ngOnInit() {
-    this.products = await this.context.for(Products).find({
+    this.products = await this.remult.repo(Products).find({
       orderBy: p => p.name,
       where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
         p.availableTo.isGreaterOrEqualTo(new Date()))
     });
   }
   getProductCategory(p: Products) {
-    return this.context.for(Categories).lookup(p.category).name.value;
+    return this.remult.repo(Categories).lookup(p.category).name.value;
   }
 }
 ```
 
 Let's review:
 1. the `getProductCategory` method will receive the product we care about, and should return the product name.
-2. We're using the `context` object as we do to get data from the server.
+2. We're using the `remult` object as we do to get data from the server.
 3. The `lookup` method, is useful for getting data to display to the user, it has several traits:
    1. It'll request the category from the server and cache the result, so that the second time you ask for it - you'll get it immediately.
    2. If the `category` doesn't exist in the cache, it'll return an empty category, until it'll get the result from the server (since Angular recomputes all the time, it'll start with a blank value and when the data is loaded from the server it'll display it's the correct category data)

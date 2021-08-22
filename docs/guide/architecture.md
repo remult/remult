@@ -73,7 +73,7 @@ An Entity object is defined once and is used on the server and in the browser. F
 
 When you write the following code which runs in the browser:
 ```ts
-await this.context.for(Products).find({
+await this.remult.repo(Products).find({
     orderBy: p => p.name
     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
     p.availableTo.isGreaterOrEqualTo(new Date()))
@@ -115,7 +115,7 @@ The server will then return the data in JSON format to be consumed in the browse
 #### On the Server
 If we'll run the same code - on the server:
 ```ts
-await this.context.for(Products).find({
+await this.remult.repo(Products).find({
     orderBy: p => p.name
     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
     p.availableTo.isGreaterOrEqualTo(new Date()))

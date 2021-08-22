@@ -22,7 +22,7 @@ An Entity object is defined once and is used on the server and in the browser. F
 
 Then you query that entity using the following code.
 ```ts
-await this.context.for(Products).find({
+await this.remult.repo(Products).find({
     orderBy: p => p.name,
     where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
                 p.availableTo.isGreaterOrEqualTo(new Date()))
@@ -40,8 +40,8 @@ async updatePrice() {
     this.products.reloadData();
   }
   @BackendMethod({ allowed: true })
-  static async updatePriceOnBackend(priceToUpdate: number, context?: Context) {
-    for await (const p of context.for(Products).iterate()) {
+  static async updatePriceOnBackend(priceToUpdate: number, remult?: Remult) {
+    for await (const p of remult.repo(Products).iterate()) {
       p.price += priceToUpdate
       await p.save();
     }

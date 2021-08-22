@@ -2,7 +2,7 @@
 We can configure the `DataGrid` to only show the columns that we want with the width we want. In the `products.component.ts` file
 ```ts{18-26}
 import { Component, OnInit } from '@angular/core';
-import { Context } from 'remult';
+import { Remult } from 'remult';
 import { Products } from './products';
 
 @Component({
@@ -12,9 +12,9 @@ import { Products } from './products';
 })
 export class ProductsComponent implements OnInit {
 
-  constructor(private context: Context) { }
+  constructor(private remult: Remult) { }
 
-  products = this.context.for(Products).gridSettings({
+  products = this.remult.repo(Products).gridSettings({
     allowInsert: true,
     allowUpdate: true,
     allowDelete: true,
@@ -43,7 +43,7 @@ Let's review:
 
 We can also limit the number of columns that are displayed on a grid, by setting the `numOfColumnsInGrid`.
 ```ts{14}
-products = this.context.for(Products).gridSettings({
+products = this.remult.repo(Products).gridSettings({
     allowInsert: true,
     allowUpdate: true,
     allowDelete: true,
@@ -70,7 +70,7 @@ We can add the `DataArea` with all the columns that are not included in the grid
 
 We can even have more control over the `DataArea` and add multiple `DataArea`s by defining them in the `products.component.ts`
 ```ts{16-21}
-products = this.context.for(Products).gridSettings({
+products = this.remult.repo(Products).gridSettings({
   allowInsert: true,
   allowUpdate: true,
   allowDelete: true,

@@ -80,7 +80,7 @@ let's adjust the html in the `question.component.ts`
 Now let's send these arguments from the calling code in `home.component.ts`
 ```ts{3-6}
 async testDialog() {
-  await this.context.openDialog(QuestionComponent, 
+  await openDialog(QuestionComponent, 
     q => q.args = {
       title: 'How great is this',
       question: "Isn't this great"
@@ -150,7 +150,7 @@ The `openDialog` method receives a 3rd parameter which is a function that will b
 In the `home.component.ts`
 ```ts{4}
 async testDialog() {
-    if (await this.context.openDialog(QuestionComponent, q => q.args = {
+    if (await this.remult.openDialog(QuestionComponent, q => q.args = {
       title: 'How great is this',
       question: "Isn't this great"
     }, q => q.clickedOk)) {

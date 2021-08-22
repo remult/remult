@@ -41,7 +41,7 @@ This step has secured the `API` which means that even someone who is accessing o
 Next we'll secure the `updatePriceOnBackend` server function we've used in the `products.component.ts`
 ```ts{1}
   @BackendMethod({allowed:Roles.admin})
-  static async updatePriceOnBackend(priceToUpdate: number, context?: Context) {
+  static async updatePriceOnBackend(priceToUpdate: number, remult?: Remult) {
 ```
 We've set the `allowed` property to the `Roles.admin` role.
 

@@ -11,8 +11,8 @@ Let's refactor the code to do that:
 <<< @/docs-code/products-batch-operations/products.component.ts{20-33} 
 
 * We've created a new static method called `updatePriceOnBackend` and moved the code to it
-* * note that the `context` parameter is marked as optional - that parameter will automatically be injected with the Backend context once this method will run on the Backend.
-* * note that since this is a `static` method, we can't use the `this` keyword so instead of writing `this.context.for(Products)` we write `context.for(Products) ` and we receive the context as a parameter.
+* * note that the `remult` parameter is marked as optional - that parameter will automatically be injected with the Backend remult once this method will run on the Backend.
+* * note that since this is a `static` method, we can't use the `this` keyword so instead of writing `this.remult.repo(Products)` we write `remult.repo(Products) ` and we receive the remult as a parameter.
 * * note that we also that the parameter `priceToUpdate` is typed, which means that we achieved type check across backend calls.
 * We've tagged it with the `@BackendMethod` decorator to indicate that it runs on the Backend and we've moved the code to it.
 * * In the parameter sent to the `@BackendMethod` decorator, we've set the `allowed` property to `true` indicating that anyone can run this function. Later we'll restrict it to users with specific roles.

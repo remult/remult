@@ -96,7 +96,7 @@ const routes: Routes = [
 Let's add another `BoolColumn` to the `users` entity, in the `users.ts` file:
 ```ts{19-22}
 export class Users extends IdEntity  {
-    constructor(private context: Context) {
+    constructor(private remult: Remult) {
 ...
    @Field({
         validate: [Validators.required, Validators.unique]
@@ -126,7 +126,7 @@ Let's add that column to the UI in the `users.component.ts`
 ```ts{7,15}
 export class UsersComponent implements OnInit {
  ...
-  products = new GridSettings(this.context.for(Users),{
+  products = new GridSettings(this.remult.repo(Users),{
     allowDelete: true,
     allowInsert: true,
     allowUpdate: true,
@@ -150,9 +150,9 @@ export class UsersComponent implements OnInit {
 The `app.component.ts` file contains the `signIn` function that signs the user in. In that function we would like to add the `productManager` role if the user has it.
 ```ts{15-17}
 @BackendMethod({ allowed: true })
-  static async signIn(user: string, password: string, context?: Context) {
+  static async signIn(user: string, password: string, remult?: Remult) {
     let result: UserInfo;
-    let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
+    let u = await remult.repo(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
       if (await u.passwordMatches(password)) {
         result = {

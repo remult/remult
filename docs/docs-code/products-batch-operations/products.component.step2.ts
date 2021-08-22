@@ -10,14 +10,14 @@ import { Products } from './products';
 export class ProductsComponent implements OnInit {
 
   constructor(private remult: Remult) { }
-  products = new GridSettings(this.remult.for(Products), {
+  products = new GridSettings(this.remult.repo(Products), {
     allowCrud: true
   });
   ngOnInit(): void {
   }
   priceInput: string;
   async updatePrice() {
-    for await (const p of this.remult.for(Products).iterate()) {
+    for await (const p of this.remult.repo(Products).iterate()) {
       p.price += +this.priceInput;
       await p.save();
     }

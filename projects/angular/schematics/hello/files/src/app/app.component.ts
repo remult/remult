@@ -46,7 +46,7 @@ export class AppComponent implements OnInit {
   @BackendMethod({ allowed: true })
   static async signIn(user: string, password: string, remult?: Remult) {
     let result: UserInfo;
-    let u = await remult.for(Users).findFirst(h => h.name.isEqualTo(user));
+    let u = await remult.repo(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
       if (await u.passwordMatches(password)) {
         result = {
@@ -83,7 +83,7 @@ export class AppComponent implements OnInit {
     this.router.navigate(['/']);
   }
   signUp() {
-    let user = this.remult.for(Users).create();
+    let user = this.remult.repo(Users).create();
     let password = new PasswordControl();
     let confirmPassword = new PasswordControl("Confirm Password");
     openDialog(InputAreaComponent, i => i.args = {
@@ -106,7 +106,7 @@ export class AppComponent implements OnInit {
   }
 
   async updateInfo() {
-    let user = await this.remult.for(Users).findId(this.remult.user.id);
+    let user = await this.remult.repo(Users).findId(this.remult.user.id);
     openDialog(InputAreaComponent, i => i.args = {
       title: "Update Info",
       fields: () => [
@@ -118,7 +118,7 @@ export class AppComponent implements OnInit {
     });
   }
   async changePassword() {
-    let user = await this.remult.for(Users).findId(this.remult.user.id);
+    let user = await this.remult.repo(Users).findId(this.remult.user.id);
     let password = new PasswordControl();
     let confirmPassword = new PasswordControl("Confirm Password");
     openDialog(InputAreaComponent, i => i.args = {
