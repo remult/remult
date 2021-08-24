@@ -15,7 +15,8 @@
           <div class="data-grid-row-selection dataGridDataCell" *ngIf="settings.settings.allowSelection">
 
             <mat-checkbox [indeterminate]="settings.selectAllIntermitent()" [checked]="settings.selectAllChecked()"
-              [matTooltip]="settings.selectedRows.length" (change)="settings.selectAllChanged($event)">
+              [matTooltip]="!settings.selectAllChecked()? settings.selectedRows.length:settings.totalRows?settings.totalRows:rightToLeft ? 'רבים' : 'many'"
+              (change)="settings.selectAllChanged($event)">
             </mat-checkbox>
 
           </div>
