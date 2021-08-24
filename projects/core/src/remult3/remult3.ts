@@ -36,6 +36,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V]  checkbox shouldn't display text true false on grid
 [V] rename AuthenticatedInGuard and not signed in guard
 [V] insert filter into the grid button
+[] add id lookup in remult angular
 [] insert the column selection into the grid button.
 [V] change grid button icon to something else
 
