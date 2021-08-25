@@ -1,9 +1,0 @@
-<mat-form-field appearance="outline" class="full-width-form-field dense-form-field">
-    <mat-label>family groups</mat-label>
-    <select matNativeControl class="form-control" #lang (change)="refreshBaskets()" [(ngModel)]="filterGroup">
-
-        <option *ngFor="let g of groups" [value]="g.name">{{g.name}} - {{g.familiesCount}}
-        </option>
-    </select>
-</mat-form-field>
-{{filterGroup|json}}

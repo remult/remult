@@ -38,6 +38,8 @@ export class Products extends IdEntity {
   name: string;
   @Field()
   price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
+  @Field()
+  categoryCode:number;
   @Field() // should be Date
   availableFrom1: Date;
   @Field()

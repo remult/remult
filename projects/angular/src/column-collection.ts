@@ -3,7 +3,7 @@ import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueL
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
-import { decorateColumnSettings } from 'remult/src/remult3';
+import { decorateColumnSettings, getEntitySettings } from 'remult/src/remult3';
 import { ValueListValueConverter } from "remult/valueConverters";
 import { ClassType } from "remult/classType";
 import { ExtendedValueListItem } from "./angular/remult-core.module";
@@ -144,6 +144,10 @@ export class FieldCollection<rowType = any> {
             s.valueList = undefined;
           else
             result.push(...x);
+          for (const item of result) {
+            if (typeof item.id === "number")//adjusted for number column since input value is string
+              item.id = item.id.toString();
+          }
 
         }
         if (this.remult) {
@@ -156,8 +160,13 @@ export class FieldCollection<rowType = any> {
       else {
         result.push(...(await (orig as (Promise<ValueListItem[]>))));
       }
+      for (const item of result) {
+        if (typeof item.id === "number")//adjusted for number column since input value is string
+          item.id = item.id.toString();
+      }
 
     }
+
     return Promise.resolve();
   }
 
@@ -292,8 +301,10 @@ export class FieldCollection<rowType = any> {
     return this.getRowColumn({ col, row }, (c, row) => {
       if (col.valueList) {
         let item = (col.valueList as ExtendedValueListItem[]).find(x => x.id == c.inputValue);
+
         if (item?.entity) {
-          c.value = item.entity;
+          if (getEntitySettings(getFieldDefinition(col.field).valueType, false))
+            c.value = item.entity;
         }
       }
 

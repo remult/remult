@@ -44,7 +44,14 @@ export class ProductsComponent implements OnInit {
   area = new DataAreaSettings({
     fields: () => [this.$.p]
   });
-  products = new GridSettings(this.remult.repo(Products), { allowCrud: true, allowSelection: true });
+  products = new GridSettings(this.remult.repo(Products), {
+    allowCrud: true,
+    allowSelection: true,
+    columnSettings: p => [
+      p.name,
+      { field: p.categoryCode, valueList: async () => [{ id: 1, caption: 'abc' }, { id: 2, caption: 'def' }] }
+    ]
+  });
   async ngOnInit() {
     let p = await this.remult.repo(Products).findFirst();
 
