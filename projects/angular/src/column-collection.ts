@@ -146,7 +146,10 @@ export class FieldCollection<rowType = any> {
             result.push(...x);
           for (const item of result) {
             if (typeof item.id === "number")//adjusted for number column since input value is string
-              item.id = item.id.toString();
+            {
+              result.splice(0,result.length,...result.map(x => ({ ...x, id: x.id?.toString() })));
+              break;
+            }
           }
 
         }
@@ -162,7 +165,10 @@ export class FieldCollection<rowType = any> {
       }
       for (const item of result) {
         if (typeof item.id === "number")//adjusted for number column since input value is string
-          item.id = item.id.toString();
+        {
+          result.splice(0,result.length,...result.map(x => ({ ...x, id: x.id?.toString() })));
+          break;
+        }
       }
 
     }
