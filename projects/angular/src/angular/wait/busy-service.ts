@@ -10,22 +10,22 @@ import { finalize } from "rxjs/operators";
 export class BusyService {
     private waitRef: MatDialogRef<any>;
     async donotWait<t>(what: () => Promise<t>): Promise<t> {
-        this.disableWait = true;
+        this.disableWait ++;
         try {
             return (await what());
         }
         finally {
-            this.disableWait = false;
+            this.disableWait --;
         }
 
     }
     donotWaitNonAsync<t>(what: () => t): t {
-        this.disableWait = true;
+        this.disableWait ++;
         try {
             return (what());
         }
         finally {
-            this.disableWait = false;
+            this.disableWait--;
         }
 
     }
@@ -33,7 +33,7 @@ export class BusyService {
     static singleInstance: BusyService;
     private id = 0;
     private numOfWaits = 0;
-    private disableWait = false;
+    private disableWait = 0;
     log(id: number, what: string) {
         //console.log(what + ' id:' + this.id + ' w:' + this.numOfWaits);
     }
