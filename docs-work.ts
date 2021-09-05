@@ -14,7 +14,7 @@ class DocFile {
     addTitle(name: string) {
         this.s += '# ' + name + '\n';
     }
-    writeMemberComments(m: member) {
+    writeMemberComments(m: member, indent = 0) {
         if (!m.comment)
             return;
 
@@ -24,7 +24,10 @@ class DocFile {
 
         if (m.comment.tags)
             for (const t of m.comment.tags) {
-                this.s += "### " + t.tag + "\n";
+                for (let index = 0; index < 3 + indent; index++) {
+                    this.s += '#';
+                }
+                this.s += " " + t.tag + "\n";
                 if (t.tag == "example") {
                     if (!t.text.endsWith('\n'))
                         t.text += '\n';
@@ -34,7 +37,7 @@ class DocFile {
                 this.s += t.text + "\n";
             }
     }
-    writeMembers(type: member) {
+    writeMembers(type: member, indent = 0) {
 
         if (type.children) {
             try {
@@ -43,15 +46,35 @@ class DocFile {
             for (const m of type.children) {
                 if (m.flags.isPrivate)
                     continue;
-                let memberText = writeMemberComments(m);
+                for (let index = 0; index < 2 + indent; index++) {
+                    this.s += '#';
+                }
+                this.s += ' ' + m.name + "\n";
+                this.writeMemberComments(m, indent);
                 if (m.signatures) {
                     for (const s of m.signatures) {
-                        memberText += writeMemberComments(s);
+                        this.writeMemberComments(s, indent);
+                        if (m.name == "findFirst") {
+                            debugger;
+                        }
+                        if (s.parameters?.length == 1) {
+                            let p = s.parameters[0];
+                            if (p.type.type == 'union') {
+                                for (const pp of p.type.types) {
+                                    if (pp.name.endsWith("Options")) {
+                                        let o = findType(pp.name);
+                                        this.writeMembers(o, indent + 1);
+                                    }
+                                }
+                            } else if (p.type.name)
+                                if (p.type.name.endsWith("Options")) {
+                                    let o = findType(p.type.name);
+                                    this.writeMembers(o, indent + 1);
+                                }
+                        }
                     }
                 }
-                if (memberText.length > 0) {
-                    this.s += '## ' + m.name + "\n" + memberText;
-                }
+
             }
         }
 
@@ -184,8 +207,15 @@ function writeMemberComments(m: member) {
 }
 
 
-export interface member {
-    name: string
+ interface member {
+    name: string,
+    parameters: {
+        type: {
+            name: string,
+            type: string,
+            types: { name: string }[]
+        }
+    }[],
     signatures: member[],
     sources: { line: number }[]
     flags: {

@@ -1,4 +1,6 @@
 # Entity
+## id
+## dbAutoIncrementId
 ## key
 A unique identifier that represents this entity, it'll also be used as the api route for this entity.
 ## dbName
@@ -6,9 +8,10 @@ The name of the table in the database that holds the data for this entity.
 If no name is set, the `key` will be used instead.
 ### example
 ```ts
-dbName = 'myProducts'
+dbName:'myProducts'
 ```
 
+## sqlExpression
 ## caption
 A human readable name for the entity
 ## allowApiRead
@@ -29,6 +32,7 @@ Determines if this entity can be updated through the api.
 sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
 ## apiDataFilter
 A filter that determines which rows can be queries using the api.
+## apiRequireId
 ## fixedFilter
 A filter that will be used for all queries from this entity both from the API and from within the server.
 ### example
@@ -36,6 +40,7 @@ A filter that will be used for all queries from this entity both from the API an
 fixedWhereFilter: () => this.archive.isEqualTo(false)
 ```
 
+## customFilterBuilder
 ## defaultOrderBy
 An order by to be used, in case no order by was specified
 ### example
@@ -74,3 +79,4 @@ will be called after the Entity was saved to the data source.
 Will be called before an Entity is deleted.
 ## deleted
 Will be called after an Entity is deleted
+## validation

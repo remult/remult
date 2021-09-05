@@ -265,8 +265,10 @@ export interface EntityMetadata<entityType = any> {
     getDbName(): Promise<string>;
 }
 export interface Repository<entityType> {
+    /**creates a json representation of the object */
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     metadata: EntityMetadata<entityType>;
+    /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
     iterate(whereOrOptions?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
     findFirst(whereOrOptions?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
@@ -280,7 +282,7 @@ export interface Repository<entityType> {
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 
-    /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
+    /** Determines the number of rows returned by the request, on the browser the default is 100 rows 
      * @example
      * this.products = await this.remult.repo(Products).find({
      *  limit:10,

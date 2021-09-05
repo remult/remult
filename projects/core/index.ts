@@ -17,6 +17,7 @@ export {
     IterateOptions,
     Repository,
     FieldType,
+    FindFirstOptions,
 
     ComparisonFilterFactory,
     FilterFactories,
