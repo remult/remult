@@ -36,6 +36,16 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V]  checkbox shouldn't display text true false on grid
 [V] rename AuthenticatedInGuard and not signed in guard
 [V] insert filter into the grid button
+[] @ExcludeEntityFromApi()
+    [] require key in entity function parameters, instead of a mandatory key member
+    [] let myRoute = api(contextForRouteExtraction).getRoute();
+    [] first parameter should be key
+[] remove entity where item
+[] translateWhereToFilter and toItem - change to To Entity Where that can get a single or array of where and returns a function that gets fitlerfactories and returns a singular Filter
+
+
+
+
 [] add id lookup in remult angular
 [] insert the column selection into the grid button.
 [V] change grid button icon to something else
@@ -47,17 +57,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## review with yoni
 [] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
 * maybe not do the array stuff, and instead do a Filter Join to build an array, that way to filter itself stays simple - just a method call
+[] fixedFilter => where
+[] apiDataFitler => apiWhere
 
-[] @ExcludeEntityFromApi()
-    [] require key in entity function parameters, instead of a mandatory key member
-    [] let myRoute = api(contextForRouteExtraction).getRoute();
 
-[] reconsider factory, instead of (options,remult), to be (set,remult).
-```
-(options,remult)=>options.dbName = async ()=>"bla bla"
-vs
-(set,remult)=>set ({dbName : async ()=>"bla bla"})
-```
 
 
 

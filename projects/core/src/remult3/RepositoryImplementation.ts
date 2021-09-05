@@ -1342,6 +1342,7 @@ interface columnInfo {
 }
 export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, remult: Remult) => void))[];
 export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
+    
     return target => {
 
         let factory: EntityOptionsFactory = remult => {
