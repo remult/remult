@@ -42,6 +42,12 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] first parameter should be key
 [] remove entity where item
 [] translateWhereToFilter and toItem - change to To Entity Where that can get a single or array of where and returns a function that gets fitlerfactories and returns a singular Filter
+[] merge security pull requests
+[]     app.use(
+        helmet({
+            contentSecurityPolicy: false,
+        })
+    );
 
 
 
