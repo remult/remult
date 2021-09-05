@@ -64,10 +64,10 @@ If the `validationError` property of the entity or any of it's columns will be s
 this is the place to run logic that we want to run in any case before an entity is saved.
 ### example
 ```ts
-saving: async () => {
+saving: async (self) => {
   if (isBackend()) {
-    if (this.isNew()) {
-        this.createDate.value = new Date();
+    if (self.isNew()) {
+        self.createDate.value = new Date();
     }
   }
 }

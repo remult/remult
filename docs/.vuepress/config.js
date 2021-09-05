@@ -94,15 +94,11 @@ module.exports = {
               collapsable: true,
               children: [
                 'ref_entity',
-                'ref_entityoptions',
-                'ref_findoptions',
-                'ref_specificentityhelper',
+                'ref_field',
+                'ref_backendmethod',
+                'ref_repository',
                 'ref_entitywhere',
-                'ref_entityorderby',
-                'ref_idatasettings',
-                'ref_datacontrolsettings',
-                'ref_rowbutton',
-                'ref_gridbutton'
+                'ref_entityorderby'
 
 
               ]

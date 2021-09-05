@@ -67,10 +67,10 @@ export interface EntityOptions<entityType = any> {
   * If the `validationError` property of the entity or any of it's columns will be set, the save will be aborted and an exception will be thrown.
   * this is the place to run logic that we want to run in any case before an entity is saved. 
   * @example
-  * saving: async () => {
+  * saving: async (self) => {
   *   if (isBackend()) {
-  *     if (this.isNew()) {
-  *         this.createDate.value = new Date();
+  *     if (self.isNew()) {
+  *         self.createDate.value = new Date();
   *     }
   *   }
   * }

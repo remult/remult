@@ -7,7 +7,7 @@
 ## find
 returns a result array based on the provided options
 ### limit
-Determines the number of rows returned by the request, on the browser the default is 25 rows
+Determines the number of rows returned by the request, on the browser the default is 100 rows
 #### example
 ```ts
 this.products = await this.remult.repo(Products).find({
