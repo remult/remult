@@ -3,7 +3,7 @@
 Creates a new instance of the entity
 ### example
 ```ts
-let p = this.remult.repo(Products).create();
+let p = this.context.for(Products).create();
 p.name.value = 'Wine';
 await p.save();
 ```
@@ -12,7 +12,7 @@ await p.save();
 Returns an array of rows for the specific type
 ### example
 ```ts
-let products = await remult.repo(Products).find();
+let products = await context.for(Products).find();
 for (const p of products) {
   console.log(p.name.value);
 }
@@ -20,7 +20,7 @@ for (const p of products) {
 
 ### example
 ```ts
-this.products = await this.remult.repo(Products).find({
+this.products = await this.context.for(Products).find({
     orderBy: p => p.name
     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
     p.availableTo.isGreaterOrEqualTo(new Date()))
@@ -35,13 +35,13 @@ For all the different options see [FindOptions](ref_findoptions)
 returns a single entity based on a filter
 ### example:
 
-let p = await this.remult.repo(Products).findFirst(p => p.id.isEqualTo(7))
+let p = await this.context.for(Products).findFirst(p => p.id.isEqualTo(7))
 
 ## findId
 returns a single entity based on it's id
 ### example
 ```ts
-let p = await remult.repo(Products).findId(productId);
+let p = await context.for(Products).findId(productId);
 ```
 
 ## lookup
@@ -51,21 +51,21 @@ It'll them call the server to get the actual value and cache it.
 Once the value is back from the server, any following call to this method will return the cached row.
 ### example
 ```ts
-return  remult.repo(Products).lookup(p=>p.id.isEqualTo(productId));
+return  context.for(Products).lookup(p=>p.id.isEqualTo(productId));
 ```
 
 ## lookupAsync
 returns a single row and caches the result for each future call
 ### example
 ```ts
-let p = await this.remult.repo(Products).lookupAsync(p => p.id.isEqualTo(productId));
+let p = await this.context.for(Products).lookupAsync(p => p.id.isEqualTo(productId));
 ```
 
 ## count
 returns the number of rows that matches the condition
 ### example
 ```ts
-let count = await this.remult.repo(Products).count(p => p.price.isGreaterOrEqualTo(5))
+let count = await this.context.for(Products).count(p => p.price.isGreaterOrEqualTo(5))
 ```
 
 ## iterate
@@ -73,14 +73,14 @@ Iterate is a more robust version of Find, that is designed to iterate over a lar
 It's safer to use Iterate when working with large datasets of data.
 ### example
 ```ts
-for await (let p of this.remult.repo(Products).iterate()){
+for await (let p of this.context.for(Products).iterate()){
   console.log(p.name.value);
 }
 ```
 
 ### example
 ```ts
-for await (let p of this.remult.repo(Products).iterate({
+for await (let p of this.context.for(Products).iterate({
     orderBy: p => p.name
     , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
     p.availableTo.isGreaterOrEqualTo(new Date()))

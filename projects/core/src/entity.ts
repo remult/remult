@@ -19,8 +19,7 @@ export interface EntityOptions<entityType = any> {
    * The name of the table in the database that holds the data for this entity.
    * If no name is set, the `key` will be used instead.
    * @example
-   * dbName = 'myProducts'
-   
+   * dbName:'myProducts'
    */
   dbName?: string;
   sqlExpression?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
@@ -28,13 +27,16 @@ export interface EntityOptions<entityType = any> {
   caption?: string;
   /**
    * Determines if this Entity is available for get requests using Rest Api 
-   * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+   * @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiRead?: Allowed;
-  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+
+  /** 
+   * Determines if this entity can be updated through the api.
+   * @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiUpdate?: AllowedForInstance<entityType>;
-  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+  /** @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiDelete?: AllowedForInstance<entityType>;
-  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+  /** @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiInsert?: AllowedForInstance<entityType>;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed;

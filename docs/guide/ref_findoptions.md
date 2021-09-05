@@ -18,7 +18,7 @@ See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for mo
 Determines the number of rows returned by the request, on the browser the default is 25 rows
 ### example
 ```ts
-this.products = await this.remult.repo(Products).find({
+this.products = await this.context.for(Products).find({
  limit:10,
  page:2
 })
@@ -28,7 +28,7 @@ this.products = await this.remult.repo(Products).find({
 Determines the page number that will be used to extract the data
 ### example
 ```ts
-this.products = await this.remult.repo(Products).find({
+this.products = await this.context.for(Products).find({
  limit:10,
  page:2
 })
