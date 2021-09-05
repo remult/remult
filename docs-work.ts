@@ -54,9 +54,7 @@ class DocFile {
                 if (m.signatures) {
                     for (const s of m.signatures) {
                         this.writeMemberComments(s, indent);
-                        if (m.name == "findFirst") {
-                            debugger;
-                        }
+                       
                         if (s.parameters?.length == 1) {
                             let p = s.parameters[0];
                             if (p.type.type == 'union') {
@@ -128,82 +126,6 @@ catch (err) {
         console.error(line);
     }
 
-}
-
-
-
-
-for (const file of api.children) {
-
-
-    if (file.children)
-        for (const type of file.children) {
-
-            switch (type.name) {
-                case "EntityOptions":
-                case "SpecificEntityHelper":
-                case "FindOptions":
-                case "EntityWhere":
-                case "EntityOrderBy":
-                case "Entity":
-                case "DataControlSettings":
-                case "IDataSettings":
-                case "RowButton":
-                case "GridButton":
-
-                    let s = '# ' + type.name + '\n';
-                    {
-                        let c = writeMemberComments(type);
-                        if (c)
-                            s += c;
-                    }
-
-
-            }
-
-        }
-}
-function writeMembers(type: member) {
-    let s = '';
-    if (type.children) {
-        type.children.sort((a, b) => a.sources[0].line - b.sources[0].line);
-        for (const m of type.children) {
-            if (m.flags.isPrivate)
-                continue;
-            let memberText = writeMemberComments(m);
-            if (m.signatures) {
-                for (const s of m.signatures) {
-                    memberText += writeMemberComments(s);
-                }
-            }
-            if (memberText.length > 0) {
-                s += '## ' + m.name + "\n" + memberText;
-            }
-        }
-    }
-    return s;
-
-}
-function writeMemberComments(m: member) {
-    if (!m.comment)
-        return '';
-    let s = '';
-    if (m.comment.shortText) {
-        s += m.comment.shortText + "\n";
-    }
-
-    if (m.comment.tags)
-        for (const t of m.comment.tags) {
-            s += "### " + t.tag + "\n";
-            if (t.tag == "example") {
-                if (!t.text.endsWith('\n'))
-                    t.text += '\n';
-                t.text = "```ts" + t.text + "```\n";
-            }
-
-            s += t.text + "\n";
-        }
-    return s;
 }
 
 
