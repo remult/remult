@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields,  EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -181,7 +181,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                         if (items && items.length < pageSize)
                             return { value: <entityType>undefined, done: true };
                         items = await cont.find({
-                            where: Filter.toItem(opts.where, nextPageFilter),
+                            where: y => Filter.fromEntityFilter(y, opts.where, nextPageFilter),
                             orderBy: opts.orderBy,
                             limit: pageSize,
                             load: opts.load
@@ -306,11 +306,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.iterate(options).first().then(r => {
+        r = this.iterate(options).first().then(async r => {
             if (!r && opts.createIfNotFound) {
                 r = this.create();
                 if (opts.where) {
-                    __updateEntityBasedOnWhere(this.metadata, opts.where, r);
+                    await __updateEntityBasedOnWhere(this.metadata, opts.where, r);
                 }
             }
             return r;
@@ -365,10 +365,12 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
     private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
-        if (this.metadata.options.backendPrefilter)
-            where = Filter.toItem(where, this.metadata.options.backendPrefilter);
+        if (this.metadata.options.backendPrefilter){
+            let z = where;
+            where = y => Filter.fromEntityFilter(y, z, this.metadata.options.backendPrefilter);
+        }
         let filterFactories = Filter.createFilterFactories(this.metadata)
-        let r = await Filter.translateWhereToFilter(filterFactories, where);
+        let r = await Filter.fromEntityFilter(filterFactories, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
             r = await Filter.translateCustomWhere(this.metadata, filterFactories, r, this.remult);
         }
@@ -380,7 +382,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
-    let w = await Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
+    let w = await Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where);
 
     if (w) {
         w.__applyToConsumer({
@@ -1342,7 +1344,7 @@ interface columnInfo {
 }
 export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, remult: Remult) => void))[];
 export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
-    
+
     return target => {
 
         let factory: EntityOptionsFactory = remult => {

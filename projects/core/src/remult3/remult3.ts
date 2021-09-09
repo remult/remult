@@ -40,15 +40,17 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] require key in entity function parameters, instead of a mandatory key member
     [] let myRoute = api(contextForRouteExtraction).getRoute();
     [] first parameter should be key
-[] remove entity where item
-[] translateWhereToFilter and toItem - change to To Entity Where that can get a single or array of where and returns a function that gets fitlerfactories and returns a singular Filter
+[V] remove entity where item
+[V] translateWhereToFilter and toItem - change to To Entity Where that can get a single or array of where and returns a function that gets fitlerfactories and returns a singular Filter
 [] merge security pull requests
 []     app.use(
         helmet({
             contentSecurityPolicy: false,
         })
     );
+[] rename Filter function to use filter and entity etc...
 [] Filter.createCustom
+[V] fromEntityFilter
 
 
 
@@ -323,8 +325,7 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityFilter<entityType> = EntityFilterItem<entityType> | EntityFilterItem<entityType>[];
-export declare type EntityFilterItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]));
+export declare type EntityFilter<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter|Promise<Filter>)[] | Promise<Filter[]>));
 
 
 

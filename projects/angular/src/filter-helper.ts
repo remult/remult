@@ -60,7 +60,7 @@ export class FilterHelper<rowType> {
 
       if (opt.where) {
         let x = opt.where;
-        opt.where = Filter.toItem(x, w);
+        opt.where = y => Filter.fromEntityFilter(y, x, w);
       }
       else opt.where = w;
     });

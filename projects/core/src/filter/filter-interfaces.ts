@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, EntityFilterItem } from "../remult3";
+import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory } from "../remult3";
 
 
 export class Filter {
@@ -25,37 +25,24 @@ export class Filter {
         }
         return r as FilterFactories<T>;
     }
-    static toItem<entityType>(...where: EntityFilter<entityType>[]) {
-        return async entityFilterFactory => {
-            return new AndFilter(...(await Promise.all(where.map(w => Filter.translateWhereToFilter(entityFilterFactory, w)))));
-        }
-    }
-    static async translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityFilter<T>): Promise<Filter> {
-        if (Array.isArray(where)) {
-            return new AndFilter(...await Promise.all(where.map(x =>
-                Filter.translateWhereToFilter(entity, x)
-            )));
-        }
-        else if (typeof where === 'function') {
-            let r = where(entity);
-            if (Array.isArray(r))
-                return new AndFilter(
-                    //@ts-ignore
-                    ...await Promise.all(r.map(async x => {
-                        if (typeof x === "function")
-                            return this.translateWhereToFilter(entity, x);
-                        return await x
-                    })));
-            else if (typeof r === 'function')
-                return this.translateWhereToFilter(entity, r);
 
-            return r;
+
+    static async fromEntityFilter<T>(entity: FilterFactories<T>, ...where: EntityFilter<T>[]): Promise<Filter> {
+        let result: Filter[] = [];
+        for (const whereItem of where) {
+            if (whereItem) {
+                let r = await whereItem(entity);
+                if (Array.isArray(r))
+                    result.push(...await Promise.all(r));
+                else result.push(await r);
+            }
         }
+        return new AndFilter(...result);
     }
     static async packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
         if (!where)
             return {};
-        return Filter.packToRawWhere(await this.translateWhereToFilter(this.createFilterFactories(entityDefs), where));
+        return Filter.packToRawWhere(await this.fromEntityFilter(this.createFilterFactories(entityDefs), where));
 
     }
     static packToRawWhere(w: Filter) {

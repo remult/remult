@@ -462,7 +462,7 @@ export class GridSettings<rowType>  {
     if (this.selectedRows.length > 0 && !this._selectedAll) {
       if (r.where) {
         let x = r.where;
-        r.where = Filter.toItem(x, y => this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows));
+        r.where = e => [Filter.fromEntityFilter(e, x), this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)];
       }
       else
         r.where = e => this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows);
