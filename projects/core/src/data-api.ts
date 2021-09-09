@@ -170,7 +170,7 @@ export class DataApi<T = any> {
       allowInsert: (e) => this.remult.isAllowedForInstance(e, options.allowApiInsert),
       requireId: this.remult.isAllowed(options.apiRequireId),
       get: {
-        where: options.apiDataFilter
+        where: options.apiPrefilter
         
       }
     }

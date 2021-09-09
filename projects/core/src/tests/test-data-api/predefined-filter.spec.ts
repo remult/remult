@@ -167,7 +167,7 @@ describe("data api", () => {
 @EntityDecorator<stam1>({
   key: 'categories',
 
-  fixedFilter: (c) => {
+  backendPrefilter: (c) => {
     return c.description.isEqualTo('b')
   }
 })
@@ -194,7 +194,7 @@ describe("", () => {
   key: undefined,
   allowApiUpdate: true,
   allowApiDelete: true,
-  apiDataFilter: (x) => {
+  apiPrefilter: (x) => {
     return x.description.isEqualTo('b')
   }
 

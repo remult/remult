@@ -365,8 +365,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
     private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
-        if (this.metadata.options.fixedFilter)
-            where = Filter.toItem(where, this.metadata.options.fixedFilter);
+        if (this.metadata.options.backendPrefilter)
+            where = Filter.toItem(where, this.metadata.options.backendPrefilter);
         let filterFactories = Filter.createFilterFactories(this.metadata)
         let r = await Filter.translateWhereToFilter(filterFactories, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
