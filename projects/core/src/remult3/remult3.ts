@@ -49,8 +49,8 @@ import { entityEventListener } from "../__EntityValueProvider";
             contentSecurityPolicy: false,
         })
     );
-[] rename Filter function to use filter and entity etc...
-[] Filter.createCustom
+[V] rename Filter function to use filter and entity etc...
+[V] Filter.createCustom
 [V] fromEntityFilter
 
 
