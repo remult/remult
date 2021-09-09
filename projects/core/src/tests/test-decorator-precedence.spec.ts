@@ -4,7 +4,7 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { Field, Entity, EntityBase, EntityWhere, FindOptions, Repository } from '../remult3';
+import { Field, Entity, EntityBase,  FindOptions, Repository } from '../remult3';
 
 @Entity({ key: 'my entity' })
 class myEntity extends EntityBase {

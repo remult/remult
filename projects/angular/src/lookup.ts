@@ -1,4 +1,4 @@
-import { Filter, EntityWhere, FindOptions, Repository, EntityMetadata, FilterFactories, AndFilter } from "remult";
+import { Filter, EntityFilter, FindOptions, Repository, EntityMetadata, FilterFactories, AndFilter } from "remult";
 
 
 export class Lookup<entityType> {
@@ -11,17 +11,17 @@ export class Lookup<entityType> {
 
   private cache = new Map<string, lookupRowInfo<entityType>>();
 
-  get(filter: EntityWhere<entityType>): entityType {
+  get(filter: EntityFilter<entityType>): entityType {
     return this.getInternal(filter).value;
   }
   getId(id: any): entityType {
     return this.getInternal(() => this.repository.metadata.idMetadata.getIdFilter(id)).value;
   }
-  found(filter: EntityWhere<entityType>): boolean {
+  found(filter: EntityFilter<entityType>): boolean {
     return this.getInternal(filter).found;
   }
 
-  private getInternal(where: EntityWhere<entityType>): lookupRowInfo<entityType> {
+  private getInternal(where: EntityFilter<entityType>): lookupRowInfo<entityType> {
     return this._internalGetByOptions({ where });
   }
 
@@ -70,7 +70,7 @@ export class Lookup<entityType> {
 
   }
 
-  getAsync(filter: EntityWhere<entityType>) {
+  getAsync(filter: EntityFilter<entityType>) {
     return this.getInternal(filter).promise.then(r => r.value);
   }
 }
@@ -81,7 +81,7 @@ export class lookupRowInfo<type> {
   value: type = {} as type;
   promise: Promise<lookupRowInfo<type>>
 }
-function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
+function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
   let w = translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
 
   if (w) {
@@ -106,7 +106,7 @@ function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: Ent
   }
 }
 
-function translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityWhere<T>): Filter {
+function translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityFilter<T>): Filter {
   if (Array.isArray(where)) {
     return new AndFilter(...where.map(x =>
       translateWhereToFilter(entity, x)

@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityWhere, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
+import { EntityMetadata, FieldRef, Fields,  EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -15,7 +15,7 @@ import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberV
 
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
-    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): EntityWhere<entityType> {
+    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): EntityFilter<entityType> {
         let values = new Map<string, any>();
 
         for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
@@ -99,7 +99,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 
-    iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType> {
+    iterate(options?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType> {
         let opts: IterateOptions<entityType> = {};
         if (options) {
             if (typeof options === 'function')
@@ -169,7 +169,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 let items: entityType[];
 
                 let itStrategy: (() => Promise<IteratorResult<entityType>>);
-                let nextPageFilter: EntityWhere<entityType> = x => undefined;;
+                let nextPageFilter: EntityFilter<entityType> = x => undefined;;
 
                 let j = 0;
 
@@ -270,11 +270,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return x;
     }
 
-    async count(where?: EntityWhere<entityType>): Promise<number> {
+    async count(where?: EntityFilter<entityType>): Promise<number> {
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
-    async findFirst(options?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
+    async findFirst(options?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
 
         let opts: FindFirstOptions<entityType> = {};
         if (options) {
@@ -364,7 +364,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 
-    private async translateWhereToFilter(where: EntityWhere<entityType>): Promise<Filter> {
+    private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
         if (this.metadata.options.fixedFilter)
             where = Filter.toItem(where, this.metadata.options.fixedFilter);
         let filterFactories = Filter.createFilterFactories(this.metadata)
@@ -379,7 +379,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 }
 
 
-export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
+export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
     let w = await Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
 
     if (w) {

@@ -1,4 +1,4 @@
-import { AndFilter, FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityWhere, FindOptions, getEntityRef, Repository, Filter } from "remult";
+import { AndFilter, FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository, Filter } from "remult";
 import { DataList } from "./angular/dataList";
 
 import { FieldCollection } from "./column-collection";
@@ -504,7 +504,7 @@ export interface IDataSettings<rowType> {
    * where p => p.price.isGreaterOrEqualTo(5)
    * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
    */
-  where?: EntityWhere<rowType>;
+  where?: EntityFilter<rowType>;
   /** Determines the order in which the result will be sorted in
    * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
    */

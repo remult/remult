@@ -30,7 +30,7 @@ import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
-import { Repository, EntityOrderBy, EntityWhere, EntityMetadata } from 'remult';
+import { Repository, EntityOrderBy, EntityFilter, EntityMetadata } from 'remult';
 
 
 
@@ -107,7 +107,7 @@ export async function getValueList<T>(repository: Repository<T>, args?: {
   idField?: (e: EntityMetadata<T>) => FieldMetadata,
   captionField?: (e: EntityMetadata<T>) => FieldMetadata
   orderBy?: EntityOrderBy<T>,
-  where?: EntityWhere<T>
+  where?: EntityFilter<T>
 }): Promise<ExtendedValueListItem[]> {
   if (!args) {
     args = {};

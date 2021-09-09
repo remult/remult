@@ -4,7 +4,7 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, EntityWhere, EntityWhereItem, Field, FilterFactories, FindOptions, Repository } from '../remult3';
+import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase,  Field, FilterFactories, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { CustomFilterBuilder, customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';

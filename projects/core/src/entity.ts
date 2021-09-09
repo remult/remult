@@ -1,7 +1,7 @@
 import { Allowed, Remult, AllowedForInstance } from "./context";
 
 import { FieldMetadata as FieldMetadata } from './column-interfaces';
-import { EntityOrderBy, FieldsMetadata, FilterFactories, EntityWhere } from "./remult3";
+import { EntityOrderBy, FieldsMetadata, FilterFactories, EntityFilter } from "./remult3";
 import { CustomFilterBuilder, Filter } from "./filter/filter-interfaces";
 
 
@@ -44,13 +44,13 @@ export interface EntityOptions<entityType = any> {
   /** A filter that determines which rows can be queries using the api.
 
   */
-  apiDataFilter?: EntityWhere<entityType>;
+  apiDataFilter?: EntityFilter<entityType>;
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  fixedFilter?: EntityWhere<entityType>;
+  fixedFilter?: EntityFilter<entityType>;
   customFilterBuilder?: () => CustomFilterBuilder<entityType, any>,
   /** An order by to be used, in case no order by was specified
    * @example

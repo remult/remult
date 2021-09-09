@@ -2,7 +2,7 @@
 
 import { createData, } from './RowProvider.spec';
 import { Remult, iterateConfig } from '../context';
-import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityWhere } from '../remult3';
+import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation,  EntityFilter } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldMetadata } from '../column-interfaces';
 import { Sort } from '../sort';
@@ -150,7 +150,7 @@ describe("test paged foreach ", () => {
         e.a = 'a';
         e.b = 'b';
         e.c = 'c';
-        async function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityWhere<theTable>) {
+        async function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityFilter<theTable>) {
             expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
                 JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere)));
         }
@@ -181,7 +181,7 @@ describe("test paged foreach ", () => {
         let eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();
 
-        async function  test(expectedWhere: EntityWhere<theTable>, expected: any) {
+        async function  test(expectedWhere: EntityFilter<theTable>, expected: any) {
             expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere))).toEqual(
                 JSON.stringify(expected));
         }

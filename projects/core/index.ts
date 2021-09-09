@@ -10,7 +10,7 @@ export {
     Fields,
     EntityMetadata,
     EntityOrderBy,
-    EntityWhere,
+    EntityFilter,
     OptionsFactory,
     FindOptions,
     IterableResult,

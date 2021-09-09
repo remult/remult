@@ -1,6 +1,6 @@
 import { Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, rowHelperImplementation, EntityWhere, FieldType } from '../remult3';
+import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, FieldType } from '../remult3';
 
 import { Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
@@ -350,7 +350,7 @@ describe("many to one relation", () => {
             id: 15,
             name: "prod 15",
         }).save();
-        async function test(where: EntityWhere<Products>, expected: number) {
+        async function test(where: EntityFilter<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
             expect(await repo.count(async p => Filter.unpackWhere(repo.metadata, await Filter.packWhere(repo.metadata,
                 where)))).toBe(expected, "packed where");

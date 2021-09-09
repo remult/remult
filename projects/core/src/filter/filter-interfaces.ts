@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import { ComparisonFilterFactory, EntityMetadata, EntityWhere, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, EntityWhereItem } from "../remult3";
+import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, EntityWhereItem } from "../remult3";
 
 
 export class Filter {
@@ -25,12 +25,12 @@ export class Filter {
         }
         return r as FilterFactories<T>;
     }
-    static toItem<entityType>(...where: EntityWhere<entityType>[]) {
+    static toItem<entityType>(...where: EntityFilter<entityType>[]) {
         return async entityFilterFactory => {
             return new AndFilter(...(await Promise.all(where.map(w => Filter.translateWhereToFilter(entityFilterFactory, w)))));
         }
     }
-    static async translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityWhere<T>): Promise<Filter> {
+    static async translateWhereToFilter<T>(entity: FilterFactories<T>, where: EntityFilter<T>): Promise<Filter> {
         if (Array.isArray(where)) {
             return new AndFilter(...await Promise.all(where.map(x =>
                 Filter.translateWhereToFilter(entity, x)
@@ -52,7 +52,7 @@ export class Filter {
             return r;
         }
     }
-    static async packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>) {
+    static async packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
         if (!where)
             return {};
         return Filter.packToRawWhere(await this.translateWhereToFilter(this.createFilterFactories(entityDefs), where));

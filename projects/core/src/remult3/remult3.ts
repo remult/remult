@@ -279,10 +279,10 @@ export interface Repository<entityType> {
     metadata: EntityMetadata<entityType>;
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
-    iterate(whereOrOptions?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
-    findFirst(whereOrOptions?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
+    iterate(whereOrOptions?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
+    findFirst(whereOrOptions?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
-    count(where?: EntityWhere<entityType>): Promise<number>;
+    count(where?: EntityFilter<entityType>): Promise<number>;
     create(item?: Partial<entityType>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
     save(item: entityType): Promise<entityType>;
@@ -322,7 +322,7 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
+export declare type EntityFilter<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
 export declare type EntityWhereItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]));
 
 
@@ -363,7 +363,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
     * where p => p.price.isGreaterOrEqualTo(5)
     * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
     */
-    where?: EntityWhere<entityType>;
+    where?: EntityFilter<entityType>;
     /** Determines the order in which the result will be sorted in
      * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
      */

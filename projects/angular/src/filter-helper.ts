@@ -1,6 +1,6 @@
 
 import { AndFilter, Filter } from 'remult';
-import { ComparisonFilterFactory, FieldRef, EntityWhere, FindOptions, Repository, ContainsFilterFactory, getEntityRef } from "remult";
+import { ComparisonFilterFactory, FieldRef, EntityFilter, FindOptions, Repository, ContainsFilterFactory, getEntityRef } from "remult";
 import { FieldMetadata } from "remult";
 import { getFieldDefinition } from '..';
 import { getEntitySettings } from 'remult/src/remult3';
@@ -36,7 +36,7 @@ export class FilterHelper<rowType> {
 
       //@ts-ignore
       let val = this.filterRow[c.key];
-      let w: EntityWhere<rowType> = item => {
+      let w: EntityFilter<rowType> = item => {
         let itemForFilter: ComparisonFilterFactory<any> & ContainsFilterFactory<any> = item[c.key];
         let f: Filter = itemForFilter.isEqualTo(val);
         if (c.valueType != Number &&
