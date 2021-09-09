@@ -5,7 +5,7 @@ import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
-import { AndFilter, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
+import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
 
@@ -1346,6 +1346,14 @@ export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType,
 export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
 
     return target => {
+        for (const key in target) {
+            if (Object.prototype.hasOwnProperty.call(target, key)) {
+                const element = target[key] as customFilterInfo<any>;
+                if (element?.customFilterInfo?.customFilterTranslator) {
+                    element.customFilterInfo.key = key;
+                }
+            }
+        }
 
         let factory: EntityOptionsFactory = remult => {
             let r = {} as EntityOptions<entityType>;

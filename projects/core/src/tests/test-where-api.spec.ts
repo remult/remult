@@ -6,7 +6,7 @@ import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
 import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import {  customUrlToken, Filter } from '../filter/filter-interfaces';
+import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
@@ -295,7 +295,7 @@ class entityForCustomFilter extends EntityBase {
         oneAndThree?: boolean,
         dbOneOrThree?: boolean,
         two?: boolean
-    }>("filter", async (e, remult, c) => {
+    }>(async (e, remult, c) => {
         let r: Filter[] = [];
         if (c.oneAndThree)
             r.push(e.id.isIn([1, 3]));
@@ -309,9 +309,9 @@ class entityForCustomFilter extends EntityBase {
         }
         return r;
     });
-    static oneAndThree = Filter.createCustom<entityForCustomFilter>("xOneAndThree", (e) => e.id.isIn([1, 3]));
-    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>("testNumericValue", (e, r, val) => e.id.isEqualTo(val));
-    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>("testObjectValue", (e, r, val) => e.id.isEqualTo(val.val));
+    static oneAndThree = Filter.createCustom<entityForCustomFilter>((e) => e.id.isIn([1, 3]));
+    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => e.id.isEqualTo(val));
+    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((e, r, val) => e.id.isEqualTo(val.val));
 }
 
 declare type Draft<T> = WritableDraft<T>;
