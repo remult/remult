@@ -63,7 +63,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] test why date is equal to null - didn't work
 
 
-
 ## review with yoni
 [] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
 * maybe not do the array stuff, and instead do a Filter Join to build an array, that way to filter itself stays simple - just a method call
@@ -99,10 +98,22 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## Yoni NAMING!!!
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
-[] apiDataFilter
-[] fixedFilter
 [] Rename Allowed and InstanceAllowed, and Allow
 [] field container type vs entity type vs target
+
+[] Docs
+    [] rewrite readme.md > Entities + CRUD, BackendMethods, Authorization
+        [] make sure readme is updated in npmjs.com
+    [] getting started > npm i, connect to db, initExpress, init frontend
+    [] Tutorials > Angular,React,Vue
+    [] API reference in Docs
+        [] determine a few main types which should appear (Remult, Entity, Field, Controller, BackendMethod, etc...)
+            [] EntityOptions members should be listed in the "Entity" reference page etc (if possible)
+        [] review existing texts
+
+[] Housekeeping
+    [] Remote unnecessary files from repo
+
 
 ## review with Yoni
 

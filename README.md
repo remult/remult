@@ -1,61 +1,81 @@
-# remult
-A fullstack library for developing data oriented application using typescript and node.
+# Remult
+![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg) [![npm version](https://badge.fury.io/js/remult.svg)](https://badge.fury.io/js/remult)
 
-### Remult is based on entities
-
-An Entity object is defined once and is used on the server and in the browser. For example:
-
-<<< @/docs-code/products-batch-operations/products.ts 
-
-Then you query that entity using the following code.
+Remult is a lightweight web application framework for Full-Stack TypeScript.
+### Define Entity classes
 ```ts
-await this.remult.repo(Products).find({
-    orderBy: p => p.name,
-    where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
-                p.availableTo.isGreaterOrEqualTo(new Date()))
-});
-```
+import { Entity, EntityBase, Field } from 'remult';
 
-
-This same code can run in the browser and produce http calls to the api that is automatically generated from the `Entity`'s definition, or this code can run on the server and interact with the database of your choice - in both cases returning a fully typed object for you to use.
-
-### Backend Methods
-You can also easily create functions that run on the server, using the same code and end-to-end type safety.
-```ts
-async updatePrice() {
-    await ProductsComponent.updatePriceOnBackend(Number.parseInt(this.priceInput));
-    this.products.reloadData();
-  }
-  @BackendMethod({ allowed: true })
-  static async updatePriceOnBackend(priceToUpdate: number, remult?: Remult) {
-    for await (const p of remult.repo(Products).iterate()) {
-      p.price += priceToUpdate
-      await p.save();
-    }
-  }
-```
-### Fine grained end-to-end security and authorization
-You can control which user is allowed to see which part of the api and `Entity` object, with a built in mechanism.
-```ts{3-4,8,12}
-@Entity({
-    key: 'Products',
-    allowApiCrud: Roles.admin,
-    allowApiRead: Allow.authenticated
+@Entity('Products', {
+    allowApiCrud: true
 })
-export class Products extends IdEntity {
-    @Field({
-        allowApiUpdate: Roles.admin
-    })
-    name: string;
-    @Field({
-        includeInApi: Allow.authenticated
-    })
-    price: number = 0;
-    @DateOnlyField()
-    availableFrom: Date;
-    @DateOnlyField()
-    availableTo: Date;
+export class Product extends EntityBase {
+  @Field()
+  name: string = '';
+
+  @Field()
+  unitPrice: number = 0;
+}
+```
+### Find and manipulate data in front end code...
+```ts
+static increasePriceOfTofu(priceIncrease: number) {
+  const product = await remult.repo(Product).findFirst(p => p.name.isEqualTo('Tofu'));
+
+  product.unitPrice += priceIncrease;
+  await product.save();
+}
+```
+### ...*exactly* the same way as in back end code
+```ts
+@BackendMethod({ allowed: Allow.authenticated })
+static increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
+  const product = await remult.repo(Product).findFirst(p => p.name.isEqualTo('Tofu'));
+
+  product.unitPrice += priceIncrease;
+  await product.save();
 }
 ```
 
-All api endpoints are secured by design, and were built to resist sql injection, xss etc...
+### Secure the API with Fine-grained Authorization
+```ts
+@Entity<Article>('Articles', {
+    allowApiRead: true,
+    allowApiInsert: remult => remult.authenticated(),
+    allowApiUpdate: (remult, article) => article.author.id == remult.user.id
+})
+export class Article extends EntityBase {
+    @Field({ allowApiUpdate: false })
+    slug: string;
+    
+    @Field({ allowApiUpdate: false })
+    author: Profile;
+
+    @Field()
+    content: string;
+}
+```
+
+## Remult handles the REST:
+* Secured back-end API endpoints for Entities and back-end methods
+* CRUD API requests (front end) / database commands (back end)
+* Object-relational mapping
+* Validations
+* Caching
+* Authorization
+
+## Installation
+```sh
+npm i remult
+```
+
+## API Setup using Express
+```ts
+import * as express from 'express';
+import { initExpress } from 'remult/server';
+import 'entities';
+
+let app = express();
+initExpress(app);
+app.listen(3002, () => console.log("Server started"));
+```
