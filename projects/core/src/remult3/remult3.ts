@@ -322,8 +322,8 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityFilter<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
-export declare type EntityWhereItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]));
+export declare type EntityFilter<entityType> = EntityFilterItem<entityType> | EntityFilterItem<entityType>[];
+export declare type EntityFilterItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]));
 
 
 

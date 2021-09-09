@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, EntityWhereItem } from "../remult3";
+import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, EntityFilterItem } from "../remult3";
 
 
 export class Filter {
