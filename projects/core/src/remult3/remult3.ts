@@ -48,6 +48,7 @@ import { entityEventListener } from "../__EntityValueProvider";
             contentSecurityPolicy: false,
         })
     );
+[] Filter.createCustom
 
 
 
