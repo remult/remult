@@ -5,7 +5,7 @@ import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
-import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
+import { AndFilter, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
 
@@ -287,7 +287,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let r: Promise<entityType>;
         let cacheInfo: cacheEntityInfo<entityType>;
         if (opts.useCache || opts.useCache === undefined) {
-            let f = await Filter.packWhere(this.metadata, opts.where);
+            let f = await entityFilterToJson(this.metadata, opts.where);
             let key = JSON.stringify(f);
             cacheInfo = this.cache.get(key);
             if (cacheInfo !== undefined) {
@@ -365,14 +365,14 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
     private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
-        if (this.metadata.options.backendPrefilter){
+        if (this.metadata.options.backendPrefilter) {
             let z = where;
             where = y => Filter.fromEntityFilter(y, z, this.metadata.options.backendPrefilter);
         }
         let filterFactories = Filter.createFilterFactories(this.metadata)
         let r = await Filter.fromEntityFilter(filterFactories, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
-            r = await Filter.translateCustomWhere(this.metadata, filterFactories, r, this.remult);
+            r = await Filter.translateCustomWhere(r, this.metadata, filterFactories, this.remult);
         }
         return r;
 

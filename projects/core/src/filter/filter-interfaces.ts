@@ -39,26 +39,18 @@ export class Filter {
         }
         return new AndFilter(...result);
     }
-    static async packWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
-        if (!where)
-            return {};
-        return Filter.packToRawWhere(await this.fromEntityFilter(this.createFilterFactories(entityDefs), where));
 
-    }
-    static packToRawWhere(w: Filter) {
+    toJson() {
         let r = new FilterSerializer();
-        if (w)
-            w.__applyToConsumer(r);
+        this.__applyToConsumer(r);
         return r.result;
     }
-    static unpackWhere<T>(entityDefs: EntityMetadata<T>, packed: any): Filter {
-        return this.extractWhere(entityDefs, { get: (key: string) => packed[key] });
+    static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): Filter {
+        return buildFilterFromRequestParameters([...entityDefs.fields], { get: (key: string) => packed[key] });
 
     }
-    static extractWhere<T>(entityDefs: EntityMetadata<T>, filterInfo: { get: (key: string) => any; }): Filter {
-        return extractWhere([...entityDefs.fields], filterInfo);
-    }
-    static async translateCustomWhere<T>(entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, r: Filter, remult: Remult) {
+
+    static async translateCustomWhere<T>(r: Filter, entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, remult: Remult) {
         let f = new customTranslator(async custom => {
             return await entity.options.customFilterBuilder().translateFilter(filterFactories, custom, remult);
         });
@@ -258,11 +250,18 @@ export class FilterSerializer implements FilterConsumer {
         this.add(col.key + "_st", col.valueConverter.toJson(val));
     }
 }
+export async function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
+    if (!where)
+        return {};
+    return (await Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where)).toJson();
+    
 
-export function unpackWhere(columns: FieldMetadata[], packed: any) {
-    return extractWhere(columns, { get: (key: string) => packed[key] });
 }
-export function extractWhere(columns: FieldMetadata[], filterInfo: {
+
+
+
+
+export function buildFilterFromRequestParameters(columns: FieldMetadata[], filterInfo: {
     get: (key: string) => any;
 }) {
     let where: Filter[] = [];
@@ -329,8 +328,7 @@ export function extractWhere(columns: FieldMetadata[], filterInfo: {
     let val = filterInfo.get('OR');
     if (val)
         where.push(new OrFilter(...val.map(x =>
-            unpackWhere(columns, x)
-
+            buildFilterFromRequestParameters(columns, { get: (key: string) => x[key] })
         )));
     let custom = filterInfo.get(customUrlToken);
     if (custom !== undefined) {
@@ -430,4 +428,10 @@ class customTranslator implements FilterConsumer {
         }
     }
 
+}
+
+function createCustomFilter<T>(key: string, filter: (e: FilterFactories<T>, r: Remult) => (Filter | Filter[] | Promise<Filter>)): () => Filter;
+function createCustomFilter<T, Y>(key: string, filter: (e: FilterFactories<T>, r: Remult, val: Y) => (Filter | Filter[] | Promise<Filter>)): (y: Y) => Filter;
+function createCustomFilter<T, Y>(key: string, filter: (e: FilterFactories<T>, r: Remult, val: Y) => (Filter | Filter[] | Promise<Filter>)): (y: Y) => Filter {
+    return undefined;
 }

@@ -19,7 +19,7 @@ import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3'
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
 import { EntityOptions } from '../entity';
 
-import { Filter } from '../filter/filter-interfaces';
+import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { ClassType } from '../../classType';
 
 
@@ -460,17 +460,17 @@ describe("test row provider", () => {
       expect(rows.length).toBe(4);
 
       rows = await r.find({
-        where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
+        where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('x')))
 
       });
       expect(rows.length).toBe(2);
-      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isEqualTo(4))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isEqualTo(4))) });
       expect(rows.length).toBe(1);
       expect(rows[0].categoryName).toBe('yael');
-      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
       expect(rows.length).toBe(1);
       expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
       expect(rows.length).toBe(2);
     })
 
@@ -481,12 +481,12 @@ describe("test row provider", () => {
     expect(rows.length).toBe(4);
 
     rows = await r.find({
-      where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
+      where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('x')))
 
     });
-    rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isIn([1, 3]))) });
+    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });

@@ -26,7 +26,7 @@ export class Lookup<entityType> {
   }
 
   _internalGetByOptions(find: FindOptions<entityType>): lookupRowInfo<entityType> {
-    let f = Filter.packToRawWhere(translateWhereToFilter(Filter.createFilterFactories(this.repository.metadata), find.where));
+    let f = translateWhereToFilter(Filter.createFilterFactories(this.repository.metadata), find.where).toJson();
     let key = JSON.stringify(f);
     let res = this.cache.get(key);
     if (res !== undefined) {

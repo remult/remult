@@ -7,7 +7,7 @@ import { Categories } from './remult-3-entities';
 import { FieldMetadata } from '../column-interfaces';
 import { Sort } from '../sort';
 import { CompoundIdField } from '../column';
-import { Filter } from '../filter/filter-interfaces';
+import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 
 
 describe("test paged foreach ", () => {
@@ -151,8 +151,8 @@ describe("test paged foreach ", () => {
         e.b = 'b';
         e.c = 'c';
         async function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityFilter<theTable>) {
-            expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
-                JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere)));
+            expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
+                JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere)));
         }
         test(x => x.a, x => x.a.isGreaterThan('a'));
         test(x => [x.a.descending()], x => x.a.isLessThan('a'));
@@ -172,8 +172,8 @@ describe("test paged foreach ", () => {
         let f = eDefs.createAfterFilter(x => [x.a, x.b], e);
         e.a = '1';
         e.b = '2';
-        expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, f))).toEqual(
-            JSON.stringify(await Filter.packWhere<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
+        expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
+            JSON.stringify(await entityFilterToJson<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
 
     });
     it("serialize filter with or", async () => {
@@ -182,7 +182,7 @@ describe("test paged foreach ", () => {
         let e = eDefs.create();
 
         async function  test(expectedWhere: EntityFilter<theTable>, expected: any) {
-            expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere))).toEqual(
+            expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere))).toEqual(
                 JSON.stringify(expected));
         }
         await test(

@@ -2,7 +2,7 @@ import { Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, FieldType } from '../remult3';
 
-import { Filter } from '../filter/filter-interfaces';
+import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
@@ -352,7 +352,7 @@ describe("many to one relation", () => {
         }).save();
         async function test(where: EntityFilter<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
-            expect(await repo.count(async p => Filter.unpackWhere(repo.metadata, await Filter.packWhere(repo.metadata,
+            expect(await repo.count(async p => Filter.fromJson(repo.metadata, await entityFilterToJson(repo.metadata,
                 where)))).toBe(expected, "packed where");
         }
 

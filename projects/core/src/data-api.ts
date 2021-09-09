@@ -1,5 +1,5 @@
 import { EntityOptions } from './entity';
-import { AndFilter, customUrlToken } from './filter/filter-interfaces';
+import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
@@ -100,7 +100,7 @@ export class DataApi<T = any> {
     if (this.options && this.options.get && this.options.get.where)
       where = await Filter.fromEntityFilter(entity, this.options.get.where);
     if (request) {
-      where = new AndFilter(where, Filter.extractWhere(this.repository.metadata, {
+      where = new AndFilter(where, buildFilterFromRequestParameters([...this.repository.metadata.fields], {
         get: key => {
           let result = request.get(key);
           if (key == customUrlToken && result)
@@ -110,7 +110,7 @@ export class DataApi<T = any> {
       }));
     }
     if (filterBody)
-      where = new AndFilter(where, Filter.unpackWhere(this.repository.metadata, filterBody))
+      where = new AndFilter(where, Filter.fromJson(this.repository.metadata, filterBody))
     return where;
   }
 

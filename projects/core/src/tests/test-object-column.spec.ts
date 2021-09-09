@@ -3,7 +3,7 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, FieldType } from '../remult3';
-import { Filter } from '../filter/filter-interfaces';
+import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { set } from '../../set';
 
 
@@ -86,7 +86,7 @@ describe("test object column", () => {
 
         let r = remult.repo(ObjectColumnTest).metadata;
         expect(await remult.repo(ObjectColumnTest).count(x => x.phone1.contains("23"))).toBe(1);
-        expect(await remult.repo(ObjectColumnTest).count(async x => Filter.unpackWhere(r, await Filter.packWhere(r, x => x.phone1.contains("23"))))).toBe(1);
+        expect(await remult.repo(ObjectColumnTest).count(async x => Filter.fromJson(r, await entityFilterToJson(r, x => x.phone1.contains("23"))))).toBe(1);
     });
     it("test basics with json", async () => {
 
