@@ -928,7 +928,7 @@ describe("test row provider", () => {
 
   });
 
-  it("column drop down 1", async () => {
+  it("column drop down 1, values are string for number value type, because it goes to inputValue", async () => {
     let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
@@ -940,8 +940,8 @@ describe("test row provider", () => {
 
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
-    expect(xx[0].id).toBe(1);
-    expect(xx[1].id).toBe(2);
+    expect(xx[0].id).toBe('1');
+    expect(xx[1].id).toBe('2');
     expect(xx[0].caption).toBe('noam');
     expect(xx[1].caption).toBe('yael');
     var c2 = c.create();

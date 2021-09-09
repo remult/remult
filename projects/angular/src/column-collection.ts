@@ -462,7 +462,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
 
 function fixResult(result: ValueListItem[], inField: FieldMetadata | FieldRef<any, any>) {
   let field = getFieldDefinition(inField);
-  if (field.valueType === Number) {
+  if (field?.valueType === Number) {
     result.splice(0, result.length, ...result.map(x => ({ ...x, id: x.id?.toString() })));
   }
 }
