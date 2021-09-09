@@ -21,7 +21,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../da
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
@@ -102,7 +102,7 @@ class Phone {
 
   }
 }
-@Entity({ key: '' })
+@Entity('')
 class tableWithPhone extends EntityBase {
   @Field()
   id: number;
@@ -127,7 +127,7 @@ describe("test object column stored as string", () => {
 });
 
 
-@Entity({ key: 'testNumbers' })
+@Entity('testNumbers')
 class testNumbers extends EntityBase {
   @IntegerField()
   id: number;
@@ -256,7 +256,7 @@ describe('Test basic row functionality', () => {
   // });
 
 });
-@Entity({ key: 'myTestEntity' })
+@Entity('myTestEntity')
 class myTestEntity extends EntityBase {
   @Field()
   id: number;
@@ -753,8 +753,7 @@ describe("data api", () => {
   it("entity order by works", async () => {
 
     let type = class extends newCategories { };
-    Entity<typeof type.prototype>({
-      key: '',
+    Entity<typeof type.prototype>('', {
       defaultOrderBy: x => x.categoryName,
 
     })(type);
@@ -776,8 +775,7 @@ describe("data api", () => {
     var deleting = new Done();
     let happend = false;
     let type = class extends newCategories { };
-    Entity<typeof type.prototype>({
-      key: undefined,
+    Entity<typeof type.prototype>(undefined, {
 
       allowApiDelete: true,
       deleted: () => happend = true,
@@ -809,8 +807,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     }
-    Entity<typeof type.prototype>({
-      key: undefined,
+    Entity<typeof type.prototype>(undefined, {
       allowApiDelete: true,
 
       deleted: () => happend = true,
@@ -840,8 +837,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     };
-    Entity<typeof type.prototype>({
-      key: undefined,
+    Entity<typeof type.prototype>(undefined, {
 
       allowApiDelete: true,
       deleted: () => happend = true,
@@ -868,9 +864,7 @@ describe("data api", () => {
     var deleting = new Done();
     let happend = false;
     let type = class extends newCategories { };
-    Entity<typeof type.prototype>({
-
-      key: undefined,
+    Entity<typeof type.prototype>(undefined, {
       allowApiDelete: true,
       deleted: (t) => {
         happend = true;
@@ -900,9 +894,7 @@ describe("data api", () => {
 
     let count = 0;
     let type = class extends newCategories { };
-    Entity<typeof type.prototype>({
-
-      key: undefined,
+    Entity<typeof type.prototype>(undefined, {
       allowApiUpdate: true,
       saving: t => {
         count++;
@@ -931,9 +923,7 @@ describe("data api", () => {
     await testAllDbs(async ({ createData, remult }) => {
       let count = 0;
       let type = class extends newCategories { };
-      Entity<typeof type.prototype>({
-
-        key: undefined,
+      Entity<typeof type.prototype>(undefined, {
         allowApiUpdate: true,
         saving: () => count++
       })(type);
@@ -966,9 +956,8 @@ describe("data api", () => {
     let startTest = false;
     let savedWorked = new Done();
     let type = class extends newCategories { };
-    Entity<typeof type.prototype>({
+    Entity<typeof type.prototype>(undefined, {
 
-      key: undefined,
       allowApiUpdate: true,
       saving: () => count++,
       saved: (t) => {
@@ -1004,9 +993,7 @@ describe("data api", () => {
   it("afterSave works on insert", async () => {
 
     let type = class extends newCategories { };
-    Entity<typeof type.prototype>({
-
-      key: undefined,
+    Entity<typeof type.prototype>(undefined, {
       allowApiUpdate: true,
       allowApiInsert: true,
 
@@ -1051,9 +1038,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     }
-    Entity<typeof type.prototype>({
-
-      key: 'testE',
+    Entity<typeof type.prototype>('testE', {
       allowApiUpdate: true,
       saving: (row, cancel) => {
         if (startTest) {
@@ -1104,7 +1089,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Field({ includeInApi: false })(type.prototype, "categoryName");
-    Entity({ key: '' })(type);
+    Entity('')(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
     var api = new DataApi(c, remult);
@@ -1164,7 +1149,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Field({ allowApiUpdate: false })(type.prototype, "categoryName");
-    Entity({ key: '', allowApiUpdate: true })(type);
+    Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
     var api = new DataApi(c, remult);
@@ -1201,7 +1186,7 @@ describe("data api", () => {
       categoryName: string;
     };
     Field({ includeInApi: false })(type.prototype, "categoryName");
-    Entity({ key: '', allowApiUpdate: true })(type);
+    Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
 
@@ -1223,9 +1208,7 @@ describe("data api", () => {
   });
   it("post with syntax error fails well", async () => {
     let type = class extends newCategories { };
-    Entity<newCategories>({
-
-      key: '',
+    Entity<newCategories>('', {
       allowApiInsert: true,
       saving: (x) => x.description.length + 1
     })(type);
@@ -1323,7 +1306,7 @@ describe("data api", () => {
     let type = class extends EntityBase {
 
     }
-    Entity({ allowApiCrud: false, key: 'a' })(type);
+    Entity('a', { allowApiCrud: false })(type);
     expect(new DataApi(sc.repo(type), sc)._getApiSettings().allowRead).toBe(false);
   });
   it("allow api read depends also on api crud", async () => {
@@ -1331,7 +1314,7 @@ describe("data api", () => {
     let type = class extends EntityBase {
 
     }
-    Entity({ allowApiCrud: false, allowApiRead: true, key: 'a' })(type);
+    Entity('a', { allowApiCrud: false, allowApiRead: true })(type);
     expect(new DataApi(sc.repo(type), sc)._getApiSettings().allowRead).toBe(true);
 
   });
@@ -1343,8 +1326,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     };
-    Entity({
-      key: '',
+    Entity('', {
 
       allowApiDelete: false
     })(type);
@@ -1368,8 +1350,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     };
-    Entity({
-      key: '',
+    Entity('', {
 
       apiRequireId: true
     })(type);
@@ -1421,8 +1402,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     };
-    Entity<typeof type.prototype>({
-      key: '',
+    Entity<typeof type.prototype>('', {
 
       allowApiDelete: (c, t) => {
         return t.id == 1;
@@ -1452,8 +1432,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     };
-    Entity<typeof type.prototype>({
-      key: '',
+    Entity<typeof type.prototype>('', {
 
       allowApiUpdate: (c, t) => {
         return t.id == 1;
@@ -1488,8 +1467,7 @@ describe("data api", () => {
     let type = class extends newCategories {
 
     };
-    Entity<typeof type.prototype>({
-      key: '',
+    Entity<typeof type.prototype>('', {
 
       allowApiInsert: (c, t) => {
         return t.categoryName == 'ok';
@@ -1633,8 +1611,7 @@ describe("column validation", () => {
       name: string;
       c3: Date
     }
-    Entity({
-      key: 't1',
+    Entity('t1', {
       dbAutoIncrementId: true
     })(type);
     IntegerField({ valueType: Number })(type.prototype, "id");
@@ -1665,8 +1642,7 @@ describe("test web sql identity", () => {
       name: string;
 
     }
-    Entity({
-      key: 't1',
+    Entity('t1', {
       dbAutoIncrementId: true
     })(type);
     IntegerField({ valueType: Number })(type.prototype, "id");
@@ -1820,7 +1796,7 @@ describe("test data list", () => {
     let type = class extends Categories {
 
     }
-    Entity({ key: 'testName', dbName: 'test' })(type);
+    Entity('testName', { dbName: 'test' })(type);
     let r = new Remult().repo(type);
     expect((await r.metadata.getDbName())).toBe('test');
   });
@@ -1871,6 +1847,19 @@ describe("test date storage", () => {
     expect(DateOnlyValueConverter.toJson(val)).toBe('1976-06-16')
   });
 });
+@Entity(undefined)
+class myEntity {
+
+}
+describe("", () => {
+
+  it("dbname of entity string works when key is not defined", async () => {
+    let r = new Remult().repo(myEntity);
+    expect((await r.metadata.getDbName())).toBe('myEntity');
+    expect(r.metadata.key).toBe('myEntity');
+    expect(getEntityKey(myEntity)).toBeUndefined();
+  });
+});
 describe("test bool value", () => {
   it("should work", () => {
     let col = decorateColumnSettings<Boolean>({ valueType: Boolean }, new Remult());
@@ -1883,7 +1872,7 @@ describe("test bool value", () => {
         id: number;
         ok: Boolean = false;
       }
-      Entity({ key: 'asdf' })(type);
+      Entity('asdf')(type);
       Field({
         valueType: Number
       })(type.prototype, 'id');
@@ -1904,8 +1893,8 @@ describe("test bool value", () => {
         id: number;
         ok: Boolean = false;
       }
-      Entity<typeof type.prototype>({
-        key: 'asdf', saving: (x) => {
+      Entity<typeof type.prototype>('asdf', {
+        saving: (x) => {
           x.ok = true;
         }
       })(type);
@@ -1953,7 +1942,7 @@ describe("test rest data provider translates data correctly", () => {
       a: number;
       b: Date;
     };
-    Entity({ key: 'x' })(type);
+    Entity('x')(type);
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
@@ -1983,7 +1972,7 @@ describe("test rest data provider translates data correctly", () => {
       a: number;
       b: Date;
     };
-    Entity({ key: 'x' })(type);
+    Entity('x')(type);
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
@@ -1996,7 +1985,7 @@ describe("test rest data provider translates data correctly", () => {
       a: number;
       b: Date;
     };
-    Entity({ key: 'x' })(type);
+    Entity('x')(type);
     Field({ valueType: Number })(type.prototype, 'a');
     Field({ valueType: Date })(type.prototype, 'b');
 
@@ -2083,10 +2072,9 @@ describe("check allowedDataType", () => {
 
 });
 @Entity<CompoundIdEntity>(
-  {
-    key: 'compountIdEntity',
-    id: x => new CompoundIdField(x.a, x.b)
-  })
+  'compountIdEntity', {
+  id: x => new CompoundIdField(x.a, x.b)
+})
 class CompoundIdEntity extends EntityBase {
   @Field()
   a: number;
@@ -2095,8 +2083,7 @@ class CompoundIdEntity extends EntityBase {
   @Field()
   c: number;
 }
-@Entity<entityWithValidations>({
-  key: '',
+@Entity<entityWithValidations>('', {
   allowApiCrud: true,
   saving: async (t) => {
     if (!t.name || t.name.length < 3)
@@ -2125,7 +2112,7 @@ export class entityWithValidations extends EntityBase {
     super();
   }
 }
-@Entity({ key: '', allowApiUpdate: true })
+@Entity('', { allowApiUpdate: true })
 export class entityWithValidationsOnColumn extends EntityBase {
   @Field()
   myId: number;
@@ -2138,8 +2125,7 @@ export class entityWithValidationsOnColumn extends EntityBase {
   name: string;
 
 }
-@Entity<entityWithValidationsOnEntityEvent>({
-  key: '',
+@Entity<entityWithValidationsOnEntityEvent>('', {
   validation: (t => {
     if (!t.name || t.name.length < 3)
       t._.fields.name.error = 'invalid';
@@ -2151,8 +2137,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
   @Field()
   name: string;
 }
-@Entity<EntityWithLateBoundDbName>({
-  key: 'stam',
+@Entity<EntityWithLateBoundDbName>('stam', {
   sqlExpression: async (t) => '(select ' + await t.id.getDbName() + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {

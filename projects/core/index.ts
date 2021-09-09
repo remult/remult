@@ -85,8 +85,7 @@ export {
     HttpProvider,
     IterateToArrayOptions,
     Unobserve,
-    UserInfo,
-    ExcludeEntityFromApi
+    UserInfo
 } from './src/context';
 export {
     IdEntity

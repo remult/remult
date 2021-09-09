@@ -55,7 +55,7 @@ describe("data api", () => {
             id: number;
             val: string;
         }
-        Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
+        Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
         Field({ valueType: Number })(type.prototype, 'id');
         Field<EntityBase, string>({
             valueType: String,
@@ -88,7 +88,7 @@ describe("data api", () => {
             id: number;
             val: string;
         }
-        Entity({ key: 'allowcolumnupdatetest', allowApiCrud: true })(type);
+        Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
         Field({ valueType: Number })(type.prototype, 'id');
         Field<typeof type.prototype, string>({
             valueType: String,
@@ -127,8 +127,7 @@ describe("data api", () => {
 
 });
 
-@Entity<CategoriesForThisTest>({
-    key: undefined,
+@Entity<CategoriesForThisTest>(undefined, {
     allowApiUpdate: true,
     allowApiInsert: true,
 

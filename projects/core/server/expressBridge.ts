@@ -1,6 +1,6 @@
 
 
-import { UserInfo, DataProvider, Remult, IdEntity } from '../';
+import { DataProvider, Remult, IdEntity } from '../';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
@@ -14,7 +14,6 @@ import { NumberValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { ExcludeEntityFromApi } from '../src/context';
 
 
 
@@ -107,15 +106,9 @@ export class SiteArea {
 
 
 
-  add(entityOrDataApiFactory: ((req: Remult) => DataApi)) {
+  add(key: string, dataApiFactory: ((req: Remult) => DataApi)) {
 
-
-    let api: ((req: Remult) => DataApi);
-    api = entityOrDataApiFactory;
-    let contextForRouteExtraction = new Remult();
-
-    let myRoute = api(contextForRouteExtraction).getRoute();
-    myRoute = this.rootUrl + '/' + myRoute;
+    let myRoute = this.rootUrl + '/' + key;
     if (this.logApiEndpoints)
       console.log(myRoute);
 
@@ -123,28 +116,28 @@ export class SiteArea {
     this.app.route(myRoute)
       .get(this.process((c, req, res) => {
         if (req.get("__action") == "count") {
-          return api(c).count(res, req);
+          return dataApiFactory(c).count(res, req);
         } else
-          return api(c).getArray(res, req);
-      })).put(this.process(async (c, req, res, orig) => api(c).put(res, '', orig.body)))
-      .delete(this.process(async (c, req, res, orig) => api(c).delete(res, '')))
+          return dataApiFactory(c).getArray(res, req);
+      })).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
+      .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, '')))
       .post(this.process(async (c, req, res, orig) => {
         switch (req.get("__action")) {
           case "get":
-            return api(c).getArray(res, req, orig.body);
+            return dataApiFactory(c).getArray(res, req, orig.body);
           case "count":
-            return api(c).count(res, req, orig.body);
+            return dataApiFactory(c).count(res, req, orig.body);
           default:
-            return api(c).post(res, orig.body);
+            return dataApiFactory(c).post(res, orig.body);
         }
       }));
     this.app.route(myRoute + '/:id')
       //@ts-ignore
-      .get(this.process(async (c, req, res, orig) => api(c).get(res, orig.params.id)))
+      .get(this.process(async (c, req, res, orig) => dataApiFactory(c).get(res, orig.params.id)))
       //@ts-ignore
-      .put(this.process(async (c, req, res, orig) => api(c).put(res, orig.params.id, orig.body)))
+      .put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, orig.params.id, orig.body)))
       //@ts-ignore
-      .delete(this.process(async (c, req, res, orig) => api(c).delete(res, orig.params.id)));
+      .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
 
 
   }
@@ -416,10 +409,8 @@ export class EntityQueueStorage implements QueueStorage {
 }
 
 
-@ExcludeEntityFromApi()
-@Entity({
-  key: 'jobsInQueue'
-
+@Entity(undefined, {
+  dbName: 'jobsInQueue'
 })
 export class JobsInQueueEntity extends IdEntity {
   @Field()

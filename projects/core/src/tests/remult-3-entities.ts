@@ -1,9 +1,7 @@
 import { EntityBase, Field, Entity, Repository } from "../remult3";
 import { Status } from "./testModel/models";
 
-@Entity({
-    key: 'Products'
-})
+@Entity('Products')
 export class Products {
     @Field()
     id: number;
@@ -23,10 +21,9 @@ export interface CategoriesForTesting extends EntityBase {
     description: string;
     status: Status;
 }
-let r :Repository<CategoriesForTesting>;
+let r: Repository<CategoriesForTesting>;
 
-@Entity({
-    key: 'Categories',
+@Entity('Categories', {
     allowApiCrud: true
 })
 export class Categories extends EntityBase {

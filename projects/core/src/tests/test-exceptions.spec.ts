@@ -1,4 +1,4 @@
-import {  Done } from './testHelper.spec';
+import { Done } from './testHelper.spec';
 import { Remult, toPromise } from '../context';
 
 
@@ -33,11 +33,11 @@ describe("test exception", () => {
             transaction: undefined
         });
         var ok = new Done();
-        let type = class extends EntityBase{
-            id:string;
+        let type = class extends EntityBase {
+            id: string;
         }
-        Entity({key:'test'})(type);
-        Field()(type.prototype,"id");
+        Entity('test')(type);
+        Field()(type.prototype, "id");
         var x = c.repo(type).create();
         try {
             await x._.save();

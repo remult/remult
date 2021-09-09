@@ -4,9 +4,9 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { Field, Entity, EntityBase,  FindOptions, Repository } from '../remult3';
+import { Field, Entity, EntityBase, FindOptions, Repository } from '../remult3';
 
-@Entity({ key: 'my entity' })
+@Entity('my entity')
 class myEntity extends EntityBase {
 
     @Field()
@@ -42,12 +42,12 @@ describe("test decorator precedence", () => {
 
 });
 
-@Entity({ key: 'profile' })
+@Entity('profile')
 class profile extends EntityBase {
     @Field()
     username: string;
 }
-@Entity({ key: 'user' })
+@Entity('user')
 class user extends profile {
     @Field()
     email: string;

@@ -409,6 +409,7 @@ export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T
 export type EntityOptionsFactory = (remult: Remult) => EntityOptions;
 
 export const entityInfo = Symbol("entityInfo");
+export const entityInfo_key = Symbol("entityInfo_key");
 const entityMember = Symbol("entityMember");
 export function getEntitySettings<T>(entity: ClassType<T>, throwError = true): EntityOptionsFactory {
     if (entity === undefined)
@@ -422,6 +423,9 @@ export function getEntitySettings<T>(entity: ClassType<T>, throwError = true): E
 
     return info;
 }
+export function getEntityKey(entity: ClassType<any>): string {
+    return Reflect.getMetadata(entityInfo_key, entity);
+}
 export const columnsOfType = new Map<any, columnInfo[]>();
 export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
     let r: columnInfo[] = columnsOfType.get(entity);
@@ -429,6 +433,7 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
         columnsOfType.set(entity, r = []);
 
     let info = getEntitySettings(entity);
+    let key = getEntityKey(entity);
 
 
     let base = Object.getPrototypeOf(entity);
@@ -442,7 +447,7 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
     }
 
 
-    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info(remult), remult, entity);
+    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info(remult), remult, entity, key);
 }
 
 abstract class rowHelperBase<T>
@@ -1000,11 +1005,13 @@ export function buildCaption(caption: string | ((remult: Remult) => string), key
     result = CaptionTransformer.transformCaption(remult, key, result);
     if (result)
         return result;
-    return makeTitle(key);
+    if (key)
+        return makeTitle(key);
+    return '';
 }
 
 export class columnDefsImpl implements FieldMetadata {
-    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private remult: Remult) {
+    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, remult: Remult) {
         if (settings.serverExpression)
             this.isServerExpression = true;
         if (typeof (this.settings.allowApiUpdate) === "boolean")
@@ -1074,8 +1081,11 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     options = this.entityInfo;
 
-    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, remult: Remult, public readonly entityType: ClassType<T>) {
-
+    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, remult: Remult, public readonly entityType: ClassType<T>, public readonly key: string) {
+        if (!this.key)
+            this.key = entityType.name;
+        if (!entityInfo.dbName)
+            entityInfo.dbName = this.key;
 
         let _items = [];
         let r = {
@@ -1091,8 +1101,8 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         this.fields = r as unknown as FieldsMetadata<T>;
 
         this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
-        this.key = entityInfo.key;
-        this.caption = buildCaption(entityInfo.caption, entityInfo.key, remult);
+
+        this.caption = buildCaption(entityInfo.caption, this.key, remult);
 
         if (entityInfo.id) {
             this.idMetadata.field = entityInfo.id(this.fields)
@@ -1159,7 +1169,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     fields: FieldsMetadata<T>;
 
 
-    key: string;
+
     dbName: string;
     caption: string;
 
@@ -1343,14 +1353,14 @@ interface columnInfo {
 
 }
 export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, remult: Remult) => void))[];
-export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
+export function Entity<entityType>(key: string, ...options: OptionsFactory<EntityOptions<entityType>>) {
 
     return target => {
-        for (const key in target) {
-            if (Object.prototype.hasOwnProperty.call(target, key)) {
-                const element = target[key] as customFilterInfo<any>;
+        for (const customFilterMember in target) {
+            if (Object.prototype.hasOwnProperty.call(target, customFilterMember)) {
+                const element = target[customFilterMember] as customFilterInfo<any>;
                 if (element?.customFilterInfo?.customFilterTranslator) {
-                    element.customFilterInfo.key = key;
+                    element.customFilterInfo.key = customFilterMember;
                 }
             }
         }
@@ -1368,8 +1378,7 @@ export function Entity<entityType>(...options: OptionsFactory<EntityOptions<enti
 
 
 
-            if (!r.key || r.key == '')
-                r.key = target.name;
+
             let base = Object.getPrototypeOf(target);
             if (base) {
                 let baseFactory = getEntitySettings(base, false);
@@ -1383,14 +1392,13 @@ export function Entity<entityType>(...options: OptionsFactory<EntityOptions<enti
                     }
                 }
             }
-            if (!r.dbName)
-                r.dbName = r.key;
             return r;
         };
 
         allEntities.push(target);
-        setControllerSettings(target, { key: undefined })
+        setControllerSettings(target, { key })
         Reflect.defineMetadata(entityInfo, factory, target);
+        Reflect.defineMetadata(entityInfo_key, key, target);
         return target;
     }
 }

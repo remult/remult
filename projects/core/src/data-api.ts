@@ -7,9 +7,7 @@ import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
 export class DataApi<T = any> {
-  getRoute() {
-    return this.options.name;
-  }
+  
   options: DataApiSettings<T>;
   constructor(private repository: Repository<T>, private remult: Remult) {
     this.options = this._getApiSettings();
@@ -163,7 +161,6 @@ export class DataApi<T = any> {
     }
 
     return {
-      name: options.key,
       allowRead: this.remult.isAllowed(options.allowApiRead),
       allowUpdate: (e) => this.remult.isAllowedForInstance(e, options.allowApiUpdate),
       allowDelete: (e) => this.remult.isAllowedForInstance(e, options.allowApiDelete),
@@ -211,7 +208,6 @@ export interface DataApiSettings<rowType> {
   allowInsert: (row: rowType) => boolean,
   allowDelete: (row: rowType) => boolean,
   requireId: boolean,
-  name?: string,
   allowRead?: boolean,
   get?: FindOptions<rowType>
 

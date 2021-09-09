@@ -1,4 +1,4 @@
-import {  ActionTestConfig } from './testHelper.spec';
+import { ActionTestConfig } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
@@ -7,7 +7,7 @@ import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
 import { set } from '../../set';
 
-@Entity({ key: 'testServerMethodOnEntity' })
+@Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
     constructor(private remult: Remult) {
         super();
@@ -44,8 +44,7 @@ class testServerMethodOnEntity extends EntityBase {
 
 }
 
-@Entity<testBoolCreate123>((o, c) => set(o, {
-    key: 'testBoolCreate123',
+@Entity<testBoolCreate123>('testBoolCreate123', (o, c) => set(o, {
     allowApiCrud: true,
     saving: async t => {
         if (isBackend() && t._.isNew()) {
@@ -144,19 +143,19 @@ describe("test Server method in entity", () => {
 });
 
 
-@Entity({ key: 'a' })
+@Entity('a')
 class a extends EntityBase {
     @Field()
     id: number;
 }
-@Entity({ key: 'b' })
+@Entity('b')
 class b extends EntityBase {
     @Field()
     id: number;
     @Field()
     a: a;
 }
-@Entity({ key: 'c' })
+@Entity('c')
 class c extends EntityBase {
     @Field()
     id: number;

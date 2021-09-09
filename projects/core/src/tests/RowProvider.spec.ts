@@ -367,7 +367,7 @@ class valueList {
   constructor(public id?: string, public caption?: string) { }
 }
 
-@Entity({ key: 'entity with value list' })
+@Entity('entity with value list')
 class entityWithValueList extends EntityBase {
   @Field()
   id: number = 0;
@@ -536,7 +536,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string;
     };
-    EntityDecorator({ key: '' })(type);
+    EntityDecorator('')(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: (entity, col) =>
         Validators.required(entity, col, "m")
@@ -563,7 +563,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string;
     };
-    EntityDecorator({ key: '' })(type);
+    EntityDecorator('')(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: (entity, col) => {
         if (!entity.a || entity.a.length == 0)
@@ -590,7 +590,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string
     };
-    EntityDecorator({ key: '' })(type);
+    EntityDecorator('')(type);
     ColumnDecorator({
       validate: Validators.required.withMessage("m")
     })(type.prototype, "a");
@@ -613,7 +613,7 @@ describe("test row provider", () => {
       let type = class extends newCategories {
         a: string
       };
-      EntityDecorator({ key: 'categories' })(type);
+      EntityDecorator('categories')(type);
       ColumnDecorator<typeof type.prototype, string>({
         validate: async (en, col) => {
           if (en._.isNew() || en.a != en._.fields.a.originalValue) {
@@ -648,7 +648,7 @@ describe("test row provider", () => {
       let type = class extends newCategories {
         a: string
       };
-      EntityDecorator({ key: 'sdfgds' })(type);
+      EntityDecorator('sdfgds')(type);
       ColumnDecorator<typeof type.prototype, string>({
         validate: Validators.unique
       })(type.prototype, "a");
@@ -678,7 +678,7 @@ describe("test row provider", () => {
     let type = class extends newCategories {
       a: string
     };
-    EntityDecorator({ key: 'asdfa' })(type);
+    EntityDecorator('asdfa')(type);
     ColumnDecorator<typeof type.prototype, string>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
@@ -719,8 +719,7 @@ describe("test row provider", () => {
 
     }
     let orderOfOperation = '';
-    EntityDecorator({
-      key: 'asdf',
+    EntityDecorator('asdf', {
       saving: () => orderOfOperation += "EntityOnSavingRow,",
       validation: r => orderOfOperation += "EntityValidate,",
 
@@ -1080,7 +1079,7 @@ describe("column collection", () => {
     let type = class extends newCategories {
       categoryName: string;
     }
-    EntityDecorator({ key: 'asdf' })(type);
+    EntityDecorator('asdf')(type);
     ColumnDecorator({
       allowApiUpdate: false
     })(type.prototype, "categoryName");
@@ -1212,11 +1211,11 @@ describe("grid settings ",
     });
   });
 
-@Entity({ key: 'typeA', dbName: 'dbnameA' })
+@Entity('typeA', { dbName: 'dbnameA' })
 class typeA extends EntityBase {
 
 }
-@Entity({ key: 'typeB' })
+@Entity('typeB')
 class typeB extends typeA {
 
 }
@@ -1489,7 +1488,7 @@ describe("test grid basics", () => {
   });
 });
 
-@EntityDecorator<TestCategories1>({ key: '123' })
+@EntityDecorator<TestCategories1>('123')
 class TestCategories1 extends newCategories {
   @ColumnDecorator({
     validate: Validators.required

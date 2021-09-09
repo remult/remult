@@ -75,7 +75,7 @@ describe("test server expression value", () => {
 
 });
 
-@Entity({ key: 'testServerExpression' })
+@Entity('testServerExpression')
 class testServerExpression extends EntityBase {
     static testVal = 1;
     static testVal2 = 10;

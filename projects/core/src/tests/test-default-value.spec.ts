@@ -37,7 +37,7 @@ describe("test default value", () => {
 
 });
 
-@Entity({ key: 'testDefaultValue' })
+@Entity('testDefaultValue')
 class testDefaultValue extends EntityBase {
     static testVal = 0;
     code: number;

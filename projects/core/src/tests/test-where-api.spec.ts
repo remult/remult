@@ -285,9 +285,7 @@ describe("custom filter", () => {
 });
 
 
-@Entity({
-    key: 'entityForCustomFilter'
-})
+@Entity('entityForCustomFilter')
 class entityForCustomFilter extends EntityBase {
     @Field()
     id: number;

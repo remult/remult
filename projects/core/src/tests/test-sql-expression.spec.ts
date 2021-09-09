@@ -54,7 +54,7 @@ describe("test sql database expressions", () => {
     });
 
 });
-@Entity({ key: 'expressionEntity' })
+@Entity('expressionEntity')
 class expressionEntity extends EntityBase {
     @IntegerField()
     id: number;
@@ -68,7 +68,7 @@ class expressionEntity extends EntityBase {
 
 
 
-@Entity({ key: 'testSqlExpression' })
+@Entity('testSqlExpression')
 class testSqlExpression extends EntityBase {
     @Field()
     code: number;
@@ -83,8 +83,8 @@ class testSqlExpression extends EntityBase {
 
 }
 
-@Entity({
-    key: 'testServerExpression1', sqlExpression: async () => new Promise(res => setTimeout(() => {
+@Entity('testServerExpression1', {
+    sqlExpression: async () => new Promise(res => setTimeout(() => {
         res('testServerExpression1');
     }, 30))
 })
@@ -113,13 +113,13 @@ export class myDummySQLCommand implements SqlCommand {
 
 }
 describe("test filter for date", () => {
-    it("filter",async () => {
+    it("filter", async () => {
         let c = new Remult()
         let e = c.repo(testCreate);
         var d = new myDummySQLCommand();
         let f = new FilterConsumerBridgeToSqlRequest(d);
-        f.isGreaterOrEqualTo(e.metadata.fields.theDate,new Date("2021-08-06T05:05:25.440Z"));
-        expect (await f.resolveWhere()).toBe(" where theDate >= '2021-08-05T21:00:00.000Z'");
+        f.isGreaterOrEqualTo(e.metadata.fields.theDate, new Date("2021-08-06T05:05:25.440Z"));
+        expect(await f.resolveWhere()).toBe(" where theDate >= '2021-08-05T21:00:00.000Z'");
     });
 });
 
@@ -158,7 +158,7 @@ class stringId2 {
 
     }
 }
-@Entity({ key: 'testCreate' })
+@Entity('testCreate')
 class testCreate extends IdEntity {
 
     @DateOnlyField()

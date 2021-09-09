@@ -1,4 +1,4 @@
-import {  Done } from './testHelper.spec';
+import { Done } from './testHelper.spec';
 import { Remult } from '../context';
 
 import { JsonDataProvider } from '../data-providers/json-data-provider';
@@ -12,7 +12,7 @@ import { Categories as newCategories } from './remult-3-entities';
 import { Field, Entity, EntityBase, IntegerField } from '../remult3';
 
 
-@Entity({ key: 'entityWithAutoId', dbAutoIncrementId: true })
+@Entity('entityWithAutoId', { dbAutoIncrementId: true })
 class entityWithAutoId extends EntityBase {
     @IntegerField()
     id: number;
@@ -30,12 +30,12 @@ describe("test json database", () => {
             await c._.delete();
         }
     }
-    it("test auto increment",async () => {
+    it("test auto increment", async () => {
         let remult = new Remult();
         remult.setDataProvider(new InMemoryDataProvider());
-        let p = await remult.repo(entityWithAutoId).create({name:'a'}).save();
+        let p = await remult.repo(entityWithAutoId).create({ name: 'a' }).save();
         expect(p.id).toBe(1);
-        p = await remult.repo(entityWithAutoId).create({name:'b'}).save();
+        p = await remult.repo(entityWithAutoId).create({ name: 'b' }).save();
         expect(p.id).toBe(2);
 
     });
@@ -59,7 +59,7 @@ describe("test json database", () => {
     });
 
 });
-@Entity({ key: 'tasks' })
+@Entity('tasks')
 class tasks extends EntityBase {
     @Field()
     id: number;

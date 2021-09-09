@@ -12,10 +12,6 @@ export interface EntityOptions<entityType = any> {
   dbAutoIncrementId?: boolean;
 
   /**
- * A unique identifier that represents this entity, it'll also be used as the api route for this entity.
- */
-  key: string;
-  /**
    * The name of the table in the database that holds the data for this entity.
    * If no name is set, the `key` will be used instead.
    * @example

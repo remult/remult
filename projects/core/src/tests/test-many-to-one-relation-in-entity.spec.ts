@@ -16,7 +16,7 @@ import { actionInfo } from '../server-action';
 
 
 
-@Entity({ key: 'categories' })
+@Entity('categories')
 class Categories extends EntityBase {
     @Field()
     id: number;
@@ -27,14 +27,14 @@ class Categories extends EntityBase {
     @Field()
     archive: boolean = false;
 }
-@Entity({ key: 'suppliers' })
+@Entity('suppliers')
 class Suppliers extends EntityBase {
     @Field()
     supplierId: string;
     @Field()
     name: string;
 }
-@Entity({ key: 'products' })
+@Entity('products')
 class Products extends EntityBase {
     @Field()
     id: number;
@@ -48,7 +48,7 @@ class Products extends EntityBase {
     supplier: Suppliers;
 
 }
-@Entity({ key: 'products' })
+@Entity('products')
 class ProductsEager extends EntityBase {
     @Field()
     id: number;
@@ -58,7 +58,7 @@ class ProductsEager extends EntityBase {
     category: Categories;
 
 }
-@Entity({ key: 'profile' })
+@Entity('profile')
 class profile extends EntityBase {
     @Field()
     id: string;
@@ -81,7 +81,7 @@ class profile extends EntityBase {
         super();
     }
 }
-@Entity({ key: 'following' })
+@Entity('following')
 class following extends EntityBase {
     @Field()
     id: string;
@@ -413,7 +413,7 @@ describe("many to one relation", () => {
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
                 return {
-                    find: x=>r.find(x), count: r.count, delete: r.delete, insert: r.insert, update: (id, data) => {
+                    find: x => r.find(x), count: r.count, delete: r.delete, insert: r.insert, update: (id, data) => {
                         d.ok();
                         expect(data).toEqual({ name: "prod 11" });
                         return r.update(id, data)
@@ -604,8 +604,7 @@ z = {
         fromJson: x => x ? x : null
     },
 })
-@Entity<h>({
-    key: 'h',
+@Entity<h>('h', {
     saving: self => {
         if (self.refH)
             self.refHId = self.refH.id;

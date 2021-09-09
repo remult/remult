@@ -148,7 +148,7 @@ class Phone4 {
 
 }
 
-@Entity({ key: 'objectColumnTest' })
+@Entity('objectColumnTest')
 class ObjectColumnTest extends EntityBase {
     @Field()
     id: number;

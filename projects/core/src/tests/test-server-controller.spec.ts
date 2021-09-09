@@ -1,4 +1,4 @@
-import {  ActionTestConfig } from './testHelper.spec';
+import { ActionTestConfig } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
 import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remult3';
@@ -15,7 +15,7 @@ export class myType {
 
     }
 }
-@Entity({ key: 'testEntity' })
+@Entity('testEntity')
 class testEntity extends IdEntity {
     @Field()
     name: string;

@@ -164,9 +164,7 @@ describe("data api", () => {
 
 });
 
-@EntityDecorator<stam1>({
-  key: 'categories',
-
+@EntityDecorator<stam1>('categories', {
   backendPrefilter: (c) => {
     return c.description.isEqualTo('b')
   }
@@ -186,12 +184,11 @@ describe("", () => {
     expect(r[0].id).toBe(2, 'value of first row');
     expect(await c.count()).toBe(1, 'count');
     expect(await c.iterate(x => x.id.isEqualTo(1)).first()).toBe(undefined, 'find first');
-    expect((await c.findFirst({ createIfNotFound: true, where:x => x.id.isEqualTo(1)}))._.isNew()).toBe(true, 'lookup ');
+    expect((await c.findFirst({ createIfNotFound: true, where: x => x.id.isEqualTo(1) }))._.isNew()).toBe(true, 'lookup ');
   });
 })
 
-@EntityDecorator<CategoriesForThisTest>({
-  key: undefined,
+@EntityDecorator<CategoriesForThisTest>(undefined, {
   allowApiUpdate: true,
   allowApiDelete: true,
   apiPrefilter: (x) => {

@@ -12,7 +12,7 @@ describe("custom id column", () => {
             a: number;
             b: number;
         }
-        Entity({ key: 'custom' })(type);
+        Entity('custom')(type);
         Field()(type.prototype, 'a');
         Field()(type.prototype, 'b');
         let c = remult.repo(type);
@@ -35,7 +35,7 @@ describe("custom id column", () => {
             a: number;
             id: number;
         }
-        Entity({ key: 'custom2' })(type);
+        Entity('custom2')(type);
         Field({ valueType: Number })(type.prototype, 'a');
         Field({ valueType: Number })(type.prototype, 'id');
         let c = remult.repo(type);
