@@ -1,7 +1,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import {  Done } from './testHelper.spec';
+import { Done } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Remult } from '../context';
 import { OneToMany } from '../column';
@@ -19,7 +19,7 @@ import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3'
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
 import { EntityOptions } from '../entity';
 
-import { Filter } from '../filter/filter-interfaces';
+import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { ClassType } from '../../classType';
 
 
@@ -251,7 +251,7 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
     expect(await c.count(w)).toBe(4);
   });
-  it("test context change event",async () => {
+  it("test context change event", async () => {
     let d = new Done();
     let c = new Remult();
     let r = await c.userChange.observe(() => d.ok());
@@ -330,7 +330,7 @@ describe("Closed List  column", () => {
   });
   it("test with entity", async () => {
     let c = new Remult()
-      .repo(entityWithValueList,new InMemoryDataProvider());
+      .repo(entityWithValueList, new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
     expect(e.l).toBe(Language.Hebrew);
@@ -342,7 +342,7 @@ describe("Closed List  column", () => {
   })
   it("test with entity and data defined on type", async () => {
     let c = new Remult()
-      .repo(entityWithValueList,new InMemoryDataProvider());
+      .repo(entityWithValueList, new InMemoryDataProvider());
     let e = c.create();
     e.id = 1;
     expect(c.metadata.fields.v.valueType).toBe(valueList);
@@ -443,7 +443,7 @@ describe("test row provider", () => {
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(2);
     rows = await c.find({
-      where: [c => c.description.isEqualTo('y'), c => c.categoryName.isEqualTo('yoni'), undefined]
+      where: c => [c.description.isEqualTo('y'), c.categoryName.isEqualTo('yoni'), undefined]
     });
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(2);
@@ -460,17 +460,17 @@ describe("test row provider", () => {
       expect(rows.length).toBe(4);
 
       rows = await r.find({
-        where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
+        where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('x')))
 
       });
       expect(rows.length).toBe(2);
-      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isEqualTo(4))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isEqualTo(4))) });
       expect(rows.length).toBe(1);
       expect(rows[0].categoryName).toBe('yael');
-      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
       expect(rows.length).toBe(1);
       expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
       expect(rows.length).toBe(2);
     })
 
@@ -481,12 +481,12 @@ describe("test row provider", () => {
     expect(rows.length).toBe(4);
 
     rows = await r.find({
-      where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.description.isEqualTo('x')))
+      where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('x')))
 
     });
-    rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isIn([1, 3]))) });
+    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isIn([1, 3]))) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: async c => Filter.unpackWhere(r.metadata, await Filter.packWhere(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
     expect(rows.length).toBe(1);
 
   });
@@ -928,7 +928,7 @@ describe("test row provider", () => {
 
   });
 
-  it("column drop down 1", async () => {
+  it("column drop down 1, values are string for number value type, because it goes to inputValue", async () => {
     let [c] = await createData(async insert => {
       await insert(1, 'noam');
       await insert(2, 'yael');
@@ -940,8 +940,8 @@ describe("test row provider", () => {
 
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
-    expect(xx[0].id).toBe(1);
-    expect(xx[1].id).toBe(2);
+    expect(xx[0].id).toBe('1');
+    expect(xx[1].id).toBe('2');
     expect(xx[0].caption).toBe('noam');
     expect(xx[1].caption).toBe('yael');
     var c2 = c.create();

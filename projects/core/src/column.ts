@@ -5,7 +5,7 @@ import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import { EntityWhere, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
+import {  FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
 
 
 

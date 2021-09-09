@@ -2,10 +2,10 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityWhere, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
-import { AndFilter, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
+import { AndFilter, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
 
@@ -15,7 +15,7 @@ import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberV
 
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
-    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): EntityWhere<entityType> {
+    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): EntityFilter<entityType> {
         let values = new Map<string, any>();
 
         for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
@@ -99,7 +99,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 
-    iterate(options?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType> {
+    iterate(options?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType> {
         let opts: IterateOptions<entityType> = {};
         if (options) {
             if (typeof options === 'function')
@@ -169,7 +169,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 let items: entityType[];
 
                 let itStrategy: (() => Promise<IteratorResult<entityType>>);
-                let nextPageFilter: EntityWhere<entityType> = x => undefined;;
+                let nextPageFilter: EntityFilter<entityType> = x => undefined;;
 
                 let j = 0;
 
@@ -181,7 +181,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                         if (items && items.length < pageSize)
                             return { value: <entityType>undefined, done: true };
                         items = await cont.find({
-                            where: Filter.toItem(opts.where, nextPageFilter),
+                            where: y => Filter.fromEntityFilter(y, opts.where, nextPageFilter),
                             orderBy: opts.orderBy,
                             limit: pageSize,
                             load: opts.load
@@ -270,11 +270,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return x;
     }
 
-    async count(where?: EntityWhere<entityType>): Promise<number> {
+    async count(where?: EntityFilter<entityType>): Promise<number> {
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
-    async findFirst(options?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
+    async findFirst(options?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
 
         let opts: FindFirstOptions<entityType> = {};
         if (options) {
@@ -287,7 +287,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let r: Promise<entityType>;
         let cacheInfo: cacheEntityInfo<entityType>;
         if (opts.useCache || opts.useCache === undefined) {
-            let f = await Filter.packWhere(this.metadata, opts.where);
+            let f = await entityFilterToJson(this.metadata, opts.where);
             let key = JSON.stringify(f);
             cacheInfo = this.cache.get(key);
             if (cacheInfo !== undefined) {
@@ -306,11 +306,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.iterate(options).first().then(r => {
+        r = this.iterate(options).first().then(async r => {
             if (!r && opts.createIfNotFound) {
                 r = this.create();
                 if (opts.where) {
-                    __updateEntityBasedOnWhere(this.metadata, opts.where, r);
+                    await __updateEntityBasedOnWhere(this.metadata, opts.where, r);
                 }
             }
             return r;
@@ -364,13 +364,15 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 
-    private async translateWhereToFilter(where: EntityWhere<entityType>): Promise<Filter> {
-        if (this.metadata.options.fixedFilter)
-            where = Filter.toItem(where, this.metadata.options.fixedFilter);
+    private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
+        if (this.metadata.options.backendPrefilter) {
+            let z = where;
+            where = y => Filter.fromEntityFilter(y, z, this.metadata.options.backendPrefilter);
+        }
         let filterFactories = Filter.createFilterFactories(this.metadata)
-        let r = await Filter.translateWhereToFilter(filterFactories, where);
+        let r = await Filter.fromEntityFilter(filterFactories, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
-            r = await Filter.translateCustomWhere(this.metadata, filterFactories, r, this.remult);
+            r = await Filter.translateCustomWhere(r, this.metadata, filterFactories, this.remult);
         }
         return r;
 
@@ -379,8 +381,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 }
 
 
-export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityWhere<T>, r: T) {
-    let w = await Filter.translateWhereToFilter(Filter.createFilterFactories(entityDefs), where);
+export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
+    let w = await Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where);
 
     if (w) {
         w.__applyToConsumer({
@@ -1342,6 +1344,7 @@ interface columnInfo {
 }
 export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, remult: Remult) => void))[];
 export function Entity<entityType>(...options: OptionsFactory<EntityOptions<entityType>>) {
+
     return target => {
 
         let factory: EntityOptionsFactory = remult => {

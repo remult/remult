@@ -1,12 +1,8 @@
 {
-    "inputFiles": [
-    "./projects/core/src/context.ts"       ,
-    "./projects/core/src/entity.ts"
-    ],
+  
     "plugin": [
         "typedoc-plugin-markdown"
     ],
-    "theme": "vuepress",
     "out": [
         "./tmp/reference"
     ],

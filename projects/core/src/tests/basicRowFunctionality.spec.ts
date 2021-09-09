@@ -18,7 +18,7 @@ import { UrlBuilder } from '../../urlBuilder';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
 import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../data-providers/rest-data-provider';
-import { Filter, OrFilter } from '../filter/filter-interfaces';
+import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
 import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField } from '../remult3';
@@ -1988,7 +1988,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Date })(type.prototype, 'b');
 
     let c = new Remult().repo(type);
-    let r = await Filter.packWhere(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
+    let r = await entityFilterToJson(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
   it("put works", async () => {

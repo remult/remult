@@ -46,7 +46,7 @@ class RestEntityDataProvider implements EntityDataProvider {
     let filterObject: any;
 
     if (where) {
-      filterObject = Filter.packToRawWhere(where);
+      filterObject = where.toJson();
       if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
         filterObject = undefined;
     }
@@ -61,7 +61,7 @@ class RestEntityDataProvider implements EntityDataProvider {
     if (options) {
       if (options.where) {
 
-        filterObject = Filter.packToRawWhere(options.where);//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+        filterObject = options.where.toJson();//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
         if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
           filterObject = undefined;
       }

@@ -36,7 +36,7 @@ A filter that determines which rows can be queries using the api.
 ### example
 ```ts
 apiDataFilter: () => {
-  if (!remult.authenticated)
+  if (!context.isSignedIn())
      return this.availableTo.isGreaterOrEqualTo(new Date());
   }
 ```
@@ -72,7 +72,7 @@ this is the place to run logic that we want to run in any case before an entity 
 ### example
 ```ts
 saving: async () => {
-  if (remult.onServer) {
+  if (context.onServer) {
     if (this.isNew()) {
         this.createDate.value = new Date();
     }

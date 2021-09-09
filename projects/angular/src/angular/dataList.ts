@@ -1,4 +1,4 @@
-import { EntityWhere, FindOptions,  Repository } from "remult/src/remult3";
+import { EntityFilter, FindOptions,  Repository } from "remult/src/remult3";
 
 export class DataList<T> implements Iterable<T>{
   [Symbol.iterator](): Iterator<T> {
@@ -26,7 +26,7 @@ export class DataList<T> implements Iterable<T>{
     return item;
   }
   lastGetId = 0;
-  count(where?: EntityWhere<T>) {
+  count(where?: EntityFilter<T>) {
     return this.repository.count(where);
   }
   get(options?: FindOptions<T>) {

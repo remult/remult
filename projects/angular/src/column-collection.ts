@@ -144,11 +144,7 @@ export class FieldCollection<rowType = any> {
             s.valueList = undefined;
           else
             result.push(...x);
-          for (const item of result) {
-            if (typeof item.id === "number")//adjusted for number column since input value is string
-              item.id = item.id.toString();
-          }
-
+          fixResult(result, s.field);
         }
         if (this.remult) {
           todo(this.remult);
@@ -160,10 +156,7 @@ export class FieldCollection<rowType = any> {
       else {
         result.push(...(await (orig as (Promise<ValueListItem[]>))));
       }
-      for (const item of result) {
-        if (typeof item.id === "number")//adjusted for number column since input value is string
-          item.id = item.id.toString();
-      }
+      fixResult(result, s.field);
 
     }
 
@@ -465,4 +458,11 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
 
 
 
+}
+
+function fixResult(result: ValueListItem[], inField: FieldMetadata | FieldRef<any, any>) {
+  let field = getFieldDefinition(inField);
+  if (field?.valueType === Number) {
+    result.splice(0, result.length, ...result.map(x => ({ ...x, id: x.id?.toString() })));
+  }
 }

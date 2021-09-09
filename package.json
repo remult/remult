@@ -23,6 +23,8 @@
     "setup-type-doc": " typedoc typedoc-plugin-markdown",
     "try-generate-typedoc-docs": "typedoc  --ignoreCompilerErrors --exclude *.spec.ts --exclude **/schematics/**  --out ./tmp/ref   --excludeExternals ./projects/core/src/entity.ts && node docs-work",
     "remult-angular-build": "copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V angular.json dist/build-angular && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/remult/** dist/build-angular/node_modules && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles ",
+    "build-ref-ts":"ts-node --project tsconfig.server.json docs-work.ts",
+    "build-ref":"build-ref.bat",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
     "schemas:build": "tsc -p projects/angular/tsconfig.schematics.json",
     "schemas:copy:schemas": "copyfiles -V -u 2  projects/angular/schematics/*/schema.json dist/angular/",
@@ -91,6 +93,8 @@
     "tsc-watch": "^4.0.0",
     "tslib": "^2.2.0",
     "tslint": "~6.1.0",
+    "typedoc": "^0.21.9",
+    "typedoc-plugin-markdown": "^3.10.4",
     "typescript": "~4.1.5"
   },
   "browser": {

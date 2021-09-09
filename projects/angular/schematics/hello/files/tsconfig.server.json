@@ -7,6 +7,6 @@
     "emitDecoratorMetadata":true
   },
   "files": [
-    "./src/server/*.ts"
+    "./src/server/index.ts"
   ]
 }

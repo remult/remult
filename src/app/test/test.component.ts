@@ -2,7 +2,26 @@ import { Component, OnInit } from '@angular/core';
 import { async } from '@angular/core/testing';
 import { DataAreaSettings } from '../../../projects/angular';
 
-import { Field, getFields } from '../../../projects/core';
+import { Field, getFields, ValueListFieldType } from '../../../projects/core';
+
+
+
+@ValueListFieldType(FamilyStatus, {
+
+})
+export class FamilyStatus {
+
+
+  static Active: FamilyStatus = new FamilyStatus(0);
+  static Frozen: FamilyStatus = new FamilyStatus(100);
+  static RemovedFromList: FamilyStatus = new FamilyStatus(99);
+  static ToDelete: FamilyStatus = new FamilyStatus(98);
+
+  constructor(public id: number) {
+  }
+
+
+}
 
 @Component({
   selector: 'app-test',
@@ -17,7 +36,8 @@ import { Field, getFields } from '../../../projects/core';
                 <option *ngFor="let v of getDropDown()" [ngValue]="v.id">{{v.caption}}</option>
             </select>
 {{a}}<br>
-{{this.area.fields.items[0].valueList|json}}
+{{b|json}}<br>
+{{this.area.fields.items[1].valueList|json}}
    `,
   styleUrls: ['./test.component.scss']
 })
@@ -25,13 +45,16 @@ export class TestComponent {
   @Field()
   a: number = 1;
 
+  @Field()
+  b: FamilyStatus = FamilyStatus.Active;
+
   area: DataAreaSettings;
   async ngOnInit() {
     this.area = new DataAreaSettings({
       fields: () => [{
         field: getFields(this).a,
         valueList: async () => [{ id: 1, caption: 'abc' }, { id: 2, caption: 'def' }]
-      }]
+      }, getFields(this).b]
     });
     console.log();
 
@@ -45,7 +68,7 @@ export class TestComponent {
   get map() {
     return this.area.fields.items[0];
   }
-  getDropDown(){
+  getDropDown() {
     return this.map.valueList;
   }
 

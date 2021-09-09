@@ -36,6 +36,25 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V]  checkbox shouldn't display text true false on grid
 [V] rename AuthenticatedInGuard and not signed in guard
 [V] insert filter into the grid button
+[] @ExcludeEntityFromApi()
+    [] require key in entity function parameters, instead of a mandatory key member
+    [] let myRoute = api(contextForRouteExtraction).getRoute();
+    [] first parameter should be key
+[V] remove entity where item
+[V] translateWhereToFilter and toItem - change to To Entity Where that can get a single or array of where and returns a function that gets fitlerfactories and returns a singular Filter
+[] merge security pull requests
+[]     app.use(
+        helmet({
+            contentSecurityPolicy: false,
+        })
+    );
+[] rename Filter function to use filter and entity etc...
+[] Filter.createCustom
+[V] fromEntityFilter
+
+
+
+
 [] add id lookup in remult angular
 [] insert the column selection into the grid button.
 [V] change grid button icon to something else
@@ -46,17 +65,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## review with yoni
 [] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
 * maybe not do the array stuff, and instead do a Filter Join to build an array, that way to filter itself stays simple - just a method call
+[] fixedFilter => where
+[] apiDataFitler => apiWhere
 
-[] @ExcludeEntityFromApi()
-    [] require key in entity function parameters, instead of a mandatory key member
-    [] let myRoute = api(contextForRouteExtraction).getRoute();
 
-[] reconsider factory, instead of (options,remult), to be (set,remult).
-```
-(options,remult)=>options.dbName = async ()=>"bla bla"
-vs
-(set,remult)=>set ({dbName : async ()=>"bla bla"})
-```
 
 
 
@@ -276,13 +288,15 @@ export interface EntityMetadata<entityType = any> {
     getDbName(): Promise<string>;
 }
 export interface Repository<entityType> {
+    /**creates a json representation of the object */
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     metadata: EntityMetadata<entityType>;
+    /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
-    iterate(whereOrOptions?: EntityWhere<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
-    findFirst(whereOrOptions?: EntityWhere<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
+    iterate(whereOrOptions?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
+    findFirst(whereOrOptions?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
-    count(where?: EntityWhere<entityType>): Promise<number>;
+    count(where?: EntityFilter<entityType>): Promise<number>;
     create(item?: Partial<entityType>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
     save(item: entityType): Promise<entityType>;
@@ -291,7 +305,7 @@ export interface Repository<entityType> {
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 
-    /** Determines the number of rows returned by the request, on the browser the default is 25 rows 
+    /** Determines the number of rows returned by the request, on the browser the default is 100 rows 
      * @example
      * this.products = await this.remult.repo(Products).find({
      *  limit:10,
@@ -322,8 +336,7 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityWhere<entityType> = EntityWhereItem<entityType> | EntityWhereItem<entityType>[];
-export declare type EntityWhereItem<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | Filter[]));
+export declare type EntityFilter<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter|Promise<Filter>)[] | Promise<Filter[]>));
 
 
 
@@ -363,7 +376,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
     * where p => p.price.isGreaterOrEqualTo(5)
     * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
     */
-    where?: EntityWhere<entityType>;
+    where?: EntityFilter<entityType>;
     /** Determines the order in which the result will be sorted in
      * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
      */

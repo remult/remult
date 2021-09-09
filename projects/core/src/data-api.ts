@@ -1,5 +1,5 @@
 import { EntityOptions } from './entity';
-import { AndFilter, customUrlToken } from './filter/filter-interfaces';
+import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
@@ -37,14 +37,14 @@ export class DataApi<T = any> {
       return;
     }
     try {
-      let findOptions: FindOptions<T> = {load:()=>[]};
+      let findOptions: FindOptions<T> = { load: () => [] };
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
       findOptions.where = t => this.buildWhere(t, request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        let w = await Filter.translateWhereToFilter(Filter.createFilterFactories(this.repository.metadata), findOptions.where);
+        let w = await Filter.fromEntityFilter(Filter.createFilterFactories(this.repository.metadata), findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },
@@ -98,9 +98,9 @@ export class DataApi<T = any> {
   private async buildWhere(entity: FilterFactories<T>, request: DataApiRequest, filterBody: any) {
     var where: Filter;
     if (this.options && this.options.get && this.options.get.where)
-      where = await Filter.translateWhereToFilter(entity, this.options.get.where);
+      where = await Filter.fromEntityFilter(entity, this.options.get.where);
     if (request) {
-      where = new AndFilter(where, Filter.extractWhere(this.repository.metadata, {
+      where = new AndFilter(where, buildFilterFromRequestParameters([...this.repository.metadata.fields], {
         get: key => {
           let result = request.get(key);
           if (key == customUrlToken && result)
@@ -110,7 +110,7 @@ export class DataApi<T = any> {
       }));
     }
     if (filterBody)
-      where = new AndFilter(where, Filter.unpackWhere(this.repository.metadata, filterBody))
+      where = new AndFilter(where, Filter.fromJson(this.repository.metadata, filterBody))
     return where;
   }
 
@@ -122,7 +122,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: Filter.toItem(this.options?.get?.where, x => this.repository.metadata.idMetadata.getIdFilter(id))
+        where: y => [Filter.fromEntityFilter(y, this.options?.get?.where), this.repository.metadata.idMetadata.getIdFilter(id)]
       })
         .then(async r => {
           if (r.length == 0)
@@ -170,8 +170,8 @@ export class DataApi<T = any> {
       allowInsert: (e) => this.remult.isAllowedForInstance(e, options.allowApiInsert),
       requireId: this.remult.isAllowed(options.apiRequireId),
       get: {
-        where: options.apiDataFilter
-        
+        where: options.apiPrefilter
+
       }
     }
   }

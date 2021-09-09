@@ -1,7 +1,7 @@
 import { Allowed, Remult, AllowedForInstance } from "./context";
 
 import { FieldMetadata as FieldMetadata } from './column-interfaces';
-import { EntityOrderBy, FieldsMetadata, FilterFactories, EntityWhere } from "./remult3";
+import { EntityOrderBy, FieldsMetadata, FilterFactories, EntityFilter } from "./remult3";
 import { CustomFilterBuilder, Filter } from "./filter/filter-interfaces";
 
 
@@ -19,8 +19,7 @@ export interface EntityOptions<entityType = any> {
    * The name of the table in the database that holds the data for this entity.
    * If no name is set, the `key` will be used instead.
    * @example
-   * dbName = 'myProducts'
-   
+   * dbName:'myProducts'
    */
   dbName?: string;
   sqlExpression?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
@@ -28,13 +27,16 @@ export interface EntityOptions<entityType = any> {
   caption?: string;
   /**
    * Determines if this Entity is available for get requests using Rest Api 
-   * @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+   * @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiRead?: Allowed;
-  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+
+  /** 
+   * Determines if this entity can be updated through the api.
+   * @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiUpdate?: AllowedForInstance<entityType>;
-  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+  /** @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiDelete?: AllowedForInstance<entityType>;
-  /** @see [allowed](http://remult-ts.github.io/guide/allowed.html)*/
+  /** @see [allowed](http://remult.github.io/guide/allowed.html)*/
   allowApiInsert?: AllowedForInstance<entityType>;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed;
@@ -42,13 +44,13 @@ export interface EntityOptions<entityType = any> {
   /** A filter that determines which rows can be queries using the api.
 
   */
-  apiDataFilter?: EntityWhere<entityType>;
+  apiPrefilter?: EntityFilter<entityType>;
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  fixedFilter?: EntityWhere<entityType>;
+  backendPrefilter?: EntityFilter<entityType>;
   customFilterBuilder?: () => CustomFilterBuilder<entityType, any>,
   /** An order by to be used, in case no order by was specified
    * @example
@@ -65,10 +67,10 @@ export interface EntityOptions<entityType = any> {
   * If the `validationError` property of the entity or any of it's columns will be set, the save will be aborted and an exception will be thrown.
   * this is the place to run logic that we want to run in any case before an entity is saved. 
   * @example
-  * saving: async () => {
+  * saving: async (self) => {
   *   if (isBackend()) {
-  *     if (this.isNew()) {
-  *         this.createDate.value = new Date();
+  *     if (self.isNew()) {
+  *         self.createDate.value = new Date();
   *     }
   *   }
   * }

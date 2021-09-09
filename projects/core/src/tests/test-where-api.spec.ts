@@ -4,7 +4,7 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, EntityWhere, EntityWhereItem, Field, FilterFactories, FindOptions, Repository } from '../remult3';
+import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { CustomFilterBuilder, customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
@@ -27,25 +27,40 @@ describe("test where stuff", () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count([y => y.id.isLessOrEqualTo(3), Filter.toItem(fo.where)])).toBe(2);
+        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(async y => [y.id.isLessOrEqualTo(3), await Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(y => Filter.fromEntityFilter(y, fo.where, y => y.id.isLessOrEqualTo(3)))).toBe(2);
+        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where)])).toBe(2);
     });
     it("test basics_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where, () => undefined])).toBe(2);
+        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
+    });
+    it("test basics_2_2", async () => {
+        let fo: FindOptions<CategoriesForTesting> = {
+            where: x => x.id.isGreaterOrEqualTo(2)
+        };
+        expect(await repo.count(async y => y.id.isLessOrEqualTo(3).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
+    });
+    it("test basics_2_3", async () => {
+        let fo: FindOptions<CategoriesForTesting> = {
+            where: x => x.id.isGreaterOrEqualTo(2)
+        };
+        expect(await repo.count(async y => y.id.isLessOrEqualTo(3).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
     });
     it("test basics_2_1", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => Promise.resolve(x.id.isGreaterOrEqualTo(2))
         };
-        expect(await repo.count([y => y.id.isLessOrEqualTo(3), () => fo.where, () => undefined])).toBe(2);
+        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
     });
     it("test basics_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: [x => x.id.isGreaterOrEqualTo(2), undefined]
+            where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count([y => y.id.isLessOrEqualTo(3), Filter.toItem(fo.where)])).toBe(2);
+        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where)])).toBe(2);
     });
 
 

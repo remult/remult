@@ -2,12 +2,12 @@
 
 import { createData, } from './RowProvider.spec';
 import { Remult, iterateConfig } from '../context';
-import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityWhere } from '../remult3';
+import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation,  EntityFilter } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldMetadata } from '../column-interfaces';
 import { Sort } from '../sort';
 import { CompoundIdField } from '../column';
-import { Filter } from '../filter/filter-interfaces';
+import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 
 
 describe("test paged foreach ", () => {
@@ -150,9 +150,9 @@ describe("test paged foreach ", () => {
         e.a = 'a';
         e.b = 'b';
         e.c = 'c';
-        async function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityWhere<theTable>) {
-            expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
-                JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere)));
+        async function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityFilter<theTable>) {
+            expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
+                JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere)));
         }
         test(x => x.a, x => x.a.isGreaterThan('a'));
         test(x => [x.a.descending()], x => x.a.isLessThan('a'));
@@ -172,8 +172,8 @@ describe("test paged foreach ", () => {
         let f = eDefs.createAfterFilter(x => [x.a, x.b], e);
         e.a = '1';
         e.b = '2';
-        expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, f))).toEqual(
-            JSON.stringify(await Filter.packWhere<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
+        expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
+            JSON.stringify(await entityFilterToJson<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
 
     });
     it("serialize filter with or", async () => {
@@ -181,8 +181,8 @@ describe("test paged foreach ", () => {
         let eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>;
         let e = eDefs.create();
 
-        async function  test(expectedWhere: EntityWhere<theTable>, expected: any) {
-            expect(JSON.stringify(await Filter.packWhere(eDefs.metadata, expectedWhere))).toEqual(
+        async function  test(expectedWhere: EntityFilter<theTable>, expected: any) {
+            expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere))).toEqual(
                 JSON.stringify(expected));
         }
         await test(
