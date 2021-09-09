@@ -2,7 +2,7 @@ import { Allowed, Remult, AllowedForInstance } from "./context";
 
 import { FieldMetadata as FieldMetadata } from './column-interfaces';
 import { EntityOrderBy, FieldsMetadata, FilterFactories, EntityFilter } from "./remult3";
-import { CustomFilterBuilder, Filter } from "./filter/filter-interfaces";
+
 
 
 
@@ -51,7 +51,6 @@ export interface EntityOptions<entityType = any> {
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
   backendPrefilter?: EntityFilter<entityType>;
-  customFilterBuilder?: () => CustomFilterBuilder<entityType, any>,
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: () => this.name

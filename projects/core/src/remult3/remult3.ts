@@ -1,4 +1,5 @@
 
+import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { IterateToArrayOptions, Unobserve } from "../context";
 import { EntityOptions as EntityOptions } from "../entity";
@@ -274,6 +275,7 @@ export interface EntityMetadata<entityType = any> {
     readonly fields: FieldsMetadata<entityType>,
     readonly caption: string;
     readonly options: EntityOptions;
+    readonly entityType: ClassType<entityType>;
     getDbName(): Promise<string>;
 }
 export interface Repository<entityType> {
@@ -325,7 +327,7 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityFilter<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter|Promise<Filter>)[] | Promise<Filter[]>));
+export declare type EntityFilter<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter | Promise<Filter>)[] | Promise<Filter[]>));
 
 
 

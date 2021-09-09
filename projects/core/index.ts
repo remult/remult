@@ -92,22 +92,9 @@ export {
     IdEntity
 } from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';
-
-
-
 export { OneToMany, CompoundIdField } from './src/column';
-
-
-
-
-
-
-export { Filter, AndFilter, OrFilter, CustomFilterBuilder } from './src/filter/filter-interfaces';
-
-
+export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
 export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-bridge-to-sql-request';
-
-
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 

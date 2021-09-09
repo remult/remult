@@ -6,7 +6,7 @@ import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
 import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { CustomFilterBuilder, customUrlToken, Filter } from '../filter/filter-interfaces';
+import {  customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
 import { DataApi } from '../data-api';
 import { TestDataApiResponse } from './basicRowFunctionality.spec';
@@ -74,8 +74,18 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => entityForCustomFilter.filter.build({ oneAndThree: true }))))
+        expect(await (c.count(e => entityForCustomFilter.filter({ oneAndThree: true }))))
             .toBe(2);
+    });
+    it("test that it works", async () => {
+        let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
+        for (let id = 0; id < 5; id++) {
+            await c.create({ id }).save();
+        }
+        expect(await (c.count(e => entityForCustomFilter.oneAndThree()))).toBe(2);
+        expect((await (c.findFirst(e => entityForCustomFilter.testNumericValue(2)))).id).toBe(2);
+        expect((await (c.findFirst(e => entityForCustomFilter.testObjectValue({ val: 2 })))).id).toBe(2);
+
     });
     it("test that it works with sql", async () => {
         let w = new WebSqlDataProvider("testWithFilter");
@@ -87,7 +97,7 @@ describe("custom filter", () => {
         }
         expect(await (c.count(e => SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
-        expect(await (c.count(e => entityForCustomFilter.filter.build({ dbOneOrThree: true })))).toBe(2);
+        expect(await (c.count(e => entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
     it("test that it works with arrayFilter", async () => {
 
@@ -98,7 +108,7 @@ describe("custom filter", () => {
         }
         expect(await (c.count(e => ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))))
             .toBe(2);
-        expect(await (c.count(e => entityForCustomFilter.filter.build({ dbOneOrThree: true })))).toBe(2);
+        expect(await (c.count(e => entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
 
     });
     it("test or and promise in translate", async () => {
@@ -106,7 +116,7 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => e.id.isEqualTo(4).or(entityForCustomFilter.filter.build({ dbOneOrThree: true }))))).toBe(3);
+        expect(await (c.count(e => e.id.isEqualTo(4).or(entityForCustomFilter.filter({ dbOneOrThree: true }))))).toBe(3);
     });
     it("test sent in api", async () => {
         let ok = new Done();
@@ -114,7 +124,7 @@ describe("custom filter", () => {
             delete: undefined,
             get: async (url) => {
                 ok.ok();
-                expect(url).toBe('/entityForCustomFilter?__action=count&_%24custom=%7B%22oneAndThree%22%3Atrue%7D');
+                expect(url).toBe('/entityForCustomFilter?__action=count&_%24custom=%7B%22filter%22%3A%7B%22oneAndThree%22%3Atrue%7D%7D');
                 return { count: 0 }
 
             },
@@ -123,7 +133,7 @@ describe("custom filter", () => {
         });
         let c = new Remult();
         c.setDataProvider(z);
-        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }));
+        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter({ oneAndThree: true }));
         ok.test();
     });
     it("test sent in api", async () => {
@@ -133,13 +143,17 @@ describe("custom filter", () => {
             post: async (url, data) => {
                 ok.ok();
                 expect(data).toEqual({
-                    "_$custom": [
+                    "_$custom": [{
+                        "filter":
                         {
                             "oneAndThree": true
-                        },
-                        {
+                        }
+                    },
+                    {
+                        "filter": {
                             "two": true
                         }
+                    }
                     ]
                 }
                 );
@@ -151,7 +165,7 @@ describe("custom filter", () => {
         });
         let c = new Remult();
         c.setDataProvider(z);
-        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter.build({ oneAndThree: true }).and(entityForCustomFilter.filter.build({ two: true })));
+        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter({ oneAndThree: true }).and(entityForCustomFilter.filter({ two: true })));
         ok.test();
     });
     it("test that api reads custom correctly", async () => {
@@ -171,7 +185,7 @@ describe("custom filter", () => {
         await api.count(t, {
             get: x => {
                 if (x == customUrlToken)
-                    return "{\"oneAndThree\":true}";
+                    return "{\"filter\":{\"oneAndThree\":true}}";
                 return undefined;
             }
         });
@@ -198,9 +212,11 @@ describe("custom filter", () => {
                 return undefined;
             }
         }, {
-            "_$custom":
-            {
-                "oneAndThree": true
+            "_$custom": {
+                "filter":
+                {
+                    "oneAndThree": true
+                }
             }
         });
         d.test();
@@ -226,13 +242,18 @@ describe("custom filter", () => {
                 return undefined;
             }
         }, {
-            "_$custom": [
+            "_$custom": [{
+                "filter":
                 {
                     "oneAndThree": true
-                },
+                }
+            },
+            {
+                "filter":
                 {
                     "two": true
                 }
+            }
             ]
         });
         d.test();
@@ -254,7 +275,7 @@ describe("custom filter", () => {
         await api.count(t, {
             get: x => {
                 if (x == customUrlToken)
-                    return "{\"dbOneOrThree\":true}";
+                    return "{\"filter\":{\"dbOneOrThree\":true}}";
                 return undefined;
             }
         });
@@ -265,17 +286,16 @@ describe("custom filter", () => {
 
 
 @Entity({
-    key: 'entityForCustomFilter',
-    customFilterBuilder: () => entityForCustomFilter.filter
+    key: 'entityForCustomFilter'
 })
 class entityForCustomFilter extends EntityBase {
     @Field()
     id: number;
-    static filter = new CustomFilterBuilder<entityForCustomFilter, {
+    static filter = Filter.createCustom<entityForCustomFilter, {
         oneAndThree?: boolean,
         dbOneOrThree?: boolean,
         two?: boolean
-    }>(async (e, c) => {
+    }>("filter", async (e, remult, c) => {
         let r: Filter[] = [];
         if (c.oneAndThree)
             r.push(e.id.isIn([1, 3]));
@@ -289,6 +309,9 @@ class entityForCustomFilter extends EntityBase {
         }
         return r;
     });
+    static oneAndThree = Filter.createCustom<entityForCustomFilter>("xOneAndThree", (e) => e.id.isIn([1, 3]));
+    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>("testNumericValue", (e, r, val) => e.id.isEqualTo(val));
+    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>("testObjectValue", (e, r, val) => e.id.isEqualTo(val.val));
 }
 
 declare type Draft<T> = WritableDraft<T>;

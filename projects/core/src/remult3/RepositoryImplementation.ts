@@ -442,7 +442,7 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
     }
 
 
-    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info(remult), remult);
+    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info(remult), remult, entity);
 }
 
 abstract class rowHelperBase<T>
@@ -1074,7 +1074,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     options = this.entityInfo;
 
-    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private remult: Remult) {
+    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, remult: Remult, public readonly entityType: ClassType<T>) {
 
 
         let _items = [];
