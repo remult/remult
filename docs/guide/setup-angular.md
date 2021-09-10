@@ -81,7 +81,7 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
          "emitDecoratorMetadata": true
       },
       "include": [
-         "src/server/*.ts"
+         "src/server/index.ts"
       ]
    }
    ```
@@ -946,7 +946,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    import '../app/app.module';
 
    let app = express();
-   app.use(helmet());
+   app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
       secret: "my secret key",
@@ -1027,7 +1027,7 @@ Let's replace it with a production PostgreSQL database.
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{6-8,18-33}
+   ```ts{6-8,18-34}
    import * as express from 'express';
    import { initExpress } from 'remult/server';
    import * as expressJwt from 'express-jwt';
