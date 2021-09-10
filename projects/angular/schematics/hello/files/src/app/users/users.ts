@@ -12,7 +12,7 @@ import { InputTypes } from "remult/inputTypes";
     allowApiInsert: Roles.admin
 },
     (options, remult) => {
-        options.apiDataFilter = (user) => {
+        options.apiPrefilter = (user) => {
             if (!(remult.isAllowed(Roles.admin)))
                 return user.id.isEqualTo(remult.user.id);
             return new Filter(() => { });
