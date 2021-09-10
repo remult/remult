@@ -1,7 +1,6 @@
 import { IdEntity, Field, Entity } from 'remult';
 
-@Entity({
-    key: 'Products',
+@Entity('Products', {
     allowApiCrud: true
 })
 export class Products extends IdEntity {

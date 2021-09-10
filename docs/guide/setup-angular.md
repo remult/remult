@@ -198,8 +198,7 @@ Create a file `task.ts` in the `src/app/` folder, with the following code:
 ```ts
 import { Field, Entity, IdEntity } from "remult";
 
-@Entity({
-    key: "tasks",
+@Entity("tasks", {
     allowApiCrud: true
 })
 export class Task extends IdEntity {
@@ -403,8 +402,7 @@ Here are the code files we've modified to implement these features.
 ```ts
 import { Field, Entity, IdEntity } from "remult";
 
-@Entity({
-    key: "tasks",
+@Entity("tasks", {
     allowApiCrud: true
 })
 export class Task extends IdEntity {
@@ -646,9 +644,8 @@ User authentication remains outside the scope of Remult. In this tutorial, we'll
 This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Remult` object and returns the result of the remult's `authenticated` method.
 
 *src/app/task.ts*
-```ts{3}
-@Entity({
-    key: "tasks",
+```ts{2}
+@Entity("tasks", {
     allowApiCrud: Allow.authenticated
 })
 ```
@@ -833,12 +830,11 @@ Usually, not all application users have the same privileges. Let's define an `ad
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
    *src/app/task.ts*
-   ```ts{2,6-9,14}
+   ```ts{2,5-8,13}
    import { Field, Entity, IdEntity, Validators } from "remult";
    import { Roles } from "./roles";
 
-   @Entity({
-      key: "tasks",
+   @Entity("tasks", {
       allowApiRead: Allow.authenticated,
       allowApiUpdate: Allow.authenticated,
       allowApiInsert: Roles.admin,
@@ -901,9 +897,8 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
 2. Add a `remult` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
 
    *src/app/task.ts*
-   ```ts{1,7-10,13-15}
-   @Entity<Task>({
-      key: "tasks",
+   ```ts{1,6-9,12-14}
+   @Entity<Task>("tasks", {
       allowApiRead: Allow.authenticated,
       allowApiUpdate: Allow.authenticated,
       allowApiInsert: Roles.admin,

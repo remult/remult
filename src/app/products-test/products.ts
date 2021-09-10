@@ -21,14 +21,13 @@ export class GroupsValue {
   }
 }
 
-@Entity({
-  key: "Products",
+@Entity("Products", {
   allowApiCrud: true,
   sqlExpression: async () =>
     new Promise(res => setTimeout(() => {
       res('Products')
     }, 10)),
-  apiDataFilter: (e) => {
+  apiPrefilter: (e) => {
 
     return new Filter();
   }
@@ -39,7 +38,7 @@ export class Products extends IdEntity {
   @Field()
   price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
   @Field()
-  categoryCode:number;
+  categoryCode: number;
   @Field() // should be Date
   availableFrom1: Date;
   @Field()
@@ -53,32 +52,3 @@ export class Products extends IdEntity {
   }
 }
 
-
-class entityDecorator<T> {
-  constructor(settings: EntityOptions<T>) {
-
-  }
-}
-
-
-class productsDecorator extends entityDecorator<Products> {
-  constructor(private remult: Remult) {
-    super({
-      key: 'asdf',
-      apiDataFilter: (p) => {
-
-        return undefined;
-      }
-    });
-  }
-
-}
-
-class productsDecorator2 implements EntityOptions<Products>{
-  key = '123';
-  apiDataFilter = p => {
-
-    return undefined;
-  }
-
-}

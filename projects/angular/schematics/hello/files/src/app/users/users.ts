@@ -5,8 +5,7 @@ import { Roles } from './roles';
 import { InputField } from "@remult/angular";
 import { InputTypes } from "remult/inputTypes";
 
-@Entity<Users>({
-    key: "Users",
+@Entity<Users>("Users", {
     allowApiRead: remult => remult.authenticated(),
     allowApiDelete: Roles.admin,
     allowApiUpdate: remult => remult.authenticated(),

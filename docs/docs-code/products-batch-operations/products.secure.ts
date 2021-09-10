@@ -1,7 +1,6 @@
 import { IdEntity, Field, Entity, DateOnlyField } from 'remult';
 import { Roles } from '../users/roles';
-@Entity({
-    key: 'Products',
+@Entity('Products', {
     allowApiCrud: Roles.admin,
     allowApiRead: true
 })
