@@ -97,8 +97,9 @@ class RestEntityDataProvider implements EntityDataProvider {
 
   public update(id: any, data: any): Promise<any> {
     let result = {};
+    let keys  =Object.keys(data);
     for (const col of this.entity.fields) {
-      if (data[col.key] !== undefined)
+      if (keys.includes(col.key))
         result[col.key] = col.valueConverter.toJson(data[col.key]);
     }
 

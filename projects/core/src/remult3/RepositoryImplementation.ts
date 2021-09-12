@@ -581,8 +581,9 @@ abstract class rowHelperBase<T>
     }
 
     async _updateEntityBasedOnApi(body: any) {
+        let keys = Object.keys(body);
         for (const col of this.columnsInfo) {
-            if (body[col.key] !== undefined)
+            if (keys.includes(col.key))
                 if (col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
                     if (!this.remult || col.allowApiUpdate === undefined || this.remult.isAllowedForInstance(this.instance, col.allowApiUpdate)) {
                         let lu = this.lookups.get(col.key);

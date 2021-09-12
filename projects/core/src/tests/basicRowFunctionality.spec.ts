@@ -1937,6 +1937,43 @@ describe("test number negative", () => {
 });
 
 describe("test rest data provider translates data correctly", () => {
+  it("rest data provider works with update", async () => {
+    let [serverRepo, serverRemult] = await createData(async insert => await insert(1, "test"));
+    let dataApi = new DataApi(serverRepo, serverRemult);
+    let restDb = new RestDataProvider("", {
+      delete: undefined,
+      get: async (url) => {
+        let r = new TestDataApiResponse();
+        let result;
+        r.success = data => { result = data };
+        await dataApi.get(r, 1);
+        return [result];
+      },
+      post: undefined,
+      put: async (url, data) => {
+        let r = new TestDataApiResponse();
+        let result;
+        r.success = data => { result = data };
+        console.log(data);
+        await dataApi.put(r, 1,data);
+        return result;
+      }
+    });
+    let remult = new Remult();
+    remult.setDataProvider(restDb);
+    let c = await remult.repo(Categories).findId(1, { useCache: false });
+    expect(c.categoryName).toBe("test");
+    c.categoryName = "test1";
+    await c.save();
+    expect(c.categoryName).toBe("test1");
+    c = await remult.repo(Categories).findId(1, { useCache: false });
+    expect(c.categoryName).toBe("test1");
+    c.categoryName = undefined;
+    await c.save();
+    expect(c.categoryName).toBeUndefined();
+    c = await remult.repo(Categories).findId(1, { useCache: false });
+    expect(c.categoryName).toBeUndefined();
+  });
   it("get works", async () => {
     let type = class extends EntityBase {
       a: number;
