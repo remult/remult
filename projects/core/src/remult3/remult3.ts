@@ -37,10 +37,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V]  checkbox shouldn't display text true false on grid
 [V] rename AuthenticatedInGuard and not signed in guard
 [V] insert filter into the grid button
-[] @ExcludeEntityFromApi()
-    [] require key in entity function parameters, instead of a mandatory key member
-    [] let myRoute = api(contextForRouteExtraction).getRoute();
-    [] first parameter should be key
+[V] @ExcludeEntityFromApi()
+    [V] require key in entity function parameters, instead of a mandatory key member
+    [V] let myRoute = api(contextForRouteExtraction).getRoute();
+    [V] first parameter should be key
 [V] remove entity where item
 [V] translateWhereToFilter and toItem - change to To Entity Where that can get a single or array of where and returns a function that gets fitlerfactories and returns a singular Filter
 [] merge security pull requests
@@ -63,18 +63,33 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] test why date is equal to null - didn't work
 
 
+# more to remult repo
+[]code samples
+[]real world anguar
+[]real world react
+[]todo angular
+[]todo react
+[]bezkoder react
+[]bekoder vue
+
+
+[] upgrade all satelite projects to latest remult
+[] upgrade northwind to latest remult
+[] change structure of remult projects - to include projects/core projects/test-angular and under it, everything.
+
+
 ## review with yoni
-[] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
+[V] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
 * maybe not do the array stuff, and instead do a Filter Join to build an array, that way to filter itself stays simple - just a method call
-[] fixedFilter => where
-[] apiDataFitler => apiWhere
+[V] fixedFilter => where
+[V] apiDataFitler => apiWhere
 
 
 
 
 
-[] consider the different wheres of an entity, to see where it takes us.
-[] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.
+[V] consider the different wheres of an entity, to see where it takes us.
+[V] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.
 [V] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
 
 [V] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
