@@ -1,6 +1,5 @@
-import { Done } from "../testHelper.spec";
+import { Done, TestDataApiResponse } from "../testHelper.spec";
 import { createData } from '../RowProvider.spec';
-import { TestDataApiResponse } from '../basicRowFunctionality.spec';
 import { DataApi } from '../../data-api';
 import { Remult } from '../../context';
 import { Categories } from "../remult-3-entities";

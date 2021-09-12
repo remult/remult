@@ -114,23 +114,13 @@ export class SiteArea {
 
 
     this.app.route(myRoute)
-      .get(this.process((c, req, res) => {
-        if (req.get("__action") == "count") {
-          return dataApiFactory(c).count(res, req);
-        } else
-          return dataApiFactory(c).getArray(res, req);
-      })).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
+      .get(this.process((c, req, res) =>
+        dataApiFactory(c).httpGet(res, req)
+      )).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, '')))
-      .post(this.process(async (c, req, res, orig) => {
-        switch (req.get("__action")) {
-          case "get":
-            return dataApiFactory(c).getArray(res, req, orig.body);
-          case "count":
-            return dataApiFactory(c).count(res, req, orig.body);
-          default:
-            return dataApiFactory(c).post(res, orig.body);
-        }
-      }));
+      .post(this.process(async (c, req, res, orig) =>
+        dataApiFactory(c).httpPost(res, req, orig.body)
+      ));
     this.app.route(myRoute + '/:id')
       //@ts-ignore
       .get(this.process(async (c, req, res, orig) => dataApiFactory(c).get(res, orig.params.id)))

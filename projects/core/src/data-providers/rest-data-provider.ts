@@ -20,7 +20,7 @@ export class RestDataProvider implements DataProvider {
   supportsCustomFilter = true;
 
 }
-class RestEntityDataProvider implements EntityDataProvider {
+export class RestEntityDataProvider implements EntityDataProvider {
 
   constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityMetadata) {
 

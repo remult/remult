@@ -1,18 +1,19 @@
 import { Remult } from '../context';
-import { itWithDataProvider } from './basicRowFunctionality.spec';
+
 import { Field, Entity, EntityBase } from '../remult3';
+import { testAllDataProviders } from './testHelper.spec';
 
 
 
 describe("custom id column", () => {
-    itWithDataProvider("basic test", async (dpf) => {
+    it("basic test", () => testAllDataProviders(async (dpf) => {
         let remult = new Remult();
         remult.setDataProvider(dpf);
         let type = class extends EntityBase {
             a: number;
             b: number;
         }
-        Entity('custom')(type);
+        Entity('custom', { allowApiCrud: true })(type);
         Field()(type.prototype, 'a');
         Field()(type.prototype, 'b');
         let c = remult.repo(type);
@@ -27,15 +28,15 @@ describe("custom id column", () => {
         expect(c.metadata.idMetadata.field.key).toBe(c.metadata.fields.a.key);
 
 
-    });
-    itWithDataProvider("basic test id column not first column", async (dpf) => {
+    }));
+    it("basic test id column not first column", () => testAllDataProviders(async (dpf) => {
         let remult = new Remult();
         remult.setDataProvider(dpf);
         let type = class extends EntityBase {
             a: number;
             id: number;
         }
-        Entity('custom2')(type);
+        Entity('custom2', { allowApiCrud: true })(type);
         Field({ valueType: Number })(type.prototype, 'a');
         Field({ valueType: Number })(type.prototype, 'id');
         let c = remult.repo(type);
@@ -51,6 +52,6 @@ describe("custom id column", () => {
         expect((await c.findId(6)).a).toBe(2);
 
 
-    });
+    }));
 
 });

@@ -7,10 +7,26 @@ import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
 export class DataApi<T = any> {
-  
+
   options: DataApiSettings<T>;
   constructor(private repository: Repository<T>, private remult: Remult) {
     this.options = this._getApiSettings();
+  }
+  httpGet(res: DataApiResponse, req: DataApiRequest) {
+    if (req.get("__action") == "count") {
+      return this.count(res, req);
+    } else
+      return this.getArray(res, req);
+  }
+  httpPost(res: DataApiResponse, req: DataApiRequest, body: any) {
+    switch (req.get("__action")) {
+      case "get":
+        return this.getArray(res, req, body);
+      case "count":
+        return this.count(res, req, body);
+      default:
+        return this.post(res, body);
+    }
   }
 
   async get(response: DataApiResponse, id: any) {

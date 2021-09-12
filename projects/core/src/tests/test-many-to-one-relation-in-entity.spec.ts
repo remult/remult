@@ -7,9 +7,9 @@ import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
-import { Done } from './testHelper.spec';
+import { Done, TestDataApiResponse } from './testHelper.spec';
 import { DataApi } from '../data-api';
-import { TestDataApiResponse } from './basicRowFunctionality.spec';
+
 import { actionInfo } from '../server-action';
 
 

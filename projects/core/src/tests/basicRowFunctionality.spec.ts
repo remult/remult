@@ -4,24 +4,24 @@ import { createData, testAllDbs } from './RowProvider.spec';
 import { DataApi, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { itForEach, Done, fitForEach } from './testHelper.spec';
+import { itForEach, Done, fitForEach, TestDataApiResponse, testAllDataProviders, MockRestDataProvider, restDbTestingServer } from './testHelper.spec';
 
 import { Status } from './testModel/models';
 
 import { Remult, Allowed } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { DataProvider } from '../data-interfaces';
+import { DataProvider, EntityDataProvider } from '../data-interfaces';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/src/angular/dataList';
 import { UrlBuilder } from '../../urlBuilder';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { async } from '@angular/core/testing';
-import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider } from '../data-providers/rest-data-provider';
+import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey, EntityMetadata } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
@@ -29,67 +29,6 @@ import { actionInfo } from '../server-action';
 //SqlDatabase.LogToConsole = true;
 
 
-export function itWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
-  let webSql = new WebSqlDataProvider('test');
-  itForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
-    (dp) => new Promise((res, rej) => {
-      webSql.db.transaction(t => {
-        t.executeSql("select name from sqlite_master where type='table'", null,
-          (t1, r) => {
-            for (let i = 0; i < r.rows.length; i++) {
-              webSql.db.transaction(t => t.executeSql("delete from " + r.rows[i].name));
-            }
-            runAsync(dp, dp).then(res).catch(rej);
-          }, (t, e) => {
-            rej(e);
-            return undefined;
-          });
-      }, (e) => rej(e));
-    }));
-}
-export function fitWithDataProvider(name: string, runAsync: (dpf: DataProvider, rows?: __RowsOfDataForTesting) => Promise<any>) {
-  let webSql = new WebSqlDataProvider('test');
-  fitForEach<any>(name, [new InMemoryDataProvider(), new SqlDatabase(webSql)],
-    (dp) => new Promise((res, rej) => {
-      webSql.db.transaction(t => {
-        t.executeSql("select name from sqlite_master where type='table'", null,
-          (t1, r) => {
-            for (let i = 0; i < r.rows.length; i++) {
-              webSql.db.transaction(t => t.executeSql("delete from " + r.rows[i].name));
-            }
-            runAsync(dp, dp).then(res).catch(rej);
-          }, (t, e) => {
-            rej(e);
-            return undefined;
-          });
-      }, (e) => rej(e));
-    }));
-}
-
-export class TestDataApiResponse implements DataApiResponse {
-  progress(progress: number): void {
-
-  }
-  success(data: any): void {
-    fail('didnt expect success: ' + JSON.stringify(data));
-  }
-  forbidden() {
-    fail('didnt expect forbidden:');
-  }
-  created(data: any): void {
-    fail('didnt expect created: ' + JSON.stringify(data));
-  }
-  deleted(): void {
-    fail('didnt expect deleted:');
-  }
-  notFound(): void {
-    fail('not found');
-  }
-  error(data) {
-    fail('error: ' + data + " " + JSON.stringify(data));
-  }
-
-}
 
 @FieldType<Phone>({
   valueConverter: {
@@ -127,7 +66,7 @@ describe("test object column stored as string", () => {
 });
 
 
-@Entity('testNumbers')
+@Entity('testNumbers', { allowApiCrud: true })
 class testNumbers extends EntityBase {
   @IntegerField()
   id: number;
@@ -334,7 +273,7 @@ describe("data api", () => {
 
   let ctx = new Remult();
   ctx.setDataProvider(new InMemoryDataProvider());
-  itWithDataProvider("put with validations on entity fails",
+  it("put with validations on entity fails", () => testAllDataProviders(
     async (dataProvider) => {
       let ctx = new Remult();
       ctx.setDataProvider(dataProvider);
@@ -357,23 +296,21 @@ describe("data api", () => {
       var x = await s.find({ where: c => c.myId.isEqualTo(1) });
       expect(x[0].name).toBe('noam');
 
-    });
-  itWithDataProvider("filter works on all db",
+    }));
+  it("filter works on all db", () => testAllDataProviders(
     async (dataProvider) => {
-
       let s = await create4RowsInDp(ctx, dataProvider);
       expect((await s.find({ where: c => c.myId.isIn([1, 3]) })).length).toBe(2);
-
-    });
-  itWithDataProvider("filter works on all db or",
+    }));
+  it("filter works on all db or", () => testAllDataProviders(
     async (dataProvider) => {
 
       let s = await create4RowsInDp(ctx, dataProvider);
       expect((await s.find({ where: c => new OrFilter(c.myId.isEqualTo(1), c.myId.isEqualTo(3)) })).length).toBe(2);
 
-    });
+    }));
 
-  itWithDataProvider("put with validations on column fails", async (dp) => {
+  it("put with validations on column fails", () => testAllDataProviders(async (dp) => {
     ctx = new Remult();
     ctx.setDataProvider(dp);
     var s = ctx.repo(entityWithValidationsOnColumn);
@@ -396,8 +333,8 @@ describe("data api", () => {
     var x = await s.find({ where: c => c.myId.isEqualTo(1) });
     expect(x[0].name).toBe('noam');
 
-  });
-  itWithDataProvider("put with validations on entity fails", async (dp) => {
+  }));
+  it("put with validations on entity fails", () => testAllDataProviders(async (dp) => {
     ctx = new Remult();
     ctx.setDataProvider(dp);
     var s = ctx.repo(entityWithValidations);
@@ -419,8 +356,8 @@ describe("data api", () => {
     var x = await s.find({ where: c => c.myId.isEqualTo(1) });
     expect(x[0].name).toBe('noam');
 
-  });
-  itWithDataProvider("entity with different id column still works well", async (dp) => {
+  }));
+  it("entity with different id column still works well", () => testAllDataProviders(async (dp) => {
     ctx = new Remult();
     ctx.setDataProvider(dp);
     let s = ctx.repo(entityWithValidations);
@@ -434,8 +371,8 @@ describe("data api", () => {
     expect((await s.find()).length).toBe(1);
 
 
-  });
-  itWithDataProvider("empty find works", async (dp) => {
+  }));
+  it("empty find works", () => testAllDataProviders(async (dp) => {
     let ctx = new Remult();
     ctx.setDataProvider(dp);
     let c = ctx.repo(newCategories).create();
@@ -447,8 +384,8 @@ describe("data api", () => {
     expect(l[0].categoryName).toBe('test');
 
 
-  });
-  itWithDataProvider("parial updates", async (dp) => {
+  }));
+  it("partial updates", () => testAllDataProviders(async (dp) => {
     let remult = new Remult();
     remult.setDataProvider(dp);
     let c = remult.repo(newCategories).create({
@@ -464,7 +401,7 @@ describe("data api", () => {
     expect(l.description).toBe('new desc');
 
 
-  });
+  }));
 
 
 
@@ -924,8 +861,11 @@ describe("data api", () => {
       let count = 0;
       let type = class extends newCategories { };
       Entity<typeof type.prototype>(undefined, {
-        allowApiUpdate: true,
-        saving: () => count++
+        allowApiCrud: true,
+        saving: () => {
+          if (!restDbTestingServer)
+            count++;
+        }
       })(type);
       let c = await createData(async insert =>
         await insert(1, 'noam'), type);
@@ -1538,7 +1478,7 @@ describe("data api", () => {
 
 
 
-  itWithDataProvider("count", async (dp) => {
+  it("count", () => testAllDataProviders(async (dp) => {
     let ctx = new Remult();
     ctx.setDataProvider(dp);
     expect(await ctx.repo(newCategories).count()).toBe(0);
@@ -1547,7 +1487,7 @@ describe("data api", () => {
     c.categoryName = 'test';
     await c._.save();
     expect(await ctx.repo(newCategories).count()).toBe(1);
-  });
+  }));
 
 });
 describe("rest call use url get or fallback to post", () => {
@@ -1872,7 +1812,7 @@ describe("test bool value", () => {
         id: number;
         ok: Boolean = false;
       }
-      Entity('asdf')(type);
+      Entity('asdf', { allowApiCrud: true })(type);
       Field({
         valueType: Number
       })(type.prototype, 'id');
@@ -1894,6 +1834,7 @@ describe("test bool value", () => {
         ok: Boolean = false;
       }
       Entity<typeof type.prototype>('asdf', {
+        allowApiCrud: true,
         saving: (x) => {
           x.ok = true;
         }
@@ -1938,27 +1879,9 @@ describe("test number negative", () => {
 
 describe("test rest data provider translates data correctly", () => {
   it("rest data provider works with update", async () => {
-    let [serverRepo, serverRemult] = await createData(async insert => await insert(1, "test"));
-    let dataApi = new DataApi(serverRepo, serverRemult);
-    let restDb = new RestDataProvider("", {
-      delete: undefined,
-      get: async (url) => {
-        let r = new TestDataApiResponse();
-        let result;
-        r.success = data => { result = data };
-        await dataApi.get(r, 1);
-        return [result];
-      },
-      post: undefined,
-      put: async (url, data) => {
-        let r = new TestDataApiResponse();
-        let result;
-        r.success = data => { result = data };
-        console.log(data);
-        await dataApi.put(r, 1,data);
-        return result;
-      }
-    });
+    let [, serverRemult] = await createData(async insert => await insert(1, "test"));
+
+    let restDb = new MockRestDataProvider(serverRemult);
     let remult = new Remult();
     remult.setDataProvider(restDb);
     let c = await remult.repo(Categories).findId(1, { useCache: false });
@@ -2135,7 +2058,8 @@ class CompoundIdEntity extends EntityBase {
       t.myId = e.length ? e[0].myId + 1 : 1;
 
     }
-    entityWithValidations.savingRowCount++;
+    if (!restDbTestingServer)
+      entityWithValidations.savingRowCount++;
 
   }
 })
@@ -2149,7 +2073,7 @@ export class entityWithValidations extends EntityBase {
     super();
   }
 }
-@Entity('', { allowApiUpdate: true })
+@Entity('', { allowApiCrud: true })
 export class entityWithValidationsOnColumn extends EntityBase {
   @Field()
   myId: number;
@@ -2182,6 +2106,8 @@ export class EntityWithLateBoundDbName extends EntityBase {
   id: number;
 
 }
+
+
 
 async function create4RowsInDp(ctx: Remult, dataProvider: DataProvider) {
   ctx = new Remult();

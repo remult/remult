@@ -1,4 +1,4 @@
-import { Done } from './testHelper.spec';
+import { Done, TestDataApiResponse } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
@@ -9,7 +9,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
 import { DataApi } from '../data-api';
-import { TestDataApiResponse } from './basicRowFunctionality.spec';
+
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider';
 import { ClassType } from '../../classType';
 import { CustomSqlFilterBuilder } from '../filter/filter-consumer-bridge-to-sql-request';

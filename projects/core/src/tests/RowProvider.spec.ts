@@ -1,7 +1,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { Done } from './testHelper.spec';
+import { Done, testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Remult } from '../context';
 import { OneToMany } from '../column';
@@ -62,50 +62,45 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
         await sql.execute("drop table if exists " + r.name);
     }
   }
-
-  for (const db of [
-    new InMemoryDataProvider()
-    ,
-    sql
-  ]) {
-    if (!db)
-      throw new Error("you forget to set a db for the test");
-    let remult = new Remult();
-    remult.setDataProvider(db);
-
-    let createData = async (doInsert, entity?) => {
-      if (!entity)
-        entity = newCategories;
-      let rep = remult.repo(entity) as Repository<T>;
-      if (doInsert)
-        await doInsert(async (id, name, description, status) => {
-
-          let c = rep.create();
-
-          c.id = id;
-          c.categoryName = name;
-          c.description = description;
-          if (status)
-            c.status = status;
-          await rep.save(c);
-
-        });
-      return rep;
-    };
-
-    await doTest({
-      remult,
-      createData,
-      insertFourRows: async () => {
-        return createData(async i => {
-          await i(1, 'noam', 'x');
-          await i(4, 'yael', 'x');
-          await i(2, 'yoni', 'y');
-          await i(3, 'maayan', 'y');
-        });
-      }
-    });
-  }
+  await testAllDataProviders(async db=>{
+      if (!db)
+        throw new Error("you forget to set a db for the test");
+      let remult = new Remult();
+      remult.setDataProvider(db);
+  
+      let createData = async (doInsert, entity?) => {
+        if (!entity)
+          entity = newCategories;
+        let rep = remult.repo(entity) as Repository<T>;
+        if (doInsert)
+          await doInsert(async (id, name, description, status) => {
+  
+            let c = rep.create();
+  
+            c.id = id;
+            c.categoryName = name;
+            c.description = description;
+            if (status)
+              c.status = status;
+            await rep.save(c);
+  
+          });
+        return rep;
+      };
+  
+      await doTest({
+        remult,
+        createData,
+        insertFourRows: async () => {
+          return createData(async i => {
+            await i(1, 'noam', 'x');
+            await i(4, 'yael', 'x');
+            await i(2, 'yoni', 'y');
+            await i(3, 'maayan', 'y');
+          });
+        }
+      });
+  });
 
 }
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {

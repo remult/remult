@@ -1,10 +1,10 @@
-import { ActionTestConfig } from './testHelper.spec';
+import { ActionTestConfig, TestDataApiResponse } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
-import { TestDataApiResponse } from './basicRowFunctionality.spec';
+
 import { set } from '../../set';
 
 @Entity('testServerMethodOnEntity')

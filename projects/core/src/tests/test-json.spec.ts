@@ -1,4 +1,4 @@
-import { Done } from './testHelper.spec';
+import { Done, TestDataApiResponse } from './testHelper.spec';
 import { Remult } from '../context';
 
 import { JsonDataProvider } from '../data-providers/json-data-provider';
@@ -7,7 +7,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { IdEntity } from '../id-entity';
 
 import { DataApi } from '../data-api';
-import { TestDataApiResponse } from './basicRowFunctionality.spec';
+
 import { Categories as newCategories } from './remult-3-entities';
 import { Field, Entity, EntityBase, IntegerField } from '../remult3';
 
