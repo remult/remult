@@ -64,6 +64,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 # more to remult repo
+[] copy readme to npm bundle
+[] mark remult/core as deprecated
 []code samples
 []real world anguar
 []real world react
