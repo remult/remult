@@ -7,7 +7,7 @@
     "ng-serve-noam-ip-10.0.0.6": "ng serve --port 4201 --host 10.0.0.6",
     "test": "cd projects/test-angular && ng test core",
     "build": "npm run core-build && npm run remult-angular-build ",
-    "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/remult",
+    "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles readme.md dist/remult",
     "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next && cd.. ",
     "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
