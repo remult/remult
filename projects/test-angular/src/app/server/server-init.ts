@@ -7,7 +7,7 @@ import * as passwordHash from 'password-hash';
 
 
 import { Remult, EntityOptions, SqlDatabase } from 'remult';
-import { ClassType } from '../../../projects/core/classType';
+
 
 
 

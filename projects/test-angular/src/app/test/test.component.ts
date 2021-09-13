@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { async } from '@angular/core/testing';
-import { DataAreaSettings } from '../../../projects/angular';
+import { DataAreaSettings } from '@remult/angular';
 
-import { Field, getFields, ValueListFieldType } from '../../../projects/core';
+import { Field, getFields, ValueListFieldType } from 'remult';
 
 
 

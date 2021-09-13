@@ -6,8 +6,8 @@ import { AppComponent } from './app.component';
 import { RemultModule } from '@remult/angular';
 import { FormsModule } from '@angular/forms';
 
-import {DialogService} from '../../projects/angular/schematics/hello/files/src/app/common/dialog';
-import {YesNoQuestionComponent} from '../../projects/angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
+import {DialogService} from '../../../angular/schematics/hello/files/src/app/common/dialog';
+import {YesNoQuestionComponent} from '../../../angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 //import { InputAreaComponent } from '../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
 
 import { MatSidenavModule } from '@angular/material/sidenav';

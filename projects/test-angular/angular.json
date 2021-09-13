@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "$schema": "../../node_modules/@angular/cli/lib/config/schema.json",
   "cli": {
     "analytics": false
   },
@@ -20,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/radweb-app",
+            "outputPath": "../../dist/radweb-app",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -31,7 +31,7 @@
             ],
             "styles": [
               "src/styles.scss",
-              "./projects/angular/input-styles.scss"
+              "../../projects/angular/input-styles.scss"
             ],
             "scripts": []
           },
@@ -140,47 +140,47 @@
       }
     },
     "core": {
-      "root": "projects/core",
-      "sourceRoot": "projects/core/src",
+      "root": "../../projects/core",
+      "sourceRoot": "../../projects/core/src",
       "projectType": "library",
       "architect": {
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/core/src/test.ts",
-            "tsConfig": "projects/core/tsconfig.spec.json",
-            "karmaConfig": "projects/core/karma.conf.js"
+            "main": "../../projects/core/src/test.ts",
+            "tsConfig": "../../projects/core/tsconfig.spec.json",
+            "karmaConfig": "../../projects/core/karma.conf.js"
           }
         }
       },
     },
     "angular": {
-      "root": "projects/angular",
-      "sourceRoot": "projects/angular/src",
+      "root": "../../projects/angular",
+      "sourceRoot": "../../projects/angular/src",
       "projectType": "library",
       "prefix": "rw",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/angular/tsconfig.lib.json",
-            "project": "projects/angular/ng-package.json"
+            "tsConfig": "../../projects/angular/tsconfig.lib.json",
+            "project": "../../projects/angular/ng-package.json"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/angular/src/test.ts",
-            "tsConfig": "projects/angular/tsconfig.spec.json",
-            "karmaConfig": "projects/angular/karma.conf.js"
+            "main": "../../projects/angular/src/test.ts",
+            "tsConfig": "../../projects/angular/tsconfig.spec.json",
+            "karmaConfig": "../../projects/angular/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/angular/tsconfig.lib.json",
-              "projects/angular/tsconfig.spec.json"
+              "../../projects/angular/tsconfig.lib.json",
+              "../../projects/angular/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"

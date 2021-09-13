@@ -1,8 +1,6 @@
 # Entity
 ## id
 ## dbAutoIncrementId
-## key
-A unique identifier that represents this entity, it'll also be used as the api route for this entity.
 ## dbName
 The name of the table in the database that holds the data for this entity.
 If no name is set, the `key` will be used instead.
@@ -30,17 +28,16 @@ Determines if this entity can be updated through the api.
 [allowed](http://remult.github.io/guide/allowed.html)
 ## allowApiCrud
 sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
-## apiDataFilter
+## apiPrefilter
 A filter that determines which rows can be queries using the api.
 ## apiRequireId
-## fixedFilter
+## backendPrefilter
 A filter that will be used for all queries from this entity both from the API and from within the server.
 ### example
 ```ts
 fixedWhereFilter: () => this.archive.isEqualTo(false)
 ```
 
-## customFilterBuilder
 ## defaultOrderBy
 An order by to be used, in case no order by was specified
 ### example

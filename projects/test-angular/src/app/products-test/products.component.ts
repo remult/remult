@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod, getFields } from 'remult';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
 import { DataAreaSettings, DataControl } from '@remult/angular';
-import { DateOnlyField, getFields } from '../../../projects/core/src/remult3';
+
 
 
 

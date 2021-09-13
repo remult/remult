@@ -1,5 +1,5 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
-let moduleLoader = new CustomModuleLoader('/dist-server/projects');
+let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import * as express from 'express';
 import * as cors from 'cors';
 import { initExpress } from 'remult/server';
@@ -13,13 +13,6 @@ import { preparePostgresQueueStorage } from 'remult/postgres';
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import { Remult, Field, FieldMetadata, FieldsMetadata, Filter, Repository } from '../../../projects/core';
-import { Products } from '../products-test/products';
-
-import { isJSDocTypedefTag } from 'typescript';
-import { ClassType } from 'remult/classType';
-import { } from 'remult';
-import { Injectable } from '@angular/core';
 
 
 

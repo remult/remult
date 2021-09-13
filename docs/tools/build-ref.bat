@@ -1,4 +1,6 @@
-call xcopy projects\core\*.* dist\generate\*.* /s /Y
+call xcopy ..\..\projects\core\*.* ..\..\dist\generate\*.* /s /Y
+cd ..
+cd ..
 cd dist
 cd generate
 rem call npm i typescript typedoc

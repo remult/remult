@@ -215,6 +215,17 @@
             ],
             "label": "npm: publish-as-next",
             "detail": "npm run build && npm run patch-versions && npm run build && cd dist/core && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next && cd.. "
+        },
+        {
+            "type": "npm",
+            "script": "build-server-watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "group": "build",
+            "label": "npm: build-server-watch",
+            "detail": "tsc -p projects/test-angular/tsconfig.server.json --watch",
+            "isBackground": true
         }
     ]
 }

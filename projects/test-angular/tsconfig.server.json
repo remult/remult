@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist-server/",
+    "outDir": "../../dist/test-angular",
     "module": "commonjs",
     "skipLibCheck": true,
     "stripInternal": true,

@@ -6,11 +6,11 @@ import { BackendMethod, Remult,    UserInfo } from 'remult';
 
 
 import { openDialog, RouteHelperService } from '@remult/angular';
-import { DialogService } from '../../projects/angular/schematics/hello/files/src/app/common/dialog';
-import { InputAreaComponent } from '../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
+import { DialogService } from '../../../angular/schematics/hello/files/src/app/common/dialog';
+
 //import { PasswordColumn, Users } from '../../projects/angular/schematics/hello/files/src/app/users/users';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { Roles } from '../../docs/docs-code/users/roles';
+
 
 
 
