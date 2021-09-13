@@ -1,6 +1,6 @@
 {
   "name": "remult",
-  "version": "1.0.16",
+  "version": "0.3.3",
   "scripts": {
     "ng": "ng",
     "ng-serve": "cd projects/test-angular && ng serve --port 4201",
@@ -8,16 +8,17 @@
     "test": "cd projects/test-angular && ng test core",
     "build": "npm run core-build && npm run remult-angular-build ",
     "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/remult",
-    "publish-as-next": "npm run build && npm run patch-versions && npm run build && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next && cd.. ",
-    "release": "npm run build && npm run patch-versions && npm run build && cd dist/remult && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
-    "patch-versions": "cd projects/core && npm version patch && cd.. && cd angular && npm version patch && cd..",
+    "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next && cd.. ",
+    "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
+    "patch-versions": " npm version patch -m \"release %s\" && npm run update-versions",
+    "update-versions": "ts-node --project projects/test-angular/tsconfig.server.json ./tools/update-versions.ts",
     "node-serve": "./node_modules/.bin/tsc-watch -p projects/test-angular/tsconfig.server.json --onSuccess \"npm run server:dev-run",
     "build-server-watch": "tsc -p projects/test-angular/tsconfig.server.json --watch",
     "server:dev-run": "node --inspect dist/test-angular/test-angular/src/app/server/server.js",
     "docs": "cd docs && npm run dev",
     "build-docs": "cd docs && npm run build",
     "release-docs": "cd docs && npm run publish",
-    "remult-angular-build": "copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V angular.json dist/build-angular && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/remult/** dist/build-angular/node_modules && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles ",
+    "remult-angular-build": "copyfiles -V  -a projects/angular/** dist/build-angular && copyfiles -V dist/build-angular/projects/angular/angular.json dist/build-angular -u 4 && copyfiles -V tsconfig.json dist/build-angular && copyfiles -V -u 1 dist/remult/** dist/build-angular/node_modules && cd dist/build-angular &&  ng build angular && cd.. && cd.. && npm run schemas:build && npm run copy:styles ",
     "build-ref-ts": "ts-node --project projects/test-angular/tsconfig.server.json ./docs/tools/docs-work.ts",
     "build-ref": "cd docs/tools && build-ref.bat",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
@@ -26,7 +27,6 @@
     "schemas:copy:files": "copyfiles -a -p -V -u 2 projects/angular/schematics/*/files/** dist/angular/",
     "schemas:copy:collection": "copyfiles -V -u 3 projects/angular/schematics/collection.json dist/angular/schematics/",
     "postschemas:build": "npm run schemas:copy:schemas && npm run schemas:copy:files && npm run schemas:copy:collection"
-    
   },
   "private": true,
   "dependencies": {

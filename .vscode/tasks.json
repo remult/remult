@@ -226,6 +226,15 @@
             "label": "npm: build-server-watch",
             "detail": "tsc -p projects/test-angular/tsconfig.server.json --watch",
             "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "update-versions",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "label": "npm: update-versions",
+            "detail": "ts-node --project projects/test-angular/tsconfig.server.json ./tools/update-versions.ts"
         }
     ]
 }
