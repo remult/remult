@@ -119,7 +119,7 @@ export function hello(_options: Schema): Rule {
       json.scripts.start = "node dist/server/server/";
       json.dependencies["dotenv"] = "^8.1.0";
       json.dependencies["password-hash"] = "^1.2.2";
-      json.dependencies["remult"] = "^0.3.2";
+      json.dependencies["remult"] = json.dependencies["@remult/angular"];
       json.dependencies["pg"] = "^8.3.0";
       json.dependencies["helmet"] = "^4.6.0";
       json.dependencies["jsonwebtoken"] = "^8.5.1";
