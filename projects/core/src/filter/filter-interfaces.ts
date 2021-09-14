@@ -68,12 +68,11 @@ export class Filter {
         let f = new customTranslator(async custom => {
             let r: Filter[] = [];
             for (const key in entity.entityType) {
-                if (Object.prototype.hasOwnProperty.call(entity.entityType, key)) {
-                    const element = entity.entityType[key] as customFilterInfo<any>;
-                    if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
-                        if (custom[element.customFilterInfo.key]) {
-                            r.push(await Filter.fromEntityFilter(filterFactories, f => element.customFilterInfo.customFilterTranslator(f, remult, custom[element.customFilterInfo.key])));
-                        }
+
+                const element = entity.entityType[key] as customFilterInfo<any>;
+                if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
+                    if (custom[element.customFilterInfo.key]) {
+                        r.push(await Filter.fromEntityFilter(filterFactories, f => element.customFilterInfo.customFilterTranslator(f, remult, custom[element.customFilterInfo.key])));
                     }
                 }
             }

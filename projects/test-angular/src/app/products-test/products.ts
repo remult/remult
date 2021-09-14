@@ -45,6 +45,7 @@ export class Products extends IdEntity {
   availableTo: Date;
   @Field()
   archive: boolean;
+  static filter = Filter.createCustom<Products>(p => p.name.isEqualTo("a"));
 
   @BackendMethod({ allowed: true })
   async doit() {

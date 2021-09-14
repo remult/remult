@@ -1,4 +1,4 @@
-import { Done, TestDataApiResponse } from './testHelper.spec';
+import { Done, testAllDataProviders, TestDataApiResponse, testRestDb, testSql } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
@@ -77,14 +77,45 @@ describe("custom filter", () => {
         expect(await (c.count(e => entityForCustomFilter.filter({ oneAndThree: true }))))
             .toBe(2);
     });
-    it("test that it works", async () => {
+    it("works with serialize filter", async () => {
+        let z = entityForCustomFilter.oneAndThree();
+        let js = z.toJson();
         let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
-        for (let id = 0; id < 5; id++) {
-            await c.create({ id }).save();
-        }
-        expect(await (c.count(e => entityForCustomFilter.oneAndThree()))).toBe(2);
-        expect((await (c.findFirst(e => entityForCustomFilter.testNumericValue(2)))).id).toBe(2);
-        expect((await (c.findFirst(e => entityForCustomFilter.testObjectValue({ val: 2 })))).id).toBe(2);
+
+        let json = (await Filter.fromEntityFilter(Filter.createFilterFactories(c.metadata), () => entityForCustomFilter.oneAndThree())).toJson();
+
+        expect(json).toEqual({
+            _$custom: {
+                oneAndThree: {}
+            }
+        });
+        let json3 = Filter.fromJson(c.metadata, json).toJson();
+        expect(json3).toEqual(json);
+    })
+    it("test that it works", () => {
+        testAllDataProviders(async dp => {
+
+            let c = new Remult().repo(entityForCustomFilter, dp);
+            for (let id = 0; id < 5; id++) {
+                await c.create({ id }).save();
+            }
+            expect(await (c.count(e => entityForCustomFilter.oneAndThree()))).toBe(2);
+            expect((await (c.findFirst(e => entityForCustomFilter.testNumericValue(2)))).id).toBe(2);
+            expect((await (c.findFirst(e => entityForCustomFilter.testObjectValue({ val: 2 })))).id).toBe(2);
+        })
+
+    });
+    it("test that it works with inheritance", () => {
+        testAllDataProviders(async dp => {
+
+            let c = new Remult().repo(entityForCustomFilter1, dp);
+            for (let id = 0; id < 5; id++) {
+                await c.create({ id }).save();
+            }
+            expect(await (c.count(e => entityForCustomFilter1.oneAndThree()))).toBe(2);
+            expect((await (c.findFirst(e => entityForCustomFilter1.testNumericValue(2)))).id).toBe(2);
+            expect((await (c.findFirst(e => entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
+        })
 
     });
     it("test that it works with sql", async () => {
@@ -285,7 +316,7 @@ describe("custom filter", () => {
 });
 
 
-@Entity('entityForCustomFilter')
+@Entity('entityForCustomFilter', { allowApiCrud: true })
 class entityForCustomFilter extends EntityBase {
     @Field()
     id: number;
@@ -310,6 +341,10 @@ class entityForCustomFilter extends EntityBase {
     static oneAndThree = Filter.createCustom<entityForCustomFilter>((e) => e.id.isIn([1, 3]));
     static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => e.id.isEqualTo(val));
     static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((e, r, val) => e.id.isEqualTo(val.val));
+}
+@Entity('entityForCustomFilter1', { allowApiCrud: true })
+class entityForCustomFilter1 extends entityForCustomFilter {
+
 }
 
 declare type Draft<T> = WritableDraft<T>;

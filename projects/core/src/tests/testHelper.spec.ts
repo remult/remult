@@ -141,7 +141,7 @@ function urlToReq(url: string) {
       if (!p)
         continue;
       let z = p.split('=');
-      let key = z[0];
+      let key = decodeURIComponent(z[0]);
       let value = decodeURIComponent(z[1]);
       let x = args.get(key);
       if (x === undefined) {

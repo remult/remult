@@ -84,8 +84,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
         url.add('_limit', options.limit);
       if (options.page)
         url.add('_page', options.page);
-      if (options.__customFindData)
-        url.addObject(options.__customFindData);
+      
     }
     if (filterObject) {
       url.add("__action", "get");

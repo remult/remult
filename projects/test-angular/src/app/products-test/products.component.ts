@@ -47,6 +47,7 @@ export class ProductsComponent implements OnInit {
   products = new GridSettings(this.remult.repo(Products), {
     allowCrud: true,
     allowSelection: true,
+    where:()=>Products.filter(),
     columnSettings: p => [
       p.name,
       { field: p.categoryCode, valueList: async () => [{ id: 1, caption: 'abc' }, { id: 2, caption: 'def' }] }

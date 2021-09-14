@@ -21,7 +21,6 @@ export interface EntityDataProviderFindOptions {
   limit?: number;
   page?: number;
   orderBy?: Sort;
-  __customFindData?: any;
 }
 export interface RestDataProviderHttpProvider {
   post(url: string, data: any): Promise<any>;
