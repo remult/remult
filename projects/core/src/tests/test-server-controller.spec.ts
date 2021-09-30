@@ -121,7 +121,7 @@ describe("test Server Controller basics", () => {
             await testBasics.syntaxError();
         }
         catch (err) {
-            expect(err.message).toBe("Cannot read property 'toString' of undefined")
+            expect(err.message).toContain("Cannot read prop")
         }
     });
     it("test error server method", async () => {
@@ -129,7 +129,7 @@ describe("test Server Controller basics", () => {
             await new testBasics(c).syntaxError();
         }
         catch (err) {
-            expect(err.message).toBe("Cannot read property 'toString' of undefined")
+            expect(err.message).toContain("Cannot read prop")
         }
     });
     it("send entity to server ", async () => {

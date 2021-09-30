@@ -1159,7 +1159,7 @@ describe("data api", () => {
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
-      expect(data.message).toBe("Cannot read property 'length' of undefined");
+      expect(data.message).toContain("Cannot read prop");
       d.ok();
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
