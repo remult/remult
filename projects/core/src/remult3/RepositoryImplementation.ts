@@ -1180,7 +1180,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
 
 
-export function FieldType<valueType = any>(...options: OptionsFactory<FieldOptions<any, valueType>>) {
+export function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]) {
     return target => {
         if (!options) {
             options = [];
@@ -1192,25 +1192,25 @@ export function FieldType<valueType = any>(...options: OptionsFactory<FieldOptio
     }
 
 }
-export function DateOnlyField<entityType = any>(...options: OptionsFactory<FieldOptions<entityType, Date>>) {
+export function DateOnlyField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
     return Field({
         valueConverter: DateOnlyValueConverter
     }, ...options);
 }
-export function IntegerField<entityType = any>(...options: OptionsFactory<FieldOptions<entityType, Number>>) {
+export function IntegerField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
     return Field({
         valueType: Number,
         valueConverter: IntegerValueConverter
     }, ...options)
 }
-export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(type: ClassType<valueType>, ...options: OptionsFactory<FieldOptions<entityType, valueType>>) {
+export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(type: ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return FieldType<valueType>({
         valueConverter: new ValueListValueConverter(type),
         displayValue: (item, val) => val.caption
     }, ...options)
 }
 
-export function Field<entityType = any, valueType = any>(...options: OptionsFactory<FieldOptions<entityType, valueType>>) {
+export function Field<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
 
 
 
@@ -1259,7 +1259,7 @@ export function Field<entityType = any, valueType = any>(...options: OptionsFact
 
 }
 const storableMember = Symbol("storableMember");
-function buildOptions<entityType = any, valueType = any>(options: OptionsFactory<FieldOptions<entityType, valueType>>, remult: Remult) {
+function buildOptions<entityType = any, valueType = any>(options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[], remult: Remult) {
     let r = {} as FieldOptions<entityType, valueType>;
     for (const o of options) {
         if (o) {
@@ -1353,8 +1353,8 @@ interface columnInfo {
     settings: (remult: Remult) => FieldOptions
 
 }
-export type OptionsFactory<optionsType> = (optionsType | ((options: optionsType, remult: Remult) => void))[];
-export function Entity<entityType>(key: string, ...options: OptionsFactory<EntityOptions<entityType>>) {
+
+export function Entity<entityType>(key: string, ...options: (EntityOptions | ((options: EntityOptions, remult: Remult) => void))[]) {
 
     return target => {
         for (const customFilterMember in target) {

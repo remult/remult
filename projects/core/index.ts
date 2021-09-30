@@ -11,7 +11,6 @@ export {
     EntityMetadata,
     EntityOrderBy,
     EntityFilter,
-    OptionsFactory,
     FindOptions,
     IterableResult,
     IterateOptions,
