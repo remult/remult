@@ -64,8 +64,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 # more to remult repo
-[] copy readme to npm bundle
-[] mark remult/core as deprecated
+[V] copy readme to npm bundle
+[V] mark remult/core as deprecated
 []code samples
 []real world anguar
 []real world react
@@ -73,11 +73,12 @@ import { entityEventListener } from "../__EntityValueProvider";
 []todo react
 []bezkoder react
 []bekoder vue
+[] remove options factory
 
 
 [] upgrade all satelite projects to latest remult
 [] upgrade northwind to latest remult
-[] change structure of remult projects - to include projects/core projects/test-angular and under it, everything.
+[V] change structure of remult projects - to include projects/core projects/test-angular and under it, everything.
 
 
 ## review with yoni
@@ -229,6 +230,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## remult angular future
 [] change the getValue - to  displayValue
 [] change the input type to support code+value, displayValueOnly
+[V] boolean didn't display by default as checkbox on grid.
+[] without knowing the types  - it doesn't use the display value or get value - see date without experimental meta data
 
 
 
