@@ -204,7 +204,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                             return { value: <entityType>undefined, done: true };
                         } else {
                             if (prev?.length > 0) {
-                                if (JSON.stringify(prev[0]) == JSON.stringify(items[0]))
+                                if (cont.getEntityRef(prev[0]).getId() == cont.getEntityRef(items[0]).getId())
                                     throw new Error("Iterate failure, returned same first row");
                             }
                             nextPageFilter = await self.createAfterFilter(opts.orderBy, items[items.length - 1]);
