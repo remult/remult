@@ -12,57 +12,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 /*
-## Should work
-
 
 
 ## TODO
-
-[V] remove recursive types with array (Where etc...) Type instantiation is excessively deep and possibly infinite.Vetur(2589) - same problem we had before, now happens with vue.
-
-[V] introduce the context based factory for EntityOptions and FieldOptions
-    @Entity({},(o,c)=>{
-        o.
-    })
-[V] remove info about request from context
-[V] remove backend member from context and create isBackend method.
-[V] change remult.repo to remult.repo
-[V] api find array should load nothing :) (check server methods)
-[V] isnull should be valueIsNull, and originalValueIsNull
-[V] valueChanged instead of was changed.
-[V] reconsider update should only put fields that have changed (also to sql), it makes debugging so much easier.
-[V] consider exclude a table from table creation - add sql expression to entity options and don't create these tables.
-[V] talk about the case where postgres created a remult, to build the database - and it didn't have our special methods created in init remult, - send context for  create all entities
-[V] fix readonly checkbox on grid.
-[V]  checkbox shouldn't display text true false on grid
-[V] rename AuthenticatedInGuard and not signed in guard
-[V] insert filter into the grid button
-[V] @ExcludeEntityFromApi()
-    [V] require key in entity function parameters, instead of a mandatory key member
-    [V] let myRoute = api(contextForRouteExtraction).getRoute();
-    [V] first parameter should be key
-[V] remove entity where item
-[V] translateWhereToFilter and toItem - change to To Entity Where that can get a single or array of where and returns a function that gets fitlerfactories and returns a singular Filter
-[] merge security pull requests
-[]     app.use(
-        helmet({
-            contentSecurityPolicy: false,
-        })
-    );
-[V] rename Filter function to use filter and entity etc...
-[V] Filter.createCustom
-[V] fromEntityFilter
-
-
-
-
-[] add id lookup in remult angular
-[] insert the column selection into the grid button.
-[V] change grid button icon to something else
-
-[] test why date is equal to null - didn't work
-
-
 # more to remult repo
 [V] copy readme to npm bundle
 [V] mark remult/core as deprecated
@@ -73,44 +25,12 @@ import { entityEventListener } from "../__EntityValueProvider";
 []todo react
 []bezkoder react
 []bekoder vue
-[] remove options factory
+[V] remove options factory
 
 
 [] upgrade all satelite projects to latest remult
 [] upgrade northwind to latest remult
 [V] change structure of remult projects - to include projects/core projects/test-angular and under it, everything.
-
-
-## review with yoni
-[V] Filter.toItem, EntityWhereItem, EntityWhere, AllowedItem,Allowed
-* maybe not do the array stuff, and instead do a Filter Join to build an array, that way to filter itself stays simple - just a method call
-[V] fixedFilter => where
-[V] apiDataFitler => apiWhere
-
-
-
-
-
-[V] consider the different wheres of an entity, to see where it takes us.
-[V] reconsider custom part in filter, to include the entity key - to prevent conflicts - rethink the custom interface.
-[V] The solution I've found for find id. consider the previous functionality of being aware of the id column type of the entity, to allow a short id lookup
-
-[V] when changing the default number to be full number - started getting these errors: Failed: could not prepare statement (1 AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY) and had to use @IntegerField for it
-
-[] reconsider input value as id - it causes an  update that then reads from the server again - which causes problems sometime :)
-
-
-[V] restricted id to be number or string
-
-
-[V] should find id accept null or undefined - or should it throw an exception?
-[V] consider making db name awaitable - since it may rely on an sql that relies on an awaitable promise where
-
-
-
-
-
-
 
 
 
@@ -121,7 +41,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] Docs
     [] rewrite readme.md > Entities + CRUD, BackendMethods, Authorization
-        [] make sure readme is updated in npmjs.com
+        [V] make sure readme is updated in npmjs.com
     [] getting started > npm i, connect to db, initExpress, init frontend
     [] Tutorials > Angular,React,Vue
     [] API reference in Docs
@@ -134,48 +54,22 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
-
-
-
-[V] included display value and input type also in value converter - ias it is relevant to date only, and also value list
-[V] add code that entity relation can be tested for null - and it'll not perform fetch.
-[V] talk about familyDeliveries.$.courier.hasValue - to see if it was set without loading the row
-
-
-[V] should save, undo changes and reload load all non lazy fields or based on the load in the original query?
-
-
-[V] reconsider isSignedIn
-
-
-
-
-[V] reconsider all the where stuff - just search references for AndFilter to see the problem
-
-
-
-[] talk about allow null for date, object types, etc...
+[] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
+[] consider adding an overload to save that gets an object and does object assign
+[] consider using db default null for fields - or only non literal fields.
+[] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 [] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
 
 
 
 
 []c.defs.valueConverter !== DateOnlyValueConverter
-[] dependency injection for decorator
-[] current user in any app - not simple enough.
+
+
 
 
 
 ## context related:
-[] entity allowed gets entity as second parameter, because allowed always get the context as first parameter
-[] rename context to remult
-[] with regards to the context init and setting the different things - maybe we should add an option to fail there and fail the request - for example in case the user info was updated since the last token was given and he has no rights any more etc...
-[] consider the case when initing remult, and cashing rows between requests, you might get a save to a context of a request two hours ago.
-[] custom context 
-[] consider the name FilterFactories to be EntityFilterFactories
-[] add to entity options a lambda that gets context and returns data provider.
-[] consider an option of running it all in the browser, for the development start, just like weve done with the json database
-
 
 ## things that came up during react:
 [] talk about invoking client side validation
@@ -183,30 +77,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
 
 
-
-
-## compound id column
-[V] "compound id"
-[V] reconsider the IdColumn member - might make sense to remove it
-[] sql database, update of row where id is not named id is compromised
-[] consider DbAutoIncrement to decorator
-[] reconsider idColumn - maybe internalize it.
-[] rethink compoundid and idmetadata to encapsulate some of the ugliness of ids.
-
-
-
-
-
-    
-
-## consider if needed
-
-
-
-[] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
-
-
-
+## Angular:
+[] add id lookup in remult angular
+[] insert the column selection into the grid button.
+[] test why date is equal to null - didn't work
 
 
 
