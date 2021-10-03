@@ -110,15 +110,17 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
 
     }
     isLessThan(val: any): Filter {
+        val = this.processVal(val);
         return new Filter(add => add.isLessThan(this.metadata, val));
     }
     isGreaterOrEqualTo(val: any): Filter {
+        val = this.processVal(val);
         return new Filter(add => add.isGreaterOrEqualTo(this.metadata, val));
     }
     isNotIn(values: any[]): Filter {
         return new Filter(add => {
             for (const v of values) {
-                add.isDifferentFrom(this.metadata, v);
+                add.isDifferentFrom(this.metadata, this.processVal(v));
             }
         });
     }
@@ -129,9 +131,11 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
         return new Filter(add => add.isDifferentFrom(this.metadata, val));
     }
     isLessOrEqualTo(val: any): Filter {
+        val = this.processVal(val);
         return new Filter(add => add.isLessOrEqualTo(this.metadata, val));
     }
     isGreaterThan(val: any): Filter {
+        val = this.processVal(val);
         return new Filter(add => add.isGreaterThan(this.metadata, val));
     }
     isEqualTo(val: any): Filter {

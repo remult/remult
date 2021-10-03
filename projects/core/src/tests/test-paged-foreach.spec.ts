@@ -8,6 +8,8 @@ import { FieldMetadata } from '../column-interfaces';
 import { Sort } from '../sort';
 import { CompoundIdField } from '../column';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
+import { testAllDataProviders, testInMemoryDb, testRestDb, testSql } from './testHelper.spec';
+import { SqlDatabase } from '../..';
 
 
 describe("test paged foreach ", () => {
@@ -151,7 +153,7 @@ describe("test paged foreach ", () => {
         e.b = 'b';
         e.c = 'c';
         async function test(orderBy: EntityOrderBy<theTable>, expectedWhere: EntityFilter<theTable>) {
-            expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, eDefs.createAfterFilter(orderBy, e)))).toEqual(
+            expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, await eDefs.createAfterFilter(orderBy, e)))).toEqual(
                 JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere)));
         }
         test(x => x.a, x => x.a.isGreaterThan('a'));
@@ -169,7 +171,7 @@ describe("test paged foreach ", () => {
         e.b = 'b';
         e.c = 'c';
 
-        let f = eDefs.createAfterFilter(x => [x.a, x.b], e);
+        let f = await eDefs.createAfterFilter(x => [x.a, x.b], e);
         e.a = '1';
         e.b = '2';
         expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
@@ -216,6 +218,35 @@ describe("test paged foreach ", () => {
 
 
     });
+    it("test paging with complex object", () => testAllDataProviders(async db => {
+        
+        let r = new Remult();
+        r.setDataProvider(db);
+        let c1 = await r.repo(c).create({ id: 1, name: 'c1' }).save();
+        let c2 = await r.repo(c).create({ id: 2, name: 'c2' }).save();
+        let c3 = await r.repo(c).create({ id: 3, name: 'c3' }).save();
+
+        await r.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
+        await r.repo(p).create({ id: 2, name: 'p2', c: c2 }).save();
+        await r.repo(p).create({ id: 3, name: 'p3', c: c3 }).save();
+        await r.repo(p).create({ id: 4, name: 'p4', c: c3 }).save();
+        await r.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
+        let i = 0;
+        for await (const x of r.repo(p).iterate({
+            orderBy: p => [p.c, p.id]
+        })) {
+            i++;
+        }
+        expect(i).toBe(5);
+    }))
+    it("test paging with complex object_2", () => testAllDataProviders(async db => {
+        let r = new Remult();
+        r.setDataProvider(db);
+        let c1 = await r.repo(c).create({ id: 1, name: 'c1' }).save();
+
+        await r.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
+        expect((await r.repo(p).findFirst({ where: x => x.c.isEqualTo(c1) })).id).toBe(1);
+    }))
 })
 
 @Entity<theTable>('', {
@@ -228,4 +259,27 @@ class theTable extends EntityBase {
     b: string;
     @Field()
     c: string;
+}
+
+@Entity('c', { allowApiCrud: true })
+class c extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    name: string;
+    constructor(private remult: Remult) {
+        super();
+    }
+}
+@Entity('p', { allowApiCrud: true })
+class p extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    name: string;
+    @Field()
+    c: c;
+    constructor(private remult: Remult) {
+        super();
+    }
 }

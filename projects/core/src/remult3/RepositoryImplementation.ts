@@ -12,29 +12,41 @@ import { Sort } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
+import { filterHelper } from "../filter/filter-interfaces";
+
 
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
-    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): EntityFilter<entityType> {
+    async createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>> {
         let values = new Map<string, any>();
 
         for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
-            values.set(s.field.key, lastRow[s.field.key]);
+            let existingVal = lastRow[s.field.key];
+            // if (typeof existingVal !== "string" && typeof existingVal !== "number") {
+            // }
+            // else {
+            //     let ei = getEntitySettings(s.field.valueType, false);
+            //     if (ei) {
+            //         existingVal = await this.remult.repo(s.field.valueType).findId(existingVal);
+            //     }
+            // }
+            values.set(s.field.key, existingVal);
         }
         return x => {
             let r: Filter = undefined;
             let equalToColumn: FieldMetadata[] = [];
             for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
+                let ff = new filterHelper(s.field);
                 let f: Filter;
                 for (const c of equalToColumn) {
-                    f = new AndFilter(f, new Filter(x => x.isEqualTo(c, values.get(c.key))));
+                    f = new AndFilter(f, new filterHelper(c).isEqualTo(values.get(c.key)));
                 }
                 equalToColumn.push(s.field);
                 if (s.isDescending) {
-                    f = new AndFilter(f, new Filter(x => x.isLessThan(s.field, values.get(s.field.key))));
+                    f = new AndFilter(f, ff.isLessThan(values.get(s.field.key)));
                 }
                 else
-                    f = new AndFilter(f, new Filter(x => x.isGreaterThan(s.field, values.get(s.field.key))));
+                    f = new AndFilter(f, ff.isGreaterThan(values.get(s.field.key)));
                 r = new OrFilter(r, f);
             }
             return r;
@@ -180,6 +192,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                     if (items === undefined || itemIndex == items.length) {
                         if (items && items.length < pageSize)
                             return { value: <entityType>undefined, done: true };
+                        let prev = items;
                         items = await cont.find({
                             where: y => Filter.fromEntityFilter(y, opts.where, nextPageFilter),
                             orderBy: opts.orderBy,
@@ -190,7 +203,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                         if (items.length == 0) {
                             return { value: <entityType>undefined, done: true };
                         } else {
-                            nextPageFilter = self.createAfterFilter(opts.orderBy, items[items.length - 1]);
+                            if (prev?.length > 0) {
+                                if (JSON.stringify(prev[0]) == JSON.stringify(items[0]))
+                                    throw new Error("Iterate failure, returned same first row");
+                            }
+                            nextPageFilter = await self.createAfterFilter(opts.orderBy, items[items.length - 1]);
                         }
 
                     }
