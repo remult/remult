@@ -1371,7 +1371,7 @@ interface columnInfo {
 
 }
 
-export function Entity<entityType>(key: string, ...options: (EntityOptions | ((options: EntityOptions, remult: Remult) => void))[]) {
+export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 
     return target => {
         for (const customFilterMember in target) {
