@@ -13,6 +13,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
+import { set } from "../../set";
 
 
 
@@ -1429,6 +1430,10 @@ export function Entity<entityType>(key: string, ...options: (EntityOptions<entit
 export class EntityBase {
     get _(): EntityRef<this> { return getEntityRef(this) }
     save() { return this._.save(); }
+    assign(values: Partial<this>) {
+        set(this, values);
+        return this;
+    }
     delete() { return this._.delete(); }
     isNew() { return this._.isNew(); }
     wasChanged() { return this._.wasChanged(); }

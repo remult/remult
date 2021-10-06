@@ -18,6 +18,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 # more to remult repo
 [V] copy readme to npm bundle
 [V] mark remult/core as deprecated
+[] test @remult/angular start with angular 12
+[] create starter todo angular, that's ready to start coding
+[] create starter todo react that's ready to start coding
+[] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
+[] consider using db default null for fields - or only non literal fields.
+[] rename set to assign
+
 []code samples
 []real world anguar
 []real world react
@@ -26,6 +33,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 []bezkoder react
 []bekoder vue
 [V] remove options factory
+[] add no tests to angular starter kit
+[] rethink why save when no changes are done it reloading
+
 
 
 [] upgrade all satelite projects to latest remult
@@ -54,9 +64,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
-[] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
-[] consider adding an overload to save that gets an object and does object assign
-[] consider using db default null for fields - or only non literal fields.
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 [] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
 
