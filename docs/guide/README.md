@@ -1,5 +1,17 @@
 # Introduction 
 
-Remult is an end to end library that handles both server and browser concerns. It was designed so that you can have a single code base that will run both in the browser and on the server, using the same classes and same writing style. IT's fully typed and allows for type checks even when you call the server.
+**Remult** is a full-stack web application framework which uses your Typescript model class structure and metadata to handle the flow of data all the way from your backend database to your frontend app, and vice versa. 
 
-We've written this basic guide that is designed for anyone with basic development skills - no angular background required.
+To do this, Remult provides the following core features:
+1. Mapping database-agnostic model-based CRUD operations to database commands (like an ORM)
+2. Automatically generating secured REST api routes for your Node backend
+3. Handling frontend model-based queries and updates by calling the backend api
+
+
+### Use the same model classes for both frontend and backend code
+With Remult it is simple to keep your code DRY and increase development speed and maintainability by defining a single Typescript model class (for each domain object) and sharing it between your frontend and backend code. 
+
+As Remult is "aware" of the runtime context (frontend or backend), data validations and entity lifecycle hooks can be written in layer-agnostic Typescript which will run, as needed, on either the frontend, the backend, or both.
+
+# Getting Started
+Get started with Remult by following this [tutorial](./tutorial-angular.md).
