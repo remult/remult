@@ -23,6 +23,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] create starter todo react that's ready to start coding
 [] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
 [] consider using db default null for fields - or only non literal fields.
+[] remove reload on save with no changes
 [] rename set to assign
 
 []code samples
