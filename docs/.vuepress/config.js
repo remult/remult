@@ -34,6 +34,10 @@ module.exports = {
     lastUpdated: false,
     nav: [
       {
+        text: 'Tutorials',
+        link: '/tutorials/',
+      },
+      {
         text: 'Guide',
         link: '/guide/',
       }/*,
@@ -49,65 +53,33 @@ module.exports = {
     sidebar: {
       '/guide/': [
         {
-          title: 'Guide',
+          title: 'Getting Started',
           collapsable: false,
           children: [
-            '',
-            '05-Installing-a-Dev-Machine',
-            '10-Creating-a-new-Project',
-            '15-Running-the-Development-Environment',
-            '20-Hello-Angular',
-            '25-Adding-the-Products-Component',
-            '30-Adding the Products Entity',
+            '']
+        },
+        {
+          title: 'Tutorial',
+          collapsable: false,
+          children: [
+            'tutorial-angular']
+        },
+        {
+          title: 'API Reference',
+          collapsable: true,
+          children: [
+            'ref_entity',
+            'ref_field',
+            'ref_backendmethod',
+            'ref_repository',
+            'ref_entitywhere',
+            'ref_entityorderby'
 
-            //'40-Adding Validations',
-            //'45-Configuring the DataGrid and DataArea',
-            //'50-Settings Default Values for New Rows',
-            '55-Displaying the Products Entity using Custom Html',
-            //'60-Adding Product Categories',
-            //'65-Creating a CategoryId column type',
-            '70-Batch Operations',
-            '75-Moving Logic to the Server',
-            '80-Users and Security',
-            '85-Deployment',
-            {
-              title: 'Further Reading',
-              collapsable: true,
-              children: [
-                'architecture',
-                'dialog',
-                'entity',
-                'grid-settings-and-data-grid',
-                'allowed',
-                '81-Adding a new Role',
-                'using-server-only-packages',
-                'running-sql-on-the-server',
-                'rest-api',
-                'further-learning',
-                'using-postgres-on-your-dev-machine',
-                'VSCode-keyboard-shortcuts',
-                'setup-angular'
-              ]
-            },
-            {
-              title: 'Reference',
-              collapsable: true,
-              children: [
-                'ref_entity',
-                'ref_field',
-                'ref_backendmethod',
-                'ref_repository',
-                'ref_entitywhere',
-                'ref_entityorderby'
-
-
-              ]
-            }
 
           ]
         }
+
       ]
-      ,
     }
   },
 

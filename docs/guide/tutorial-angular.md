@@ -1,7 +1,9 @@
 # Todo App with Angular
-### Build a production ready task list app with Remult using Angular + Node
+### Build a production ready task list app with Remult using an Angular front-end
 
-In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node + Express for the API server, and Remult as our full stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
+In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node + Express for the API server, and Remult as our full-stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. 
+
+By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
 ### Prerequisites
 
@@ -36,7 +38,6 @@ npm i express remult
 npm i --save-dev @types/express
 ```
 #### The API server project
-
 The starter API server TypeScript project contains a single module which initializes `Express`, starts Remult and begins listening for API requests.
 
 In our development environment we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server.
@@ -105,7 +106,7 @@ The server is now running and listening on port 3002. `ts-node-dev` is watching 
 
 #### Proxy API requests from Webpack DevServer to Node and run the Angular app
 The Angular app created in this tutorial is intended to be served from the same domain as its API. 
-However, during development, the API server will be listening on `http://localhost:3002`, while the Angular app is served from `http://localhost:4200`. 
+However, for development, the API server will be listening on `http://localhost:3002`, while the Angular app is served from `http://localhost:4200`. 
 
 We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-server) feature of webpack dev server to divert all calls for `http://localhost:4200/api` to our dev API server.
 
@@ -129,7 +130,7 @@ We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-serve
    ```
 
    ::: warning Note
-   The `start` and `build` npm scripts created by Angular CLI will be modified in the [Deployment](#deployment) section of this tutorial to script that will `start` and `build` the full-stack app.
+   The existing `start` and `build` npm scripts created by Angular CLI will be modified in the [Deployment](#deployment) section of this tutorial to scripts that will `start` and `build` the full-stack app.
    :::
 
 3. Start the Angular app in a new terminal. **Don't stop the `dev-node` script. `dev-ng` and `dev-node` should be running concurrently.**
@@ -145,13 +146,15 @@ If you are using Visual Studio Code and would like to run both `dev-node` and `d
 :::
 
 #### Setting up an Angular DI Provider for Remult
-Our Angular starter project is almost ready. All that's left is to add a dependency injection provider for the `Remult` `Remult` object. The `Remult` object provided will be used to communicate with the API server.
+Our Angular starter project is almost ready. All that's left is to add a dependency injection provider for the front-end `Remult` object. The `Remult` object provided will be used to communicate with the API server.
 
 This requires making the following changes to `app.module.ts`:
 1. Import Angular's [HttpClientModule](https://angular.io/api/common/http/HttpClientModule)
 2. Add an Angular `provider` for the `Remult` object, which depends on Angular's `HttpClient` object
 
+::: warning Note
 While we're editing the root Angular module, we can also import the `FormsModule` which we'll need later in order to use the [ngModel](https://angular.io/api/forms/NgModel) two-way binding directive.
+:::
 
 *src/app/app.module.ts*
 ```ts{5-7,15-16,19}
@@ -180,10 +183,12 @@ import { Remult } from 'remult';
 export class AppModule { }
 ```
 
+### Setup completed
+At this point our starter project is up and running. We are now ready to start creating the task list app.
 
 ## Entities
 
-Now that our starter project is ready, we can start coding the app by defining the `Task` entity class.
+Let's start coding the app by defining the `Task` entity class.
 
 The `Task` entity class will be used:
 * As a model class for client-side code
@@ -207,11 +212,11 @@ export class Task extends IdEntity {
 }
 ```
 
-The `@Entity` decorator tells Remult this class is an entity class, and accepts an argument which implements the `EntitySettings` interface. We use an anonymous object to instantiate it, setting the `key` property (used to name the API route and database collection/table), and the `allowApiCrud` property to `true`. <!-- consider linking to reference -->
+The `@Entity` decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the `allowApiCrud` property to `true`. <!-- consider linking to reference -->
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The `@Field` decorator tells Remult the `title` property is an entity data field. This decorator is also used to encapsulate field related properties and operations, discussed in the next sections of this tutorial.
+The `@Field` decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
 
 
 ### Create new tasks
@@ -226,7 +231,7 @@ Let's implement this feature within the main `AppComponent` class.
    ```ts{2-3,12-18}
    import { Component } from '@angular/core';
    import { Remult } from 'remult';
-   import { Task } from './tasks';
+   import { Task } from './task';
 
    @Component({
       selector: 'app-root',
@@ -245,7 +250,7 @@ Let's implement this feature within the main `AppComponent` class.
    }
    ```
 
-   The `remult` field we've add to the `AppComponent` class (using a constructor argument), is a Remult `Remult` object which will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on in the tutorial.
+   The `remult` field we've add to the `AppComponent` class (using a constructor argument), will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
 
    The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
@@ -262,19 +267,13 @@ Let's implement this feature within the main `AppComponent` class.
    </div>
    ```
 
-   Using the `ngModel` directive, we've bound the `inputValue` property of the new task's `title` field to an `input` element.
-
-   **The `inputValue` property is a `string` property which handles parsing and formatting of entity field values to and from valid `input` values.** This is less of an issue with `string` fields, but is valuable for `Number` or `Boolean` fields.
-
-   For the `placeholder` of the `input` element, we've used the `caption` property of the the `title` field. The default value of the `caption` property is the name of entity class field (i.e. "Title").
+   Using the `ngModel` directive, we've bound the new task's `title` field to an `input` element.
 
 ### Run and create tasks
-Using the browser, create a few new tasks. Then navigate to the `tasks` API route at <http://localhost:4200/api/tasks> to see the tasks have been successfully stored on the server.
+Using the browser, create a few new tasks. Then, navigate to the `tasks` API route at <http://localhost:4200/api/tasks> to see the tasks have been successfully stored on the server.
 
 ::: warning Wait, where is the backend database?
 By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file that contains the created tasks.
-
-If you're using git, it is advisable to exclude the `db` folder from version control by adding it to the project's `.gitignore` file.
 :::
 
 
@@ -332,12 +331,12 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
    }
    ```
 
-2. Add the `Delete` button to task list item element in `app.component.html`.
+2. Add the `Delete` button to the task list item template element in `app.component.html`.
 
    *src/app/app.component.html*
    ```html{3}
    <li *ngFor="let task of tasks">
-      {{task.title.value}}
+      {{task.title}}
       <button (click)="deleteTask(task)">Delete</button>
    </li>
    ```
@@ -389,6 +388,7 @@ After the browser refreshes, a checkbox appears next to each task in the list. M
 ::: tip
 To save the change of `task.completed` immediately when the user checks or unchecks the checkbox, simply add a `change` event handler to the checkbox element and call `task.save()`.
 :::
+
 ### Code review
 We've implemented the following features of the todo app:
 * Creating new tasks
@@ -467,12 +467,12 @@ export class AppComponent {
 ```
 
 ## Sorting and Filtering
-The RESTful API create by Remult supports server-side sorting and filtering. Let's use that sort and filter the list of tasks.
+The RESTful API created by Remult supports server-side sorting and filtering. Let's use that to sort and filter the list of tasks.
 
 ### Show uncompleted tasks first
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `loadTasks` method of the `AppComponent` class, modify the `find` method call to include an `options` argument which implements the `FindOptions` interface. Implement the interface using an anonymous object and set the object's `orderBy` property to an arrow function which accepts an argument of the `Task` entity class and returns its `completed` field.
+In the `loadTasks` method of the `AppComponent` class, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
 
 *src/app/app.component.ts*
 ```ts{2-4}
@@ -483,7 +483,9 @@ async loadTasks() {
 }
 ```
 
+::: warning Note
 By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
+:::
 
 ### Optionally hide completed tasks
 Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
@@ -508,7 +510,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    ```
 
    ::: warning Note
-   Because the `completed` field is of type `BoolColumn`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
+   Because the `completed` field is of type `boolean`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
    :::
 
 3. Add a `checkbox` input element immediately before the unordered list element in `app.component.html`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
