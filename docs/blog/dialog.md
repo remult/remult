@@ -1,5 +1,10 @@
 # How to create a dialog
 
+::: danger Please Note
+This article uses the experimental `@remult/angular` library that is still work in progress.
+:::
+
+
 Some times we want to open a dialog user interface where the user has to complete some operation.
 In this article we'll specify how it's done.
 

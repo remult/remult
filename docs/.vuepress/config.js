@@ -34,13 +34,17 @@ module.exports = {
     lastUpdated: false,
     nav: [
       {
-        text: 'Tutorials',
-        link: '/tutorials/',
+        text: 'Blog',
+        link: '/blog/',
       },
+      /*  {
+          text: 'Tutorials',
+          link: '/tutorials/',
+        },*/
       {
         text: 'Guide',
         link: '/guide/',
-      }/*,
+      },/*,
       {
         text: 'Config',
         link: '/config/'
@@ -51,6 +55,36 @@ module.exports = {
       }*/
     ],
     sidebar: {
+      '/blog/': [
+        {
+          title: '',
+          collapsable: false,
+          children: [
+            'architecture',
+            'using-server-only-packages',
+            'running-sql-on-the-server',
+            'rest-api',
+            'further-learning',
+            'VSCode-keyboard-shortcuts'
+          ]
+        },
+        {
+          title: 'Setup and configuration',
+          collapsable: false,
+          children: [
+            '05-Installing-a-Dev-Machine',
+            'using-postgres-on-your-dev-machine'
+          ]
+        },
+        {
+          title: 'experimental',
+          collapsable: false,
+          children: [
+            'angular-for-non-web-developers',
+            'dialog',
+            'grid-settings-and-data-grid',
+          ]
+        }],
       '/guide/': [
         {
           title: 'Getting Started',

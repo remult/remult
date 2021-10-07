@@ -9,3 +9,5 @@ Here are some great external learning resources that we've gathered
 
 Other cool toturials:
 1.  [css animation](https://scrimba.com/c/cZnaWghz)
+
+Updated: 2019-09-15

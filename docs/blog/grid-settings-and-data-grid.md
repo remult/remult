@@ -1,5 +1,9 @@
 # Grid Settings and Data-Grid
 
+::: danger Please Note
+This article uses the experimental `@remult/angular` library that is still work in progress.
+:::
+
 These objects are used to display an editable grid based on an entity.
 
 They are designed with the goal of creating "admin" screens effortlessly.

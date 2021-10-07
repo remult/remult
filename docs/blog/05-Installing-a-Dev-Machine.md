@@ -13,6 +13,12 @@ Git is the most widely used source control and versioning tool.
 Download and install it from:
 [https://git-scm.com/download/win](https://git-scm.com/download/win)
 
+After you complete the installation, you'll need to set your name and email for using git.
+```sh
+git config --global user.name "John Doe"
+git config --global user.email johndoe@example.com
+```
+
 
 ## Visual Studio Code 
 A source code editor which we use to develop application.
@@ -29,8 +35,3 @@ code --install-extension eamodio.gitlens
 code --install-extension sibiraj-s.vscode-scss-formatter
 ```
 
-## Angular Cli
-From the command prompt, run the following command to install angular cli with the specific version we used for this demo
-```sh
-npm install -g @angular/cli@11.2.10
-```
