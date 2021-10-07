@@ -1,0 +1,72 @@
+diff --git a/package.json b/package.json
+index bb90d39..ea7a59f 100644
+--- a/package.json
++++ b/package.json
+@@ -3,10 +3,10 @@
+   "version": "0.0.0",
+   "scripts": {
+     "ng": "ng",
+-    "start": "ng serve",
++    "start": "node dist/server/server/",
+     "dev-node": "ts-node-dev --project tsconfig.server.json src/server/",
+     "dev-ng": "ng serve --proxy-config proxy.conf.json --open",
+-    "build": "ng build",
++    "build": "ng build && tsc -p tsconfig.server.json",
+     "watch": "ng build --watch --configuration development",
+     "test": "ng test"
+   },
+@@ -24,8 +24,10 @@
+     "@angular/platform-browser-dynamic": "~12.2.0",
+     "@angular/router": "~12.2.0",
+     "@auth0/angular-jwt": "^5.0.2",
++    "compression": "^1.7.4",
+     "express": "^4.17.1",
+     "express-jwt": "^6.1.0",
++    "helmet": "^4.6.0",
+     "jsonwebtoken": "^8.5.1",
+     "remult": "^0.3.12",
+     "rxjs": "~6.6.0",
+@@ -36,6 +38,7 @@
+     "@angular-devkit/build-angular": "~12.2.8",
+     "@angular/cli": "~12.2.8",
+     "@angular/compiler-cli": "~12.2.0",
++    "@types/compression": "^1.7.2",
+     "@types/express": "^4.17.13",
+     "@types/express-jwt": "^6.0.2",
+     "@types/jasmine": "~3.8.0",
+@@ -50,4 +53,4 @@
+     "ts-node-dev": "^1.1.8",
+     "typescript": "~4.3.5"
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/server/index.ts b/src/server/index.ts
+index 1f0794d..f743208 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -1,13 +1,21 @@
+ import * as express from 'express';
+ import * as expressJwt from 'express-jwt';
+ import { getJwtTokenSignKey } from '../app/auth.service';
++import * as compression from 'compression';
++import * as helmet from 'helmet';
+ import { initExpress } from 'remult/server';
+ 
+ let app = express();
++app.use(helmet({ contentSecurityPolicy: false }));
++app.use(compression());
+ app.use(expressJwt({
+     secret: getJwtTokenSignKey(),
+     credentialsRequired: false,
+     algorithms: ['HS256']
+ }));
+ initExpress(app);
+-app.listen(3002, () => console.log("Server started"));
+\ No newline at end of file
++app.use(express.static('dist/remult-angular-todo'));
++app.use('/*', async (req, res) => {
++   res.sendFile('./dist/remult-angular-todo/index.html');
++});
++app.listen(process.env.PORT || 3002, () => console.log("Server started"));
+\ No newline at end of file

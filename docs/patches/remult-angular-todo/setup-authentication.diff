@@ -1,0 +1,145 @@
+diff --git a/package.json b/package.json
+index f6b1b47..bb90d39 100644
+--- a/package.json
++++ b/package.json
+@@ -10,6 +10,9 @@
+     "watch": "ng build --watch --configuration development",
+     "test": "ng test"
+   },
++  "browser": {
++    "jsonwebtoken": false
++  },
+   "private": true,
+   "dependencies": {
+     "@angular/animations": "~12.2.0",
+@@ -20,7 +23,10 @@
+     "@angular/platform-browser": "~12.2.0",
+     "@angular/platform-browser-dynamic": "~12.2.0",
+     "@angular/router": "~12.2.0",
++    "@auth0/angular-jwt": "^5.0.2",
+     "express": "^4.17.1",
++    "express-jwt": "^6.1.0",
++    "jsonwebtoken": "^8.5.1",
+     "remult": "^0.3.12",
+     "rxjs": "~6.6.0",
+     "tslib": "^2.3.0",
+@@ -31,7 +37,9 @@
+     "@angular/cli": "~12.2.8",
+     "@angular/compiler-cli": "~12.2.0",
+     "@types/express": "^4.17.13",
++    "@types/express-jwt": "^6.0.2",
+     "@types/jasmine": "~3.8.0",
++    "@types/jsonwebtoken": "^8.5.5",
+     "@types/node": "^12.11.1",
+     "jasmine-core": "~3.8.0",
+     "karma": "~6.3.0",
+@@ -42,4 +50,4 @@
+     "ts-node-dev": "^1.1.8",
+     "typescript": "~4.3.5"
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/src/app/app.module.ts b/src/app/app.module.ts
+index 3afce5b..3ea123b 100644
+--- a/src/app/app.module.ts
++++ b/src/app/app.module.ts
+@@ -5,6 +5,8 @@ import { AppComponent } from './app.component';
+ import { HttpClientModule, HttpClient } from '@angular/common/http';
+ import { FormsModule } from '@angular/forms';
+ import { Remult } from 'remult';
++import { JwtModule } from '@auth0/angular-jwt';
++import { AuthService } from './auth.service';
+ 
+ @NgModule({
+   declarations: [
+@@ -13,6 +15,11 @@ import { Remult } from 'remult';
+   imports: [
+     BrowserModule,
+     HttpClientModule,
++    JwtModule.forRoot({
++      config: {
++        tokenGetter: () => AuthService.fromStorage()
++      }
++    }),
+     FormsModule
+   ],
+   providers: [
+diff --git a/src/app/auth.service.ts b/src/app/auth.service.ts
+new file mode 100644
+index 0000000..3142149
+--- /dev/null
++++ b/src/app/auth.service.ts
+@@ -0,0 +1,52 @@
++import { Injectable } from '@angular/core';
++import { JwtHelperService } from '@auth0/angular-jwt';
++import * as jwt from 'jsonwebtoken';
++import { BackendMethod, Remult } from 'remult';
++
++const AUTH_TOKEN_KEY = "authToken";
++@Injectable({
++    providedIn: 'root'
++})
++export class AuthService {
++    constructor(private remult: Remult) {
++        let token = AuthService.fromStorage();
++        if (token) {
++            this.setAuthToken(token);
++        }
++    }
++   
++    async signIn(username: string) {
++        this.setAuthToken(await AuthService.signIn(username));
++    }
++    @BackendMethod({ allowed: true })
++    static async signIn(username: string) {
++        let validUsers = [
++            { id: "1", name: "Jane", roles: [] },
++            { id: "2", name: "Steve", roles: [] }
++        ];
++        let user = validUsers.find(user => user.name === username);
++        if (!user)
++            throw "Invalid User";
++        return jwt.sign(user, getJwtTokenSignKey());
++    }
++
++    setAuthToken(token: string) {
++        this.remult.setUser(new JwtHelperService().decodeToken(token));
++        sessionStorage.setItem(AUTH_TOKEN_KEY, token);
++    }
++    static fromStorage(): string {
++        return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
++    }
++
++    signOut() {
++        this.remult.setUser(undefined!);
++        sessionStorage.removeItem(AUTH_TOKEN_KEY);
++    }
++}
++
++export function getJwtTokenSignKey() {
++    if (process.env.NODE_ENV === "production")
++        return process.env.TOKEN_SIGN_KEY!;
++    return "my secret key";
++}
++ 
+\ No newline at end of file
+diff --git a/src/server/index.ts b/src/server/index.ts
+index aed15c9..1f0794d 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -1,6 +1,13 @@
+ import * as express from 'express';
++import * as expressJwt from 'express-jwt';
++import { getJwtTokenSignKey } from '../app/auth.service';
+ import { initExpress } from 'remult/server';
+ 
+ let app = express();
++app.use(expressJwt({
++    secret: getJwtTokenSignKey(),
++    credentialsRequired: false,
++    algorithms: ['HS256']
++}));
+ initExpress(app);
+ app.listen(3002, () => console.log("Server started"));
+\ No newline at end of file

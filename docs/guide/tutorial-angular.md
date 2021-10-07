@@ -13,11 +13,6 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed
 
 
 ## Create a Project
-::: tip
-You can skip the setup steps by [cloning the following repo](https://github.com/remult/remult-angular-todo-ready-to-start) see the steps in the readme.
-
-If you do that you can skip directly to [after the setup](#entities)
-:::
 We'll start by creating an Angular project, so if Angular CLI is not already installed - then install it.
 ```sh
 npm i -g @angular/cli
@@ -36,6 +31,14 @@ In this tutorial we'll be using the workspace folder created by `Angular` as the
 ```sh
 cd remult-angular-todo
 ```
+::: tip TLDR
+To skip the setup steps, run the following commands to apply them in a patch and skip directly to [Entities](#entities)
+```sh
+curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/remult-setup.diff | git apply
+npm i
+```
+:::
+
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
 ```sh
@@ -734,6 +737,14 @@ In this section, we'll be using the following packages:
 * [@auth0/angular-jwt](https://github.com/auth0/angular2-jwt) for client-side JWT decoding and passing HTTP `Authorization` headers to the API server
 * [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
 
+::: tip TLDR
+You can skip steps 1-5, which are just jwt wiring, by running the following commands
+```sh
+curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/setup-authentication.diff | git apply
+npm i
+```
+:::
+
 1. Open a terminal and run the following command to install the required packages:
    ```sh
    npm i jsonwebtoken @auth0/angular-jwt express-jwt
@@ -1010,6 +1021,14 @@ In this tutorial, we'll deploy both the Angular app files and the API server pro
 
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware to improve security.
 
+::: tip TLDR
+You can skip the setup steps, using the following command, and jump to: [Deploy to heroku](#deploy-to-heroku)
+```sh
+curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/setup-deployment.diff | git apply
+npm i
+```
+:::
+
 1. Install `compression` and `helmet`.
 
    ```sh
@@ -1100,6 +1119,13 @@ If you run into trouble deploying the app to Heroku, try using Heroku's [documen
 While the simple backend JSON database provided by `remult` is nice for development, it isn't suitable for production (it will be discarded each time the Heroku `dyno` is restarted).
 
 Let's replace it with a production PostgreSQL database.
+::: tip TLDR
+You can skip steps 1 and two, using the following command
+```sh
+curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/setup-postgres.diff | git apply
+npm i
+```
+:::
 
 1. Install `pg`.
 

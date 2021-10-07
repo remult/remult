@@ -1,0 +1,60 @@
+diff --git a/package.json b/package.json
+index ea7a59f..1d8e953 100644
+--- a/package.json
++++ b/package.json
+@@ -29,6 +29,7 @@
+     "express-jwt": "^6.1.0",
+     "helmet": "^4.6.0",
+     "jsonwebtoken": "^8.5.1",
++    "pg": "^8.7.1",
+     "remult": "^0.3.12",
+     "rxjs": "~6.6.0",
+     "tslib": "^2.3.0",
+@@ -44,6 +45,7 @@
+     "@types/jasmine": "~3.8.0",
+     "@types/jsonwebtoken": "^8.5.5",
+     "@types/node": "^12.11.1",
++    "@types/pg": "^8.6.1",
+     "jasmine-core": "~3.8.0",
+     "karma": "~6.3.0",
+     "karma-chrome-launcher": "~3.1.0",
+diff --git a/src/server/index.ts b/src/server/index.ts
+index f743208..d70cf9b 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -3,6 +3,9 @@ import * as expressJwt from 'express-jwt';
+ import { getJwtTokenSignKey } from '../app/auth.service';
+ import * as compression from 'compression';
+ import * as helmet from 'helmet';
++import { Remult, SqlDatabase } from 'remult';
++import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
++import { Pool } from 'pg';
+ import { initExpress } from 'remult/server';
+ 
+ let app = express();
+@@ -13,7 +16,24 @@ app.use(expressJwt({
+     credentialsRequired: false,
+     algorithms: ['HS256']
+ }));
+-initExpress(app);
++let getDatabase = () => {
++    if (process.env.NODE_ENV === "production") {
++        const db = new SqlDatabase(new PostgresDataProvider(new Pool({
++            connectionString: process.env.DATABASE_URL,
++            ssl: process.env.NODE_ENV !== "production" ? false : {
++                rejectUnauthorized: false
++            }
++        })));
++        let remult = new Remult();
++        remult.setDataProvider(db);
++        verifyStructureOfAllEntities(db, remult);
++        return db;
++    }
++    return undefined;
++}
++initExpress(app, {
++    dataProvider: getDatabase()
++});
+ app.use(express.static('dist/remult-angular-todo'));
+ app.use('/*', async (req, res) => {
+    res.sendFile('./dist/remult-angular-todo/index.html');
