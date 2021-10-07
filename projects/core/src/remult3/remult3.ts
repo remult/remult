@@ -47,7 +47,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## Yoni NAMING!!!
-[] in the tutorial - when sorting, not all values has done or not done - and that compromises the sort. since true comes before undefined
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
 [] Rename Allowed and InstanceAllowed, and Allow
 [] field container type vs entity type vs target
@@ -67,6 +66,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] in the tutorial - when sorting, not all values has done or not done - and that compromises the sort. since true comes before undefined
+[] reconsider our deployment strategy - we can build in the dev machine, and send a built project to the server - it'll probably deploy a lot faster (no need to build the angular on the node server)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 [] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
 

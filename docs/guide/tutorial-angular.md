@@ -1027,6 +1027,7 @@ You can skip the setup steps, using the following command, and jump to: [Deploy 
 curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/setup-deployment.diff | git apply
 npm i
 ```
+* note that if your project name is different than `remult-angular-todo`, you'll need to replace these values in the index.ts file
 :::
 
 1. Install `compression` and `helmet`.
@@ -1103,8 +1104,12 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
    ```sh
    git push heroku master
    ```
+4. Set the jwt authentication to something random - you can use uuidgenerator
+   ```sh
+   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key-generated-from-guid
+   ```
 
-4. Run the production app using `heroku apps:open` command: 
+5. Run the production app using `heroku apps:open` command: 
 
    ```sh
    heroku apps:open
