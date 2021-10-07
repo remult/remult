@@ -67,6 +67,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## review with Yoni
 [] in the docs, consider separating the creation of the AuthService with the implementation  of the SignIn method
+[] consider creating a seperate docs, for noam blog with the angular material etc..
 [] in the tutorial - when sorting, not all values has done or not done - and that compromises the sort. since true comes before undefined
 [] reconsider our deployment strategy - we can build in the dev machine, and send a built project to the server - it'll probably deploy a lot faster (no need to build the angular on the node server)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
