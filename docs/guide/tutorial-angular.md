@@ -379,7 +379,7 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    *src/app/task.ts*
    ```ts
    @Field()
-   completed: boolean = false
+   completed: boolean = false;
    ```
 
 2. Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 

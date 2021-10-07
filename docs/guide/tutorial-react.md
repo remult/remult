@@ -269,37 +269,48 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
 1. Add the following code to the `App` function:
 
    *src/App.tsx*
-   ```ts
-   tasks: Task[] = [];
-   async loadTasks() {
-     this.tasks = await this.tasksRepo.find();
-   }
-   ngOnInit() {
-     this.loadTasks();
+   ```ts{4-8,21-26}
+   function App() {
+     const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
+   
+     const [tasks, setTasks] = useState([] as Task[]);
+   
+     const loadTasks = useCallback(() =>
+       taskRepo.find().then(tasks => setTasks(tasks)), []);
+     useEffect(() => { loadTasks() }, [loadTasks]);
+   
+     const createTask = () => newTask.save().then(() => setNewTask({ newTask: taskRepo.create() }))
+     return (
+       <div>
+   
+         <input value={newTask.title}
+           onChange={(e) =>
+             setNewTask({
+               newTask: newTask.assign({ title: e.target.value })
+             })}
+         />
+         <button onClick={createTask}>Create Task</button>
+         <ul>
+           {tasks.map(task => (
+               <li key={task.id}>
+                    {task.title}
+               </li>))}
+         </ul>
+   
+       </div>
+     );
    }
    ```
-   The `ngOnInit` hook method loads an array of tasks when the component is loaded.
-
-2. Add the unordered list element to the `app.component.html` file.
-
-   *src/app/app.component.html*
-   ```html
-   <ul>
-      <li *ngFor="let task of tasks">
-         {{task.title}}
-      </li>
-   </ul>
-   ```
-
+::: danger Import useCallback
+Don't forget to import `useCallback` and `useEffect` from `react` for this code to work.
+:::
 3. To refresh the list of tasks after a new task is created, add a `loadTasks` method call to the `createNewTask` method of the `App` function.
 
    *src/App.tsx*
-   ```ts{4}
-   async createNewTask() {
-      await this.newTask.save();
-      this.newTask = this.tasksRepo.create();
-      this.loadTasks();
-   }
+   ```ts{3}
+   const createTask = () => newTask.save()
+     .then(() => setNewTask({ newTask: taskRepo.create() }))
+     .then(loadTasks)
    ```
 
 After the browser refreshes, the list of `tasks` appears. Create a new `task` and it's added to the list.
@@ -311,37 +322,67 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
 
    *src/App.tsx*
    ```ts
-   async deleteTask(task: Task) {
-     await task.delete();
-     this.loadTasks();
-   }
+   const deleteTask = (t: Task) => t.delete().then(loadTasks);
    ```
 
-2. Add the `Delete` button to the task list item template element in `app.component.html`.
+2. Add the `Delete` button to the task list item template element in `App.tsx`.
 
-   *src/app/app.component.html*
-   ```html{3}
-   <li *ngFor="let task of tasks">
-      {{task.title}}
-      <button (click)="deleteTask(task)">Delete</button>
-   </li>
+   *src/App.tsx*
+   ```html{5}
+   <ul>
+     {tasks.map(t => (
+         <li key={t.id}>
+             {t.title}
+             <button onClick={() => deleteTask(t)}>Delete</button>
+         </li>))}
+   </ul>
    ```
 
 After the browser refreshes, a `Delete` button appears next to each task in the list. Delete a `task` by clicking the button.
 
 ### Making the task titles editable
-To make the titles of the tasks in the list editable, let's add an html `input` for the titles, and s `Save` button to save the changes to the backend database. We'll use the `wasChanged` method of the entity class to disable the `Save` button while there are no changes to save.
+To make the titles of the tasks in the list editable, let's add a new React element called `TaskEditor` and use it in our `App` function.
+The `TaskEditor` will have an html `input` for the titles, and the `Save` button to save the changes to the backend database. We'll use the `wasChanged` method of the entity class to disable the `Save` button while there are no changes to save.
 
-Replace the task `title` template expression in `app.component.html` with the highlighted lines:
+1. Create a file called `src/TaskEditor.tsx`, and place the following code in it:
+   ```ts
+   import { useState } from "react"
+   import { Task } from "./Task"
+   
+   const TaskEditor: React.FC<{ task: Task }> = (props) => {
+       const [{ task }, setTask] = useState(props);
+       const save = () => task.save().then(task => setTask({ task }));
+       return <span><input
+           value={task.title}
+           onChange={e =>
+                setTask({ task: task.assign({ title: e.target.value }) })
+           }
+       />
+           <button onClick={() => save()}
+               disabled={!task.wasChanged()}
+           >save</button>
+       </span>
+   }
+   export default TaskEditor
+   ```
 
-*src/app/app.component.html*
-```html{2-3}
-<li *ngFor="let task of tasks">
-   <input [(ngModel)]="task.title">
-   <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
-   <button (click)="deleteTask(task)">Delete</button>
-</li>
+Replace the task `title` template expression in `App.tsx` with the highlighted lines:
+
+*src/App.tsx*
+```ts{3}
+<ul>
+    {tasks.map(task => (<li key={task.id}>
+        <TaskEditor task={task} />
+        <button onClick={() => deleteTask(task)}>Delete</button>
+    </li>))}
+</ul>
 ```
+::: danger Import BackendMethod
+Don't forget to import `TaskEditor` from `./TaskEditor.ts` for this code to work.
+```ts
+import TaskEditor from './TaskEditor'
+```
+:::
 
 ### Mark tasks as completed
 Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
@@ -351,22 +392,34 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    *src/Task.ts*
    ```ts
    @Field()
-   completed: boolean = false
+   completed: boolean = false;
    ```
 
-2. Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 
+2. Add a an html `input` of type `checkbox` to the `TaskEditor`. 
    
    Set the `text-decoration` style attribute expression of the task `title` input element to evaluate to `line-through` when the value of `completed` is `true`.
 
-   *src/app/app.component.html*
-   ```html{2-4}
-   <li *ngFor="let task of tasks">
-     <input [(ngModel)]="task.completed" type="checkbox">
-     <input [(ngModel)]="task.title" 
-        [style.textDecoration]="task.completed?'line-through':''">
-     <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
-     <button (click)="deleteTask(task)">Delete</button>
-   </li>
+   *src/App.tsx*
+   ```ts{2-8,14}
+   return <span>
+        <input
+            checked={task.completed}
+            type="checkbox"
+            onChange={e =>
+                setTask({ task: task.assign({ completed: e.target.checked }) })
+            }
+        />
+        <input
+            value={task.title}
+            onChange={e =>
+                setTask({ task: task.assign({ title: e.target.value }) })
+            }
+            style={{ textDecoration: task.completed ? 'line-through' : undefined! }}
+        />
+        <button onClick={() => save()}
+            disabled={!task.wasChanged()}
+        >save</button>
+    </span>
    ```
 
 After the browser refreshes, a checkbox appears next to each task in the list. Mark a few tasks as completed using the checkboxes.
@@ -401,56 +454,83 @@ export class Task extends IdEntity {
 
 *src/App.tsx*
 ```ts
-import { Component } from '@react/core';
-import { Remult } from 'remult';
-import { Task } from './task';
+import { useCallback, useEffect, useState } from 'react';
+import './App.css';
+import { remult } from './common';
+import { Task } from './Task';
+import TaskEditor from './TaskEditor'
 
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
-})
-export class AppComponent {
-  title = 'remult-react-todo';
-  constructor(public remult: Remult) {
-  }
-  tasksRepo = this.remult.repo(Task);
-  newTask = this.tasksRepo.create();
-  async createNewTask() {
-    await this.newTask.save();
-    this.newTask = this.tasksRepo.create();
-    this.loadTasks();
-  }
-  tasks: Task[] = [];
-  async loadTasks() {
-    this.tasks = await this.tasksRepo.find();
-  }
-  ngOnInit() {
-    this.loadTasks();
-  }
-  async deleteTask(task: Task) {
-    await task.delete();
-    this.loadTasks();
-  }
+const taskRepo = remult.repo(Task);
+
+function App() {
+  const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
+
+  const [tasks, setTasks] = useState([] as Task[]);
+
+  const loadTasks = useCallback(() =>
+    taskRepo.find().then(tasks => setTasks(tasks)), []);
+  useEffect(() => { loadTasks() }, [loadTasks]);
+
+  const createTask = () => newTask.save()
+    .then(() => setNewTask({ newTask: taskRepo.create() }))
+    .then(loadTasks);
+
+  const deleteTask = (t: Task) => t.delete().then(loadTasks);
+
+  return (
+    <div>
+
+      <input value={newTask.title}
+        onChange={(e) =>
+          setNewTask({
+            newTask: newTask.assign({ title: e.target.value })
+          })}
+      />
+      <button onClick={createTask}>Create Task</button>
+      <ul>
+        {tasks.map(task => (
+          <li key={task.id}>
+            <TaskEditor task={task} />
+            <button onClick={() => deleteTask(task)}>Delete</button>
+          </li>))}
+      </ul>
+
+    </div>
+  );
 }
+
+export default App;
 ```
 
-*src/app/app.component.html*
-```html
-<title>{{title}}</title>
-<div>
-  <input [(ngModel)]="newTask.title" placeholder="Title">
-  <button (click)="createNewTask()">Create new task</button>
-</div>
-<ul>
-  <li *ngFor="let task of tasks">
-    <input [(ngModel)]="task.completed" type="checkbox">
-    <input [(ngModel)]="task.title" 
-       [style.textDecoration]="task.completed?'line-through':''">
-    <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
-    <button (click)="deleteTask(task)">Delete</button>
- </li>
-</ul>
+*src/TaskEditor.tsx*
+```ts
+import { useState } from "react"
+import { Task } from "./Task"
+
+const TaskEditor: React.FC<{ task: Task }> = (props) => {
+    const [{ task }, setTask] = useState(props);
+    const save = () => task.save().then(task => setTask({ task }));
+    return <span>
+        <input
+            checked={task.completed}
+            type="checkbox"
+            onChange={e =>
+                setTask({ task: task.assign({ completed: e.target.checked }) })
+            }
+        />
+        <input
+            value={task.title}
+            onChange={e =>
+                setTask({ task: task.assign({ title: e.target.value }) })
+            }
+            style={{ textDecoration: task.completed ? 'line-through' : undefined! }}
+        />
+        <button onClick={() => save()}
+            disabled={!task.wasChanged()}
+        >save</button>
+    </span>
+}
+export default TaskEditor
 ```
 
 ## Sorting and Filtering
@@ -500,9 +580,9 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    Because the `completed` field is of type `boolean`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
    :::
 
-3. Add a `checkbox` input element immediately before the unordered list element in `app.component.html`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
+3. Add a `checkbox` input element immediately before the unordered list element in `App.tsx`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
 
-   *src/app/app.component.html*
+   *src/App.tsx*
    ```html
    <p>
       <input type="checkbox" id="hideCompleted" [(ngModel)]="hideCompleted" (change)="loadTasks()">
@@ -529,9 +609,9 @@ Task titles are required. Let's add a validity check for this rule, and display 
     title: string = '';
    ```
 
-2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
+2. In the `App.tsx` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
 
-   *src/app/app.component.html*
+   *src/App.tsx*
    ```html
    <div *ngIf="newTask.$.title.error">
       {{newTask.$.title.error}}
@@ -576,9 +656,9 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    The `iterate` method is an alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. The `iterate` method doesn't return an array (as the `find` method) and instead returns an `iteratable` object which supports iterations using the JavaScript `for await` statement.
 
 
-2. Add the two buttons to the `app.component.html` template, immediately before the unordered list element. Both of the buttons' `click` events will call the `setAll` function with the relevant value of the `completed` argument.
+2. Add the two buttons to the `App.tsx` template, immediately before the unordered list element. Both of the buttons' `click` events will call the `setAll` function with the relevant value of the `completed` argument.
 
-   *src/app/app.component.html*
+   *src/App.tsx*
    ```html
    <button (click)="setAll(true)">Set all as completed</button> 
    <button (click)="setAll(false)">Set all as uncompleted</button>
@@ -661,7 +741,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 :::
 
 ### Hide UI for non-authenticated users
-*src/app/app.component.html*
+*src/App.tsx*
 ```html{2,25}
 <title>{{title}}</title>
 <ng-container *ngIf="remult.authenticated()">
@@ -855,9 +935,9 @@ npm i
    This code requires imports for `AuthService` from `./auth.service`.
    :::
 
-7. Add the following `HTML` after the `title` element of the `app.component.html` template, replacing the `<ng-container>` open tag.
+7. Add the following `HTML` after the `title` element of the `App.tsx` template, replacing the `<ng-container>` open tag.
 
-   *src/app/app.component.html*
+   *src/App.tsx*
    ```html
    <ng-container *ngIf="!remult.authenticated()">
       <input [(ngModel)]="username"> 
