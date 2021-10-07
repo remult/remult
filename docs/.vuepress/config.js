@@ -57,13 +57,13 @@ module.exports = {
     sidebar: {
       '/blog/': [
         {
-          title: '',
+          title: 'Blog',
           collapsable: false,
           children: [
-            'architecture',
             'using-server-only-packages',
             'running-sql-on-the-server',
             'rest-api',
+            'architecture',
             'further-learning',
             'VSCode-keyboard-shortcuts'
           ]
