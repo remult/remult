@@ -96,7 +96,9 @@ module.exports = {
           title: 'Tutorial',
           collapsable: false,
           children: [
-            'tutorial-angular']
+            'tutorial-angular',
+            'tutorial-react',
+          ]
         },
         {
           title: 'API Reference',
