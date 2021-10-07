@@ -26,6 +26,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] remove reload on save with no changes
 [] rename set to assign
 
+
 []code samples
 []real world anguar
 []real world react
@@ -46,6 +47,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## Yoni NAMING!!!
+[] in the tutorial - when sorting, not all values has done or not done - and that compromises the sort. since true comes before undefined
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
 [] Rename Allowed and InstanceAllowed, and Allow
 [] field container type vs entity type vs target

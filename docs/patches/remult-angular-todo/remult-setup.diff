@@ -1,0 +1,112 @@
+diff --git a/package.json b/package.json
+index 3bb8620..f6b1b47 100644
+--- a/package.json
++++ b/package.json
+@@ -4,6 +4,8 @@
+   "scripts": {
+     "ng": "ng",
+     "start": "ng serve",
++    "dev-node": "ts-node-dev --project tsconfig.server.json src/server/",
++    "dev-ng": "ng serve --proxy-config proxy.conf.json --open",
+     "build": "ng build",
+     "watch": "ng build --watch --configuration development",
+     "test": "ng test"
+@@ -18,6 +20,8 @@
+     "@angular/platform-browser": "~12.2.0",
+     "@angular/platform-browser-dynamic": "~12.2.0",
+     "@angular/router": "~12.2.0",
++    "express": "^4.17.1",
++    "remult": "^0.3.12",
+     "rxjs": "~6.6.0",
+     "tslib": "^2.3.0",
+     "zone.js": "~0.11.4"
+@@ -26,6 +30,7 @@
+     "@angular-devkit/build-angular": "~12.2.8",
+     "@angular/cli": "~12.2.8",
+     "@angular/compiler-cli": "~12.2.0",
++    "@types/express": "^4.17.13",
+     "@types/jasmine": "~3.8.0",
+     "@types/node": "^12.11.1",
+     "jasmine-core": "~3.8.0",
+@@ -34,6 +39,7 @@
+     "karma-coverage": "~2.0.3",
+     "karma-jasmine": "~4.0.0",
+     "karma-jasmine-html-reporter": "~1.7.0",
++    "ts-node-dev": "^1.1.8",
+     "typescript": "~4.3.5"
+   }
+ }
+diff --git a/proxy.conf.json b/proxy.conf.json
+new file mode 100644
+index 0000000..cd0be7c
+--- /dev/null
++++ b/proxy.conf.json
+@@ -0,0 +1,7 @@
++{
++    "/api": {
++       "target": "http://localhost:3002",
++       "secure": false
++    }
++ }
++ 
+\ No newline at end of file
+diff --git a/src/app/app.module.ts b/src/app/app.module.ts
+index 8dfc1d6..3afce5b 100644
+--- a/src/app/app.module.ts
++++ b/src/app/app.module.ts
+@@ -2,15 +2,22 @@ import { NgModule } from '@angular/core';
+ import { BrowserModule } from '@angular/platform-browser';
+ 
+ import { AppComponent } from './app.component';
++import { HttpClientModule, HttpClient } from '@angular/common/http';
++import { FormsModule } from '@angular/forms';
++import { Remult } from 'remult';
+ 
+ @NgModule({
+   declarations: [
+     AppComponent
+   ],
+   imports: [
+-    BrowserModule
++    BrowserModule,
++    HttpClientModule,
++    FormsModule
++  ],
++  providers: [
++    { provide: Remult, useClass: Remult, deps: [HttpClient] }
+   ],
+-  providers: [],
+   bootstrap: [AppComponent]
+ })
+ export class AppModule { }
+diff --git a/src/server/index.ts b/src/server/index.ts
+new file mode 100644
+index 0000000..aed15c9
+--- /dev/null
++++ b/src/server/index.ts
+@@ -0,0 +1,6 @@
++import * as express from 'express';
++import { initExpress } from 'remult/server';
++
++let app = express();
++initExpress(app);
++app.listen(3002, () => console.log("Server started"));
+\ No newline at end of file
+diff --git a/tsconfig.server.json b/tsconfig.server.json
+new file mode 100644
+index 0000000..b5b9d65
+--- /dev/null
++++ b/tsconfig.server.json
+@@ -0,0 +1,11 @@
++{
++    "extends": "./tsconfig.json",
++    "compilerOptions": {
++       "outDir": "./dist/server",
++       "module": "commonjs",
++       "emitDecoratorMetadata": true
++    },
++    "include": [
++       "src/server/index.ts"
++    ]
++ }
+\ No newline at end of file

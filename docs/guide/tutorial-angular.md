@@ -13,6 +13,11 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed
 
 
 ## Create a Project
+::: tip
+You can skip the setup steps by [cloning the following repo](https://github.com/remult/remult-angular-todo-ready-to-start) see the steps in the readme.
+
+If you do that you can skip directly to [after the setup](#entities)
+:::
 We'll start by creating an Angular project, so if Angular CLI is not already installed - then install it.
 ```sh
 npm i -g @angular/cli
@@ -57,7 +62,6 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    ```ts
    import * as express from 'express';
    import { initExpress } from 'remult/server';
-   import '../app/app.module';
 
    let app = express();
    initExpress(app);
@@ -208,7 +212,7 @@ import { Field, Entity, IdEntity } from "remult";
 })
 export class Task extends IdEntity {
     @Field()
-    title: string;
+    title: string = '';
 }
 ```
 
@@ -217,6 +221,11 @@ The `@Entity` decorator tells Remult this class is an entity class. The decorato
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
 The `@Field` decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
+
+#### Import this file in the server's index.ts file
+```ts
+import '../app/task';
+```
 
 
 ### Create new tasks
@@ -228,26 +237,28 @@ Let's implement this feature within the main `AppComponent` class.
 1. Add the highlighted code lines to the `AppComponent` class file:
 
    *src/app/app.component.ts*
-   ```ts{2-3,12-18}
+   ```ts{2-3,12-19}
    import { Component } from '@angular/core';
    import { Remult } from 'remult';
    import { Task } from './task';
-
+   
    @Component({
-      selector: 'app-root',
-      templateUrl: './app.component.html',
-      styleUrls: ['./app.component.css']
+     selector: 'app-root',
+     templateUrl: './app.component.html',
+     styleUrls: ['./app.component.css']
    })
    export class AppComponent {
-      title = 'remult-angular-todo';
-      constructor(public remult: Remult) { 
-      }
-      newTask = this.remult.repo(Task).create();
-      async createNewTask() {
-         await this.newTask.save();
-         this.newTask = this.remult.repo(Task).create();
-      }
+     title = 'remult-angular-todo';
+     constructor(public remult: Remult) {
+     }
+     tasksRepo = this.remult.repo(Task);
+     newTask = this.tasksRepo.create();
+     async createNewTask() {
+       await this.newTask.save();
+       this.newTask = this.tasksRepo.create();
+     }
    }
+
    ```
 
    The `remult` field we've add to the `AppComponent` class (using a constructor argument), will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
@@ -284,12 +295,12 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
 
    *src/app/app.component.ts*
    ```ts
-   tasks: Task[];
+   tasks: Task[] = [];
    async loadTasks() {
-      this.tasks = await this.remult.repo(Task).find();
+     this.tasks = await this.tasksRepo.find();
    }
    ngOnInit() {
-      this.loadTasks();
+     this.loadTasks();
    }
    ```
    The `ngOnInit` hook method loads an array of tasks when the component is loaded.
@@ -311,7 +322,7 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
    ```ts{4}
    async createNewTask() {
       await this.newTask.save();
-      this.newTask = this.remult.repo(Task).create();
+      this.newTask = this.tasksRepo.create();
       this.loadTasks();
    }
    ```
@@ -365,7 +376,7 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    *src/app/task.ts*
    ```ts
    @Field()
-   completed: boolean;
+   completed: boolean = false
    ```
 
 2. Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 
@@ -407,17 +418,17 @@ import { Field, Entity, IdEntity } from "remult";
 })
 export class Task extends IdEntity {
     @Field()
-    title: string;
+    title: string = '';
     @Field()
-    completed: boolean;
+    completed: boolean = false;
 }
 ```
 
 *src/app/app.component.ts*
-```ts{2-3,12-30}
+```ts
 import { Component } from '@angular/core';
 import { Remult } from 'remult';
-import { Task } from './tasks';
+import { Task } from './task';
 
 @Component({
   selector: 'app-root',
@@ -428,15 +439,16 @@ export class AppComponent {
   title = 'remult-angular-todo';
   constructor(public remult: Remult) {
   }
-  newTask = this.remult.repo(Task).create();
+  tasksRepo = this.remult.repo(Task);
+  newTask = this.tasksRepo.create();
   async createNewTask() {
     await this.newTask.save();
-    this.newTask = this.remult.repo(Task).create();
+    this.newTask = this.tasksRepo.create();
     this.loadTasks();
   }
-  tasks: Task[];
+  tasks: Task[] = [];
   async loadTasks() {
-    this.tasks = await this.remult.repo(Task).find();
+    this.tasks = await this.tasksRepo.find();
   }
   ngOnInit() {
     this.loadTasks();
@@ -477,7 +489,7 @@ In the `loadTasks` method of the `AppComponent` class, add an object literal arg
 *src/app/app.component.ts*
 ```ts{2-4}
 async loadTasks() {
-  this.tasks = await this.remult.repo(Task).find({
+  this.tasks = await this.tasksRepo.find({
     orderBy: task => task.completed
   });
 }
@@ -494,7 +506,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
 
    *src/app/app.component.ts*
    ```ts
-   hideCompleted: boolean;
+   hideCompleted: boolean = false;
    ```
 
 2. In the `loadTasks` method of the `AppComponent` class, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`.
@@ -502,8 +514,8 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    *src/app/app.component.ts*
    ```ts{3}
    async loadTasks() {
-     this.tasks = await this.remult.repo(Task).find({
-       where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
+     this.tasks = await this.tasksRepo.find({
+       where: task => this.hideCompleted ? task.completed.isDifferentFrom(true) : undefined,
        orderBy: task => task.completed
      });
    }
@@ -539,7 +551,7 @@ Task titles are required. Let's add a validity check for this rule, and display 
     @Field({
         validate: Validators.required
     })
-    title: string;
+    title: string = '';
    ```
 
 2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
@@ -578,7 +590,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    *src/app/app.component.ts*
    ```ts
    async setAll(completed: boolean) {
-     for await (const task of this.remult.repo(Task).iterate()) {
+     for await (const task of this.tasksRepo.iterate()) {
         task.completed = completed;
         await task.save();
      }
@@ -603,25 +615,27 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-Refactor the `for await` loop from the `setAll` function of the `AppComponent` class into a new, `static`, `setAll` function which will run on the server.
-
-*src/app/app.component.ts*
-```ts{2,5-11}
-async setAll(completed: boolean) {
-   await AppComponent.setAll(completed);
-   this.loadTasks();
-}
+Refactor the `for await` loop from the `setAll` function of the `AppComponent` class into a new, `static`, `setAll` function in the `Task` entity,  which will run on the server.
+*src/app/task.ts*
+```ts
 @BackendMethod({ allowed: true })
 static async setAll(completed: boolean, remult?: Remult) {
-   for await (const task of remult.repo(Task).iterate()) {
+   for await (const task of remult!.repo(Task).iterate()) {
       task.completed = completed;
       await task.save();
    }
 }
 ```
+*src/app/app.component.ts*
+```ts{2}
+async setAll(completed: boolean) {
+   await Task.setAll(completed);
+   this.loadTasks();
+}
+```
 
 ::: danger Import BackendMethod
-Don't forget to import `BackendMethod` from `remult` for this code to work.
+Don't forget to import `BackendMethod` and `Remult` from `remult` for this code to work.
 :::
 
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
@@ -663,13 +677,55 @@ curl -i http://localhost:4200/api/tasks
 ::: danger Authorized server-side code can still modify tasks
 Although client CRUD requests to `tasks` API endpoints now require a signed in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
 
-To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `AppComponent`.
+To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `Task`.
 
-*src/app/app.component.ts*
+*src/app/task.ts*
 ```ts
 @BackendMethod({ allowed: Allow.authenticated })
 ```
 :::
+
+### Hide UI for non-authenticated users
+*src/app/app.component.html*
+```html{2,25}
+<title>{{title}}</title>
+<ng-container *ngIf="remult.authenticated()">
+  <div>
+    <input [(ngModel)]="newTask.title" placeholder="Title">
+    <button (click)="createNewTask()">Create new task</button>
+    <div *ngIf="newTask.$.title.error">
+      {{newTask.$.title.error}}
+   </div>
+  </div>
+  <ul>
+    <li *ngFor="let task of tasks">
+      <input [(ngModel)]="task.completed" type="checkbox">
+      <input [(ngModel)]="task.title" 
+         [style.textDecoration]="task.completed?'line-through':''">
+      <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+      <button (click)="deleteTask(task)">Delete</button>
+    </li>
+  </ul>
+  <p>
+    <input type="checkbox" id="hideCompleted" [(ngModel)]="hideCompleted" (change)="loadTasks()">
+    <label for="hideCompleted">Hide completed</label>
+  </p>
+  <button (click)="setAll(true)">Set all as completed</button> 
+  <button (click)="setAll(false)">Set all as uncompleted</button>
+</ng-container>
+```
+
+*src/app/app.component.ts*
+```ts{2}
+async loadTasks() {
+  if (this.remult.authenticated())
+    this.tasks = await this.tasksRepo.find({
+      where: task => this.hideCompleted ? task.completed.isDifferentFrom(true) : undefined,
+      orderBy: task => task.completed
+    });
+}
+```
+
 ### User authentication
 Let's add a sign in area to the todo app, with an `input` for typing in a `username` and a sign in `button`. The app will have two valid `username` values - *"Jane"* and *"Steve"*. After a successful sign in, the sign in area will be replaced by a "Hi [username]" message.
 
@@ -683,13 +739,64 @@ In this section, we'll be using the following packages:
    npm i jsonwebtoken @auth0/angular-jwt express-jwt
    npm i --save-dev  @types/jsonwebtoken @types/express-jwt 
    ```
-
-2. Import `jsonwebtoken` into a `jwt` variable in `app.component.ts`.
-
-   *src/app/app.component.ts*
+2. Create a file called `src/app/auth.service.ts ` and place the following code in it:
+   *src/app/auth.service.ts*
    ```ts
+   import { Injectable } from '@angular/core';
+   import { JwtHelperService } from '@auth0/angular-jwt';
    import * as jwt from 'jsonwebtoken';
+   import { BackendMethod, Remult } from 'remult';
+   
+   const AUTH_TOKEN_KEY = "authToken";
+   @Injectable({
+       providedIn: 'root'
+   })
+   export class AuthService {
+       constructor(private remult: Remult) {
+           let token = AuthService.fromStorage();
+           if (token) {
+               this.setAuthToken(token);
+           }
+       }
+      
+       async signIn(username: string) {
+           this.setAuthToken(await AuthService.signIn(username));
+       }
+       @BackendMethod({ allowed: true })
+       static async signIn(username: string) {
+           let validUsers = [
+               { id: "1", name: "Jane", roles: [] },
+               { id: "2", name: "Steve", roles: [] }
+           ];
+           let user = validUsers.find(user => user.name === username);
+           if (!user)
+               throw "Invalid User";
+           return jwt.sign(user, getJwtTokenSignKey());
+       }
+   
+       setAuthToken(token: string) {
+           this.remult.setUser(new JwtHelperService().decodeToken(token));
+           sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+       }
+       static fromStorage(): string {
+           return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
+       }
+   
+       signOut() {
+           this.remult.setUser(undefined!);
+           sessionStorage.removeItem(AUTH_TOKEN_KEY);
+       }
+   }
+   
+   export function getJwtTokenSignKey() {
+       if (process.env.NODE_ENV === "production")
+           return process.env.TOKEN_SIGN_KEY!;
+       return "my secret key";
+   }
    ```
+   * Note that tThe (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
+   
+   The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 
 3. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
 
@@ -705,112 +812,82 @@ In this section, we'll be using the following packages:
 
    **For this change to take effect, our Angular app's dev server must be restarted by terminating the `dev-ng` script and running it again.**
    :::
-
-4. Add a `signIn` backend method to the `AppComponent` class. The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
-   
-   The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
-
-   ```ts
-   @BackendMethod({ allowed: true })
-   static async signIn(username: string) {
-      let validUsers = [
-          { id: "1", name: "Jane", roles: [] },
-          { id: "2", name: "Steve", roles: [] }
-      ];
-      let user = validUsers.find(user => user.name === username);
-      if (!user)
-         throw "Invalid User";
-      return jwt.sign(user, "my secret key");
-   }
-   ```
-
-   ::: warning Note
-   The secret key used to sign the JWT should be kept secret (dah) 
-
-5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
-
-   *src/server/index.ts*
-   ```ts{3,7-10}
-   import * as express from 'express';
-   import { initExpress } from 'remult/server';
-   import * as expressJwt from 'express-jwt';
-   import '../app/app.module';
-
-   let app = express();
-   app.use(expressJwt({ 
-      secret: "my secret key", 
-      credentialsRequired: false, 
-      algorithms: ['HS256'] }));
-   initExpress(app);
-   app.listen(3002, () => console.log("Server started"));
-   ```
-
-   The `secret` provided to `express-jwt` must be identical to the one used by `jsonwebtoken` to sign the JWT in the `signIn` server function.
-
-   `credentialsRequired` is set to `false` to allow unauthenticated API requests (e.g. the request to `signIn`).
-
-   The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
-
-6. Add the following code to the `AppComponent` class.
-
-   *src/app/app.component.ts*
-   ```ts
-   static readonly AUTH_TOKEN_KEY = "authToken";
-
-   setAuthToken(token: string) {
-      this.remult.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
-      sessionStorage.setItem(AppComponent.AUTH_TOKEN_KEY, token);
-   }
-
-   username: string;
-
-   async signIn() {
-      this.setAuthToken(await AppComponent.signIn(this.username));
-      this.loadTasks();
-   }
-
-   signOut() {
-      this.remult.setUser(undefined);
-      sessionStorage.removeItem(AppComponent.AUTH_TOKEN_KEY);
-      this.tasks = [];
-   }
-   ```
-
-   ::: warning Imports
-   This code requires imports for `UserInfo` from `remult` and `JwtHelperService` from `@auth0/angular-jwt`.
-   :::
-
-7. Add the following `HTML` after the `title` element of the `app.component.html` template.
-
-   *src/app/app.component.html*
-   ```html
-   <p>
-      <ng-container *ngIf="!remult.authenticated()">
-         <input [(ngModel)]="username"> 
-         <button (click)="signIn()">Sign in</button>
-      </ng-container>
-
-      <ng-container *ngIf="remult.authenticated()">
-         Hi {{remult.user.name}}
-         <button (click)="signOut()">Sign out</button>
-      </ng-container>
-   </p>
-   ```
-
-8. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
+4. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
 
    *src/app/app.module.ts*
    ```ts
    JwtModule.forRoot({
       config:{
-         tokenGetter: () => sessionStorage.getItem(AppComponent.AUTH_TOKEN_KEY)
+         tokenGetter: () => AuthService.fromStorage()
       }
    })
    ```
+   ::: warning Imports
+   This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/angular-jwt`.
+   :::
+5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+
+   *src/server/index.ts*
+   ```ts{3-4,8-12}
+   import * as express from 'express';
+   import { initExpress } from 'remult/server';
+   import * as expressJwt from 'express-jwt';
+   import { getJwtTokenSignKey } from '../app/auth.service';
+   import '../app/task';
+   
+   let app = express();
+   app.use(expressJwt({
+       secret: getJwtTokenSignKey(),
+       credentialsRequired: false,
+       algorithms: ['HS256']
+   }));
+   initExpress(app);
+   app.listen(3002, () => console.log("Server started"));
+   ```
+
+   `credentialsRequired` is set to `false` to allow unauthenticated API requests (e.g. the request to `signIn`).
+
+   The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
+
+6. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
+
+   *src/app/app.component.ts*
+   ```ts
+   constructor(public remult: Remult, private auth: AuthService) {
+   }
+   username: string = '';
+ 
+   async signIn() {
+     await this.auth.signIn(this.username);
+     this.loadTasks();
+   }
+ 
+   signOut() {
+     this.auth.signOut();
+     this.tasks = [];
+   }
+   ```
+
+   ::: warning Imports
+   This code requires imports for `AuthService` from `./auth.service`.
+   :::
+
+7. Add the following `HTML` after the `title` element of the `app.component.html` template, replacing the `<ng-container>` open tag.
+
+   *src/app/app.component.html*
+   ```html
+   <ng-container *ngIf="!remult.authenticated()">
+      <input [(ngModel)]="username"> 
+      <button (click)="signIn()">Sign in</button>
+   </ng-container>
+
+   <ng-container *ngIf="remult.authenticated()">
+      Hi {{remult.user.name}}
+      <button (click)="signOut()">Sign out</button>
+   ```
+
 
 The todo app now supports signing in and out, with all access restricted to signed in users only.
-
-As there is no point in displaying anything but the sign in area to users who haven't signed in yet, we can move the rest of the template elements into the second `ng-container`, conditioned by `*ngIf="remult.authenticated()"`.
 
 ### Role-based authorization
 Usually, not all application users have the same privileges. Let's define an `admin` role for our todo list, and enforce the following authorization rules:
@@ -832,37 +909,40 @@ Usually, not all application users have the same privileges. Let's define an `ad
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
    *src/app/task.ts*
-   ```ts{2,5-8,13}
-   import { Field, Entity, IdEntity, Validators } from "remult";
+   ```ts{2,5-8,13,19}
+   import { Field, Entity, IdEntity, Validators, BackendMethod, Remult, Allow } from "remult";
    import { Roles } from "./roles";
-
+   
    @Entity("tasks", {
-      allowApiRead: Allow.authenticated,
-      allowApiUpdate: Allow.authenticated,
-      allowApiInsert: Roles.admin,
-      allowApiDelete: Roles.admin
+       allowApiRead: Allow.authenticated,
+       allowApiUpdate: Allow.authenticated,
+       allowApiInsert: Roles.admin,
+       allowApiDelete: Roles.admin
    })
    export class Task extends IdEntity {
-      @Field({
-         validate: Validators.required,
-         allowApiUpdate: Roles.admin
-      })
-      title: string;
-      @Field()
-      completed: boolean;
+       @Field({
+           validate: Validators.required,
+           allowApiUpdate: Roles.admin
+       })
+       title: string = '';
+       @Field()
+       completed: boolean = false;
+   
+       @BackendMethod({ allowed: Roles.admin })
+       static async setAll(completed: boolean, remult?: Remult) {
+           for await (const task of remult!.repo(Task).iterate()) {
+               task.completed = completed;
+               await task.save();
+           }
+       }
    }
+
    ```
 
-3. Modify the `@BackendMethod` decorator of the AppComponent's `setAll` server function, to reflect the required `admin` role.
-
-   *src/app/app.component.ts*
-   ```ts
-   @BackendMethod({ allowed: Roles.admin })
-   ```
 
 4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
 
-   *src/app/app.component.ts*
+   *src/app/auth.service.ts*
    ```ts{4}
    @BackendMethod({ allowed: true })
    static async signIn(username: string) {
@@ -897,6 +977,7 @@ Now that our todo app requires a valid, signed in, user, we can easily add a `co
    ```
 
 2. Add a `remult` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
+** Yoni reconsider this - if you want to use the lambda with remult here **
 
    *src/app/task.ts*
    ```ts{1,6-9,12-14}
@@ -939,21 +1020,22 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{4-5,9-10,17-21}
+   ```ts{4-5,10-11,18-22}
    import * as express from 'express';
-   import { initExpress } from 'remult/server';
    import * as expressJwt from 'express-jwt';
+   import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
-   import '../app/app.module';
-
+   import { initExpress } from 'remult/server';
+   import '../app/task';
+   
    let app = express();
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
-      secret: "my secret key",
-      credentialsRequired: false,
-      algorithms: ['HS256']
+       secret: getJwtTokenSignKey(),
+       credentialsRequired: false,
+       algorithms: ['HS256']
    }));
    initExpress(app);
    app.use(express.static('dist/remult-angular-todo'));
@@ -1029,41 +1111,43 @@ Let's replace it with a production PostgreSQL database.
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{6-8,18-34}
+   ```ts{6-8,20-36}
    import * as express from 'express';
-   import { initExpress } from 'remult/server';
    import * as expressJwt from 'express-jwt';
+   import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
-   import { SqlDatabase } from 'remult';
+   import { Remult, SqlDatabase } from 'remult';
    import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
    import { Pool } from 'pg';
-   import '../app/app.module';
-
+   import { initExpress } from 'remult/server';
+   import '../app/task';
+   
    let app = express();
-   app.use(helmet());
+   app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
-   app.use(expressJwt({ 
-      secret: "my secret key", 
-      credentialsRequired: false, 
-      algorithms: ['HS256'] }));
+   app.use(expressJwt({
+       secret: getJwtTokenSignKey(),
+       credentialsRequired: false,
+       algorithms: ['HS256']
+   }));
    let getDatabase = () => {
-      if (process.env.NODE_ENV === "production") {
-         const db = new SqlDatabase(new PostgresDataProvider(new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: {
-                rejectUnauthorized: false
-            }
-         })));
-         let remult = new Remult();
-         remult.setDataProvider(db);
-         verifyStructureOfAllEntities(db, remult);
-         return db;
-      }
-      return undefined;
+       if (process.env.NODE_ENV === "production") {
+           const db = new SqlDatabase(new PostgresDataProvider(new Pool({
+               connectionString: process.env.DATABASE_URL,
+               ssl: process.env.NODE_ENV !== "production" ? false : {
+                   rejectUnauthorized: false
+               }
+           })));
+           let remult = new Remult();
+           remult.setDataProvider(db);
+           verifyStructureOfAllEntities(db, remult);
+           return db;
+       }
+       return undefined;
    }
    initExpress(app, {
-      dataProvider: getDatabase()
+       dataProvider: getDatabase()
    });
    app.use(express.static('dist/remult-angular-todo'));
    app.use('/*', async (req, res) => {
