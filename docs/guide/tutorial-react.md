@@ -14,7 +14,7 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed
 
 ## Create a React Project
 :::tip TLDR
-To skip creating the project, and doing the setup, you can clone the (remult-react-todo)[https://github.com/remult/remult-react-todo] repository using the following commands:
+To skip creating the project, and doing the setup, you can clone the [remult-react-todo](https://github.com/remult/remult-react-todo) repository using the following commands and skip directly to [Entities](#entities):
 ```sh
 git clone https://github.com/remult/remult-react-todo.git
 cd remult-react-todo

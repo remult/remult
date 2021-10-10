@@ -14,7 +14,7 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed
 
 ## Create a Project
 :::tip TLDR
-To skip creating the project, and doing the setup, you can clone the (remult-angular-todo)[https://github.com/remult/remult-angular-todo] repository using the following commands:
+To skip creating the project, and doing the setup, you can clone the [remult-angular-todo](https://github.com/remult/remult-angular-todo) repository using the following commands and skip directly to [Entities](#entities):
 ```sh
 git clone https://github.com/remult/remult-angular-todo.git
 cd remult-angular-todo
@@ -546,7 +546,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    ```ts{3}
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
-       where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
+       where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined!,
        orderBy: task => task.completed
      });
    }
