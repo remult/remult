@@ -552,6 +552,22 @@ const loadTasks = useCallback(() =>
 ::: warning Note
 By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
 :::
+### Hide completed tasks
+Let's hide all completed tasks, using server side filtering.
+
+1. In the `loadTasks` method of the `App` function, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)`.
+
+   *src/App.tsx*
+   ```ts{4}
+   const loadTasks = useCallback(() =>
+     taskRepo.find({
+       orderBy: task => task.completed,
+       where: task => task.completed.isEqualTo(false) 
+     }).then(tasks => setTasks(tasks)), []);
+   ```
+   ::: warning Note
+   Because the `completed` field is of type `boolean`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
+   :::
 
 ### Optionally hide completed tasks
 Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
@@ -563,20 +579,16 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    const [hideCompleted, setHideCompleted] = useState(false);
    ```
 
-2. In the `loadTasks` method of the `App` function, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isDifferentFrom(true)` filter if the `hideCompleted` field is `true`.
+2. In the `loadTasks` method of the `App` function, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`, also register the `hideCompleted` in the array that is sent as the second parameter to `useCallback`.
 
    *src/App.tsx*
    ```ts{4-5}
    const loadTasks = useCallback(() =>
      taskRepo.find({
        orderBy: task => task.completed,
-       where: task => hideCompleted ? task.completed.isDifferentFrom(true) : undefined
+       where: task => hideCompleted ? task.completed.isEqualTo(false) : undefined
      }).then(tasks => setTasks(tasks)), [hideCompleted]);
    ```
-
-   ::: warning Note
-   Because the `completed` field is of type `boolean`, the argument of its `isDifferentFrom` method is **compile-time checked to be of the `boolean` type.**
-   :::
 
 3. Add a `checkbox` input element immediately before the unordered list element in `App.tsx`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
 
@@ -784,7 +796,7 @@ const loadTasks = useCallback(() => {
   if (remult.authenticated())
     taskRepo.find({
       orderBy: task => task.completed,
-      where: task => hideCompleted ? task.completed.isDifferentFrom(true) : undefined
+      where: task => hideCompleted ? task.completed.isEqualTo(false) : undefined
     }).then(tasks => setTasks(tasks));
 }, [hideCompleted]);
 ```
@@ -798,13 +810,6 @@ In this section, we'll be using the following packages:
 * [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
 * [axios](https://github.com/axios/axios) to use as http client and passing HTTP `Authorization` headers to the API server
 
-::: tip TLDR
-You can skip steps 1-5, which are just jwt wiring, by running the following commands
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-react-todo/setup-authentication.diff | git apply
-npm i
-```
-:::
 
 1. Open a terminal and run the following command to install the required packages:
    ```sh
@@ -917,7 +922,7 @@ npm i
 5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{3-4,8-12}
+   ```ts{2-3,8-12}
    import express from 'express';
    import expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../AuthService';
@@ -971,19 +976,6 @@ npm i
    This code requires imports for `auth` from the existing import of `./common`.
    :::
 
-7. Add the following `HTML` after the `title` element of the `App.tsx` template, replacing the `<ng-container>` open tag.
-
-   *src/App.tsx*
-   ```tsx
-   <ng-container *ngIf="!remult.authenticated()">
-      <input [(ngModel)]="username"> 
-      <button (click)="signIn()">Sign in</button>
-   </ng-container>
-
-   <ng-container *ngIf="remult.authenticated()">
-      Hi {{remult.user.name}}
-      <button (click)="signOut()">Sign out</button>
-   ```
 
 
 The todo app now supports signing in and out, with all access restricted to signed in users only.
@@ -1059,61 +1051,14 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 **Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**
 
-<p>&nbsp;</p> 
 
-::: tip Bonus - store the user who completed the task
 
-Now that our todo app requires a valid, signed in, user, we can easily add a `completedUser` field to the `Task` entity class and store the name of the authenticated user who completed each task.
-
-1. Add a `completedUser` field (of type `string`) to the `Task` entity class, and define it with `allowApiUpdate: false` to ensure it is only updated by server-side code.
-
-   *src/Task.ts*
-   ```ts
-   @Field({
-      allowApiUpdate: false
-   })
-   completedUser: string;
-   ```
-
-2. Add a `remult` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
-** Yoni reconsider this - if you want to use the lambda with remult here **
-
-   *src/Task.ts*
-   ```ts{1,6-9,12-14}
-   @Entity<Task>("tasks", {
-      allowApiRead: Allow.authenticated,
-      allowApiUpdate: Allow.authenticated,
-      allowApiInsert: Roles.admin,
-      allowApiDelete: Roles.admin,
-      saving: task => {
-         if (isBackend() && task.completed && task.$.completed.wasChanged())
-               task.completedUser = task.remult.user.name;
-      }
-   })
-   export class Task extends IdEntity {
-      constructor(private remult: Remult) {
-         super();
-      }
-      ...
-   ```
-
-The `remult` constructor argument will be injected with either a client-side `Remult` implementation or a server-side one, depending on the runtime remult of the code.
-
-When the `save` method of a `Task` object is called in client-side code, the `saving` function is executed twice. First, it runs in the browser, before the an API `put` request is submitted. Next, when the API request is handled on the API server, the `saving` function is invoked again before the database is updated. The `Remult.onServer` property is used here to ensure our code runs only once, on the server-side.
-
-:::
 
 ## Deployment
 In this tutorial, we'll deploy both the React app files and the API server project to the same host, and redirect all non-API requests to return the React app's `index.html` page.
 
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware to improve security.
 
-::: tip TLDR
-You can skip the setup steps, using the following command, and jump to: [Deploy to heroku](#deploy-to-heroku)
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-react-todo/setup-deployment.diff | git apply
-npm i
-```
 * note that if your project name is different than `remult-react-todo`, you'll need to replace these values in the index.ts file
 :::
 
@@ -1156,7 +1101,7 @@ npm i
 
    *package.json*
    ```json
-   "build": "react-scripts build && tsc -p tsconfig.server.json",
+   "build": "react-scripts build && tsc -p tsconfig.server.json"
    ```
 
 4. Modify the project's `start` npm script to start the production Node server.
@@ -1176,10 +1121,9 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
    ```sh
    del yarn.lock
    ```
-1. In the root folder, initialize Git and commit your work:
+1. In the root folder, create a commit to deploy:
 
    ```sh
-   git init
    git add .
    git commit -m "todo app tutorial"
    ```
@@ -1190,9 +1134,9 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
    heroku create
    ```
 
-3. Set the jwt authentication to something random - you can use uuidgenerator
+3. Set the jwt authentication to something random - you can use an [Online UUID Generator](https://www.uuidgenerator.net/)
    ```sh
-   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key-generated-from-guid
+   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
    ```
 
 4. Deploy to Heroku using `git push`:
@@ -1216,12 +1160,6 @@ If you run into trouble deploying the app to Heroku, try using Heroku's [documen
 While the simple backend JSON database provided by `remult` is nice for development, it isn't suitable for production (it will be discarded each time the Heroku `dyno` is restarted).
 
 Let's replace it with a production PostgreSQL database.
-::: tip TLDR
-You can skip steps 1 and two, using the following command
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-react-todo/setup-postgres.diff | git apply
-npm i
-```
 :::
 
 1. Install `pg`.
@@ -1241,7 +1179,7 @@ npm i
    import compression from 'compression';
    import helmet from 'helmet';
    import { Remult, SqlDatabase } from 'remult';
-   import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/   postgres';
+   import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
    import { Pool } from 'pg';
    import { initExpress } from 'remult/server';
    import '../Task';

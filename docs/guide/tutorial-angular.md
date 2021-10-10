@@ -502,6 +502,25 @@ async loadTasks() {
 By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
 :::
 
+### Hide completed tasks
+Let's hide all completed tasks, using server side filtering.
+
+1. In the `loadTasks` method of the `AppComponent` class, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter.
+
+   *src/app/app.component.ts*
+   ```ts{3}
+   async loadTasks() {
+     this.tasks = await this.tasksRepo.find({
+       where: task => task.completed.isEqualTo(false),
+       orderBy: task => task.completed
+     });
+   }
+   ```
+
+   ::: warning Note
+   Because the `completed` field is of type `boolean`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
+   :::
+
 ### Optionally hide completed tasks
 Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
 
@@ -512,21 +531,18 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    hideCompleted: boolean = false;
    ```
 
-2. In the `loadTasks` method of the `AppComponent` class, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`.
+2. In the `loadTasks` method of the `AppComponent` class, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`.
 
    *src/app/app.component.ts*
    ```ts{3}
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
-       where: task => this.hideCompleted ? task.completed.isDifferentFrom(true) : undefined,
+       where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
        orderBy: task => task.completed
      });
    }
    ```
 
-   ::: warning Note
-   Because the `completed` field is of type `boolean`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
-   :::
 
 3. Add a `checkbox` input element immediately before the unordered list element in `app.component.html`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
 
@@ -724,7 +740,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 async loadTasks() {
   if (this.remult.authenticated())
     this.tasks = await this.tasksRepo.find({
-      where: task => this.hideCompleted ? task.completed.isDifferentFrom(true) : undefined,
+      where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
       orderBy: task => task.completed
     });
 }
@@ -738,13 +754,6 @@ In this section, we'll be using the following packages:
 * [@auth0/angular-jwt](https://github.com/auth0/angular2-jwt) for client-side JWT decoding and passing HTTP `Authorization` headers to the API server
 * [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
 
-::: tip TLDR
-You can skip steps 1-5, which are just jwt wiring, by running the following commands
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/setup-authentication.diff | git apply
-npm i
-```
-:::
 
 1. Open a terminal and run the following command to install the required packages:
    ```sh
@@ -972,49 +981,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 **Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**
 
-<p>&nbsp;</p> 
 
-::: tip Bonus - store the user who completed the task
-
-Now that our todo app requires a valid, signed in, user, we can easily add a `completedUser` field to the `Task` entity class and store the name of the authenticated user who completed each task.
-
-1. Add a `completedUser` field (of type `string`) to the `Task` entity class, and define it with `allowApiUpdate: false` to ensure it is only updated by server-side code.
-
-   *src/app/task.ts*
-   ```ts
-   @Field({
-      allowApiUpdate: false
-   })
-   completedUser: string;
-   ```
-
-2. Add a `remult` argument to the constructor of the `Task` entity class, and set the `saving` property of the `EntitySettings` implemented in the constructor to the following arrow function.
-** Yoni reconsider this - if you want to use the lambda with remult here **
-
-   *src/app/task.ts*
-   ```ts{1,6-9,12-14}
-   @Entity<Task>("tasks", {
-      allowApiRead: Allow.authenticated,
-      allowApiUpdate: Allow.authenticated,
-      allowApiInsert: Roles.admin,
-      allowApiDelete: Roles.admin,
-      saving: task => {
-         if (isBackend() && task.completed && task.$.completed.wasChanged())
-               task.completedUser = task.remult.user.name;
-      }
-   })
-   export class Task extends IdEntity {
-      constructor(private remult: Remult) {
-         super();
-      }
-      ...
-   ```
-
-The `remult` constructor argument will be injected with either a client-side `Remult` implementation or a server-side one, depending on the runtime remult of the code.
-
-When the `save` method of a `Task` object is called in client-side code, the `saving` function is executed twice. First, it runs in the browser, before the an API `put` request is submitted. Next, when the API request is handled on the API server, the `saving` function is invoked again before the database is updated. The `Remult.onServer` property is used here to ensure our code runs only once, on the server-side.
-
-:::
 
 ## Deployment
 
@@ -1022,12 +989,6 @@ In this tutorial, we'll deploy both the Angular app files and the API server pro
 
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware to improve security.
 
-::: tip TLDR
-You can skip the setup steps, using the following command, and jump to: [Deploy to heroku](#deploy-to-heroku)
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/setup-deployment.diff | git apply
-npm i
-```
 * note that if your project name is different than `remult-angular-todo`, you'll need to replace these values in the index.ts file
 :::
 
@@ -1086,10 +1047,9 @@ The todo app is now ready for deployment to production.
 
 In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need a `heroku` account. You'll also need [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install) installed.
 
-1. In the root folder, initialize Git and commit your work:
+1. In the root folder, create a commit to deploy:
 
    ```sh
-   git init
    git add .
    git commit -m "todo app tutorial"
    ```
@@ -1100,11 +1060,11 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
    heroku create
    ```
 
-3. Set the jwt authentication to something random - you can use uuidgenerator
+3. Set the jwt authentication to something random - you can use an [Online UUID Generator](https://www.uuidgenerator.net/)
    ```sh
-   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key-generated-from-guid
+   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
    ```
-
+   
 4. Deploy to Heroku using `git push`:
 
    ```sh
@@ -1126,13 +1086,6 @@ If you run into trouble deploying the app to Heroku, try using Heroku's [documen
 While the simple backend JSON database provided by `remult` is nice for development, it isn't suitable for production (it will be discarded each time the Heroku `dyno` is restarted).
 
 Let's replace it with a production PostgreSQL database.
-::: tip TLDR
-You can skip steps 1 and two, using the following command
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/setup-postgres.diff | git apply
-npm i
-```
-:::
 
 1. Install `pg`.
 
