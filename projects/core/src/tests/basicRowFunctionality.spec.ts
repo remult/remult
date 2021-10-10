@@ -25,6 +25,7 @@ import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerFi
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
+import { assign } from '../../assign';
 
 //SqlDatabase.LogToConsole = true;
 
@@ -1875,6 +1876,24 @@ describe("test number negative", () => {
 
   // });
 
+});
+describe("cache", () => {
+  it("find first useCache", async () => {
+    let [r,] = await createData(async i => i(1, "noam"));
+    await r.findFirst({ where: x => x.id.isEqualTo(1), useCache: true });
+    await r.find().then(x => assign(x[0], { categoryName: 'a' }).save());
+    expect((await r.findFirst(x => x.id.isEqualTo(1))).categoryName).toBe("a");
+    expect((await r.findFirst({ where: x => x.id.isEqualTo(1) })).categoryName).toBe("a");
+    expect((await r.findFirst({ where: x => x.id.isEqualTo(1), useCache: true })).categoryName).toBe("noam");
+
+  });
+  it("find id", async () => {
+    let [r,] = await createData(async i => i(1, "noam"));
+    await r.findId(1);
+    await r.find().then(x => assign(x[0], { categoryName: 'a' }).save());
+    expect((await r.findId(1)).categoryName).toBe("noam");
+    expect((await r.findId(1, { useCache: false })).categoryName).toBe("a");
+  });
 });
 
 describe("test rest data provider translates data correctly", () => {

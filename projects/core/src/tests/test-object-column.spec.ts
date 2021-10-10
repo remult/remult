@@ -4,7 +4,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, FieldType } from '../remult3';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
-import { set } from '../../set';
+import { assign } from '../../assign';
 
 
 describe("test object column", () => {
@@ -42,7 +42,7 @@ describe("test object column", () => {
         expect(sqlr.phone1).toBe('');
         expect(sqlr.phone2).toBeNull();
         expect(sqlr.phone3).toBe('');
-        set(x, {
+        assign(x, {
             phone1: new Phone("123"),
             phone2: new Phone("456"),
             phone3: new Phone("789")
@@ -52,7 +52,7 @@ describe("test object column", () => {
         expect(sqlr.phone1).toBe('123');
         expect(sqlr.phone2).toBe('456');
         expect(sqlr.phone3).toBe('789');
-        await set(x, {
+        await assign(x, {
             phone1: null,
             phone2: null,
             phone3: null

@@ -1,5 +1,5 @@
 import { ClassType } from '../classType';
-import { set } from '../set';
+import { assign } from '../assign';
 import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces';
 
 import { AndFilter, Filter } from './filter/filter-interfaces';
@@ -180,7 +180,7 @@ export class OneToMany<T>{
   async create(item?: Partial<T>): Promise<T> {
     let r = this.provider.create();
     await __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
-    set(r, item);
+    assign(r, item);
     if (this.settings.create)
       this.settings.create(r);
     return r;

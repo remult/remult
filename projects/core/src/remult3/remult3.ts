@@ -25,14 +25,15 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [V] remove the bonus from the tutorials
 [V] remove git init from tutorial
-[] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
+[V] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
+[V] rename set to assign
+[V] remove reload on save with no changes
+[V] remove options factory
 
 
 [] test @remult/angular start with angular 12
 [] create starter todo angular, that's ready to start coding
 [] create starter todo react that's ready to start coding
-[] remove reload on save with no changes
-[] rename set to assign
 
 
 []code samples
@@ -42,7 +43,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 []todo react
 []bezkoder react
 []bekoder vue
-[V] remove options factory
 [] add no tests to angular starter kit
 
 

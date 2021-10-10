@@ -5,7 +5,7 @@ import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 
-import { set } from '../../set';
+import { assign } from '../../assign';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -44,7 +44,7 @@ class testServerMethodOnEntity extends EntityBase {
 
 }
 
-@Entity<testBoolCreate123>('testBoolCreate123', (o, c) => set(o, {
+@Entity<testBoolCreate123>('testBoolCreate123', (o, c) => assign(o, {
     allowApiCrud: true,
     saving: async t => {
         if (isBackend() && t._.isNew()) {

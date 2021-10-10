@@ -13,7 +13,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
-import { set } from "../../set";
+import { assign } from "../../assign";
 
 
 
@@ -304,7 +304,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         let r: Promise<entityType>;
         let cacheInfo: cacheEntityInfo<entityType>;
-        if (opts.useCache || opts.useCache === undefined) {
+        if (opts.useCache) {
             let f = await entityFilterToJson(this.metadata, opts.where);
             let key = JSON.stringify(f);
             cacheInfo = this.cache.get(key);
@@ -375,6 +375,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         if (typeof id !== "string" && typeof id !== "number")
             throw new Error("id can be either number or string, but got: " + typeof (id))
         return this.findFirst({
+            useCache: true,
             ...options,
             where: x => this.metadata.idMetadata.getIdFilter(id),
         });
@@ -1433,7 +1434,7 @@ export class EntityBase {
     get _(): EntityRef<this> { return getEntityRef(this) }
     save() { return this._.save(); }
     assign(values: Partial<this>) {
-        set(this, values);
+        assign(this, values);
         return this;
     }
     delete() { return this._.delete(); }
