@@ -13,6 +13,14 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed
 
 
 ## Create a React Project
+:::tip TLDR
+To skip creating the project, and doing the setup, you can clone the (remult-react-todo)[https://github.com/remult/remult-react-todo] repository using the following commands:
+```sh
+git clone https://github.com/remult/remult-react-todo.git
+cd remult-react-todo
+npm i
+```
+:::
 Create the new React project.
 ```sh
 npx create-react-app remult-react-todo --template typescript

@@ -13,6 +13,15 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed
 
 
 ## Create a Project
+:::tip TLDR
+To skip creating the project, and doing the setup, you can clone the (remult-angular-todo)[https://github.com/remult/remult-angular-todo] repository using the following commands:
+```sh
+git clone https://github.com/remult/remult-angular-todo.git
+cd remult-angular-todo
+npm i
+```
+:::
+
 We'll start by creating an Angular project, so if Angular CLI is not already installed - then install it.
 ```sh
 npm i -g @angular/cli
