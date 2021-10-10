@@ -330,7 +330,7 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
 
    *src/App.tsx*
    ```ts
-   const deleteTask = (t: Task) => t.delete().then(loadTasks);
+   const deleteTask = (task: Task) => task.delete().then(loadTasks);
    ```
 
 2. Add the `Delete` button to the task list item template element in `App.tsx`.
@@ -338,10 +338,10 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
    *src/App.tsx*
    ```tsx{5}
    <ul>
-     {tasks.map(t => (
-         <li key={t.id}>
-             {t.title}
-             <button onClick={() => deleteTask(t)}>Delete</button>
+     {tasks.map(task => (
+         <li key={task.id}>
+             {task.title}
+             <button onClick={() => deleteTask(task)}>Delete</button>
          </li>))}
    </ul>
    ```
@@ -594,7 +594,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    const loadTasks = useCallback(() =>
      taskRepo.find({
        orderBy: task => task.completed,
-       where: task => hideCompleted ? task.completed.isEqualTo(false) : undefined
+       where: task => hideCompleted ? task.completed.isEqualTo(false) : undefined!
      }).then(tasks => setTasks(tasks)), [hideCompleted]);
    ```
 
@@ -714,7 +714,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 3. Adjust the `TaskEditor` to refresh when it's task is changed, 
    ```tsx{2}
    const [{ task }, setTask] = useState(props);
-   useEffect(() => setTask({ task: props.task }), [props]);
+   useEffect(() => setTask(props), [props]);
    const save = () => task.save().then(task => setTask({ task }));
    ```
 
@@ -739,7 +739,7 @@ static async setAll(completed: boolean, remult?: Remult) {
 *src/App.tsx*
 ```ts{2}
 const setAll = async (completed: boolean) => {
-  Task.setAll(completed);
+  await Task.setAll(completed);
   loadTasks();
 }
 ```
@@ -824,7 +824,7 @@ In this section, we'll be using the following packages:
    npm i jsonwebtoken jwt-decode  express-jwt axios
    npm i --save-dev  @types/jsonwebtoken @types/express-jwt
    ```
-2. Create a file called `src/app/auth.service.ts ` and place the following code in it:
+2. Create a file called `src/app/AuthService.ts ` and place the following code in it:
    *src/AuthService.ts*
    ```ts
    import { BackendMethod, Remult } from 'remult';
@@ -835,6 +835,10 @@ In this section, we'll be using the following packages:
    
    export class AuthService {
      constructor(private remult: Remult) {
+        let token = AuthService.fromStorage();
+        if (token) {
+            this.setAuthToken(token);
+        }
      }
    
      async signIn(username: string) {
@@ -956,9 +960,9 @@ In this section, we'll be using the following packages:
    *src/App.tsx*
    ```tsx
    const [username, setUsername] = useState("");
-   const signIn = () => {
+   const signIn = () => 
      auth.signIn(username).then(loadTasks);
-   }
+   
    const signOut = () => {
      auth.signOut();
      setTasks([]);
