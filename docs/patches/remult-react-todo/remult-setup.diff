@@ -1,0 +1,104 @@
+diff --git a/.gitignore b/.gitignore
+index 4d29575..800f3a8 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -10,6 +10,7 @@
+ 
+ # production
+ /build
++/dist
+ 
+ # misc
+ .DS_Store
+diff --git a/package.json b/package.json
+index 6312652..4753265 100644
+--- a/package.json
++++ b/package.json
+@@ -10,18 +10,23 @@
+     "@types/node": "^12.0.0",
+     "@types/react": "^17.0.0",
+     "@types/react-dom": "^17.0.0",
++    "express": "^4.17.1",
+     "react": "^17.0.2",
+     "react-dom": "^17.0.2",
+     "react-scripts": "4.0.3",
++    "remult": "^0.3.12",
+     "typescript": "^4.1.2",
+     "web-vitals": "^1.0.1"
+   },
+   "scripts": {
+     "start": "react-scripts start",
+     "build": "react-scripts build",
++    "dev-node": "ts-node-dev --project tsconfig.server.json src/server/",
++    "dev-react": "react-scripts start",
+     "test": "react-scripts test",
+     "eject": "react-scripts eject"
+   },
++  "proxy": "http://localhost:3002",
+   "eslintConfig": {
+     "extends": [
+       "react-app",
+@@ -39,5 +44,9 @@
+       "last 1 firefox version",
+       "last 1 safari version"
+     ]
++  },
++  "devDependencies": {
++    "@types/express": "^4.17.13",
++    "ts-node-dev": "^1.1.8"
+   }
+ }
+diff --git a/src/common.ts b/src/common.ts
+new file mode 100644
+index 0000000..2359214
+--- /dev/null
++++ b/src/common.ts
+@@ -0,0 +1,3 @@
++import { Remult } from "remult";
++
++export const remult = new Remult(); 
+\ No newline at end of file
+diff --git a/src/server/index.ts b/src/server/index.ts
+new file mode 100644
+index 0000000..8e42794
+--- /dev/null
++++ b/src/server/index.ts
+@@ -0,0 +1,6 @@
++import express from 'express';
++import { initExpress } from 'remult/server';
++
++let app = express();
++initExpress(app);
++app.listen(3002, () => console.log("Server started"));
+\ No newline at end of file
+diff --git a/tsconfig.json b/tsconfig.json
+index a273b0c..28e791a 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -13,6 +13,7 @@
+     "strict": true,
+     "forceConsistentCasingInFileNames": true,
+     "noFallthroughCasesInSwitch": true,
++    "experimentalDecorators": true,
+     "module": "esnext",
+     "moduleResolution": "node",
+     "resolveJsonModule": true,
+diff --git a/tsconfig.server.json b/tsconfig.server.json
+new file mode 100644
+index 0000000..67a59b0
+--- /dev/null
++++ b/tsconfig.server.json
+@@ -0,0 +1,12 @@
++{
++    "extends": "./tsconfig.json",
++    "compilerOptions": {
++       "outDir": "./dist/server",
++       "module": "commonjs",
++       "noEmit": false,
++       "emitDecoratorMetadata": true
++    },
++    "include": [
++       "src/server/index.ts"
++    ]
++ }
+\ No newline at end of file

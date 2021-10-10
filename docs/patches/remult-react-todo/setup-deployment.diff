@@ -1,0 +1,89 @@
+diff --git a/package.json b/package.json
+index 22b6f88..68600d5 100644
+--- a/package.json
++++ b/package.json
+@@ -11,8 +11,10 @@
+     "@types/react": "^17.0.0",
+     "@types/react-dom": "^17.0.0",
+     "axios": "^0.22.0",
++    "compression": "^1.7.4",
+     "express": "^4.17.1",
+     "express-jwt": "^6.1.0",
++    "helmet": "^4.6.0",
+     "jsonwebtoken": "^8.5.1",
+     "jwt-decode": "^3.1.2",
+     "react": "^17.0.2",
+@@ -23,8 +25,8 @@
+     "web-vitals": "^1.0.1"
+   },
+   "scripts": {
+-    "start": "react-scripts start",
+-    "build": "react-scripts build",
++    "start": "node dist/server/server",
++    "build": "react-scripts build && tsc -p tsconfig.server.json",
+     "dev-node": "ts-node-dev --project tsconfig.server.json src/server/",
+     "dev-react": "react-scripts start",
+     "test": "react-scripts test",
+@@ -53,6 +55,7 @@
+     ]
+   },
+   "devDependencies": {
++    "@types/compression": "^1.7.2",
+     "@types/express": "^4.17.13",
+     "@types/express-jwt": "^6.0.2",
+     "@types/jsonwebtoken": "^8.5.5",
+diff --git a/src/AuthService.ts b/src/AuthService.ts
+index 765cde9..591899e 100644
+--- a/src/AuthService.ts
++++ b/src/AuthService.ts
+@@ -1,4 +1,5 @@
+-import { BackendMethod, Remult } from 'remult';
++
++import { BackendMethod, Remult, UserInfo } from 'remult';
+ import * as jwt from 'jsonwebtoken';
+ import jwtDecode from 'jwt-decode';
+ 
+@@ -19,12 +20,12 @@ export class AuthService {
+     ];
+     let user = validUsers.find(user => user.name === username);
+     if (!user)
+-      throw new Error("Invalid User");
++      throw "Invalid User";
+     return jwt.sign(user, getJwtTokenSignKey());
+   }
+ 
+   setAuthToken(token: string) {
+-    this.remult.setUser(jwtDecode(token));
++    this.remult.setUser(<UserInfo>jwtDecode(token));
+     sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+   }
+   static fromStorage(): string {
+diff --git a/src/server/index.ts b/src/server/index.ts
+index 6fd48fc..08a462c 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -1,13 +1,21 @@
+ import express from 'express';
+ import expressJwt from 'express-jwt';
+ import { getJwtTokenSignKey } from '../AuthService';
++import compression from 'compression';
++import helmet from 'helmet';
+ import { initExpress } from 'remult/server';
+ 
+ let app = express();
++app.use(helmet({ contentSecurityPolicy: false }));
++app.use(compression());
+ app.use(expressJwt({
+     secret: getJwtTokenSignKey(),
+     credentialsRequired: false,
+     algorithms: ['HS256']
+ }));
+ initExpress(app);
+-app.listen(3002, () => console.log("Server started"));
+\ No newline at end of file
++app.use(express.static('build'));
++app.use('/*', async (req, res) => {
++    res.sendFile('./build/index.html');
++});
++app.listen(process.env.PORT || 3002, () => console.log("Server started"));
+\ No newline at end of file

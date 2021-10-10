@@ -619,6 +619,7 @@ With the current state of the `setAll` function, each modified task being saved 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
 Refactor the `for await` loop from the `setAll` function of the `AppComponent` class into a new, `static`, `setAll` function in the `Task` entity,  which will run on the server.
+
 *src/app/task.ts*
 ```ts
 @BackendMethod({ allowed: true })
@@ -963,8 +964,8 @@ Usually, not all application users have the same privileges. Let's define an `ad
       ];
       let user = validUsers.find(user => user.name === username);
       if (!user)
-      throw "Invalid User";
-      return jwt.sign(user, "my secret key");
+        throw "Invalid User";
+      return jwt.sign(user, getJwtTokenSignKey());
    }
    ```
 
@@ -1099,14 +1100,15 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
    heroku create
    ```
 
-3. Deploy to Heroku using `git push`:
+3. Set the jwt authentication to something random - you can use uuidgenerator
+   ```sh
+   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key-generated-from-guid
+   ```
+
+4. Deploy to Heroku using `git push`:
 
    ```sh
    git push heroku master
-   ```
-4. Set the jwt authentication to something random - you can use uuidgenerator
-   ```sh
-   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key-generated-from-guid
    ```
 
 5. Run the production app using `heroku apps:open` command: 
@@ -1187,15 +1189,16 @@ npm i
    app.listen(process.env.PORT || 3002, () => console.log("Server started"));
    ```
 
+4. Provision a dev postgres database on Heroku
+   ```sh
+   heroku addons:create heroku-postgresql:hobby-dev
+   ```
+
 3. Commit and deploy to Heroku using `git push`:
 
    ```sh
    git commit -m "Added Postgres"
    git push heroku master
-   ```
-4. Provision a dev postgres database on Heroku
-   ```sh
-   heroku addons:create heroku-postgresql:hobby-dev
    ```
 
 4. Run the production app using `heroku apps:open` command: 

@@ -1,0 +1,62 @@
+diff --git a/package.json b/package.json
+index 68600d5..a778cf5 100644
+--- a/package.json
++++ b/package.json
+@@ -17,6 +17,7 @@
+     "helmet": "^4.6.0",
+     "jsonwebtoken": "^8.5.1",
+     "jwt-decode": "^3.1.2",
++    "pg": "^8.7.1",
+     "react": "^17.0.2",
+     "react-dom": "^17.0.2",
+     "react-scripts": "4.0.3",
+@@ -59,6 +60,7 @@
+     "@types/express": "^4.17.13",
+     "@types/express-jwt": "^6.0.2",
+     "@types/jsonwebtoken": "^8.5.5",
++    "@types/pg": "^8.6.1",
+     "ts-node-dev": "^1.1.8"
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/server/index.ts b/src/server/index.ts
+index 08a462c..d4b3d02 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -3,6 +3,9 @@ import expressJwt from 'express-jwt';
+ import { getJwtTokenSignKey } from '../AuthService';
+ import compression from 'compression';
+ import helmet from 'helmet';
++import { Remult, SqlDatabase } from 'remult';
++import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
++import { Pool } from 'pg';
+ import { initExpress } from 'remult/server';
+ 
+ let app = express();
+@@ -13,7 +16,24 @@ app.use(expressJwt({
+     credentialsRequired: false,
+     algorithms: ['HS256']
+ }));
+-initExpress(app);
++let getDatabase = () => {
++    if (process.env.NODE_ENV === "production") {
++        const db = new SqlDatabase(new PostgresDataProvider(new Pool({
++            connectionString: process.env.DATABASE_URL,
++            ssl: process.env.NODE_ENV !== "production" ? false : {
++                rejectUnauthorized: false
++            }
++        })));
++        let remult = new Remult();
++        remult.setDataProvider(db);
++        verifyStructureOfAllEntities(db, remult);
++        return db;
++    }
++    return undefined;
++}
++initExpress(app, {
++    dataProvider: getDatabase()
++});
+ app.use(express.static('build'));
+ app.use('/*', async (req, res) => {
+     res.sendFile('./build/index.html');

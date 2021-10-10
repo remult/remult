@@ -7,7 +7,7 @@ npm i --save-dev @types/express ts-node-dev
 
 for prod
 ```sh
-express-jwt compression helmet pg jwt-decode axios
+npm i express-jwt compression helmet pg jwt-decode axios
 npm i --save-dev @types/compression @types/express-jwt @types/jsonwebtoken @types/pg
 ```
 

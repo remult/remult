@@ -18,11 +18,19 @@ import { entityEventListener } from "../__EntityValueProvider";
 # more to remult repo
 [V] copy readme to npm bundle
 [V] mark remult/core as deprecated
+[] add completed structure for InMemory database to treat missing values correctly - for example isEqualToTrue or sorting for the tutorial.
+[] tutorial - add step of simple where,
+[] tutorial - use isequalto instead of isdifferent from
+[] rethink why save when no changes are done it reloading
+
+[] remove the bonus from the tutorials
+[] remove git init from tutorial
+
+
 [] test @remult/angular start with angular 12
 [] create starter todo angular, that's ready to start coding
 [] create starter todo react that's ready to start coding
 [] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
-[] consider using db default null for fields - or only non literal fields.
 [] remove reload on save with no changes
 [] rename set to assign
 
@@ -66,9 +74,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
-[] in the docs, consider separating the creation of the AuthService with the implementation  of the SignIn method
-[] consider creating a seperate docs, for noam blog with the angular material etc..
+
+
 [] in the tutorial - when sorting, not all values has done or not done - and that compromises the sort. since true comes before undefined
+
+[] reconsider the tricks we've done with {task}  in react - maybe just use state for completed and title to make it more friendly for react developers
+
+[V] consider creating a seperate docs, for noam blog with the angular material etc..
 [] reconsider our deployment strategy - we can build in the dev machine, and send a built project to the server - it'll probably deploy a lot faster (no need to build the angular on the node server)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 [] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
