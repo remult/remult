@@ -22,7 +22,7 @@ index 6312652..4753265 100644
      "react": "^17.0.2",
      "react-dom": "^17.0.2",
      "react-scripts": "4.0.3",
-+    "remult": "^0.3.12",
++    "remult": "^0.4.0",
      "typescript": "^4.1.2",
      "web-vitals": "^1.0.1"
    },

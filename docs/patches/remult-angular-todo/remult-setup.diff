@@ -16,7 +16,7 @@ index 3bb8620..f6b1b47 100644
      "@angular/platform-browser-dynamic": "~12.2.0",
      "@angular/router": "~12.2.0",
 +    "express": "^4.17.1",
-+    "remult": "^0.3.12",
++    "remult": "^0.4.0",
      "rxjs": "~6.6.0",
      "tslib": "^2.3.0",
      "zone.js": "~0.11.4"
