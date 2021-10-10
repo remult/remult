@@ -19,18 +19,18 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] copy readme to npm bundle
 [V] mark remult/core as deprecated
 [V] add completed structure for InMemory database to treat missing values correctly - for example isEqualToTrue or sorting for the tutorial.
-[] rethink why save when no changes are done it reloading
+[V] rethink why save when no changes are done it reloading
 [V] tutorial - add step of simple where,
 [V] tutorial - use isequalto instead of isdifferent from
 
 [V] remove the bonus from the tutorials
 [V] remove git init from tutorial
+[] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
 
 
 [] test @remult/angular start with angular 12
 [] create starter todo angular, that's ready to start coding
 [] create starter todo react that's ready to start coding
-[] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
 [] remove reload on save with no changes
 [] rename set to assign
 

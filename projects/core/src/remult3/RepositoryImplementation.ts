@@ -718,7 +718,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                         }
                     }
                 }
-                if (doNotSave || !wasChanged) {
+                if (!wasChanged)
+                    return this.instance;
+                if (doNotSave) {
                     updatedRow = (await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }))[0];
                 }
                 else {
