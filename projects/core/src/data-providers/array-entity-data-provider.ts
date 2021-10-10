@@ -15,6 +15,29 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     constructor(private entity: EntityMetadata, private rows?: any[]) {
         if (!rows)
             rows = [];
+        else {
+            for (const r of rows) {
+                this.verifyThatRowHasAllNotNullColumns(r);
+            }
+        }
+
+
+    }
+    private verifyThatRowHasAllNotNullColumns(r: any) {
+        for (const f of this.entity.fields) {
+            if (!f.allowNull) {
+                if (r[f.key] === undefined || r[f.key] === null) {
+                    let val = undefined;
+                    if (f.valueType === Boolean)
+                        val = false;
+                    else if (f.valueType === Number)
+                        val = 0;
+                    else if (f.valueType === String)
+                        val = '';
+                    r[f.key] = val;
+                }
+            }
+        }
     }
     async count(where?: Filter): Promise<number> {
         let rows = this.rows;
@@ -105,6 +128,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                         }
                     }
                 }
+                this.verifyThatRowHasAllNotNullColumns(newR);
                 this.rows[i] = newR;
                 return Promise.resolve(this.translateFromJson(this.rows[i]));
             }

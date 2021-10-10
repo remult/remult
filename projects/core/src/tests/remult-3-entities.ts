@@ -31,7 +31,7 @@ export class Categories extends EntityBase {
         dbName: 'CategoryID'
     })
     id: number = 0;
-    @Field()
+    @Field({allowNull:true})
     categoryName: string;
     @Field()
     description: string;

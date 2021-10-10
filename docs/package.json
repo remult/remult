@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "vuepress dev .",
     "build": "vuepress build .",
-    "publish": "deploy.sh"
+    "publish": "tools\\deploy.sh"
   },
   "devDependencies": {
     "vuepress": "^1.8.2",

@@ -18,13 +18,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 # more to remult repo
 [V] copy readme to npm bundle
 [V] mark remult/core as deprecated
-[] add completed structure for InMemory database to treat missing values correctly - for example isEqualToTrue or sorting for the tutorial.
-[] tutorial - add step of simple where,
-[] tutorial - use isequalto instead of isdifferent from
+[V] add completed structure for InMemory database to treat missing values correctly - for example isEqualToTrue or sorting for the tutorial.
 [] rethink why save when no changes are done it reloading
+[V] tutorial - add step of simple where,
+[V] tutorial - use isequalto instead of isdifferent from
 
-[] remove the bonus from the tutorials
-[] remove git init from tutorial
+[V] remove the bonus from the tutorials
+[V] remove git init from tutorial
 
 
 [] test @remult/angular start with angular 12
@@ -44,7 +44,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 []bekoder vue
 [V] remove options factory
 [] add no tests to angular starter kit
-[] rethink why save when no changes are done it reloading
+
 
 
 
@@ -74,11 +74,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] overload for find, and iterate that only accepts where (we have that for find first)
 
-
-[] in the tutorial - when sorting, not all values has done or not done - and that compromises the sort. since true comes before undefined
-
-[] reconsider the tricks we've done with {task}  in react - maybe just use state for completed and title to make it more friendly for react developers
+[V] reconsider the tricks we've done with {task}  in react - maybe just use state for completed and title to make it more friendly for react developers
 
 [V] consider creating a seperate docs, for noam blog with the angular material etc..
 [] reconsider our deployment strategy - we can build in the dev machine, and send a built project to the server - it'll probably deploy a lot faster (no need to build the angular on the node server)
