@@ -85,10 +85,10 @@ export function hello(_options: Schema): Rule {
 
     try {
       tree.delete('./src/app/app.component.html');
-      tree.delete('./src/app/app.component.spec.ts');
       tree.delete('./src/app/app.component.ts');
       tree.delete('./src/app/app.component.scss');
       tree.delete('./src/app/app-routing.module.ts');
+      tree.delete('./src/app/app.component.spec.ts');
     }
     catch { }
 
