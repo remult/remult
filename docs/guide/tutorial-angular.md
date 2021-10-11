@@ -91,12 +91,6 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    app.listen(3002, () => console.log("Server started"));
    ```
 
-   ::: warning Note
-   Remult creates RESTful API endpoints based on decorators in the application code. Importing the Angular `../app/app.module` in the main server module **ensures all the decorators used in our app are found by Remult**.
-
-   Sure, this means the entire Angular app is loaded on the server-side, but that's a small price to pay for keeping our code simple.
-   :::
-
 5. In the root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
 
    *tsconfig.server.json*
@@ -224,32 +218,33 @@ The `Task` entity class will be used:
 
 The `Task` entity class we're creating will have an `id` field and a `title` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
-Create a file `task.ts` in the `src/app/` folder, with the following code:
+1. Create a file `task.ts` in the `src/app/` folder, with the following code:
 
-*src/app/task.ts*
-```ts
-import { Field, Entity, IdEntity } from "remult";
+   *src/app/task.ts*
+   ```ts
+   import { Field, Entity, IdEntity } from "remult";
 
-@Entity("tasks", {
-    allowApiCrud: true
-})
-export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-}
-```
+   @Entity("tasks", {
+      allowApiCrud: true
+   })
+   export class Task extends IdEntity {
+      @Field()
+      title: string = '';
+   }
+   ```
+
+2. Import the `task` module into the API server's `index` module:
+
+   *src/server/index.ts*
+   ```ts
+   import '../app/task';
+   ```
 
 The `@Entity` decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the `allowApiCrud` property to `true`. <!-- consider linking to reference -->
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
 The `@Field` decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
-
-#### Import this file in the server's index.ts file
-```ts
-import '../app/task';
-```
-
 
 ### Create new tasks
 
