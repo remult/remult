@@ -30,23 +30,19 @@ The first thing we'll do is let angular create the project using it's CLI.
 Open a command prompt in a folder that'll be the parent of your new project (in my case I use `c:\repos\`) and run the following command, replacing `my-project` with the name of the project you want to use:
 ```sh
 ng new --style=scss --routing=true --skipTests=true my-project
-```
-
-### Install the Starter Kit
-Next go into the folder of your new project
-```sh
 cd my-project
-```
-
-And run the following command to install the `remult` framework starter kit. 
-```sh
 ng add @remult/angular
 ```
-This will add:
-3. [Angular Material](https://material.angular.io/)
-4. Basic User Authentication and Authorization
-5. Deployment Ready code, that can be easily deployed using Heroku
-6. Uses a basic Json db for development, and Postgres SQL in Production.
+1. Create an angular project.
+2. change dir to the newly created project
+3. install `remult` framework starter kit.
+   
+   This will add:
+
+   1. [Angular Material](https://material.angular.io/)
+   2. Basic User Authentication and Authorization
+   3. Deployment Ready code, that can be easily deployed using Heroku
+   4. Uses a basic Json db for development, and Postgres SQL in Production.
 
 
 ### open vs code in the `my-project` directory
@@ -996,12 +992,12 @@ To Generate a unique string, goto [uuidgenerator](https://www.uuidgenerator.net/
 
 This key is required, so set it using:
 ```sh
-heroku config:set TOKEN_SIGN_KEY=woEczJuvjuOWmIakjdvH
+heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
 ```
 
 ### Step 5 Deploy the application using git
 ```sh
-git push heroku master -f
+git push heroku master 
 ```
 
 * This will take a few minutes, and will report the process of deploying the app to heroku
@@ -1017,6 +1013,15 @@ heroku apps:open
  It'll open browser with your application. You'll see the url provided to you in step 2 of this page  (`https://desolate-fjord-53965.herokuapp.com/` in our case).
 
 Don't forget to sign in and declare yourself the admin :)
+
+Or if you're lazy, here are the 5 lines in one copy and paste:
+```sh
+heroku apps:create 
+heroku addons:create heroku-postgresql:hobby-dev
+heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
+git push heroku master 
+heroku apps:open
+```
 
 ### Doing it all with a user interface
 Heroku has a web user interface to setup your app, define the db and set the config vars, you may find it easier to use.
