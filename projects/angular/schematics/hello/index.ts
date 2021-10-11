@@ -143,14 +143,7 @@ export function hello(_options: Schema): Rule {
       const angularMaterial = "@angular/material";
       let angularVersion = json.dependencies["@angular/core"];
       if (!json.dependencies[angularMaterial]) {
-        if (angularVersion.startsWith("~11"))
-          json.dependencies[angularMaterial] = "^11.2.9";
-        else if (angularVersion.startsWith("~10"))
-          json.dependencies[angularMaterial] = "^10.2.7";
-        else if (angularVersion.startsWith("~9"))
-          json.dependencies[angularMaterial] = "^9.2.4";
-        else
-          json.dependencies[angularMaterial] = "^7.3.7";
+        json.dependencies[angularMaterial] = angularVersion;
       }
 
     });

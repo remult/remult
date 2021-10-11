@@ -32,18 +32,20 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 [] test @remult/angular start with angular 12
-[] create starter todo angular, that's ready to start coding
-[] create starter todo react that's ready to start coding
+[] add no tests to angular starter kit
+[] update to use AuthService
+[] update northwind to use AuthService
+[V] create starter todo angular, that's ready to start coding
+[V] create starter todo react that's ready to start coding
 
 
 []code samples
-[]real world anguar
+[]real world angular
 []real world react
-[]todo angular
-[]todo react
+[V]todo angular
+[V]todo react
 []bezkoder react
 []bekoder vue
-[] add no tests to angular starter kit
 
 
 
