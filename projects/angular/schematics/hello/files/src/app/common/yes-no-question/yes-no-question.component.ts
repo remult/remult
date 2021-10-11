@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { terms } from '../../terms';
 
 
 @Component({
@@ -9,7 +10,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class YesNoQuestionComponent implements OnInit {
   okPressed = false;
-  args: {
+  args!: {
     message: string,
     isAQuestion?: boolean
   }
@@ -18,6 +19,7 @@ export class YesNoQuestionComponent implements OnInit {
     private dialogRef: MatDialogRef<any>) {
 
   }
+  terms = terms;
 
   ngOnInit() {
     if (this.args.isAQuestion === undefined)

@@ -11,7 +11,7 @@ Please review the steps in the [Installing a Dev Machine
 
 And also please install angular, by running the following command:
 ```sh
-npm install -g @angular/cli@11.2.10
+npm install -g @angular/cli
 ```
 
 ### Creating a new project
@@ -19,7 +19,7 @@ The first thing we'll do is let angular create the project using it's CLI.
 
 Open a command prompt in a folder that'll be the parent of your new project (in my case I use `c:\repos\`) and run the following command, replacing `my-project` with the name of the project you want to use:
 ```sh
-ng new --style=scss --routing=true --strict=false  my-project
+ng new --style=scss --routing=true --skipTests=true my-project
 ```
 
 ### Install remult
@@ -350,7 +350,7 @@ To open the terminal window click on the `Terminal\new Terminal` menu.
 ### Adding the Component
 In the terminal window run the following command to create the `Products` component.
 ```sh
-ng generate component --skipTests=true products
+ng generate component products
 ```
 
 After running this command we'll see that a folder called `products` was created under the `src/app` folder and in it there are three files:

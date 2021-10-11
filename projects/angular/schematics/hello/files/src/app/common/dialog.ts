@@ -4,6 +4,7 @@ import { Remult } from "remult";
 
 import { YesNoQuestionComponent } from "./yes-no-question/yes-no-question.component";
 import { openDialog } from "@remult/angular";
+import { terms } from "../terms";
 
 
 
@@ -39,7 +40,7 @@ export class DialogService {
         return await openDialog(YesNoQuestionComponent, d => d.args = { message: question }, d => d.okPressed);
     }
     async confirmDelete(of: string) {
-        return await this.yesNoQuestion("Are you sure you would like to delete " + of + "?");
+        return await this.yesNoQuestion(terms.areYouSureYouWouldLikeToDelete + " " + of + "?");
     }
 }
 @Injectable()
@@ -47,9 +48,9 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
     constructor(private dialog: DialogService, private zone: NgZone) {
         super();
     }
-    lastErrorString= '';
-    lastErrorTime: number;
-    async handleError(error:any) {
+    lastErrorString = '';
+    lastErrorTime!: number;
+    async handleError(error: any) {
         super.handleError(error);
         if (this.lastErrorString == error.toString() && new Date().valueOf() - this.lastErrorTime < 100)
             return;
@@ -63,7 +64,7 @@ export class ShowDialogOnErrorErrorHandler extends ErrorHandler {
 }
 
 
-export function extractError(err: any):string {
+export function extractError(err: any): string {
     if (typeof err === 'string')
         return err;
     if (err.modelState) {
@@ -82,7 +83,7 @@ export function extractError(err: any):string {
     if (err.message) {
         let r = err.message;
         if (err.error && err.error.message)
-            r =  err.error.message;
+            r = err.error.message;
         return r;
     }
     if (err.error)

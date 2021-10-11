@@ -5,13 +5,13 @@
   <mat-dialog-actions>
 
     <button mat-raised-button color="warning" (click)="close()" *ngIf="args.isAQuestion">
-      No
+      {{terms.no}}
     </button>
     <button mat-raised-button color="primary" (click)="close()" *ngIf="!args.isAQuestion">
-      Ok
+      {{terms.ok}}
     </button>
     <button mat-raised-button color="primary"  (click)="select()" *ngIf="args.isAQuestion">
-      Yes
+      {{terms.yes}}
     </button>
   </mat-dialog-actions>
 

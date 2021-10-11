@@ -51,7 +51,7 @@ export class UsersComponent implements OnInit {
   });
   @BackendMethod({ allowed: Roles.admin })
   static async resetPassword(userId: string, remult?: Remult) {
-    let u = await remult.repo(Users).findId(userId);
+    let u = await remult!.repo(Users).findId(userId);
     if (u) {
       u.password = '';
       await u._.save();

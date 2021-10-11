@@ -12,9 +12,10 @@ import * as jwt from 'express-jwt';
 import * as compression from 'compression';
 
 import '../app/app.module';
+import { getJwtTokenSignKey } from '../app/auth.service';
 async function startup() {
     config(); //loads the configuration from the .env file
-    let dataProvider: DataProvider;
+    let dataProvider: DataProvider | undefined;
 
     // use json db for dev, and postgres for production
     if (!process.env.DEV_MODE) {//if you want to use postgres for development - change this if to be if(true)
@@ -30,7 +31,7 @@ async function startup() {
     }
 
     let app = express();
-    app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
+    app.use(jwt({ secret: getJwtTokenSignKey(), credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(compression());
     app.use(
         helmet({

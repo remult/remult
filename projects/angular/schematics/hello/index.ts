@@ -32,7 +32,7 @@ export function hello(_options: Schema): Rule {
     editJson(tree, appTsConfig, j => {
       j.compilerOptions.emitDecoratorMetadata = true;
     });
-    editJson(tree, 'tsconfig.json', j => j.compilerOptions.strictNullChecks = false);
+    
 
     editGitIgnore(tree);
     let entryComponents = [{ name: 'YesNoQuestionComponent', path: './common/yes-no-question/yes-no-question.component' },
