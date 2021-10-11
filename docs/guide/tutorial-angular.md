@@ -12,14 +12,32 @@ This tutorial assumes you are familiar with `TypeScript` and `Angular`.
 Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed. <!-- consider specifying Node minimum version with npm -->
 
 
-## Create a Project
-:::tip TLDR
-To skip creating the project, and doing the setup, you can clone the [remult-angular-todo](https://github.com/remult/remult-angular-todo) repository using the following commands and skip directly to [Entities](#entities):
-```sh
-git clone https://github.com/remult/remult-angular-todo.git
-cd remult-angular-todo
-npm i
-```
+## Setup for the Tutorial
+This tutorial requires setting up an Angular project, an API Server project and a few lines of code to add Remult.
+
+:::details TLDR: Follow these steps to skip the manual setup and dive straight into coding the app
+
+1. Clone the [remult-angular-todo](https://github.com/remult/remult-angular-todo) repository and install its dependencies.
+   ```sh
+   git clone https://github.com/remult/remult-angular-todo.git
+   cd remult-angular-todo
+   npm i
+   ```
+2. Open your IDE.
+3. Open a terminal and run the `dev-node` npm script to start the dev API server.
+
+   ```sh
+   npm run dev-node
+   ```
+4. Open another terminal and start the Angular app by running the `dev-ng` script. **Don't stop the `dev-node` script. `dev-ng` and `dev-node` should be running concurrently.**
+
+   ```sh
+   npm run dev-ng
+   ```
+
+The default Angular app main screen should be displayed.
+
+At this point our starter project is up and running. We are now ready to [start creating the task list app](#entities).
 :::
 
 We'll start by creating an Angular project, so if Angular CLI is not already installed - then install it.
