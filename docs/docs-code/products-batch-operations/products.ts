@@ -1,14 +1,15 @@
 import { IdEntity, Field, Entity, DateOnlyField } from 'remult';
+
 @Entity('Products', {
     allowApiCrud: true
 })
-export class Products extends IdEntity {
+export class Product extends IdEntity {
     @Field()
-    name: string;
+    name: string = '';
     @Field()
     price: number = 0;
     @DateOnlyField()
-    availableFrom: Date;
+    availableFrom?: Date;
     @DateOnlyField()
-    availableTo: Date;
+    availableTo?: Date;
 }
