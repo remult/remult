@@ -16,9 +16,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## TODO
 # more to remult repo
-[] fix app.component to home component in non developers tutorial.
-[] fix src/app - to src/app/home for non developers tutorial
-[] remove <title> from it
+[V] fix app.component to home component in non developers tutorial.
+[V] fix src/app - to src/app/home for non developers tutorial
+[src/app/app] remove <title> from it
 
 
 [V] copy readme to npm bundle

@@ -241,7 +241,6 @@ export class HomeComponent implements OnInit {
 
 In the `home.component.html` file:
 ```html
-What is your name?
 <input [(ngModel)]="newTask.title" />
 <p *ngIf="newTask.title.length>0">
   Task: {{newTask.title}}
@@ -253,9 +252,8 @@ we've replace all references to `newTaskTitle` to the `title` field of the `newT
 Arrays are easy to define in typescript and are very powerful. For those of you coming from C# it's a full blown powerful list.
 
 Let's add an array of tasks, to the 'home.component.ts' file
-```ts{8}
+```ts{7}
 export class HomeComponent implements OnInit {
-
   constructor() { }
   newTask: Task = {
     title: 'New Task',
@@ -358,16 +356,16 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
 
 1. Add the following `deleteTask` method to the `HomeComponent` class.
 
-   *src/app/app.component.ts*
+   *src/app/home/home.component.ts*
    ```ts
    deleteTask(task: Task) {
      this.tasks = this.tasks.filter(t => t != task);
    }
    ```
 
-2. Add the `Delete` button to the task list item template element in `app.component.html`.
+2. Add the `Delete` button to the task list item template element in `home.component.html`.
 
-   *src/app/app.component.html*
+   *src/app/home/home.component.html*
    ```html{4}
    <ul>
      <li *ngFor="let task of tasks">
@@ -382,9 +380,9 @@ After the browser refreshes, a `Delete` button appears next to each task in the 
 ### Making the task titles editable
 To make the titles of the tasks in the list editable, let's add an html `input` for the titles
 
-Replace the task `title` template expression in `app.component.html` with the highlighted lines:
+Replace the task `title` template expression in `home.component.html` with the highlighted lines:
 
-*src/app/app.component.html*
+*src/app/home/home.component.html*
 ```html{3}
 <ul>
   <li *ngFor="let task of tasks">
@@ -397,10 +395,10 @@ Replace the task `title` template expression in `app.component.html` with the hi
 ### Mark tasks as completed
 Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
 
-Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 
+Add a an html `input` of type `checkbox` to the task list item element in `home.component.html`, and bind its `ngModel` to the task's `completed` field. 
 
 Set the `text-decoration` style attribute expression of the task `title` input element to evaluate to `line-through` when the value of `completed` is `true`
-*src/app/app.component.html*
+*src/app/home/home.component.html*
 ```html{2-4}
 <li *ngFor="let task of tasks">
   <input [(ngModel)]="task.completed" type="checkbox">
@@ -412,7 +410,69 @@ Set the `text-decoration` style attribute expression of the task `title` input e
 
 After the browser refreshes, a checkbox appears next to each task in the list. Mark a few tasks as completed using the checkboxes.
 
-**Add code review at this stage**
+### Code review
+We've implemented the following features of the todo app:
+* Creating new tasks
+* Displaying the list of tasks
+* Updating and deleting tasks
+* Marking tasks as completed
+
+Here are the code files we've modified to implement these features.
+
+*src/app/task.ts*
+```ts
+export interface Task {
+    title: string;
+    completed?: boolean;
+}
+```
+
+*src/app/home/home.component.ts*
+```ts
+import { Component, OnInit } from '@angular/core';
+import { Task } from './task';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+export class HomeComponent implements OnInit {
+  constructor() { }
+  newTask: Task = {
+    title: 'New Task',
+    completed: false
+  };
+  tasks: Task[] = [{ title: 'Task a' }, { title: 'Task b' }];
+  ngOnInit() {
+  }
+  createNewTask() {
+    this.tasks.push(this.newTask);
+    this.newTask = { title: "New Task" };
+  }
+  deleteTask(task: Task) {
+    this.tasks = this.tasks.filter(t => t != task);
+  }
+}
+
+```
+
+*src/app/home/home.component.html*
+```html
+<input [(ngModel)]="newTask.title" />
+<button (click)="createNewTask()">Create new task</button>
+<p *ngIf="newTask.title.length>0">
+  Task: {{newTask.title}}
+</p>
+<ul>
+  <li *ngFor="let task of tasks">
+    <input [(ngModel)]="task.completed" type="checkbox">
+    <input [(ngModel)]="task.title" 
+     [style.textDecoration]="task.completed?'line-through':''">
+    <button (click)="deleteTask(task)">Delete</button>
+  </li>
+</ul>
+```
 
 ## Storing data on the Server
 So far, everything that we've done is locally in the web browser window. As soon as we refresh, all the tasks we've create disappear. 
@@ -463,6 +523,7 @@ Let's change this code, to store it's data on the server.
      deleteTask(task: Task) {
        this.tasks = this.tasks.filter(t => t != task);
      }
+   }
    ```
    The `remult` field we've add to the `HomeComponent` class (using a constructor argument), will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
 
@@ -547,9 +608,9 @@ The RESTful API created by Remult supports server-side sorting and filtering. Le
 ### Show uncompleted tasks first
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `loadTasks` method of the `AppComponent` class, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
+In the `loadTasks` method of the `HomeComponent` class, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
 
-*src/app/app.component.ts*
+*src/app/home/home.component.ts*
 ```ts{2-4}
 async loadTasks() {
   this.tasks = await this.tasksRepo.find({
@@ -565,9 +626,9 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 ### Hide completed tasks
 Let's hide all completed tasks, using server side filtering.
 
-1. In the `loadTasks` method of the `AppComponent` class, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter.
+1. In the `loadTasks` method of the `HomeComponent` class, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter.
 
-   *src/app/app.component.ts*
+   *src/app/home/home.component.ts*
    ```ts{3}
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
@@ -584,16 +645,16 @@ Let's hide all completed tasks, using server side filtering.
 ### Optionally hide completed tasks
 Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
 
-1. Add a `hideCompleted` boolean field to the `AppComponent` class.
+1. Add a `hideCompleted` boolean field to the `HomeComponent` class.
 
-   *src/app/app.component.ts*
+   *src/app/home/home.component.ts*
    ```ts
    hideCompleted = false;
    ```
 
-2. In the `loadTasks` method of the `AppComponent` class, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`.
+2. In the `loadTasks` method of the `HomeComponent` class, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`.
 
-   *src/app/app.component.ts*
+   *src/app/home/home.component.ts*
    ```ts{3}
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
@@ -604,9 +665,9 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    ```
 
 
-3. Add a `checkbox` input element immediately before the unordered list element in `app.component.html`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
+3. Add a `checkbox` input element immediately before the unordered list element in `home.component.html`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
 
-   *src/app/app.component.html*
+   *src/app/home/home.component.html*
    ```html
    <p>
       <input type="checkbox" id="hideCompleted" [(ngModel)]="hideCompleted" (change)="loadTasks()">
@@ -625,7 +686,7 @@ Task titles are required. Let's add a validity check for this rule, and display 
 
 1. In the `Task` entity class, modify the `Field` decorator for the `title` field to include an argument which implements the `ColumnOptions` interface. Implement the interface using an anonymous object and set the object's `validate` property to `Validators.required`.
 
-   *src/app/task.ts*
+   *src/app/home/task.ts*
    ```ts{1-3}
     @Field({
         validate: Validators.required
@@ -633,9 +694,9 @@ Task titles are required. Let's add a validity check for this rule, and display 
     title: string = '';
    ```
 
-2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
+2. In the `home.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
 
-   *src/app/app.component.html*
+   *src/app/home/home.component.html*
    ```html
    <div *ngIf="newTask.$.title.error">
       {{newTask.$.title.error}}
@@ -664,9 +725,9 @@ When performing operations on multiple entity objects, performance consideration
 ### Set all tasks as un/completed
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAll` async function to the `AppComponent` class, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add a `setAll` async function to the `HomeComponent` class, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
-   *src/app/app.component.ts*
+   *src/app/home/home.component.ts*
    ```ts
    async setAll(completed: boolean) {
      for await (const task of this.tasksRepo.iterate()) {
@@ -680,9 +741,9 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    The `iterate` method is an alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. The `iterate` method doesn't return an array (as the `find` method) and instead returns an `iteratable` object which supports iterations using the JavaScript `for await` statement.
 
 
-2. Add the two buttons to the `app.component.html` template, immediately before the unordered list element. Both of the buttons' `click` events will call the `setAll` function with the relevant value of the `completed` argument.
+2. Add the two buttons to the `home.component.html` template, immediately before the unordered list element. Both of the buttons' `click` events will call the `setAll` function with the relevant value of the `completed` argument.
 
-   *src/app/app.component.html*
+   *src/app/home/home.component.html*
    ```html
    <button (click)="setAll(true)">Set all as completed</button> 
    <button (click)="setAll(false)">Set all as uncompleted</button>
@@ -694,9 +755,9 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-Refactor the `for await` loop from the `setAll` function of the `AppComponent` class into a new, `static`, `setAll` function in the `Task` entity,  which will run on the server.
+Refactor the `for await` loop from the `setAll` function of the `HomeComponent` class into a new, `static`, `setAll` function in the `Task` entity,  which will run on the server.
 
-*src/app/task.ts*
+*src/app/home/task.ts*
 ```ts
 @BackendMethod({ allowed: true })
 static async setAll(completed: boolean, remult?: Remult) {
@@ -706,7 +767,7 @@ static async setAll(completed: boolean, remult?: Remult) {
    }
 }
 ```
-*src/app/app.component.ts*
+*src/app/home/home.component.ts*
 ```ts{2}
 async setAll(completed: boolean) {
    await Task.setAll(completed);
@@ -739,7 +800,7 @@ User authentication remains outside the scope of Remult. In this tutorial, we'll
 ### Tasks CRUD operations require sign in
 This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Remult` object and returns the result of the remult's `authenticated` method.
 
-*src/app/task.ts*
+*src/app/home/task.ts*
 ```ts{2}
 @Entity("tasks", {
     allowApiCrud: Allow.authenticated
@@ -759,16 +820,15 @@ Although client CRUD requests to `tasks` API endpoints now require a signed in u
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `Task`.
 
-*src/app/task.ts*
+*src/app/home/task.ts*
 ```ts
 @BackendMethod({ allowed: Allow.authenticated })
 ```
 :::
 
 ### Hide UI for non-authenticated users
-*src/app/app.component.html*
-```html{2,25}
-<title>{{title}}</title>
+*src/app/home/home.component.html*
+```html{1,24}
 <ng-container *ngIf="remult.authenticated()">
   <div>
     <input [(ngModel)]="newTask.title" placeholder="Title">
@@ -795,7 +855,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 </ng-container>
 ```
 
-*src/app/app.component.ts*
+*src/app/home/home.component.ts*
 ```ts{2}
 async loadTasks() {
   if (this.remult.authenticated())
@@ -813,9 +873,7 @@ After you Sign In, you can Sign out by clicking the `Sign Out` button on the top
 ### User Management
 The first user that signs in is by default the application's `Admin` and has access to the `User Accounts` menu entry where users can be managed.
 
-![](/2019-10-08_11h20_28.png)
-
-Here you can manage the users and even reset their password.
+Here you can manage the users and reset their password.
 
 ### Role-based authorization
 Usually, not all application users have the same privileges. Let's define an `admin` role for our todo list, and enforce the following authorization rules:
@@ -836,7 +894,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
-   *src/app/task.ts*
+   *src/app/home/task.ts*
    ```ts{2,5-8,13,19}
    import { Field, Entity, IdEntity, Validators, BackendMethod, Remult, Allow } from "remult";
    import { Roles } from "../users/roles";
@@ -909,9 +967,9 @@ In the Command line, in the project folder, we can use the `apps:create` command
 2. Specify the name of the project, (`my-project` in our case) - that name will be used as the prefix for your application's url (`https://my-project.herokuapp.com` on our case). 
 The name you want may be taken - so keep trying names until you reach a name that is free, or run the command without a name, and `heroku` will generate a name for you.
 
-Here's the command with the specific name `my-project` in the `eu` region
+Run
 ```sh
-heroku apps:create --region eu  my-project
+heroku apps:create 
 ```
 
 Here's the result we got, when we allowed heroku to determine the name :)
