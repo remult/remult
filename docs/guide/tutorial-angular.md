@@ -58,13 +58,6 @@ In this tutorial we'll be using the workspace folder created by `Angular` as the
 ```sh
 cd remult-angular-todo
 ```
-::: tip TLDR
-To skip the setup steps, run the following commands to apply them in a patch and skip directly to [Entities](#entities)
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/remult-setup.diff | git apply
-npm i
-```
-:::
 
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
