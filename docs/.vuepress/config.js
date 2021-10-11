@@ -81,6 +81,7 @@ module.exports = {
           collapsable: false,
           children: [
             'angular-for-non-web-developers',
+            'adding-an-angular-component-and-route',
             'dialog',
             'grid-settings-and-data-grid',
           ]

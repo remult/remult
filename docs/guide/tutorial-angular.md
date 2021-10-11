@@ -537,7 +537,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
 
    *src/app/app.component.ts*
    ```ts
-   hideCompleted: boolean = false;
+   hideCompleted = false;
    ```
 
 2. In the `loadTasks` method of the `AppComponent` class, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`.

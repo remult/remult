@@ -16,6 +16,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## TODO
 # more to remult repo
+[] fix app.component to home component in non developers tutorial.
+[] fix src/app - to src/app/home for non developers tutorial
+[] remove <title> from it
+
+
 [V] copy readme to npm bundle
 [V] mark remult/core as deprecated
 [V] add completed structure for InMemory database to treat missing values correctly - for example isEqualToTrue or sorting for the tutorial.
@@ -34,6 +39,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] test @remult/angular start with angular 12
 [] review the tutorial with strick in mind
 
+[] work on common.ts with Yoni - the axios shit
 [] update to use AuthService
 [] update northwind to use AuthService
 [] update northwind to use terms 
