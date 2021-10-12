@@ -56,7 +56,11 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     }
     //@ts-ignore
     else r = p;
-    return r.catch(async ex => {
+    return r.then((x: any) => {
+        if (x.status = 200 && x.headers && x.request && x.data)//for axios
+            return x.data;
+        return x;
+    }).catch(async ex => {
         throw await processHttpException(ex);
     });
 }

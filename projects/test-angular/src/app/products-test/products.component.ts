@@ -26,33 +26,21 @@ import axios from 'axios';
   height: '1500px'
 
 })
-export class ProductsComponent implements OnInit {
+export class ProductsComponent {
 
   constructor() {
 
   }
   remult = new Remult(axios);
 
-  x = this.remult.repo(stam).create();
-  ex: any;
-  async ngOnInit() {
-    this.x.name = "noam";
-    try {
-      await this.x.save();
-    }
-    catch (err) {
-      this.ex = err;
-    }
-
-  }
-
+  x = new GridSettings(this.remult.repo(stam), { allowCrud: true });
 }
 
 
 @Entity<stam>('stam', {
- // allowApiCrud: true,
+  allowApiCrud: true,
   saving: self => {
-    if (isBackend()) {
+    if (isBackend() && false) {
       var x = undefined;
       x.toString();
       self.$.name.error = 'name error';
