@@ -18,7 +18,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 # more to remult repo
 [V] fix app.component to home component in non developers tutorial.
 [V] fix src/app - to src/app/home for non developers tutorial
-[src/app/app] remove <title> from it
+[V] remove <title> from it
 
 
 [V] copy readme to npm bundle
@@ -34,6 +34,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] rename set to assign
 [V] remove reload on save with no changes
 [V] remove options factory
+
+[] fix FitlerFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc....
 
 
 [] test @remult/angular start with angular 12
