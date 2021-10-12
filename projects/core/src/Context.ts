@@ -57,7 +57,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     //@ts-ignore
     else r = p;
     return r.then((x: any) => {
-        if (x.status = 200 && x.headers && x.request && x.data)//for axios
+        if (x.status == 200 && x.headers && x.request && x.data)//for axios
             return x.data;
         return x;
     }).catch(async ex => {
