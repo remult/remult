@@ -16,6 +16,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## TODO
 # more to remult repo
+[V] fix app.component to home component in non developers tutorial.
+[V] fix src/app - to src/app/home for non developers tutorial
+[V] remove <title> from it
+
+
 [V] copy readme to npm bundle
 [V] mark remult/core as deprecated
 [V] add completed structure for InMemory database to treat missing values correctly - for example isEqualToTrue or sorting for the tutorial.
@@ -30,20 +35,29 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] remove reload on save with no changes
 [V] remove options factory
 
+[] fix FitlerFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc....
+
 
 [] test @remult/angular start with angular 12
-[] create starter todo angular, that's ready to start coding
-[] create starter todo react that's ready to start coding
+[] review the tutorial with strick in mind
 
+[] work on common.ts with Yoni - the axios shit
+[] update to use AuthService
+[] update northwind to use AuthService
+[] update northwind to use terms 
+[] update northwind to use skip tests
+[] update northwind to use strict
+[V] create starter todo angular, that's ready to start coding
+[V] create starter todo react that's ready to start coding
+[] fix tutorial images
 
 []code samples
-[]real world anguar
+[]real world angular
 []real world react
-[]todo angular
-[]todo react
+[V]todo angular
+[V]todo react
 []bezkoder react
 []bekoder vue
-[] add no tests to angular starter kit
 
 
 

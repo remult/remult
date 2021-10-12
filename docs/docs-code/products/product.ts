@@ -3,7 +3,7 @@ import { IdEntity, Field, Entity } from 'remult';
 @Entity('Products', {
     allowApiCrud: true
 })
-export class Products extends IdEntity {
+export class Product extends IdEntity {
     @Field()
-    name: string;
+    name: string = '';
 }

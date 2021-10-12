@@ -53,9 +53,9 @@ cd remult-react-todo
 ```
 
 #### Installing required packages
-We need `express` to serve our app's API and, of course, `remult`.
+We  need [axios](https://github.com/axios/axios) for our http requests,  `express` to serve our app's API and, of course, `remult`.
 ```sh
-npm i express remult
+npm i axios express remult
 npm i --save-dev @types/express
 ```
 #### The API server project
@@ -174,13 +174,12 @@ Our React starter project is almost ready. All that's left is to add for the fro
 Add a file called `src/common.ts` and place the following content in it:
 *src/common.ts*
 ```ts
+import axios from "axios";
 import { Remult } from "remult";
 
-export const remult = new Remult(); 
+export const remult = new Remult(axios); 
 ```
-::: tip
-By default `remult` uses the `fetch` interface, later in this tutorial will replace it with `axios`, but for now `fetch` will do.
-:::
+We use [axios](https://github.com/axios/axios) for the http requests
 
 ### Setup completed
 At this point our starter project is up and running. We are now ready to start creating the task list app.
@@ -325,7 +324,7 @@ Don't forget to import `useCallback` and `useEffect` from `react` for this code 
    ```ts{3}
    const createTask = () => newTask.save()
      .then(() => setNewTask({ newTask: taskRepo.create() }))
-     .then(loadTasks)
+     .then(loadTasks);
    ```
 
 After the browser refreshes, the list of `tasks` appears. Create a new `task` and it's added to the list.
@@ -414,7 +413,7 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    
    Set the `text-decoration` style attribute expression of the task `title` input element to evaluate to `line-through` when the value of `completed` is `true`.
 
-   *src/App.tsx*
+   *src/TaskEditor.tsx*
    ```tsx{2-8,14}
    return <span>
         <input
@@ -823,12 +822,12 @@ In this section, we'll be using the following packages:
 * [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) to create JSON web tokens
 * [jwt-decode](hhttps://github.com/auth0/jwt-decode) for client-side JWT decoding.
 * [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
-* [axios](https://github.com/axios/axios) to use as http client and passing HTTP `Authorization` headers to the API server
+
 
 
 1. Open a terminal and run the following command to install the required packages:
    ```sh
-   npm i jsonwebtoken jwt-decode  express-jwt axios
+   npm i jsonwebtoken jwt-decode  express-jwt
    npm i --save-dev  @types/jsonwebtoken @types/express-jwt
    ```
 2. Create a file called `src/app/AuthService.ts ` and place the following code in it:
@@ -906,33 +905,17 @@ In this section, we'll be using the following packages:
    *src/common.ts*
    ```ts
    import { Remult } from "remult";
-   import axios, { AxiosResponse } from 'axios';
+   import axios from 'axios';
    import { AuthService } from "./AuthService";
    
-   function axiosConfig() {
+   axios.interceptors.request.use(config => {
        let token = AuthService.fromStorage();;
-       if (token) {
-           return {
-               headers: {
-                   Authorization: "Bearer " + token
-               }
-           }
-       }
-       return {};
-   }
-   function wrapAxios<T>(what: Promise<AxiosResponse<T>>): Promise<any> {
-       return what.then(x => x.data, err => {
-           if (typeof err.response.data === "string")
-               throw Error(err.response.data);
-           throw err.response.data
-       });
-   }
-   export const remult = new Remult({
-       get: (url) => wrapAxios(axios.get(url, axiosConfig())),
-       put: (url, data) => wrapAxios(axios.put(url, data, axiosConfig())),
-       post: (url, data) => wrapAxios(axios.post(url, data, axiosConfig())),
-       delete: (url) => wrapAxios(axios.delete(url, axiosConfig()))
+       if (token)
+           config.headers!["Authorization"] = "Bearer " + token;
+       return config;
    });
+   export const remult = new Remult(axios);
+   
    export const auth = new AuthService(remult);
    ```
    ::: warning Imports

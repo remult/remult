@@ -1,21 +1,22 @@
 
-import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators, isBackend } from "remult";
+import { IdEntity, FieldOptions, BackendMethod, Filter, Entity, Field, Validators, isBackend, Allow } from "remult";
 import { Remult, } from 'remult';
 import { Roles } from './roles';
 import { InputField } from "@remult/angular";
 import { InputTypes } from "remult/inputTypes";
+import { terms } from "../terms";
 
 @Entity<Users>("Users", {
-    allowApiRead: remult => remult.authenticated(),
+    allowApiRead: Allow.authenticated,
+    allowApiUpdate: Allow.authenticated,
     allowApiDelete: Roles.admin,
-    allowApiUpdate: remult => remult.authenticated(),
     allowApiInsert: Roles.admin
 },
     (options, remult) => {
         options.apiPrefilter = (user) => {
             if (!(remult.isAllowed(Roles.admin)))
                 return user.id.isEqualTo(remult.user.id);
-            return new Filter(() => { });
+            return undefined!;
         };
         options.saving = async (user) => {
             if (isBackend()) {
@@ -30,7 +31,8 @@ import { InputTypes } from "remult/inputTypes";
 )
 export class Users extends IdEntity {
     @Field({
-        validate: [Validators.required, Validators.unique]
+        validate: [Validators.required, Validators.unique],
+        caption: terms.username
     })
     name: string = '';
     @Field({ includeInApi: false })
@@ -41,7 +43,8 @@ export class Users extends IdEntity {
     createDate: Date = new Date();
 
     @Field({
-        allowApiUpdate: Roles.admin
+        allowApiUpdate: Roles.admin,
+        caption:terms.admin
     })
     admin: Boolean = false;
     constructor(private remult: Remult) {
@@ -56,21 +59,21 @@ export class Users extends IdEntity {
     @BackendMethod({ allowed: true })
     async create(password: string) {
         if (!this._.isNew())
-            throw "Invalid Operation";
+            throw new Error(terms.invalidOperation);
         await this.hashAndSetPassword(password);
         await this._.save();
     }
-    @BackendMethod({ allowed: remult => remult.authenticated() })
+    @BackendMethod({ allowed: Allow.authenticated })
     async updatePassword(password: string) {
         if (this._.isNew() || this.id != this.remult.user.id)
-            throw "Invalid Operation";
+            throw new Error(terms.invalidOperation);
         await this.hashAndSetPassword(password);
         await this._.save();
     }
 }
 export class PasswordControl extends InputField<string>
 {
-    constructor(caption = 'password') {
+    constructor(caption = terms.password) {
         super({ caption, inputType: InputTypes.password, defaultValue: () => '' });
     }
 }

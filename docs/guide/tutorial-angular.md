@@ -375,7 +375,7 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
 After the browser refreshes, a `Delete` button appears next to each task in the list. Delete a `task` by clicking the button.
 
 ### Making the task titles editable
-To make the titles of the tasks in the list editable, let's add an html `input` for the titles, and s `Save` button to save the changes to the backend database. We'll use the `wasChanged` method of the entity class to disable the `Save` button while there are no changes to save.
+To make the titles of the tasks in the list editable, let's add an html `input` for the titles, and a `Save` button to save the changes to the backend database. We'll use the `wasChanged` method of the entity class to disable the `Save` button while there are no changes to save.
 
 Replace the task `title` template expression in `app.component.html` with the highlighted lines:
 
@@ -545,7 +545,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
 
    *src/app/app.component.ts*
    ```ts
-   hideCompleted: boolean = false;
+   hideCompleted = false;
    ```
 
 2. In the `loadTasks` method of the `AppComponent` class, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`.

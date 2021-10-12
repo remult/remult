@@ -5,14 +5,14 @@
     </button>
     <span class="toolbar-title">{{currentTitle()}}</span>
     <ng-container *ngIf="!remult.authenticated()">
-      <button mat-flat-button color="primary" (click)="signIn()">Sign In</button>
-      <button mat-flat-button color="primary" (click)="signUp()">Sign Up</button>
+      <button mat-flat-button color="primary" (click)="signIn()">{{terms.signIn}}</button>
+      <button mat-flat-button color="primary" (click)="signUp()">{{terms.signUp}}</button>
     </ng-container>
     <ng-container *ngIf="remult.authenticated()">
       <button mat-flat-button color="primary" [matMenuTriggerFor]="menu">{{remult.user.name}}</button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="updateInfo()">Update Info</button>
-        <button mat-menu-item (click)="changePassword()">Change Password</button>
+        <button mat-menu-item (click)="updateInfo()">{{terms.updateInfo}}</button>
+        <button mat-menu-item (click)="changePassword()">{{terms.changePassword}}</button>
         <button mat-menu-item (click)="signOut()">Sign Out</button>
       </mat-menu>
     </ng-container>
@@ -23,26 +23,26 @@
       <div style="width:100%;text-align: center">
 
       </div>
-      <h4 *ngIf="remult.authenticated()">Hello {{remult.user.name}}</h4>
+      <h4 *ngIf="remult.authenticated()">{{terms.hello}} {{remult.user.name}}</h4>
       <mat-nav-list role="list">
         <ng-container *ngFor="let m of router.config">
-        <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">
-          <a matLine [routerLink]="m.path" (click)="routeClicked()">{{routeName(m)}}</a>
-        </mat-list-item>
+          <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">
+            <a matLine [routerLink]="m.path" (click)="routeClicked()">{{routeName(m)}}</a>
+          </mat-list-item>
 
 
-      </ng-container>
-    </mat-nav-list>
+        </ng-container>
+      </mat-nav-list>
 
-  </mat-sidenav>
-  <div class="app-sidenav-content ">
+    </mat-sidenav>
+    <div class="app-sidenav-content ">
 
 
-      <div class="wrapper"  style="height:100%">
-          <router-outlet></router-outlet>
+      <div class="wrapper" style="height:100%">
+        <router-outlet></router-outlet>
       </div>
 
-  </div>
+    </div>
 
   </mat-sidenav-container>
 </div>

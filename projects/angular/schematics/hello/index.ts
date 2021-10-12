@@ -32,7 +32,7 @@ export function hello(_options: Schema): Rule {
     editJson(tree, appTsConfig, j => {
       j.compilerOptions.emitDecoratorMetadata = true;
     });
-    editJson(tree, 'tsconfig.json', j => j.compilerOptions.strictNullChecks = false);
+    
 
     editGitIgnore(tree);
     let entryComponents = [{ name: 'YesNoQuestionComponent', path: './common/yes-no-question/yes-no-question.component' },
@@ -85,10 +85,10 @@ export function hello(_options: Schema): Rule {
 
     try {
       tree.delete('./src/app/app.component.html');
-      tree.delete('./src/app/app.component.spec.ts');
       tree.delete('./src/app/app.component.ts');
       tree.delete('./src/app/app.component.scss');
       tree.delete('./src/app/app-routing.module.ts');
+      tree.delete('./src/app/app.component.spec.ts');
     }
     catch { }
 
@@ -143,14 +143,7 @@ export function hello(_options: Schema): Rule {
       const angularMaterial = "@angular/material";
       let angularVersion = json.dependencies["@angular/core"];
       if (!json.dependencies[angularMaterial]) {
-        if (angularVersion.startsWith("~11"))
-          json.dependencies[angularMaterial] = "^11.2.9";
-        else if (angularVersion.startsWith("~10"))
-          json.dependencies[angularMaterial] = "^10.2.7";
-        else if (angularVersion.startsWith("~9"))
-          json.dependencies[angularMaterial] = "^9.2.4";
-        else
-          json.dependencies[angularMaterial] = "^7.3.7";
+        json.dependencies[angularMaterial] = angularVersion;
       }
 
     });
