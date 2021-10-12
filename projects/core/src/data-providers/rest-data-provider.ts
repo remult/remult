@@ -163,7 +163,6 @@ function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((n
 
   }).catch(async error => {
     let r = await error;
-    console.log(r);
     throw r;
   });
 }

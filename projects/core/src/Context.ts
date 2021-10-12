@@ -66,7 +66,6 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
 }
 
 export async function processHttpException(ex: any) {
-    console.log("process http exception", { ex });
     let z = await ex;
     var error;
     if (z.error)

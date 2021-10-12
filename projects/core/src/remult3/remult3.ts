@@ -49,7 +49,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] update northwind to use strict
 [V] create starter todo angular, that's ready to start coding
 [V] create starter todo react that's ready to start coding
-
+[] fix tutorial images
 
 []code samples
 []real world angular
