@@ -57,22 +57,37 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     //@ts-ignore
     else r = p;
     return r.catch(async ex => {
-        let z = await ex;
-        var error;
-        if (z.error)
-            error = z.error;
-        else
-            error = z.message;
-        if (typeof error === 'string') {
-            error = {
-                message: error
-            }
-        }
-        var result = Object.assign(error, {
-            //     exception: ex disabled for now because JSON.stringify crashed with this
-        });
-        throw result;
+        throw await processHttpException(ex);
     });
+}
+
+export async function processHttpException(ex: any) {
+    console.log("process http exception", { ex });
+    let z = await ex;
+    var error;
+    if (z.error)
+        error = z.error;
+
+    else if (z.isAxiosError) {
+        if (typeof z.response?.data === "string")
+            error = z.response.data;
+        else
+            error = z?.response?.data
+
+    }
+    if (!error)
+        error = z.message;
+    if (z.status == 0 && z.error.isTrusted)
+        error = "Network Error";
+    if (typeof error === 'string') {
+        error = {
+            message: error
+        };
+    }
+    var result = Object.assign(error, {
+        //     exception: ex disabled for now because JSON.stringify crashed with this
+    });
+    return result;
 }
 
 export function isBackend() {

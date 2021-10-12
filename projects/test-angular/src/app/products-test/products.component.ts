@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod, getFields } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend } from 'remult';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
 import { DataAreaSettings, DataControl } from '@remult/angular';
+import axios from 'axios';
+
 
 
 
@@ -26,47 +28,38 @@ import { DataAreaSettings, DataControl } from '@remult/angular';
 })
 export class ProductsComponent implements OnInit {
 
-  constructor(private remult: Remult) {
+  constructor() {
 
   }
+  remult = new Remult(axios);
 
-  @DataControl<ProductsComponent>({
-    valueList: c => getValueList(c.repo(Products)),
-    valueChange: (row) => {
-      console.log({ val: row.p, prod: row.p instanceof Products })
-      row.$.p.load().then(() => console.log("loaded", row.p));
-    }
-  })
-  @Field()
-  p: Products;
-
-  get $() { return getFields(this, this.remult) };
-  area = new DataAreaSettings({
-    fields: () => [this.$.p]
-  });
-  products = new GridSettings(this.remult.repo(Products), {
-    allowCrud: true,
-    allowSelection: true,
-    where:()=>Products.filter(),
-    columnSettings: p => [
-      p.name,
-      { field: p.categoryCode, valueList: async () => [{ id: 1, caption: 'abc' }, { id: 2, caption: 'def' }] }
-    ]
-  });
+  x = this.remult.repo(stam).create();
+  ex: any;
   async ngOnInit() {
-    let p = await this.remult.repo(Products).findFirst();
-
-    //this.title = p?.name;
-    this.title = await ProductsComponent.doIt(null);
+    this.x.name = "noam";
+    try {
+      await this.x.save();
+    }
+    catch (err) {
+      this.ex = err;
+    }
 
   }
-  title: string;
+
+}
 
 
-  @BackendMethod({ allowed: true })
-  static async doIt(p: Products) {
-    if (p == null)
-      return 'null';
-    return p.name;
+@Entity<stam>('stam', {
+ // allowApiCrud: true,
+  saving: self => {
+    if (isBackend()) {
+      var x = undefined;
+      x.toString();
+      self.$.name.error = 'name error';
+    }
   }
+})
+class stam extends IdEntity {
+  @Field()
+  name: string;
 }

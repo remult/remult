@@ -46,6 +46,7 @@
     "@types/jsonwebtoken": "^8.3.2",
     "@types/mssql": "^4.0.10",
     "@types/pg": "^7.4.11",
+    "axios": "^0.22.0",
     "convert-csv-to-array": "^1.0.3",
     "core-js": "^2.5.4",
     "cors": "^2.8.5",

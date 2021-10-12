@@ -70,7 +70,6 @@ export function DialogConfig(config: MatDialogConfig) {
 const dialogConfigMember = Symbol("dialogConfigMember");
 var _matDialog: MatDialog;
 export function buildContext(http: HttpClient, _dialog: MatDialog) {
-
   let r = new Remult(http);
   _matDialog = _dialog;
 
