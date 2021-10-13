@@ -58,13 +58,6 @@ In this tutorial we'll be using the workspace folder created by `Angular` as the
 ```sh
 cd remult-angular-todo
 ```
-::: tip TLDR
-To skip the setup steps, run the following commands to apply them in a patch and skip directly to [Entities](#entities)
-```sh
-curl https://raw.githubusercontent.com/remult/remult/master/docs/patches/remult-angular-todo/remult-setup.diff | git apply
-npm i
-```
-:::
 
 #### Installing required packages
 We need `express` to serve our app's API and, of course, `remult`.
@@ -97,12 +90,6 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    initExpress(app);
    app.listen(3002, () => console.log("Server started"));
    ```
-
-   ::: warning Note
-   Remult creates RESTful API endpoints based on decorators in the application code. Importing the Angular `../app/app.module` in the main server module **ensures all the decorators used in our app are found by Remult**.
-
-   Sure, this means the entire Angular app is loaded on the server-side, but that's a small price to pay for keeping our code simple.
-   :::
 
 5. In the root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
 
@@ -231,32 +218,33 @@ The `Task` entity class will be used:
 
 The `Task` entity class we're creating will have an `id` field and a `title` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
-Create a file `task.ts` in the `src/app/` folder, with the following code:
+1. Create a file `task.ts` in the `src/app/` folder, with the following code:
 
-*src/app/task.ts*
-```ts
-import { Field, Entity, IdEntity } from "remult";
+   *src/app/task.ts*
+   ```ts
+   import { Field, Entity, IdEntity } from "remult";
 
-@Entity("tasks", {
-    allowApiCrud: true
-})
-export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-}
-```
+   @Entity("tasks", {
+      allowApiCrud: true
+   })
+   export class Task extends IdEntity {
+      @Field()
+      title: string = '';
+   }
+   ```
 
-The `@Entity` decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the `allowApiCrud` property to `true`. <!-- consider linking to reference -->
+2. Import the `task` module into the API server's `index` module:
+
+   *src/server/index.ts*
+   ```ts
+   import '../app/task';
+   ```
+
+The [@Entity](./ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](./ref_entity.md#allowapicrud) property to `true`.
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The `@Field` decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
-
-#### Import this file in the server's index.ts file
-```ts
-import '../app/task';
-```
-
+The [@Field](./ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
 
 ### Create new tasks
 
@@ -291,11 +279,13 @@ Let's implement this feature within the main `AppComponent` class.
 
    ```
 
-   The `remult` field we've add to the `AppComponent` class (using a constructor argument), will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
+   The `remult` field of the `AppComponent` class will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
+
+   The `tasksRepo` field contains a Remult [Repository](./ref_repository.md) object used to fetch and create `Task` entity objects.
 
    The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
-   The `createNewTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` member is replaced with a new `Task` object.
+   The `createNewTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` field is replaced with a new `Task` object.
 
 2. Replace the contents of `app.component.html` with the following HTML:
 
