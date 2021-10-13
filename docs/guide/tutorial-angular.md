@@ -1177,6 +1177,7 @@ Let's replace it with a production PostgreSQL database.
 3. Commit and deploy to Heroku using `git push`:
 
    ```sh
+   git add .
    git commit -m "Added Postgres"
    git push heroku master
    ```
