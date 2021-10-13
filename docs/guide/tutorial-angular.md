@@ -808,7 +808,7 @@ In this section, we'll be using the following packages:
            ];
            let user = validUsers.find(user => user.name === username);
            if (!user)
-               throw "Invalid User";
+               throw new Error("Invalid User");
            return jwt.sign(user, getJwtTokenSignKey());
        }
    
@@ -893,7 +893,7 @@ In this section, we'll be using the following packages:
    ```ts
    constructor(public remult: Remult, private auth: AuthService) {
    }
-   username: string = '';
+   username = '';
  
    async signIn() {
      await this.auth.signIn(this.username);
@@ -990,7 +990,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
       ];
       let user = validUsers.find(user => user.name === username);
       if (!user)
-        throw "Invalid User";
+        throw new Error("Invalid User");
       return jwt.sign(user, getJwtTokenSignKey());
    }
    ```
@@ -1064,42 +1064,19 @@ The todo app is now ready for deployment to production.
 
 In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need a `heroku` account. You'll also need [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install) installed.
 
-1. In the root folder, create a commit to deploy:
-
-   ```sh
-   git add .
-   git commit -m "todo app tutorial"
-   ```
-
-2. Create a Heroku `app`:
+1. Create a Heroku `app`:
 
    ```sh
    heroku create
    ```
 
-3. Set the jwt authentication to something random - you can use an [Online UUID Generator](https://www.uuidgenerator.net/)
+2. Set the jwt authentication to something random - you can use an [Online UUID Generator](https://www.uuidgenerator.net/)
    ```sh
    heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
    ```
-   
-4. Deploy to Heroku using `git push`:
 
-   ```sh
-   git push heroku master
-   ```
 
-5. Run the production app using `heroku apps:open` command: 
-
-   ```sh
-   heroku apps:open
-   ```
-
-::: warning Note
-If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
-:::
-
-#### Use PostreSQL as production database
-
+:::details Follow these steps to Use PostreSQL as production database
 While the simple backend JSON database provided by `remult` is nice for development, it isn't suitable for production (it will be discarded each time the Heroku `dyno` is restarted).
 
 Let's replace it with a production PostgreSQL database.
@@ -1163,17 +1140,24 @@ Let's replace it with a production PostgreSQL database.
    ```sh
    heroku addons:create heroku-postgresql:hobby-dev
    ```
+:::
 
-3. Commit and deploy to Heroku using `git push`:
+4. Commit the changes to git and deploy to Heroku using `git push`:
 
    ```sh
    git add .
-   git commit -m "Added Postgres"
+   git commit -m "todo app tutorial"
    git push heroku master
    ```
 
-4. Run the production app using `heroku apps:open` command: 
+5. Run the production app using `heroku apps:open` command: 
 
    ```sh
    heroku apps:open
    ```
+
+That's it - our application is deployed to production, play with it and enjoy :)
+
+::: warning Note
+If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
+:::

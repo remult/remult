@@ -1,3 +1,6 @@
+## review
+1. Write the code once, and both the `backend` and `frontend` use the same code.
+
 ## Setup for the Tutorial
 1. Clone the repository
 2. **review** setup steps and focus on `index.ts` for the  er:
@@ -29,9 +32,47 @@
 3. add ul
 4. add `loadTasks` to createNewTasks **explain that we're calling the load tasks, to verify that the task was added on the server** 
 
+## Delete tasks
+
+## Making the task titles editable
+1. add the input
+2. add the button and remember the `[disabled]` property
+
+## Mark tasks as completed
+1. add the completed field
+2. add the checkbox
+3. **remember the `[style.TextDecoration]` and `line-through`**
+
+## Sorting and Filtering
+### Show uncompleted tasks first
+### Hide completed tasks
+### Optionally hide completed tasks
+1. label `for`
 
 
 
+## Validation
+1. required
+2. demo server side validation using curl
 
+## Backend methods
+1. create `setAll` method
+2. use iterate
 
+## Authentication and Authorization
+1. restrict crud and server method to `Allow.authenticated`
+2. Hide UI, and add not signed in text.
+3. restrict `loadTasks` 
+4. setup
+5. review `server.auth`
 
+## Sign In
+1. **Add `auth` to the constructor**
+2. add `username`, `signIn` and `signOut`
+
+## Role-based authorization
+1. add `roles.ts` **LOWERCASE!!!!!**
+2. restrict insert and `update`
+3. restrict update of `title`.
+4. restring Backend method
+5. Add role to Jane
