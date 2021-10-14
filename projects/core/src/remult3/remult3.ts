@@ -37,6 +37,15 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] fix FitlerFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc....
 
+[] doc field types (date etc... value converter and more)
+[] doc value list column - and it's usage as strategy
+
+## unexplained errors in mitchashvim
+[] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
+[] can't read properties of null - status.
+
+
+
 
 [] test @remult/angular start with angular 12
 [] review the tutorial with strick in mind

@@ -4,6 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import { BackendMethod, Remult, UserInfo } from 'remult';
 import { Roles } from './users/roles';
 import { Users } from './users/users';
+import { terms } from './terms';
 
 const AUTH_TOKEN_KEY = "authToken";
 @Injectable({
@@ -39,7 +40,7 @@ export class AuthService {
         if (result!) {
             return (jwt.sign(result, getJwtTokenSignKey()));
         }
-        throw new Error("Invalid Sign In Info");
+        throw new Error(terms.invalidSignIn);
     }
     setAuthToken(token: string) {
         this.remult.setUser(new JwtHelperService().decodeToken(token));
