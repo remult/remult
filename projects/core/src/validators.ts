@@ -2,7 +2,7 @@ import { FieldRef } from "./remult3";
 
 export class Validators {
     static required = Object.assign((entity: any, col: FieldRef<any, string>, message = 'Should not be empty') => {
-        if (!col.value || col.value.trim().length == 0)
+        if (!col.value || typeof (col.value) === "string" && col.value.trim().length == 0)
             col.error = message;
     }, {
         withMessage: (message: string) => {

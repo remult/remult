@@ -15,51 +15,33 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-# more to remult repo
-[V] fix app.component to home component in non developers tutorial.
-[V] fix src/app - to src/app/home for non developers tutorial
-[V] remove <title> from it
-
-
-[V] copy readme to npm bundle
-[V] mark remult/core as deprecated
-[V] add completed structure for InMemory database to treat missing values correctly - for example isEqualToTrue or sorting for the tutorial.
-[V] rethink why save when no changes are done it reloading
-[V] tutorial - add step of simple where,
-[V] tutorial - use isequalto instead of isdifferent from
-
-[V] remove the bonus from the tutorials
-[V] remove git init from tutorial
-[V] talk again with yoni about the default of use cache for find first - I do so many mistakes with it.
-[V] rename set to assign
-[V] remove reload on save with no changes
-[V] remove options factory
-
 [] fix FitlerFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc....
-
-[] doc field types (date etc... value converter and more)
-[] doc value list column - and it's usage as strategy
 
 ## unexplained errors in mitchashvim
 [] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
-[] can't read properties of null - status.
+[] can't read properties of null - status. on delete
+[] fix the bug with json array, when you add an item to it - it doesn't seem as a change to the code - and it doesn't serialize it.
+[] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
+[] add to iterator - nextPage or something that brinks back the page as a set array.
+[] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager
+[] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
 
 
-
-
-[] test @remult/angular start with angular 12
-[] review the tutorial with strick in mind
-
-[] work on common.ts with Yoni - the axios shit
-[] update to use AuthService
-[] update northwind to use AuthService
-[] update northwind to use terms 
-[] update northwind to use skip tests
-[] update northwind to use strict
-[V] create starter todo angular, that's ready to start coding
-[V] create starter todo react that's ready to start coding
+## TODO Docs
+[] doc field types (date etc... value converter and more)
+[] doc value list column - and it's usage as strategy
 [] fix tutorial images
 
+## Todo Angular Material
+[] test @remult/angular start with angular 12
+[] review the tutorial with strick in mind
+[] readonly doesn't work on checkbox in area
+[] add id lookup in remult angular
+[] insert the column selection into the grid button.
+[] test why date is equal to null - didn't work
+
+
+## Project to fix
 []code samples
 []real world angular
 []real world react
@@ -67,12 +49,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V]todo react
 []bezkoder react
 []bekoder vue
-
-
-
-
 [] upgrade all satelite projects to latest remult
 [] upgrade northwind to latest remult
+[] update northwind to use AuthService
+[] update northwind to use terms 
+[] update northwind to use skip tests
+[] update northwind to use strict
+
 [V] change structure of remult projects - to include projects/core projects/test-angular and under it, everything.
 
 
@@ -98,35 +81,15 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## review with Yoni
 [] overload for find, and iterate that only accepts where (we have that for find first)
-
-[V] reconsider the tricks we've done with {task}  in react - maybe just use state for completed and title to make it more friendly for react developers
-
-[V] consider creating a seperate docs, for noam blog with the angular material etc..
-[] reconsider our deployment strategy - we can build in the dev machine, and send a built project to the server - it'll probably deploy a lot faster (no need to build the angular on the node server)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
-[] when using a value list column - it generates an int column with allow null, and no options to set it as allow null false and default value for now on the create table script
-
-
-
-
-[]c.defs.valueConverter !== DateOnlyValueConverter
-
-
-
-
 
 ## context related:
 
 ## things that came up during react:
 [] talk about invoking client side validation
 [] talk about isvalid that gives you indication of the data is valid etc....
-[] reconsider if setting a value, clears the error member - see test ""validation clears on change"", "get based on id virtual column"
 
 
-## Angular:
-[] add id lookup in remult angular
-[] insert the column selection into the grid button.
-[] test why date is equal to null - didn't work
 
 
 
@@ -150,7 +113,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## remult angular future
 [] change the getValue - to  displayValue
 [] change the input type to support code+value, displayValueOnly
-[V] boolean didn't display by default as checkbox on grid.
 [] without knowing the types  - it doesn't use the display value or get value - see date without experimental meta data
 
 
