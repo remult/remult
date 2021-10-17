@@ -15,7 +15,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[] fix FitlerFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc....
+
 
 ## unexplained errors in mitchashvim
 [V] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
@@ -78,6 +78,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] overload for find, and iterate that only accepts where (we have that for find first)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
