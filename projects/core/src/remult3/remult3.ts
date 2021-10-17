@@ -22,7 +22,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] can't read properties of null - status. on delete
 [V] fix the bug with json array, when you add an item to it - it doesn't seem as a change to the code - and it doesn't serialize it.
 [V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
-[] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager
+
 [] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
 [] add to iterator - nextPage or something that brinks back the page as a set array.
 
@@ -78,6 +78,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] overload for find, and iterate that only accepts where (we have that for find first)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
