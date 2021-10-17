@@ -30,7 +30,7 @@ serverInit().then(async (dataSource) => {
         app.use(forceHttps);
 
     let s = initExpress(app, {
-               dataProvider:dataSource,
+           //    dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource),
 
     });

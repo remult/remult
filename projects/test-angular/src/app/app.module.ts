@@ -6,8 +6,8 @@ import { AppComponent } from './app.component';
 import { RemultModule } from '@remult/angular';
 import { FormsModule } from '@angular/forms';
 
-import {DialogService} from '../../../angular/schematics/hello/files/src/app/common/dialog';
-import {YesNoQuestionComponent} from '../../../angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
+import { DialogService } from '../../../angular/schematics/hello/files/src/app/common/dialog';
+import { YesNoQuestionComponent } from '../../../angular/schematics/hello/files/src/app/common/yes-no-question/yes-no-question.component';
 //import { InputAreaComponent } from '../../projects/angular/schematics/hello/files/src/app/common/input-area/input-area.component';
 
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -27,6 +27,9 @@ import { TestDialogComponent } from './test-dialog/test-dialog.component';
 import { ProductsComponent } from './products-test/products.component';
 import { JwtModule } from '@auth0/angular-jwt';
 import { MatMenuModule } from '@angular/material/menu';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 
 
 
@@ -38,18 +41,21 @@ import { MatMenuModule } from '@angular/material/menu';
     AppComponent,
     ProductsComponent,
     CategoriesComponent,
+    
     TestComponent,
     YesNoQuestionComponent,
-  //  InputAreaComponent,
+    //  InputAreaComponent,
     TestDialogComponent
   ],
-  providers:[
+  providers: [
     DialogService
   ],
   imports: [
+    ScrollingModule,
     BrowserModule,
     AppRoutingModule,
     RemultModule,
+    MatProgressSpinnerModule,
     MatSidenavModule,
     MatListModule,
     MatToolbarModule,
@@ -64,15 +70,15 @@ import { MatMenuModule } from '@angular/material/menu';
     FormsModule,
     MatMenuModule,
     JwtModule.forRoot({
-      config:{
+      config: {
         tokenGetter: () => sessionStorage.getItem("auth_token")
       }
     })
   ],
-  entryComponents:[YesNoQuestionComponent
+  entryComponents: [YesNoQuestionComponent
     //,InputAreaComponent
-    ,TestDialogComponent],
-  
+    , TestDialogComponent],
+
   bootstrap: [AppComponent]
 })
 export class AppModule { }

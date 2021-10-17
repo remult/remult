@@ -1,0 +1,10 @@
+.content {
+    height: calc(100vh - 100px);
+    overflow: auto;
+}
+
+.spinner-item {
+    display: grid;
+    place-items: center;
+    margin-top: 10px;
+}

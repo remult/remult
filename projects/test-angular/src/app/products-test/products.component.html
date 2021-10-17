@@ -1,1 +1,11 @@
-<data-grid [settings]="x"></data-grid>
+<cdk-virtual-scroll-viewport #scroller itemSize="72" class="content">
+    <ng-container *cdkVirtualFor="let item of listItems">
+      <div style="height:72px">
+         {{item.name}}
+      </div>
+    </ng-container>
+    <div class="spinner-item">
+      <mat-progress-spinner [mode]="'indeterminate'" [diameter]="50"></mat-progress-spinner>
+    </div>
+  
+  </cdk-virtual-scroll-viewport>
