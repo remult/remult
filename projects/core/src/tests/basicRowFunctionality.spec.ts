@@ -4,7 +4,7 @@ import { createData, testAllDbs } from './RowProvider.spec';
 import { DataApi, DataApiResponse } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { itForEach, Done, fitForEach, TestDataApiResponse, testAllDataProviders, MockRestDataProvider, restDbTestingServer } from './testHelper.spec';
+import { itForEach, Done, fitForEach, TestDataApiResponse, testAllDataProviders, MockRestDataProvider, restDbTestingServer, testSql, testInMemoryDb, testRestDb } from './testHelper.spec';
 
 import { Status } from './testModel/models';
 
@@ -21,7 +21,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestEntityDa
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey, EntityMetadata } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey, EntityMetadata, DateOnlyField } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
@@ -1912,9 +1912,9 @@ describe("test rest data provider translates data correctly", () => {
     expect(c.categoryName).toBe("test1");
     c.categoryName = undefined;
     await c.save();
-    expect(c.categoryName).toBeUndefined();
+    expect(c.categoryName).toBeNull();
     c = await remult.repo(Categories).findId(1, { useCache: false });
-    expect(c.categoryName).toBeUndefined();
+    expect(c.categoryName).toBeNull();
   });
   it("get works", async () => {
     let type = class extends EntityBase {
@@ -2149,4 +2149,39 @@ async function create4RowsInDp(ctx: Remult, dataProvider: DataProvider) {
   c.name = 'maayan';
   await c._.save();
   return s;
+}
+
+it("test date with null works", async () => testRestDb(async x => {
+  let remult = new Remult();
+  remult.setDataProvider(x);
+  let repo = remult.repo(testDateWithNull);
+  let r = repo.create({ id: 0 });
+  await r.save();
+  r = await repo.findFirst();
+  expect(r.d).toBeNull();
+  expect (await  repo.count(x=>x.d.isEqualTo(null))).toBe(1);
+}));
+@Entity('testDateWithNull', { allowApiCrud: true })
+class testDateWithNull extends EntityBase {
+  @Field()
+  id: number = 0;
+  @DateOnlyField({ allowNull: true })
+  d: Date;
+}
+
+it("test string with null works", async () => testAllDataProviders(async x => {
+  let remult = new Remult();
+  remult.setDataProvider(x);
+  let repo = remult.repo(testStringWithNull);
+  let r = repo.create({ id: 0 });
+  await r.save();
+  r = await repo.findFirst();
+  expect(r.d).toBeNull();
+}));
+@Entity('teststringWithNull', { allowApiCrud: true })
+class testStringWithNull extends EntityBase {
+  @Field()
+  id: number = 0;
+  @Field({ allowNull: true })
+  d: string;
 }

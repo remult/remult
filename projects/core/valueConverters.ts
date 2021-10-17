@@ -44,33 +44,36 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
   fromInput: x => DateOnlyValueConverter.fromJson(x),
   toInput: x => DateOnlyValueConverter.toJson(x),
   toJson: (val: Date) => {
-    var d = val as Date;
-    if (!d)
-      return '';
-    if (val.getHours() == 0)
-      return new Date(val.valueOf() - val.getTimezoneOffset() * 60000).toISOString().substring(0, 10)
+    var d = val;
+    if (typeof d === "string")
+      d = new Date(d);
+    if (!d || d == null)
+      return null;
+
+    if (d.getHours() == 0)
+      return new Date(d.valueOf() - d.getTimezoneOffset() * 60000).toISOString().substring(0, 10)
     else
-      return val.toISOString().substring(0, 10);
+      return d.toISOString().substring(0, 10);
   },
   fromJson: (value: string) => {
     if (!value || value == '' || value == '0000-00-00')
-      return undefined;
+      return null;
     let d = new Date(Date.parse(value));
     return new Date(d.valueOf() + d.getTimezoneOffset() * 60000);
   },
   inputType: InputTypes.date,
   toDb: (val: Date) => {
-    
+
     if (!val)
-      return undefined;
-    return DateOnlyValueConverter.fromJson(DateOnlyValueConverter.toJson( val));
+      return null;
+    return DateOnlyValueConverter.fromJson(DateOnlyValueConverter.toJson(val));
 
   }//when using date storage,  the database expects and returns a date local and every where else we reflect on date iso
   , fromDb: (val: Date) => {
-    
+
     var d = val as Date;
     if (!d)
-      return undefined;
+      return null;
     return val;
 
   },
@@ -107,7 +110,7 @@ export const BoolValueConverter: ValueConverter<Boolean> = {
   fromJson: value => {
     if (typeof value === "boolean")
       return value;
-    if (value !== undefined&&value!==null) {
+    if (value !== undefined && value !== null) {
       return value.toString().trim().toLowerCase() == 'true';
     }
     return undefined;

@@ -382,7 +382,7 @@ class taskWithNull extends EntityBase {
     @Field()
     title: string = '';
     @Field({ allowNull: true })
-    completed: boolean ;
+    completed: boolean;
 }
 describe("missing fields are added in array column", async () => {
     it("not allow null", async () => {
@@ -432,19 +432,19 @@ describe("missing fields are added in array column", async () => {
 
         r.setDataProvider(db);
         let rep = r.repo(taskWithNull);
-        expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t2", "t3"]);
+        expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count(task => task.completed.isEqualTo(false))).toBe(0);
         let t = (await rep.findFirst(task => task.title.isEqualTo('t1')));
-         expect(t.completed).toBe(undefined);
-         t.completed = undefined;
-         await t.save();
-         expect(t.completed).toBe(undefined);
-         t.completed = null;
-         await t.save();
-         expect(t.completed).toBe(undefined);
-         t = rep.create({ title: '4' });
-         await t.save();
-         expect(t.completed).toBe(undefined);
+        expect(t.completed).toBe(undefined);
+        t.completed = undefined;
+        await t.save();
+        expect(t.completed).toBe(undefined);
+        t.completed = null;
+        await t.save();
+        expect(t.completed).toBe(undefined);
+        t = rep.create({ title: '4' });
+        await t.save();
+        expect(t.completed).toBe(undefined);
 
     });
 });

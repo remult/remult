@@ -1337,8 +1337,8 @@ describe("test datetime column", () => {
   });
   it("displays null date well 1", () => {
 
-    expect(DateOnlyValueConverter.toJson(null)).toBe('');
-    expect(DateOnlyValueConverter.toJson(null)).toBe('');
+    expect(DateOnlyValueConverter.toJson(null)).toBe(null);
+    expect(DateOnlyValueConverter.toJson(null)).toBe(null);
     expect(DateOnlyValueConverter.displayValue(null)).toBe('');
   });
   it("displays empty date well empty", () => {

@@ -126,7 +126,7 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
     }
     isDifferentFrom(val: any) {
         val = this.processVal(val);
-        if (val === null && this.metadata.allowNull)
+        if ((val === null || val === undefined) && this.metadata.allowNull)
             return new Filter(add => add.isNotNull(this.metadata));
         return new Filter(add => add.isDifferentFrom(this.metadata, val));
     }
@@ -140,7 +140,7 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
     }
     isEqualTo(val: any): Filter {
         val = this.processVal(val);
-        if (val === null && this.metadata.allowNull)
+        if ((val === null || val === undefined) && this.metadata.allowNull)
             return new Filter(add => add.isNull(this.metadata));
         return new Filter(add => add.isEqualTo(this.metadata, val));
     }
@@ -333,17 +333,21 @@ export function buildFilterFromRequestParameters(columns: FieldMetadata[], filte
         addFilter('_ne', val => c.isDifferentFrom(val));
         addFilter('_in', val =>
             c.isIn(val), true);
-        addFilter('_null', val => {
-            val = val.toString().trim().toLowerCase();
-            switch (val) {
+        var nullFilter = filterInfo.get(col.key + "_null");
+        if (nullFilter) {
+            nullFilter = nullFilter.toString().trim().toLowerCase();
+            switch (nullFilter) {
                 case "y":
                 case "true":
                 case "yes":
-                    return c.isEqualTo(null);
+                    where.push(c.isEqualTo(null));
+                    break;
                 default:
-                    return c.isDifferentFrom(null);
+                    where.push(c.isDifferentFrom(null));
+                    break;
             }
-        });
+        }
+     
         addFilter('_contains', val => {
 
             return c.contains(val);

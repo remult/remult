@@ -25,18 +25,21 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
     private verifyThatRowHasAllNotNullColumns(r: any) {
         for (const f of this.entity.fields) {
-            if (!f.allowNull) {
-                if (r[f.key] === undefined || r[f.key] === null) {
-                    let val = undefined;
-                    if (f.valueType === Boolean)
-                        val = false;
-                    else if (f.valueType === Number)
-                        val = 0;
-                    else if (f.valueType === String)
-                        val = '';
-                    r[f.key] = val;
+            if (!f.isServerExpression)
+                if (!f.allowNull) {
+                    if (r[f.key] === undefined || r[f.key] === null) {
+                        let val = undefined;
+                        if (f.valueType === Boolean)
+                            val = false;
+                        else if (f.valueType === Number)
+                            val = 0;
+                        else if (f.valueType === String)
+                            val = '';
+                        r[f.key] = val;
+                    }
                 }
-            }
+                else if (r[f.key] === undefined)
+                    r[f.key] = null;
         }
     }
     async count(where?: Filter): Promise<number> {
@@ -164,6 +167,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
                 });
         }
         let j = this.translateToJson(data);
+        this.verifyThatRowHasAllNotNullColumns(j);
         this.rows.push(j);
         return Promise.resolve(this.translateFromJson(j));
     }
