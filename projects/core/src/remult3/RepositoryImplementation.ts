@@ -236,7 +236,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             x = new rowHelperImplementation(this._info, entity, this, this.edp, this.remult, true);
             Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.log
                 get: () => x
-            })
+            });
+            x.saveOriginalData();
 
         }
         return x;

@@ -5,6 +5,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Field, Entity, EntityBase, FieldType } from '../remult3';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { assign } from '../../assign';
+import { IdEntity } from '../id-entity';
 
 
 describe("test object column", () => {
@@ -28,7 +29,7 @@ describe("test object column", () => {
         expect(x.$.col.valueChanged()).toBe(false);
         expect(x.wasChanged()).toBe(false);
         expect(x.col.lastName).toBe("honig");
-        x =await  remult.repo(ObjectColumnTest).findFirst();
+        x = await remult.repo(ObjectColumnTest).findFirst();
         expect(x.col.lastName).toBe("honig");
     });
 
@@ -201,4 +202,20 @@ class ObjectColumnTest extends EntityBase {
 interface person {
     firstName: string;
     lastName: string;
+}
+
+
+
+it("Test original values address defaults", async () => {
+    let r = new Remult();
+    let c = r.repo(somethingWithDefaults).create();
+    expect(c.name).toBe("noam");
+    expect(c.$.name.value).toBe("noam");
+    expect(c.$.name.originalValue).toBe('noam');
+});
+
+@Entity('somethingWithDefaults', {})
+class somethingWithDefaults extends IdEntity {
+    @Field()
+    name: string = 'noam';
 }

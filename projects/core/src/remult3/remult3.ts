@@ -23,8 +23,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] fix the bug with json array, when you add an item to it - it doesn't seem as a change to the code - and it doesn't serialize it.
 [V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
 
-[] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
-[] add to iterator - nextPage or something that brinks back the page as a set array.
+[V] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
+[] add to iterator - nextPage or something that brings back the page as a set array.
 
 
 ## TODO Docs
