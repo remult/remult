@@ -17,6 +17,20 @@ describe("test object column", () => {
         await wsql.dropTable(e);
         await wsql.createTable(e);
     }
+    it("test that changes to inner items are monitored", async () => {
+        await deleteAll();
+        var x = remult.repo(ObjectColumnTest).create({ id: 1, col: { firstName: 'yael', lastName: 'katri' } });
+        await x.save();
+        x.col.lastName = 'honig';
+        expect(x.$.col.valueChanged()).toBe(true);
+        expect(x.wasChanged()).toBe(true);
+        await x.save();
+        expect(x.$.col.valueChanged()).toBe(false);
+        expect(x.wasChanged()).toBe(false);
+        expect(x.col.lastName).toBe("honig");
+        x =await  remult.repo(ObjectColumnTest).findFirst();
+        expect(x.col.lastName).toBe("honig");
+    });
 
     it("test basics with wsql", async () => {
         await deleteAll();

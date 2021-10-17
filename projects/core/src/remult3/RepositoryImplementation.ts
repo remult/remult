@@ -563,7 +563,7 @@ abstract class rowHelperBase<T>
     }
     originalValues: any = {};
     saveOriginalData() {
-        this.originalValues = this.copyDataToObject();
+        this.originalValues = JSON.parse(JSON.stringify(this.copyDataToObject()));
     }
     async __validateEntity() {
         this.__clearErrors();
@@ -811,13 +811,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         return this._isNew;
     }
     wasChanged(): boolean {
-        for (const col of this.info.fields) {
-            let val = this.instance[col.key];
-            let lu = this.lookups.get(col.key);
-            if (lu) {
-                val = lu.id;
-            }
-            if (col.valueConverter.toJson(val) != col.valueConverter.toJson(this.originalValues[col.key]))
+        for (const col of this.fields) {
+            if (col.valueChanged())
                 return true;
         }
         return false;
@@ -986,7 +981,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         if (lu) {
             val = lu.id;
         }
-        return this.metadata.valueConverter.toJson(this.rowBase.originalValues[this.metadata.key]) != this.metadata.valueConverter.toJson(val);
+        return JSON.stringify(this.metadata.valueConverter.toJson(this.rowBase.originalValues[this.metadata.key])) != JSON.stringify(this.metadata.valueConverter.toJson(val));
     }
     entityRef: EntityRef<any> = this.helper;
 

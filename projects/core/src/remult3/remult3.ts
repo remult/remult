@@ -18,13 +18,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] fix FitlerFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc....
 
 ## unexplained errors in mitchashvim
-[] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
-[] can't read properties of null - status. on delete
-[] fix the bug with json array, when you add an item to it - it doesn't seem as a change to the code - and it doesn't serialize it.
-[] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
-[] add to iterator - nextPage or something that brinks back the page as a set array.
+[V] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
+[V] can't read properties of null - status. on delete
+[V] fix the bug with json array, when you add an item to it - it doesn't seem as a change to the code - and it doesn't serialize it.
+[V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager
 [] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
+[] add to iterator - nextPage or something that brinks back the page as a set array.
 
 
 ## TODO Docs
@@ -33,12 +33,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] fix tutorial images
 
 ## Todo Angular Material
-[] test @remult/angular start with angular 12
-[] review the tutorial with strick in mind
+[] test why date is equal to null - didn't work
 [] readonly doesn't work on checkbox in area
 [] add id lookup in remult angular
 [] insert the column selection into the grid button.
-[] test why date is equal to null - didn't work
 
 
 ## Project to fix
