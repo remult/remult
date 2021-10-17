@@ -33,7 +33,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] fix tutorial images
 
 ## Todo Angular Material
-[] test why date is equal to null - didn't work
+[V] test why date is equal to null - didn't work
 [] readonly doesn't work on checkbox in area
 [] add id lookup in remult angular
 [] insert the column selection into the grid button.
@@ -48,11 +48,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 []bezkoder react
 []bekoder vue
 [] upgrade all satelite projects to latest remult
-[] upgrade northwind to latest remult
-[] update northwind to use AuthService
-[] update northwind to use terms 
-[] update northwind to use skip tests
-[] update northwind to use strict
+[V] upgrade northwind to latest remult
+[V] update northwind to use AuthService
+[V] update northwind to use skip tests
+[V] update northwind to use strict
 
 [V] change structure of remult projects - to include projects/core projects/test-angular and under it, everything.
 
