@@ -11,6 +11,8 @@ export const DateValueConverter: ValueConverter<Date> = {
   toJson: (val: Date) => {
     if (!val)
       return '';
+    if (typeof (val) === "string")
+      val = new Date(val);
     if (val instanceof Date) {
       return val.toISOString();
     }
