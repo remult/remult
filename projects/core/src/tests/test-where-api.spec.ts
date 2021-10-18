@@ -93,9 +93,9 @@ describe("custom filter", () => {
         expect(json3).toEqual(json);
     })
     it("test that it works", () => {
-        testAllDataProviders(async dp => {
+        testAllDataProviders(async ({remult}) => {
 
-            let c = new Remult().repo(entityForCustomFilter, dp);
+            let c = remult.repo(entityForCustomFilter);
             for (let id = 0; id < 5; id++) {
                 await c.create({ id }).save();
             }
@@ -106,9 +106,9 @@ describe("custom filter", () => {
 
     });
     it("test that it works with inheritance", () => {
-        testAllDataProviders(async dp => {
+        testAllDataProviders(async ({remult}) => {
 
-            let c = new Remult().repo(entityForCustomFilter1, dp);
+            let c = remult.repo(entityForCustomFilter1);
             for (let id = 0; id < 5; id++) {
                 await c.create({ id }).save();
             }

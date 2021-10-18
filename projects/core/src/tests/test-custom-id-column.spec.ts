@@ -6,9 +6,8 @@ import { testAllDataProviders } from './testHelper.spec';
 
 
 describe("custom id column", () => {
-    it("basic test", () => testAllDataProviders(async (dpf) => {
-        let remult = new Remult();
-        remult.setDataProvider(dpf);
+    it("basic test", () => testAllDataProviders(async ({remult}) => {
+       
         let type = class extends EntityBase {
             a: number;
             b: number;
@@ -29,9 +28,8 @@ describe("custom id column", () => {
 
 
     }));
-    it("basic test id column not first column", () => testAllDataProviders(async (dpf) => {
-        let remult = new Remult();
-        remult.setDataProvider(dpf);
+    it("basic test id column not first column", () => testAllDataProviders(async ({remult}) => {
+       
         let type = class extends EntityBase {
             a: number;
             id: number;

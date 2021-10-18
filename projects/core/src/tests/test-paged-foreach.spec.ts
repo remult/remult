@@ -218,34 +218,32 @@ describe("test paged foreach ", () => {
 
 
     });
-    it("test paging with complex object", () => testAllDataProviders(async db => {
+    it("test paging with complex object", () => testAllDataProviders(async ({remult}) => {
         
-        let r = new Remult();
-        r.setDataProvider(db);
-        let c1 = await r.repo(c).create({ id: 1, name: 'c1' }).save();
-        let c2 = await r.repo(c).create({ id: 2, name: 'c2' }).save();
-        let c3 = await r.repo(c).create({ id: 3, name: 'c3' }).save();
 
-        await r.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
-        await r.repo(p).create({ id: 2, name: 'p2', c: c2 }).save();
-        await r.repo(p).create({ id: 3, name: 'p3', c: c3 }).save();
-        await r.repo(p).create({ id: 4, name: 'p4', c: c3 }).save();
-        await r.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
+        let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
+        let c2 = await remult.repo(c).create({ id: 2, name: 'c2' }).save();
+        let c3 = await remult.repo(c).create({ id: 3, name: 'c3' }).save();
+
+        await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
+        await remult.repo(p).create({ id: 2, name: 'p2', c: c2 }).save();
+        await remult.repo(p).create({ id: 3, name: 'p3', c: c3 }).save();
+        await remult.repo(p).create({ id: 4, name: 'p4', c: c3 }).save();
+        await remult.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
         let i = 0;
-        for await (const x of r.repo(p).iterate({
+        for await (const x of remult.repo(p).iterate({
             orderBy: p => [p.c, p.id]
         })) {
             i++;
         }
         expect(i).toBe(5);
     }))
-    it("test paging with complex object_2", () => testAllDataProviders(async db => {
-        let r = new Remult();
-        r.setDataProvider(db);
-        let c1 = await r.repo(c).create({ id: 1, name: 'c1' }).save();
+    it("test paging with complex object_2", () => testAllDataProviders(async ({remult}) => {
+        
+        let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
 
-        await r.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
-        expect((await r.repo(p).findFirst({ where: x => x.c.isEqualTo(c1) })).id).toBe(1);
+        await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
+        expect((await remult.repo(p).findFirst({ where: x => x.c.isEqualTo(c1) })).id).toBe(1);
     }))
 })
 

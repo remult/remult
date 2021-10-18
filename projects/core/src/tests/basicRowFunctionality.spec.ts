@@ -33,7 +33,7 @@ import { assign } from '../../assign';
 
 @FieldType<Phone>({
   valueConverter: {
-    toJson: x => x.thePhone,
+    toJson: x => x?.thePhone,
     fromJson: x => new Phone(x)
   }
 })
@@ -272,18 +272,16 @@ describe("data api", () => {
 
 
 
-  let ctx = new Remult();
-  ctx.setDataProvider(new InMemoryDataProvider());
+  let remult = new Remult();
+  remult.setDataProvider(new InMemoryDataProvider());
   it("put with validations on entity fails", () => testAllDataProviders(
-    async (dataProvider) => {
-      let ctx = new Remult();
-      ctx.setDataProvider(dataProvider);
-      let s = ctx.repo(entityWithValidations);
+    async ({ remult }) => {
+      let s = remult.repo(entityWithValidations);
       let c = s.create();
       c.myId = 1;
       c.name = 'noam';
       await c._.save();
-      let api = new DataApi(s, ctx);
+      let api = new DataApi(s, remult);
       let t = new TestDataApiResponse();
       let d = new Done();
       t.error = async (data: any) => {
@@ -299,28 +297,27 @@ describe("data api", () => {
 
     }));
   it("filter works on all db", () => testAllDataProviders(
-    async (dataProvider) => {
-      let s = await create4RowsInDp(ctx, dataProvider);
+    async ({ db }) => {
+      let s = await create4RowsInDp(remult, db);
       expect((await s.find({ where: c => c.myId.isIn([1, 3]) })).length).toBe(2);
     }));
   it("filter works on all db or", () => testAllDataProviders(
-    async (dataProvider) => {
+    async ({ db }) => {
 
-      let s = await create4RowsInDp(ctx, dataProvider);
+      let s = await create4RowsInDp(remult, db);
       expect((await s.find({ where: c => new OrFilter(c.myId.isEqualTo(1), c.myId.isEqualTo(3)) })).length).toBe(2);
 
     }));
 
-  it("put with validations on column fails", () => testAllDataProviders(async (dp) => {
-    ctx = new Remult();
-    ctx.setDataProvider(dp);
-    var s = ctx.repo(entityWithValidationsOnColumn);
+  it("put with validations on column fails", () => testAllDataProviders(async ({ remult }) => {
+
+    var s = remult.repo(entityWithValidationsOnColumn);
     let c = s.create();
 
     c.myId = 1;
     c.name = 'noam';
     await c._.save();
-    let api = new DataApi(s, ctx);
+    let api = new DataApi(s, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -335,15 +332,14 @@ describe("data api", () => {
     expect(x[0].name).toBe('noam');
 
   }));
-  it("put with validations on entity fails", () => testAllDataProviders(async (dp) => {
-    ctx = new Remult();
-    ctx.setDataProvider(dp);
-    var s = ctx.repo(entityWithValidations);
+  it("put with validations on entity fails", () => testAllDataProviders(async ({ remult }) => {
+
+    var s = remult.repo(entityWithValidations);
     let c = s.create();
 
     c.myId = 1; c.name = 'noam';
     await c._.save();
-    let api = new DataApi(s, ctx);
+    let api = new DataApi(s, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
     t.error = async (data: any) => {
@@ -358,10 +354,9 @@ describe("data api", () => {
     expect(x[0].name).toBe('noam');
 
   }));
-  it("entity with different id column still works well", () => testAllDataProviders(async (dp) => {
-    ctx = new Remult();
-    ctx.setDataProvider(dp);
-    let s = ctx.repo(entityWithValidations);
+  it("entity with different id column still works well", () => testAllDataProviders(async ({ remult }) => {
+
+    let s = remult.repo(entityWithValidations);
     let c = s.create();
 
     c.myId = 1; c.name = 'noam';
@@ -373,22 +368,19 @@ describe("data api", () => {
 
 
   }));
-  it("empty find works", () => testAllDataProviders(async (dp) => {
-    let ctx = new Remult();
-    ctx.setDataProvider(dp);
-    let c = ctx.repo(newCategories).create();
+  it("empty find works", () => testAllDataProviders(async ({ remult }) => {
+    let c = remult.repo(newCategories).create();
     c.id = 5;
     c.categoryName = 'test';
     await c._.save();
-    let l = await ctx.repo(newCategories).find();
+    let l = await remult.repo(newCategories).find();
     expect(l.length).toBe(1);
     expect(l[0].categoryName).toBe('test');
 
 
   }));
-  it("partial updates", () => testAllDataProviders(async (dp) => {
-    let remult = new Remult();
-    remult.setDataProvider(dp);
+  it("partial updates", () => testAllDataProviders(async ({ remult }) => {
+
     let c = remult.repo(newCategories).create({
       id: 5, categoryName: 'test', description: 'desc'
     });
@@ -1479,15 +1471,14 @@ describe("data api", () => {
 
 
 
-  it("count", () => testAllDataProviders(async (dp) => {
-    let ctx = new Remult();
-    ctx.setDataProvider(dp);
-    expect(await ctx.repo(newCategories).count()).toBe(0);
-    let c = ctx.repo(newCategories).create();
+  it("count", () => testAllDataProviders(async ({ remult }) => {
+
+    expect(await remult.repo(newCategories).count()).toBe(0);
+    let c = remult.repo(newCategories).create();
     c.id = 5;
     c.categoryName = 'test';
     await c._.save();
-    expect(await ctx.repo(newCategories).count()).toBe(1);
+    expect(await remult.repo(newCategories).count()).toBe(1);
   }));
 
 });
@@ -2151,16 +2142,22 @@ async function create4RowsInDp(ctx: Remult, dataProvider: DataProvider) {
   return s;
 }
 
-it("test date with null works", async () => testRestDb(async x => {
-  let remult = new Remult();
-  remult.setDataProvider(x);
+it("test date with null works", async () => testAllDataProviders(async ({ remult }) => {
+
   let repo = remult.repo(testDateWithNull);
   let r = repo.create({ id: 0 });
   await r.save();
   r = await repo.findFirst();
   expect(r.d).toBeNull();
-  expect (await  repo.count(x=>x.d.isEqualTo(null))).toBe(1);
+  expect(await repo.count(x => x.d.isEqualTo(null))).toBe(1);
 }));
+it("test original value of date", async () => testAllDataProviders(async ({ remult }) => {
+  let r =await  remult.repo(testDateWithNull).create({ id: 1, d : new Date(1976, 6, 16) }).save();
+
+  expect(r.$.d.originalValue.getFullYear()).toBe(1976);
+
+}));
+
 @Entity('testDateWithNull', { allowApiCrud: true })
 class testDateWithNull extends EntityBase {
   @Field()
@@ -2169,9 +2166,8 @@ class testDateWithNull extends EntityBase {
   d: Date;
 }
 
-it("test string with null works", async () => testAllDataProviders(async x => {
-  let remult = new Remult();
-  remult.setDataProvider(x);
+it("test string with null works", async () => testAllDataProviders(async ({ remult }) => {
+
   let repo = remult.repo(testStringWithNull);
   let r = repo.create({ id: 0 });
   await r.save();

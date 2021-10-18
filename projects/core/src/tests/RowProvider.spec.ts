@@ -62,7 +62,7 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
         await sql.execute("drop table if exists " + r.name);
     }
   }
-  await testAllDataProviders(async db=>{
+  await testAllDataProviders(async ({db})=>{
       if (!db)
         throw new Error("you forget to set a db for the test");
       let remult = new Remult();
@@ -1547,3 +1547,5 @@ class mockColumnDefs implements FieldMetadata {
   readonly allowNull: boolean;
   readonly dbType: string;
 }
+
+

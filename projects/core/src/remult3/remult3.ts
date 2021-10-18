@@ -24,6 +24,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
 
 [V] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
+[] check why realworkd - allowApiInsert - the first param was any.
+[] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
 
 
 
@@ -41,12 +43,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## Project to fix
 []code samples
-[]real world angular
-[]real world react
+
 [V]todo angular
 [V]todo react
-[]bezkoder react
-[]bekoder vue
+[V] bezkoder react
+[V] bekoder vue
 [] upgrade all satelite projects to latest remult
 [V] upgrade northwind to latest remult
 [V] update northwind to use AuthService
@@ -80,6 +81,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] add to iterator - nextPage or something that brings back the page as a set array. something to use not just in the for await scenario
 [] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
+[] real world angular - moving target, there is a full  new version of it - might worth forking from that
+[] real world react - there is a new react typescript project - https://github.com/angelguzmaning/ts-redux-react-realworld-example-app
 [] overload for find, and iterate that only accepts where (we have that for find first)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 

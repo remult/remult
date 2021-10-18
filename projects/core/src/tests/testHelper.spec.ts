@@ -102,7 +102,10 @@ Action.provider = {
 }
 
 
-export async function testSql(runAsync: (db: DataProvider) => Promise<void>) {
+export async function testSql(runAsync: (db: {
+  db: DataProvider,
+  remult: Remult
+}) => Promise<void>) {
   let webSql = new WebSqlDataProvider('test');
   const sql = new SqlDatabase(webSql);
   for (const r of await (await sql.execute("select name from sqlite_master where type='table'")).rows) {
@@ -113,18 +116,35 @@ export async function testSql(runAsync: (db: DataProvider) => Promise<void>) {
         await sql.execute("drop table if exists " + r.name);
     }
   }
-  await runAsync(sql);
+  let remult = new Remult();
+  remult.setDataProvider(sql);
+  await runAsync({ db: sql, remult });
 }
-export async function testInMemoryDb(runAsync: (db: DataProvider) => Promise<void>) {
-  await runAsync(new InMemoryDataProvider());
+export async function testInMemoryDb(runAsync: (db: {
+  db: DataProvider,
+  remult: Remult
+}) => Promise<void>) {
+  let remult = new Remult();
+  let db = new InMemoryDataProvider();
+  remult.setDataProvider(db);
+  await runAsync({ db, remult });
 }
-export async function testRestDb(runAsync: (db: DataProvider) => Promise<void>) {
+export async function testRestDb(runAsync: (db: {
+  db: DataProvider,
+  remult: Remult
+}) => Promise<void>) {
   let r = new Remult();
   r.setDataProvider(new InMemoryDataProvider());
-  new MockRestDataProvider(r);
-  await runAsync(new MockRestDataProvider(r));
+
+  let remult = new Remult();
+  let db = new MockRestDataProvider(r);
+  remult.setDataProvider(db);
+  await runAsync({ db, remult });
 }
-export async function testAllDataProviders(runAsync: (db: DataProvider) => Promise<void>) {
+export async function testAllDataProviders(runAsync: (db: {
+  db: DataProvider,
+  remult: Remult
+}) => Promise<void>) {
   await testSql(runAsync);
   await testInMemoryDb(runAsync);
   await testRestDb(runAsync);
