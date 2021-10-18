@@ -555,16 +555,21 @@ abstract class rowHelperBase<T>
         let d: any = {};
         for (const col of this.columnsInfo) {
             let lu = this.lookups.get(col.key);
+            let val = this.instance[col.key];
             if (lu)
-                d[col.key] = lu.id;
-            else
-                d[col.key] = this.instance[col.key];
+                val = lu.id;
+            if (val)
+                val = col.valueConverter.fromJson(
+                    JSON.parse(
+                        JSON.stringify(
+                            col.valueConverter.toJson(val))));
+            d[col.key] = val;
         }
         return d;
     }
     originalValues: any = {};
     saveOriginalData() {
-        this.originalValues = JSON.parse(JSON.stringify(this.copyDataToObject()));
+        this.originalValues = this.copyDataToObject();
     }
     async __validateEntity() {
         this.__clearErrors();
