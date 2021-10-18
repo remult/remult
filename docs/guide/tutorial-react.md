@@ -214,7 +214,7 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
 
    *src/server/index.ts*
    ```ts
-   import '../app/task';
+   import '../Task';
    ```
 
 The [@Entity](./ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](./ref_entity.md#allowapicrud) property to `true`.
@@ -363,7 +363,7 @@ The `TaskEditor` will have an html `input` for the titles, and the `Save` button
    import { useState } from "react"
    import { Task } from "./Task"
    
-   const TaskEditor: React.FC<{ task: Task }> = (props) => {
+   export const TaskEditor: React.FC<{ task: Task }> = (props) => {
        const [{ task }, setTask] = useState(props);
        const save = () => task.save().then(task => setTask({ task }));
        return <span><input
@@ -377,7 +377,6 @@ The `TaskEditor` will have an html `input` for the titles, and the `Save` button
            >save</button>
        </span>
    }
-   export default TaskEditor
    ```
 
 Replace the task `title` template expression in `App.tsx` with the highlighted lines:
@@ -394,7 +393,7 @@ Replace the task `title` template expression in `App.tsx` with the highlighted l
 ::: danger Import BackendMethod
 Don't forget to import `TaskEditor` from `./TaskEditor.ts` for this code to work.
 ```ts
-import TaskEditor from './TaskEditor'
+import { TaskEditor } from './TaskEditor';
 ```
 :::
 
@@ -472,7 +471,7 @@ import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { remult } from './common';
 import { Task } from './Task';
-import TaskEditor from './TaskEditor'
+import { TaskEditor } from './TaskEditor';
 
 const taskRepo = remult.repo(Task);
 
@@ -521,7 +520,7 @@ export default App;
 import { useState } from "react"
 import { Task } from "./Task"
 
-const TaskEditor: React.FC<{ task: Task }> = (props) => {
+export const TaskEditor: React.FC<{ task: Task }> = (props) => {
     const [{ task }, setTask] = useState(props);
     const save = () => task.save().then(task => setTask({ task }));
     return <span>
@@ -544,7 +543,6 @@ const TaskEditor: React.FC<{ task: Task }> = (props) => {
         >save</button>
     </span>
 }
-export default TaskEditor
 ```
 
 ## Sorting and Filtering
