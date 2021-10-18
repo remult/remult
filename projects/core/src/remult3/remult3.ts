@@ -17,14 +17,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## TODO
 
 
-## unexplained errors in mitchashvim
 [V] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
 [V] can't read properties of null - status. on delete
 [V] fix the bug with json array, when you add an item to it - it doesn't seem as a change to the code - and it doesn't serialize it.
 [V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
 
 [V] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
-[] check why realworkd - allowApiInsert - the first param was any.
+[] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+[] check why realworld - allowApiInsert - the first param was any.
 [] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
 
 
@@ -33,6 +33,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] doc field types (date etc... value converter and more)
 [] doc value list column - and it's usage as strategy
 [] fix tutorial images
+
 
 ## Todo Angular Material
 [V] test why date is equal to null - didn't work
@@ -81,10 +82,15 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] add to iterator - nextPage or something that brings back the page as a set array. something to use not just in the for await scenario
 [] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
-[] real world angular - moving target, there is a full  new version of it - might worth forking from that
-[] real world react - there is a new react typescript project - https://github.com/angelguzmaning/ts-redux-react-realworld-example-app
+[] ## Realworld
+    [] real world angular - moving target, there is a full  new version of it - might worth forking from that
+    [] use subscription like the original one does.
+    [] real world - consider adding custom remult, that will have current user details?
+    [] React - there is a new react typescript project - https://github.com/angelguzmaning/ts-redux-react-realworld-example-app
 [] overload for find, and iterate that only accepts where (we have that for find first)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
+
+
 
 ## context related:
 
