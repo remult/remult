@@ -82,8 +82,8 @@ module.exports = {
           children: [
             'angular-for-non-web-developers',
             'adding-an-angular-component-and-route',
-            'dialog',
-            'grid-settings-and-data-grid',
+            'dialog'
+          //  'grid-settings-and-data-grid',
           ]
         }],
       '/guide/': [

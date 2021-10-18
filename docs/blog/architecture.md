@@ -68,7 +68,20 @@ It handles security concerns and server/client concerns so that you the develope
 
 An Entity object is defined once and is used on the server and in the browser. For example:
 
-<<< @/docs-code/products-batch-operations/products.ts
+```
+import { Entity, EntityBase, Field } from 'remult';
+
+@Entity('Products', {
+    allowApiCrud: true
+})
+export class Product extends EntityBase {
+  @Field()
+  name: string = '';
+
+  @Field()
+  unitPrice: number = 0;
+}
+```
 
 
 When you write the following code which runs in the browser:

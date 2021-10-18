@@ -21,7 +21,7 @@ And in the `html` refer to the `gridSettings` object
 
 We can configure the data grid by sending an options object to the `gridSettings` method.
 
-<<< @/docs-code/products/products.component.ts{11-15} 
+
 
 
 
