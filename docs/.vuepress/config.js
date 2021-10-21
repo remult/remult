@@ -27,32 +27,32 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
-    repo: '',
-    editLinks: false,
-    docsDir: '',
-    editLinkText: '',
+    repo: 'remult/remult',
+    editLinks: true,
+    docsDir: 'docs',
     lastUpdated: false,
     nav: [
       {
+        text: 'Guide',
+        link: '/guide/',
+      },
+      {
         text: 'Blog',
         link: '/blog/',
-      },
+      }, 
       /*  {
           text: 'Tutorials',
           link: '/tutorials/',
         },*/
-      {
-        text: 'Guide',
-        link: '/guide/',
-      },/*,
-      {
-        text: 'Config',
-        link: '/config/'
-      },
-      {
-        text: 'VuePress',
-        link: 'https://v1.vuepress.vuejs.org'
-      }*/
+      /*,
+            {
+              text: 'Config',
+              link: '/config/'
+            },
+            {
+              text: 'VuePress',
+              link: 'https://v1.vuepress.vuejs.org'
+            }*/
     ],
     sidebar: {
       '/blog/': [
