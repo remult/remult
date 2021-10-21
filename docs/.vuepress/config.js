@@ -31,6 +31,7 @@ module.exports = {
     editLinks: true,
     docsDir: 'docs',
     lastUpdated: false,
+    smoothScroll: true,
     nav: [
       {
         text: 'Guide',
@@ -94,7 +95,7 @@ module.exports = {
             '']
         },
         {
-          title: 'Tutorial',
+          title: 'Tutorials',
           collapsable: false,
           children: [
             'tutorial-angular',
