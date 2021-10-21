@@ -103,7 +103,7 @@ module.exports = {
         },
         {
           title: 'API Reference',
-          collapsable: true,
+          collapsable: false,
           children: [
             'ref_entity',
             'ref_field',
