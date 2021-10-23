@@ -34,6 +34,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] entity
     [] controller
     [] and usage FieldType - to send complex parameters
+[] continue swagger to reflect Backend Methods
 [] overload for find, and iterate that only accepts where (we have that for find first)
 [] check why realworld - allowApiInsert - the first param was any.
 [] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get

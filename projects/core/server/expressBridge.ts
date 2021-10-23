@@ -65,7 +65,7 @@ export function initExpress(app: express.Express,
 export class ExpressBridge {
 
 
-  openapiDoc(options: { title: string }) {
+  openApiDoc(options: { title: string }) {
     let r = new Remult();
     let spec: any = {
       info: { title: options.title },
