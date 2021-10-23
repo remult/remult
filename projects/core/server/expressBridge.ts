@@ -121,7 +121,7 @@ export class ExpressBridge {
           if (condition === undefined)
             condition = def;
 
-          console.log("cod" + condition);
+          
           item.tags = [meta.key];
           if (condition != false) {
             if (condition != true) {
@@ -260,8 +260,8 @@ export class ExpressBridge {
 
           ],
           "responses": {
-            "200": {
-              "description": "successful operation"
+            "204": {
+              "description": "Deleted"
 
             },
             ...validationError
