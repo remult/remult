@@ -207,7 +207,7 @@ export class AppModule { }
 ### Setup completed
 At this point our starter project is up and running. We are now ready to start creating the task list app.
 
-## Entities
+## Entities and CRUD Operations
 
 Let's start coding the app by defining the `Task` entity class.
 

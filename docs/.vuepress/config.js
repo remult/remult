@@ -27,32 +27,33 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
-    repo: '',
-    editLinks: false,
-    docsDir: '',
-    editLinkText: '',
+    repo: 'remult/remult',
+    editLinks: true,
+    docsDir: 'docs',
     lastUpdated: false,
+    smoothScroll: true,
     nav: [
+      {
+        text: 'Guide',
+        link: '/guide/',
+      },
       {
         text: 'Blog',
         link: '/blog/',
-      },
+      }, 
       /*  {
           text: 'Tutorials',
           link: '/tutorials/',
         },*/
-      {
-        text: 'Guide',
-        link: '/guide/',
-      },/*,
-      {
-        text: 'Config',
-        link: '/config/'
-      },
-      {
-        text: 'VuePress',
-        link: 'https://v1.vuepress.vuejs.org'
-      }*/
+      /*,
+            {
+              text: 'Config',
+              link: '/config/'
+            },
+            {
+              text: 'VuePress',
+              link: 'https://v1.vuepress.vuejs.org'
+            }*/
     ],
     sidebar: {
       '/blog/': [
@@ -94,7 +95,7 @@ module.exports = {
             '']
         },
         {
-          title: 'Tutorial',
+          title: 'Tutorials',
           collapsable: false,
           children: [
             'tutorial-angular',
@@ -103,7 +104,7 @@ module.exports = {
         },
         {
           title: 'API Reference',
-          collapsable: true,
+          collapsable: false,
           children: [
             'ref_entity',
             'ref_field',
