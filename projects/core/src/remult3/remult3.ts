@@ -23,9 +23,27 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
 
 [V] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
+[] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+[] write an article about the different usages of backend method:
+    [] static
+    [] entity
+    [] controller
+    [] and usage FieldType - to send complex parameters
+[] overload for find, and iterate that only accepts where (we have that for find first)
 [] check why realworld - allowApiInsert - the first param was any.
 [] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
+[] Love Angular? Give our repo a star.Star
+```
+ Love Angular?&nbsp;
+      <a href="https://github.com/angular/angular" target="_blank" rel="noopener"> Give our repo a star.
+        <div class="github-star-badge">
+            <svg class="material-icons" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          Star
+        </div>
+      </a>
+```
+[] google sheets gateway
 
 
 
@@ -79,15 +97,16 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+
 [] add to iterator - nextPage or something that brings back the page as a set array. something to use not just in the for await scenario
 [] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
-[] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
+[] talk about invoking client side validation
+[] talk about isvalid that gives you indication of the data is valid etc....
 [] ## Realworld
     [] real world angular - moving target, there is a full  new version of it - might worth forking from that
     [] use subscription like the original one does.
     [] real world - consider adding custom remult, that will have current user details?
     [] React - there is a new react typescript project - https://github.com/angelguzmaning/ts-redux-react-realworld-example-app
-[] overload for find, and iterate that only accepts where (we have that for find first)
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
 
@@ -95,8 +114,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## context related:
 
 ## things that came up during react:
-[] talk about invoking client side validation
-[] talk about isvalid that gives you indication of the data is valid etc....
+
 
 
 
@@ -109,6 +127,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## V2
 ### questions about find with create
+[] backend method - to expose some result that indicates progress.
 [] should the new row created when not found enter the cache?
 [] should cache empty results?
 [] find with create and cache, and then find without create and with cache - should return the cache?
