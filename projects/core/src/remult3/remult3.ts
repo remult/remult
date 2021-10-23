@@ -24,7 +24,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [V] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
+[] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
+[] make sure repository can perform save and delete on external entities.
+[] create a todo app using "normal" node js - and create a refactoring video
 [] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+[] check why helmet doesnt force https
 [] write an article about the different usages of backend method:
     [] static
     [] entity
@@ -97,7 +101,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
-
+[] consider changing caption to title (that's how it is in the swagger docs)
+[] consider adding documentation properties to options, 'description', 'example value'
 [] add to iterator - nextPage or something that brings back the page as a set array. something to use not just in the for await scenario
 [] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
 [] talk about invoking client side validation
@@ -108,6 +113,9 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] real world - consider adding custom remult, that will have current user details?
     [] React - there is a new react typescript project - https://github.com/angelguzmaning/ts-redux-react-realworld-example-app
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
+
+[] This is breaking intellisense in the html of angular - Failed to run ngcc for c:/repos/hug-moms/tsconfig.json, language service may not operate correctly:
+    ngcc for c:/repos/hug-moms/tsconfig.json returned exit code 1, stderr: [33mWarning:[0m Entry point '@remult/angular' contains deep imports into 'C:/repos/hug-moms/node_modules/remult/valueConverters', 'C:/repos/hug-moms/node_modules/remult/src/remult3', 'C:/repos/hug-moms/node_modules/remult/src/server-action', 'C:/repos/hug-moms/node_modules/remult/classType'. This is probably not a problem, but may cause the compilation of entry points to be out of order.
 
 
 

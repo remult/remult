@@ -9,11 +9,12 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Field, Entity, Repository } from '../src/remult3';
+import { Field, Entity, Repository, getEntityKey } from '../src/remult3';
 import { NumberValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
+import { allEntities } from '../src/context';
 
 
 
@@ -64,7 +65,226 @@ export function initExpress(app: express.Express,
 export class ExpressBridge {
 
 
+  openapiDoc(options: { title: string }) {
+    let r = new Remult();
+    let spec: any = {
+      info: { title: options.title },
+      openapi: "3.0.0",
+      //swagger: "2.0",
+      "components": {
+        "securitySchemes": {
+          "bearerAuth": {
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "type": "http"
+          }
+        }
+      },
+      paths: {
+      },
+      definitions: {
+      }
+    };
 
+    for (const e of allEntities) {
+      let meta = r.repo(e).metadata;
+      let key = getEntityKey(e);
+
+      if (key) {
+        let properties: any = {};
+        for (const f of meta.fields) {
+          properties[f.key] = {
+            "type": f.valueType == String ? "string" :
+              f.valueType == Boolean ? "boolean" :
+                f.valueType == Date ? "string" :
+                  f.valueType == Number ? "number" :
+                    "object"
+          }
+        }
+        spec.definitions[key] = {
+          type: "object",
+          properties
+        }
+        let definition = {
+          "$ref": "#/definitions/" + key
+        };
+        let security = {
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+        let secure = (condition: any, def: boolean, item: any) => {
+          if (condition === undefined)
+            condition = meta.options.allowApiCrud;
+          if (condition === undefined)
+            condition = def;
+
+          console.log("cod" + condition);
+          item.tags = [meta.key];
+          if (condition != false) {
+            if (condition != true) {
+
+              item = { ...item, ...security }
+              item.responses["403"] = { description: "forbidden" };
+            }
+            return item;
+          }
+        }
+
+        let apiPath: any = spec.paths['/api/' + key] = {};
+        let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
+
+        apiPath.get = secure(meta.options.allowApiRead, true, {
+          responses: {
+            "200": {
+              "description": "returns an array of " + key,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": definition
+                  }
+                }
+              }
+
+            },
+          }
+        });
+        let idParameter = {
+          "name": "id",
+          "in": "path",
+          "description": "id of " + key,
+          "required": true,
+          "type": "string"
+        };
+        let itemInBody = {
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/definitions/" + key
+                }
+              }
+            }
+          }
+        };
+
+
+        let validationError = {
+          "400": {
+            "description": "Error: Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/definitions/InvalidResponse"
+                }
+              }
+            }
+          }
+        }
+        apiPath.post = secure(meta.options.allowApiInsert, false, {
+          "summary": "insert a " + key,
+          "description": "insert a " + key,
+          "produces": ["application/json"],
+
+          ...itemInBody,
+
+          "responses": {
+            "201": {
+              "description": "Created",
+              "content": {
+                "application/json": {
+
+                  "schema": {
+                    "$ref": "#/definitions/" + key
+
+                  }
+                }
+              }
+            },
+            ...validationError
+          }
+        });
+        apiPathWithId.get = secure(meta.options.allowApiRead, true, {
+          parameters: [idParameter],
+          responses: {
+            "200": {
+              "description": "returns an item of " + key,
+              "content": {
+                "application/json": {
+
+                  "schema": {
+                    "$ref": "#/definitions/" + key
+
+                  }
+                }
+              }
+            },
+          }
+        });
+
+
+        apiPathWithId.put = secure(meta.options.allowApiUpdate, false, {
+          "summary": "Update a " + key,
+          "description": "Update a " + key,
+          "produces": ["application/json"],
+          "parameters": [
+            idParameter
+
+          ],
+          ...itemInBody,
+          "responses": {
+            "200": {
+              "description": "successful operation",
+              "content": {
+                "application/json": {
+
+                  "schema": {
+                    "$ref": "#/definitions/" + key
+
+                  }
+                }
+              }
+            },
+            ...validationError
+          }
+        });
+        apiPathWithId.delete = secure(meta.options.allowApiDelete, false, {
+          "summary": "Delete a " + key,
+          "description": "Delete a " + key,
+          "produces": ["application/json"],
+          "parameters": [
+            idParameter
+
+          ],
+          "responses": {
+            "200": {
+              "description": "successful operation"
+
+            },
+            ...validationError
+          }
+        });
+
+
+
+      }
+    }
+    spec.definitions["InvalidResponse"] = {
+      "type": "object",
+      properties: {
+        "message": {
+          "type": "string"
+        },
+        "modelState": {
+          "type": "object"
+        }
+      }
+    }
+    return spec;
+  }
 
 
 
