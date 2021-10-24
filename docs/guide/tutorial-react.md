@@ -369,16 +369,17 @@ The `TaskEditor` will have an html `input` for the titles, and the `Save` button
    export const TaskEditor: React.FC<{ task: Task }> = (props) => {
        const [{ task }, setTask] = useState(props);
        const save = () => task.save().then(task => setTask({ task }));
-       return <span><input
-           value={task.title}
-           onChange={e =>
-                setTask({ task: task.assign({ title: e.target.value }) })
-           }
-       />
-           <button onClick={() => save()}
-               disabled={!task.wasChanged()}
-           >save</button>
-       </span>
+       return <span>
+         <input
+            value={task.title}
+            onChange={e =>
+                  setTask({ task: task.assign({ title: e.target.value }) })
+            }
+         />
+            <button onClick={() => save()}
+                  disabled={!task.wasChanged()}
+            >save</button>
+         </span>
    }
    ```
 
