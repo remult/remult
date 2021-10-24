@@ -60,10 +60,10 @@ cd remult-angular-todo
 ```
 
 #### Installing required packages
-We need `express` to serve our app's API and, of course, `remult`.
+We need `express` to serve our app's API, `swagger-ui-express` for API documentation and, of course, `remult`.
 ```sh
-npm i express remult
-npm i --save-dev @types/express
+npm i express swagger-ui-express  remult
+npm i --save-dev @types/express @types/swagger-ui-express
 ```
 #### The API server project
 The starter API server TypeScript project contains a single module which initializes `Express`, starts Remult and begins listening for API requests.
@@ -84,10 +84,13 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    *src/server/index.ts*
    ```ts
    import * as express from 'express';
+   import swaggerUi from 'swagger-ui-express';
    import { initExpress } from 'remult/server';
 
    let app = express();
-   initExpress(app);
+   let api = initExpress(app);
+   app.use('/api/docs', swaggerUi.serve,
+       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
    app.listen(3002, () => console.log("Server started"));
    ```
 
@@ -866,11 +869,12 @@ In this section, we'll be using the following packages:
 5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{3-4,8-12}
+   ```ts{3-4,9-13}
    import * as express from 'express';
-   import { initExpress } from 'remult/server';
+   import swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
+   import { initExpress } from 'remult/server';
    import '../app/task';
    
    let app = express();
@@ -879,7 +883,9 @@ In this section, we'll be using the following packages:
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   initExpress(app);
+   let api = initExpress(app);
+   app.use('/api/docs', swaggerUi.serve,
+       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
    app.listen(3002, () => console.log("Server started"));
    ```
 
@@ -1019,8 +1025,9 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{4-5,10-11,18-22}
+   ```ts{5-6,11-12,21-25}
    import * as express from 'express';
+   import swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
@@ -1036,8 +1043,10 @@ In addition, to follow a few basic production best practices, we'll use [compres
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   initExpress(app);
-   app.use(express.static('dist/remult-angular-todo'));
+   let api = initExpress(app);
+   app.use('/api/docs', swaggerUi.serve,
+       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
+   app.use(express.static('dist'));       
    app.use('/*', async (req, res) => {
       res.sendFile('./dist/remult-angular-todo/index.html');
    });
@@ -1091,8 +1100,9 @@ Let's replace it with a production PostgreSQL database.
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{6-8,20-36}
+   ```ts{7-9,21-37}
    import * as express from 'express';
+   import swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
@@ -1126,10 +1136,12 @@ Let's replace it with a production PostgreSQL database.
        }
        return undefined;
    }
-   initExpress(app, {
+   let api = initExpress(app, {
        dataProvider: getDatabase()
    });
-   app.use(express.static('dist/remult-angular-todo'));
+   app.use('/api/docs', swaggerUi.serve,
+       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
+   app.use(express.static('dist'));
    app.use('/*', async (req, res) => {
       res.sendFile('./dist/remult-angular-todo/index.html');
    });

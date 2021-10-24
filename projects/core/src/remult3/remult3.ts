@@ -39,6 +39,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] check why realworld - allowApiInsert - the first param was any.
 [] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
 [] Love Angular? Give our repo a star.Star
+[] check helmet doesn't force https
 ```
  Love Angular?&nbsp;
       <a href="https://github.com/angular/angular" target="_blank" rel="noopener"> Give our repo a star.
@@ -103,11 +104,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## review with Yoni
 [] consider changing caption to title (that's how it is in the swagger docs)
+[] consider merging the postgres and deployment docs
+[] consider simplifying the postgres setup docs.
 [] consider adding documentation properties to options, 'description', 'example value'
 [] add to iterator - nextPage or something that brings back the page as a set array. something to use not just in the for await scenario
 [] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
 [] talk about invoking client side validation
 [] talk about isvalid that gives you indication of the data is valid etc....
+[] discuss api  with regards to count, query etc...
 [] ## Realworld
     [] real world angular - moving target, there is a full  new version of it - might worth forking from that
     [] use subscription like the original one does.
