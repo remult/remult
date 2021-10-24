@@ -84,7 +84,7 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    *src/server/index.ts*
    ```ts
    import * as express from 'express';
-   import swaggerUi from 'swagger-ui-express';
+   import * as swaggerUi from 'swagger-ui-express';
    import { initExpress } from 'remult/server';
 
    let app = express();
@@ -871,7 +871,7 @@ In this section, we'll be using the following packages:
    *src/server/index.ts*
    ```ts{3-4,9-13}
    import * as express from 'express';
-   import swaggerUi from 'swagger-ui-express';
+   import * as swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import { initExpress } from 'remult/server';
@@ -1027,7 +1027,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    *src/server/index.ts*
    ```ts{5-6,11-12,21-25}
    import * as express from 'express';
-   import swaggerUi from 'swagger-ui-express';
+   import * as swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
@@ -1102,7 +1102,7 @@ Let's replace it with a production PostgreSQL database.
    *src/server/index.ts*
    ```ts{7-9,21-37}
    import * as express from 'express';
-   import swaggerUi from 'swagger-ui-express';
+   import * as swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
