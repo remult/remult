@@ -219,8 +219,8 @@ export class ExpressBridge {
 
 
         apiPath.post = secure(meta.options.allowApiInsert, false, {
-          "summary": "insert a " + key,
-          "description": "insert a " + key,
+          //"summary": "insert a " + key,
+          //"description": "insert a " + key,
           "produces": ["application/json"],
 
           ...itemInBody,
@@ -245,7 +245,7 @@ export class ExpressBridge {
           parameters: [idParameter],
           responses: {
             "200": {
-              "description": "returns an item of " + key,
+             // "description": "returns an item of " + key,
               "content": {
                 "application/json": {
 
@@ -261,8 +261,8 @@ export class ExpressBridge {
 
 
         apiPathWithId.put = secure(meta.options.allowApiUpdate, false, {
-          "summary": "Update a " + key,
-          "description": "Update a " + key,
+          //"summary": "Update a " + key,
+          //"description": "Update a " + key,
           "produces": ["application/json"],
           "parameters": [
             idParameter
@@ -286,8 +286,8 @@ export class ExpressBridge {
           }
         });
         apiPathWithId.delete = secure(meta.options.allowApiDelete, false, {
-          "summary": "Delete a " + key,
-          "description": "Delete a " + key,
+    //      "summary": "Delete a " + key,
+    //      "description": "Delete a " + key,
           "produces": ["application/json"],
           "parameters": [
             idParameter
