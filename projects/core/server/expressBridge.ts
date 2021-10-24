@@ -148,7 +148,7 @@ export class ExpressBridge {
 
         let apiPath: any = spec.paths['/api/' + key] = {};
         let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
-
+        //https://github.com/2fd/open-api.d.ts
         apiPath.get = secure(meta.options.allowApiRead, true, {
           description:"return an array of "+key+". supports filter operators",
           parameters: [{
