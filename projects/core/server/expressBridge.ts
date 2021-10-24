@@ -14,7 +14,7 @@ import { NumberValueConverter } from '../valueConverters';
 import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities } from '../src/context';
+import { allEntities, AllowedForInstance } from '../src/context';
 
 
 
@@ -85,7 +85,37 @@ export class ExpressBridge {
       definitions: {
       }
     };
+    let validationError = {
+      "400": {
+        "description": "Error: Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/definitions/InvalidResponse"
+            }
+          }
+        }
+      }
+    }
+    let security = {
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ]
+    }
+    let secureBase = (condition: any, def: boolean, item: any) => {
+      if (condition === undefined)
+        condition = def;
+      if (condition != false) {
+        if (condition != true) {
 
+          item = { ...item, ...security }
+          item.responses["403"] = { description: "forbidden" };
+        }
+        return item;
+      }
+    }
     for (const e of allEntities) {
       let meta = r.repo(e).metadata;
       let key = getEntityKey(e);
@@ -108,30 +138,13 @@ export class ExpressBridge {
         let definition = {
           "$ref": "#/definitions/" + key
         };
-        let security = {
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
         let secure = (condition: any, def: boolean, item: any) => {
+          item.tags = [meta.key];
           if (condition === undefined)
             condition = meta.options.allowApiCrud;
-          if (condition === undefined)
-            condition = def;
-
-          
-          item.tags = [meta.key];
-          if (condition != false) {
-            if (condition != true) {
-
-              item = { ...item, ...security }
-              item.responses["403"] = { description: "forbidden" };
-            }
-            return item;
-          }
+          return secureBase(condition, def, item);
         }
+
 
         let apiPath: any = spec.paths['/api/' + key] = {};
         let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
@@ -172,18 +185,7 @@ export class ExpressBridge {
         };
 
 
-        let validationError = {
-          "400": {
-            "description": "Error: Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/definitions/InvalidResponse"
-                }
-              }
-            }
-          }
-        }
+
         apiPath.post = secure(meta.options.allowApiInsert, false, {
           "summary": "insert a " + key,
           "description": "insert a " + key,
@@ -272,6 +274,49 @@ export class ExpressBridge {
 
       }
     }
+    for (const b of this.backendMethodsOpenApi) {
+      spec.paths[b.path] = {
+        post: secureBase(b.allowed, false, {
+
+          "produces": ["application/json"],
+
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  properties: {
+                    "args": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+
+          "responses": {
+            "201": {
+              "description": "Created",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    properties:{
+                      "data":{
+                        "type":"object"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            ...validationError
+          }
+        })
+      }
+    }
     spec.definitions["InvalidResponse"] = {
       "type": "object",
       properties: {
@@ -285,7 +330,8 @@ export class ExpressBridge {
     }
     return spec;
   }
-
+  /* internal */
+  backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any> }[] = [];
 
 
   constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
@@ -377,7 +423,7 @@ export class SiteArea {
   initQueue() {
     this.addAction({
       __register: x => {
-        x(Action.apiUrlForJobStatus, false, async (data: jobWasQueuedResult, req, res) => {
+        x(Action.apiUrlForJobStatus, false, () => true, async (data: jobWasQueuedResult, req, res) => {
           let job = await this.bridge.queue.getJobInfo(data.queuedJobId);
           let userId = undefined;
           if (req.user)
@@ -394,10 +440,11 @@ export class SiteArea {
     this.initQueue = () => { };
   }
   addAction(action: {
-    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) => void
+    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) => void
   }) {
-    action.__register((url: string, queue: boolean, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
+    action.__register((url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
       let myUrl = this.rootUrl + '/' + url;
+      this.bridge.backendMethodsOpenApi.push({ path: myUrl, allowed });
       if (this.logApiEndpoints)
         console.log(myUrl);
       if (queue) {

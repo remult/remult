@@ -1,6 +1,7 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import * as express from 'express';
+import * as swaggerUi from 'swagger-ui-express';
 import * as cors from 'cors';
 import { initExpress } from 'remult/server';
 import * as fs from 'fs';
@@ -29,15 +30,17 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-    let s = initExpress(app, {
+    let api = initExpress(app, {
                dataProvider:dataSource,
         queueStorage: await preparePostgresQueueStorage(dataSource),
 
     });
+    app.use('/api/docs', swaggerUi.serve,
+        swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
 
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
-        let c = await s.getValidContext(req);
+        let c = await api.getValidContext(req);
         res.send('hello ' + JSON.stringify(c.user));
     });
 

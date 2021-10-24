@@ -65,7 +65,11 @@ export class AppComponent implements OnInit {
     //       result.roles.push(Roles.admin);
     //     }
     //   }
-
+    result={
+      id:'1',
+      name:"noam",
+      roles:[]
+    }
     if (result) {
       return (await import('jsonwebtoken'.toString())).sign(result, process.env.TOKEN_SIGN_KEY);
     }

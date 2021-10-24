@@ -1,6 +1,6 @@
 
 
-import { Remult } from "../context";
+import { AllowedForInstance, Remult } from "../context";
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from "../data-api";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
@@ -69,7 +69,7 @@ Action.provider = {
 
         action[serverActionField].
           __register(
-            (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => {
+            (url: string, queue: boolean,allowed:AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => {
 
               if (Remult.apiBaseUrl + '/' + url == urlreq) {
                 found = true;

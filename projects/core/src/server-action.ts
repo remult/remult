@@ -28,7 +28,7 @@ interface result {
 
 }
 export abstract class Action<inParam, outParam>{
-    constructor(private actionUrl: string, private queue: boolean) {
+    constructor(private actionUrl: string, private queue: boolean,private allowed:AllowedForInstance<any>) {
 
     }
     static apiUrlForJobStatus = 'jobStatusInQueue';
@@ -72,8 +72,8 @@ export abstract class Action<inParam, outParam>{
     }
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
 
-    __register(reg: (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
-        reg(this.actionUrl, this.queue, async (d, req, res) => {
+    __register(reg: (url: string, queue: boolean,allowed:AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
+        reg(this.actionUrl, this.queue,this.allowed, async (d, req, res) => {
 
             try {
                 var r = await this.execute(d, req, res);
@@ -91,7 +91,7 @@ export abstract class Action<inParam, outParam>{
 export class myServerAction extends Action<inArgs, result>
 {
     constructor(name: string, private types: any[], private options: BackendMethodOptions<any>, private originalMethod: (args: any[]) => any) {
-        super(name, options.queue)
+        super(name, options.queue,options.allowed)
     }
 
     protected async execute(info: inArgs, remult: Remult, res: DataApiResponse): Promise<result> {
@@ -221,7 +221,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         var originalMethod = descriptor.value;
         let serverAction = {
 
-            __register(reg: (url: string, queue: boolean, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
+            __register(reg: (url: string, queue: boolean,allowed:AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
 
                 let c = new Remult();
                 for (const constructor of mh.classes.keys()) {
@@ -233,7 +233,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     }
 
 
-                    reg(controllerOptions.key + '/' + key, options ? options.queue : false, async (d: serverMethodInArgs, req, res) => {
+                    reg(controllerOptions.key + '/' + key, options ? options.queue : false,options.allowed, async (d: serverMethodInArgs, req, res) => {
 
                         d.args = d.args.map(x => isCustomUndefined(x) ? undefined : x);
                         let allowed = options.allowed;
@@ -337,7 +337,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             async execute(a, b): Promise<serverMethodOutArgs> {
                                 throw ('should get here');
                             }
-                        }(classOptions.key + "/" + key, options ? options.queue : false).run({
+                        }(classOptions.key + "/" + key, options ? options.queue : false,options.allowed).run({
                             args,
                             rowInfo: {
                                 data: await defs.toApiJson(),
@@ -364,7 +364,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             async execute(a, b): Promise<serverMethodOutArgs> {
                                 throw ('should get here');
                             }
-                        }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false).run({
+                        }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false,options.allowed).run({
                             args,
                             fields: await defs.toApiJson()
                         }));
@@ -400,7 +400,7 @@ function isCustomUndefined(x: any) {
     return x && x._isUndefined;
 }
 export interface registrableAction {
-    __register: (reg: (url: string, queue: boolean, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) => void
+    __register: (reg: (url: string, queue: boolean,allowed:AllowedForInstance<any>, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) => void
 }
 export interface jobWasQueuedResult {
     queuedJobId?: string

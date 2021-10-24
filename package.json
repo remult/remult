@@ -60,6 +60,7 @@
     "pg": "^8.3.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~6.6.0",
+    "swagger-ui-express": "^4.1.6",
     "uuid": "^3.3.2",
     "zone.js": "~0.11.3"
   },
@@ -69,6 +70,7 @@
     "@angular/compiler-cli": "~11.2.10",
     "@types/jasmine": "~3.6.0",
     "@types/node": "^12.11.1",
+    "@types/swagger-ui-express": "^4.1.3",
     "@types/websql": "0.0.27",
     "@vuepress/plugin-back-to-top": "^1.5.2",
     "@vuepress/plugin-medium-zoom": "^1.5.2",
