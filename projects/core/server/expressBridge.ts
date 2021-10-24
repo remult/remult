@@ -150,6 +150,38 @@ export class ExpressBridge {
         let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
 
         apiPath.get = secure(meta.options.allowApiRead, true, {
+          description:"return an array of "+key+". supports filter operators",
+          parameters: [{
+            "name": "_limit",
+            "in": "path",
+            "description": "limit the number of returned rows, default 100",
+            "required": false,
+            "example": "25",
+            "type": "int"
+          },
+          {
+            "name": "_page",
+            "in": "path",
+            "description": "to be used for paging",
+            "required": false,
+            "type": "int"
+          },
+          {
+            "name": "_sort",
+            "in": "path",
+            "description": "the columns to sort on",
+            "example": "name,id",
+            "required": false,
+            "type": "string"
+          }, 
+          {
+            "name": "_order ",
+            "in": "path",
+            "description": "the sort order to user for the columns in `_sort`",
+            "example": "desc,asc",
+            "required": false,
+            "type": "string"
+          }],
           responses: {
             "200": {
               "description": "returns an array of " + key,
@@ -303,9 +335,9 @@ export class ExpressBridge {
                 "application/json": {
                   "schema": {
                     "type": "object",
-                    properties:{
-                      "data":{
-                        "type":"object"
+                    properties: {
+                      "data": {
+                        "type": "object"
                       }
                     }
                   }
