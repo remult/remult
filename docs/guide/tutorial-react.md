@@ -129,9 +129,9 @@ The server is now running and listening on port 3002. `ts-node-dev` is watching 
 
 #### Proxy API requests from Webpack DevServer to Node and run the React app
 The React app created in this tutorial is intended to be served from the same domain as its API. 
-However, for development, the API server will be listening on `http://localhost:3002`, while the React app is served from `http://localhost:3000`. 
+However, for development, the API server will be listening on `http://localhost:3002`, while the React app is served from `http://localhost:3002`. 
 
-We'll use the feature to divert all calls for `http://localhost:3000/api` to our dev API server.
+We'll use the feature to divert all calls for `http://localhost:3002/api` to our dev API server.
 
 1. Configure the proxy by adding the following JSON to the main section of the project's package.json file.
 
@@ -680,10 +680,10 @@ Attempting to modify titles of existing tasks to invalid values will also fail, 
 ### Implicit server-side validation
 The validation code we've added is called by Remult on the server-side to validate any API calls attempting to modify the `title` field.
 
-Try making the following `POST` http request to the `http://localhost:3000/api/tasks` API route, providing an invalid title.
+Try making the following `POST` http request to the `http://localhost:3002/api/tasks` API route, providing an invalid title.
 
 ```sh
-curl -i -X POST http://localhost:3000/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"\"}"
+curl -i -X POST http://localhost:3002/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"\"}"
 ```
 
 An http error is returned and the validation error text is included in the response body,
@@ -787,7 +787,7 @@ After the browser refreshes, the list of tasks disappeared and the user can no l
 
 ::: details Inspect the HTTP error returned by the API using cURL
 ```sh
-curl -i http://localhost:3000/api/tasks
+curl -i http://localhost:3002/api/tasks
 ```
 :::
 
