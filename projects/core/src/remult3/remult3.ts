@@ -13,9 +13,20 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 /*
 
+## Presentation notes:
+[] show api working with only get - and allowapicrud crud to show control
+[] when doing taskRepo - talk for a second that it wraps axios - type of agent or service.
+[] on orderby and where - explain that there is page and limit to be used in pagination
+[] Iterate - explain that we run on all tasks on the server.
+[] Propose to skip authorize implementation. - un intrusive, un opinionated
+
 
 ## TODO
-
+[] check why update object value with null didn't update the database in hugmom
+[] move use affect to the original task editor.
+[] try if there is a snippet for input in react vscode.
+[] make doc update well and not recreated
+[] adjust swagger to show that you can filter.
 
 [V] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
 [V] can't read properties of null - status. on delete
@@ -23,12 +34,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
 
 [V] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
+[] remove swagger from tutorial, and add it to separate article
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] make sure repository can perform save and delete on external entities.
 [] create a todo app using "normal" node js - and create a refactoring video
 [] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
 [] check why helmet doesnt force https
+[] reorder the code of AuthService.
 [] write an article about the different usages of backend method:
     [] static
     [] entity
@@ -112,6 +125,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about invoking client side validation
 [] talk about isvalid that gives you indication of the data is valid etc....
 [] discuss api  with regards to count, query etc...
+[] consider adding a startup option for init express, that will be a promise that will be used to create the database and perform other things that should be performed before the first request is handled.
+
 [] ## Realworld
     [] real world angular - moving target, there is a full  new version of it - might worth forking from that
     [] use subscription like the original one does.

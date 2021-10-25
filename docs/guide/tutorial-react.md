@@ -906,8 +906,8 @@ In this section, we'll be using the following packages:
 
    *src/common.ts*
    ```ts
-   import { Remult } from "remult";
    import axios from 'axios';
+   import { Remult } from "remult";
    import { AuthService } from "./AuthService";
    
    axios.interceptors.request.use(config => {
@@ -926,7 +926,7 @@ In this section, we'll be using the following packages:
 5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{4-5,9-13}
+   ```ts{3-4,9-13}
    import express from 'express';
    import swaggerUi from 'swagger-ui-express';
    import expressJwt from 'express-jwt';
@@ -963,13 +963,12 @@ In this section, we'll be using the following packages:
      setTasks([]);
    }
    if (!remult.authenticated())
-     if (!remult.authenticated())
-       return (<div>
-         <p>
-           <input value={username} onChange={e => setUsername(e.target.value)}  />
-           <button onClick={signIn}>Sign in</button> <span style={{ color:  'green' }}></span>
-         </p>
-       </div>);
+      return (<div>
+        <p>
+          <input value={username} onChange={e => setUsername(e.target.value)}  />
+          <button onClick={signIn}>Sign in</button> <span style={{ color:  'green' }}></span>
+        </p>
+      </div>);
  
    return (
      <div>
@@ -1079,13 +1078,13 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{5-6,11-12,21-25}
+   ```ts{3-4,11-12,21-25}
    import express from 'express';
+   import compression from 'compression';
+   import helmet from 'helmet';
    import swaggerUi from 'swagger-ui-express';
    import expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../AuthService';
-   import compression from 'compression';
-   import helmet from 'helmet';
    import { initExpress } from 'remult/server';
    import '../Task';
    
@@ -1160,17 +1159,17 @@ Let's replace it with a production PostgreSQL database.
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{7-9,21-37}
+   ```ts{5-7,21-37}
    import express from 'express';
-   import swaggerUi from 'swagger-ui-express';
-   import expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../AuthService';
    import compression from 'compression';
    import helmet from 'helmet';
+   import swaggerUi from 'swagger-ui-express';
    import { Remult, SqlDatabase } from 'remult';
    import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
    import { Pool } from 'pg';
    import { initExpress } from 'remult/server';
+   import expressJwt from 'express-jwt';
+   import { getJwtTokenSignKey } from '../AuthService';
    import '../Task';
    
    let app = express();
