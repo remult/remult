@@ -22,7 +22,7 @@ import * as jwt from 'express-jwt';
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
-
+    
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());

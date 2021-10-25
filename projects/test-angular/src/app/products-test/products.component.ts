@@ -29,8 +29,29 @@ import { timer } from 'rxjs';
 
 
 export class ProductsComponent {
-
+  page = 0;
   constructor(private remult: Remult) {
+
+  }
+  items: stam[] = [];
+  repo = this.remult.repo(stam);
+  load() {
+    this.repo.find({ page: this.page }).then(r => this.items.push(...r));
+  }
+  nextPage(){
+    this.page++;
+    this.load();
+  }
+  async run(){
+    for await (const s of this.repo.iterate()) {
+      return yield s;
+    } 
+    let z=  this.repo.iterate()[Symbol.asyncIterator]();
+    
+    let r = await z.next();
+
+    
+
 
   }
   grid = new GridSettings(this.remult.repo(stam), { allowCrud: true });

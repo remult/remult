@@ -22,11 +22,20 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
+[] getValidContext to change to getRemult - and if request is null, also work.
+[] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
+[] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})
+[] consider simplifying the postgres setup docs.
 [] check why update object value with null didn't update the database in hugmom
+[] new remult that gets data provider
 [] move use affect to the original task editor.
 [] try if there is a snippet for input in react vscode.
 [] make doc update well and not recreated
 [] adjust swagger to show that you can filter.
+[] consider merging the postgres and deployment docs
+[] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
+[] add to iterate pagesize
+
 
 [V] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
 [V] can't read properties of null - status. on delete
@@ -63,7 +72,9 @@ import { entityEventListener } from "../__EntityValueProvider";
       </a>
 ```
 [] google sheets gateway
-
+[] consider "class-validator", integration
+[] typeorm gateway
+[] sqlite
 
 
 ## TODO Docs
@@ -96,7 +107,15 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 
-## Yoni NAMING!!!
+## Yoni TODO
+[] fix helmet non http - http://itimet.herokuapp.com/
+[] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
+[] add to iterator - nextPage or something that brings back the page as a set array. something to use not just in the for await scenario
+   iterator(): {
+        next: () => Promise<IteratorResult<entityType, entityType>>;
+        nextArray:(num:number) => Promise<IteratorResult<entityType[], entityType[]>>;
+    };
+
 [] other name for load in find, that indicates that load only loads the detailed fields - not just the lazy ones.
 [] Rename Allowed and InstanceAllowed, and Allow
 [] field container type vs entity type vs target
@@ -116,16 +135,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
-[] consider changing caption to title (that's how it is in the swagger docs)
-[] consider merging the postgres and deployment docs
-[] consider simplifying the postgres setup docs.
-[] consider adding documentation properties to options, 'description', 'example value'
-[] add to iterator - nextPage or something that brings back the page as a set array. something to use not just in the for await scenario
-[] fix FilterFactories in the case of optional fields, to handle gracefully the fields metadata and filter etc.... - tried -? (based on the Required Implementation, but it breaks Fields<any> = Fields<Product>)
-[] talk about invoking client side validation
-[] talk about isvalid that gives you indication of the data is valid etc....
+
+
 [] discuss api  with regards to count, query etc...
-[] consider adding a startup option for init express, that will be a promise that will be used to create the database and perform other things that should be performed before the first request is handled.
 
 [] ## Realworld
     [] real world angular - moving target, there is a full  new version of it - might worth forking from that
@@ -134,8 +146,6 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] React - there is a new react typescript project - https://github.com/angelguzmaning/ts-redux-react-realworld-example-app
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
-[] This is breaking intellisense in the html of angular - Failed to run ngcc for c:/repos/hug-moms/tsconfig.json, language service may not operate correctly:
-    ngcc for c:/repos/hug-moms/tsconfig.json returned exit code 1, stderr: [33mWarning:[0m Entry point '@remult/angular' contains deep imports into 'C:/repos/hug-moms/node_modules/remult/valueConverters', 'C:/repos/hug-moms/node_modules/remult/src/remult3', 'C:/repos/hug-moms/node_modules/remult/src/server-action', 'C:/repos/hug-moms/node_modules/remult/classType'. This is probably not a problem, but may cause the compilation of entry points to be out of order.
 
 
 
@@ -165,6 +175,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] talk about forgetting the :type on fields - it's dangerous and can lead to debug issues - on the other hand we want some default - not sure if we should scream
 [] consider the case where the name in restapi (json name) of a column is different from it's member - see commented test "json name is important"
 [] switched back to es5 - since react scripts default is es5 and it breaks things
+[] consider adding documentation properties to options, 'description', 'example value'
 
 ## remult angular future
 [] change the getValue - to  displayValue
@@ -363,8 +374,11 @@ export interface IterableResult<entityType> {
     count(): Promise<number>;
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;
     [Symbol.asyncIterator](): {
-        next: () => Promise<IteratorResult<entityType>>;
+        next: () => Promise<IteratorResult<entityType, entityType>>;
     };
+    
+    
+
 }
 
 
