@@ -44,7 +44,7 @@ export class ProductsComponent {
   }
   async run(){
     for await (const s of this.repo.iterate()) {
-      return yield s;
+      
     } 
     let z=  this.repo.iterate()[Symbol.asyncIterator]();
     

@@ -35,6 +35,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider merging the postgres and deployment docs
 [] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
 [] add to iterate pagesize
+[] change entity backend methods to be entity/backend method name
+[] check if can extract parameter name with backend method and use something other than array.
 
 
 [V] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
@@ -135,16 +137,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
-
-[] discuss api  with regards to count, query etc...
 
 [] ## Realworld
     [] real world angular - moving target, there is a full  new version of it - might worth forking from that
     [] use subscription like the original one does.
     [] real world - consider adding custom remult, that will have current user details?
     [] React - there is a new react typescript project - https://github.com/angelguzmaning/ts-redux-react-realworld-example-app
-[] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
 
 

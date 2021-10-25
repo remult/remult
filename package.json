@@ -12,7 +12,7 @@
     "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "update-versions": "ts-node --project projects/test-angular/tsconfig.server.json ./tools/update-versions.ts",
-    "node-serve": "./node_modules/.bin/tsc-watch -p projects/test-angular/tsconfig.server.json --onSuccess \"npm run server:dev-run",
+    "node-serve": "tsc-watch -p projects/test-angular/tsconfig.server.json --onSuccess \"npm run server:dev-run\"",
     "build-server-watch": "tsc -p projects/test-angular/tsconfig.server.json --watch",
     "server:dev-run": "node --inspect dist/test-angular/test-angular/src/app/server/server.js",
     "docs": "cd docs && npm run dev",
