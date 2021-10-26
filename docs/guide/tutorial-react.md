@@ -368,6 +368,7 @@ The `TaskEditor` will have an html `input` for the titles, and the `Save` button
    
    export const TaskEditor: React.FC<{ task: Task }> = (props) => {
        const [{ task }, setTask] = useState(props);
+       useEffect(() => setTask(props), [props]);
        const save = () => task.save().then(task => setTask({ task }));
        return <span>
          <input
@@ -526,6 +527,7 @@ import { Task } from "./Task"
 
 export const TaskEditor: React.FC<{ task: Task }> = (props) => {
     const [{ task }, setTask] = useState(props);
+    useEffect(() => setTask(props), [props]);
     const save = () => task.save().then(task => setTask({ task }));
     return <span>
         <input
@@ -719,12 +721,6 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    <button onClick={() => setAll(true)}>Set all as completed</button>
    <button onClick={() => setAll(false)}>Set all as uncompleted</button>
    ```
-3. Adjust the `TaskEditor` to refresh when it's task is changed, 
-   ```tsx{2}
-   const [{ task }, setTask] = useState(props);
-   useEffect(() => setTask(props), [props]);
-   const save = () => task.save().then(task => setTask({ task }));
-   ```
 
 Make sure the buttons are working as expected before moving on to the next step.
 ### Refactoring `setAll` to have it run on the server
@@ -838,51 +834,52 @@ In this section, we'll be using the following packages:
    import jwtDecode from 'jwt-decode';
    import * as jwt from 'jsonwebtoken';
    import { BackendMethod, Remult } from 'remult';
-   
-   const AUTH_TOKEN_KEY = "authToken";
-   
+
    export class AuthService {
-     constructor(private remult: Remult) {
-        let token = AuthService.fromStorage();
-        if (token) {
-            this.setAuthToken(token);
-        }
-     }
-   
-     async signIn(username: string) {
-       this.setAuthToken(await AuthService.signIn(username));
-     }
-     @BackendMethod({ allowed: true })
-     static async signIn(username: string) {
-       let validUsers = [
+
+   @BackendMethod({ allowed: true })
+   static async signIn(username: string) {
+      let validUsers = [
          { id: "1", name: "Jane", roles: [] },
          { id: "2", name: "Steve", roles: [] }
-       ];
-       let user = validUsers.find(user => user.name === username);
-       if (!user)
+      ];
+      let user = validUsers.find(user => user.name === username);
+      if (!user)
          throw new Error("Invalid User");
-       return jwt.sign(user, getJwtTokenSignKey());
-     }
-   
-     setAuthToken(token: string) {
-       this.remult.setUser(jwtDecode(token));
-       sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-     }
-     static fromStorage(): string {
-       return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
-     }
-   
-     signOut() {
-       this.remult.setUser(undefined!);
-       sessionStorage.removeItem(AUTH_TOKEN_KEY);
-     }
+      return jwt.sign(user, getJwtTokenSignKey());
    }
-   
+
+   async signIn(username: string) {
+      this.setAuthToken(await AuthService.signIn(username));
+   }
+   setAuthToken(token: string) {
+      this.remult.setUser(jwtDecode(token));
+      sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+   }
+   signOut() {
+      this.remult.setUser(undefined!);
+      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+   }
+
+   static fromStorage(): string {
+      return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
+   }
+
+   constructor(private remult: Remult) {
+      let token = AuthService.fromStorage();
+      if (token) {
+         this.setAuthToken(token);
+      }
+   }
+   }
+
    export function getJwtTokenSignKey() {
-     if (process.env.NODE_ENV === "production")
-       return process.env.TOKEN_SIGN_KEY!;
-     return "my secret key";
+   if (process.env.NODE_ENV === "production")
+      return process.env.TOKEN_SIGN_KEY!;
+   return "my secret key";
    }
+
+   const AUTH_TOKEN_KEY = "authToken";
    ```
    * Note that tThe (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
    
@@ -921,7 +918,7 @@ In this section, we'll be using the following packages:
    export const auth = new AuthService(remult);
    ```
    ::: warning Imports
-   This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/react-jwt`.
+   This code requires imports for `AuthService` from `./AuthService` and `JwtModule` from `@auth0/react-jwt`.
    :::
 5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
@@ -1039,7 +1036,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
 
-   *src/app/auth.service.ts*
+   *src/AuthService.ts*
    ```ts{4}
    @BackendMethod({ allowed: true })
    static async signIn(username: string) {

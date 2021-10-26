@@ -1,6 +1,6 @@
 # Using the rest api
 
-All entities automatically expose a rest api based on the parameters defined in it's constructor.
+All entities automatically expose a rest api based on the parameters defined in it's decorator.
 
 The api supports the following actions (we'll use the `products` entity as an example, and a specific product with an id=7):
 
@@ -53,9 +53,9 @@ returns:
 ```
 
 ## Paginate
-By default the page size is 25 rows.
+By default the page size is 100 rows.
 ```
-https://mySite.com/api/products?_limit=100
+https://mySite.com/api/products?_limit=25
 ```
 ```
 https://mySite.com/api/products?_limit=5&_page=3

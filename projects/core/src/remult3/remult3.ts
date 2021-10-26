@@ -14,45 +14,64 @@ import { entityEventListener } from "../__EntityValueProvider";
 /*
 
 ## Presentation notes:
-[] show api working with only get - and allowapicrud crud to show control
-[] when doing taskRepo - talk for a second that it wraps axios - type of agent or service.
-[] on orderby and where - explain that there is page and limit to be used in pagination
-[] Iterate - explain that we run on all tasks on the server.
-[] Propose to skip authorize implementation. - un intrusive, un opinionated
+[] Review Setup
+    [] common.ts - explain remult
+    [] server/index
+
+[] Create Entity
+    [] create a class with title.
+    [] decorate it
+    [] show swagger
+        [] talk about paging
+    [] add IdEntity
+    [] show swagger
+    [] Add Crud
+    [] show swagger
+    [] add a few tasks
+
+[] App.tsx
+    [] add task repo - it wraps axios - type of agent or service..
+
+[] skip line-through
+
+[] Order by and where -  PAGING 
+
+[] Backend
+    [] Iterate - explain that we run on all tasks on the server.
+    [] create taskService - for set all
+    [] backend method - talk about transaction and unit of work
+
+    [] Propose to skip authorize implementation. - un intrusive, un opinionated
 
 
 ## TODO
-[] getValidContext to change to getRemult - and if request is null, also work.
+[] try add rest api doc to the swagger doc.
 [] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
 [] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})
 [] consider simplifying the postgres setup docs.
-[] check why update object value with null didn't update the database in hugmom
-[] new remult that gets data provider
-[] move use affect to the original task editor.
-[] try if there is a snippet for input in react vscode.
-[] make doc update well and not recreated
 [] adjust swagger to show that you can filter.
 [] consider merging the postgres and deployment docs
+[] add swagger to starter kit
+[] add https to starter kit
+![] reorder auth service. for angular and starter project
+[] reorder the code of AuthService.
+
+[] new remult that gets data provider
+[] getValidContext to change to getRemult - and if request is null, also work.
+[] check why update object value with null didn't update the database in hugmom
+[V] make doc update well and not recreated
 [] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
 [] add to iterate pagesize
 [] change entity backend methods to be entity/backend method name
-[] check if can extract parameter name with backend method and use something other than array.
-
-
-[V] check if dbname works end to end - in mitchashvim - when I changed the column from source to pickup - and set the dbname - it didn't work
-[V] can't read properties of null - status. on delete
-[V] fix the bug with json array, when you add an item to it - it doesn't seem as a change to the code - and it doesn't serialize it.
-[V] fix the bug with any json object - that when you update it's child value it doesn't register as a change.
-
-[V] reconsider if original values of new row should be it's values when the object was created after it's defaults - or undefined.
 [] remove swagger from tutorial, and add it to separate article
+
+
+[] check why helmet doesnt force https
+
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
-[] make sure repository can perform save and delete on external entities.
 [] create a todo app using "normal" node js - and create a refactoring video
 [] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
-[] check why helmet doesnt force https
-[] reorder the code of AuthService.
 [] write an article about the different usages of backend method:
     [] static
     [] entity
@@ -63,7 +82,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] check why realworld - allowApiInsert - the first param was any.
 [] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
 [] Love Angular? Give our repo a star.Star
-[] check helmet doesn't force https
+
 ```
  Love Angular?&nbsp;
       <a href="https://github.com/angular/angular" target="_blank" rel="noopener"> Give our repo a star.
@@ -77,6 +96,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] consider "class-validator", integration
 [] typeorm gateway
 [] sqlite
+[] check sending field types to custom filter
 
 
 ## TODO Docs

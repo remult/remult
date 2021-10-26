@@ -150,7 +150,7 @@ export class ExpressBridge {
         let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
         //https://github.com/2fd/open-api.d.ts
         apiPath.get = secure(meta.options.allowApiRead, true, {
-          description:"return an array of "+key+". supports filter operators",
+          description:"return an array of "+key+". supports filter operators. For more info on filtering [see this article](https://remult.dev/blog/rest-api.html#filter)",
           parameters: [{
             "name": "_limit",
             "in": "path",

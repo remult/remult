@@ -98,8 +98,8 @@ module.exports = {
           title: 'Tutorials',
           collapsable: false,
           children: [
-            'tutorial-angular',
             'tutorial-react',
+            'tutorial-angular',
           ]
         },
         {
