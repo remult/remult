@@ -37,7 +37,7 @@ This tutorial requires setting up a React project, an API Server project and a f
 
 The default React app main screen should be displayed.
 
-At this point our starter project is up and running. We are now ready to [start creating the task list app](#entities).
+At this point our starter project is up and running. We are now ready to [start creating the task list app](#entities-and-crud-operations).
 :::
 
 ## Create a React Project
