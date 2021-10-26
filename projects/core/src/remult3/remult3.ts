@@ -35,6 +35,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] skip line-through
 
 [] Order by and where -  PAGING 
+[] skip hide completed
 
 [] Backend
     [] Iterate - explain that we run on all tasks on the server.
@@ -45,6 +46,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
+[] check why limit and page don't work from swagger
 [] try add rest api doc to the swagger doc.
 [] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
 [] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})

@@ -363,24 +363,24 @@ The `TaskEditor` will have an html `input` for the titles, and the `Save` button
 
 1. Create a file called `src/TaskEditor.tsx`, and place the following code in it:
    ```tsx
-   import { useState } from "react"
+   import { useEffect, useState } from "react"
    import { Task } from "./Task"
-   
+
    export const TaskEditor: React.FC<{ task: Task }> = (props) => {
-       const [{ task }, setTask] = useState(props);
-       useEffect(() => setTask(props), [props]);
-       const save = () => task.save().then(task => setTask({ task }));
-       return <span>
+      const [{ task }, setTask] = useState(props);
+      useEffect(() => setTask(props), [props]);
+      const save = () => task.save().then(task => setTask({ task }));
+      return <span>
          <input
-            value={task.title}
-            onChange={e =>
+               value={task.title}
+               onChange={e =>
                   setTask({ task: task.assign({ title: e.target.value }) })
-            }
+               }
          />
-            <button onClick={() => save()}
-                  disabled={!task.wasChanged()}
-            >save</button>
-         </span>
+         <button onClick={() => save()}
+               disabled={!task.wasChanged()}
+         >save</button>
+      </span>
    }
    ```
 
@@ -522,7 +522,7 @@ export default App;
 
 *src/TaskEditor.tsx*
 ```tsx
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Task } from "./Task"
 
 export const TaskEditor: React.FC<{ task: Task }> = (props) => {
