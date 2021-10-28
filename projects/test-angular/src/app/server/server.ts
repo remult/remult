@@ -44,9 +44,11 @@ serverInit().then(async (dataSource) => {
 
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
-        let c = await api.getValidContext(req);
+        let c = await api.getRemult(req);
         res.send('hello ' + JSON.stringify(c.user));
     });
+    let r = await api.getRemult();
+    console.log(r.user);
 
     app.use('/*', async (req, res) => {
         console.log(req.path);

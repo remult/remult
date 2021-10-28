@@ -46,7 +46,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[] getValidContext to change to getRemult - and if request is null, also work.
+[V] getValidContext to change to getRemult - and if request is null, also work.
 [] new remult that gets data provider
 [] overload for find, and iterate that only accepts where (we have that for find first)
 [] check why realworld - allowApiInsert - the first param was any.

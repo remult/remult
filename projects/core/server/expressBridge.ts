@@ -393,8 +393,8 @@ export class ExpressBridge {
     }
     return r;
   }
-  async getValidContext(req: express.Request) {
-    return this.firstArea.getValidContext(req);
+  async getRemult(req?: express.Request) {
+    return this.firstArea.getRemult(req);
   }
 
 
@@ -445,9 +445,11 @@ export class SiteArea {
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
       remult.setDataProvider(await this.bridge.dataProvider);
-      let user = req['user'];
-      if (user)
-        remult.setUser(user);
+      if (req) {
+        let user = req['user'];
+        if (user)
+          remult.setUser(user);
+      }
       if (this.bridge.initRequest) {
         await this.bridge.initRequest(remult, req);
       }
@@ -455,7 +457,7 @@ export class SiteArea {
       what(remult, myReq, myRes, req);
     }
   };
-  async getValidContext(req: express.Request) {
+  async getRemult(req: express.Request) {
     let remult: Remult;
     await this.process(async (c) => {
       remult = c;
@@ -468,7 +470,7 @@ export class SiteArea {
         x(Action.apiUrlForJobStatus, false, () => true, async (data: jobWasQueuedResult, req, res) => {
           let job = await this.bridge.queue.getJobInfo(data.queuedJobId);
           let userId = undefined;
-          if (req.user)
+          if (req?.user)
             userId = req.user.id;
           if (job.userId == '')
             job.userId = undefined;
