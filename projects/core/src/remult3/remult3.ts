@@ -47,7 +47,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## TODO
 [V] getValidContext to change to getRemult - and if request is null, also work.
-[] new remult that gets data provider
+[V] new remult that gets data provider
 [] overload for find, and iterate that only accepts where (we have that for find first)
 [] check why realworld - allowApiInsert - the first param was any.
 [] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get

@@ -57,7 +57,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     //@ts-ignore
     else r = p;
     return r.then((x: any) => {
-        if (x&&x.status == 200 && x.headers && x.request && x.data)//for axios
+        if (x && x.status == 200 && x.headers && x.request && x.data)//for axios
             return x.data;
         return x;
     }).catch(async ex => {
@@ -105,18 +105,25 @@ export class Remult {
     authenticated() {
         return this.user.id !== undefined;
     }
-    constructor(http?: HttpProvider) {
-        let provider: RestDataProviderHttpProvider;
-        if (http) {
-            provider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
+    constructor(provider?: HttpProvider | DataProvider) {
+
+        if (provider && (provider as DataProvider).getEntityDataProvider) {
+            this._dataSource = provider as DataProvider;
+            return;
         }
 
-        if (!provider) {
-            provider = new RestDataProviderHttpProviderUsingFetch();
+        let http: HttpProvider = provider as HttpProvider;
+        let dataProvider: RestDataProviderHttpProvider;
+        if (http) {
+            dataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
         }
-        this._dataSource = new RestDataProvider(Remult.apiBaseUrl, provider);
+
+        if (!dataProvider) {
+            dataProvider = new RestDataProviderHttpProviderUsingFetch();
+        }
+        this._dataSource = new RestDataProvider(Remult.apiBaseUrl, dataProvider);
         if (!Action.provider)
-            Action.provider = provider;
+            Action.provider = dataProvider;
     }
 
 

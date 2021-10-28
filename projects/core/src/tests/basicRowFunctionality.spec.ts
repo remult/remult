@@ -51,8 +51,8 @@ class tableWithPhone extends EntityBase {
 }
 describe("test object column stored as string", () => {
   it("was changed should work correctly", async () => {
-    var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult(new InMemoryDataProvider());
+    
     let repo = remult.repo(tableWithPhone);
     let r = repo.create();
     r.id = 1;
