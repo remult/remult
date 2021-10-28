@@ -20,7 +20,7 @@ import * as jwt from 'express-jwt';
 const getDatabase = () => {
     if (1 + 1 == 3)
         return undefined;
-    return createPostgresConnection({ configuration: "Heroku" })
+    return createPostgresConnection({ configuration: "heroku" })
 }
 
 

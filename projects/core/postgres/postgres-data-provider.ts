@@ -212,10 +212,10 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 export async function createPostgresConnection(options: {
     connectionString?: string,
     sslInDev?: boolean,
-    configuration?: "Heroku" | PoolConfig
+    configuration?: "heroku" | PoolConfig
 }) {
     let config: PoolConfig = {};
-    if (options.configuration == "Heroku") {
+    if (options.configuration == "heroku") {
         config = {
             connectionString: process.env.DATABASE_URL,
             ssl: process.env.NODE_ENV !== "production" && !options.sslInDev ? false : {
