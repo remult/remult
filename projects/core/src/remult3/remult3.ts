@@ -46,29 +46,41 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[] check why limit and page don't work from swagger
-[] try add rest api doc to the swagger doc.
-[] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
-[] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})
-[] consider simplifying the postgres setup docs.
-[] adjust swagger to show that you can filter.
+[] getValidContext to change to getRemult - and if request is null, also work.
+[] new remult that gets data provider
+[] overload for find, and iterate that only accepts where (we have that for find first)
+[] check why realworld - allowApiInsert - the first param was any.
+[] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
+[] remove swagger from tutorial, and add it to separate article
 [] consider merging the postgres and deployment docs
+[] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
+[] add to iterate pagesize
+[] fix iterate typing
+
+[V] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
+[V] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})
+[V] consider simplifying the postgres setup docs.
+
+
+
+[] check why limit and page don't work from swagger
+[V] try add rest api doc to the swagger doc.
+[] adjust swagger to show that you can filter.
 [] add swagger to starter kit
 [] add https to starter kit
+[] heroku-ssl-redirect
 ![] reorder auth service. for angular and starter project
 [] reorder the code of AuthService.
 
-[] new remult that gets data provider
-[] getValidContext to change to getRemult - and if request is null, also work.
+
 [] check why update object value with null didn't update the database in hugmom
 [V] make doc update well and not recreated
-[] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
-[] add to iterate pagesize
+
+
 [] change entity backend methods to be entity/backend method name
-[] remove swagger from tutorial, and add it to separate article
 
 
-[] check why helmet doesnt force https
+
 
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
@@ -80,9 +92,9 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] controller
     [] and usage FieldType - to send complex parameters
 [] continue swagger to reflect Backend Methods
-[] overload for find, and iterate that only accepts where (we have that for find first)
-[] check why realworld - allowApiInsert - the first param was any.
-[] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
+
+
+
 [] Love Angular? Give our repo a star.Star
 
 ```
@@ -96,9 +108,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 ```
 [] google sheets gateway
 [] consider "class-validator", integration
-[] typeorm gateway
+[] typeorm gateway - https://typeorm.io/#/separating-entity-definition
 [] sqlite
 [] check sending field types to custom filter
+[] dynamo db
 
 
 ## TODO Docs
@@ -112,6 +125,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] readonly doesn't work on checkbox in area
 [] add id lookup in remult angular
 [] insert the column selection into the grid button.
+[] figure out why field with basket type in a controller did not work with the combo
 
 
 ## Project to fix
@@ -122,10 +136,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] bezkoder react
 [V] bekoder vue
 [] upgrade all satelite projects to latest remult
-[V] upgrade northwind to latest remult
-[V] update northwind to use AuthService
-[V] update northwind to use skip tests
-[V] update northwind to use strict
+[V] upgrade Northwind to latest remult
+[V] update  Northwind to use AuthService
+[V] update  Northwind to use skip tests
+[V] update  Northwind to use strict
 
 [V] change structure of remult projects - to include projects/core projects/test-angular and under it, everything.
 

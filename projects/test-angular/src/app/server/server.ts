@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import { serverInit } from './server-init';
 
 
-import { preparePostgresQueueStorage } from 'remult/postgres';
+import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
 
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
@@ -17,12 +17,16 @@ import * as jwt from 'express-jwt';
 
 
 
-
+const getDatabase = () => {
+    if (1 + 1 == 3)
+        return undefined;
+    return createPostgresConnection({ configuration: "Heroku" })
+}
 
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
-    
+
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
@@ -31,7 +35,7 @@ serverInit().then(async (dataSource) => {
         app.use(forceHttps);
 
     let api = initExpress(app, {
-               dataProvider:dataSource,
+        dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
 
     });

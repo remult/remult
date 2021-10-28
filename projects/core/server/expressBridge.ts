@@ -11,7 +11,7 @@ import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 import { Field, Entity, Repository, getEntityKey } from '../src/remult3';
 import { NumberValueConverter } from '../valueConverters';
-import { Action, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
+import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance } from '../src/context';
@@ -21,7 +21,7 @@ import { allEntities, AllowedForInstance } from '../src/context';
 export function initExpress(app: express.Express,
   options?:
     {
-      dataProvider?: DataProvider,
+      dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
@@ -31,6 +31,7 @@ export function initExpress(app: express.Express,
   if (!options) {
     options = {};
   }
+  actionInfo.runningOnServer = true;
 
   if (options.bodySizeLimit === undefined) {
     options.bodySizeLimit = '10mb';
@@ -42,12 +43,21 @@ export function initExpress(app: express.Express,
 
   app.use(bodyParser.json({ limit: options.bodySizeLimit }));
   app.use(bodyParser.urlencoded({ extended: true, limit: options.bodySizeLimit }));
+  let dataProvider: Promise<DataProvider>;
+  if (typeof options.dataProvider === "function") {
+    dataProvider = options.dataProvider();
+  } else dataProvider = Promise.resolve(options.dataProvider)
 
-  if (!options.dataProvider) {
-    options.dataProvider = new JsonDataProvider(new JsonEntityFileStorage('./db'));
-  }
 
-  let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, options.dataProvider);
+  dataProvider = dataProvider.then(dp => {
+    if (dp)
+      return dp;
+    return new JsonDataProvider(new JsonEntityFileStorage('./db'))
+
+  });
+
+
+  let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
   let apiArea = result.addArea('/' + Remult.apiBaseUrl);
 
 
@@ -150,7 +160,7 @@ export class ExpressBridge {
         let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
         //https://github.com/2fd/open-api.d.ts
         apiPath.get = secure(meta.options.allowApiRead, true, {
-          description:"return an array of "+key+". supports filter operators. For more info on filtering [see this article](https://remult.dev/blog/rest-api.html#filter)",
+          description: "return an array of " + key + ". supports filter operators. For more info on filtering [see this article](https://remult.dev/blog/rest-api.html#filter)",
           parameters: [{
             "name": "_limit",
             "in": "path",
@@ -173,7 +183,7 @@ export class ExpressBridge {
             "example": "name,id",
             "required": false,
             "type": "string"
-          }, 
+          },
           {
             "name": "_order ",
             "in": "path",
@@ -245,7 +255,7 @@ export class ExpressBridge {
           parameters: [idParameter],
           responses: {
             "200": {
-             // "description": "returns an item of " + key,
+              // "description": "returns an item of " + key,
               "content": {
                 "application/json": {
 
@@ -286,8 +296,8 @@ export class ExpressBridge {
           }
         });
         apiPathWithId.delete = secure(meta.options.allowApiDelete, false, {
-    //      "summary": "Delete a " + key,
-    //      "description": "Delete a " + key,
+          //      "summary": "Delete a " + key,
+          //      "description": "Delete a " + key,
           "produces": ["application/json"],
           "parameters": [
             idParameter
@@ -367,7 +377,7 @@ export class ExpressBridge {
 
 
   constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
-    public dataProvider: DataProvider) {
+    public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
   logApiEndPoints = true;
@@ -434,7 +444,7 @@ export class SiteArea {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
-      remult.setDataProvider(this.bridge.dataProvider);
+      remult.setDataProvider(await this.bridge.dataProvider);
       let user = req['user'];
       if (user)
         remult.setUser(user);

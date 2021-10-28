@@ -1,6 +1,6 @@
 import { DataProvider, EntityDataProvider, Entity, SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
 
-import { Pool, QueryResult } from 'pg';
+import { Pool, PoolConfig, QueryResult } from 'pg';
 
 import { connect } from 'net';
 import { allEntities, Remult } from '../src/context';
@@ -205,5 +205,32 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
     await new PostgresSchemaBuilder(sql).verifyAllColumns(e.metadata);
 
     return new (await import('../server/expressBridge')).EntityQueueStorage(c.repo(JobsInQueueEntity));
+
+
+}
+
+export async function createPostgresConnection(options: {
+    connectionString?: string,
+    sslInDev?: boolean,
+    configuration?: "Heroku" | PoolConfig
+}) {
+    let config: PoolConfig = {};
+    if (options.configuration == "Heroku") {
+        config = {
+            connectionString: process.env.DATABASE_URL,
+            ssl: process.env.NODE_ENV !== "production" && !options.sslInDev ? false : {
+                rejectUnauthorized: false
+            }
+        }
+    }
+    if (!config.connectionString && options.connectionString) {
+        config.connectionString = options.connectionString;
+    }
+
+    const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)));
+    let remult = new Remult();
+    remult.setDataProvider(db);
+    await verifyStructureOfAllEntities(db, remult);
+    return db;
 
 }
