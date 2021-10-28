@@ -18,9 +18,9 @@ export class Filter {
     or(filter: Filter): Filter {
         return new OrFilter(this, filter);
     }
-    static createCustom<T>(customFilterTranslator: customFilterTranslator<T, any>): (() => Filter) & customFilterInfo<T>;
-    static createCustom<T, Y>(customFilterTranslator: customFilterTranslator<T, Y>): ((y: Y) => Filter) & customFilterInfo<T>;
-    static createCustom<T, Y>(customFilterTranslator: customFilterTranslator<T, Y>): ((y: Y) => Filter) & customFilterInfo<T> {
+    static createCustom<entityType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): (() => Filter) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => Filter) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => Filter) & customFilterInfo<entityType> {
 
         let customFilterInfo = { key: '', customFilterTranslator };
         return Object.assign((x: any) => {
@@ -458,8 +458,8 @@ class customTranslator implements FilterConsumer {
 export interface customFilterInfo<entityType> {
     customFilterInfo: {
         key: string;
-        customFilterTranslator: customFilterTranslator<entityType>;
+        customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: any) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>);
     }
 
 }
-export type customFilterTranslator<entityType, argsType = any> = (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>);
+

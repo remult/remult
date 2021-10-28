@@ -49,13 +49,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] getValidContext to change to getRemult - and if request is null, also work.
 [V] new remult that gets data provider
 [V] overload for find, and iterate that only accepts where (we have that for find first)
-[] check why realworld - allowApiInsert - the first param was any.
-[] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
+[V] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
+[V] fix iterate typing
+[V] add to iterate pagesize
+[V] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
+
 [] remove swagger from tutorial, and add it to separate article
 [] consider merging the postgres and deployment docs
-[] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
-[] add to iterate pagesize
-[] fix iterate typing
 
 [V] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
 [V] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})
@@ -173,6 +173,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] check why realworld - allowApiInsert - the first param was any.
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
 
@@ -238,6 +239,7 @@ export interface EntityRef<entityType> {
     repository: Repository<entityType>;
     metadata: EntityMetadata<entityType>
     toApiJson(): any;
+    validate(): Promise<boolean>;
 }
 export type Fields<entityType> = {
     [Properties in keyof entityType]: FieldRef<entityType, entityType[Properties]>
@@ -275,6 +277,7 @@ export interface FieldRef<entityType = any, valueType = any> {
     load(): Promise<valueType>;
     valueIsNull(): boolean;
     originalValueIsNull(): boolean;
+    validate(): Promise<boolean>;
 }
 export interface IdMetadata<entityType = any> {
 
@@ -299,7 +302,7 @@ export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     metadata: EntityMetadata<entityType>;
     /** returns a result array based on the provided options */
-    find(whereOrOptions?:EntityFilter<entityType> | FindOptions<entityType>): Promise<entityType[]>;
+    find(whereOrOptions?: EntityFilter<entityType> | FindOptions<entityType>): Promise<entityType[]>;
     iterate(whereOrOptions?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
     findFirst(whereOrOptions?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
@@ -402,6 +405,7 @@ export interface FindFirstOptionsBase<entityType> extends LoadOptions<entityType
     createIfNotFound?: boolean;
 }
 export interface IterateOptions<entityType> extends FindOptionsBase<entityType> {
+    pageSize?: number,
     progress?: { progress: (progress: number) => void };
 }
 export interface IterableResult<entityType> {
@@ -412,8 +416,8 @@ export interface IterableResult<entityType> {
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
-    
-    
+
+
 
 }
 

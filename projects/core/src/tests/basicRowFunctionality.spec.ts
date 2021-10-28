@@ -334,6 +334,36 @@ describe("data api", () => {
     expect(x[0].name).toBe('noam');
 
   }));
+  it("validate with validations on column fails", () => testAllDataProviders(async ({ remult }) => {
+
+    var s = remult.repo(entityWithValidationsOnColumn);
+    let c = s.create();
+
+    c.myId = 1;
+    c.name = 'noam';
+    await c._.save();
+    c.name = '1';
+    expect(await c._.validate()).toBe(false);
+    c.name = "123";
+    expect(await c._.validate()).toBe(true);
+    
+    
+
+  }));
+  it("validate with validations on column fails 1", () => testAllDataProviders(async ({ remult }) => {
+
+    var s = remult.repo(entityWithValidationsOnColumn);
+    let c = s.create();
+
+    c.myId = 1;
+    c.name = 'noam';
+    await c._.save();
+    c.name = '1';
+    expect(await c.$.name.validate()).toBe(false);
+    c.name = "123";
+    expect(await c._.validate()).toBe(true);
+
+  }));
   it("put with validations on entity fails", () => testAllDataProviders(async ({ remult }) => {
 
     var s = remult.repo(entityWithValidations);

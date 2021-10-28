@@ -176,6 +176,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 let ob = opts.orderBy;
                 opts.orderBy = x => Sort.createUniqueSort(self.metadata, ob).Segments;
                 let pageSize = iterateConfig.pageSize;
+                if (opts.pageSize)
+                    pageSize = opts.pageSize;
 
 
                 let itemIndex = -1;
@@ -575,6 +577,12 @@ abstract class rowHelperBase<T>
     originalValues: any = {};
     saveOriginalData() {
         this.originalValues = this.copyDataToObject();
+    }
+    async validate() {
+        this.__clearErrors();
+        await this.__performColumnAndEntityValidations();
+        let r =  this.hasErrors();
+        return r;
     }
     async __validateEntity() {
         this.__clearErrors();
@@ -1005,6 +1013,10 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
             }
         } else if (typeof this.settings.validate === 'function')
             await this.settings.validate(this.container, this);
+    }
+    async validate() {
+        await this.__performValidation();
+        return !!!this.error;
     }
 
 

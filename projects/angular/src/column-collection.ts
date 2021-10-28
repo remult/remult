@@ -353,6 +353,9 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
 export class InputField<valueType> implements FieldRef<any, valueType> {
   private options: FieldOptions;
   dataControl: DataControlSettings;
+  async validate() {
+    return true;
+  }
   constructor(
     settings: FieldOptions<any, valueType>
       & DataControlSettings
