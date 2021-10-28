@@ -48,7 +48,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## TODO
 [V] getValidContext to change to getRemult - and if request is null, also work.
 [V] new remult that gets data provider
-[] overload for find, and iterate that only accepts where (we have that for find first)
+[V] overload for find, and iterate that only accepts where (we have that for find first)
 [] check why realworld - allowApiInsert - the first param was any.
 [] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
 [] remove swagger from tutorial, and add it to separate article
@@ -299,7 +299,7 @@ export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     metadata: EntityMetadata<entityType>;
     /** returns a result array based on the provided options */
-    find(options?: FindOptions<entityType>): Promise<entityType[]>;
+    find(whereOrOptions?:EntityFilter<entityType> | FindOptions<entityType>): Promise<entityType[]>;
     iterate(whereOrOptions?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
     findFirst(whereOrOptions?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;

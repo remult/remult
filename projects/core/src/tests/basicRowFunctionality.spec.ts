@@ -294,6 +294,8 @@ describe("data api", () => {
       d.test();
       var x = await s.find({ where: c => c.myId.isEqualTo(1) });
       expect(x[0].name).toBe('noam');
+      x = await s.find( c => c.myId.isEqualTo(1) );
+      expect(x[0].name).toBe('noam');
 
     }));
   it("filter works on all db", () => testAllDataProviders(

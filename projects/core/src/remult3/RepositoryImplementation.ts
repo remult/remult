@@ -249,7 +249,12 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     async save(entity: entityType): Promise<entityType> {
         return await this.getEntityRef(entity).save();
     }
-    async find(options?: FindOptions<entityType>): Promise<entityType[]> {
+    async find(whereOrOptions?: EntityFilter<entityType> | FindOptions<entityType>): Promise<entityType[]> {
+        let options = whereOrOptions as FindOptions<entityType>;
+        if (typeof whereOrOptions === "function")
+            options = {
+                where: whereOrOptions
+            }
         let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
