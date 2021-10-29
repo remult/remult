@@ -54,7 +54,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] add to iterate pagesize
 [V] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
 
-[] remove swagger from tutorial, and add it to separate article
+[V] remove swagger from tutorial, and add it to separate article
 [] consider merging the postgres and deployment docs
 [] replace let with const
 [V] reorder the code of AuthService.

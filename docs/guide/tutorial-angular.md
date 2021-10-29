@@ -645,8 +645,10 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 
    *src/app/app.component.html*
    ```html
-   <button (click)="setAll(true)">Set all as completed</button> 
-   <button (click)="setAll(false)">Set all as uncompleted</button>
+   <div>
+      <button (click)="setAll(true)">Set all as completed</button> 
+      <button (click)="setAll(false)">Set all as uncompleted</button>
+   </div>
    ```
 
 Make sure the buttons are working as expected before moving on to the next step.
@@ -752,6 +754,14 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
       {{newTask.$.title.error}}
    </div>
   </div>
+  <p>
+    <input type="checkbox" id="hideCompleted" [(ngModel)]="hideCompleted" (change)="loadTasks()">
+    <label for="hideCompleted">Hide completed</label>
+  </p>
+  <div>
+    <button (click)="setAll(true)">Set all as completed</button> 
+    <button (click)="setAll(false)">Set all as uncompleted</button>
+  </div>
   <ul>
     <li *ngFor="let task of tasks">
       <input [(ngModel)]="task.completed" type="checkbox">
@@ -761,12 +771,6 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
       <button (click)="deleteTask(task)">Delete</button>
     </li>
   </ul>
-  <p>
-    <input type="checkbox" id="hideCompleted" [(ngModel)]="hideCompleted" (change)="loadTasks()">
-    <label for="hideCompleted">Hide completed</label>
-  </p>
-  <button (click)="setAll(true)">Set all as completed</button> 
-  <button (click)="setAll(false)">Set all as uncompleted</button>
 </ng-container>
 ```
 
@@ -888,12 +892,13 @@ In this section, we'll be using the following packages:
 5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{2-3,8-12}
+   ```ts{2-3,9-13}
    import * as express from 'express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import { initExpress } from 'remult/server';
    import '../app/task';
+   import '../app/tasks.service';
    
    let app = express();
    app.use(expressJwt({
@@ -969,7 +974,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
    *src/app/task.ts*
-   ```ts{2,5-8,13,19}
+   ```ts{2,5-8,13}
    import { Field, Entity, IdEntity, Validators, BackendMethod, Remult, Allow } from "remult";
    import { Roles } from "./roles";
    
@@ -987,6 +992,17 @@ Usually, not all application users have the same privileges. Let's define an `ad
        title: string = '';
        @Field()
        completed: boolean = false;
+   }
+
+   ```
+3. Modify the highlighted line in the `TasksService` class to reflect the authorization rule
+   *src/app/tasks.service.ts*
+   ```ts{3,7}
+   import { BackendMethod, Remult } from "remult";
+   import { Task } from "./task";
+   import { Roles } from "./roles";
+   
+   export class TasksService {
    
        @BackendMethod({ allowed: Roles.admin })
        static async setAll(completed: boolean, remult?: Remult) {
@@ -996,8 +1012,8 @@ Usually, not all application users have the same privileges. Let's define an `ad
            }
        }
    }
-
    ```
+
 
 
 4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
@@ -1041,7 +1057,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{4-5,10-11,18-22}
+   ```ts{4-5,11-12,19-23}
    import * as express from 'express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
@@ -1049,6 +1065,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    import * as helmet from 'helmet';
    import { initExpress } from 'remult/server';
    import '../app/task';
+   import '../app/tasks.service';
    
    let app = express();
    app.use(helmet({ contentSecurityPolicy: false }));
@@ -1086,46 +1103,31 @@ The todo app is now ready for deployment to production.
 
 In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need a `heroku` account. You'll also need [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install) installed.
 
-1. Create a Heroku `app`:
+For this tutorial, we will use `postgres` as a production database.
 
+1. Install postgres `pg` and `heroku-ssl-redirect` (to enforce https)
    ```sh
-   heroku create
-   ```
-
-2. Set the jwt authentication to something random - you can use an [Online UUID Generator](https://www.uuidgenerator.net/)
-   ```sh
-   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
-   ```
-
-
-:::details Follow these steps to Use PostreSQL as production database
-While the simple backend JSON database provided by `remult` is nice for development, it isn't suitable for production (it will be discarded each time the Heroku `dyno` is restarted).
-
-Let's replace it with a production PostgreSQL database.
-
-1. Install `pg`.
-
-   ```sh
-   npm i pg 
+   npm i pg heroku-ssl-redirect
    npm i --save-dev @types/pg
    ```
 
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{6-8,20-36}
+   ```ts{5-6,21-27}
    import * as express from 'express';
-   import * as expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
-   import { Remult, SqlDatabase } from 'remult';
-   import { PostgresDataProvider, verifyStructureOfAllEntities } from 'remult/postgres';
-   import { Pool } from 'pg';
+   import * as expressJwt from 'express-jwt';
+   import * as sslRedirect from 'heroku-ssl-redirect'
+   import { createPostgresConnection } from 'remult/postgres';
+   import { getJwtTokenSignKey } from '../app/auth.service';
    import { initExpress } from 'remult/server';
    import '../app/task';
+   import '../app/tasks.service';
    
    let app = express();
+   app.use(sslRedirect());
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
@@ -1133,23 +1135,13 @@ Let's replace it with a production PostgreSQL database.
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   let getDatabase = () => {
-       if (process.env.NODE_ENV === "production") {
-           const db = new SqlDatabase(new PostgresDataProvider(new Pool({
-               connectionString: process.env.DATABASE_URL,
-               ssl: process.env.NODE_ENV !== "production" ? false : {
-                   rejectUnauthorized: false
-               }
-           })));
-           let remult = new Remult();
-           remult.setDataProvider(db);
-           verifyStructureOfAllEntities(db, remult);
-           return db;
-       }
+   const dataProvider = async () => {
+       if (process.env.NODE_ENV === "production")
+           return createPostgresConnection({ configuration: "heroku" })
        return undefined;
    }
    initExpress(app, {
-       dataProvider: getDatabase()
+       dataProvider
    });
    app.use(express.static('dist'));
    app.use('/*', async (req, res) => {
@@ -1157,12 +1149,21 @@ Let's replace it with a production PostgreSQL database.
    });
    app.listen(process.env.PORT || 3002, () => console.log("Server started"));
    ```
+2. Create a Heroku `app`:
 
-4. Provision a dev postgres database on Heroku
+   ```sh
+   heroku create
+   ```
+
+3. Set the jwt authentication to something random - you can use an [Online UUID Generator](https://www.uuidgenerator.net/)
+   ```sh
+   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
+   ```
+3. Provision a dev postgres database on Heroku
    ```sh
    heroku addons:create heroku-postgresql:hobby-dev
    ```
-:::
+
 
 4. Commit the changes to git and deploy to Heroku using `git push`:
 
@@ -1183,7 +1184,7 @@ If you run into trouble deploying the app to Heroku, try using Heroku's [documen
 :::
 
 
-That's it - our application is deployed to production, play with it and enjoy :)
+That's it - our application is deployed to production, play with it and enjoy.
 
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
