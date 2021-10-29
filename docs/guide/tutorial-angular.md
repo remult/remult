@@ -86,7 +86,7 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    import * as express from 'express';
    import { initExpress } from 'remult/server';
 
-   let app = express();
+   const app = express();
    initExpress(app);
    app.listen(3002, () => console.log("Server started"));
    ```
@@ -814,11 +814,11 @@ In this section, we'll be using the following packages:
 
        @BackendMethod({ allowed: true })
        static async signIn(username: string) {
-           let validUsers = [
+           const validUsers = [
                { id: "1", name: "Jane", roles: [] },
                { id: "2", name: "Steve", roles: [] }
            ];
-           let user = validUsers.find(user => user.name === username);
+           const user = validUsers.find(user => user.name === username);
            if (!user)
                throw new Error("Invalid User");
            return jwt.sign(user, getJwtTokenSignKey());
@@ -843,7 +843,7 @@ In this section, we'll be using the following packages:
        }
    
        constructor(private remult: Remult) {
-           let token = AuthService.fromStorage();
+           const token = AuthService.fromStorage();
            if (token) {
                this.setAuthToken(token);
            }
@@ -900,7 +900,7 @@ In this section, we'll be using the following packages:
    import '../app/task';
    import '../app/tasks.service';
    
-   let app = express();
+   const app = express();
    app.use(expressJwt({
        secret: getJwtTokenSignKey(),
        credentialsRequired: false,
@@ -1022,11 +1022,11 @@ Usually, not all application users have the same privileges. Let's define an `ad
    ```ts{4}
    @BackendMethod({ allowed: true })
    static async signIn(username: string) {
-      let validUsers = [
+      const validUsers = [
       { id: "1", name: "Jane", roles: [ Roles.admin] },
       { id: "2", name: "Steve", roles: [] }
       ];
-      let user = validUsers.find(user => user.name === username);
+      const user = validUsers.find(user => user.name === username);
       if (!user)
         throw new Error("Invalid User");
       return jwt.sign(user, getJwtTokenSignKey());
@@ -1067,7 +1067,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    import '../app/task';
    import '../app/tasks.service';
    
-   let app = express();
+   const app = express();
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
@@ -1126,7 +1126,7 @@ For this tutorial, we will use `postgres` as a production database.
    import '../app/task';
    import '../app/tasks.service';
    
-   let app = express();
+   const app = express();
    app.use(sslRedirect());
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());

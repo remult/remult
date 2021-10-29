@@ -55,8 +55,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
 
 [V] remove swagger from tutorial, and add it to separate article
-[] consider merging the postgres and deployment docs
-[] replace let with const
+[V] consider merging the postgres and deployment docs
+[V] replace let with const
 [V] reorder the code of AuthService.
 
 [] expressRemult - do something with app use
@@ -71,13 +71,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 
-[] check why limit and page don't work from swagger
 [V] try add rest api doc to the swagger doc.
-[] adjust swagger to show that you can filter.
 [] add swagger to starter kit
 [] add https to starter kit
 [] heroku-ssl-redirect
-![] reorder auth service. for angular and starter project
+[] reorder auth service. for  starter project
+
+[] adjust swagger to show that you can filter.
+[] check why limit and page don't work from swagger
 
 
 
