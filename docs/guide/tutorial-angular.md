@@ -788,21 +788,11 @@ In this section, we'll be using the following packages:
    import * as jwt from 'jsonwebtoken';
    import { BackendMethod, Remult } from 'remult';
    
-   const AUTH_TOKEN_KEY = "authToken";
    @Injectable({
        providedIn: 'root'
    })
    export class AuthService {
-       constructor(private remult: Remult) {
-           let token = AuthService.fromStorage();
-           if (token) {
-               this.setAuthToken(token);
-           }
-       }
-      
-       async signIn(username: string) {
-           this.setAuthToken(await AuthService.signIn(username));
-       }
+
        @BackendMethod({ allowed: true })
        static async signIn(username: string) {
            let validUsers = [
@@ -814,18 +804,30 @@ In this section, we'll be using the following packages:
                throw new Error("Invalid User");
            return jwt.sign(user, getJwtTokenSignKey());
        }
+
+       async signIn(username: string) {
+           this.setAuthToken(await AuthService.signIn(username));
+       }
    
        setAuthToken(token: string) {
            this.remult.setUser(new JwtHelperService().decodeToken(token));
            sessionStorage.setItem(AUTH_TOKEN_KEY, token);
        }
+
+       signOut() {
+           this.remult.setUser(undefined!);
+           sessionStorage.removeItem(AUTH_TOKEN_KEY);
+       }
+       
        static fromStorage(): string {
            return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
        }
    
-       signOut() {
-           this.remult.setUser(undefined!);
-           sessionStorage.removeItem(AUTH_TOKEN_KEY);
+       constructor(private remult: Remult) {
+           let token = AuthService.fromStorage();
+           if (token) {
+               this.setAuthToken(token);
+           }
        }
    }
    
@@ -834,6 +836,8 @@ In this section, we'll be using the following packages:
            return process.env.TOKEN_SIGN_KEY!;
        return "my secret key";
    }
+   
+   const AUTH_TOKEN_KEY = "authToken";
    ```
    * Note that tThe (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
    
@@ -1168,8 +1172,12 @@ Let's replace it with a production PostgreSQL database.
    heroku apps:open
    ```
 
-That's it - our application is deployed to production, play with it and enjoy :)
-
 ::: warning Note
 If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
 :::
+
+
+That's it - our application is deployed to production, play with it and enjoy :)
+
+Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
+

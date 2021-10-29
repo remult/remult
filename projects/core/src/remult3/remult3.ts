@@ -56,6 +56,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] remove swagger from tutorial, and add it to separate article
 [] consider merging the postgres and deployment docs
+[V] reorder the code of AuthService.
+
+[] expressRemult - do something with app use
+
+[] prepare more copy paste 
+
+
 
 [V] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
 [V] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})
@@ -70,7 +77,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] add https to starter kit
 [] heroku-ssl-redirect
 ![] reorder auth service. for angular and starter project
-[] reorder the code of AuthService.
+
 
 
 [] check why update object value with null didn't update the database in hugmom
@@ -112,6 +119,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] sqlite
 [] check sending field types to custom filter
 [] dynamo db
+[] graphql
+    https://snipcart.com/blog/graphql-nodejs-express-tutorial
+    https://graphql.org/graphql-js
+
+
 
 
 ## TODO Docs
@@ -174,6 +186,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## review with Yoni
 [] check why realworld - allowApiInsert - the first param was any.
+[] db migrations
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
 

@@ -5,7 +5,7 @@ tagline: Lightweight web application framework for FullStack TypeScript
 actionText: Quick Start →
 actionLink: /guide/
 
-footer: Made by the Remult team with ❤️
+footer: Made by the Remult team with ❤️ 
 ---
 ### Define Entity classes
 ```ts

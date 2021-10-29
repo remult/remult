@@ -1223,9 +1223,11 @@ Let's replace it with a production PostgreSQL database.
    ```sh
    heroku apps:open
    ```
-
-That's it - our application is deployed to production, play with it and enjoy :)
-
 ::: warning Note
 If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
 :::
+
+
+That's it - our application is deployed to production, play with it and enjoy :)
+
+Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
