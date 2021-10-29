@@ -61,6 +61,7 @@ module.exports = {
           title: 'Blog',
           collapsable: false,
           children: [
+            'adding-swagger',
             'using-server-only-packages',
             'running-sql-on-the-server',
             'rest-api',

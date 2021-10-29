@@ -56,6 +56,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] remove swagger from tutorial, and add it to separate article
 [] consider merging the postgres and deployment docs
+[] replace let with const
 [V] reorder the code of AuthService.
 
 [] expressRemult - do something with app use

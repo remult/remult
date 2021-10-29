@@ -60,10 +60,10 @@ cd remult-angular-todo
 ```
 
 #### Installing required packages
-We need `express` to serve our app's API, `swagger-ui-express` for API documentation and, of course, `remult`.
+We need `express` to serve our app's API and, of course, `remult`.
 ```sh
-npm i express swagger-ui-express  remult
-npm i --save-dev @types/express @types/swagger-ui-express
+npm i express remult
+npm i --save-dev @types/express
 ```
 #### The API server project
 The starter API server TypeScript project contains a single module which initializes `Express`, starts Remult and begins listening for API requests.
@@ -84,15 +84,16 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    *src/server/index.ts*
    ```ts
    import * as express from 'express';
-   import * as swaggerUi from 'swagger-ui-express';
    import { initExpress } from 'remult/server';
 
    let app = express();
-   let api = initExpress(app);
-   app.use('/api/docs', swaggerUi.serve,
-       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
+   initExpress(app);
    app.listen(3002, () => console.log("Server started"));
    ```
+
+   ::: tip swagger
+   You can easily add swagger by following [this article](/blog/adding-swagger.html)
+   :::
 
 5. In the root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
 
@@ -654,29 +655,43 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-Refactor the `for await` loop from the `setAll` function of the `AppComponent` class into a new, `static`, `setAll` function in the `Task` entity,  which will run on the server.
+1. Create a new `TasksService` class and refactor the `for await` loop from the `setAll` function of the `App` function into a new, `static`, `setAll` function in the `TasksService` class,  which will run on the server.
 
-*src/app/task.ts*
-```ts
-@BackendMethod({ allowed: true })
-static async setAll(completed: boolean, remult?: Remult) {
-   for await (const task of remult!.repo(Task).iterate()) {
-      task.completed = completed;
-      await task.save();
+   *src/app/tasks.service.ts*
+   ```ts
+   import { BackendMethod, Remult } from "remult";
+   import { Task } from "./task";
+   
+   export class TasksService {
+   
+       @BackendMethod({ allowed: true })
+       static async setAll(completed: boolean, remult?: Remult) {
+           for await (const task of remult!.repo(Task).iterate()) {
+               task.completed = completed;
+               await task.save();
+           }
+       }
    }
-}
-```
-*src/app/app.component.ts*
-```ts{2}
-async setAll(completed: boolean) {
-   await Task.setAll(completed);
-   this.loadTasks();
-}
-```
+   ```
 
-::: danger Import BackendMethod
-Don't forget to import `BackendMethod` and `Remult` from `remult` for this code to work.
-:::
+2. Import the `Task` module into the API server's `index` module:
+
+   *src/server/index.ts*
+   ```ts
+   import '../app/tasks.service';
+   ```
+
+3. Call the `setAll` method in the `TasksService`
+   *src/app/app.component.ts*
+   ```ts{2}
+   async setAll(completed: boolean) {
+      await TasksService.setAll(completed);
+      this.loadTasks();
+   }
+   ```
+   ::: danger Import TasksService
+   Don't forget to import `TasksService`.
+   :::
 
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
@@ -717,7 +732,7 @@ curl -i http://localhost:4200/api/tasks
 ::: danger Authorized server-side code can still modify tasks
 Although client CRUD requests to `tasks` API endpoints now require a signed in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
 
-To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `Task`.
+To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `TasksService`.
 
 *src/app/task.ts*
 ```ts
@@ -836,7 +851,7 @@ In this section, we'll be using the following packages:
            return process.env.TOKEN_SIGN_KEY!;
        return "my secret key";
    }
-   
+
    const AUTH_TOKEN_KEY = "authToken";
    ```
    * Note that tThe (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
@@ -873,9 +888,8 @@ In this section, we'll be using the following packages:
 5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{3-4,9-13}
+   ```ts{2-3,8-12}
    import * as express from 'express';
-   import * as swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import { initExpress } from 'remult/server';
@@ -887,9 +901,7 @@ In this section, we'll be using the following packages:
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   let api = initExpress(app);
-   app.use('/api/docs', swaggerUi.serve,
-       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
+   initExpress(app);
    app.listen(3002, () => console.log("Server started"));
    ```
 
@@ -1029,9 +1041,8 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{5-6,11-12,21-25}
+   ```ts{4-5,10-11,18-22}
    import * as express from 'express';
-   import * as swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
@@ -1047,9 +1058,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   let api = initExpress(app);
-   app.use('/api/docs', swaggerUi.serve,
-       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
+   initExpress(app);
    app.use(express.static('dist'));       
    app.use('/*', async (req, res) => {
       res.sendFile('./dist/remult-angular-todo/index.html');
@@ -1104,9 +1113,8 @@ Let's replace it with a production PostgreSQL database.
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{7-9,21-37}
+   ```ts{6-8,20-36}
    import * as express from 'express';
-   import * as swaggerUi from 'swagger-ui-express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
@@ -1140,11 +1148,9 @@ Let's replace it with a production PostgreSQL database.
        }
        return undefined;
    }
-   let api = initExpress(app, {
+   initExpress(app, {
        dataProvider: getDatabase()
    });
-   app.use('/api/docs', swaggerUi.serve,
-       swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
    app.use(express.static('dist'));
    app.use('/*', async (req, res) => {
       res.sendFile('./dist/remult-angular-todo/index.html');
