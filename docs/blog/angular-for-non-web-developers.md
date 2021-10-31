@@ -1029,5 +1029,6 @@ Heroku has a web user interface to setup your app, define the db and set the con
 
 
 ### We're done
-That's it - our application is deployed to production, play with it and enjoy :)
+That's it - our application is deployed to production, play with it and enjoy.
+
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>

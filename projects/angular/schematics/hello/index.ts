@@ -131,6 +131,7 @@ export function hello(_options: Schema): Rule {
       json.dependencies["express-graphql"] = "^0.12.0";
       json.dependencies["graphql"] = "^16.0.0";
       json.dependencies["swagger-ui-express"] = "^4.1.6";
+      json.dependencies["heroku-ssl-redirect"] = "^0.1.1";
       json.devDependencies["ts-node-dev"] = "^1.1.6";
       json.devDependencies["@types/pg"] = "^7.14.4";
       json.devDependencies["@types/express"] = "^4.16.1";
