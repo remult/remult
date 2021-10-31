@@ -54,8 +54,8 @@ serverInit().then(async (dataSource) => {
         res.send('hello ' + JSON.stringify(c.user));
     });
 
-    
     let g = remultGraphql(api);
+    console.log(g.schema);
     app.use('/api/graphql', graphqlHTTP({
         schema: buildSchema(g. schema),
         rootValue: g.rootValue,

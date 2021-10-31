@@ -62,6 +62,7 @@ module.exports = {
           collapsable: false,
           children: [
             'adding-swagger',
+            'adding-graphql',
             'using-server-only-packages',
             'running-sql-on-the-server',
             'rest-api',

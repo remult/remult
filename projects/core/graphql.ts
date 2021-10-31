@@ -5,7 +5,7 @@ import { getEntityKey } from "./src/remult3";
 import { ExpressBridge } from "./server";
 import { DataApi } from "./src/data-api";
 
-export function remultGraphql(api:ExpressBridge) {
+export function remultGraphql(api: ExpressBridge) {
     let r = new Remult();
     let types = '';
     let query = '';
@@ -65,8 +65,8 @@ export function remultGraphql(api:ExpressBridge) {
                     forbidden: () => err = 'forbidden',
                     notFound: () => err = 'not found',
                     progress: undefined
-    
-    
+
+
                 }, {
                     get: key => {
                         if (options)
@@ -88,6 +88,12 @@ export function remultGraphql(api:ExpressBridge) {
             }
         }
     }
+    if (query.length > 0) {
+        query = `type Query {${query}
+}`
+
+    }
+
 
 
 
@@ -104,8 +110,7 @@ input options{
     order:String
 }
 ${types}
-type Query {${query}
-}
+${query}
 `
     };
 }

@@ -94,6 +94,9 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    ::: tip swagger
    You can easily add swagger by following [this article](/blog/adding-swagger.html)
    :::
+   ::: tip graphql
+   You can easily add swagger by following [this article](/blog/adding-graphql.html)
+   :::
 
 5. In the root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
 
