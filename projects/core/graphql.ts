@@ -2,10 +2,11 @@ import { Remult } from ".";
 import { IntegerValueConverter } from "./valueConverters";
 import { allEntities } from "./src/context";
 import { getEntityKey } from "./src/remult3";
-import { ExpressBridge } from "./server";
-import { DataApi } from "./src/data-api";
 
-export function remultGraphql(api: ExpressBridge) {
+import { DataApi } from "./src/data-api";
+import { RemultExpressBridge } from "./server/expressBridge";
+
+export function remultGraphql(api: RemultExpressBridge) {
     let r = new Remult();
     let types = '';
     let query = '';

@@ -3,7 +3,7 @@ let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import * as express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
 import * as cors from 'cors';
-import { initExpress } from 'remult/server';
+
 import * as fs from 'fs';
 //import '../app.module';
 import { serverInit } from './server-init';
@@ -20,6 +20,7 @@ import { buildSchema } from 'graphql';
 import { stam } from '../products-test/products.component';
 import { Filter } from '../../../../core';
 import { DataApi } from '../../../../core/src/data-api';
+import { remultExpress } from '../../../../core/server/expressBridge';
 
 
 
@@ -39,32 +40,34 @@ serverInit().then(async (dataSource) => {
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
+    
 
-    let api = initExpress(app, {
+    
+    let remultApi = remultExpress({
         dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
-
     });
+
+    app.use(remultApi);
     app.use('/api/docs', swaggerUi.serve,
-        swaggerUi.setup(api.openApiDoc({ title: 'remult-angular-todo' })));
+        swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
 
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
-        let c = await api.getRemult(req);
+        let c = await remultApi.getRemult(req);
         res.send('hello ' + JSON.stringify(c.user));
     });
 
-    let g = remultGraphql(api);
-    console.log(g.schema);
+    let g = remultGraphql(remultApi);
     app.use('/api/graphql', graphqlHTTP({
-        schema: buildSchema(g. schema),
+        schema: buildSchema(g.schema),
         rootValue: g.rootValue,
         graphiql: true,
     }));
 
 
     app.use('/*', async (req, res) => {
-        console.log(req.path);
+
         const index = 'dist/my-project/index.html';
         if (fs.existsSync(index)) {
             res.send(fs.readFileSync(index).toString());

@@ -17,17 +17,17 @@ import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src
 import { allEntities, AllowedForInstance } from '../src/context';
 
 
-
-export function initExpress(app: express.Express,
+export function remultExpress(
   options?:
     {
       dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
-      initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>
-    }) {
-
+      initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>,
+      logApiEndPoints?: boolean
+    }): RemultExpressBridge {
+  let app = express.Router();
   if (!options) {
     options = {};
   }
@@ -57,8 +57,8 @@ export function initExpress(app: express.Express,
   });
 
 
-  let result = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
-  let apiArea = result.addArea('/' + Remult.apiBaseUrl);
+  let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
+  let apiArea = bridge.addArea('/' + Remult.apiBaseUrl);
 
 
 
@@ -67,12 +67,23 @@ export function initExpress(app: express.Express,
     registerEntitiesOnServer(apiArea);
   }
 
-
-  return result;
+  return Object.assign(app, {
+    getRemult: () => bridge.getRemult(),
+    openApiDoc: (options: { title: string }) => bridge.openApiDoc(options),
+    addArea: x => bridge.addArea(x)
+  });
+}
+export interface RemultExpressBridge extends express.RequestHandler {
+  getRemult(req: express.Request): Promise<Remult>;
+  openApiDoc(options: { title: string }): any;
+  addArea(
+    rootUrl: string
+  );
 }
 
 
-export class ExpressBridge {
+
+class ExpressBridge {
 
 
   openApiDoc(options: { title: string }) {
@@ -376,7 +387,7 @@ export class ExpressBridge {
   backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any> }[] = [];
 
 
-  constructor(private app: express.Express, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
+  constructor(private app: express.Router, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
@@ -403,7 +414,7 @@ export class ExpressBridge {
 export class SiteArea {
   constructor(
     private bridge: ExpressBridge,
-    private app: express.Express,
+    private app: express.Router,
     private rootUrl: string,
     private logApiEndpoints: boolean) {
 
