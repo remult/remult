@@ -24,6 +24,9 @@ export class CustomModuleLoader {
                 case "remult/postgres":
                     request = request = process.cwd() + root + '/core/postgres';
                     break;
+                    case "remult/graphql":
+                    request = request = process.cwd() + root + '/core/graphql';
+                    break;
                 case "remult/src/context":
                     request = request = process.cwd() + root + '/core/src/context';
                     break;

@@ -7,6 +7,7 @@ import { initExpress } from 'remult/server';
 import * as fs from 'fs';
 //import '../app.module';
 import { serverInit } from './server-init';
+import { remultGraphql } from 'remult/graphql';
 
 
 import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
@@ -14,6 +15,11 @@ import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/po
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
+import { graphqlHTTP } from 'express-graphql';
+import { buildSchema } from 'graphql';
+import { stam } from '../products-test/products.component';
+import { Filter } from '../../../../core';
+import { DataApi } from '../../../../core/src/data-api';
 
 
 
@@ -47,8 +53,15 @@ serverInit().then(async (dataSource) => {
         let c = await api.getRemult(req);
         res.send('hello ' + JSON.stringify(c.user));
     });
-    let r = await api.getRemult();
-    console.log(r.user);
+
+    
+    let g = remultGraphql(api);
+    app.use('/api/graphql', graphqlHTTP({
+        schema: buildSchema(g. schema),
+        rootValue: g.rootValue,
+        graphiql: true,
+    }));
+
 
     app.use('/*', async (req, res) => {
         console.log(req.path);

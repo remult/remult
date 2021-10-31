@@ -68,7 +68,7 @@ export class ProductsComponent {
     }
   }
 })
-class stam extends IdEntity {
+export class stam extends IdEntity {
   @Field({ dbName: 'name' })
   name: string;
   @DateOnlyField({ allowNull: true })

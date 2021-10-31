@@ -126,7 +126,11 @@ import { entityEventListener } from "../__EntityValueProvider";
     https://graphql.org/graphql-js
 
 
-
+[] graphql
+    [] work on dates
+    [] ne of many (same as not in, may require different api)
+    [] maybe equal and in should be the saml api
+    [] update, insert, delete
 
 ## TODO Docs
 [] doc field types (date etc... value converter and more)
