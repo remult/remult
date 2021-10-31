@@ -38,11 +38,12 @@ async function startup() {
         swaggerUi.setup(api.openApiDoc({ title: 'remult-react-todo' })));
 
     const { schema, rootValue } = remultGraphql(api);
-    app.use('/api/graphql', graphqlHTTP({
-        schema: buildSchema(schema),
-        rootValue,
-        graphiql: true,
-    }));
+    if (process.env.NODE_ENV !== "production")
+        app.use('/api/graphql', graphqlHTTP({
+            schema: buildSchema(schema),
+            rootValue,
+            graphiql: true,
+        }));
 
     app.use(express.static('dist/my-project'));
     app.use('/*', async (req, res) => {
