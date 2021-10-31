@@ -6,21 +6,11 @@ import { Roles } from './users/roles';
 import { Users } from './users/users';
 import { terms } from './terms';
 
-const AUTH_TOKEN_KEY = "authToken";
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    constructor(private remult: Remult) {
-        let token = AuthService.fromStorage();
-        if (token) {
-            this.setAuthToken(token);
-        }
-    }
 
-    async signIn(username: string, password: string) {
-        this.setAuthToken(await AuthService.signIn(username, password));
-    }
     @BackendMethod({ allowed: true })
     static async signIn(user: string, password: string, remult?: Remult) {
         let result: UserInfo;
@@ -42,20 +32,33 @@ export class AuthService {
         }
         throw new Error(terms.invalidSignIn);
     }
+
+    async signIn(username: string, password: string) {
+        this.setAuthToken(await AuthService.signIn(username, password));
+    }
+    
     setAuthToken(token: string) {
         this.remult.setUser(new JwtHelperService().decodeToken(token));
         sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-    }
-    static fromStorage(): string {
-        return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
     }
 
     signOut() {
         this.remult.setUser(undefined!);
         sessionStorage.removeItem(AUTH_TOKEN_KEY);
     }
-}
 
+    static fromStorage(): string {
+        return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
+    }
+
+    constructor(private remult: Remult) {
+        let token = AuthService.fromStorage();
+        if (token) {
+            this.setAuthToken(token);
+        }
+    }
+}
+const AUTH_TOKEN_KEY = "authToken";
 export function getJwtTokenSignKey() {
     if (process.env.NODE_ENV === "production")
         return process.env.TOKEN_SIGN_KEY!;

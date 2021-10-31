@@ -1,4 +1,4 @@
-# Adding GraphQl
+# Adding Graphql
  
 To add graphql to a `remult` application follow these steps:
 1. Install the `graphql` and `express-graphql` packages:

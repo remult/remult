@@ -32,7 +32,7 @@ export function hello(_options: Schema): Rule {
     editJson(tree, appTsConfig, j => {
       j.compilerOptions.emitDecoratorMetadata = true;
     });
-    
+
 
     editGitIgnore(tree);
     let entryComponents = [{ name: 'YesNoQuestionComponent', path: './common/yes-no-question/yes-no-question.component' },
@@ -128,6 +128,9 @@ export function hello(_options: Schema): Rule {
       json.dependencies["express"] = "^4.16.4";
       json.dependencies["reflect-metadata"] = "^0.1.12";
       json.dependencies["compression"] = "^1.7.3";
+      json.dependencies["express-graphql"] = "^0.12.0";
+      json.dependencies["graphql"] = "^16.0.0";
+      json.dependencies["swagger-ui-express"] = "^4.1.6";
       json.devDependencies["ts-node-dev"] = "^1.1.6";
       json.devDependencies["@types/pg"] = "^7.14.4";
       json.devDependencies["@types/express"] = "^4.16.1";
@@ -135,6 +138,7 @@ export function hello(_options: Schema): Rule {
       json.devDependencies["@types/jsonwebtoken"] = "^8.5.1";
       json.devDependencies["@types/password-hash"] = "^1.2.20";
       json.devDependencies["@types/express-jwt"] = "^6.0.1";
+      json.devDependencies["@types/swagger-ui-express"] = "^4.1.3";
       json.browser = {
         "jsonwebtoken": false,
         "password-hash": false

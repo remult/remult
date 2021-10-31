@@ -72,10 +72,12 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 [V] try add rest api doc to the swagger doc.
-[] add swagger to starter kit
-[] add https to starter kit
-[] heroku-ssl-redirect
-[] reorder auth service. for  starter project
+[V] add swagger to starter kit
+[V] add graphql to starter kit
+[V] add swagger to angular tutorial
+[V] add https to starter kit
+[V] heroku-ssl-redirect
+[V] reorder auth service. for  starter project
 
 [] adjust swagger to show that you can filter.
 [] check why limit and page don't work from swagger
@@ -100,11 +102,11 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] entity
     [] controller
     [] and usage FieldType - to send complex parameters
-[] continue swagger to reflect Backend Methods
+[V] continue swagger to reflect Backend Methods
 
 
 
-[] Love Angular? Give our repo a star.Star
+[V] Love Angular? Give our repo a star.Star
 
 ```
  Love Angular?&nbsp;
