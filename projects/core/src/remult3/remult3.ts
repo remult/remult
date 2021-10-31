@@ -4,8 +4,7 @@ import { FieldMetadata } from "../column-interfaces";
 import { IterateToArrayOptions, Unobserve } from "../context";
 import { EntityOptions as EntityOptions } from "../entity";
 import { Filter } from "../filter/filter-interfaces";
-import { BackendMethod } from "../server-action";
-import { Sort, SortSegment } from "../sort";
+import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 
 
@@ -36,6 +35,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] Order by and where -  PAGING 
 [] skip hide completed
+[] validation:
+    [] talk about saving,saved,validate...
 
 [] Backend
     [] Iterate - explain that we run on all tasks on the server.
@@ -46,77 +47,21 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[V] getValidContext to change to getRemult - and if request is null, also work.
-[V] new remult that gets data provider
-[V] overload for find, and iterate that only accepts where (we have that for find first)
-[V] consider removing the customFilterTranslator type - it hides the parameters that a create filter might get
-[V] fix iterate typing
-[V] add to iterate pagesize
-[V] validate to field, and validate to entity - return true if valid and false if not - and updates all error fields.
-
-[V] remove swagger from tutorial, and add it to separate article
-[V] consider merging the postgres and deployment docs
-[V] replace let with const
-[V] reorder the code of AuthService.
-
 [] expressRemult - do something with app use
-
-[] prepare more copy paste 
-
-
-
-[V] initExpress to accept dataPRovider:DAtaProvider||Promise||lamda of proimse - take down isnode
-[V] createPostgresConnection ({connectionString:"asdfas", poolconfig:, sslInDev,configuration Heroku or postgres Poolconfig})
-[V] consider simplifying the postgres setup docs.
-
-
-
-[V] try add rest api doc to the swagger doc.
-[V] add swagger to starter kit
-[V] add graphql to starter kit
-[V] add swagger to angular tutorial
-[V] add https to starter kit
-[V] heroku-ssl-redirect
-[V] reorder auth service. for  starter project
-
 [] adjust swagger to show that you can filter.
 [] check why limit and page don't work from swagger
-
-
-
 [] check why update object value with null didn't update the database in hugmom
-[V] make doc update well and not recreated
-
-
+[] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
 [] change entity backend methods to be entity/backend method name
-
-
-
-
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
-[] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
 [] write an article about the different usages of backend method:
     [] static
     [] entity
     [] controller
     [] and usage FieldType - to send complex parameters
-[V] continue swagger to reflect Backend Methods
 
-
-
-[V] Love Angular? Give our repo a star.Star
-
-```
- Love Angular?&nbsp;
-      <a href="https://github.com/angular/angular" target="_blank" rel="noopener"> Give our repo a star.
-        <div class="github-star-badge">
-            <svg class="material-icons" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-          Star
-        </div>
-      </a>
-```
 [] google sheets gateway
 [] consider "class-validator", integration
 [] typeorm gateway - https://typeorm.io/#/separating-entity-definition
