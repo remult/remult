@@ -565,11 +565,13 @@ abstract class rowHelperBase<T>
             let val = this.instance[col.key];
             if (lu)
                 val = lu.id;
-            if (val)
-                val = col.valueConverter.fromJson(
-                    JSON.parse(
-                        JSON.stringify(
-                            col.valueConverter.toJson(val))));
+            if (val !== undefined) {
+                val = col.valueConverter.toJson(val);
+                if (val !== undefined)
+                    val = col.valueConverter.fromJson(
+                        JSON.parse(
+                            JSON.stringify(val)));
+            }
             d[col.key] = val;
         }
         return d;
@@ -581,7 +583,7 @@ abstract class rowHelperBase<T>
     async validate() {
         this.__clearErrors();
         await this.__performColumnAndEntityValidations();
-        let r =  this.hasErrors();
+        let r = this.hasErrors();
         return r;
     }
     async __validateEntity() {

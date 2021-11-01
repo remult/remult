@@ -58,6 +58,8 @@ export function remultExpress(
 
 
   let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
+  if (options.logApiEndPoints !== undefined)
+    bridge.logApiEndPoints = options.logApiEndPoints;
   let apiArea = bridge.addArea('/' + Remult.apiBaseUrl);
 
 

@@ -92,7 +92,7 @@ describe("custom filter", () => {
         let json3 = Filter.fromJson(c.metadata, json).toJson();
         expect(json3).toEqual(json);
     })
-    it("test that it works", () => {
+    it("test that it works", () => 
         testAllDataProviders(async ({remult}) => {
 
             let c = remult.repo(entityForCustomFilter);
@@ -104,9 +104,9 @@ describe("custom filter", () => {
             expect((await (c.findFirst(e => entityForCustomFilter.testObjectValue({ val: 2 })))).id).toBe(2);
         })
 
-    });
-    it("test that it works with inheritance", () => {
-        testAllDataProviders(async ({remult}) => {
+    );
+    it("test that it works with inheritance", () => 
+         testAllDataProviders(async ({remult}) => {
 
             let c = remult.repo(entityForCustomFilter1);
             for (let id = 0; id < 5; id++) {
@@ -117,7 +117,7 @@ describe("custom filter", () => {
             expect((await (c.findFirst(e => entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
         })
 
-    });
+    );
     it("test that it works with sql", async () => {
         let w = new WebSqlDataProvider("testWithFilter");
 
@@ -441,10 +441,12 @@ describe("missing fields are added in array column", async () => {
         expect(t.completed).toBe(undefined);
         t.completed = null;
         await t.save();
-        expect(t.completed).toBe(undefined);
+        expect(t.completed).toBe(null);
         t = rep.create({ title: '4' });
         await t.save();
         expect(t.completed).toBe(undefined);
 
     });
 });
+
+
