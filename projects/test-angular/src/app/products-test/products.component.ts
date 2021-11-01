@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, NgZone, OnInit, ViewChild } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller } from 'remult';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
@@ -10,6 +10,7 @@ import { filter, map, pairwise, throttleTime } from 'rxjs/operators';
 import { timer } from 'rxjs';
 
 
+@Controller("blabla")
 
 @Component({
   selector: 'app-products',
@@ -28,29 +29,42 @@ import { timer } from 'rxjs';
 
 
 
-export class ProductsComponent {
+export class ProductsComponent implements OnInit {
   page = 0;
   constructor(private remult: Remult) {
 
+  }
+  ngOnInit(): void {
+    ProductsComponent.myMethod(this.remult);
   }
   items: stam[] = [];
   repo = this.remult.repo(stam);
   load() {
     this.repo.find({ page: this.page }).then(r => this.items.push(...r));
   }
-  nextPage(){
+  nextPage() {
     this.page++;
     this.load();
   }
-  async run(){
-    for await (const s of this.repo.iterate()) {
-      
-    } 
-    let z=  this.repo.iterate()[Symbol.asyncIterator]();
-    
-    let r = await z.next();
+  
+  @BackendMethod({ allowed: true })
+  static async myMethod(remult?: Remult) {
 
+  }
+  @BackendMethod({ allowed: true })
+   async myMethod2(remult?: Remult) {
+
+  }
+  async run() {
+    for await (const s of this.repo.iterate()) {
+
+    }
+    let z = this.repo.iterate()[Symbol.asyncIterator]();
+
+    let r = await z.next();
     
+
+
 
 
   }
@@ -73,4 +87,8 @@ export class stam extends IdEntity {
   name: string;
   @DateOnlyField({ allowNull: true })
   stamDate?: Date
+  @BackendMethod({ allowed: true })
+  async myMethod(remult?: Remult) {
+
+  }
 }

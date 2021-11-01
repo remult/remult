@@ -48,14 +48,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## TODO
 [V] expressRemult - do something with app use
-[] adjust swagger to show that you can filter.
-[] check why limit and page don't work from swagger
-[] move one2many.items to remult angular - and make is a subscriber
+[V] adjust swagger to show that you can filter.
+[V] check why limit and page don't work from swagger
+[V] fix sending of remult in argument - to work
+[V] change entity backend methods to be entity/backend method name
+
 
 [] check why update object value with null didn't update the database in hugmom
-[] fix sending of remult in argument - to work
 [] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
-[] change entity backend methods to be entity/backend method name
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
@@ -95,6 +95,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] add id lookup in remult angular
 [] insert the column selection into the grid button.
 [] figure out why field with basket type in a controller did not work with the combo
+[] move one2many.items to remult angular - and make is a subscriber
 
 
 ## Project to fix

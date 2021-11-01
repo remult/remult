@@ -142,17 +142,36 @@ class ExpressBridge {
     for (const e of allEntities) {
       let meta = r.repo(e).metadata;
       let key = getEntityKey(e);
-
+      let parameters = [];
       if (key) {
         let properties: any = {};
         for (const f of meta.fields) {
+          let type = f.valueType == String ? "string" :
+            f.valueType == Boolean ? "boolean" :
+              f.valueType == Date ? "string" :
+                f.valueType == Number ? "number" :
+                  "object";
           properties[f.key] = {
-            "type": f.valueType == String ? "string" :
-              f.valueType == Boolean ? "boolean" :
-                f.valueType == Date ? "string" :
-                  f.valueType == Number ? "number" :
-                    "object"
+            type
           }
+          parameters.push({
+            "name": f.key,
+            "in": "query",
+            "description": "filter equal to " + f.key,
+            "required": false,
+            "style": "simple",
+            type
+          });
+          parameters.push({
+            "name": f.key + "_ne",
+            "in": "query",
+            "description": "filter not equal to " + f.key,
+            "required": false,
+            "style": "simple",
+            type
+          });
+
+
         }
         spec.definitions[key] = {
           type: "object",
@@ -176,35 +195,33 @@ class ExpressBridge {
           description: "return an array of " + key + ". supports filter operators. For more info on filtering [see this article](https://remult.dev/blog/rest-api.html#filter)",
           parameters: [{
             "name": "_limit",
-            "in": "path",
+            "in": "query",
             "description": "limit the number of returned rows, default 100",
             "required": false,
-            "example": "25",
+            "style": "simple",
             "type": "int"
           },
           {
             "name": "_page",
-            "in": "path",
+            "in": "query",
             "description": "to be used for paging",
             "required": false,
             "type": "int"
           },
           {
             "name": "_sort",
-            "in": "path",
+            "in": "query",
             "description": "the columns to sort on",
-            "example": "name,id",
             "required": false,
             "type": "string"
           },
           {
-            "name": "_order ",
-            "in": "path",
+            "name": "_order",
+            "in": "query",
             "description": "the sort order to user for the columns in `_sort`",
-            "example": "desc,asc",
             "required": false,
             "type": "string"
-          }],
+          }, ...parameters],
           responses: {
             "200": {
               "description": "returns an array of " + key,
@@ -334,7 +351,7 @@ class ExpressBridge {
         post: secureBase(b.allowed, false, {
 
           "produces": ["application/json"],
-
+          "tags":[b.tag],
           "requestBody": {
             "content": {
               "application/json": {
@@ -386,7 +403,7 @@ class ExpressBridge {
     return spec;
   }
   /* internal */
-  backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any> }[] = [];
+  backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any>, tag: string }[] = [];
 
 
   constructor(private app: express.Router, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
@@ -501,7 +518,14 @@ export class SiteArea {
   }) {
     action.__register((url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
       let myUrl = this.rootUrl + '/' + url;
-      this.bridge.backendMethodsOpenApi.push({ path: myUrl, allowed });
+      let tag = (() => {
+        let split = url.split('/');
+        if (split.length == 1)
+          return 'Static Backend Methods';
+        else
+          return split[0];
+      })();
+      this.bridge.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.logApiEndpoints)
         console.log(myUrl);
       if (queue) {
