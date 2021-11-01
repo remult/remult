@@ -63,7 +63,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "~6.6.0",
     "swagger-ui-express": "^4.1.6",
-    "uuid": "^3.3.2",
+    "uuid": "^8.3.2",
     "zone.js": "~0.11.3"
   },
   "devDependencies": {

@@ -12,7 +12,7 @@
     "name": "Noam Honig"
   },
   "dependencies": {
-    "uuid": "^3.3.2",
+    "uuid": "^8.3.2",
     "body-parser": "^1.18.3",
     "reflect-metadata": "^0.1.13"
   }
