@@ -70,7 +70,7 @@ export function remultExpress(
   }
 
   return Object.assign(app, {
-    getRemult: () => bridge.getRemult(),
+    getRemult: (req) => bridge.getRemult(req),
     openApiDoc: (options: { title: string }) => bridge.openApiDoc(options),
     addArea: x => bridge.addArea(x)
   });
