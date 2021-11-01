@@ -47,10 +47,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[] expressRemult - do something with app use
+[V] expressRemult - do something with app use
 [] adjust swagger to show that you can filter.
 [] check why limit and page don't work from swagger
+[] move one2many.items to remult angular - and make is a subscriber
+
 [] check why update object value with null didn't update the database in hugmom
+[] fix sending of remult in argument - to work
 [] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
 [] change entity backend methods to be entity/backend method name
 [] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
@@ -74,6 +77,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 [] graphql
+    []doesn't like entity names with -
     [] work on dates
     [] ne of many (same as not in, may require different api)
     [] maybe equal and in should be the saml api
@@ -138,6 +142,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] rethink entity inheritence - saving of child overwritten the saving of base
+[] reconsider type FieldValidator - that hides lambda
 [] check why realworld - allowApiInsert - the first param was any.
 [] db migrations
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...

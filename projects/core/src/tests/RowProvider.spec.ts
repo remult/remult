@@ -1443,7 +1443,7 @@ describe("relation", () => {
     let r = new OneToMany(c, {
       where: x => x.description.isEqualTo("x")
     });
-    let arr = r.items;
+    let arr = r.lazyItems;
     expect(arr.length).toBe(0);
     await r.load();
     expect(arr.length).toBe(2);

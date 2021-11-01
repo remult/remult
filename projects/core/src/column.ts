@@ -155,7 +155,7 @@ export class OneToMany<T>{
   }
   private _items: T[];
   private _currentPromise: Promise<T[]>;
-  get items() {
+  get lazyItems() {
     this.load();
     return this._items;
   }
