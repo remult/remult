@@ -6,15 +6,16 @@ To add graphql to a `remult` application follow these steps:
    npm i graphql express-graphql
       ```
 2. In the `/src/server/index.ts` file add the following code:
-   ```ts{2-4,8-14}
+   ```ts{2-4,8-15}
    import express from 'express';
    import { buildSchema } from 'graphql';
    import { graphqlHTTP } from 'express-graphql';
    import { remultGraphql } from 'remult/graphql';
-   import { initExpress } from 'remult/server';
+   import { remultExpress } from 'remult/remult-express';
    
    let app = express();
-   let api = initExpress(app);
+   let api = remultExpress();
+   app.use(api);
    const { schema, rootValue } = remultGraphql(api);
    app.use('/api/graphql', graphqlHTTP({
        schema: buildSchema(schema),

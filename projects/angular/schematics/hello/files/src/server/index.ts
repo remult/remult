@@ -1,7 +1,7 @@
 //import { CustomModuleLoader } from '../../../../../../repos/radweb/src/app/server/CustomModuleLoader';
 //let moduleLoader = new CustomModuleLoader('/dist-server/repos/radweb/projects/');
 import * as express from 'express';
-import { initExpress } from 'remult/server';
+import { remultExpress } from 'remult/remult-express';
 import { config } from 'dotenv';
 import sslRedirect from 'heroku-ssl-redirect'
 import { createPostgresConnection } from 'remult/postgres';
@@ -31,9 +31,10 @@ async function startup() {
             return createPostgresConnection({ configuration: "heroku" })
         return undefined;
     }
-    let api = initExpress(app, {
+    let api = remultExpress({
         dataProvider
     });
+    app.use(api);
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(api.openApiDoc({ title: 'remult-react-todo' })));
 

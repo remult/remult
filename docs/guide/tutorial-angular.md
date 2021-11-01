@@ -84,10 +84,10 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    *src/server/index.ts*
    ```ts
    import * as express from 'express';
-   import { initExpress } from 'remult/server';
+   import { remultExpress } from 'remult/remult-express';
 
    const app = express();
-   initExpress(app);
+   app.use(remultExpress());
    app.listen(3002, () => console.log("Server started"));
    ```
 
@@ -899,7 +899,7 @@ In this section, we'll be using the following packages:
    import * as express from 'express';
    import * as expressJwt from 'express-jwt';
    import { getJwtTokenSignKey } from '../app/auth.service';
-   import { initExpress } from 'remult/server';
+   import { remultExpress } from 'remult/remult-express';
    import '../app/task';
    import '../app/tasks.service';
    
@@ -909,7 +909,7 @@ In this section, we'll be using the following packages:
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   initExpress(app);
+   app.use(remultExpress());
    app.listen(3002, () => console.log("Server started"));
    ```
 
@@ -1066,7 +1066,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    import { getJwtTokenSignKey } from '../app/auth.service';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
-   import { initExpress } from 'remult/server';
+   import { remultExpress } from 'remult/remult-express';
    import '../app/task';
    import '../app/tasks.service';
    
@@ -1078,7 +1078,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   initExpress(app);
+   app.use(remultExpress());
    app.use(express.static('dist'));       
    app.use('/*', async (req, res) => {
       res.sendFile('./dist/remult-angular-todo/index.html');
@@ -1125,7 +1125,7 @@ For this tutorial, we will use `postgres` as a production database.
    import * as sslRedirect from 'heroku-ssl-redirect'
    import { createPostgresConnection } from 'remult/postgres';
    import { getJwtTokenSignKey } from '../app/auth.service';
-   import { initExpress } from 'remult/server';
+   import { remultExpress } from 'remult/remult-express';
    import '../app/task';
    import '../app/tasks.service';
    
@@ -1143,9 +1143,9 @@ For this tutorial, we will use `postgres` as a production database.
            return createPostgresConnection({ configuration: "heroku" })
        return undefined;
    }
-   initExpress(app, {
+   app.use(remultExpress({
        dataProvider
-   });
+   }));
    app.use(express.static('dist'));
    app.use('/*', async (req, res) => {
       res.sendFile('./dist/remult-angular-todo/index.html');

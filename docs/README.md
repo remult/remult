@@ -77,10 +77,10 @@ npm i remult
 ## API Setup using Express
 ```ts
 import * as express from 'express';
-import { initExpress } from 'remult/server';
+import { remultExpress } from 'remult/remult-express';
 import 'entities';
 
 let app = express();
-initExpress(app);
+app.use(remultExpress());
 app.listen(3002, () => console.log("Server started"));
 ```
