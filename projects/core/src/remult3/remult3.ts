@@ -54,10 +54,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] change entity backend methods to be entity/backend method name
 
 
-[] check why update object value with null didn't update the database in hugmom
+[V] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
+[V] check why update object value with null didn't update the database in hugmom
 [V] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
 
-[] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
 [] write an article about the different usages of backend method:

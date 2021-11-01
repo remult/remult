@@ -18,17 +18,9 @@ import { timer } from 'rxjs';
   styleUrls: ['./products.component.scss']
   //,changeDetection: ChangeDetectionStrategy.OnPush
 })
-
-
-
-
 @DialogConfig({
   height: '1500px'
-
 })
-
-
-
 export class ProductsComponent implements OnInit {
   page = 0;
   constructor(private remult: Remult) {
@@ -46,13 +38,13 @@ export class ProductsComponent implements OnInit {
     this.page++;
     this.load();
   }
-  
+
   @BackendMethod({ allowed: true })
   static async myMethod(remult?: Remult) {
 
   }
   @BackendMethod({ allowed: true })
-   async myMethod2(remult?: Remult) {
+  async myMethod2(remult?: Remult) {
 
   }
   async run() {
@@ -62,7 +54,7 @@ export class ProductsComponent implements OnInit {
     let z = this.repo.iterate()[Symbol.asyncIterator]();
 
     let r = await z.next();
-    
+
 
 
 
@@ -75,6 +67,7 @@ export class ProductsComponent implements OnInit {
 @Entity<stam>('stam', {
   allowApiCrud: true,
   saving: self => {
+    console.log(self.test);
     if (isBackend() && false) {
       var x = undefined;
       x.toString();
@@ -87,6 +80,10 @@ export class stam extends IdEntity {
   name: string;
   @DateOnlyField({ allowNull: true })
   stamDate?: Date
+
+  @Field({ serverExpression: () => 'noam' })
+  test: string = '';
+
   @BackendMethod({ allowed: true })
   async myMethod(remult?: Remult) {
 
