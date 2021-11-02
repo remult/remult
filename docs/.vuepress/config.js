@@ -69,8 +69,8 @@ module.exports = {
             'architecture',
             'further-learning',
             'VSCode-keyboard-shortcuts',
-            'lazy-loading-of-related-entities',
-            'entity-relations'
+            'entity-relations',
+            'lazy-loading-of-related-entities'
           ]
         },
         {
