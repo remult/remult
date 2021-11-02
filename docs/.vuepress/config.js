@@ -71,7 +71,9 @@ module.exports = {
             'VSCode-keyboard-shortcuts',
             'entity-relations',
             'backendMethods',
+            'field-types',
             'lazy-loading-of-related-entities'
+
           ]
         },
         {
