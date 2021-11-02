@@ -27,7 +27,7 @@ export class ProductsComponent implements OnInit {
 
   }
   ngOnInit(): void {
-    ProductsComponent.myMethod(this.remult);
+    new Remult(axios).repo(stam).create({ name: '1234' }).save().then(y => console.log(y));
   }
   items: stam[] = [];
   repo = this.remult.repo(stam);
