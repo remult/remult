@@ -1,4 +1,4 @@
-# Using Node JS Packages (server only)
+# Backend only code
 One of the core advantages of remult is that you write your code once and it runs both on the server and in the browser.
 
 Although this can useful for most cases, if you are using an npm package that only makes sense in the remult of the Node JS Server and wouldn't work in a browser, the fact that the same code "compiles" both to the server and the client can cause problems.

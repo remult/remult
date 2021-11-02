@@ -61,18 +61,9 @@ module.exports = {
           title: 'Blog',
           collapsable: false,
           children: [
-            'adding-swagger',
-            'adding-graphql',
-            'using-server-only-packages',
-            'running-sql-on-the-server',
-            'rest-api',
             'architecture',
             'further-learning',
-            'VSCode-keyboard-shortcuts',
-            'entity-relations',
-            'backendMethods',
-            'field-types',
-            'lazy-loading-of-related-entities'
+            'VSCode-keyboard-shortcuts'
 
           ]
         },
@@ -106,7 +97,28 @@ module.exports = {
           collapsable: false,
           children: [
             'tutorial-react',
-            'tutorial-angular',
+            'tutorial-angular'
+          ]
+        },
+        {
+          title: 'Concepts',
+          collapsable: false,
+          children: [
+            'entity-relations',
+            'backendMethods',
+            'field-types'
+          ]
+        },
+        {
+          title: 'Advanced Topics',
+          collapsable: false,
+          children: [
+            'rest-api',
+            'adding-swagger',
+            'adding-graphql',
+            'lazy-loading-of-related-entities',
+            'using-server-only-packages',
+            'running-sql-on-the-server'
           ]
         },
         {

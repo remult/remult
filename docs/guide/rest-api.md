@@ -1,4 +1,4 @@
-# Using the rest api
+# Entity Rest Api Breakdown
 
 All entities automatically expose a rest api based on the parameters defined in it's decorator.
 
