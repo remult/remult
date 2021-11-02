@@ -10,7 +10,7 @@ The rule is, if the user can run the `BackendMethod` using it's `allowed` option
 There are three different kinds of backend methods
 1. static backend method
 2. entity backend method
-3. controller backend method.
+3. controller backend method
 
 ## static backend method
 A static backend method, is the simplest kind, it will send it's parameters to the `back-end`, and will return it's result to the `front-end`.

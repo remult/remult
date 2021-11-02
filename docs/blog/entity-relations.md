@@ -22,7 +22,7 @@ and we'll use it as a field in the `Task` entity.
 
 Note that we set the `valueType` option of the `Field` decorator, because `create-react-app` doesn't support `emitDecoratorMetadata` 
 
-```ts{2,12-15}
+```ts{2,12-13}
 import { Entity, Field, IdEntity } from "remult";
 import { Category } from "./Category";
 
@@ -34,9 +34,7 @@ export class Task extends IdEntity {
     title: string = '';
     @Field()
     completed: boolean = false;
-    @Field(options => {
-        options.valueType = Category;
-    })
+    @Field(options => options.valueType = Category )
     category?: Category;
 }
 ```

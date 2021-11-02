@@ -150,6 +150,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] reconsider type FieldValidator - that hides lambda
 [] check why realworld - allowApiInsert - the first param was any.
 [] db migrations
+[] should fieldType automatically serialize it's Fields?
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
 
 
