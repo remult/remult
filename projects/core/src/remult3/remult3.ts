@@ -144,6 +144,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] react metadata doesn't really work - and you need to specify the "valueType: Category"
+[] the problem with ? and null and ! - imagine task has a Category property that is an entity - category? doesn't allow null - and undefined should be have ?
 [] rethink entity inheritence - saving of child overwritten the saving of base
 [] reconsider type FieldValidator - that hides lambda
 [] check why realworld - allowApiInsert - the first param was any.

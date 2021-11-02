@@ -40,7 +40,7 @@ module.exports = {
       {
         text: 'Blog',
         link: '/blog/',
-      }, 
+      },
       /*  {
           text: 'Tutorials',
           link: '/tutorials/',
@@ -68,7 +68,9 @@ module.exports = {
             'rest-api',
             'architecture',
             'further-learning',
-            'VSCode-keyboard-shortcuts'
+            'VSCode-keyboard-shortcuts',
+            'lazy-loading-of-related-entities',
+            'entity-relations'
           ]
         },
         {
@@ -86,7 +88,7 @@ module.exports = {
             'angular-for-non-web-developers',
             'adding-an-angular-component-and-route',
             'dialog'
-          //  'grid-settings-and-data-grid',
+            //  'grid-settings-and-data-grid',
           ]
         }],
       '/guide/': [
