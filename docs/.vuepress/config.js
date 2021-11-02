@@ -70,6 +70,7 @@ module.exports = {
             'further-learning',
             'VSCode-keyboard-shortcuts',
             'entity-relations',
+            'backendMethods',
             'lazy-loading-of-related-entities'
           ]
         },
