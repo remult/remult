@@ -38,57 +38,75 @@ export class Filter {
         let result: Filter[] = [];
         for (const key in whereItem) {
             if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
-                const element: any = whereItem[key];
+                const fieldToFilter: any = whereItem[key];
                 {
-                    if (key == "OR") {
-                        result.push(new OrFilter(...element.map(x => Filter.build(entity, x))))
+                    if (key == "$or") {
+                        result.push(new OrFilter(...fieldToFilter.map(x => Filter.build(entity, x))))
+
+                    } else if (key == "$and") {
+                        result.push(new AndFilter(...fieldToFilter.map(x => Filter.build(entity, x))))
 
                     } else if (key.startsWith(customUrlToken)) {
                         result.push(new Filter(x => {
-                            x.custom(key.substring(customUrlToken.length), element);
+                            x.custom(key.substring(customUrlToken.length), fieldToFilter);
                         }))
                     } else if (key == customDatabaseFilterToken) {
-                        result.push(new Filter(x => x.databaseCustom(element)));
+                        result.push(new Filter(x => x.databaseCustom(fieldToFilter)));
                     }
                     else {
                         let fh = entity[key] as (ContainsFilterFactory<any> & ComparisonFilterFactory<any>);
                         let found = false;
-                        if (element !== undefined && element != null) {
-                            if (element.gte) {
-                                result.push(fh.isGreaterOrEqualTo(element.gte));
-                                found = true;
-                            }
-                            if (element.gt) {
-                                result.push(fh.isGreaterThan(element.gt));
-                                found = true;
-                            }
-                            if (element.lte) {
-                                result.push(fh.isLessOrEqualTo(element.lte));
-                                found = true;
-                            }
-                            if (element.lt) {
-                                result.push(fh.isLessThan(element.lt));
-                                found = true;
-                            }
-                            if (element.ne) {
-                                found = true;
-                                if (Array.isArray(element.ne)) {
-                                    result.push(fh.isNotIn(element.ne));
+                        if (fieldToFilter !== undefined && fieldToFilter != null) {
+                            for (const key in fieldToFilter) {
+                                if (Object.prototype.hasOwnProperty.call(fieldToFilter, key)) {
+                                    const element = fieldToFilter[key];
+                                    switch (key) {
+                                        case "$gte":
+                                        case ">=":
+                                            result.push(fh.isGreaterOrEqualTo(element));
+                                            found = true;
+                                            break;
+                                        case "$gt":
+                                        case ">":
+
+                                            result.push(fh.isGreaterThan(element));
+                                            found = true;
+                                            break;
+                                        case "$lte":
+                                        case "<=":
+                                            result.push(fh.isLessOrEqualTo(element));
+                                            found = true;
+                                            break;
+                                        case "$lt":
+                                        case "<":
+
+                                            result.push(fh.isLessThan(element));
+                                            found = true;
+                                            break
+                                        case "$ne":
+                                        case "!=":
+                                            found = true;
+                                            if (Array.isArray(element)) {
+                                                result.push(fh.isNotIn(element));
+                                            }
+                                            else
+                                                result.push(fh.isDifferentFrom(element));
+                                            break;
+                                        case "$contains":
+                                            found = true;
+                                            result.push(fh.contains(element));
+                                            break;
+                                    }
                                 }
-                                else
-                                    result.push(fh.isDifferentFrom(element.ne));
                             }
-                            if (element.contains) {
+
+                            if (Array.isArray(fieldToFilter)) {
                                 found = true;
-                                result.push(fh.contains(element.contains));
-                            }
-                            if (Array.isArray(element)) {
-                                found = true;
-                                result.push(fh.isIn(element));
+                                result.push(fh.isIn(fieldToFilter));
                             }
                         }
                         if (!found) {
-                            result.push(fh.isEqualTo(element));
+                            result.push(fh.isEqualTo(fieldToFilter));
                         }
 
                     }

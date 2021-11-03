@@ -24,7 +24,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({ where: { categoryName: { gte: "n" } } })) {
+        for await (const x of c.iterate({ where: { categoryName: { $gte: "n" } } })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
         }
         expect(i).toBe(4);
@@ -156,12 +156,12 @@ describe("test paged foreach ", () => {
             expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, await eDefs.createAfterFilter(orderBy, e)))).toEqual(
                 JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere)));
         }
-        test(x => x.a, { a: { gt: 'a' } });
-        test(x => [x.a.descending()], { a: { lt: 'a' } });
+        test(x => x.a, { a: { $gt: 'a' } });
+        test(x => [x.a.descending()], { a: { $lt: 'a' } });
         test(x => [x.a, x.b], {
-            OR: [
-                { a: { gt: 'a' } },
-                { a: 'a', b: { gt: 'b' } }
+            $or: [
+                { a: { $gt: 'a' } },
+                { a: 'a', b: { $gt: 'b' } }
             ]
         });
 
@@ -181,9 +181,9 @@ describe("test paged foreach ", () => {
         e.b = '2';
         expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
             JSON.stringify(await entityFilterToJson<theTable>(eDefs.metadata, {
-                OR: [
-                    { a: { gt: 'a' } },
-                    { a: 'a', b: { gt: 'b' } }]
+                $or: [
+                    { a: { $gt: 'a' } },
+                    { a: 'a', b: { $gt: 'b' } }]
             })));
 
     });
@@ -198,13 +198,13 @@ describe("test paged foreach ", () => {
         }
         await test(
             {
-                OR: [
+                $or: [
                     {
                         a: 'a',
-                        b: { gt: 'b' }
+                        b: { $gt: 'b' }
                     },
                     {
-                        a: { gt: 'a' }
+                        a: { $gt: 'a' }
                     }
                 ]
             },
@@ -222,7 +222,7 @@ describe("test paged foreach ", () => {
         await test(
             {
                 a: 'a',
-                b: { gt: 'b' }
+                b: { $gt: 'b' }
             },
             {
                 a: 'a',
@@ -230,9 +230,9 @@ describe("test paged foreach ", () => {
             });
         await test(
             {
-                OR: [
+                $or: [
                     { a: 'a' },
-                    { b: { gt: 'b' } }]
+                    { b: { $gt: 'b' } }]
             },
             {
                 OR: [

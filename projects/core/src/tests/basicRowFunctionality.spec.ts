@@ -307,7 +307,7 @@ describe("data api", () => {
     async ({ db }) => {
 
       let s = await create4RowsInDp(remult, db);
-      expect((await s.find({ where: { OR: [{ myId: 1 }, { myId: 3 }] } })).length).toBe(2);
+      expect((await s.find({ where: { $or: [{ myId: 1 }, { myId: 3 }] } })).length).toBe(2);
 
     }));
 
@@ -1593,7 +1593,7 @@ describe("column validation", () => {
     p = await f.findFirst({ where: { c3: d } });
     f.findFirst({ c3: d });
     expect(p.name).toBe('1');
-    p = await f.findFirst(() => [{ c3: { ne: d } }]);
+    p = await f.findFirst(() => [{ c3: { $ne: d } }]);
     expect(p.name).toBe('2');
   });
 

@@ -465,7 +465,7 @@ describe("test row provider", () => {
       rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { description: 'y', categoryName: 'yoni' })) });
       expect(rows.length).toBe(1);
       expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: { ne: [2, 4] } })) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: { $ne: [2, 4] } })) });
       expect(rows.length).toBe(2);
     })
 
@@ -481,7 +481,7 @@ describe("test row provider", () => {
     });
     rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: [1, 3] })) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: { ne: [1, 2, 3] } })) });
+    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: { $ne: [1, 2, 3] } })) });
     expect(rows.length).toBe(1);
 
   });

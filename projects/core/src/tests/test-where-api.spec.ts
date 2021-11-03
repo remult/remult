@@ -22,45 +22,52 @@ describe("test where stuff", () => {
         [repo] = await insertFourRows();
         done();
     });
+    it("test and", async () => {
+        expect(await repo.count({ categoryName: 'yoni' })).toBe(1);
+        expect(await repo.count({ id: 1 })).toBe(1);
+        expect(await repo.count({ id: 1, categoryName: 'yoni' })).toBe(0);
+        expect(await repo.count({ id: 1, $and: [{ categoryName: 'yoni' }] })).toBe(0);
+        expect(await repo.count({ $and: [{ id: 1 }, { categoryName: 'yoni' }] })).toBe(0);
+    });
 
     it("test basics", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
-        expect(await repo.count(async y => [{ id: { lte: 3 } }, await Filter.fromEntityFilter(y, fo.where)])).toBe(2);
-        expect(await repo.count(y => Filter.fromEntityFilter(y, fo.where, { id: { lte: 3 } }))).toBe(2);
-        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(async y => [{ id: { $lte: 3 } }, await Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(y => Filter.fromEntityFilter(y, fo.where, { id: { $lte: 3 } }))).toBe(2);
+        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
     });
     it("test basics_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: { id: { gte: 2 } }
+            where: { id: { $gte: 2 } }
         };
-        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
+        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
     });
     it("test basics_2_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(async y => Filter.build(y, { id: { lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
+        expect(await repo.count(async y => Filter.build(y, { id: { $lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
     });
     it("test basics_2_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(async y => Filter.build(y, { id: { lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
+        expect(await repo.count(async y => Filter.build(y, { id: { $lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
     });
     it("test basics_2_1", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => Promise.resolve(Filter.build(x, { id: { gte: 2 } }))
+            where: x => Promise.resolve(Filter.build(x, { id: { $gte: 2 } }))
         };
-        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
+        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
     });
     it("test basics_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
     });
 
 
@@ -122,7 +129,7 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count( SqlDatabase.customFilter(async x => x.sql = await c.metadata.fields.id.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
+        expect(await (c.count(SqlDatabase.customFilter(async x => x.sql = await c.metadata.fields.id.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
         expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
@@ -144,7 +151,7 @@ describe("custom filter", () => {
         }
         "".toString();
         expect(await (c.count({
-            OR: [entityForCustomFilter.filter({ dbOneOrThree: true }), { id: 4 }]
+            $or: [entityForCustomFilter.filter({ dbOneOrThree: true }), { id: 4 }]
         }))).toBe(3);
     });
     it("test sent in api", async () => {
@@ -294,8 +301,8 @@ class entityForCustomFilter extends EntityBase {
             r.push(Filter.build(e, SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")")).and(
                 Filter.build(e, ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))
             ))
-}
-return r;
+        }
+        return r;
     });
     static oneAndThree = Filter.createCustom<entityForCustomFilter>((e) => Filter.build(e, { id: [1, 3] }));
     static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => Filter.build(e, { id: val }));

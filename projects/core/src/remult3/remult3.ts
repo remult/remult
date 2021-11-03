@@ -339,17 +339,17 @@ export declare type EntityFilter<entityType> = FilterRule<entityType> |
 
 
 interface otherFilters<T> {
-    ne?: T | T[],
+    $ne?: T | T[],
 
 }
 interface otherComparisonFilters<T> extends otherFilters<T> {
-    gt?: T,
-    gte?: T,
-    lt?: T,
-    lte?: T
+    $gt?: T,
+    $gte?: T,
+    $lt?: T,
+    $lte?: T
 }
 interface stringFilter extends otherFilters<string>, otherComparisonFilters<string> {
-    contains?: string,
+    $contains?: string,
 
 }
 
@@ -362,9 +362,9 @@ export type FilterRule1<entityType> = {
 
 export type FilterRule<entityType> = FilterRule1<entityType> & FilterRuleWithOr<entityType>;
 export interface FilterRuleWithOr<entityType> {
-    OR?: FilterRule<entityType>[]
+    $or?: FilterRule<entityType>[];
+    $and?:FilterRule<entityType>[];
     //NOT
-    //AND
 }
 
 
