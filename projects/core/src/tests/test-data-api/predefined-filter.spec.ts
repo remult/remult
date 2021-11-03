@@ -182,7 +182,7 @@ describe("", () => {
     expect(r[0].id).toBe(2, 'value of first row');
     expect(await c.count()).toBe(1, 'count');
     expect(await c.iterate({ where: { id: 1 } }).first()).toBe(undefined, 'find first');
-    expect((await c.findFirst({ createIfNotFound: true, where: { id: 1 } }))._.isNew()).toBe(true, 'lookup ');
+    expect((await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew()).toBe(true, 'lookup ');
   });
 })
 

@@ -103,8 +103,8 @@ describe("custom filter", () => {
                 await c.create({ id }).save();
             }
             expect(await (c.count(entityForCustomFilter.oneAndThree()))).toBe(2);
-            expect((await (c.findFirst(() => [entityForCustomFilter.testNumericValue(2)]))).id).toBe(2);
-            expect((await (c.findFirst(() => [entityForCustomFilter.testObjectValue({ val: 2 })]))).id).toBe(2);
+            expect((await (c.findFirst(entityForCustomFilter.testNumericValue(2)))).id).toBe(2);
+            expect((await (c.findFirst(entityForCustomFilter.testObjectValue({ val: 2 })))).id).toBe(2);
         })
 
     );
@@ -116,8 +116,8 @@ describe("custom filter", () => {
                 await c.create({ id }).save();
             }
             expect(await (c.count(entityForCustomFilter1.oneAndThree()))).toBe(2);
-            expect((await (c.findFirst(() => [entityForCustomFilter1.testNumericValue(2)]))).id).toBe(2);
-            expect((await (c.findFirst(() => [entityForCustomFilter1.testObjectValue({ val: 2 })]))).id).toBe(2);
+            expect((await (c.findFirst(entityForCustomFilter1.testNumericValue(2)))).id).toBe(2);
+            expect((await (c.findFirst(entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
         })
 
     );
@@ -369,7 +369,7 @@ describe("missing fields are added in array column", async () => {
         let rep = r.repo(task);
         expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count({ completed: false })).toBe(2);
-        let t = (await rep.findFirst(() => [{ title: 't1' }]));
+        let t = (await rep.findFirst({ title: 't1' }));
         expect(t.completed).toBe(false);
         t.completed = undefined;
         await t.save();
@@ -400,7 +400,7 @@ describe("missing fields are added in array column", async () => {
         let rep = r.repo(taskWithNull);
         expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count({ completed: false })).toBe(0);
-        let t = (await rep.findFirst(() => [{ title: 't1' }]));
+        let t = (await rep.findFirst({ title: 't1' }));
         expect(t.completed).toBe(undefined);
         t.completed = undefined;
         await t.save();

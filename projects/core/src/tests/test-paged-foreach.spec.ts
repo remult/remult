@@ -269,7 +269,7 @@ describe("test paged foreach ", () => {
         let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
 
         await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
-        expect((await remult.repo(p).findFirst({ where: { c: c1 } })).id).toBe(1);
+        expect((await remult.repo(p).findFirst({ c: c1 })).id).toBe(1);
     }))
 })
 

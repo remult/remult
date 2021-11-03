@@ -45,9 +45,9 @@ describe("test object column", () => {
         x = await remult.repo(ObjectColumnTest).findFirst();
         expect(x.col.firstName).toBe('noam');
 
-        x = await remult.repo(ObjectColumnTest).findFirst(x => x.col.contains("yael"));
+        x = await remult.repo(ObjectColumnTest).findFirst({ col: { $contains: "yael" } });
         expect(x).toBeUndefined();
-        x = await remult.repo(ObjectColumnTest).findFirst(x => x.col.contains("noam"));
+        x = await remult.repo(ObjectColumnTest).findFirst({ col: { $contains: "noam" } });
         expect(x.id).toBe(1);
 
         expect(x.phone1).toBeNull();

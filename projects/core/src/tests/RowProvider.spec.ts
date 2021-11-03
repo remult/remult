@@ -780,7 +780,7 @@ describe("test row provider", () => {
     let [c] = await insertFourRows();
 
 
-    let r = await c.findFirst({ createIfNotFound: true, where: { categoryName: undefined } });
+    let r = await c.findFirst({ categoryName: undefined }, { createIfNotFound: true });
     expect(r.categoryName).toBe(undefined);
 
   });
@@ -831,11 +831,11 @@ describe("test row provider", () => {
     let r = lookup.get(c => c.id.isEqualTo(1));
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
-    r = await c.findFirst({ createIfNotFound: true, where: { id: 1 } });
+    r = await c.findFirst({ id: 1 }, { createIfNotFound: true });
     expect(r._.isNew()).toBe(false);
     await r._.delete();
     expect(await c.count()).toBe(0);
-    r = await c.findFirst({ createIfNotFound: true, where: { id: 1 } });
+    r = await c.findFirst({ id: 1 }, { createIfNotFound: true });
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
     await r._.save();

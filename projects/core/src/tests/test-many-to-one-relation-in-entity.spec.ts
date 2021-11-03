@@ -63,8 +63,7 @@ class profile extends EntityBase {
     @Field()
     id: string;
     async rel() {
-        return this.remult.repo(following).findFirst({
-            where: { id: '1', profile: this },
+        return this.remult.repo(following).findFirst({ id: '1', profile: this }, {
             createIfNotFound: true
         })
 
@@ -132,8 +131,8 @@ describe("many to one relation", () => {
         let category = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         await remult.repo(Products).create({ id: 1, name: 'p1', category }).save();
         remult.clearAllCache();
-        let p = await remult.repo(ProductsEager).findFirst({
-            where: { id: 1 },
+        let p = await remult.repo(ProductsEager).findFirst({ id: 1 }, {
+
             load: () => []
         });
         expect(p.category).toBe(undefined);
@@ -518,7 +517,7 @@ describe("many to one relation", () => {
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
-        let p = await remult.repo(Products).findFirst({ createIfNotFound: true, where: { id: 10, category: cat } });
+        let p = await remult.repo(Products).findFirst({ id: 10, category: cat }, { createIfNotFound: true });
         expect(p.isNew()).toBe(true);
         expect(p.id).toBe(10);
         expect((await p.$.category.load()).id).toBe(cat.id);

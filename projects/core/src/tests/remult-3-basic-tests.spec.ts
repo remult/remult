@@ -37,8 +37,8 @@ describe("remult-3-basics", () => {
             where: { id: 2 }
         });
         expect(products[0].name).toBe("yael");
-        p = await c.repo(Products).findFirst(() => [{ id: 3 }]);
-        p = await c.repo(Products).findFirst({ where: { id: 3 } });
+        p = await c.repo(Products).findFirst({ id: 3 });
+        p = await c.repo(Products).findFirst({},{ where: { id: 3 } });
         expect(p.name).toBe("yoni");
     });
 });

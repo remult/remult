@@ -79,7 +79,6 @@ export class Filter {
                                             break;
                                         case "$lt":
                                         case "<":
-
                                             result.push(fh.isLessThan(element));
                                             found = true;
                                             break

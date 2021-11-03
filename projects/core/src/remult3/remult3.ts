@@ -291,7 +291,7 @@ export interface Repository<entityType> {
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
     iterate(options?: IterateOptions<entityType>): IterableResult<entityType>;
-    findFirst(whereOrOptions?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
+    findFirst(where?: FilterRule<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
     create(item?: Partial<entityType>): entityType;
@@ -340,15 +340,20 @@ export declare type EntityFilter<entityType> = FilterRule<entityType> |
 
 interface otherFilters<T> {
     $ne?: T | T[],
+    "!="?: T | T[],
 
 }
 interface otherComparisonFilters<T> extends otherFilters<T> {
     $gt?: T,
+    ">"?: T,
     $gte?: T,
+    ">="?: T,
     $lt?: T,
+    "<"?: T,
     $lte?: T
+    "<="?: T
 }
-interface stringFilter extends otherFilters<string>, otherComparisonFilters<string> {
+interface containsStringFilter {
     $contains?: string,
 
 }
@@ -356,14 +361,15 @@ interface stringFilter extends otherFilters<string>, otherComparisonFilters<stri
 export type FilterRule1<entityType> = {
     [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
         entityType[Properties] extends number | Date ? otherComparisonFilters<entityType[Properties]> :
-        entityType[Properties] extends string ? stringFilter :
-        otherFilters<entityType[Properties]>);
+        entityType[Properties] extends string ? containsStringFilter & otherComparisonFilters<string> :
+        entityType[Properties] extends boolean ? otherFilters<boolean> :
+        otherFilters<entityType[Properties]>) & containsStringFilter;
 }
 
 export type FilterRule<entityType> = FilterRule1<entityType> & FilterRuleWithOr<entityType>;
 export interface FilterRuleWithOr<entityType> {
     $or?: FilterRule<entityType>[];
-    $and?:FilterRule<entityType>[];
+    $and?: FilterRule<entityType>[];
     //NOT
 }
 

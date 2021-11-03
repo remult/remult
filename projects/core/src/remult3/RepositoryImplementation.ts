@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, FilterRule } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -293,20 +293,22 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
-    async findFirst(options?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType> {
-
-        let opts: FindFirstOptions<entityType> = {};
-        if (options) {
-            if (typeof options === 'function')
-                opts.where = <any>options;
-            else
-                opts = <any>options;
+    async findFirst(where?: FilterRule<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType> {
+        
+        if (!options)
+            options = {};
+        if (where) {
+            if (options.where) {
+                let w = options.where;
+                options.where = async e => Filter.fromEntityFilter(e, w, where);
+            }
+            else options.where = where;
         }
 
         let r: Promise<entityType>;
         let cacheInfo: cacheEntityInfo<entityType>;
-        if (opts.useCache) {
-            let f = await entityFilterToJson(this.metadata, opts.where);
+        if (options.useCache) {
+            let f = await entityFilterToJson(this.metadata, options.where);
             let key = JSON.stringify(f);
             cacheInfo = this.cache.get(key);
             if (cacheInfo !== undefined) {
@@ -325,11 +327,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.iterate(opts).first().then(async r => {
-            if (!r && opts.createIfNotFound) {
+        r = this.iterate(options).first().then(async r => {
+            if (!r && options.createIfNotFound) {
                 r = this.create();
-                if (opts.where) {
-                    await __updateEntityBasedOnWhere(this.metadata, opts.where, r);
+                if (options.where) {
+                    await __updateEntityBasedOnWhere(this.metadata, options.where, r);
                 }
             }
             return r;
@@ -375,7 +377,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             return null;
         if (typeof id !== "string" && typeof id !== "number")
             throw new Error("id can be either number or string, but got: " + typeof (id))
-        return this.findFirst({
+        return this.findFirst({}, {
             useCache: true,
             ...options,
             where: x => this.metadata.idMetadata.getIdFilter(id),

@@ -123,11 +123,11 @@ describe('Test basic row functionality', () => {
   });
   it("Find or Create", async () => {
     let [repo] = await (await createData());
-    let row = await repo.findFirst({ createIfNotFound: true, where: { id: 1 } });
+    let row = await repo.findFirst({ id: 1 }, { createIfNotFound: true });
     expect(row._.isNew()).toBe(true);
     expect(row.id).toBe(1);
     await row._.save();
-    let row2 = await repo.findFirst({ createIfNotFound: true, where: { id: 1 } });
+    let row2 = await repo.findFirst({ id: 1 }, { createIfNotFound: true });
     expect(row2._.isNew()).toBe(false);
     expect(row2.id).toBe(1);
 
@@ -1589,11 +1589,13 @@ describe("column validation", () => {
     p.c3 = d;
     await p._.save();
     await f.create({ name: '2', c3: new Date(2021) }).save();
-    p = await f.findFirst(() => [{ c3: d }]);
-    p = await f.findFirst({ where: { c3: d } });
+    p = await f.findFirst({ c3: d });
+    p = await f.findFirst({ c3: d });
     f.findFirst({ c3: d });
     expect(p.name).toBe('1');
-    p = await f.findFirst(() => [{ c3: { $ne: d } }]);
+    p = await f.findFirst({ c3: { $ne: d } });
+    expect(p.name).toBe('2');
+    p = await f.findFirst({ c3: { "!=": d } });
     expect(p.name).toBe('2');
   });
 
@@ -1648,7 +1650,7 @@ describe("compound id", () => {
       od.a = 99;
       od.b = 1;
       await od._.save();
-      od = await cod.findFirst({ where: { a: 99 } });
+      od = await cod.findFirst({ a: 99 });
       od.c = 5;
       await od._.save();
       await od._.delete();
@@ -1908,11 +1910,11 @@ describe("test number negative", () => {
 describe("cache", () => {
   it("find first useCache", async () => {
     let [r,] = await createData(async i => i(1, "noam"));
-    await r.findFirst({ where: { id: 1 }, useCache: true });
+    await r.findFirst({ id: 1 }, { useCache: true });
     await r.find().then(x => assign(x[0], { categoryName: 'a' }).save());
     expect((await r.findFirst({ id: 1 })).categoryName).toBe("a");
-    expect((await r.findFirst({ where: { id: 1 } })).categoryName).toBe("a");
-    expect((await r.findFirst({ where: { id: 1 }, useCache: true })).categoryName).toBe("noam");
+    expect((await r.findFirst({ id: 1 })).categoryName).toBe("a");
+    expect((await r.findFirst({ id: 1 }, { useCache: true })).categoryName).toBe("noam");
 
   });
   it("find id", async () => {
