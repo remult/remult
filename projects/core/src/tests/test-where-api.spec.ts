@@ -4,7 +4,7 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories, FindOptions, Repository } from '../remult3';
+import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories, FilterRule, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
@@ -291,22 +291,29 @@ class entityForCustomFilter extends EntityBase {
         dbOneOrThree?: boolean,
         two?: boolean
     }>(async (e, remult, c) => {
-        let r: Filter[] = [];
+
+        let r: FilterRule<entityForCustomFilter>[] = [];
         if (c.oneAndThree)
-            r.push(Filter.build(e, { id: [1, 3] }));
+            r.push({ id: [1, 3] });
         if (c.two)
-            r.push(Filter.build(e, { id: 2 }));
+            r.push({ id: 2 });
         if (c.dbOneOrThree) {
 
-            r.push(Filter.build(e, SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")")).and(
-                Filter.build(e, ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))
-            ))
+            r.push(
+                {
+                    $and: [
+                        SqlDatabase.customFilter(async x => x.sql = await e.fields.id.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")"),
+                        ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3)
+
+                    ]
+                }
+            );
         }
-        return r;
+        return { $and: r };
     });
-    static oneAndThree = Filter.createCustom<entityForCustomFilter>((e) => Filter.build(e, { id: [1, 3] }));
-    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => Filter.build(e, { id: val }));
-    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((e, r, val) => Filter.build(e, { id: val.val }));
+    static oneAndThree = Filter.createCustom<entityForCustomFilter>(() => ({ id: [1, 3] }));
+    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => ({ id: val }));
+    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((e, r, val) => ({ id: val.val }));
 }
 @Entity('entityForCustomFilter1', { allowApiCrud: true })
 class entityForCustomFilter1 extends entityForCustomFilter {

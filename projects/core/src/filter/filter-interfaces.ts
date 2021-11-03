@@ -18,9 +18,9 @@ export class Filter {
     or(filter: Filter): Filter {
         return new OrFilter(this, filter);
     }
-    static createCustom<entityType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): (() => FilterRule<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType> {
+    static createCustom<entityType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult) => FilterRule<entityType> | Promise<FilterRule<entityType>>): (() => FilterRule<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => FilterRule<entityType> | Promise<FilterRule<entityType>>): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => FilterRule<entityType> | Promise<FilterRule<entityType>>): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType> {
 
         let customFilterInfo = { key: '', customFilterTranslator };
         return Object.assign((x: any) => {
@@ -158,7 +158,7 @@ export class Filter {
                 const element = entity.entityType[key] as customFilterInfo<any>;
                 if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
                     if (element.customFilterInfo.key == filterKey) {
-                        r.push(await Filter.fromEntityFilter(filterFactories, f => element.customFilterInfo.customFilterTranslator(f, remult, custom)));
+                        r.push(await Filter.fromEntityFilter(filterFactories,  await element.customFilterInfo.customFilterTranslator(entity, remult, custom)));
                     }
                 }
             }
@@ -553,7 +553,7 @@ class customTranslator implements FilterConsumer {
 export interface customFilterInfo<entityType> {
     customFilterInfo: {
         key: string;
-        customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: any) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>);
+        customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: any) => (FilterRule<entityType> | Promise<FilterRule<entityType>>);
     }
 
 }
