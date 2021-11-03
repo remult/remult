@@ -18,8 +18,8 @@ describe("remult-3-basics", () => {
         p.archived = false;
         await c.repo(Products).save(p);
         expect(await c.repo(Products).count()).toBe(1);
-        expect(await c.repo(Products).count(p => p.id.isEqualTo(1))).toBe(1);
-        expect(await c.repo(Products).count(p => p.id.isEqualTo(2))).toBe(0);
+        expect(await c.repo(Products).count({ id: 1 })).toBe(1);
+        expect(await c.repo(Products).count({ id: 2 })).toBe(0);
         p = c.repo(Products).create();
         p.id = 2;
         p.name = "yael";
@@ -34,10 +34,11 @@ describe("remult-3-basics", () => {
         await c.repo(Products).save(p);
         expect(await c.repo(Products).count()).toBe(3);
         let products = await c.repo(Products).find({
-            where: x => x.id.isEqualTo(2)
+            where: { id: 2 }
         });
         expect(products[0].name).toBe("yael");
-        p = await c.repo(Products).findFirst(p => p.id.isEqualTo(3));
+        p = await c.repo(Products).findFirst(() => [{ id: 3 }]);
+        p = await c.repo(Products).findFirst({ where: { id: 3 } });
         expect(p.name).toBe("yoni");
     });
 });

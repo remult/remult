@@ -112,13 +112,10 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 
-    iterate(options?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType> {
+    iterate(options?: IterateOptions<entityType>): IterableResult<entityType> {
         let opts: IterateOptions<entityType> = {};
         if (options) {
-            if (typeof options === 'function')
-                opts.where = <any>options;
-            else
-                opts = <any>options;
+            opts = <any>options;
         }
 
         let cont = this;
@@ -251,12 +248,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     async save(entity: entityType): Promise<entityType> {
         return await this.getEntityRef(entity).save();
     }
-    async find(whereOrOptions?: EntityFilter<entityType> | FindOptions<entityType>): Promise<entityType[]> {
-        let options = whereOrOptions as FindOptions<entityType>;
-        if (typeof whereOrOptions === "function")
-            options = {
-                where: whereOrOptions
-            }
+    async find(options: FindOptions<entityType>): Promise<entityType[]> {
+
         let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
@@ -332,7 +325,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.iterate(options).first().then(async r => {
+        r = this.iterate(opts).first().then(async r => {
             if (!r && opts.createIfNotFound) {
                 r = this.create();
                 if (opts.where) {

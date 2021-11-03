@@ -15,7 +15,7 @@ export class Validators {
 
 
         if (col.entityRef.isNew() || col.valueChanged()) {
-            if (await col.entityRef.repository.count(e => e[col.metadata.key].isEqualTo(col.value)))
+            if (await col.entityRef.repository.count({ [col.metadata.key]: col.value }))
                 col.error = message;
         }
     }, {

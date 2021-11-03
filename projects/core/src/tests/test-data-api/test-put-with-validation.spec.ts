@@ -28,7 +28,7 @@ describe("data api", () => {
             categoryName: 'noam 1'
         });
         d.test();
-        var x = await c.find({ where: c => c.id.isEqualTo(1) });
+        var x = await c.find({ where: { id: 1 } });
         expect(x[0].categoryName).toBe('noam');
 
     });
@@ -77,7 +77,7 @@ describe("data api", () => {
             val: 'yael'
         });
 
-        var x = await c.find({ where: c => c.id.isEqualTo(1) });
+        var x = await c.find({ where: { id: 1 } });
         expect(x[0].val).toBe('noam');
 
     });
@@ -109,12 +109,12 @@ describe("data api", () => {
         await api.put(t, 1, {
             val: 'yael'
         });
-        var x = await c.find({ where: c => c.id.isEqualTo(1) });
+        var x = await c.find({ where: { id: 1 } });
         expect(x[0].val).toBe('yael');
         await api.put(t, 1, {
             val: 'yoni'
         });
-        var x = await c.find({ where: c => c.id.isEqualTo(1) });
+        var x = await c.find({ where: { id: 1 } });
         expect(x[0].val).toBe('yael');
 
     });

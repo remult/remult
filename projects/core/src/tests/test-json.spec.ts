@@ -91,9 +91,9 @@ describe("test tasks", () => {
         t.completed = true;
         await t._.save();
 
-        expect(await c.count(t => t.completed.isDifferentFrom(true))).toBe(1);
-        expect(await c.count(t => t.completed.isEqualTo(true))).toBe(2);
-        expect(await c.count(t => t.completed.isEqualTo(false))).toBe(1);
+        expect(await c.count({ completed: { ne: true } })).toBe(1);
+        expect(await c.count({ completed: true })).toBe(2);
+        expect(await c.count({ completed: false })).toBe(1);
         var api = new DataApi(c, cont);
         let tr = new TestDataApiResponse();
         let d = new Done();

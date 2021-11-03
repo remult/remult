@@ -65,6 +65,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] entity
     [] controller
     [] and usage FieldType - to send complex parameters
+    [] type augmentation
 [] https://docusaurus.io/
 
 [] google sheets gateway
@@ -145,6 +146,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] Filter Refactoring:
+    YES [] consider "<="?:T $and $or etc...,
+    Remove [] options | where doesn't work anymore
+    [] order by "asc", "desc"
+    [] reconsider starts with etc...
+    [] members with the same name?
+
+
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
 [] the problem with ? and null and ! - imagine task has a Category property that is an entity - category? doesn't allow null - and undefined should be have ?
 [] rethink entity inheritence - saving of child overwritten the saving of base
@@ -280,8 +289,8 @@ export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     metadata: EntityMetadata<entityType>;
     /** returns a result array based on the provided options */
-    find(whereOrOptions?: EntityFilter<entityType> | FindOptions<entityType>): Promise<entityType[]>;
-    iterate(whereOrOptions?: EntityFilter<entityType> | IterateOptions<entityType>): IterableResult<entityType>;
+    find(options?: FindOptions<entityType>): Promise<entityType[]>;
+    iterate(options?: IterateOptions<entityType>): IterableResult<entityType>;
     findFirst(whereOrOptions?: EntityFilter<entityType> | FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
@@ -324,9 +333,39 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityFilter<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter | Promise<Filter>)[] | Promise<Filter[]>));
+export declare type EntityFilter<entityType> = FilterRule<entityType> |
+    ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter | Promise<Filter> | FilterRule<entityType>)[] | Promise<(Filter | FilterRule<entityType>)[]>));
 
 
+
+interface otherFilters<T> {
+    ne?: T | T[],
+
+}
+interface otherComparisonFilters<T> extends otherFilters<T> {
+    gt?: T,
+    gte?: T,
+    lt?: T,
+    lte?: T
+}
+interface stringFilter extends otherFilters<string>, otherComparisonFilters<string> {
+    contains?: string,
+
+}
+
+export type FilterRule1<entityType> = {
+    [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
+        entityType[Properties] extends number | Date ? otherComparisonFilters<entityType[Properties]> :
+        entityType[Properties] extends string ? stringFilter :
+        otherFilters<entityType[Properties]>);
+}
+
+export type FilterRule<entityType> = FilterRule1<entityType> & FilterRuleWithOr<entityType>;
+export interface FilterRuleWithOr<entityType> {
+    OR?: FilterRule<entityType>[]
+    //NOT
+    //AND
+}
 
 
 

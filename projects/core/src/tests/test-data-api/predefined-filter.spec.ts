@@ -158,16 +158,14 @@ describe("data api", () => {
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     });
-    expect((await c.iterate(x => x.id.isEqualTo(1)).first()).categoryName).toBe('noam');
+    expect((await c.iterate({ where: { id: 1 } }).first()).categoryName).toBe('noam');
     expect((await c.findId(1)).categoryName).toBe('noam');
   });
 
 });
 
 @EntityDecorator<stam1>('categories', {
-  backendPrefilter: (c) => {
-    return c.description.isEqualTo('b')
-  }
+  backendPrefilter: { description: 'b' }
 })
 class stam1 extends newCategories {
 
@@ -183,17 +181,15 @@ describe("", () => {
     expect(r.length).toBe(1, 'array length');
     expect(r[0].id).toBe(2, 'value of first row');
     expect(await c.count()).toBe(1, 'count');
-    expect(await c.iterate(x => x.id.isEqualTo(1)).first()).toBe(undefined, 'find first');
-    expect((await c.findFirst({ createIfNotFound: true, where: x => x.id.isEqualTo(1) }))._.isNew()).toBe(true, 'lookup ');
+    expect(await c.iterate({ where: { id: 1 } }).first()).toBe(undefined, 'find first');
+    expect((await c.findFirst({ createIfNotFound: true, where: { id: 1 } }))._.isNew()).toBe(true, 'lookup ');
   });
 })
 
 @EntityDecorator<CategoriesForThisTest>(undefined, {
   allowApiUpdate: true,
   allowApiDelete: true,
-  apiPrefilter: (x) => {
-    return x.description.isEqualTo('b')
-  }
+  apiPrefilter: { description: 'b' }
 
 })
 class CategoriesForThisTest extends newCategories { }

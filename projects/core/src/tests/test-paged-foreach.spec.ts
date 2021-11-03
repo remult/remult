@@ -24,7 +24,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate(x => x.categoryName.isGreaterOrEqualTo("n"))) {
+        for await (const x of c.iterate({ where: { categoryName: { gte: "n" } } })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
         }
         expect(i).toBe(4);
@@ -156,9 +156,14 @@ describe("test paged foreach ", () => {
             expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, await eDefs.createAfterFilter(orderBy, e)))).toEqual(
                 JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere)));
         }
-        test(x => x.a, x => x.a.isGreaterThan('a'));
-        test(x => [x.a.descending()], x => x.a.isLessThan('a'));
-        test(x => [x.a, x.b], x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))));
+        test(x => x.a, { a: { gt: 'a' } });
+        test(x => [x.a.descending()], { a: { lt: 'a' } });
+        test(x => [x.a, x.b], {
+            OR: [
+                { a: { gt: 'a' } },
+                { a: 'a', b: { gt: 'b' } }
+            ]
+        });
 
     });
     it("create rows after filter, values are frozen when filter is created", async () => {
@@ -175,7 +180,11 @@ describe("test paged foreach ", () => {
         e.a = '1';
         e.b = '2';
         expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
-            JSON.stringify(await entityFilterToJson<theTable>(eDefs.metadata, x => x.a.isGreaterThan('a').or(x.a.isEqualTo('a').and(x.b.isGreaterThan('b'))))));
+            JSON.stringify(await entityFilterToJson<theTable>(eDefs.metadata, {
+                OR: [
+                    { a: { gt: 'a' } },
+                    { a: 'a', b: { gt: 'b' } }]
+            })));
 
     });
     it("serialize filter with or", async () => {
@@ -188,7 +197,17 @@ describe("test paged foreach ", () => {
                 JSON.stringify(expected));
         }
         await test(
-            x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')).or(x.a.isGreaterThan('a')),
+            {
+                OR: [
+                    {
+                        a: 'a',
+                        b: { gt: 'b' }
+                    },
+                    {
+                        a: { gt: 'a' }
+                    }
+                ]
+            },
             {
                 OR: [
                     {
@@ -201,13 +220,20 @@ describe("test paged foreach ", () => {
                 ]
             });
         await test(
-            x => x.a.isEqualTo('a').and(x.b.isGreaterThan('b')),
+            {
+                a: 'a',
+                b: { gt: 'b' }
+            },
             {
                 a: 'a',
                 b_gt: 'b'
             });
         await test(
-            x => x.a.isEqualTo('a').or(x.b.isGreaterThan('b')),
+            {
+                OR: [
+                    { a: 'a' },
+                    { b: { gt: 'b' } }]
+            },
             {
                 OR: [
                     { a: 'a' },
@@ -218,8 +244,8 @@ describe("test paged foreach ", () => {
 
 
     });
-    it("test paging with complex object", () => testAllDataProviders(async ({remult}) => {
-        
+    it("test paging with complex object", () => testAllDataProviders(async ({ remult }) => {
+
 
         let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
         let c2 = await remult.repo(c).create({ id: 2, name: 'c2' }).save();
@@ -238,12 +264,12 @@ describe("test paged foreach ", () => {
         }
         expect(i).toBe(5);
     }))
-    it("test paging with complex object_2", () => testAllDataProviders(async ({remult}) => {
-        
+    it("test paging with complex object_2", () => testAllDataProviders(async ({ remult }) => {
+
         let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
 
         await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
-        expect((await remult.repo(p).findFirst({ where: x => x.c.isEqualTo(c1) })).id).toBe(1);
+        expect((await remult.repo(p).findFirst({ where: { c: c1 } })).id).toBe(1);
     }))
 })
 

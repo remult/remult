@@ -64,7 +64,7 @@ class profile extends EntityBase {
     id: string;
     async rel() {
         return this.remult.repo(following).findFirst({
-            where: f => f.id.isEqualTo('1').and(f.profile.isEqualTo(this)),
+            where: { id: '1', profile: this },
             createIfNotFound: true
         })
 
@@ -133,7 +133,7 @@ describe("many to one relation", () => {
         await remult.repo(Products).create({ id: 1, name: 'p1', category }).save();
         remult.clearAllCache();
         let p = await remult.repo(ProductsEager).findFirst({
-            where: p => p.id.isEqualTo(1),
+            where: { id: 1 },
             load: () => []
         });
         expect(p.category).toBe(undefined);
@@ -167,7 +167,7 @@ describe("many to one relation", () => {
         await p.$.category.load();
         expect(p.category.name).toBe("cat 1");
         expect((await p.$.name.load())).toBe("prod 10");
-        expect(await remult.repo(Products).count(x => x.category.isEqualTo(cat))).toBe(1);
+        expect(await remult.repo(Products).count({ category: cat })).toBe(1);
 
         let c2 = remult.repo(Categories).create();
         c2.id = 2;
@@ -242,7 +242,7 @@ describe("many to one relation", () => {
         p = await remult.repo(Products).findFirst();
         expect(p.category).toBe(null);
 
-        expect(await remult.repo(Products).count(x => x.category.isEqualTo(null))).toBe(1);
+        expect(await remult.repo(Products).count({ category: null })).toBe(1);
     });
     it("test stages", async () => {
         let mem = new InMemoryDataProvider();
@@ -356,9 +356,9 @@ describe("many to one relation", () => {
                 where)))).toBe(expected, "packed where");
         }
 
-        await test(p => p.category.isEqualTo(c), 2);
-        await test(p => p.category.isEqualTo(null), 3);
-        await test(p => p.category.isEqualTo(c2), 1);
+        await test({ category: c }, 2);
+        await test({ category: null }, 3);
+        await test({ category: c2 }, 1);
 
     });
     it("test that not too many reads are made", async () => {
@@ -518,7 +518,7 @@ describe("many to one relation", () => {
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
-        let p = await remult.repo(Products).findFirst({ createIfNotFound: true, where: p => p.id.isEqualTo(10).and(p.category.isEqualTo(cat)) });
+        let p = await remult.repo(Products).findFirst({ createIfNotFound: true, where: { id: 10, category: cat } });
         expect(p.isNew()).toBe(true);
         expect(p.id).toBe(10);
         expect((await p.$.category.load()).id).toBe(cat.id);
@@ -577,8 +577,8 @@ describe("many to one relation", () => {
         let sqlr = (await db.execute("select category,supplier from products")).rows[0];
         expect(sqlr.category).toEqual('1.0');
         expect(sqlr.supplier).toBe('sup1');
-        expect(await remult.repo(Products).count(p => p.supplier.isEqualTo(sup))).toBe(1);
-        expect(await remult.repo(Products).count(p => p.supplier.isIn([sup]))).toBe(1);
+        expect(await remult.repo(Products).count({ supplier: sup })).toBe(1);
+        expect(await remult.repo(Products).count({ supplier: [sup] })).toBe(1);
 
 
     });

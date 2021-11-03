@@ -62,44 +62,44 @@ export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper
         await sql.execute("drop table if exists " + r.name);
     }
   }
-  await testAllDataProviders(async ({db})=>{
-      if (!db)
-        throw new Error("you forget to set a db for the test");
-      let remult = new Remult();
-      remult.setDataProvider(db);
-  
-      let createData = async (doInsert, entity?) => {
-        if (!entity)
-          entity = newCategories;
-        let rep = remult.repo(entity) as Repository<T>;
-        if (doInsert)
-          await doInsert(async (id, name, description, status) => {
-  
-            let c = rep.create();
-  
-            c.id = id;
-            c.categoryName = name;
-            c.description = description;
-            if (status)
-              c.status = status;
-            await rep.save(c);
-  
-          });
-        return rep;
-      };
-  
-      await doTest({
-        remult,
-        createData,
-        insertFourRows: async () => {
-          return createData(async i => {
-            await i(1, 'noam', 'x');
-            await i(4, 'yael', 'x');
-            await i(2, 'yoni', 'y');
-            await i(3, 'maayan', 'y');
-          });
-        }
-      });
+  await testAllDataProviders(async ({ db }) => {
+    if (!db)
+      throw new Error("you forget to set a db for the test");
+    let remult = new Remult();
+    remult.setDataProvider(db);
+
+    let createData = async (doInsert, entity?) => {
+      if (!entity)
+        entity = newCategories;
+      let rep = remult.repo(entity) as Repository<T>;
+      if (doInsert)
+        await doInsert(async (id, name, description, status) => {
+
+          let c = rep.create();
+
+          c.id = id;
+          c.categoryName = name;
+          c.description = description;
+          if (status)
+            c.status = status;
+          await rep.save(c);
+
+        });
+      return rep;
+    };
+
+    await doTest({
+      remult,
+      createData,
+      insertFourRows: async () => {
+        return createData(async i => {
+          await i(1, 'noam', 'x');
+          await i(4, 'yael', 'x');
+          await i(2, 'yoni', 'y');
+          await i(3, 'maayan', 'y');
+        });
+      }
+    });
   });
 
 }
@@ -225,11 +225,11 @@ describe("grid filter stuff", () => {
     let w = ds.getFilterWithSelectedRows().where;
 
     expect(await c.count(w)).toBe(2);
-    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
+    expect(await c.count({ id: [1, 3] })).toBe(2);
   });
   it("test in statement", async () => {
     let [c] = await insertFourRows();
-    expect(await c.count(c => c.id.isIn([1, 3]))).toBe(2);
+    expect(await c.count({ id: [1, 3] })).toBe(2);
   });
   it("test all rows selected when some rows are outside the scope", async () => {
     let [c] = await insertFourRows();
@@ -429,21 +429,21 @@ describe("test row provider", () => {
 
     let rows = await c.find();
     expect(rows.length).toBe(4);
-    rows = await c.find({ where: c => c.description.isEqualTo('x') });
+    rows = await c.find({ where: { description: 'x' } });
     expect(rows.length).toBe(2);
-    rows = await c.find({ where: c => c.id.isEqualTo(4) });
+    rows = await c.find({ where: { id: 4 } });
     expect(rows.length).toBe(1);
     expect(rows[0].categoryName).toBe('yael');
-    rows = await c.find({ where: c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')) });
+    rows = await c.find({ where: { description: 'y', categoryName: 'yoni' } });
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(2);
     rows = await c.find({
-      where: c => [c.description.isEqualTo('y'), c.categoryName.isEqualTo('yoni'), undefined]
+      where: c => [{ description: 'y' }, { categoryName: 'yoni' }, undefined]
     });
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(2);
     rows = await c.find({
-      where: c => [c.description.isEqualTo('y'), c.categoryName.isEqualTo('yoni')]
+      where: c => [{ description: 'y' }, { categoryName: 'yoni' }]
     });
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(2);
@@ -455,17 +455,17 @@ describe("test row provider", () => {
       expect(rows.length).toBe(4);
 
       rows = await r.find({
-        where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('x')))
+        where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { description: 'x' }))
 
       });
       expect(rows.length).toBe(2);
-      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isEqualTo(4))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: 4 })) });
       expect(rows.length).toBe(1);
       expect(rows[0].categoryName).toBe('yael');
-      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('y').and(c.categoryName.isEqualTo('yoni')))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { description: 'y', categoryName: 'yoni' })) });
       expect(rows.length).toBe(1);
       expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isDifferentFrom(4).and(c.id.isDifferentFrom(2)))) });
+      rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: { ne: [2, 4] } })) });
       expect(rows.length).toBe(2);
     })
 
@@ -476,12 +476,12 @@ describe("test row provider", () => {
     expect(rows.length).toBe(4);
 
     rows = await r.find({
-      where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.description.isEqualTo('x')))
+      where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { description: 'x' }))
 
     });
-    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isIn([1, 3]))) });
+    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: [1, 3] })) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, c => c.id.isNotIn([1, 2, 3]))) });
+    rows = await r.find({ where: async c => Filter.fromJson(r.metadata, await entityFilterToJson(r.metadata, { id: { ne: [1, 2, 3] } })) });
     expect(rows.length).toBe(1);
 
   });
@@ -612,7 +612,7 @@ describe("test row provider", () => {
       ColumnDecorator<typeof type.prototype, string>({
         validate: async (en, col) => {
           if (en._.isNew() || en.a != en._.fields.a.originalValue) {
-            if (await c.count(f => f.a.isEqualTo(en.a)))
+            if (await c.count({ a: en.a }))
               en._.fields.a.error = 'already exists';
           }
         }
@@ -780,7 +780,7 @@ describe("test row provider", () => {
     let [c] = await insertFourRows();
 
 
-    let r = await c.findFirst({ createIfNotFound: true, where: c => c.categoryName.isEqualTo(undefined) });
+    let r = await c.findFirst({ createIfNotFound: true, where: { categoryName: undefined } });
     expect(r.categoryName).toBe(undefined);
 
   });
@@ -803,10 +803,10 @@ describe("test row provider", () => {
     var nc = { value: undefined };
     nc.value = undefined;
     expect(nc.value).toBe(undefined);
-    await l.getAsync(c => c.id.isEqualTo(nc.value));
+    await l.getAsync(c => Filter.build(c, { id: nc.value }));
     expect(calledFind).toBe(false, 'expected not to call find');
     nc.value = 1;
-    await l.getAsync(c => c.id.isEqualTo(nc.value));
+    await l.getAsync(c => Filter.build(c, { id: nc.value }));
     expect(calledFind).toBe(true);
 
   });
@@ -831,11 +831,11 @@ describe("test row provider", () => {
     let r = lookup.get(c => c.id.isEqualTo(1));
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
-    r = await c.findFirst({ createIfNotFound: true, where: c => c.id.isEqualTo(1) });
+    r = await c.findFirst({ createIfNotFound: true, where: { id: 1 } });
     expect(r._.isNew()).toBe(false);
     await r._.delete();
     expect(await c.count()).toBe(0);
-    r = await c.findFirst({ createIfNotFound: true, where: c => c.id.isEqualTo(1) });
+    r = await c.findFirst({ createIfNotFound: true, where: { id: 1 } });
     expect(r._.isNew()).toBe(true);
     expect(r.id).toBe(1);
     await r._.save();
@@ -1190,7 +1190,7 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: c => c.categoryName.isEqualTo('b') });
+      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: { categoryName: 'b' } });
       await ds.reloadData();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id).toBe(2);
@@ -1431,7 +1431,7 @@ describe("relation", () => {
 
     let [c] = await insertFourRows();
     let r = new OneToMany(c, {
-      where: x => x.description.isEqualTo("x")
+      where: { description: "x" }
     });
     let rows = await r.load();
     expect(rows.length).toBe(2);
@@ -1441,7 +1441,7 @@ describe("relation", () => {
   it("should have an array and lazy load it", async () => {
     let [c] = await insertFourRows();
     let r = new OneToMany(c, {
-      where: x => x.description.isEqualTo("x")
+      where: { description: 'x' }
     });
     let arr = r.lazyItems;
     expect(arr.length).toBe(0);

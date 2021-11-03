@@ -27,40 +27,40 @@ describe("test where stuff", () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where)])).toBe(2);
-        expect(await repo.count(async y => [y.id.isLessOrEqualTo(3), await Filter.fromEntityFilter(y, fo.where)])).toBe(2);
-        expect(await repo.count(y => Filter.fromEntityFilter(y, fo.where, y => y.id.isLessOrEqualTo(3)))).toBe(2);
-        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(async y => [{ id: { lte: 3 } }, await Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(y => Filter.fromEntityFilter(y, fo.where, { id: { lte: 3 } }))).toBe(2);
+        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
     });
     it("test basics_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => x.id.isGreaterOrEqualTo(2)
+            where: { id: { gte: 2 } }
         };
-        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
+        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
     });
     it("test basics_2_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(async y => y.id.isLessOrEqualTo(3).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
+        expect(await repo.count(async y => Filter.build(y, { id: { lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
     });
     it("test basics_2_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(async y => y.id.isLessOrEqualTo(3).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
+        expect(await repo.count(async y => Filter.build(y, { id: { lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
     });
     it("test basics_2_1", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => Promise.resolve(x.id.isGreaterOrEqualTo(2))
+            where: x => Promise.resolve(Filter.build(x, { id: { gte: 2 } }))
         };
-        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
+        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
     });
     it("test basics_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: x => x.id.isGreaterOrEqualTo(2)
         };
-        expect(await repo.count(y => [y.id.isLessOrEqualTo(3), Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count(y => [{ id: { lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
     });
 
 
@@ -92,8 +92,8 @@ describe("custom filter", () => {
         let json3 = Filter.fromJson(c.metadata, json).toJson();
         expect(json3).toEqual(json);
     })
-    it("test that it works", () => 
-        testAllDataProviders(async ({remult}) => {
+    it("test that it works", () =>
+        testAllDataProviders(async ({ remult }) => {
 
             let c = remult.repo(entityForCustomFilter);
             for (let id = 0; id < 5; id++) {
@@ -105,8 +105,8 @@ describe("custom filter", () => {
         })
 
     );
-    it("test that it works with inheritance", () => 
-         testAllDataProviders(async ({remult}) => {
+    it("test that it works with inheritance", () =>
+        testAllDataProviders(async ({ remult }) => {
 
             let c = remult.repo(entityForCustomFilter1);
             for (let id = 0; id < 5; id++) {
@@ -147,7 +147,7 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => e.id.isEqualTo(4).or(entityForCustomFilter.filter({ dbOneOrThree: true }))))).toBe(3);
+        expect(await (c.count(e => Filter.build(e, { id: 4 }).or(entityForCustomFilter.filter({ dbOneOrThree: true }))))).toBe(3);
     });
     it("test sent in api", async () => {
         let ok = new Done();
@@ -327,9 +327,9 @@ class entityForCustomFilter extends EntityBase {
     }>(async (e, remult, c) => {
         let r: Filter[] = [];
         if (c.oneAndThree)
-            r.push(e.id.isIn([1, 3]));
+            r.push(Filter.build(e, { id: [1, 3] }));
         if (c.two)
-            r.push(e.id.isEqualTo(2));
+            r.push(Filter.build(e, { id: 2 }));
         if (c.dbOneOrThree) {
 
             r.push(SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
@@ -338,9 +338,9 @@ class entityForCustomFilter extends EntityBase {
         }
         return r;
     });
-    static oneAndThree = Filter.createCustom<entityForCustomFilter>((e) => e.id.isIn([1, 3]));
-    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => e.id.isEqualTo(val));
-    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((e, r, val) => e.id.isEqualTo(val.val));
+    static oneAndThree = Filter.createCustom<entityForCustomFilter>((e) => Filter.build(e, { id: [1, 3] }));
+    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => Filter.build(e, { id: val }));
+    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((e, r, val) => Filter.build(e, { id: val.val }));
 }
 @Entity('entityForCustomFilter1', { allowApiCrud: true })
 class entityForCustomFilter1 extends entityForCustomFilter {
@@ -402,8 +402,8 @@ describe("missing fields are added in array column", async () => {
         r.setDataProvider(db);
         let rep = r.repo(task);
         expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
-        expect(await rep.count(task => task.completed.isEqualTo(false))).toBe(2);
-        let t = (await rep.findFirst(task => task.title.isEqualTo('t1')));
+        expect(await rep.count({ completed: false })).toBe(2);
+        let t = (await rep.findFirst(() => [{ title: 't1' }]));
         expect(t.completed).toBe(false);
         t.completed = undefined;
         await t.save();
@@ -433,8 +433,8 @@ describe("missing fields are added in array column", async () => {
         r.setDataProvider(db);
         let rep = r.repo(taskWithNull);
         expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
-        expect(await rep.count(task => task.completed.isEqualTo(false))).toBe(0);
-        let t = (await rep.findFirst(task => task.title.isEqualTo('t1')));
+        expect(await rep.count({ completed: false })).toBe(0);
+        let t = (await rep.findFirst(() => [{ title: 't1' }]));
         expect(t.completed).toBe(undefined);
         t.completed = undefined;
         await t.save();

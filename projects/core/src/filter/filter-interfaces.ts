@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory } from "../remult3";
+import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, FilterRule } from "../remult3";
 
 
 export class Filter {
@@ -32,6 +32,63 @@ export class Filter {
         }, { customFilterInfo })
 
     }
+    static build<T>(entity: FilterFactories<T>, whereItem: FilterRule<T>) {
+        let result: Filter[] = [];
+        for (const key in whereItem) {
+            if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
+                const element: any = whereItem[key];
+                {
+                    if (key == "OR") {
+                        result.push(new OrFilter(...element.map(x => Filter.build(entity, x))))
+
+                    } else {
+                        let fh = entity[key] as (ContainsFilterFactory<any> & ComparisonFilterFactory<any>);
+                        let found = false;
+                        if (element !== undefined && element != null) {
+                            if (element.gte) {
+                                result.push(fh.isGreaterOrEqualTo(element.gte));
+                                found = true;
+                            }
+                            if (element.gt) {
+                                result.push(fh.isGreaterThan(element.gt));
+                                found = true;
+                            }
+                            if (element.lte) {
+                                result.push(fh.isLessOrEqualTo(element.lte));
+                                found = true;
+                            }
+                            if (element.lt) {
+                                result.push(fh.isLessThan(element.lt));
+                                found = true;
+                            }
+                            if (element.ne) {
+                                found = true;
+                                if (Array.isArray(element.ne)) {
+                                    result.push(fh.isNotIn(element.ne));
+                                }
+                                else
+                                    result.push(fh.isDifferentFrom(element.ne));
+                            }
+                            if (element.contains) {
+                                found = true;
+                                result.push(fh.contains(element.contains));
+                            }
+                            if (Array.isArray(element)) {
+                                found = true;
+                                result.push(fh.isIn(element));
+                            }
+                        }
+                        if (!found) {
+                            result.push(fh.isEqualTo(element));
+                        }
+
+                    }
+                }
+
+            }
+        }
+        return new AndFilter(...result);
+    }
     static createFilterFactories<T>(entityDefs: EntityMetadata<T>): FilterFactories<T> {
         let r = {};
         for (const c of entityDefs.fields) {
@@ -44,11 +101,14 @@ export class Filter {
     static async fromEntityFilter<T>(entity: FilterFactories<T>, ...where: EntityFilter<T>[]): Promise<Filter> {
         let result: Filter[] = [];
         for (const whereItem of where) {
-            if (whereItem) {
+            if (typeof whereItem === "function") {
                 let r = await whereItem(entity);
                 if (Array.isArray(r))
-                    result.push(...await Promise.all(r));
+                    result.push(...(await Promise.all(r)).map(x => x instanceof Filter ? x : Filter.build(entity, x)));
                 else result.push(await r);
+            }
+            else {
+                result.push(Filter.build<T>(entity, whereItem));
             }
         }
         return new AndFilter(...result);
@@ -278,6 +338,8 @@ export class FilterSerializer implements FilterConsumer {
         this.add(col.key + "_st", col.valueConverter.toJson(val));
     }
 }
+
+
 export async function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
     if (!where)
         return {};
@@ -347,7 +409,7 @@ export function buildFilterFromRequestParameters(columns: FieldMetadata[], filte
                     break;
             }
         }
-     
+
         addFilter('_contains', val => {
 
             return c.contains(val);

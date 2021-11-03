@@ -52,7 +52,7 @@ class tableWithPhone extends EntityBase {
 describe("test object column stored as string", () => {
   it("was changed should work correctly", async () => {
     var remult = new Remult(new InMemoryDataProvider());
-    
+
     let repo = remult.repo(tableWithPhone);
     let r = repo.create();
     r.id = 1;
@@ -123,11 +123,11 @@ describe('Test basic row functionality', () => {
   });
   it("Find or Create", async () => {
     let [repo] = await (await createData());
-    let row = await repo.findFirst({ createIfNotFound: true, where: x => x.id.isEqualTo(1) });
+    let row = await repo.findFirst({ createIfNotFound: true, where: { id: 1 } });
     expect(row._.isNew()).toBe(true);
     expect(row.id).toBe(1);
     await row._.save();
-    let row2 = await repo.findFirst({ createIfNotFound: true, where: x => x.id.isEqualTo(1) });
+    let row2 = await repo.findFirst({ createIfNotFound: true, where: { id: 1 } });
     expect(row2._.isNew()).toBe(false);
     expect(row2.id).toBe(1);
 
@@ -292,22 +292,22 @@ describe("data api", () => {
         name: '1'
       });
       d.test();
-      var x = await s.find({ where: c => c.myId.isEqualTo(1) });
+      var x = await s.find({ where: { myId: 1 } });
       expect(x[0].name).toBe('noam');
-      x = await s.find( c => c.myId.isEqualTo(1) );
+      x = await s.find({ where: { myId: 1 } });
       expect(x[0].name).toBe('noam');
 
     }));
   it("filter works on all db", () => testAllDataProviders(
     async ({ db }) => {
       let s = await create4RowsInDp(remult, db);
-      expect((await s.find({ where: c => c.myId.isIn([1, 3]) })).length).toBe(2);
+      expect((await s.find({ where: { myId: [1, 3] } })).length).toBe(2);
     }));
   it("filter works on all db or", () => testAllDataProviders(
     async ({ db }) => {
 
       let s = await create4RowsInDp(remult, db);
-      expect((await s.find({ where: c => new OrFilter(c.myId.isEqualTo(1), c.myId.isEqualTo(3)) })).length).toBe(2);
+      expect((await s.find({ where: { OR: [{ myId: 1 }, { myId: 3 }] } })).length).toBe(2);
 
     }));
 
@@ -330,7 +330,7 @@ describe("data api", () => {
       name: '1'
     });
     d.test();
-    var x = await s.find({ where: c => c.myId.isEqualTo(1) });
+    var x = await s.find({ where: { myId: 1 } });
     expect(x[0].name).toBe('noam');
 
   }));
@@ -346,8 +346,8 @@ describe("data api", () => {
     expect(await c._.validate()).toBe(false);
     c.name = "123";
     expect(await c._.validate()).toBe(true);
-    
-    
+
+
 
   }));
   it("validate with validations on column fails 1", () => testAllDataProviders(async ({ remult }) => {
@@ -382,7 +382,7 @@ describe("data api", () => {
       name: '1'
     });
     d.test();
-    var x = await s.find({ where: c => c.myId.isEqualTo(1) });
+    var x = await s.find({ where: { myId: 1 } });
     expect(x[0].name).toBe('noam');
 
   }));
@@ -759,7 +759,7 @@ describe("data api", () => {
     d.test();
     deleting.test();
     expect(happend).toBe(false);
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam');
   });
   it("delete with validation exception fails", async () => {
@@ -790,7 +790,7 @@ describe("data api", () => {
     d.test();
     deleting.test();
     expect(happend).toBe(false);
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam');
   });
   it("delete with validation exception fails - no data api", async () => {
@@ -848,7 +848,7 @@ describe("data api", () => {
     d.test();
     deleting.test();
     expect(happend).toBe(true);
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x.length).toBe(0);
   });
 
@@ -876,7 +876,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam');
     expect(count).toBe(1);
 
@@ -908,7 +908,7 @@ describe("data api", () => {
       });
       d.test();
       var x = await c.find({
-        where: c => c.id.isEqualTo(1)
+        where: { id: 1 }
       });
 
       expect(x[0].categoryName).toBe('noam 1');
@@ -950,7 +950,7 @@ describe("data api", () => {
 
     d.test();
     savedWorked.test();
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam 1');
     expect(count).toBe(1);
 
@@ -988,7 +988,7 @@ describe("data api", () => {
 
     d.test();
     savedWorked.test();
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam 1');
 
 
@@ -1041,7 +1041,7 @@ describe("data api", () => {
     });
 
     d.test();
-    var x = await remult.repo(type).find({ where: c => c.id.isEqualTo(1) });
+    var x = await remult.repo(type).find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('kuku');
 
 
@@ -1104,7 +1104,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam 1');
 
   });
@@ -1129,7 +1129,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam');
 
   });
@@ -1167,7 +1167,7 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
-    var x = await c.find({ where: c => c.id.isEqualTo(1) });
+    var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam');
 
   });
@@ -1588,8 +1588,13 @@ describe("column validation", () => {
     p.name = '1';
     p.c3 = d;
     await p._.save();
-    p = await f.findFirst(x => x.c3.isEqualTo(d));
+    await f.create({ name: '2', c3: new Date(2021) }).save();
+    p = await f.findFirst(() => [{ c3: d }]);
+    p = await f.findFirst({ where: { c3: d } });
+    f.findFirst({ c3: d });
     expect(p.name).toBe('1');
+    p = await f.findFirst(() => [{ c3: { ne: d } }]);
+    expect(p.name).toBe('2');
   });
 
 });
@@ -1636,14 +1641,14 @@ describe("compound id", () => {
       ctx.setDataProvider(sql);
 
       let cod = ctx.repo(CompoundIdEntity);
-      for (const od of await cod.find({ where: od => od.a.isEqualTo(99) })) {
+      for (const od of await cod.find({ where: { a: 99 } })) {
         await od._.delete();
       }
       let od = cod.create();
       od.a = 99;
       od.b = 1;
       await od._.save();
-      od = await cod.findFirst({ where: od => od.a.isEqualTo(99) });
+      od = await cod.findFirst({ where: { a: 99 } });
       od.c = 5;
       await od._.save();
       await od._.delete();
@@ -1903,11 +1908,11 @@ describe("test number negative", () => {
 describe("cache", () => {
   it("find first useCache", async () => {
     let [r,] = await createData(async i => i(1, "noam"));
-    await r.findFirst({ where: x => x.id.isEqualTo(1), useCache: true });
+    await r.findFirst({ where: { id: 1 }, useCache: true });
     await r.find().then(x => assign(x[0], { categoryName: 'a' }).save());
-    expect((await r.findFirst(x => x.id.isEqualTo(1))).categoryName).toBe("a");
-    expect((await r.findFirst({ where: x => x.id.isEqualTo(1) })).categoryName).toBe("a");
-    expect((await r.findFirst({ where: x => x.id.isEqualTo(1), useCache: true })).categoryName).toBe("noam");
+    expect((await r.findFirst({ id: 1 })).categoryName).toBe("a");
+    expect((await r.findFirst({ where: { id: 1 } })).categoryName).toBe("a");
+    expect((await r.findFirst({ where: { id: 1 }, useCache: true })).categoryName).toBe("noam");
 
   });
   it("find id", async () => {
@@ -1979,7 +1984,7 @@ describe("test rest data provider translates data correctly", () => {
     Field({ valueType: Date })(type.prototype, 'b');
 
     let c = new Remult().repo(type);
-    let r = await entityFilterToJson(c.metadata, x => x.b.isEqualTo(new Date("2021-05-16T08:32:19.905Z")));
+    let r = await entityFilterToJson(c.metadata, { b: new Date("2021-05-16T08:32:19.905Z") });
     expect(r.b).toBe("2021-05-16T08:32:19.905Z");
   })
   it("put works", async () => {
@@ -2181,10 +2186,10 @@ it("test date with null works", async () => testAllDataProviders(async ({ remult
   await r.save();
   r = await repo.findFirst();
   expect(r.d).toBeNull();
-  expect(await repo.count(x => x.d.isEqualTo(null))).toBe(1);
+  expect(await repo.count({ d: null })).toBe(1);
 }));
 it("test original value of date", async () => testAllDataProviders(async ({ remult }) => {
-  let r =await  remult.repo(testDateWithNull).create({ id: 1, d : new Date(1976, 6, 16) }).save();
+  let r = await remult.repo(testDateWithNull).create({ id: 1, d: new Date(1976, 6, 16) }).save();
 
   expect(r.$.d.originalValue.getFullYear()).toBe(1976);
 
