@@ -122,7 +122,7 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
+        expect(await (c.count( SqlDatabase.customFilter(async x => x.sql = await c.metadata.fields.id.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
         expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
@@ -133,7 +133,7 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))))
+        expect(await (c.count(ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))))
             .toBe(2);
         expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
@@ -291,11 +291,11 @@ class entityForCustomFilter extends EntityBase {
             r.push(Filter.build(e, { id: 2 }));
         if (c.dbOneOrThree) {
 
-            r.push(SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")").and(
-                ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3)
+            r.push(Filter.build(e, SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")")).and(
+                Filter.build(e, ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))
             ))
-        }
-        return r;
+}
+return r;
     });
     static oneAndThree = Filter.createCustom<entityForCustomFilter>((e) => Filter.build(e, { id: [1, 3] }));
     static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => Filter.build(e, { id: val }));

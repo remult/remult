@@ -47,6 +47,8 @@ export class Filter {
                         result.push(new Filter(x => {
                             x.custom(key.substring(customUrlToken.length), element);
                         }))
+                    } else if (key == customDatabaseFilterToken) {
+                        result.push(new Filter(x => x.databaseCustom(element)));
                     }
                     else {
                         let fh = entity[key] as (ContainsFilterFactory<any> & ComparisonFilterFactory<any>);
@@ -138,7 +140,7 @@ export class Filter {
 
                 const element = entity.entityType[key] as customFilterInfo<any>;
                 if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
-                    if (element.customFilterInfo.key==filterKey) {
+                    if (element.customFilterInfo.key == filterKey) {
                         r.push(await Filter.fromEntityFilter(filterFactories, f => element.customFilterInfo.customFilterTranslator(f, remult, custom)));
                     }
                 }
@@ -269,6 +271,7 @@ export class OrFilter extends Filter {
 
 
 export const customUrlToken = "$custom$";
+export const customDatabaseFilterToken = "$db$";
 export class FilterSerializer implements FilterConsumer {
     result: any = {};
     constructor() {
@@ -277,8 +280,8 @@ export class FilterSerializer implements FilterConsumer {
     databaseCustom(databaseCustom: any): void {
         throw new Error("database custom is not allowed with api calls.");
     }
-    custom(key,customItem: any): void {
-        this.add(customUrlToken+key, customItem);
+    custom(key, customItem: any): void {
+        this.add(customUrlToken + key, customItem);
     }
     hasUndefined = false;
     add(key: string, val: any) {
@@ -442,7 +445,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
             }
         }
     }
-    
+
     return new AndFilter(...where);
 }
 

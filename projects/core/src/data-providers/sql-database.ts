@@ -4,9 +4,9 @@ import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
 import { CompoundIdField } from "../column";
 
 import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
-import { Filter } from '../filter/filter-interfaces';
+import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityMetadata } from "../remult3";
+import { EntityMetadata, FilterRule } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 
 // @dynamic
@@ -54,10 +54,13 @@ export class SqlDatabase implements DataProvider {
       }
     });
   }
-  static customFilter(build: CustomSqlFilterBuilderFunction) {
-    return new Filter(x => x.databaseCustom({
-      buildSql: build
-    } as CustomSqlFilterObject));
+  static customFilter(build: CustomSqlFilterBuilderFunction):FilterRule<any> {
+    return {
+      [customDatabaseFilterToken]: {
+        buildSql: build
+      }
+    }
+
   }
   public static LogToConsole = false;
   public static durationThreshold = 0;

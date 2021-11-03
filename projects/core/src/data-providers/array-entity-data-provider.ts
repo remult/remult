@@ -1,16 +1,19 @@
 import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
-import { Filter, FilterConsumer } from '../filter/filter-interfaces';
+import { customDatabaseFilterToken, Filter, FilterConsumer } from '../filter/filter-interfaces';
 import { FieldMetadata } from '../column-interfaces';
-import { EntityMetadata } from '../remult3';
+import { EntityMetadata, FilterRule } from '../remult3';
 import { CompoundIdField } from '../column';
 import { Sort } from '../sort';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    static customFilter(filter: CustomArrayFilter): Filter {
-        return new Filter(x => x.databaseCustom({
-            arrayFilter: filter
-        } as CustomArrayFilterObject))
+    static customFilter(filter: CustomArrayFilter): FilterRule<any> {
+        return {
+            [customDatabaseFilterToken]: {
+                arrayFilter: filter
+            }
+        }
+
     }
     constructor(private entity: EntityMetadata, private rows?: any[]) {
         if (!rows)
@@ -200,7 +203,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
                 this.ok = false;
         }
     }
-    custom(key:string,customItem: any): void {
+    custom(key: string, customItem: any): void {
         throw new Error('Custom Filter should be translated before it gets here');
     }
     or(orElements: Filter[]) {
