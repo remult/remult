@@ -65,6 +65,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] entity
     [] controller
     [] and usage FieldType - to send complex parameters
+[] https://docusaurus.io/
 
 [] google sheets gateway
 [] consider "class-validator", integration
