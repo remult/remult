@@ -200,7 +200,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
                 this.ok = false;
         }
     }
-    custom(customItem: any): void {
+    custom(key:string,customItem: any): void {
         throw new Error('Custom Filter should be translated before it gets here');
     }
     or(orElements: Filter[]) {

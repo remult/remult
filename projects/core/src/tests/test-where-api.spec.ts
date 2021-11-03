@@ -1,4 +1,4 @@
-import { Done, testAllDataProviders, TestDataApiResponse, testRestDb, testSql } from './testHelper.spec';
+import { Done, testAllDataProviders, TestDataApiResponse, testInMemoryDb, testRestDb, testSql } from './testHelper.spec';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
@@ -74,34 +74,30 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => entityForCustomFilter.filter({ oneAndThree: true }))))
+        expect(await (c.count(entityForCustomFilter.filter({ oneAndThree: true }))))
             .toBe(2);
     });
     it("works with serialize filter", async () => {
         let z = entityForCustomFilter.oneAndThree();
-        let js = z.toJson();
         let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
 
-        let json = (await Filter.fromEntityFilter(Filter.createFilterFactories(c.metadata), () => entityForCustomFilter.oneAndThree())).toJson();
+        let json = (await Filter.fromEntityFilter(Filter.createFilterFactories(c.metadata), entityForCustomFilter.oneAndThree())).toJson();
 
         expect(json).toEqual({
-            _$custom: {
-                oneAndThree: {}
-            }
+            $custom$oneAndThree: {}
         });
         let json3 = Filter.fromJson(c.metadata, json).toJson();
         expect(json3).toEqual(json);
     })
     it("test that it works", () =>
-        testAllDataProviders(async ({ remult }) => {
-
+        testRestDb(async ({ remult }) => {
             let c = remult.repo(entityForCustomFilter);
             for (let id = 0; id < 5; id++) {
                 await c.create({ id }).save();
             }
-            expect(await (c.count(e => entityForCustomFilter.oneAndThree()))).toBe(2);
-            expect((await (c.findFirst(e => entityForCustomFilter.testNumericValue(2)))).id).toBe(2);
-            expect((await (c.findFirst(e => entityForCustomFilter.testObjectValue({ val: 2 })))).id).toBe(2);
+            expect(await (c.count(entityForCustomFilter.oneAndThree()))).toBe(2);
+            expect((await (c.findFirst(() => [entityForCustomFilter.testNumericValue(2)]))).id).toBe(2);
+            expect((await (c.findFirst(() => [entityForCustomFilter.testObjectValue({ val: 2 })]))).id).toBe(2);
         })
 
     );
@@ -112,9 +108,9 @@ describe("custom filter", () => {
             for (let id = 0; id < 5; id++) {
                 await c.create({ id }).save();
             }
-            expect(await (c.count(e => entityForCustomFilter1.oneAndThree()))).toBe(2);
-            expect((await (c.findFirst(e => entityForCustomFilter1.testNumericValue(2)))).id).toBe(2);
-            expect((await (c.findFirst(e => entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
+            expect(await (c.count(entityForCustomFilter1.oneAndThree()))).toBe(2);
+            expect((await (c.findFirst(() => [entityForCustomFilter1.testNumericValue(2)]))).id).toBe(2);
+            expect((await (c.findFirst(() => [entityForCustomFilter1.testObjectValue({ val: 2 })]))).id).toBe(2);
         })
 
     );
@@ -128,7 +124,7 @@ describe("custom filter", () => {
         }
         expect(await (c.count(e => SqlDatabase.customFilter(async x => x.sql = await e.id.metadata.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
-        expect(await (c.count(e => entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
+        expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
     it("test that it works with arrayFilter", async () => {
 
@@ -139,15 +135,17 @@ describe("custom filter", () => {
         }
         expect(await (c.count(e => ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))))
             .toBe(2);
-        expect(await (c.count(e => entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
-
+        expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
     it("test or and promise in translate", async () => {
         let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(e => Filter.build(e, { id: 4 }).or(entityForCustomFilter.filter({ dbOneOrThree: true }))))).toBe(3);
+        "".toString();
+        expect(await (c.count({
+            OR: [entityForCustomFilter.filter({ dbOneOrThree: true }), { id: 4 }]
+        }))).toBe(3);
     });
     it("test sent in api", async () => {
         let ok = new Done();
@@ -155,7 +153,7 @@ describe("custom filter", () => {
             delete: undefined,
             get: async (url) => {
                 ok.ok();
-                expect(url).toBe('/entityForCustomFilter?__action=count&_%24custom=%7B%22filter%22%3A%7B%22oneAndThree%22%3Atrue%7D%7D');
+                expect(url).toBe('/entityForCustomFilter?__action=count&%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D');
                 return { count: 0 }
 
             },
@@ -164,41 +162,10 @@ describe("custom filter", () => {
         });
         let c = new Remult();
         c.setDataProvider(z);
-        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter({ oneAndThree: true }));
+        await c.repo(entityForCustomFilter).count(entityForCustomFilter.filter({ oneAndThree: true }));
         ok.test();
     });
-    it("test sent in api", async () => {
-        let ok = new Done();
-        let z = new RestDataProvider("", {
-            delete: undefined,
-            post: async (url, data) => {
-                ok.ok();
-                expect(data).toEqual({
-                    "_$custom": [{
-                        "filter":
-                        {
-                            "oneAndThree": true
-                        }
-                    },
-                    {
-                        "filter": {
-                            "two": true
-                        }
-                    }
-                    ]
-                }
-                );
-                return { count: 0 }
 
-            },
-            get: undefined,
-            put: undefined
-        });
-        let c = new Remult();
-        c.setDataProvider(z);
-        await c.repo(entityForCustomFilter).count(e => entityForCustomFilter.filter({ oneAndThree: true }).and(entityForCustomFilter.filter({ two: true })));
-        ok.test();
-    });
     it("test that api reads custom correctly", async () => {
         let remult = new Remult();
         remult.setDataProvider(new InMemoryDataProvider());
@@ -215,8 +182,8 @@ describe("custom filter", () => {
         };
         await api.count(t, {
             get: x => {
-                if (x == customUrlToken)
-                    return "{\"filter\":{\"oneAndThree\":true}}";
+                if (x == customUrlToken + "filter")
+                    return "{\"oneAndThree\":true}";
                 return undefined;
             }
         });
@@ -243,13 +210,12 @@ describe("custom filter", () => {
                 return undefined;
             }
         }, {
-            "_$custom": {
-                "filter":
-                {
-                    "oneAndThree": true
-                }
+            "$custom$filter":
+            {
+                "oneAndThree": true
             }
-        });
+        }
+        );
         d.test();
     });
     it("test that api reads custom correctly 3", async () => {
@@ -263,7 +229,7 @@ describe("custom filter", () => {
         let t = new TestDataApiResponse();
         let d = new Done();
         t.success = data => {
-            expect(data.count).toBe(0);
+            expect(data.count).toBe(2);
             d.ok();
         };
         await api.count(t, {
@@ -273,20 +239,13 @@ describe("custom filter", () => {
                 return undefined;
             }
         }, {
-            "_$custom": [{
-                "filter":
-                {
-                    "oneAndThree": true
-                }
-            },
+            "$custom$filter":
             {
-                "filter":
-                {
-                    "two": true
-                }
+                "oneAndThree": true
             }
-            ]
-        });
+        }
+
+        );
         d.test();
     });
     it("test that api reads custom correctly and translates to db", async () => {
@@ -305,8 +264,8 @@ describe("custom filter", () => {
         };
         await api.count(t, {
             get: x => {
-                if (x == customUrlToken)
-                    return "{\"filter\":{\"dbOneOrThree\":true}}";
+                if (x == customUrlToken + "filter")
+                    return "{\"dbOneOrThree\":true}";
                 return undefined;
             }
         });

@@ -19,7 +19,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 
   constructor(private r: SqlCommand) { }
 
-  custom(customItem: any): void {
+  custom(key:string,customItem: any): void {
     throw new Error("Custom filter should be translated before it gets here");
   }
 

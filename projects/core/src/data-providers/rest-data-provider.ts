@@ -222,7 +222,7 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
           element.forEach(e => url.add(key, e));
       }
       else
-        if (key == customUrlToken)
+        if (key .startsWith(customUrlToken))
           url.add(key, JSON.stringify(element));
         else
           url.add(key, element);

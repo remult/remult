@@ -18,18 +18,20 @@ export class Filter {
     or(filter: Filter): Filter {
         return new OrFilter(this, filter);
     }
-    static createCustom<entityType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): (() => Filter) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => Filter) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => Filter) & customFilterInfo<entityType> {
+    static createCustom<entityType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): (() => FilterRule<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: FilterFactories<entityType>, r: Remult, args: argsType) => (Filter | Filter[] | Promise<Filter> | Promise<Filter[]>)): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType> {
 
         let customFilterInfo = { key: '', customFilterTranslator };
         return Object.assign((x: any) => {
             let z = {};
             if (x == undefined)
                 x = {};
-            z[customFilterInfo.key] = x;
-            return new Filter(x => x.custom(z));
-        }, { customFilterInfo })
+
+            return {
+                [customUrlToken + customFilterInfo.key]: x
+            }
+        }, { customFilterInfo }) as ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType>;
 
     }
     static build<T>(entity: FilterFactories<T>, whereItem: FilterRule<T>) {
@@ -41,7 +43,12 @@ export class Filter {
                     if (key == "OR") {
                         result.push(new OrFilter(...element.map(x => Filter.build(entity, x))))
 
-                    } else {
+                    } else if (key.startsWith(customUrlToken)) {
+                        result.push(new Filter(x => {
+                            x.custom(key.substring(customUrlToken.length), element);
+                        }))
+                    }
+                    else {
                         let fh = entity[key] as (ContainsFilterFactory<any> & ComparisonFilterFactory<any>);
                         let found = false;
                         if (element !== undefined && element != null) {
@@ -120,19 +127,19 @@ export class Filter {
         return r.result;
     }
     static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): Filter {
-        return buildFilterFromRequestParameters([...entityDefs.fields], { get: (key: string) => packed[key] });
+        return buildFilterFromRequestParameters(entityDefs, { get: (key: string) => packed[key] });
 
     }
 
     static async translateCustomWhere<T>(r: Filter, entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, remult: Remult) {
-        let f = new customTranslator(async custom => {
+        let f = new customTranslator(async (filterKey, custom) => {
             let r: Filter[] = [];
             for (const key in entity.entityType) {
 
                 const element = entity.entityType[key] as customFilterInfo<any>;
                 if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
-                    if (custom[element.customFilterInfo.key]) {
-                        r.push(await Filter.fromEntityFilter(filterFactories, f => element.customFilterInfo.customFilterTranslator(f, remult, custom[element.customFilterInfo.key])));
+                    if (element.customFilterInfo.key==filterKey) {
+                        r.push(await Filter.fromEntityFilter(filterFactories, f => element.customFilterInfo.customFilterTranslator(f, remult, custom)));
                     }
                 }
             }
@@ -223,7 +230,7 @@ export interface FilterConsumer {
     containsCaseInsensitive(col: FieldMetadata, val: any): void;
     startsWith(col: FieldMetadata, val: any): void;
     isIn(col: FieldMetadata, val: any[]): void;
-    custom(customItem: any): void;
+    custom(key: string, customItem: any): void;
     databaseCustom(databaseCustom: any): void;
 }
 
@@ -261,17 +268,17 @@ export class OrFilter extends Filter {
 }
 
 
-export const customUrlToken = "_$custom";
+export const customUrlToken = "$custom$";
 export class FilterSerializer implements FilterConsumer {
     result: any = {};
     constructor() {
 
     }
     databaseCustom(databaseCustom: any): void {
-        throw new Error("database custom is not allowed with rest calls.");
+        throw new Error("database custom is not allowed with api calls.");
     }
-    custom(customItem: any): void {
-        this.add(customUrlToken, customItem);
+    custom(key,customItem: any): void {
+        this.add(customUrlToken+key, customItem);
     }
     hasUndefined = false;
     add(key: string, val: any) {
@@ -351,12 +358,12 @@ export async function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where
 
 
 
-export function buildFilterFromRequestParameters(columns: FieldMetadata[], filterInfo: {
+export function buildFilterFromRequestParameters(entity: EntityMetadata, filterInfo: {
     get: (key: string) => any;
 }) {
     let where: Filter[] = [];
 
-    columns.forEach(col => {
+    [...entity.fields].forEach(col => {
         function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false, asString = false) {
             let val = filterInfo.get(col.key + operation);
             if (val !== undefined) {
@@ -422,14 +429,20 @@ export function buildFilterFromRequestParameters(columns: FieldMetadata[], filte
     let val = filterInfo.get('OR');
     if (val)
         where.push(new OrFilter(...val.map(x =>
-            buildFilterFromRequestParameters(columns, { get: (key: string) => x[key] })
+            buildFilterFromRequestParameters(entity, { get: (key: string) => x[key] })
         )));
-    let custom = filterInfo.get(customUrlToken);
-    if (custom !== undefined) {
-        if (!Array.isArray(custom))
-            custom = [custom];
-        where.push(...custom.map(y => new Filter(x => x.custom(y))));
+
+    for (const key in entity.entityType) {
+
+        const element = entity.entityType[key] as customFilterInfo<any>;
+        if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
+            let custom = filterInfo.get(customUrlToken + key);
+            if (custom !== undefined) {
+                where.push(new Filter(x => x.custom(key, custom)));
+            }
+        }
     }
+    
     return new AndFilter(...where);
 }
 
@@ -438,7 +451,7 @@ class customTranslator implements FilterConsumer {
     applyTo(x: FilterConsumer): void {
         this.commands.forEach(y => y(x));
     }
-    constructor(private translateCustom: (custom: any) => Promise<Filter | Filter[]>) { }
+    constructor(private translateCustom: (key: string, custom: any) => Promise<Filter | Filter[]>) { }
 
     commands: ((x: FilterConsumer) => void)[] = [];
     promises: Promise<void>[] = [];
@@ -487,10 +500,10 @@ class customTranslator implements FilterConsumer {
     isIn(col: FieldMetadata<any>, val: any[]): void {
         this.commands.push(x => x.isIn(col, val));
     }
-    custom(customItem: any): void {
+    custom(key: string, customItem: any): void {
         this.promises.push(
             (async () => {
-                let r = await this.translateCustom(customItem);
+                let r = await this.translateCustom(key, customItem);
                 if (r)
                     if (Array.isArray(r))
                         r.forEach(x => x.__applyToConsumer(this));
