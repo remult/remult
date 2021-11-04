@@ -25,7 +25,7 @@ export class Product extends EntityBase {
 ### Find and manipulate data in front end code...
 ```ts
 static increasePriceOfTofu(priceIncrease: number) {
-  const product = await remult.repo(Product).findFirst(p => p.name.isEqualTo('Tofu'));
+  const product = await remult.repo(Product).findFirst({ name:'Tofu' });
 
   product.unitPrice += priceIncrease;
   await product.save();
@@ -35,7 +35,7 @@ static increasePriceOfTofu(priceIncrease: number) {
 ```ts
 @BackendMethod({ allowed: Allow.authenticated })
 static increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
-  const product = await remult.repo(Product).findFirst(p => p.name.isEqualTo('Tofu'));
+  const product = await remult.repo(Product).findFirst({ name:'Tofu' });
 
   product.unitPrice += priceIncrease;
   await product.save();

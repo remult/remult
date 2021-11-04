@@ -49,13 +49,13 @@ export interface EntityOptions<entityType = any> {
   backendPrefilter?: EntityFilter<entityType>;
   /** An order by to be used, in case no order by was specified
    * @example
-   * defaultOrderBy: () => this.name
+   * defaultOrderBy: { name: "asc" }
    * 
    * @example
-   * defaultOrderBy: () => [this.price, this.name]
+   * defaultOrderBy: { price: "asc", name: "asc" }
    * 
    * @example
-   * defaultOrderBy: () => [{ column: this.price, descending: true }, this.name]
+   * defaultOrderBy: { price: "desc", name: "asc" }
    */
   defaultOrderBy?: EntityOrderBy<entityType>,
   /** An event that will be fired before the Entity will be saved to the database.

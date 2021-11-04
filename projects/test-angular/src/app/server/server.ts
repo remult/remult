@@ -40,9 +40,9 @@ serverInit().then(async (dataSource) => {
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
-    
 
-    
+
+
     let remultApi = remultExpress({
         dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
@@ -80,4 +80,13 @@ serverInit().then(async (dataSource) => {
 
     let port = process.env.PORT || 3001;
     app.listen(port);
+});
+
+
+await this.remult.repo(Products).find({
+    orderBy: { name: "asc" }
+    , where: {
+        availableFrom: { "<=": new Date() },
+        availableTo: { ">=": new Date() }
+    }
 });

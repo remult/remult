@@ -60,7 +60,7 @@ export class Category extends IdEntity {
         super();
     }
     tasks = new OneToMany(this.remult.repo(Task), {
-        where: task => task.category!.isEqualTo(this)
+        where: { category: this }
     })
 }
 ```
@@ -116,7 +116,7 @@ export class Category extends IdEntity {
         super();
     }
     tasks = new OneToMany(this.remult.repo(TaskCategories), {
-        where: task => task.category!.isEqualTo(this)
+        where: { category: this }
     })
 }
 ```
@@ -138,7 +138,7 @@ export class Task extends IdEntity {
         super();
     }
     categories = new OneToMany(this.remult.repo(TaskCategories), {
-        where: tc => tc.task!.isEqualTo(this)
+        where: { task: this }
     })
 }
 ```

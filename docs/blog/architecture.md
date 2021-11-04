@@ -87,9 +87,11 @@ export class Product extends EntityBase {
 When you write the following code which runs in the browser:
 ```ts
 await this.remult.repo(Products).find({
-    orderBy: p => p.name
-    , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
-    p.availableTo.isGreaterOrEqualTo(new Date()))
+    orderBy: { name: "asc" }
+    , where: {
+        availableFrom: { "<=": new Date() },
+        availableTo: { ">=": new Date() }
+    }
 });
 ```
 remult will issue an http call to the server using rest, which will look like this:
@@ -129,9 +131,11 @@ The server will then return the data in JSON format to be consumed in the browse
 If we'll run the same code - on the server:
 ```ts
 await this.remult.repo(Products).find({
-    orderBy: p => p.name
-    , where: p => p.availableFrom.isLessOrEqualTo(new Date()).and(
-    p.availableTo.isGreaterOrEqualTo(new Date()))
+    orderBy: { name: "asc" }
+    , where: {
+        availableFrom: { "<=": new Date() },
+        availableTo: { ">=": new Date() }
+    }
 });
 ```
 

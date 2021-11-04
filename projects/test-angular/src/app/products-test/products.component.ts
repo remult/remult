@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, NgZone, OnInit, ViewChild } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller,  FilterFactories, Filter } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller,   Filter } from 'remult';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
@@ -88,31 +88,4 @@ export class stam extends IdEntity {
   async myMethod(remult?: Remult) {
 
   }
-}
-
-let where: EntityFilter<stam> = x => x.name.isEqualTo("a");
-interface otherFilters<T> {
-  ne?: T | T[],
-  gt?: T,
-  gte?: T,
-  lt?: T,
-  lte?: T
-}
-export type Test<entityType> = {
-  [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | otherFilters<entityType[Properties]>;
-}
-export declare type EntityFilter<entityType> = ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter | Promise<Filter>)[] | Promise<Filter[]>));
-export interface Test2<entityType> {
-  OR: Test<entityType>[]
-}
-let w: Test2<stam> | Test<stam>|EntityFilter<stam> = {
-  
-  name: ['abc', "def"],
-  id: {
-    ne: "asd"
-  },
-  OR: [
-    { name: 'a' },
-    { name: 'b' }
-  ]
 }

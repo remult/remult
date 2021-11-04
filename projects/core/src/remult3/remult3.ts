@@ -322,21 +322,18 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 }
 /** Determines the order of rows returned by the query.
  * @example
- * await this.remult.repo(Products).find({ orderBy: p => p.name })
+ * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
  * @example
- * await this.remult.repo(Products).find({ orderBy: p => [p.price, p.name])
+ * await this.remult.repo(Products).find({ orderBy: { price: "asc", name: "asc" }})
  * @example
- * await this.remult.repo(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
+ * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
     [Properties in keyof entityType]?: "asc" | "desc"
 }
 
 
-/**Used to filter the desired result set
- * @example
- * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
- */
+
 export declare type EntityFilter<entityType> = {
     [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
         entityType[Properties] extends number | Date ? ComparisonValueFilter<entityType[Properties]> :
