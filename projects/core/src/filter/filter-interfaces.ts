@@ -120,7 +120,7 @@ export class Filter {
     static entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
         return Filter.fromEntityFilter(entityDefs, where).toJson();
     }
-    static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): EntityFilter<T> {
+    static entityFilterFromJson<T>(entityDefs: EntityMetadata<T>, packed: any): EntityFilter<T> {
         return buildFilterFromRequestParameters(entityDefs, { get: (key: string) => packed[key] });
 
     }

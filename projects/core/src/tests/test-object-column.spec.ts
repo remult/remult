@@ -101,7 +101,7 @@ describe("test object column", () => {
 
         let r = remult.repo(ObjectColumnTest).metadata;
         expect(await remult.repo(ObjectColumnTest).count({ phone1: { $contains: "23" } })).toBe(1);
-        expect(await remult.repo(ObjectColumnTest).count(Filter.fromJson(r, entityFilterToJson(r, {phone1:{$contains:"23"}})))).toBe(1);
+        expect(await remult.repo(ObjectColumnTest).count(Filter.entityFilterFromJson(r, entityFilterToJson(r, {phone1:{$contains:"23"}})))).toBe(1);
     });
     it("test basics with json", async () => {
 

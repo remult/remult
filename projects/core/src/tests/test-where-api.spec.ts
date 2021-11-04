@@ -93,7 +93,7 @@ describe("custom filter", () => {
         expect(json).toEqual({
             $custom$oneAndThree: {}
         });
-        let json3 = Filter.entityFilterToJson(c.metadata, Filter.fromJson(c.metadata, json));
+        let json3 = Filter.entityFilterToJson(c.metadata, Filter.entityFilterFromJson(c.metadata, json));
         expect(json3).toEqual(json);
     })
     it("test that it works", () =>

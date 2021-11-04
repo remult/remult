@@ -447,17 +447,17 @@ describe("test row provider", () => {
       expect(rows.length).toBe(4);
 
       rows = await r.find({
-        where: Filter.fromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'x' }))
+        where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'x' }))
 
       });
       expect(rows.length).toBe(2);
-      rows = await r.find({ where: Filter.fromJson(r.metadata, entityFilterToJson(r.metadata, { id: 4 })) });
+      rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: 4 })) });
       expect(rows.length).toBe(1);
       expect(rows[0].categoryName).toBe('yael');
-      rows = await r.find({ where: Filter.fromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'y', categoryName: 'yoni' })) });
+      rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'y', categoryName: 'yoni' })) });
       expect(rows.length).toBe(1);
       expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: Filter.fromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [2, 4] } })) });
+      rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [2, 4] } })) });
       expect(rows.length).toBe(2);
     })
 
@@ -468,12 +468,12 @@ describe("test row provider", () => {
     expect(rows.length).toBe(4);
 
     rows = await r.find({
-      where: Filter.fromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'x' }))
+      where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'x' }))
 
     });
-    rows = await r.find({ where: Filter.fromJson(r.metadata, entityFilterToJson(r.metadata, { id: [1, 3] })) });
+    rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: [1, 3] })) });
     expect(rows.length).toBe(2);
-    rows = await r.find({ where: Filter.fromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [1, 2, 3] } })) });
+    rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [1, 2, 3] } })) });
     expect(rows.length).toBe(1);
 
   });

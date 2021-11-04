@@ -124,7 +124,7 @@ export class DataApi<T = any> {
       }));
     }
     if (filterBody)
-      where.push(Filter.fromJson(this.repository.metadata, filterBody))
+      where.push(Filter.entityFilterFromJson(this.repository.metadata, filterBody))
     return { $and: where };
   }
 

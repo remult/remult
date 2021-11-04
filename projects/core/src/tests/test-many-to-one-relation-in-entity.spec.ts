@@ -355,7 +355,7 @@ describe("many to one relation", () => {
                 console.log(x);
                 return x;
             }
-            expect(await repo.count(log(Filter.fromJson(repo.metadata, log(entityFilterToJson(repo.metadata,
+            expect(await repo.count(log(Filter.entityFilterFromJson(repo.metadata, log(entityFilterToJson(repo.metadata,
                 where)))))).toBe(expected, "packed where");
         }
 
