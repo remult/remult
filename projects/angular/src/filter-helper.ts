@@ -3,7 +3,7 @@ import { AndFilter, Filter } from 'remult';
 import { ComparisonFilterFactory, FieldRef, EntityFilter, FindOptions, Repository, ContainsFilterFactory, getEntityRef } from "remult";
 import { FieldMetadata } from "remult";
 import { getFieldDefinition } from '..';
-import { FilterRule, getEntitySettings } from 'remult/src/remult3';
+import {  getEntitySettings } from 'remult/src/remult3';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
@@ -51,10 +51,10 @@ export class FilterHelper<rowType> {
           f = { $gte: v, $lt: (new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1)) };
         }
       }
-      let w = { [c.key]: val } as FilterRule<any>;
+      let w = { [c.key]: val } as EntityFilter<any>;
       if (opt.where) {
         let x = opt.where;
-        opt.where = { $and: [x, w] } as FilterRule<any>;
+        opt.where = { $and: [x, w] } as EntityFilter<any>;
       }
       else opt.where = w;
     });

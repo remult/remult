@@ -4,7 +4,7 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories, FilterRule, FindOptions, Repository } from '../remult3';
+import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories,  EntityFilter, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
@@ -292,7 +292,7 @@ class entityForCustomFilter extends EntityBase {
         two?: boolean
     }>(async (e, remult, c) => {
 
-        let r: FilterRule<entityForCustomFilter>[] = [];
+        let r: EntityFilter<entityForCustomFilter>[] = [];
         if (c.oneAndThree)
             r.push({ id: [1, 3] });
         if (c.two)

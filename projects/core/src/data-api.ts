@@ -2,7 +2,7 @@ import { EntityOptions } from './entity';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation, FilterRule } from './remult3';
+import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation,  EntityFilter } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -109,8 +109,8 @@ export class DataApi<T = any> {
       response.error(err);
     }
   }
-  private buildWhere(request: DataApiRequest, filterBody: any): FilterRule<any> {
-    var where: FilterRule<any>[] = [];
+  private buildWhere(request: DataApiRequest, filterBody: any): EntityFilter<any> {
+    var where: EntityFilter<any>[] = [];
 
     where.push(this.options?.get?.where);
     if (request) {
@@ -136,7 +136,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: { $and: [this.options?.get?.where, this.repository.metadata.idMetadata.getIdFilter(id)] } as FilterRule<any>
+        where: { $and: [this.options?.get?.where, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
       })
         .then(async r => {
           if (r.length == 0)

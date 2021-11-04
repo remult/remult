@@ -1,13 +1,13 @@
 import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { customDatabaseFilterToken, Filter, FilterConsumer } from '../filter/filter-interfaces';
 import { FieldMetadata } from '../column-interfaces';
-import { EntityMetadata, FilterRule } from '../remult3';
+import { EntityMetadata,  EntityFilter } from '../remult3';
 import { CompoundIdField } from '../column';
 import { Sort } from '../sort';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    static customFilter(filter: CustomArrayFilter): FilterRule<any> {
+    static customFilter(filter: CustomArrayFilter): EntityFilter<any> {
         return {
             [customDatabaseFilterToken]: {
                 arrayFilter: filter

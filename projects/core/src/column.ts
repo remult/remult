@@ -5,7 +5,7 @@ import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import { FilterRule, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
+import {  EntityFilter, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -58,7 +58,7 @@ export class CompoundIdField implements FieldMetadata<string> {
   dbName: string;
 
   valueType: any
-  isEqualTo(value: FieldMetadata<string> | string): FilterRule<any> {
+  isEqualTo(value: FieldMetadata<string> | string): EntityFilter<any> {
     let result = {};
     let val = value.toString();
     let id = val.split(',');

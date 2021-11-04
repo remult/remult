@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, FilterRule } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -34,11 +34,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             values.set(s.field.key, existingVal);
         }
 
-        let r: FilterRule<any> = { $or: [] };
+        let r: EntityFilter<any> = { $or: [] };
         let equalToColumn: FieldMetadata[] = [];
         for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
             let ff = new filterHelper(s.field);
-            let f: FilterRule<any> = {};
+            let f: EntityFilter<any> = {};
             for (const c of equalToColumn) {
                 f[c.key] = values.get(c.key);
             }
@@ -193,7 +193,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                             return { value: <entityType>undefined, done: true };
                         let prev = items;
                         items = await cont.find({
-                            where: { $and: [opts.where, nextPageFilter] } as FilterRule<entityType>,
+                            where: { $and: [opts.where, nextPageFilter] } as EntityFilter<entityType>,
                             orderBy: opts.orderBy,
                             limit: pageSize,
                             load: opts.load
@@ -292,7 +292,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
-    async findFirst(where?: FilterRule<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType> {
+    async findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType> {
 
         if (!options)
             options = {};
@@ -304,7 +304,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                         w,
                         where
                     ]
-                } as FilterRule<entityType>;
+                } as EntityFilter<entityType>;
             }
             else options.where = where;
         }
@@ -1194,7 +1194,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     idMetadata: IdMetadata<T> = {
         field: undefined,
-        createIdInFilter: (items: T[]): FilterRule<any> => {
+        createIdInFilter: (items: T[]): EntityFilter<any> => {
             if (items.length > 0)
                 return {
                     $or: items.map(x => this.idMetadata.getIdFilter(getEntityRef(x).getId()))
@@ -1205,7 +1205,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         isIdField: (col: FieldMetadata<any>): boolean => {
             return col.key == this.idMetadata.field.key;
         },
-        getIdFilter: (id: any): FilterRule<any> => {
+        getIdFilter: (id: any): EntityFilter<any> => {
             if (this.idMetadata.field instanceof CompoundIdField)
                 return this.idMetadata.field.isEqualTo(id);
             else return {

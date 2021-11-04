@@ -270,9 +270,9 @@ export interface FieldRef<entityType = any, valueType = any> {
 export interface IdMetadata<entityType = any> {
 
     field: FieldMetadata<any>;
-    getIdFilter(id: any): FilterRule<entityType>;
+    getIdFilter(id: any): EntityFilter<entityType>;
     isIdField(col: FieldMetadata): boolean;
-    createIdInFilter(items: entityType[]): FilterRule<entityType>;
+    createIdInFilter(items: entityType[]): EntityFilter<entityType>;
 
 }
 
@@ -292,7 +292,7 @@ export interface Repository<entityType> {
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
     iterate(options?: IterateOptions<entityType>): IterableResult<entityType>;
-    findFirst(where?: FilterRule<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
+    findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
     create(item?: Partial<entityType>): entityType;
@@ -334,7 +334,16 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityFilter<entityType> = FilterRule<entityType>;
+export declare type EntityFilter<entityType> = {
+    [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
+        entityType[Properties] extends number | Date ? otherComparisonFilters<entityType[Properties]> :
+        entityType[Properties] extends string ? containsStringFilter & otherComparisonFilters<string> :
+        entityType[Properties] extends boolean ? otherFilters<boolean> :
+        otherFilters<entityType[Properties]>) & containsStringFilter;
+} & {
+    $or?: EntityFilter<entityType>[];
+    $and?: EntityFilter<entityType>[];
+}
 
 
 
@@ -358,16 +367,7 @@ interface containsStringFilter {
 
 }
 
-export type FilterRule<entityType> = {
-    [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
-        entityType[Properties] extends number | Date ? otherComparisonFilters<entityType[Properties]> :
-        entityType[Properties] extends string ? containsStringFilter & otherComparisonFilters<string> :
-        entityType[Properties] extends boolean ? otherFilters<boolean> :
-        otherFilters<entityType[Properties]>) & containsStringFilter;
-} & {
-    $or?: FilterRule<entityType>[];
-    $and?: FilterRule<entityType>[];
-}
+
 
 
 

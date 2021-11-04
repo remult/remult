@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory, FilterRule } from "../remult3";
+import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory } from "../remult3";
 
 
 export class Filter {
@@ -18,9 +18,9 @@ export class Filter {
     or(filter: Filter): Filter {
         return new OrFilter(this, filter);
     }
-    static createCustom<entityType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult) => FilterRule<entityType> | Promise<FilterRule<entityType>>): (() => FilterRule<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => FilterRule<entityType> | Promise<FilterRule<entityType>>): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => FilterRule<entityType> | Promise<FilterRule<entityType>>): ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType> {
+    static createCustom<entityType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType> {
 
         let customFilterInfo = { key: '', customFilterTranslator };
         return Object.assign((x: any) => {
@@ -31,10 +31,10 @@ export class Filter {
             return {
                 [customUrlToken + customFilterInfo.key]: x
             }
-        }, { customFilterInfo }) as ((y: argsType) => FilterRule<entityType>) & customFilterInfo<entityType>;
+        }, { customFilterInfo }) as ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
 
     }
-    static build<T>(entity: FilterFactories<T>, whereItem: FilterRule<T>) {
+    static build<T>(entity: FilterFactories<T>, whereItem: EntityFilter<T>) {
         let result: Filter[] = [];
         for (const key in whereItem) {
             if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
@@ -142,7 +142,7 @@ export class Filter {
     static entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
         return Filter.build(Filter.createFilterFactories(entityDefs), where).toJson();
     }
-    static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): FilterRule<T> {
+    static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): EntityFilter<T> {
         return buildFilterFromRequestParameters(entityDefs, { get: (key: string) => packed[key] });
 
     }
@@ -371,8 +371,8 @@ export function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: Enti
 
 export function buildFilterFromRequestParameters(entity: EntityMetadata, filterInfo: {
     get: (key: string) => any;
-}): FilterRule<any> {
-    let where: FilterRule<any>[] = [];
+}): EntityFilter<any> {
+    let where: EntityFilter<any>[] = [];
 
     [...entity.fields].forEach(col => {
         function addFilter(operation: string, theFilter: (val: any) => (any | { "!=" }), jsonArray = false, asString = false) {
@@ -538,7 +538,7 @@ class customTranslator implements FilterConsumer {
 export interface customFilterInfo<entityType> {
     customFilterInfo: {
         key: string;
-        customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: any) => (FilterRule<entityType> | Promise<FilterRule<entityType>>);
+        customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: any) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
     }
 
 }
