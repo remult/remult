@@ -4,7 +4,7 @@ import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
-import { ComparisonFilterFactory, ContainsFilterFactory, Entity, EntityBase, Field, FilterFactories,  EntityFilter, FindOptions, Repository } from '../remult3';
+import { Entity, EntityBase, Field, EntityFilter, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
@@ -88,7 +88,7 @@ describe("custom filter", () => {
         let z = entityForCustomFilter.oneAndThree();
         let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
 
-        let json = (await Filter.fromEntityFilter(Filter.createFilterFactories(c.metadata), entityForCustomFilter.oneAndThree())).toJson();
+        let json = (await Filter.fromEntityFilter(c.metadata, entityForCustomFilter.oneAndThree())).toJson();
 
         expect(json).toEqual({
             $custom$oneAndThree: {}

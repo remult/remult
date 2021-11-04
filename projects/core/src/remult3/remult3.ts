@@ -336,10 +336,10 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  */
 export declare type EntityFilter<entityType> = {
     [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
-        entityType[Properties] extends number | Date ? otherComparisonFilters<entityType[Properties]> :
-        entityType[Properties] extends string ? containsStringFilter & otherComparisonFilters<string> :
-        entityType[Properties] extends boolean ? otherFilters<boolean> :
-        otherFilters<entityType[Properties]>) & containsStringFilter;
+        entityType[Properties] extends number | Date ? ComparisonValueFilter<entityType[Properties]> :
+        entityType[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
+        entityType[Properties] extends boolean ? ValueFilter<boolean> :
+        ValueFilter<entityType[Properties]>) & ContainsStringValueFilter;
 } & {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
@@ -347,12 +347,12 @@ export declare type EntityFilter<entityType> = {
 
 
 
-interface otherFilters<T> {
+export interface ValueFilter<T> {
     $ne?: T | T[],
     "!="?: T | T[],
 
 }
-interface otherComparisonFilters<T> extends otherFilters<T> {
+export interface ComparisonValueFilter<T> extends ValueFilter<T> {
     $gt?: T,
     ">"?: T,
     $gte?: T,
@@ -362,42 +362,12 @@ interface otherComparisonFilters<T> extends otherFilters<T> {
     $lte?: T
     "<="?: T
 }
-interface containsStringFilter {
+export interface ContainsStringValueFilter {
     $contains?: string,
 
 }
 
 
-
-
-
-
-
-export interface FilterFactory<valueType> {
-    isEqualTo(val: valueType): Filter;
-    isDifferentFrom(val: valueType);
-    isIn(val: valueType[]): Filter;
-    isNotIn(val: valueType[]): Filter;
-    metadata: FieldMetadata;
-}
-
-export interface ComparisonFilterFactory<valueType> extends FilterFactory<valueType> {
-
-
-    isLessOrEqualTo(val: valueType): Filter;
-    isLessThan(val: valueType): Filter;
-    isGreaterThan(val: valueType): Filter;
-    isGreaterOrEqualTo(val: valueType): Filter;
-}
-export interface ContainsFilterFactory<valueType> extends FilterFactory<valueType> {
-    contains(val: string): Filter;
-}
-
-export type FilterFactories<entityType> = {
-    [Properties in keyof entityType]: entityType[Properties] extends number | Date ? ComparisonFilterFactory<entityType[Properties]> :
-    entityType[Properties] extends string ? (ContainsFilterFactory<entityType[Properties]> & ComparisonFilterFactory<entityType[Properties]>) :
-    ContainsFilterFactory<entityType[Properties]>
-}
 export interface LoadOptions<entityType> {
     load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]
 }

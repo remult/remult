@@ -116,7 +116,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     private idMatches(id: any): (item: any) => boolean {
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
-            Filter.fromEntityFilter(Filter.createFilterFactories(this.entity), this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(x);
+            Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(x);
             return x.ok;
         };
     }

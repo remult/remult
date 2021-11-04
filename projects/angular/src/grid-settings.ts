@@ -1,4 +1,4 @@
-import { AndFilter, FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository, Filter } from "remult";
+import { FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository } from "remult";
 
 import { DataList } from "./angular/dataList";
 

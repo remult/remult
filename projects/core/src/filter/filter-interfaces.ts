@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import { ComparisonFilterFactory, EntityMetadata, EntityFilter, FilterFactories, FilterFactory, getEntityRef, getEntitySettings, SortSegments, ContainsFilterFactory } from "../remult3";
+import {  EntityMetadata, EntityFilter,  getEntityRef, getEntitySettings } from "../remult3";
 
 
 export class Filter {
@@ -11,12 +11,6 @@ export class Filter {
     }
     __applyToConsumer(add: FilterConsumer) {
         this.apply(add);
-    }
-    and(filter: Filter): Filter {
-        return new AndFilter(this, filter);
-    }
-    or(filter: Filter): Filter {
-        return new OrFilter(this, filter);
     }
     static createCustom<entityType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
     static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
@@ -34,17 +28,17 @@ export class Filter {
         }, { customFilterInfo }) as ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
 
     }
-    static build<T>(entity: FilterFactories<T>, whereItem: EntityFilter<T>) {
+    static fromEntityFilter<T>(entity: EntityMetadata<T>, whereItem: EntityFilter<T>) :Filter{
         let result: Filter[] = [];
         for (const key in whereItem) {
             if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
                 const fieldToFilter: any = whereItem[key];
                 {
                     if (key == "$or") {
-                        result.push(new OrFilter(...fieldToFilter.map(x => Filter.build(entity, x))))
+                        result.push(new OrFilter(...fieldToFilter.map(x => Filter.fromEntityFilter(entity, x))))
 
                     } else if (key == "$and") {
-                        result.push(new AndFilter(...fieldToFilter.map(x => Filter.build(entity, x))))
+                        result.push(new AndFilter(...fieldToFilter.map(x => Filter.fromEntityFilter(entity, x))))
 
                     } else if (key.startsWith(customUrlToken)) {
                         result.push(new Filter(x => {
@@ -54,7 +48,7 @@ export class Filter {
                         result.push(new Filter(x => x.databaseCustom(fieldToFilter)));
                     }
                     else {
-                        let fh = entity[key] as (ContainsFilterFactory<any> & ComparisonFilterFactory<any>);
+                        let fh =  new filterHelper(entity.fields[key]);
                         let found = false;
                         if (fieldToFilter !== undefined && fieldToFilter != null) {
                             for (const key in fieldToFilter) {
@@ -115,24 +109,8 @@ export class Filter {
         }
         return new AndFilter(...result);
     }
-    static createFilterFactories<T>(entityDefs: EntityMetadata<T>): FilterFactories<T> {
-        let r = {};
-        for (const c of entityDefs.fields) {
-            r[c.key] = new filterHelper(c);
-        }
-        return r as FilterFactories<T>;
-    }
 
-
-    static fromEntityFilter<T>(entity: FilterFactories<T>, ...where: EntityFilter<T>[]): Filter {
-        let result: Filter[] = [];
-        for (const whereItem of where) {
-            {
-                result.push(Filter.build<T>(entity, whereItem));
-            }
-        }
-        return new AndFilter(...result);
-    }
+   
 
     toJson() {
         let r = new FilterSerializer();
@@ -140,14 +118,14 @@ export class Filter {
         return r.result;
     }
     static entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
-        return Filter.build(Filter.createFilterFactories(entityDefs), where).toJson();
+        return Filter.fromEntityFilter(entityDefs, where).toJson();
     }
     static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): EntityFilter<T> {
         return buildFilterFromRequestParameters(entityDefs, { get: (key: string) => packed[key] });
 
     }
 
-    static async translateCustomWhere<T>(r: Filter, entity: EntityMetadata<T>, filterFactories: FilterFactories<T>, remult: Remult) {
+    static async translateCustomWhere<T>(r: Filter, entity: EntityMetadata<T>, filterFactories: EntityMetadata<T>, remult: Remult) {
         let f = new customTranslator(async (filterKey, custom) => {
             let r: Filter[] = [];
             for (const key in entity.entityType) {
@@ -168,7 +146,7 @@ export class Filter {
     }
 
 }
-export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory<any>, ContainsFilterFactory<any>  {
+export class filterHelper   {
     constructor(public metadata: FieldMetadata) {
 
     }
@@ -361,7 +339,7 @@ export class FilterSerializer implements FilterConsumer {
 export function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
     if (!where)
         return {};
-    return (Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where)).toJson();
+    return (Filter.fromEntityFilter(entityDefs, where)).toJson();
 
 
 }

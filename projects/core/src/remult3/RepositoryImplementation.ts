@@ -399,10 +399,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 ]
             } as EntityFilter<entityType>;
         }
-        let filterFactories = Filter.createFilterFactories(this.metadata)
-        let r = await Filter.fromEntityFilter(filterFactories, where);
+        let r = await Filter.fromEntityFilter(this.metadata, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
-            r = await Filter.translateCustomWhere(r, this.metadata, filterFactories, this.remult);
+            r = await Filter.translateCustomWhere(r, this.metadata, this.metadata, this.remult);
         }
         return r;
 
@@ -412,7 +411,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
-    let w = Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where);
+    let w = Filter.fromEntityFilter(entityDefs, where);
 
     if (w) {
         w.__applyToConsumer({
@@ -774,7 +773,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
     private getIdFilter(): Filter {
-        return Filter.build(Filter.createFilterFactories(this.metadata), this.repository.metadata.idMetadata.getIdFilter(this.id));
+        return Filter.fromEntityFilter(this.metadata, this.repository.metadata.idMetadata.getIdFilter(this.id));
     }
 
     async delete() {

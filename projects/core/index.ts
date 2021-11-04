@@ -17,15 +17,13 @@ export {
     Repository,
     FieldType,
     FindFirstOptions,
-
-    ComparisonFilterFactory,
-    FilterFactories,
-    FilterFactory,
+    ComparisonValueFilter,
+    ValueFilter,
+    ContainsStringValueFilter,
     getFields,
     EntityRef,
     getEntityRef,
     SortSegments,
-    ContainsFilterFactory,
     ValueListFieldType,
     DateOnlyField,
     IntegerField,
@@ -91,7 +89,7 @@ export {
 } from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
-export { Filter, AndFilter, OrFilter } from './src/filter/filter-interfaces';
+export { Filter } from './src/filter/filter-interfaces';
 export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-bridge-to-sql-request';
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';

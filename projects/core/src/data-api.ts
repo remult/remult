@@ -2,7 +2,7 @@ import { EntityOptions } from './entity';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation,  EntityFilter } from './remult3';
+import {  FindOptions, Repository, EntityRef, rowHelperImplementation,  EntityFilter } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -58,7 +58,7 @@ export class DataApi<T = any> {
       findOptions.where = this.buildWhere(request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
-        let w = await Filter.fromEntityFilter(Filter.createFilterFactories(this.repository.metadata), findOptions.where);
+        let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
         if (w) {
           w.__applyToConsumer({
             containsCaseInsensitive: () => { },
