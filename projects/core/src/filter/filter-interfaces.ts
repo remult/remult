@@ -124,16 +124,10 @@ export class Filter {
     }
 
 
-    static async fromEntityFilter<T>(entity: FilterFactories<T>, ...where: EntityFilter<T>[]): Promise<Filter> {
+    static fromEntityFilter<T>(entity: FilterFactories<T>, ...where: EntityFilter<T>[]): Filter {
         let result: Filter[] = [];
         for (const whereItem of where) {
-            if (typeof whereItem === "function") {
-                let r = await whereItem(entity);
-                if (Array.isArray(r))
-                    result.push(...(await Promise.all(r)).map(x => x instanceof Filter ? x : Filter.build(entity, x)));
-                else result.push(await r);
-            }
-            else {
+            {
                 result.push(Filter.build<T>(entity, whereItem));
             }
         }
@@ -145,7 +139,10 @@ export class Filter {
         this.__applyToConsumer(r);
         return r.result;
     }
-    static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): Filter {
+    static entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
+        return Filter.build(Filter.createFilterFactories(entityDefs), where).toJson();
+    }
+    static fromJson<T>(entityDefs: EntityMetadata<T>, packed: any): FilterRule<T> {
         return buildFilterFromRequestParameters(entityDefs, { get: (key: string) => packed[key] });
 
     }
@@ -158,7 +155,7 @@ export class Filter {
                 const element = entity.entityType[key] as customFilterInfo<any>;
                 if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
                     if (element.customFilterInfo.key == filterKey) {
-                        r.push(await Filter.fromEntityFilter(filterFactories,  await element.customFilterInfo.customFilterTranslator(entity, remult, custom)));
+                        r.push(await Filter.fromEntityFilter(filterFactories, await element.customFilterInfo.customFilterTranslator(entity, remult, custom)));
                     }
                 }
             }
@@ -186,9 +183,6 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
             return getEntityRef(val).getId();
         }
         return val;
-    }
-    startsWith(val: any): Filter {
-        return new Filter(add => add.startsWith(this.metadata, val));
     }
 
     contains(val: string): Filter {
@@ -226,7 +220,7 @@ export class filterHelper implements FilterFactory<any>, ComparisonFilterFactory
     }
     isEqualTo(val: any): Filter {
         val = this.processVal(val);
-        if ((val === null || val === undefined) && this.metadata.allowNull)
+        if ((val === null || val === undefined&& this.metadata.allowNull) )
             return new Filter(add => add.isNull(this.metadata));
         return new Filter(add => add.isEqualTo(this.metadata, val));
     }
@@ -247,7 +241,6 @@ export interface FilterConsumer {
     isLessOrEqualTo(col: FieldMetadata, val: any): void;
     isLessThan(col: FieldMetadata, val: any): void;
     containsCaseInsensitive(col: FieldMetadata, val: any): void;
-    startsWith(col: FieldMetadata, val: any): void;
     isIn(col: FieldMetadata, val: any[]): void;
     custom(key: string, customItem: any): void;
     databaseCustom(databaseCustom: any): void;
@@ -361,16 +354,14 @@ export class FilterSerializer implements FilterConsumer {
     public containsCaseInsensitive(col: FieldMetadata, val: any): void {
         this.add(col.key + "_contains", val);
     }
-    public startsWith(col: FieldMetadata, val: any): void {
-        this.add(col.key + "_st", col.valueConverter.toJson(val));
-    }
+   
 }
 
 
-export async function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
+export function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>) {
     if (!where)
         return {};
-    return (await Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where)).toJson();
+    return (Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where)).toJson();
 
 
 }
@@ -380,11 +371,11 @@ export async function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where
 
 export function buildFilterFromRequestParameters(entity: EntityMetadata, filterInfo: {
     get: (key: string) => any;
-}) {
-    let where: Filter[] = [];
+}): FilterRule<any> {
+    let where: FilterRule<any>[] = [];
 
     [...entity.fields].forEach(col => {
-        function addFilter(operation: string, theFilter: (val: any) => Filter, jsonArray = false, asString = false) {
+        function addFilter(operation: string, theFilter: (val: any) => (any | { "!=" }), jsonArray = false, asString = false) {
             let val = filterInfo.get(col.key + operation);
             if (val !== undefined) {
                 let addFilter = (val: any) => {
@@ -401,7 +392,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
                     }
                     let f = theFilter(theVal);
                     if (f) {
-                        where.push(f);
+                        where.push({ [col.key]: f });
                     }
                 };
                 if (!jsonArray && val instanceof Array) {
@@ -414,14 +405,13 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
             }
         }
         let c = new filterHelper(col);
-        addFilter('', val => c.isEqualTo(val));
-        addFilter('_gt', val => c.isGreaterThan(val));
-        addFilter('_gte', val => c.isGreaterOrEqualTo(val));
-        addFilter('_lt', val => c.isLessThan(val));
-        addFilter('_lte', val => c.isLessOrEqualTo(val));
-        addFilter('_ne', val => c.isDifferentFrom(val));
-        addFilter('_in', val =>
-            c.isIn(val), true);
+        addFilter('', val => val);
+        addFilter('_gt', val => ({ "$gt": val }));
+        addFilter('_gte', val => ({ "$gte": val }));
+        addFilter('_lt', val => ({ "$lt": val }));
+        addFilter('_lte', val => ({ "$lte": val }));
+        addFilter('_ne', val => ({ "$ne": val }));
+        addFilter('_in', val => val, true);
         var nullFilter = filterInfo.get(col.key + "_null");
         if (nullFilter) {
             nullFilter = nullFilter.toString().trim().toLowerCase();
@@ -429,28 +419,25 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
                 case "y":
                 case "true":
                 case "yes":
-                    where.push(c.isEqualTo(null));
+                    where.push({ [col.key]: null });
                     break;
                 default:
-                    where.push(c.isDifferentFrom(null));
+                    where.push({ [col.key]: { "$ne": null } });
                     break;
             }
         }
 
-        addFilter('_contains', val => {
+        addFilter('_contains', val => ({ $contains: val })
+            , false, true);
 
-            return c.contains(val);
-
-        }, false, true);
-        addFilter('_st', val => {
-            return c.startsWith(val);
-        });
     });
     let val = filterInfo.get('OR');
     if (val)
-        where.push(new OrFilter(...val.map(x =>
-            buildFilterFromRequestParameters(entity, { get: (key: string) => x[key] })
-        )));
+        where.push({
+            $or: val.map(x =>
+                buildFilterFromRequestParameters(entity, { get: (key: string) => x[key] })
+            )
+        });
 
     for (const key in entity.entityType) {
 
@@ -458,12 +445,12 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
         if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
             let custom = filterInfo.get(customUrlToken + key);
             if (custom !== undefined) {
-                where.push(new Filter(x => x.custom(key, custom)));
+                where.push({ [customUrlToken + key]: custom });
             }
         }
     }
 
-    return new AndFilter(...where);
+    return { $and: where };
 }
 
 
@@ -514,9 +501,7 @@ class customTranslator implements FilterConsumer {
     containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
         this.commands.push(x => x.containsCaseInsensitive(col, val));
     }
-    startsWith(col: FieldMetadata<any>, val: any): void {
-        this.commands.push(x => x.startsWith(col, val));
-    }
+   
     isIn(col: FieldMetadata<any>, val: any[]): void {
         this.commands.push(x => x.isIn(col, val));
     }

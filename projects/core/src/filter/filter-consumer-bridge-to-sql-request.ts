@@ -84,9 +84,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       this.addToWhere('lower (' + await col.getDbName() + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
     })());
   }
-  public startsWith(col: FieldMetadata, val: any): void {
-    this.add(col, val + '%', 'like');
-  }
+
   private add(col: FieldMetadata, val: any, operator: string) {
     this.promises.push((async () => {
       let x = await col.getDbName() + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val));

@@ -54,7 +54,7 @@ export class SqlDatabase implements DataProvider {
       }
     });
   }
-  static customFilter(build: CustomSqlFilterBuilderFunction):FilterRule<any> {
+  static customFilter(build: CustomSqlFilterBuilderFunction): FilterRule<any> {
     return {
       [customDatabaseFilterToken]: {
         buildSql: build
@@ -217,7 +217,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.idMetadata.getIdFilter(id).__applyToConsumer(f);
+    Filter.fromEntityFilter(Filter.createFilterFactories(this.entity),this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
 
     let statement = 'update ' + await this.entity.getDbName() + ' set ';
     let added = false;
@@ -244,7 +244,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     statement += await f.resolveWhere();
 
     return r.execute(statement).then(() => {
-      return this.find({ where: resultFilter }).then(y => y[0]);
+      return this.find({ where: Filter.fromEntityFilter(Filter.createFilterFactories(this.entity), resultFilter) }).then(y => y[0]);
     });
 
 
@@ -254,7 +254,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    this.entity.idMetadata.getIdFilter(id).__applyToConsumer(f);
+    Filter.fromEntityFilter(Filter.createFilterFactories(this.entity),this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
     let statement = 'delete from ' + await this.entity.getDbName();
     statement += await f.resolveWhere();
     return r.execute(statement).then(() => { });
@@ -271,7 +271,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     if (this.entity.idMetadata.field instanceof CompoundIdField)
       resultFilter = this.entity.idMetadata.field.resultIdFilter(undefined, data);
     else
-      resultFilter = this.entity.idMetadata.getIdFilter(data[this.entity.idMetadata.field.key]);
+      resultFilter = Filter.fromEntityFilter(Filter.createFilterFactories(this.entity), this.entity.idMetadata.getIdFilter(data[this.entity.idMetadata.field.key]));
     for (const x of this.entity.fields) {
 
       if (await isDbReadonly(x)) { }

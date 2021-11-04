@@ -3,7 +3,7 @@ import { AndFilter, Filter } from 'remult';
 import { ComparisonFilterFactory, FieldRef, EntityFilter, FindOptions, Repository, ContainsFilterFactory, getEntityRef } from "remult";
 import { FieldMetadata } from "remult";
 import { getFieldDefinition } from '..';
-import { getEntitySettings } from 'remult/src/remult3';
+import { FilterRule, getEntitySettings } from 'remult/src/remult3';
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
@@ -36,31 +36,25 @@ export class FilterHelper<rowType> {
 
       //@ts-ignore
       let val = this.filterRow[c.key];
-      let w: EntityFilter<rowType> = item => {
-        let itemForFilter: ComparisonFilterFactory<any> & ContainsFilterFactory<any> = item[c.key];
-        let f: Filter = itemForFilter.isEqualTo(val);
-        if (c.valueType != Number &&
-          c.valueType != Date &&
-          c.valueType != Boolean &&
-          getEntitySettings(c.valueType, false) == undefined &&
-          !this.forceEqual.find(x => c.key == x.key))
-          f = itemForFilter.contains(getEntityRef(this.filterRow).fields[c.key].inputValue);
-        else if (c.valueType == Date) {
-          if (val) {
-            let v = <Date>val;
-            v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
+      let f: any = val;
+      if (c.valueType != Number &&
+        c.valueType != Date &&
+        c.valueType != Boolean &&
+        getEntitySettings(c.valueType, false) == undefined &&
+        !this.forceEqual.find(x => c.key == x.key))
+        f = { $contains: getEntityRef(this.filterRow).fields[c.key].inputValue };
+      else if (c.valueType == Date) {
+        if (val) {
+          let v = <Date>val;
+          v = new Date(v.getFullYear(), v.getMonth(), v.getDate());
 
-            f = itemForFilter.isGreaterOrEqualTo(v).and(itemForFilter.isLessThan((new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1))));
-          }
+          f = { $gte: v, $lt: (new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1)) };
         }
-        return f;
-
       }
-
-
+      let w = { [c.key]: val } as FilterRule<any>;
       if (opt.where) {
         let x = opt.where;
-        opt.where = y => Filter.fromEntityFilter(y, x, w);
+        opt.where = { $and: [x, w] } as FilterRule<any>;
       }
       else opt.where = w;
     });

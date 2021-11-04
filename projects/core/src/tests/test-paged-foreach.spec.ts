@@ -39,8 +39,7 @@ describe("test paged foreach ", () => {
         });
         let i = 0;
         for await (const x of c.iterate({
-            where: x =>
-                x.categoryName.isGreaterOrEqualTo("n")
+            where: { categoryName: { ">=": "n" } }
         })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
         }

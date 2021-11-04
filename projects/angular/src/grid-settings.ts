@@ -1,4 +1,5 @@
 import { AndFilter, FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository, Filter } from "remult";
+import { FilterRule } from "../../core/src/remult3";
 import { DataList } from "./angular/dataList";
 
 import { FieldCollection } from "./column-collection";
@@ -462,10 +463,10 @@ export class GridSettings<rowType>  {
     if (this.selectedRows.length > 0 && !this._selectedAll) {
       if (r.where) {
         let x = r.where;
-        r.where = e => [Filter.fromEntityFilter(e, x), this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)];
+        r.where = { $and: [x, this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)] } as FilterRule<any>;
       }
       else
-        r.where = e => this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows);
+        r.where = this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows);
     }
     return r;
   }

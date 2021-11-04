@@ -116,7 +116,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     private idMatches(id: any): (item: any) => boolean {
         return item => {
             let x = new FilterConsumerBridgeToObject(item);
-            this.entity.idMetadata.getIdFilter(id).__applyToConsumer(x);
+            Filter.fromEntityFilter(Filter.createFilterFactories(this.entity), this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(x);
             return x.ok;
         };
     }
@@ -279,17 +279,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
-    public startsWith(col: FieldMetadata, val: any): void {
-        let v = this.row[col.key];
-        if (!v) {
-            this.ok = false;
-            return;
-        }
-
-        let s = '' + v;
-        if (s.indexOf(col.valueConverter.toJson(val)) != 0)
-            this.ok = false;
-    }
+   
 }
 
 

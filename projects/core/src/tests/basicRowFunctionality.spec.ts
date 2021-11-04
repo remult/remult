@@ -1216,32 +1216,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  it("getArray works with filter startsWith", async () => {
-    await testAllDbs(async ({ createData, remult }) => {
-      let c = await createData(async (i) => {
-        await i(1, 'noam');
-        await i(2, 'yael');
-        await i(3, 'yoni');
-      });
-      var api = new DataApi(c, remult);
-      let t = new TestDataApiResponse();
-      let d = new Done();
-      t.success = data => {
-        expect(data.length).toBe(2);
-        expect(data[0].id).toBe(2);
-        expect(data[1].id).toBe(3);
-        d.ok();
-      };
-      await api.getArray(t, {
-        get: x => {
-          if (x == c.create()._.fields.categoryName.metadata.key + '_st')
-            return "y";
-          return undefined;
-        }
-      });
-      d.test();
-    })
-  });
+ 
   it("getArray works with predefined filter", async () => {
     let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
@@ -1671,7 +1646,7 @@ describe("compound id", () => {
     expect(r.length).toBe(2);
     expect(r[0].a).toBe(1);
     expect(r[0]._.getId()).toBe('1,11');
-    r = await s.find({ where: c => s.metadata.idMetadata.getIdFilter('1,11') });
+    r = await s.find({ where: s.metadata.idMetadata.getIdFilter('1,11') });
 
     expect(r.length).toBe(1);
     expect(r[0].a).toBe(1);

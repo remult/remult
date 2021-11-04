@@ -5,7 +5,7 @@ import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import {  FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
+import { FilterRule, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -58,14 +58,14 @@ export class CompoundIdField implements FieldMetadata<string> {
   dbName: string;
 
   valueType: any
-  isEqualTo(value: FieldMetadata<string> | string): Filter {
-    return new Filter(add => {
-      let val = value.toString();
-      let id = val.split(',');
-      this.fields.forEach((c, i) => {
-        add.isEqualTo(c, id[i]);
-      });
+  isEqualTo(value: FieldMetadata<string> | string): FilterRule<any> {
+    let result = {};
+    let val = value.toString();
+    let id = val.split(',');
+    this.fields.forEach((c, i) => {
+      result[c.key] = id[i];
     });
+    return result;
   }
 
 
@@ -177,9 +177,9 @@ export class OneToMany<T>{
   private async find(): Promise<T[]> {
     return this.provider.find(this.settings)
   }
-  async create(item?: Partial<T>): Promise<T> {
+  create(item?: Partial<T>): T {
     let r = this.provider.create();
-    await __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
+    __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
     assign(r, item);
     if (this.settings.create)
       this.settings.create(r);

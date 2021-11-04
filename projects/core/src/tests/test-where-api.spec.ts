@@ -32,42 +32,42 @@ describe("test where stuff", () => {
 
     it("test basics", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => x.id.isGreaterOrEqualTo(2)
+            where: { id: { ">=": 2 } }
         };
-        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
-        expect(await repo.count(async y => [{ id: { $lte: 3 } }, await Filter.fromEntityFilter(y, fo.where)])).toBe(2);
-        expect(await repo.count(y => Filter.fromEntityFilter(y, fo.where, { id: { $lte: 3 } }))).toBe(2);
-        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2);
+        expect(await repo.count({ $and: [fo.where], id: { $lte: 3 } })).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2);
     });
     it("test basics_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
             where: { id: { $gte: 2 } }
         };
-        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where, undefined] })).toBe(2);
     });
     it("test basics_2_2", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => x.id.isGreaterOrEqualTo(2)
+            where: { id: { ">=": 2 } }
         };
-        expect(await repo.count(async y => Filter.build(y, { id: { $lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2);
     });
     it("test basics_2_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => x.id.isGreaterOrEqualTo(2)
+            where: { id: { ">=": 2 } }
         };
-        expect(await repo.count(async y => Filter.build(y, { id: { $lte: 3 } }).and(await Filter.fromEntityFilter(y, fo.where)))).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2);
     });
     it("test basics_2_1", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => Promise.resolve(Filter.build(x, { id: { $gte: 2 } }))
+            where: { id: { $gte: 2 } }
         };
-        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where), undefined])).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where, undefined] })).toBe(2);
     });
     it("test basics_3", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
-            where: x => x.id.isGreaterOrEqualTo(2)
+            where: { id: { ">=": 2 } }
         };
-        expect(await repo.count(y => [{ id: { $lte: 3 } }, Filter.fromEntityFilter(y, fo.where)])).toBe(2);
+        expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2);
     });
 
 
@@ -93,7 +93,7 @@ describe("custom filter", () => {
         expect(json).toEqual({
             $custom$oneAndThree: {}
         });
-        let json3 = Filter.fromJson(c.metadata, json).toJson();
+        let json3 = Filter.entityFilterToJson(c.metadata, Filter.fromJson(c.metadata, json));
         expect(json3).toEqual(json);
     })
     it("test that it works", () =>

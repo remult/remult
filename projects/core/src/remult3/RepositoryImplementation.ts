@@ -33,25 +33,24 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             // }
             values.set(s.field.key, existingVal);
         }
-        return x => {
-            let r: Filter = undefined;
-            let equalToColumn: FieldMetadata[] = [];
-            for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
-                let ff = new filterHelper(s.field);
-                let f: Filter;
-                for (const c of equalToColumn) {
-                    f = new AndFilter(f, new filterHelper(c).isEqualTo(values.get(c.key)));
-                }
-                equalToColumn.push(s.field);
-                if (s.isDescending) {
-                    f = new AndFilter(f, ff.isLessThan(values.get(s.field.key)));
-                }
-                else
-                    f = new AndFilter(f, ff.isGreaterThan(values.get(s.field.key)));
-                r = new OrFilter(r, f);
+
+        let r: FilterRule<any> = { $or: [] };
+        let equalToColumn: FieldMetadata[] = [];
+        for (const s of Sort.translateOrderByToSort(this.metadata, orderBy).Segments) {
+            let ff = new filterHelper(s.field);
+            let f: FilterRule<any> = {};
+            for (const c of equalToColumn) {
+                f[c.key] = values.get(c.key);
             }
-            return r;
+            equalToColumn.push(s.field);
+            if (s.isDescending) {
+                f[s.field.key] = { $lt: values.get(s.field.key) };
+            }
+            else
+                f[s.field.key] = { $gt: values.get(s.field.key) };
+            r.$or.push(f);
         }
+        return r;
     }
 
     private _info: EntityFullInfo<entityType>;
@@ -168,7 +167,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             [Symbol.asyncIterator]() {
 
                 if (!opts.where) {
-                    opts.where = x => undefined;
+                    opts.where = {};
                 }
                 let ob = opts.orderBy;
                 opts.orderBy = x => Sort.createUniqueSort(self.metadata, ob).Segments;
@@ -181,7 +180,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 let items: entityType[];
 
                 let itStrategy: (() => Promise<IteratorResult<entityType>>);
-                let nextPageFilter: EntityFilter<entityType> = x => undefined;;
+                let nextPageFilter: EntityFilter<entityType>;
 
                 let j = 0;
 
@@ -194,7 +193,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                             return { value: <entityType>undefined, done: true };
                         let prev = items;
                         items = await cont.find({
-                            where: y => Filter.fromEntityFilter(y, opts.where, nextPageFilter),
+                            where: { $and: [opts.where, nextPageFilter] } as FilterRule<entityType>,
                             orderBy: opts.orderBy,
                             limit: pageSize,
                             load: opts.load
@@ -294,13 +293,18 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
     async findFirst(where?: FilterRule<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType> {
-        
+
         if (!options)
             options = {};
         if (where) {
             if (options.where) {
                 let w = options.where;
-                options.where = async e => Filter.fromEntityFilter(e, w, where);
+                options.where = {
+                    $and: [
+                        w,
+                        where
+                    ]
+                } as FilterRule<entityType>;
             }
             else options.where = where;
         }
@@ -380,7 +384,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return this.findFirst({}, {
             useCache: true,
             ...options,
-            where: x => this.metadata.idMetadata.getIdFilter(id),
+            where: this.metadata.idMetadata.getIdFilter(id),
         });
     }
 
@@ -389,7 +393,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
         if (this.metadata.options.backendPrefilter) {
             let z = where;
-            where = y => Filter.fromEntityFilter(y, z, this.metadata.options.backendPrefilter);
+            where = {
+                $and: [
+                    z, this.metadata.options.backendPrefilter
+                ]
+            } as EntityFilter<entityType>;
         }
         let filterFactories = Filter.createFilterFactories(this.metadata)
         let r = await Filter.fromEntityFilter(filterFactories, where);
@@ -403,8 +411,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 }
 
 
-export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
-    let w = await Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where);
+export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
+    let w = Filter.fromEntityFilter(Filter.createFilterFactories(entityDefs), where);
 
     if (w) {
         w.__applyToConsumer({
@@ -422,7 +430,7 @@ export async function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T
             isLessThan: () => { },
             isNotNull: () => { },
             isNull: () => { },
-            startsWith: () => { },
+
             or: () => { }
         });
     }
@@ -557,9 +565,11 @@ abstract class rowHelperBase<T>
         let d: any = {};
         for (const col of this.columnsInfo) {
             let lu = this.lookups.get(col.key);
-            let val = this.instance[col.key];
+            let val: any = undefined;
             if (lu)
                 val = lu.id;
+            else
+                val = this.instance[col.key];
             if (val !== undefined) {
                 val = col.valueConverter.toJson(val);
                 if (val !== undefined)
@@ -679,7 +689,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         this.__clearErrors();
     }
     async reload(): Promise<T> {
-        await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }).then(async newData => {
+        await this.edp.find({ where: this.getIdFilter() }).then(async newData => {
             await this.loadDataFrom(newData[0]);
             this.saveOriginalData();
 
@@ -738,7 +748,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 if (!wasChanged)
                     return this.instance;
                 if (doNotSave) {
-                    updatedRow = (await this.edp.find({ where: this.repository.metadata.idMetadata.getIdFilter(this.id) }))[0];
+                    updatedRow = (await this.edp.find({ where: this.getIdFilter() }))[0];
                 }
                 else {
 
@@ -762,6 +772,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
 
+
+    private getIdFilter(): Filter {
+        return Filter.build(Filter.createFilterFactories(this.metadata), this.repository.metadata.idMetadata.getIdFilter(this.id));
+    }
 
     async delete() {
         this.__clearErrors();
@@ -1180,20 +1194,24 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     idMetadata: IdMetadata<T> = {
         field: undefined,
-        createIdInFilter: (items: T[]): Filter => {
+        createIdInFilter: (items: T[]): FilterRule<any> => {
             if (items.length > 0)
-                return new OrFilter(...items.map(x => this.idMetadata.getIdFilter(getEntityRef(x).getId())));
+                return {
+                    $or: items.map(x => this.idMetadata.getIdFilter(getEntityRef(x).getId()))
+                }
 
 
         },
         isIdField: (col: FieldMetadata<any>): boolean => {
             return col.key == this.idMetadata.field.key;
         },
-        getIdFilter: (id: any): Filter => {
+        getIdFilter: (id: any): FilterRule<any> => {
             if (this.idMetadata.field instanceof CompoundIdField)
                 return this.idMetadata.field.isEqualTo(id);
-            else
-                return new Filter(x => x.isEqualTo(this.idMetadata.field, id));
+            else return {
+                [this.idMetadata.field.key]: id
+            }
+
         }
     };
 

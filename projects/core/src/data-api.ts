@@ -2,7 +2,7 @@ import { EntityOptions } from './entity';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation } from './remult3';
+import { FilterFactories, FindOptions, Repository, EntityRef, rowHelperImplementation, FilterRule } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -39,7 +39,7 @@ export class DataApi<T = any> {
   async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     try {
 
-      response.success({ count: +await this.repository.count(t => this.buildWhere(t, request, filterBody)) });
+      response.success({ count: +await this.repository.count(this.buildWhere(request, filterBody)) });
     } catch (err) {
       response.error(err);
     }
@@ -55,7 +55,7 @@ export class DataApi<T = any> {
       if (this.options && this.options.get) {
         Object.assign(findOptions, this.options.get);
       }
-      findOptions.where = t => this.buildWhere(t, request, filterBody);
+      findOptions.where = this.buildWhere(request, filterBody);
       if (this.options.requireId) {
         let hasId = false;
         let w = await Filter.fromEntityFilter(Filter.createFilterFactories(this.repository.metadata), findOptions.where);
@@ -76,7 +76,7 @@ export class DataApi<T = any> {
             isLessThan: () => { },
             isNotNull: () => { },
             isNull: () => { },
-            startsWith: () => { },
+            
             or: () => { }
           });
         }
@@ -109,12 +109,12 @@ export class DataApi<T = any> {
       response.error(err);
     }
   }
-  private async buildWhere(entity: FilterFactories<T>, request: DataApiRequest, filterBody: any) {
-    var where: Filter;
-    if (this.options && this.options.get && this.options.get.where)
-      where = await Filter.fromEntityFilter(entity, this.options.get.where);
+  private buildWhere(request: DataApiRequest, filterBody: any): FilterRule<any> {
+    var where: FilterRule<any>[] = [];
+
+    where.push(this.options?.get?.where);
     if (request) {
-      where = new AndFilter(where, buildFilterFromRequestParameters(this.repository.metadata, {
+      where.push(buildFilterFromRequestParameters(this.repository.metadata, {
         get: key => {
           let result = request.get(key);
           if (key.startsWith(customUrlToken) && result)
@@ -124,8 +124,8 @@ export class DataApi<T = any> {
       }));
     }
     if (filterBody)
-      where = new AndFilter(where, Filter.fromJson(this.repository.metadata, filterBody))
-    return where;
+      where.push(Filter.fromJson(this.repository.metadata, filterBody))
+    return { $and: where };
   }
 
 
@@ -136,7 +136,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: y => [Filter.fromEntityFilter(y, this.options?.get?.where), this.repository.metadata.idMetadata.getIdFilter(id)]
+        where: { $and: [this.options?.get?.where, this.repository.metadata.idMetadata.getIdFilter(id)] } as FilterRule<any>
       })
         .then(async r => {
           if (r.length == 0)

@@ -52,7 +52,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] check why limit and page don't work from swagger
 [V] fix sending of remult in argument - to work
 [V] change entity backend methods to be entity/backend method name
-
+[] make sure that backend method of entity cant work on a row that it's not authorized for in terms of predefined filter.
+[] make sure that on the grid or in predefined filter, adding a filter to the same field - doesn't open values that you're not supposed to see.
 
 [V] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
 [V] check why update object value with null didn't update the database in hugmom
@@ -269,9 +270,9 @@ export interface FieldRef<entityType = any, valueType = any> {
 export interface IdMetadata<entityType = any> {
 
     field: FieldMetadata<any>;
-    getIdFilter(id: any): Filter;
+    getIdFilter(id: any): FilterRule<entityType>;
     isIdField(col: FieldMetadata): boolean;
-    createIdInFilter(items: entityType[]): Filter;
+    createIdInFilter(items: entityType[]): FilterRule<entityType>;
 
 }
 
@@ -333,8 +334,7 @@ export declare type EntityOrderBy<entityType> = (entity: SortSegments<entityType
  * @example
  * where: p=> p.availableFrom.isLessOrEqualTo(new Date()).and(p.availableTo.isGreaterOrEqualTo(new Date()))
  */
-export declare type EntityFilter<entityType> = FilterRule<entityType> |
-    ((entityType: FilterFactories<entityType>) => (Filter | Promise<Filter> | (Filter | Promise<Filter> | FilterRule<entityType>)[] | Promise<(Filter | FilterRule<entityType>)[]>));
+export declare type EntityFilter<entityType> = FilterRule<entityType>;
 
 
 
@@ -358,20 +358,18 @@ interface containsStringFilter {
 
 }
 
-export type FilterRule1<entityType> = {
+export type FilterRule<entityType> = {
     [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
         entityType[Properties] extends number | Date ? otherComparisonFilters<entityType[Properties]> :
         entityType[Properties] extends string ? containsStringFilter & otherComparisonFilters<string> :
         entityType[Properties] extends boolean ? otherFilters<boolean> :
         otherFilters<entityType[Properties]>) & containsStringFilter;
-}
-
-export type FilterRule<entityType> = FilterRule1<entityType> & FilterRuleWithOr<entityType>;
-export interface FilterRuleWithOr<entityType> {
+} & {
     $or?: FilterRule<entityType>[];
     $and?: FilterRule<entityType>[];
-    //NOT
 }
+
+
 
 
 

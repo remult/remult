@@ -260,9 +260,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                     else {
                                         let rows = await repo.find({
                                             where: x => {
-                                                let where: Filter = repo.metadata.idMetadata.getIdFilter(d.rowInfo.id);
+                                                let where = repo.metadata.idMetadata.getIdFilter(d.rowInfo.id);
                                                 if (this.options && this.options.get && this.options.get.where)
-                                                    where = new AndFilter(where, this.options.get.where(x));
+                                                    where = {$and:[where, this.options.get.where(x)]}  ;
                                                 return where;
                                             }
                                         });

@@ -351,8 +351,12 @@ describe("many to one relation", () => {
         }).save();
         async function test(where: EntityFilter<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
-            expect(await repo.count(async p => Filter.fromJson(repo.metadata, await entityFilterToJson(repo.metadata,
-                where)))).toBe(expected, "packed where");
+            function log(x:any){
+                console.log(x);
+                return x;
+            }
+            expect(await repo.count(log(Filter.fromJson(repo.metadata, log(entityFilterToJson(repo.metadata,
+                where)))))).toBe(expected, "packed where");
         }
 
         await test({ category: c }, 2);
