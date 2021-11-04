@@ -327,9 +327,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * @example
  * await this.remult.repo(Products).find({ orderBy: p => [{ field: p.price, descending: true }, p.name])
  */
-export declare type EntityOrderBy<entityType> = NewEntityOrderBy<entityType> | ((entity: SortSegments<entityType>) => SortSegment[] | SortSegment);
-
-export declare type NewEntityOrderBy<entityType> = {
+export declare type EntityOrderBy<entityType> = {
     [Properties in keyof entityType]?: "asc" | "desc"
 }
 

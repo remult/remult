@@ -55,14 +55,14 @@ describe("test paged foreach ", () => {
         });
         let i = 0;
         for await (const x of c.iterate({
-            orderBy: x => x.categoryName
+            orderBy: { categoryName: "asc" }
         })) {
             expect(x.id).toBe([5, 1, 4, 2, 3][i++])
         }
         expect(i).toBe(5);
 
         expect((await c.iterate({
-            orderBy: x => x.categoryName
+            orderBy: { categoryName: "asc" }
         }).first()).id).toBe(5);
 
     });
@@ -77,7 +77,7 @@ describe("test paged foreach ", () => {
         });
         let i = 0;
         for await (const x of c.iterate({
-            orderBy: x => x.categoryName.descending()
+            orderBy: { categoryName: "desc" }
         })) {
             expect(x.id).toBe([3, 2, 4, 1, 5][i++])
         }
@@ -119,11 +119,15 @@ describe("test paged foreach ", () => {
         let remult = new Remult();
         let e = remult.repo(Categories) as RepositoryImplementation<Categories>;
         function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldMetadata[]) {
-            let s = Sort.createUniqueSort(e.metadata, orderBy);
-            expect(s.Segments.map(x => x.field)).toEqual(sort);
+            let s = Sort.createUniqueEntityOrderBy(e.metadata, orderBy);
+            let expected = {};
+            for (const c of sort) {
+                expected[c.key] = "asc";
+            }
+            expect(s).toEqual(expected);
         }
-        test(x => x.id, e.metadata.fields.id);
-        test(x => x.categoryName, e.metadata.fields.categoryName, e.metadata.fields.id);
+        test({ id: "asc" }, e.metadata.fields.id);
+        test({ categoryName: "asc" }, e.metadata.fields.categoryName, e.metadata.fields.id);
     });
 
     it("unique sort and  compound id", async () => {
@@ -133,14 +137,18 @@ describe("test paged foreach ", () => {
         let e = eDefs.fields;
 
         function test(orderBy: EntityOrderBy<theTable>, ...sort: FieldMetadata[]) {
-            let s = Sort.createUniqueSort(eDefs, orderBy);
-            expect(s.Segments.map(x => x.field)).toEqual(sort.map(x => x));
+            let s = Sort.createUniqueEntityOrderBy(eDefs, orderBy);
+            let expected = {};
+            for (const c of sort) {
+                expected[c.key] = "asc";
+            }
+            expect(s).toEqual(expected);
         }
-        test(x => [x.b, x.c], e.b, e.c, e.a);
-        test(x => [x.a, x.b], e.a, e.b);
-        test(x => x.a, e.a, e.b);
-        test(x => x.b, e.b, e.a);
-        test(x => x.c, e.c, e.a, e.b);
+        test({ b: "asc", c: "asc" }, e.b, e.c, e.a);
+        test({ a: "asc", b: "asc" }, e.a, e.b);
+        test({ a: "asc" }, e.a, e.b);
+        test({ b: "asc" }, e.b, e.a);
+        test({ c: "asc" }, e.c, e.a, e.b);
     });
     it("create rows after filter compound id", async () => {
         let remult = new Remult();
@@ -155,9 +163,9 @@ describe("test paged foreach ", () => {
             expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, await eDefs.createAfterFilter(orderBy, e)))).toEqual(
                 JSON.stringify(await entityFilterToJson(eDefs.metadata, expectedWhere)));
         }
-        test(x => x.a, { a: { $gt: 'a' } });
-        test(x => [x.a.descending()], { a: { $lt: 'a' } });
-        test(x => [x.a, x.b], {
+        test({ a: "asc" }, { a: { $gt: 'a' } });
+        test({ a: "desc" }, { a: { $lt: 'a' } });
+        test({ a: "asc", b: "asc" }, {
             $or: [
                 { a: { $gt: 'a' } },
                 { a: 'a', b: { $gt: 'b' } }
@@ -175,7 +183,7 @@ describe("test paged foreach ", () => {
         e.b = 'b';
         e.c = 'c';
 
-        let f = await eDefs.createAfterFilter(x => [x.a, x.b], e);
+        let f = await eDefs.createAfterFilter({ a: "asc", b: "asc" }, e);
         e.a = '1';
         e.b = '2';
         expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
@@ -257,7 +265,7 @@ describe("test paged foreach ", () => {
         await remult.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
         let i = 0;
         for await (const x of remult.repo(p).iterate({
-            orderBy: p => [p.c, p.id]
+            orderBy: { c: "asc", id: "asc" }
         })) {
             i++;
         }

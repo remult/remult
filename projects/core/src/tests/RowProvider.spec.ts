@@ -141,7 +141,7 @@ describe("grid filter stuff", () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
 
-      orderBy: c => c.id,
+      orderBy: { id: "asc" },
       where: { categoryName: { $contains: 'a' } },
       rowsInPage: 2
 
@@ -156,7 +156,7 @@ describe("grid filter stuff", () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
 
-      orderBy: c => c.id,
+      orderBy: { id: "asc" },
       where: { categoryName: { $contains: 'a' } },
       rowsInPage: 2
 
@@ -171,7 +171,7 @@ describe("grid filter stuff", () => {
   it("test filter works with user filter", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
-      orderBy: c => c.id,
+      orderBy: { id: "asc" },
       where: { categoryName: { $contains: 'a' } },
       rowsInPage: 2
     });
@@ -206,7 +206,7 @@ describe("grid filter stuff", () => {
   it("test filter works with selected rows", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
-      orderBy: c => c.id,
+      orderBy: { id: "asc" },
       rowsInPage: 3
     });
     await ds.reloadData();
@@ -226,7 +226,7 @@ describe("grid filter stuff", () => {
   it("test all rows selected when some rows are outside the scope", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
-      orderBy: c => c.id,
+      orderBy: { id: "asc" },
       rowsInPage: 3
     });
     await ds.reloadData();
@@ -264,7 +264,7 @@ describe("grid filter stuff", () => {
   it("test select rows in page is not select all", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
-      orderBy: c => c.id,
+      orderBy: { id: "asc" },
       rowsInPage: 3
     });
     await ds.reloadData();
@@ -283,7 +283,7 @@ describe("grid filter stuff", () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings(c, {
       knowTotalRows: true,
-      orderBy: c => c.id,
+      orderBy: { id: "asc" },
       rowsInPage: 4
     });
     await ds.reloadData();
@@ -486,8 +486,7 @@ describe("test row provider", () => {
     expect(rows[3].id).toBe(4);
 
     rows = await c.find({
-      orderBy: c =>
-        c.categoryName.descending()
+      orderBy: { categoryName: "desc" }
     });
     expect(rows[0].id).toBe(2);
     expect(rows[1].id).toBe(4);
@@ -507,7 +506,7 @@ describe("test row provider", () => {
   it("test grid update", async () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
-      orderBy: c => c.id
+      orderBy: { id: "asc" }
     });
     await ds.reloadData();
     expect(ds.items.length).toBe(4);
@@ -724,7 +723,7 @@ describe("test row provider", () => {
     let ds = new GridSettings<CategoriesForTesting>(c, {
       saving: r => orderOfOperation += "GridOnSavingRow,",
       validation: r => orderOfOperation += "GridValidate,",
-      orderBy: c => c.id
+      orderBy: { id: "asc" }
     });
 
     await ds.reloadData();
@@ -1134,8 +1133,8 @@ describe("grid settings ",
     it("sort is displayed right on start", () => {
       let s = ctx.repo(newCategories);
 
-
-      let gs = new GridSettings(s, { orderBy: c => c.categoryName });
+      //@ts-ignore
+      let gs = new GridSettings(s, { orderBy: { Categories: "asc" } });
       expect(gs.sortedAscending(s.metadata.fields.id)).toBe(false);
       expect(gs.sortedDescending(s.metadata.fields.id)).toBe(false);
       gs.sort(s.metadata.fields.id);
@@ -1223,7 +1222,7 @@ describe("decorator inheritance", () => {
 describe("order by api", () => {
   it("works with sort", () => {
     let c = new Remult().repo(Categories);
-    let opt: FindOptions<Categories> = { orderBy: c => c.id };
+    let opt: FindOptions<Categories> = { orderBy: { id: "asc" } };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(1);
     expect(s.Segments[0].field.key).toBe(c.metadata.fields.id.key);
@@ -1234,7 +1233,7 @@ describe("order by api", () => {
 
   it("works with columns array", () => {
     let c = new Remult().repo(Categories);
-    let opt: FindOptions<Categories> = { orderBy: c => [c.id, c.categoryName] };
+    let opt: FindOptions<Categories> = { orderBy: { id: "asc", categoryName: "asc" } };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].field).toBe(c.metadata.fields.id);
@@ -1248,15 +1247,15 @@ describe("order by api", () => {
       await i(2, 'y');
     });
 
-    let r = await c.find({ orderBy: c => c.categoryName });
+    let r = await c.find({ orderBy: { categoryName: "asc" } });
     expect(r.length).toBe(2);
     expect(r[0].id).toBe(2);
 
-    r = await c.find({ orderBy: c => [c.categoryName] });
+    r = await c.find({ orderBy: { categoryName: "asc" } });
     expect(r.length).toBe(2);
     expect(r[0].id).toBe(2);
 
-    r = await c.find({ orderBy: c => c.categoryName.descending() });
+    r = await c.find({ orderBy: { categoryName: "desc" } });
     expect(r.length).toBe(2);
     expect(r[0].id).toBe(1);
 

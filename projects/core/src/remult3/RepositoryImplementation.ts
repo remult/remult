@@ -170,7 +170,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                     opts.where = {};
                 }
                 let ob = opts.orderBy;
-                opts.orderBy = x => Sort.createUniqueSort(self.metadata, ob).Segments;
+                opts.orderBy = Sort.createUniqueEntityOrderBy(self.metadata, ob);
                 let pageSize = iterateConfig.pageSize;
                 if (opts.pageSize)
                     pageSize = opts.pageSize;

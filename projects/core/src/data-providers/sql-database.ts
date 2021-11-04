@@ -6,7 +6,7 @@ import { CompoundIdField } from "../column";
 import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, FilterConsumerBridgeToSqlRequest } from "../filter/filter-consumer-bridge-to-sql-request";
 import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityMetadata,  EntityFilter } from "../remult3";
+import { EntityMetadata, EntityFilter } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 
 // @dynamic
@@ -159,7 +159,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         select += await where.resolveWhere();
       }
       if (options.limit) {
-        options.orderBy = Sort.createUniqueSort(this.entity, x => options.orderBy?.Segments);
+        options.orderBy = Sort.createUniqueSort(this.entity, options.orderBy);
       }
       if (options.orderBy) {
         let first = true;
@@ -217,7 +217,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    Filter.fromEntityFilter(this.entity,this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
+    Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
 
     let statement = 'update ' + await this.entity.getDbName() + ' set ';
     let added = false;
@@ -254,7 +254,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r);
-    Filter.fromEntityFilter(this.entity,this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
+    Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
     let statement = 'delete from ' + await this.entity.getDbName();
     statement += await f.resolveWhere();
     return r.execute(statement).then(() => { });

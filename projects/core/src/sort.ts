@@ -1,8 +1,19 @@
 
 import { CompoundIdField } from "./column";
 import { FieldMetadata } from "./column-interfaces";
-import { EntityMetadata, EntityOrderBy, SortSegments } from "./remult3";
+import { EntityMetadata, EntityOrderBy } from "./remult3";
 export class Sort {
+  toEntityOrderBy(): EntityOrderBy<any> {
+    let result: any = {};
+    for (const seg of this.Segments) {
+      if (seg.isDescending) {
+        result[seg.field.key] = "desc";
+      }
+      else
+        result[seg.field.key] = "asc";
+    }
+    return result;
+  }
   constructor(...segments: SortSegment[]) {
     this.Segments = segments;
   }
@@ -14,29 +25,11 @@ export class Sort {
     }
     return r;
   }
-  static createSortOf<T>(entityDefs: EntityMetadata<T>): SortSegments<T> {
-    let r = {};
-    for (const c of entityDefs.fields) {
-      r[c.key] = new sortHelper(c);
-    }
-    return r as SortSegments<T>;
-  }
   static translateOrderByToSort<T>(entityDefs: EntityMetadata<T>, orderBy: EntityOrderBy<T>): Sort {
     if (!orderBy)
       return undefined;
-    let entity = Sort.createSortOf(entityDefs);
     let sort: Sort;
-    if (typeof orderBy === "function") {
-      let resultOrder = orderBy(entity);//
-      if (Array.isArray(resultOrder))
-        sort = new Sort(...resultOrder);
-      else {
-        if (!resultOrder)
-          return new Sort();
-        sort = new Sort(resultOrder);
-      }
-    }
-    else if (orderBy) {
+    if (orderBy) {
       sort = new Sort();
       for (const key in orderBy) {
         if (Object.prototype.hasOwnProperty.call(orderBy, key)) {
@@ -57,37 +50,48 @@ export class Sort {
     return sort;
 
   }
-  static createUniqueSort<T>(entityMetadata: EntityMetadata<T>, orderBy: EntityOrderBy<T>): Sort {
+  static createUniqueSort<T>(entityMetadata: EntityMetadata<T>, orderBy: Sort): Sort {
     if (!orderBy)
-      orderBy = entityMetadata.options.defaultOrderBy;
+      orderBy = Sort.translateOrderByToSort(entityMetadata, entityMetadata.options.defaultOrderBy);
     if (!orderBy)
-      orderBy = x => ({ field: entityMetadata.idMetadata.field })
+      orderBy = new Sort({ field: entityMetadata.idMetadata.field });
 
-    let sort = Sort.translateOrderByToSort(entityMetadata, orderBy);
     if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
       for (const field of entityMetadata.idMetadata.field.fields) {
-        if (!sort.Segments.find(x => x.field == field)) {
-          sort.Segments.push({ field: field });
+        if (!orderBy.Segments.find(x => x.field == field)) {
+          orderBy.Segments.push({ field: field });
         }
       }
     }
     else
-      if (!sort.Segments.find(x => x.field == entityMetadata.idMetadata.field)) {
-        sort.Segments.push({ field: entityMetadata.idMetadata.field });
+      if (!orderBy.Segments.find(x => x.field == entityMetadata.idMetadata.field)) {
+        orderBy.Segments.push({ field: entityMetadata.idMetadata.field });
       }
-    return sort;
+    return orderBy;
+  }
+  static createUniqueEntityOrderBy<T>(entityMetadata: EntityMetadata<T>, orderBy: EntityOrderBy<T>): EntityOrderBy<T> {
+    if (!orderBy)
+      orderBy = entityMetadata.options.defaultOrderBy;
+    if (!orderBy)
+      orderBy = { [entityMetadata.idMetadata.field.key]: "asc" } as EntityOrderBy<T>
+
+
+    if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
+      for (const field of entityMetadata.idMetadata.field.fields) {
+        if (!orderBy[field.key]) {
+          orderBy[field.key] = "asc";
+        }
+      }
+    }
+    else
+      if (!orderBy[entityMetadata.idMetadata.field.key]) {
+        orderBy[entityMetadata.idMetadata.field.key] = "asc";
+      }
+
+    return orderBy;
   }
 }
 export interface SortSegment {
   field: FieldMetadata,
   isDescending?: boolean
-}
-
-class sortHelper implements SortSegment {
-  constructor(public field: FieldMetadata, public isDescending = false) {
-
-  }
-  descending(): SortSegment {
-    return new sortHelper(this.field, !this.isDescending);
-  }
 }

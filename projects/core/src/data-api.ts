@@ -2,7 +2,7 @@ import { EntityOptions } from './entity';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import {  FindOptions, Repository, EntityRef, rowHelperImplementation,  EntityFilter } from './remult3';
+import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
@@ -76,7 +76,7 @@ export class DataApi<T = any> {
             isLessThan: () => { },
             isNotNull: () => { },
             isNull: () => { },
-            
+
             or: () => { }
           });
         }
@@ -250,15 +250,16 @@ export function determineSort(sortUrlParm: string, dirUrlParam: string) {
   let dirItems: string[] = [];
   if (dirUrlParam)
     dirItems = dirUrlParam.split(',');
-  return x => {
-    return sortUrlParm.split(',').map((name, i) => {
-      let r: SortSegment = x[name.trim()];
-      if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
-        return { field: r.field, isDescending: true };
-      return r;
-    });
+  let result: any = {};
+  sortUrlParm.split(',').map((name, i) => {
+    let key = name.trim();
+    if (i < dirItems.length && dirItems[i].toLowerCase().trim().startsWith("d"))
+      return result[key] = "desc";
+    else
+      return result[key] = "asc";
+  });
+  return result;
 
-  };
 }
 
 

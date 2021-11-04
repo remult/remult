@@ -716,7 +716,7 @@ describe("data api", () => {
 
     let type = class extends newCategories { };
     Entity<typeof type.prototype>('', {
-      defaultOrderBy: x => x.categoryName,
+      defaultOrderBy: { categoryName: "asc" },
 
     })(type);
     await testAllDbs(async ({ createData }) => {
@@ -1216,7 +1216,7 @@ describe("data api", () => {
     });
     d.test();
   });
- 
+
   it("getArray works with predefined filter", async () => {
     let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');
@@ -2075,7 +2075,7 @@ class CompoundIdEntity extends EntityBase {
 
     if (t._.isNew() && (!t.myId || t.myId == 0)) {
       let e = await t.remult.repo(entityWithValidations).find({
-        orderBy: x => x.myId.descending(),
+        orderBy: { myId: "desc" },
         limit: 1
       });
 

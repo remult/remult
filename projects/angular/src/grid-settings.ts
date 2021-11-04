@@ -446,12 +446,8 @@ export class GridSettings<rowType>  {
       opt = Object.assign(opt, this.getOptions);
     }
     if (this._currentOrderBy)
-      opt.orderBy = r => {
-        if (this._currentOrderBy) {
-          return this._currentOrderBy.Segments
-        }
-        else return undefined;
-      };
+    opt.orderBy = this._currentOrderBy.toEntityOrderBy();
+      
     opt.limit = this.rowsPerPage;
     if (this.page > 1)
       opt.page = this.page;

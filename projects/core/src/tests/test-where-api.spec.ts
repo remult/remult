@@ -374,7 +374,7 @@ describe("missing fields are added in array column", async () => {
 
         r.setDataProvider(db);
         let rep = r.repo(task);
-        expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
+        expect((await rep.find({ orderBy: { completed: "asc", title: 'asc' }})).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count({ completed: false })).toBe(2);
         let t = (await rep.findFirst({ title: 't1' }));
         expect(t.completed).toBe(false);
@@ -405,7 +405,7 @@ describe("missing fields are added in array column", async () => {
 
         r.setDataProvider(db);
         let rep = r.repo(taskWithNull);
-        expect((await rep.find({ orderBy: task => [task.completed, task.title] })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
+        expect((await rep.find({ orderBy: { completed: "asc", title: "asc" } })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count({ completed: false })).toBe(0);
         let t = (await rep.findFirst({ title: 't1' }));
         expect(t.completed).toBe(undefined);
