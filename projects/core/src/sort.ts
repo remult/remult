@@ -25,14 +25,34 @@ export class Sort {
     if (!orderBy)
       return undefined;
     let entity = Sort.createSortOf(entityDefs);
-    let resultOrder = orderBy(entity);//
     let sort: Sort;
-    if (Array.isArray(resultOrder))
-      sort = new Sort(...resultOrder);
-    else {
-      if (!resultOrder)
-        return new Sort();
-      sort = new Sort(resultOrder);
+    if (typeof orderBy === "function") {
+      let resultOrder = orderBy(entity);//
+      if (Array.isArray(resultOrder))
+        sort = new Sort(...resultOrder);
+      else {
+        if (!resultOrder)
+          return new Sort();
+        sort = new Sort(resultOrder);
+      }
+    }
+    else if (orderBy) {
+      sort = new Sort();
+      for (const key in orderBy) {
+        if (Object.prototype.hasOwnProperty.call(orderBy, key)) {
+          const element = orderBy[key];
+          let field = entityDefs.fields.find(key);
+          if (field) {
+            switch (element) {
+              case "desc":
+                sort.Segments.push({ field, isDescending: true });
+                break;
+              case "asc":
+                sort.Segments.push({ field });
+            }
+          }
+        }
+      }
     }
     return sort;
 
@@ -45,11 +65,11 @@ export class Sort {
 
     let sort = Sort.translateOrderByToSort(entityMetadata, orderBy);
     if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
-        for (const field of entityMetadata.idMetadata.field.fields) {
-          if (!sort.Segments.find(x => x.field == field)) {
-            sort.Segments.push({ field: field });
-          }    
+      for (const field of entityMetadata.idMetadata.field.fields) {
+        if (!sort.Segments.find(x => x.field == field)) {
+          sort.Segments.push({ field: field });
         }
+      }
     }
     else
       if (!sort.Segments.find(x => x.field == entityMetadata.idMetadata.field)) {

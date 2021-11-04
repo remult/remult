@@ -201,7 +201,7 @@ describe("grid filter stuff", () => {
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
     expect(await x.resolveWhere()).toBe(" where lower (col) like lower ('%no''a''m%')");
   });
-  
+
 
   it("test filter works with selected rows", async () => {
     let [c] = await insertFourRows();
@@ -479,7 +479,7 @@ describe("test row provider", () => {
   });
   it("sort", async () => {
     let [c] = await insertFourRows();
-    let rows = await c.find({ orderBy: c => c.id });
+    let rows = await c.find({ orderBy: { id: "asc" } });
     expect(rows[0].id).toBe(1);
     expect(rows[1].id).toBe(2);
     expect(rows[2].id).toBe(3);
