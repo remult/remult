@@ -363,7 +363,6 @@ export interface ComparisonValueFilter<T> extends ValueFilter<T> {
 }
 export interface ContainsStringValueFilter {
     $contains?: string,
-
 }
 
 
