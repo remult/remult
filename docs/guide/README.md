@@ -14,4 +14,4 @@ With Remult it is simple to keep your code DRY and increase development speed an
 As Remult is "aware" of the runtime context (frontend or backend), data validations and entity lifecycle hooks can be written in layer-agnostic Typescript which will run, as needed, on either the frontend, the backend, or both.
 
 # Getting Started
-Get started with Remult by following this [tutorial](./tutorial-angular.md).
+Get started with Remult by following this [tutorial](./tutorial-react.md).

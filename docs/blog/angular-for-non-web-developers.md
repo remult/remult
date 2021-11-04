@@ -610,7 +610,7 @@ In the `loadTasks` method of the `HomeComponent` class, add an object literal ar
 ```ts{2-4}
 async loadTasks() {
   this.tasks = await this.tasksRepo.find({
-    orderBy: task => task.completed
+    orderBy: { completed: "asc" }
   });
 }
 ```
@@ -629,7 +629,7 @@ Let's hide all completed tasks, using server side filtering.
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
        where: task => task.completed.isEqualTo(false),
-       orderBy: task => task.completed
+       orderBy: { completed: "asc" }
      });
    }
    ```
@@ -655,7 +655,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
        where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined!,
-       orderBy: task => task.completed
+       orderBy: { completed: "asc" }
      });
    }
    ```
@@ -857,7 +857,7 @@ async loadTasks() {
   if (this.remult.authenticated())
     this.tasks = await this.tasksRepo.find({
       where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
-      orderBy: task => task.completed
+      orderBy: { completed: "asc" }
     });
 }
 ```

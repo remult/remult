@@ -239,9 +239,8 @@ Let's implement this feature within the main `App` function.
 Add the highlighted code lines to the `App` function file:
 
 *src/App.tsx*
-```tsx{3-6,9-10,,14-20}
+```tsx{2-5,8-9,13-19}
 import { useState } from 'react';
-import './App.css';
 import { remult } from './common';
 import { Task } from './Task';
 
@@ -477,7 +476,6 @@ export class Task extends IdEntity {
 *src/App.tsx*
 ```tsx
 import { useCallback, useEffect, useState } from 'react';
-import './App.css';
 import { remult } from './common';
 import { Task } from './Task';
 import { TaskEditor } from './TaskEditor';
@@ -567,7 +565,7 @@ In the `loadTasks` method of the `App` function, add an object literal argument 
 ```ts
 const loadTasks = useCallback(() =>
   taskRepo.find({
-    orderBy: task => task.completed
+    orderBy: { completed: "asc" }
   }).then(tasks => setTasks(tasks)), []);
 ```
 
@@ -583,8 +581,8 @@ Let's hide all completed tasks, using server side filtering.
    ```ts{4}
    const loadTasks = useCallback(() =>
      taskRepo.find({
-       orderBy: task => task.completed,
-       where: task => task.completed.isEqualTo(false) 
+       orderBy: { completed: "asc" },
+       where: { completed: false }
      }).then(tasks => setTasks(tasks)), []);
    ```
    ::: warning Note
@@ -607,8 +605,8 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    ```ts{4-5}
    const loadTasks = useCallback(() =>
      taskRepo.find({
-       orderBy: task => task.completed,
-       where: task => hideCompleted ? task.completed.isEqualTo(false) : undefined!
+       orderBy: { completed: "asc" },
+       where: hideCompleted ? { completed: false } : {}
      }).then(tasks => setTasks(tasks)), [hideCompleted]);
    ```
 
@@ -827,8 +825,8 @@ replace the loadTasks method with the following code:
 const loadTasks = useCallback(() => {
   if (remult.authenticated())
     taskRepo.find({
-      orderBy: task => task.completed,
-      where: task => hideCompleted ? task.completed.isEqualTo(false) : undefined
+      orderBy: { completed: "asc" },
+      where: hideCompleted ? { completed: false } : {}
     }).then(tasks => setTasks(tasks));
 }, [hideCompleted]);
 ```

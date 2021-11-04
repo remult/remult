@@ -517,7 +517,7 @@ In the `loadTasks` method of the `AppComponent` class, add an object literal arg
 ```ts{2-4}
 async loadTasks() {
   this.tasks = await this.tasksRepo.find({
-    orderBy: task => task.completed
+    orderBy: { completed: "asc" }
   });
 }
 ```
@@ -535,8 +535,8 @@ Let's hide all completed tasks, using server side filtering.
    ```ts{3}
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
-       where: task => task.completed.isEqualTo(false),
-       orderBy: task => task.completed
+       where: { completed: false },
+       orderBy: { completed: "asc" }
      });
    }
    ```
@@ -561,8 +561,8 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    ```ts{3}
    async loadTasks() {
      this.tasks = await this.tasksRepo.find({
-       where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined!,
-       orderBy: task => task.completed
+       where: this.hideCompleted ? { completed: false } : {},
+       orderBy: { completed: "asc" }
      });
    }
    ```
@@ -782,8 +782,8 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 async loadTasks() {
   if (this.remult.authenticated())
     this.tasks = await this.tasksRepo.find({
-      where: task => this.hideCompleted ? task.completed.isEqualTo(false) : undefined,
-      orderBy: task => task.completed
+      where: this.hideCompleted ? { completed: false } : {},
+      orderBy: { completed: "asc" }
     });
 }
 ```

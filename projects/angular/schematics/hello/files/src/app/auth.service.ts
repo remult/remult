@@ -14,7 +14,7 @@ export class AuthService {
     @BackendMethod({ allowed: true })
     static async signIn(user: string, password: string, remult?: Remult) {
         let result: UserInfo;
-        let u = await remult!.repo(Users).findFirst(h => h.name.isEqualTo(user));
+        let u = await remult!.repo(Users).findFirst({ name: user });
         if (u)
             if (await u.passwordMatches(password)) {
                 result = {
@@ -36,7 +36,7 @@ export class AuthService {
     async signIn(username: string, password: string) {
         this.setAuthToken(await AuthService.signIn(username, password));
     }
-    
+
     setAuthToken(token: string) {
         this.remult.setUser(new JwtHelperService().decodeToken(token));
         sessionStorage.setItem(AUTH_TOKEN_KEY, token);

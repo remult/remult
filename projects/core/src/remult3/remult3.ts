@@ -61,6 +61,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
 [] write an article about the different usages of backend method:
+    [] auto increment id
     [] static
     [] entity
     [] controller

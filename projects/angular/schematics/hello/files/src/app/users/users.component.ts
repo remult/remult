@@ -25,7 +25,7 @@ export class UsersComponent implements OnInit {
     allowUpdate: true,
     numOfColumnsInGrid: 2,
 
-    orderBy: h => [h.name],
+    orderBy: { name: "asc" },
     rowsInPage: 100,
 
     columnSettings: users => [

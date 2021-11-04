@@ -1233,7 +1233,12 @@ describe("order by api", () => {
 
   it("works with columns array", () => {
     let c = new Remult().repo(Categories);
-    let opt: FindOptions<Categories> = { orderBy: { id: "asc", categoryName: "asc" } };
+    let opt: FindOptions<Categories> = {
+      orderBy: {
+        id: "asc",
+        categoryName: "asc"
+      }
+    };
     let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy);
     expect(s.Segments.length).toBe(2);
     expect(s.Segments[0].field).toBe(c.metadata.fields.id);

@@ -13,11 +13,7 @@ import { terms } from "../terms";
     allowApiInsert: Roles.admin
 },
     (options, remult) => {
-        options.apiPrefilter = (user) => {
-            if (!(remult.isAllowed(Roles.admin)))
-                return user.id.isEqualTo(remult.user.id);
-            return undefined!;
-        };
+        options.apiPrefilter = !remult.isAllowed(Roles.admin) ? { id: remult.user.id } : {};
         options.saving = async (user) => {
             if (isBackend()) {
                 if (user._.isNew()) {
@@ -44,7 +40,7 @@ export class Users extends IdEntity {
 
     @Field({
         allowApiUpdate: Roles.admin,
-        caption:terms.admin
+        caption: terms.admin
     })
     admin: Boolean = false;
     constructor(private remult: Remult) {
