@@ -146,8 +146,8 @@ export async function testAllDataProviders(runAsync: (db: {
   remult: Remult
 }) => Promise<void>) {
   await testSql(runAsync);
-  await testInMemoryDb(runAsync);
-  await testRestDb(runAsync);
+ // await testInMemoryDb(runAsync);
+  //await testRestDb(runAsync);
 }
 
 export var restDbTestingServer = false;
