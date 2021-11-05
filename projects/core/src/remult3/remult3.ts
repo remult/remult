@@ -17,7 +17,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] server/index
 
 [] Create Entity
-    [] create a class with title.
+    [] create a class with title and completed.
     [] decorate it
     [] show swagger
         [] talk about paging
@@ -29,6 +29,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] App.tsx
     [] add task repo - it wraps axios - type of agent or service..
+    [] copy paste insert etc...
 
 [] skip line-through
 
@@ -46,6 +47,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
+[] completed:false
+[] https://rjsf-team.github.io/react-jsonschema-form/
+[] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
 [V] expressRemult - do something with app use
 [V] adjust swagger to show that you can filter.
 [V] check why limit and page don't work from swagger

@@ -240,3 +240,43 @@ describe("complex entity relations on server entity and backend method", () => {
 
 });
 
+
+it("test that entity backend method respects api filter", async () => {
+    let remult = new Remult(ActionTestConfig.db);
+    let repo = remult.repo(d);
+    let d1 = await repo.create({ id: 1, b: 1 }).save();
+    await repo.create({ id: 2, b: 1 }).save();
+    await repo.create({ id: 3, b: 2 }).save();
+    let d4 = await repo.create({ id: 4, b: 2 }).save();
+    d.count = 0;
+    expect(await d4.doIt()).toBe(true);;
+    expect(d.count).toBe(1);
+    d.count = 0;
+    let error = false;
+    try {
+        await d1.doIt();
+    }
+    catch { error = true; }
+    expect(error).toBe(true);
+    expect(d.count).toBe(0);
+
+})
+
+
+@Entity('d', {
+    apiPrefilter: { b: 2 }
+})
+class d extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    b: number;
+
+    static count = 0;
+    @BackendMethod({ allowed: true })
+    async doIt() {
+        d.count++;
+        return true;
+    }
+
+}

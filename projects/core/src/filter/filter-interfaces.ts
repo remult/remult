@@ -353,7 +353,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
     let where: EntityFilter<any>[] = [];
 
     [...entity.fields].forEach(col => {
-        function addFilter(operation: string, theFilter: (val: any) => (any | { "!=" }), jsonArray = false, asString = false) {
+        function addFilter(operation: string, theFilter: (val: any) => any, jsonArray = false, asString = false) {
             let val = filterInfo.get(col.key + operation);
             if (val !== undefined) {
                 let addFilter = (val: any) => {
@@ -369,7 +369,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
                         theVal = asString ? theVal : col.valueConverter.fromJson(theVal);
                     }
                     let f = theFilter(theVal);
-                    if (f) {
+                    if (f!==undefined) {
                         where.push({ [col.key]: f });
                     }
                 };
