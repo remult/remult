@@ -125,7 +125,6 @@ export class DataApi<T = any> {
     }
     if (filterBody)
       where.push(Filter.entityFilterFromJson(this.repository.metadata, filterBody))
-      console.log(where);
     return { $and: where };
   }
 
