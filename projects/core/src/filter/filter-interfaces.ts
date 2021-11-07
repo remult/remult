@@ -204,7 +204,7 @@ export class filterHelper {
     }
     isEqualTo(val: any): Filter {
         val = this.processVal(val);
-        if ((val === null || val === undefined && this.metadata.allowNull))
+        if ((val === null || val === undefined) && this.metadata.allowNull)
             return new Filter(add => add.isNull(this.metadata));
         return new Filter(add => add.isEqualTo(this.metadata, val));
     }

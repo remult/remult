@@ -715,13 +715,14 @@ describe("Test entity relation and count finds", () => {
         done.test();
         expect(fetches).toBe(1);
     });
-    fit("test filtering of null/''", () =>
+    it("test filtering of null/''", () =>
         testAllDataProviders(async ({ remult }) => {
             let repo = remult.repo(h);
             let a = await repo.create({ id: 'a' }).save();
             let b = await repo.create({ id: 'b' }).save();
             let c = await repo.create({ id: 'c', refH: b }).save();
             expect(await repo.count({ refH: null })).toBe(2);
+            expect(await repo.count({ refH: { "!=": null } })).toBe(1);
         })
     );
 });

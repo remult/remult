@@ -244,28 +244,28 @@ describe("complex entity relations on server entity and backend method", () => {
 
 it("test that entity backend method respects api filter", async () => {
     let remult = new Remult(ActionTestConfig.db);
-    let repo = remult.repo(d);
+    let repo = remult.repo(dWithPrefilter);
     await repo.iterate().forEach(x => x.delete());
     let d1 = await repo.create({ id: 1, b: 1 }).save();
     await repo.create({ id: 2, b: 1 }).save();
     await repo.create({ id: 3, b: 2 }).save();
     let d4 = await repo.create({ id: 4, b: 2 }).save();
-    d.count = 0;
+    dWithPrefilter.count = 0;
     expect(await d4.doIt()).toBe(true);;
-    expect(d.count).toBe(1);
-    d.count = 0;
+    expect(dWithPrefilter.count).toBe(1);
+    dWithPrefilter.count = 0;
     let error = false;
     try {
         await d1.doIt();
     }
     catch { error = true; }
     expect(error).toBe(true);
-    expect(d.count).toBe(0);
+    expect(dWithPrefilter.count).toBe(0);
 
 })
 it("test api filter cant be overwritten", async () => {
     return testRestDb(async ({ remult }) => {
-        let repo = remult.repo(d);
+        let repo = remult.repo(dWithPrefilter);
         let d1 = await repo.create({ id: 1, b: 1 }).save();
         await repo.create({ id: 3, b: 2 }).save();
         let d4 = await repo.create({ id: 4, b: 2 }).save();
@@ -276,16 +276,15 @@ it("test api filter cant be overwritten", async () => {
 })
 it("test filter doesn't collapse", async () => {
     return testAllDataProviders(async ({ remult }) => {
-        let repo = remult.repo(d);
+        let repo = remult.repo(dWithPrefilter);
         let d1 = await repo.create({ id: 1, b: 1 }).save();
         await repo.create({ id: 2, b: 2 }).save();
         let d4 = await repo.create({ id: 4, b: 2 }).save();
 
-        let f: EntityFilter<d> = { id: 1, $and: [{ id: 2 }] };
+        let f: EntityFilter<dWithPrefilter> = { id: 1, $and: [{ id: 2 }] };
         expect(await repo.count(f)).toBe(0);
         expect((await repo.find({ where: f })).length).toBe(0);
         let json = Filter.entityFilterToJson(repo.metadata, f);
-        console.log(json);
         f = Filter.entityFilterFromJson(repo.metadata, json);
         expect(await repo.count(f)).toBe(0);
         expect((await repo.find({ where: f })).length).toBe(0);
@@ -318,6 +317,23 @@ it("test filter doesn't collapse", async () => {
     apiPrefilter: { b: 2 },
     allowApiCrud: true
 })
+class dWithPrefilter extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    b: number;
+
+    static count = 0;
+    @BackendMethod({ allowed: true })
+    async doIt() {
+        dWithPrefilter.count++;
+        return true;
+    }
+
+}
+@Entity('d1', {
+    allowApiCrud: true
+})
 class d extends EntityBase {
     @Field()
     id: number;
@@ -327,7 +343,7 @@ class d extends EntityBase {
     static count = 0;
     @BackendMethod({ allowed: true })
     async doIt() {
-        d.count++;
+        dWithPrefilter.count++;
         return true;
     }
 
