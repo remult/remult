@@ -26,11 +26,8 @@ export class GroupsValue {
   sqlExpression: async () =>
     new Promise(res => setTimeout(() => {
       res('Products')
-    }, 10)),
-  apiPrefilter: (e) => {
+    }, 10))
 
-    return new Filter();
-  }
 })
 export class Products extends IdEntity {
   @Field()
@@ -45,7 +42,7 @@ export class Products extends IdEntity {
   availableTo: Date;
   @Field()
   archive: boolean;
-  static filter = Filter.createCustom<Products>(p => p.name.isEqualTo("a"));
+  static filter = Filter.createCustom<Products>(() => ({ name: "a" }));
 
   @BackendMethod({ allowed: true })
   async doit() {

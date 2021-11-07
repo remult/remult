@@ -53,7 +53,7 @@ export class DataApi<T = any> {
     try {
       let findOptions: FindOptions<T> = { load: () => [] };
       if (this.options?.apiPrefilter) {
-        findOptions.where = this.options.apiPrefilter;
+        findOptions.where = await Filter.resolve(this.options.apiPrefilter);
       }
       findOptions.where = this.buildWhere(request, filterBody);
       if (this.options.requireId) {
@@ -224,7 +224,7 @@ export interface DataApiSettings<rowType> {
   allowDelete: (row: rowType) => boolean,
   requireId: boolean,
   allowRead?: boolean,
-  apiPrefilter?: EntityFilter<rowType>
+  apiPrefilter?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>)
 
 }
 

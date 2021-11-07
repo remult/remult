@@ -1,4 +1,4 @@
-import { FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository } from "remult";
+import { FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository, Filter } from "remult";
 
 import { DataList } from "./angular/dataList";
 
@@ -85,18 +85,21 @@ export class GridSettings<rowType>  {
       if (!this.caption && repository) {
         this.caption = repository.metadata.caption;
       }
-      let get: FindOptions<any> = {};
+      if (settings.page)
+        this.page = settings.page;
 
-      if (settings.where)
-        get.where = settings.where;
+      if (settings.rowsInPage)
+        this.rowsPerPage = settings.rowsInPage;
+      else
+        this.rowsPerPage = 25;
+
+      if (this.rowsPerPageOptions.indexOf(this.rowsPerPage) < 0) {
+        this.rowsPerPageOptions.push(this.rowsPerPage);
+        this.rowsPerPageOptions.sort((a, b) => +a - +b);
+      }
+
       if (settings.orderBy)
-        get.orderBy = settings.orderBy;
-      if (settings.rowsInPage !== undefined)
-        get.limit = settings.rowsInPage;
-      if (settings.page !== undefined)
-        get.page = settings.page;
-      this.setGetOptions(get);
-
+        this._currentOrderBy = Sort.translateOrderByToSort(this.repository.metadata, this.settings.orderBy);
     }
 
 
@@ -139,22 +142,6 @@ export class GridSettings<rowType>  {
     this.columns.numOfColumnsInGrid--;
   }
 
-
-  private setGetOptions(get: FindOptions<rowType>) {
-    this.getOptions = get;
-    if (get && get.limit)
-      this.rowsPerPage = get.limit;
-    else
-      this.rowsPerPage = 25;
-    if (this.rowsPerPageOptions.indexOf(this.rowsPerPage) < 0) {
-      this.rowsPerPageOptions.push(this.rowsPerPage);
-      this.rowsPerPageOptions.sort((a, b) => +a - +b);
-    }
-    this._currentOrderBy = undefined;
-    if (this.getOptions && this.getOptions.orderBy)
-      this._currentOrderBy = Sort.translateOrderByToSort(this.repository.metadata, this.getOptions.orderBy);
-
-  }
 
 
 
@@ -358,7 +345,9 @@ export class GridSettings<rowType>  {
   rowsPerPageOptions = [10, 25, 50, 100];
   get(options: FindOptions<rowType>) {
 
-    this.setGetOptions(options);
+    this.settings.where = options.where;
+    if (options.orderBy)
+      this._currentOrderBy = Sort.translateOrderByToSort(this.repository.metadata, options.orderBy);
     this.page = 1;
     return this.reloadData();
 
@@ -399,13 +388,13 @@ export class GridSettings<rowType>  {
 
 
 
-  private getOptions: FindOptions<rowType>;
+
 
   totalRows: number;
 
 
-  reloadData() {
-    let opt: FindOptions<rowType> = this._internalBuildFindOptions();
+  async reloadData() {
+    let opt: FindOptions<rowType> = await this._internalBuildFindOptions();
     this.columns.autoGenerateColumnsBasedOnData(this.repository.metadata);
     let result = this.restList.get(opt).then((rows) => {
 
@@ -440,29 +429,27 @@ export class GridSettings<rowType>  {
 
 
   private restList: DataList<rowType>;
-  _internalBuildFindOptions() {
+  async _internalBuildFindOptions() {
     let opt: FindOptions<rowType> = {};
-    if (this.getOptions) {
-      opt = Object.assign(opt, this.getOptions);
+    if (this.settings.where) {
+      opt.where = await Filter.resolve(this.settings.where);
     }
+    if (this.settings.orderBy)
+      opt.orderBy = this.settings.orderBy;
+
     if (this._currentOrderBy)
-    opt.orderBy = this._currentOrderBy.toEntityOrderBy();
-      
+      opt.orderBy = this._currentOrderBy.toEntityOrderBy();
+
     opt.limit = this.rowsPerPage;
     if (this.page > 1)
       opt.page = this.page;
     this.filterHelper.addToFindOptions(opt);
     return opt;
   }
-  getFilterWithSelectedRows() {
-    let r = this._internalBuildFindOptions();
+  async getFilterWithSelectedRows() {
+    let r = await this._internalBuildFindOptions();
     if (this.selectedRows.length > 0 && !this._selectedAll) {
-      if (r.where) {
-        let x = r.where;
-        r.where = { $and: [x, this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)] } as EntityFilter<any>;
-      }
-      else
-        r.where = this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows);
+      r.where = { $and: [r.where, this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)] }
     }
     return r;
   }
@@ -501,7 +488,7 @@ export interface IDataSettings<rowType> {
    * where p => p.price.isGreaterOrEqualTo(5)
    * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
    */
-  where?: EntityFilter<rowType>;
+  where?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>);
   /** Determines the order in which the result will be sorted in
    * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
    */

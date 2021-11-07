@@ -83,10 +83,3 @@ serverInit().then(async (dataSource) => {
 });
 
 
-await this.remult.repo(Products).find({
-    orderBy: { name: "asc" }
-    , where: {
-        availableFrom: { "<=": new Date() },
-        availableTo: { ">=": new Date() }
-    }
-});
