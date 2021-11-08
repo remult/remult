@@ -284,6 +284,9 @@ export interface EntityMetadata<entityType = any> {
     readonly entityType: ClassType<entityType>;
     getDbName(): Promise<string>;
 }
+
+
+export declare type PartialEB<T> = T extends import('./RepositoryImplementation').EntityBase ? Omit<Partial<T>, keyof import('./RepositoryImplementation').EntityBase> : Partial<T>;
 export interface Repository<entityType> {
     /**creates a json representation of the object */
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
@@ -294,7 +297,7 @@ export interface Repository<entityType> {
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
-    create(item?: Partial<entityType>): entityType;
+    create(item?: PartialEB<entityType>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
     save(item: entityType): Promise<entityType>;
     delete(item: entityType): Promise<void>;
@@ -328,18 +331,18 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
-    [Properties in keyof entityType]?: "asc" | "desc"
+    [Properties in keyof PartialEB<entityType>]?: "asc" | "desc"
 }
 
 
 
 export declare type EntityFilter<entityType> = {
-    [Properties in keyof entityType]?:  (
-        entityType[Properties] extends number | Date ? ComparisonValueFilter<entityType[Properties]> :
-        entityType[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
-        entityType[Properties] extends boolean ? ValueFilter<boolean> :
-        ValueFilter<entityType[Properties]>) & ContainsStringValueFilter;
-} |& {
+    [Properties in keyof PartialEB<entityType>]?: (
+        PartialEB<entityType>[Properties] extends number | Date ? ComparisonValueFilter<PartialEB<entityType>[Properties]> :
+        PartialEB<entityType>[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
+        PartialEB<entityType>[Properties] extends boolean ? ValueFilter<boolean> :
+        ValueFilter<PartialEB<entityType>[Properties]>) & ContainsStringValueFilter;
+} | & {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
 }

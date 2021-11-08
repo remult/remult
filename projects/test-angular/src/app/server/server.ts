@@ -18,7 +18,7 @@ import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 import { stam } from '../products-test/products.component';
-import { Filter } from '../../../../core';
+import { EntityBase, Filter } from '../../../../core';
 import { DataApi } from '../../../../core/src/data-api';
 import { remultExpress } from '../../../../core/server/expressBridge';
 
@@ -81,5 +81,17 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
+
+
+class a extends EntityBase {
+    title: string;
+}
+class b {
+    title: string;
+    $: string;
+}
+
+
+
 
 

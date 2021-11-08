@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, PartialEB } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -351,7 +351,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
 
-    create(item?: Partial<entityType>): entityType {
+    create(item?: PartialEB<entityType>): entityType {
         let r = new this.entity(this.remult);
         let z = this.getEntityRef(r);
         if (item)
@@ -1465,7 +1465,7 @@ export function Entity<entityType>(key: string, ...options: (EntityOptions<entit
 export class EntityBase {
     get _(): EntityRef<this> { return getEntityRef(this) }
     save() { return this._.save(); }
-    assign(values: Partial<this>) {
+    assign(values: Partial<Omit<this, keyof EntityBase>>) {
         assign(this, values);
         return this;
     }
