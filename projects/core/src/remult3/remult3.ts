@@ -50,20 +50,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] exclude properties from type https://stackoverflow.com/questions/51804810/how-to-remove-fields-from-a-typescript-interface-via-extension/51804844
 [] where: HelpersBase.active as EntityFilter<Helpers> -  
 [] test api with and - uncomment and see error
-[V] completed:false
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
-[V] expressRemult - do something with app use
-[V] adjust swagger to show that you can filter.
-[V] check why limit and page don't work from swagger
-[V] fix sending of remult in argument - to work
-[V] change entity backend methods to be entity/backend method name
-[v] make sure that backend method of entity cant work on a row that it's not authorized for in terms of predefined filter.
-[] make sure that on the grid or in predefined filter, adding a filter to the same field - doesn't open values that you're not supposed to see.
+[] react admin
 
-[V] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
-[V] check why update object value with null didn't update the database in hugmom
-[V] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+
 
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
@@ -101,6 +92,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## Todo Angular Material
+[] make sure that on the grid or in predefined filter, adding a filter to the same field - doesn't open values that you're not supposed to see.
 [V] test why date is equal to null - didn't work
 [] readonly doesn't work on checkbox in area
 [] add id lookup in remult angular
@@ -159,6 +151,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] consider creating a type for EntityFilter | ()=>(EntityFilter|Promise.EntityFilter)
     [] order of parameters in custom filter, entity metadata seems less important now.
     [] consider "" for sort ascending.
+    [] where: { $and: [FamilyDeliveries.readyFilter()], id: f.deliveries.map(x => x.id) }
 
 
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
