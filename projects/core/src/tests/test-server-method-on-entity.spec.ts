@@ -313,7 +313,7 @@ it("test filter doesn't collapse", async () => {
 
 
 
-@Entity('d', {
+@Entity<dWithPrefilter>('d', {
     apiPrefilter: { b: 2 },
     allowApiCrud: true
 })

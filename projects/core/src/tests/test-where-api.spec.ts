@@ -425,15 +425,15 @@ describe("missing fields are added in array column", async () => {
             title: "abc",
             $and: []
         };
-        //x.$and.push({});
+        x.$and.push({});
+        let y: EntityFilter<taskWithNull> = { $and: [x, x] }
     });
     it("test api with and", () => {
         let x: EntityFilter<taskWithNull> = {
+
             $and: []
         };
         x.$and.push({});
         let z: EntityFilter<taskWithNull> = x;
     });
 });
-
-

@@ -47,9 +47,12 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[] exclude properties from type https://stackoverflow.com/questions/51804810/how-to-remove-fields-from-a-typescript-interface-via-extension/51804844
-[] where: HelpersBase.active as EntityFilter<Helpers> -  
-[] test api with and - uncomment and see error
+[V] exclude properties from type https://stackoverflow.com/questions/51804810/how-to-remove-fields-from-a-typescript-interface-via-extension/51804844
+[V] where: HelpersBase.active as EntityFilter<Helpers> -  
+[] remove wasChanged - and fix docs
+[] check why realworld - allowApiInsert - the first param was any.
+[] custom api filter - remove first parameter
+[V] test api with and - uncomment and see error
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
 [] react admin
@@ -147,18 +150,15 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## review with Yoni
 [] Filter Refactoring:
-    [] reconsider  id:{"!=":1} - it's not fun, maybe id$ne - not sure, maybe as another option
-    [] consider creating a type for EntityFilter | ()=>(EntityFilter|Promise.EntityFilter)
+    
     [] order of parameters in custom filter, entity metadata seems less important now.
-    [] consider "" for sort ascending.
-    [] where: { $and: [FamilyDeliveries.readyFilter()], id: f.deliveries.map(x => x.id) }
-
+  
 
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
 [] the problem with ? and null and ! - imagine task has a Category property that is an entity - category? doesn't allow null - and undefined should be have ?
 [] rethink entity inheritence - saving of child overwritten the saving of base
 [] reconsider type FieldValidator - that hides lambda
-[] check why realworld - allowApiInsert - the first param was any.
+
 [] db migrations
 [] should fieldType automatically serialize it's Fields?
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
@@ -342,7 +342,7 @@ export declare type EntityFilter<entityType> = {
         PartialEB<entityType>[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
         PartialEB<entityType>[Properties] extends boolean ? ValueFilter<boolean> :
         ValueFilter<PartialEB<entityType>[Properties]>) & ContainsStringValueFilter;
-} | & {
+} & {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
 }

@@ -390,7 +390,7 @@ Replace the task `title` template expression in `app.component.html` with the hi
 ```html{2-3}
 <li *ngFor="let task of tasks">
    <input [(ngModel)]="task.title">
-   <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+   <button (click)="task.save()" [disabled]="!task._.wasChanged()">Save</button>
    <button (click)="deleteTask(task)">Delete</button>
 </li>
 ```
@@ -416,7 +416,7 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
      <input [(ngModel)]="task.completed" type="checkbox">
      <input [(ngModel)]="task.title" 
         [style.textDecoration]="task.completed?'line-through':''">
-     <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+     <button (click)="task.save()" [disabled]="!task._.wasChanged()">Save</button>
      <button (click)="deleteTask(task)">Delete</button>
    </li>
    ```
@@ -499,7 +499,7 @@ export class AppComponent {
     <input [(ngModel)]="task.completed" type="checkbox">
     <input [(ngModel)]="task.title" 
        [style.textDecoration]="task.completed?'line-through':''">
-    <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+    <button (click)="task.save()" [disabled]="!task._.wasChanged()">Save</button>
     <button (click)="deleteTask(task)">Delete</button>
  </li>
 </ul>
@@ -770,7 +770,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
       <input [(ngModel)]="task.completed" type="checkbox">
       <input [(ngModel)]="task.title" 
          [style.textDecoration]="task.completed?'line-through':''">
-      <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+      <button (click)="task.save()" [disabled]="!task._.wasChanged()">Save</button>
       <button (click)="deleteTask(task)">Delete</button>
     </li>
   </ul>
