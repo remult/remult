@@ -2055,6 +2055,7 @@ describe("check allowedDataType", () => {
   });
 
 });
+
 @Entity<CompoundIdEntity>(
   'compountIdEntity', {
   id: x => new CompoundIdField(x.a, x.b)

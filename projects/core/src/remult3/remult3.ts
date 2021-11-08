@@ -49,9 +49,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## TODO
 [V] exclude properties from type https://stackoverflow.com/questions/51804810/how-to-remove-fields-from-a-typescript-interface-via-extension/51804844
 [V] where: HelpersBase.active as EntityFilter<Helpers> -  
-[] remove wasChanged - and fix docs
-[] check why realworld - allowApiInsert - the first param was any.
-[] custom api filter - remove first parameter
+[V] remove wasChanged - and fix docs
+[V] check why realworld - allowApiInsert - the first param was any.
+[V] custom api filter - remove first parameter
 [V] test api with and - uncomment and see error
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
@@ -149,13 +149,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
-[] Filter Refactoring:
-    
-    [] order of parameters in custom filter, entity metadata seems less important now.
-  
-
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
-[] the problem with ? and null and ! - imagine task has a Category property that is an entity - category? doesn't allow null - and undefined should be have ?
 [] rethink entity inheritence - saving of child overwritten the saving of base
 [] reconsider type FieldValidator - that hides lambda
 

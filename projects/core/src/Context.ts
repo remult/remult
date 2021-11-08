@@ -57,7 +57,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     //@ts-ignore
     else r = p;
     return r.then((x: any) => {
-        if (x && (x.status == 200||x.status==201) && x.headers && x.request && x.data)//for axios
+        if (x && (x.status == 200 || x.status == 201) && x.headers && x.request && x.data)//for axios
             return x.data;
         return x;
     }).catch(async ex => {
@@ -255,7 +255,7 @@ export interface UserInfo {
 export declare type AllowedItem = string | ((c: Remult) => boolean) | boolean;
 export declare type Allowed = AllowedItem | AllowedItem[];
 
-export declare type AllowedForInstance<T> = string | ((c: Remult, entity: T) => boolean) | boolean | Allowed;
+export declare type AllowedForInstance<T> = ((c: Remult, entity?: T) => boolean) | string | boolean | string[];
 export class Allow {
     static everyone = () => true;
     static authenticated = (remult: Remult) => remult.authenticated();
