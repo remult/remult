@@ -280,7 +280,7 @@ export interface EntityMetadata<entityType = any> {
 }
 
 
-export declare type PartialEB<T> = T extends import('./RepositoryImplementation').EntityBase ? Omit<Partial<T>, keyof import('./RepositoryImplementation').EntityBase> : Partial<T>;
+export declare type PartialEB<T> =  Omit<Partial<T>, keyof import('./RepositoryImplementation').EntityBase> ;
 export interface Repository<entityType> {
     /**creates a json representation of the object */
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
