@@ -40,7 +40,7 @@ export interface EntityOptions<entityType = any> {
   /** A filter that determines which rows can be queries using the api.
 
   */
-  apiPrefilter?: EntityFilter<entityType>;
+  apiPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
   apiRequireId?: Allowed;
   /** A filter that will be used for all queries from this entity both from the API and from within the server.
    * @example

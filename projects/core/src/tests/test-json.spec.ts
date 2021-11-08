@@ -1,4 +1,4 @@
-import { Done, TestDataApiResponse } from './testHelper.spec';
+import { Done, testAllDataProviders, TestDataApiResponse } from './testHelper.spec';
 import { Remult } from '../context';
 
 import { JsonDataProvider } from '../data-providers/json-data-provider';
@@ -59,14 +59,14 @@ describe("test json database", () => {
     });
 
 });
-@Entity('tasks')
+@Entity('tasks', { allowApiCrud: true })
 class tasks extends EntityBase {
     @Field()
     id: number;
     @Field()
     name: string;
     @Field()
-    completed: boolean;
+    completed: boolean=false;
 
 }
 describe("test tasks", () => {
@@ -110,4 +110,24 @@ describe("test tasks", () => {
         });
         d.test();
     });
+    it("test tasks", () => testAllDataProviders(async ({ remult }) => {
+
+        let c = remult.repo(tasks);
+        let t = c.create();
+        t.id = 1;
+        await t._.save();
+        t = c.create();
+        t.id = 2;
+        t.completed = true;
+        await t._.save();
+        t = c.create();
+        t.id = 3;
+        t.completed = true;
+        await t._.save();
+        await c.create({ id: 4, completed: false }).save();
+
+        expect(await c.count({ completed: false })).toBe(2);
+        expect(await c.count({ completed: { $ne: true } })).toBe(2);
+        expect(await c.count({ completed: true })).toBe(2);
+    }));
 });

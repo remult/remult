@@ -17,7 +17,7 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] server/index
 
 [] Create Entity
-    [] create a class with title.
+    [] create a class with title and completed.
     [] decorate it
     [] show swagger
         [] talk about paging
@@ -29,6 +29,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 [] App.tsx
     [] add task repo - it wraps axios - type of agent or service..
+    [] copy paste insert etc...
 
 [] skip line-through
 
@@ -46,17 +47,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[V] expressRemult - do something with app use
-[V] adjust swagger to show that you can filter.
-[V] check why limit and page don't work from swagger
-[V] fix sending of remult in argument - to work
-[V] change entity backend methods to be entity/backend method name
-[] make sure that backend method of entity cant work on a row that it's not authorized for in terms of predefined filter.
-[] make sure that on the grid or in predefined filter, adding a filter to the same field - doesn't open values that you're not supposed to see.
+[] exclude properties from type https://stackoverflow.com/questions/51804810/how-to-remove-fields-from-a-typescript-interface-via-extension/51804844
+[] where: HelpersBase.active as EntityFilter<Helpers> -  
+[] test api with and - uncomment and see error
+[] https://rjsf-team.github.io/react-jsonschema-form/
+[] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
+[] react admin
 
-[V] fix that updating a server expression, is not visible to the server - self.changeSeenByDeliveryManager - can be used to do additional operations on save. On the other hand, server expression sounds like something that you can trust on the server to reflect something
-[V] check why update object value with null didn't update the database in hugmom
-[V] replace uuid with a newer version based on the warnings:npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+
 
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
@@ -94,6 +92,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## Todo Angular Material
+[] make sure that on the grid or in predefined filter, adding a filter to the same field - doesn't open values that you're not supposed to see.
 [V] test why date is equal to null - didn't work
 [] readonly doesn't work on checkbox in area
 [] add id lookup in remult angular
@@ -148,11 +147,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 ## review with Yoni
 [] Filter Refactoring:
-    YES [] consider "<="?:T $and $or etc...,
-    Remove [] options | where doesn't work anymore
-    [] order by "asc", "desc"
-    [] reconsider starts with etc...
-    [] members with the same name?
+    [] reconsider  id:{"!=":1} - it's not fun, maybe id$ne - not sure, maybe as another option
+    [] consider creating a type for EntityFilter | ()=>(EntityFilter|Promise.EntityFilter)
+    [] order of parameters in custom filter, entity metadata seems less important now.
+    [] consider "" for sort ascending.
+    [] where: { $and: [FamilyDeliveries.readyFilter()], id: f.deliveries.map(x => x.id) }
 
 
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
@@ -335,32 +334,30 @@ export declare type EntityOrderBy<entityType> = {
 
 
 export declare type EntityFilter<entityType> = {
-    [Properties in keyof entityType]?: entityType[Properties] | entityType[Properties][] | (
+    [Properties in keyof entityType]?:  (
         entityType[Properties] extends number | Date ? ComparisonValueFilter<entityType[Properties]> :
         entityType[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
         entityType[Properties] extends boolean ? ValueFilter<boolean> :
         ValueFilter<entityType[Properties]>) & ContainsStringValueFilter;
-} & {
+} |& {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
 }
 
 
-
-export interface ValueFilter<T> {
-    $ne?: T | T[],
-    "!="?: T | T[],
-
+export type ValueFilter<valueType> = valueType | valueType[] | {
+    $ne?: valueType | valueType[],
+    "!="?: valueType | valueType[],
 }
-export interface ComparisonValueFilter<T> extends ValueFilter<T> {
-    $gt?: T,
-    ">"?: T,
-    $gte?: T,
-    ">="?: T,
-    $lt?: T,
-    "<"?: T,
-    $lte?: T
-    "<="?: T
+export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
+    $gt?: valueType,
+    ">"?: valueType,
+    $gte?: valueType,
+    ">="?: valueType,
+    $lt?: valueType,
+    "<"?: valueType,
+    $lte?: valueType
+    "<="?: valueType
 }
 export interface ContainsStringValueFilter {
     $contains?: string,

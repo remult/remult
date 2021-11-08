@@ -52,8 +52,8 @@ export class DataApi<T = any> {
     }
     try {
       let findOptions: FindOptions<T> = { load: () => [] };
-      if (this.options && this.options.get) {
-        Object.assign(findOptions, this.options.get);
+      if (this.options?.apiPrefilter) {
+        findOptions.where = await Filter.resolve(this.options.apiPrefilter);
       }
       findOptions.where = this.buildWhere(request, filterBody);
       if (this.options.requireId) {
@@ -112,7 +112,7 @@ export class DataApi<T = any> {
   private buildWhere(request: DataApiRequest, filterBody: any): EntityFilter<any> {
     var where: EntityFilter<any>[] = [];
 
-    where.push(this.options?.get?.where);
+    where.push(this.options?.apiPrefilter);
     if (request) {
       where.push(buildFilterFromRequestParameters(this.repository.metadata, {
         get: key => {
@@ -136,7 +136,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: { $and: [this.options?.get?.where, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
+        where: { $and: [this.options?.apiPrefilter, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
       })
         .then(async r => {
           if (r.length == 0)
@@ -182,10 +182,9 @@ export class DataApi<T = any> {
       allowDelete: (e) => this.remult.isAllowedForInstance(e, options.allowApiDelete),
       allowInsert: (e) => this.remult.isAllowedForInstance(e, options.allowApiInsert),
       requireId: this.remult.isAllowed(options.apiRequireId),
-      get: {
-        where: options.apiPrefilter
+      apiPrefilter: options.apiPrefilter
 
-      }
+
     }
   }
   async delete(response: DataApiResponse, id: any) {
@@ -225,7 +224,7 @@ export interface DataApiSettings<rowType> {
   allowDelete: (row: rowType) => boolean,
   requireId: boolean,
   allowRead?: boolean,
-  get?: FindOptions<rowType>
+  apiPrefilter?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>)
 
 }
 

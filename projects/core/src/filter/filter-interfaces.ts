@@ -1,9 +1,10 @@
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import {  EntityMetadata, EntityFilter,  getEntityRef, getEntitySettings } from "../remult3";
+import { EntityMetadata, EntityFilter, getEntityRef, getEntitySettings, ValueFilter } from "../remult3";
 
 
 export class Filter {
+
     constructor(private apply?: (add: FilterConsumer) => void) {
         if (!this.apply) {
             this.apply = () => { };
@@ -11,6 +12,11 @@ export class Filter {
     }
     __applyToConsumer(add: FilterConsumer) {
         this.apply(add);
+    }
+    static async resolve<entityType>(filter: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)): Promise<EntityFilter<entityType>> {
+        if (typeof filter === "function")
+            return await filter();
+        return filter;
     }
     static createCustom<entityType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
     static createCustom<entityType, argsType>(customFilterTranslator: (e: EntityMetadata<entityType>, r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
@@ -28,7 +34,7 @@ export class Filter {
         }, { customFilterInfo }) as ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
 
     }
-    static fromEntityFilter<T>(entity: EntityMetadata<T>, whereItem: EntityFilter<T>) :Filter{
+    static fromEntityFilter<T>(entity: EntityMetadata<T>, whereItem: EntityFilter<T>): Filter {
         let result: Filter[] = [];
         for (const key in whereItem) {
             if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
@@ -48,7 +54,7 @@ export class Filter {
                         result.push(new Filter(x => x.databaseCustom(fieldToFilter)));
                     }
                     else {
-                        let fh =  new filterHelper(entity.fields[key]);
+                        let fh = new filterHelper(entity.fields[key]);
                         let found = false;
                         if (fieldToFilter !== undefined && fieldToFilter != null) {
                             for (const key in fieldToFilter) {
@@ -98,7 +104,7 @@ export class Filter {
                                 result.push(fh.isIn(fieldToFilter));
                             }
                         }
-                        if (!found) {
+                        if (!found && fieldToFilter !== undefined) {
                             result.push(fh.isEqualTo(fieldToFilter));
                         }
 
@@ -110,7 +116,7 @@ export class Filter {
         return new AndFilter(...result);
     }
 
-   
+
 
     toJson() {
         let r = new FilterSerializer();
@@ -146,7 +152,7 @@ export class Filter {
     }
 
 }
-export class filterHelper   {
+export class filterHelper {
     constructor(public metadata: FieldMetadata) {
 
     }
@@ -198,7 +204,7 @@ export class filterHelper   {
     }
     isEqualTo(val: any): Filter {
         val = this.processVal(val);
-        if ((val === null || val === undefined&& this.metadata.allowNull) )
+        if ((val === null || val === undefined) && this.metadata.allowNull)
             return new Filter(add => add.isNull(this.metadata));
         return new Filter(add => add.isEqualTo(this.metadata, val));
     }
@@ -332,7 +338,7 @@ export class FilterSerializer implements FilterConsumer {
     public containsCaseInsensitive(col: FieldMetadata, val: any): void {
         this.add(col.key + "_contains", val);
     }
-   
+
 }
 
 
@@ -353,7 +359,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
     let where: EntityFilter<any>[] = [];
 
     [...entity.fields].forEach(col => {
-        function addFilter(operation: string, theFilter: (val: any) => (any | { "!=" }), jsonArray = false, asString = false) {
+        function addFilter(operation: string, theFilter: (val: any) => any, jsonArray = false, asString = false) {
             let val = filterInfo.get(col.key + operation);
             if (val !== undefined) {
                 let addFilter = (val: any) => {
@@ -369,7 +375,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
                         theVal = asString ? theVal : col.valueConverter.fromJson(theVal);
                     }
                     let f = theFilter(theVal);
-                    if (f) {
+                    if (f !== undefined) {
                         where.push({ [col.key]: f });
                     }
                 };
@@ -479,7 +485,7 @@ class customTranslator implements FilterConsumer {
     containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
         this.commands.push(x => x.containsCaseInsensitive(col, val));
     }
-   
+
     isIn(col: FieldMetadata<any>, val: any[]): void {
         this.commands.push(x => x.isIn(col, val));
     }

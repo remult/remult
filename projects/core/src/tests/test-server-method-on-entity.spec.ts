@@ -1,11 +1,12 @@
-import { ActionTestConfig, TestDataApiResponse } from './testHelper.spec';
+import { ActionTestConfig, testAllDataProviders, TestDataApiResponse, testRestDb } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
-import { Field, Entity, EntityBase, getFields, getEntityRef } from '../remult3';
+import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 
 import { assign } from '../../assign';
+import { Filter } from '../filter/filter-interfaces';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -240,3 +241,110 @@ describe("complex entity relations on server entity and backend method", () => {
 
 });
 
+
+it("test that entity backend method respects api filter", async () => {
+    let remult = new Remult(ActionTestConfig.db);
+    let repo = remult.repo(dWithPrefilter);
+    await repo.iterate().forEach(x => x.delete());
+    let d1 = await repo.create({ id: 1, b: 1 }).save();
+    await repo.create({ id: 2, b: 1 }).save();
+    await repo.create({ id: 3, b: 2 }).save();
+    let d4 = await repo.create({ id: 4, b: 2 }).save();
+    dWithPrefilter.count = 0;
+    expect(await d4.doIt()).toBe(true);;
+    expect(dWithPrefilter.count).toBe(1);
+    dWithPrefilter.count = 0;
+    let error = false;
+    try {
+        await d1.doIt();
+    }
+    catch { error = true; }
+    expect(error).toBe(true);
+    expect(dWithPrefilter.count).toBe(0);
+
+})
+it("test api filter cant be overwritten", async () => {
+    return testRestDb(async ({ remult }) => {
+        let repo = remult.repo(dWithPrefilter);
+        let d1 = await repo.create({ id: 1, b: 1 }).save();
+        await repo.create({ id: 3, b: 2 }).save();
+        let d4 = await repo.create({ id: 4, b: 2 }).save();
+        expect(await repo.count({ b: 1 })).toBe(0);
+        expect((await repo.find({ where: { b: 1 } })).length).toBe(0);
+    });
+
+})
+it("test filter doesn't collapse", async () => {
+    return testAllDataProviders(async ({ remult }) => {
+        let repo = remult.repo(dWithPrefilter);
+        let d1 = await repo.create({ id: 1, b: 1 }).save();
+        await repo.create({ id: 2, b: 2 }).save();
+        let d4 = await repo.create({ id: 4, b: 2 }).save();
+
+        let f: EntityFilter<dWithPrefilter> = { id: 1, $and: [{ id: 2 }] };
+        expect(await repo.count(f)).toBe(0);
+        expect((await repo.find({ where: f })).length).toBe(0);
+        let json = Filter.entityFilterToJson(repo.metadata, f);
+        f = Filter.entityFilterFromJson(repo.metadata, json);
+        expect(await repo.count(f)).toBe(0);
+        expect((await repo.find({ where: f })).length).toBe(0);
+    });
+
+})
+
+it("test filter doesn't collapse", async () => {
+    return testAllDataProviders(async ({ remult }) => {
+        let repo = remult.repo(d);
+        let d1 = await repo.create({ id: 1, b: 1 }).save();
+        await repo.create({ id: 2, b: 2 }).save();
+        let d4 = await repo.create({ id: 4, b: 2 }).save();
+
+        let f: EntityFilter<d> = { id: [1, 2] };
+        expect(await repo.count(f)).toBe(2);
+        expect((await repo.find({ where: f })).length).toBe(2);
+        let json = Filter.entityFilterToJson(repo.metadata, f);
+        console.log(json);
+        f = Filter.entityFilterFromJson(repo.metadata, json);
+        expect(await repo.count(f)).toBe(2);
+        expect((await repo.find({ where: f })).length).toBe(2);
+    });
+
+})
+
+
+
+@Entity('d', {
+    apiPrefilter: { b: 2 },
+    allowApiCrud: true
+})
+class dWithPrefilter extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    b: number;
+
+    static count = 0;
+    @BackendMethod({ allowed: true })
+    async doIt() {
+        dWithPrefilter.count++;
+        return true;
+    }
+
+}
+@Entity('d1', {
+    allowApiCrud: true
+})
+class d extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    b: number;
+
+    static count = 0;
+    @BackendMethod({ allowed: true })
+    async doIt() {
+        dWithPrefilter.count++;
+        return true;
+    }
+
+}

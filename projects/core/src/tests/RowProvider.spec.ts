@@ -148,7 +148,7 @@ describe("grid filter stuff", () => {
     });
     await ds.reloadData();
     expect(ds.items.length).toBe(2);
-    expect(await c.count(ds.getFilterWithSelectedRows().where)).toBe(3);
+    expect(await c.count((await (await ds.getFilterWithSelectedRows())).where)).toBe(3);
 
 
   });
@@ -163,7 +163,7 @@ describe("grid filter stuff", () => {
     });
     await ds.reloadData();
     expect(ds.items.length).toBe(2);
-    expect(await c.count(ds.getFilterWithSelectedRows().where)).toBe(3);
+    expect(await c.count((await ds.getFilterWithSelectedRows()).where)).toBe(3);
 
 
   });
@@ -178,7 +178,7 @@ describe("grid filter stuff", () => {
     await ds.reloadData();
     ds.filterHelper.filterRow.description = 'y';
     ds.filterHelper.filterColumn(ds.filterHelper.filterRow._.fields.description, false, false);
-    let w = ds.getFilterWithSelectedRows().where;
+    let w = (await ds.getFilterWithSelectedRows()).where;
 
     expect(await c.count(w)).toBe(1);
 
@@ -214,7 +214,7 @@ describe("grid filter stuff", () => {
     ds.selectedChanged(ds.items[2]);
     expect(ds.selectedRows[0].id).toBe(1);
     expect(ds.selectedRows[1].id).toBe(3);
-    let w = ds.getFilterWithSelectedRows().where;
+    let w = (await ds.getFilterWithSelectedRows()).where;
 
     expect(await c.count(w)).toBe(2);
     expect(await c.count({ id: [1, 3] })).toBe(2);
@@ -235,7 +235,7 @@ describe("grid filter stuff", () => {
     });
     expect(ds.selectAllChecked()).toBe(true);
     expect(ds.selectedRows.length).toBe(3);
-    let w = ds.getFilterWithSelectedRows().where;
+    let w = (await ds.getFilterWithSelectedRows()).where;
     expect(await c.count(w)).toBe(4);
   });
   it("test context change event", async () => {
@@ -275,7 +275,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectAllIntermitent()).toBe(true, 'intermetent');
     expect(ds.selectAllChecked()).toBe(false, 'select all checked');
     expect(ds.selectedRows.length).toBe(3, 'selected rows');
-    let w = ds.getFilterWithSelectedRows().where;
+    let w = (await (await ds.getFilterWithSelectedRows())).where;
 
     expect(await c.count(w)).toBe(3, 'rows in count');
   });
@@ -294,7 +294,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectAllIntermitent()).toBe(false);
     expect(ds.selectAllChecked()).toBe(true);
     expect(ds.selectedRows.length).toBe(4);
-    let w = ds.getFilterWithSelectedRows().where;
+    let w = (await  (await ds.getFilterWithSelectedRows())).where;
     expect(await c.count(w)).toBe(4);
   });
 });
@@ -769,10 +769,17 @@ describe("test row provider", () => {
   it("filter should return none", async () => {
 
     let [c] = await insertFourRows();
-
-
-    let r = await c.findFirst({ categoryName: undefined }, { createIfNotFound: true });
+    let r = await c.findFirst({ categoryName: [] }, { createIfNotFound: true });
     expect(r.categoryName).toBe(undefined);
+    expect(r.isNew()).toBe(true);
+
+  });
+  it("filter ignore works return none", async () => {
+
+    let [c] = await insertFourRows();
+    let r = await c.findFirst({ categoryName: undefined }, { createIfNotFound: true });
+    expect(r.categoryName).toBe("noam");
+    expect(r.isNew()).toBe(false);
 
   });
   it("lookup with undefined doesn't fetch", async () => {

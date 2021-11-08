@@ -7,7 +7,7 @@ import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
-import { Done, TestDataApiResponse } from './testHelper.spec';
+import { Done, testAllDataProviders, TestDataApiResponse } from './testHelper.spec';
 import { DataApi } from '../data-api';
 
 import { actionInfo } from '../server-action';
@@ -351,7 +351,7 @@ describe("many to one relation", () => {
         }).save();
         async function test(where: EntityFilter<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
-            function log(x:any){
+            function log(x: any) {
                 console.log(x);
                 return x;
             }
@@ -715,5 +715,14 @@ describe("Test entity relation and count finds", () => {
         done.test();
         expect(fetches).toBe(1);
     });
-
+    it("test filtering of null/''", () =>
+        testAllDataProviders(async ({ remult }) => {
+            let repo = remult.repo(h);
+            let a = await repo.create({ id: 'a' }).save();
+            let b = await repo.create({ id: 'b' }).save();
+            let c = await repo.create({ id: 'c', refH: b }).save();
+            expect(await repo.count({ refH: null })).toBe(2);
+            expect(await repo.count({ refH: { "!=": null } })).toBe(1);
+        })
+    );
 });

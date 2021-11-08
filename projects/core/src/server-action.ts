@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -228,7 +228,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
 
                     if (!controllerOptions.key) {
-                        controllerOptions.key = c.repo(constructor).metadata.key ;
+                        controllerOptions.key = c.repo(constructor).metadata.key;
                     }
 
 
@@ -258,12 +258,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
                                     }
                                     else {
+                                     
                                         let rows = await repo.find({
-                                            where: x => {
-                                                let where = repo.metadata.idMetadata.getIdFilter(d.rowInfo.id);
-                                                if (this.options && this.options.get && this.options.get.where)
-                                                    where = {$and:[where, this.options.get.where(x)]}  ;
-                                                return where;
+                                            where: {
+                                                ...repo.metadata.idMetadata.getIdFilter(d.rowInfo.id),
+                                                $and: [repo.metadata.options.apiPrefilter]
                                             }
                                         });
                                         if (rows.length != 1)
