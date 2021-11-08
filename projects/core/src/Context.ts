@@ -252,10 +252,9 @@ export interface UserInfo {
 }
 
 
-export declare type AllowedItem = string | ((c: Remult) => boolean) | boolean;
-export declare type Allowed = AllowedItem | AllowedItem[];
+export declare type Allowed = boolean | string | string[] | ((c: Remult) => boolean);
 
-export declare type AllowedForInstance<T> = ((c: Remult, entity?: T) => boolean) | string | boolean | string[];
+export declare type AllowedForInstance<T> = boolean | string | string[] | ((c: Remult, entity?: T) => boolean);
 export class Allow {
     static everyone = () => true;
     static authenticated = (remult: Remult) => remult.authenticated();
