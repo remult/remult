@@ -381,7 +381,7 @@ The `TaskEditor` will have an html `input` for the titles, and the `Save` button
                }
          />
          <button onClick={() => save()}
-               disabled={!task.wasChanged()}
+               disabled={!task._.wasChanged()}
          >save</button>
       </span>
    }
@@ -438,7 +438,7 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
             style={{ textDecoration: task.completed ? 'line-through' : undefined! }}
         />
         <button onClick={() => save()}
-            disabled={!task.wasChanged()}
+            disabled={!task._.wasChanged()}
         >save</button>
     </span>
    ```
@@ -547,7 +547,7 @@ export const TaskEditor: React.FC<{ task: Task }> = (props) => {
             style={{ textDecoration: task.completed ? 'line-through' : undefined! }}
         />
         <button onClick={() => save()}
-            disabled={!task.wasChanged()}
+            disabled={!task._.wasChanged()}
         >save</button>
     </span>
 }

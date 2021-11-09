@@ -24,10 +24,10 @@ describe("test object column", () => {
         await x.save();
         x.col.lastName = 'honig';
         expect(x.$.col.valueChanged()).toBe(true);
-        expect(x.wasChanged()).toBe(true);
+        expect(x._.wasChanged()).toBe(true);
         await x.save();
         expect(x.$.col.valueChanged()).toBe(false);
-        expect(x.wasChanged()).toBe(false);
+        expect(x._.wasChanged()).toBe(false);
         expect(x.col.lastName).toBe("honig");
         x = await remult.repo(ObjectColumnTest).findFirst();
         expect(x.col.lastName).toBe("honig");

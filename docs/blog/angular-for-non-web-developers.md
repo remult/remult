@@ -592,7 +592,7 @@ Calling the `delete` method of the `Task` deletes the task on the server.
  <input [(ngModel)]="task.completed" type="checkbox">
  <input [(ngModel)]="task.title" 
   [style.textDecoration]="task.completed?'line-through':''">
-  <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+  <button (click)="task.save()" [disabled]="!task._.wasChanged()">Save</button>
  <button (click)="deleteTask(task)">Delete</button>
 </li>
 
@@ -838,7 +838,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
       <input [(ngModel)]="task.completed" type="checkbox">
       <input [(ngModel)]="task.title" 
          [style.textDecoration]="task.completed?'line-through':''">
-      <button (click)="task.save()" [disabled]="!task.wasChanged()">Save</button>
+      <button (click)="task.save()" [disabled]="!task._.wasChanged()">Save</button>
       <button (click)="deleteTask(task)">Delete</button>
     </li>
   </ul>

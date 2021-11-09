@@ -290,7 +290,7 @@ class entityForCustomFilter extends EntityBase {
         oneAndThree?: boolean,
         dbOneOrThree?: boolean,
         two?: boolean
-    }>(async (e, remult, c) => {
+    }>(async (remult, c) => {
 
         let r: EntityFilter<entityForCustomFilter>[] = [];
         if (c.oneAndThree)
@@ -298,7 +298,7 @@ class entityForCustomFilter extends EntityBase {
         if (c.two)
             r.push({ id: 2 });
         if (c.dbOneOrThree) {
-
+            let e = remult.repo(entityForCustomFilter).metadata;
             r.push(
                 {
                     $and: [
@@ -312,8 +312,8 @@ class entityForCustomFilter extends EntityBase {
         return { $and: r };
     });
     static oneAndThree = Filter.createCustom<entityForCustomFilter>(() => ({ id: [1, 3] }));
-    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((e, r, val) => ({ id: val }));
-    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((e, r, val) => ({ id: val.val }));
+    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((r, val) => ({ id: val }));
+    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((r, val) => ({ id: val.val }));
 }
 @Entity('entityForCustomFilter1', { allowApiCrud: true })
 class entityForCustomFilter1 extends entityForCustomFilter {
@@ -425,15 +425,15 @@ describe("missing fields are added in array column", async () => {
             title: "abc",
             $and: []
         };
-        //x.$and.push({});
+        x.$and.push({});
+        let y: EntityFilter<taskWithNull> = { $and: [x, x] }
     });
     it("test api with and", () => {
         let x: EntityFilter<taskWithNull> = {
+
             $and: []
         };
         x.$and.push({});
         let z: EntityFilter<taskWithNull> = x;
     });
 });
-
-

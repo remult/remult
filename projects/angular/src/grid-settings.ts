@@ -449,7 +449,7 @@ export class GridSettings<rowType>  {
   async getFilterWithSelectedRows() {
     let r = await this._internalBuildFindOptions();
     if (this.selectedRows.length > 0 && !this._selectedAll) {
-      r.where = { $and: [r.where, this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)] }
+      r.where = { $and: [r.where, this.repository.metadata.idMetadata.createIdInFilter(this.selectedRows)] } as EntityFilter<rowType>
     }
     return r;
   }

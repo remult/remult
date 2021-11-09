@@ -47,14 +47,35 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## TODO
-[] exclude properties from type https://stackoverflow.com/questions/51804810/how-to-remove-fields-from-a-typescript-interface-via-extension/51804844
-[] where: HelpersBase.active as EntityFilter<Helpers> -  
-[] test api with and - uncomment and see error
+[V] exclude properties from type https://stackoverflow.com/questions/51804810/how-to-remove-fields-from-a-typescript-interface-via-extension/51804844
+[V] where: HelpersBase.active as EntityFilter<Helpers> -  
+[V] remove wasChanged - and fix docs
+[V] check why realworld - allowApiInsert - the first param was any.
+[V] custom api filter - remove first parameter
+[V] test api with and - uncomment and see error
+
+[] Numberic Id Entity Base
+[] test auto increment id
+[] swagger is missing values from inheritance
+[] graph ql
+[] saving etc child before parent.
+[] forein key
+[] do dbReadOnly implicitly of dbautoincrement
+
+
+
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
 [] react admin
+[] מה דעתך על להמיר את הREACT TUTORIAL לשימוש בASYNC ןAWAIT?‎‎
 
 
+
+[] consider "class-validator", integration a
+[] consider zod
+
+[] investigate value list column type safety without members
+[] remult-angular-code-samples
 
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
@@ -68,7 +89,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] https://docusaurus.io/
 
 [] google sheets gateway
-[] consider "class-validator", integration
+
 [] typeorm gateway - https://typeorm.io/#/separating-entity-definition
 [] sqlite
 [] check sending field types to custom filter
@@ -146,19 +167,11 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
-[] Filter Refactoring:
-    [] reconsider  id:{"!=":1} - it's not fun, maybe id$ne - not sure, maybe as another option
-    [] consider creating a type for EntityFilter | ()=>(EntityFilter|Promise.EntityFilter)
-    [] order of parameters in custom filter, entity metadata seems less important now.
-    [] consider "" for sort ascending.
-    [] where: { $and: [FamilyDeliveries.readyFilter()], id: f.deliveries.map(x => x.id) }
-
-
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
-[] the problem with ? and null and ! - imagine task has a Category property that is an entity - category? doesn't allow null - and undefined should be have ?
 [] rethink entity inheritence - saving of child overwritten the saving of base
 [] reconsider type FieldValidator - that hides lambda
-[] check why realworld - allowApiInsert - the first param was any.
+[] consider column name casing in postgres
+
 [] db migrations
 [] should fieldType automatically serialize it's Fields?
 [] apiRequireId = reconsider, maybe give more flexibility(filter orderid on orderdetails) etc...
@@ -284,6 +297,9 @@ export interface EntityMetadata<entityType = any> {
     readonly entityType: ClassType<entityType>;
     getDbName(): Promise<string>;
 }
+
+
+export declare type PartialEB<T> =  Omit<Partial<T>, keyof import('./RepositoryImplementation').EntityBase> ;
 export interface Repository<entityType> {
     /**creates a json representation of the object */
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
@@ -294,7 +310,7 @@ export interface Repository<entityType> {
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
-    create(item?: Partial<entityType>): entityType;
+    create(item?: PartialEB<entityType>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
     save(item: entityType): Promise<entityType>;
     delete(item: entityType): Promise<void>;
@@ -328,18 +344,18 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
-    [Properties in keyof entityType]?: "asc" | "desc"
+    [Properties in keyof PartialEB<entityType>]?: "asc" | "desc"
 }
 
 
 
 export declare type EntityFilter<entityType> = {
-    [Properties in keyof entityType]?:  (
-        entityType[Properties] extends number | Date ? ComparisonValueFilter<entityType[Properties]> :
-        entityType[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
-        entityType[Properties] extends boolean ? ValueFilter<boolean> :
-        ValueFilter<entityType[Properties]>) & ContainsStringValueFilter;
-} |& {
+    [Properties in keyof PartialEB<entityType>]?: (
+        PartialEB<entityType>[Properties] extends number | Date ? ComparisonValueFilter<PartialEB<entityType>[Properties]> :
+        PartialEB<entityType>[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
+        PartialEB<entityType>[Properties] extends boolean ? ValueFilter<boolean> :
+        ValueFilter<PartialEB<entityType>[Properties]>) & ContainsStringValueFilter;
+} & {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
 }
@@ -403,6 +419,7 @@ export interface IterableResult<entityType> {
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
+
 
 
 

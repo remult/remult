@@ -212,7 +212,8 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 export async function createPostgresConnection(options: {
     connectionString?: string,
     sslInDev?: boolean,
-    configuration?: "heroku" | PoolConfig
+    configuration?: "heroku" | PoolConfig,
+    autoCreateTables?: boolean
 }) {
     let config: PoolConfig = {};
     if (options.configuration == "heroku") {
@@ -230,7 +231,8 @@ export async function createPostgresConnection(options: {
     const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)));
     let remult = new Remult();
     remult.setDataProvider(db);
-    await verifyStructureOfAllEntities(db, remult);
+    if (options.autoCreateTables === undefined || options.autoCreateTables)
+        await verifyStructureOfAllEntities(db, remult);
     return db;
 
 }
