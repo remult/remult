@@ -1,9 +1,20 @@
 ---
 home: true
 
-tagline: Lightweight web application framework for FullStack TypeScript
+heroImage: /logo.png
+tagline: Unopinionated CRUD for fullstack TypeScript
 actionText: Quick Start →
 actionLink: /guide/
+
+features:
+- title: API Included
+  details: |
+    Secured API is auto generated from model type definitions, and consumed by frontend strongly typed queries/mutations. 
+    The generated API can also be used by apps & third-parties.
+- title: No Boilerplate. No Scaffolding
+  details: Simple CRUD from frontend to database just works. Smart hooks make it super easy to control data transformation, validations and CRUD events.
+- title: Highly Declarative. Always Typed
+  details: Model metadata and declarative code affect both frontend and backend, eliminating redundant, error-prone duplication. The same coding style can be used to find and manipulate data in both frontend and backend code. 
 
 footer: Made by the Remult team with ❤️ 
 ---
