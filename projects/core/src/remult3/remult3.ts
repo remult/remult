@@ -62,11 +62,13 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] forein key
 [] do dbReadOnly implicitly of dbautoincrement
 
+[] iterate => findMany
 
+[] react admin
 
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
-[] react admin
+
 [] מה דעתך על להמיר את הREACT TUTORIAL לשימוש בASYNC ןAWAIT?‎‎
 
 
