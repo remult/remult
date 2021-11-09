@@ -53,9 +53,14 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] check why realworld - allowApiInsert - the first param was any.
 [V] custom api filter - remove first parameter
 [V] test api with and - uncomment and see error
+[] prepare entities
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
 [] react admin
+[] מה דעתך על להמיר את הREACT TUTORIAL לשימוש בASYNC ןAWAIT?‎‎
+
+[] remult-angular-code-samples
+
 
 
 
