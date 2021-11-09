@@ -42,17 +42,17 @@ fixedWhereFilter: () => this.archive.isEqualTo(false)
 An order by to be used, in case no order by was specified
 ### example
 ```ts
-defaultOrderBy: () => this.name
+defaultOrderBy: { name: "asc" }
 ```
 
 ### example
 ```ts
-defaultOrderBy: () => [this.price, this.name]
+defaultOrderBy: { price: "asc", name: "asc" }
 ```
 
 ### example
 ```ts
-defaultOrderBy: () => [{ column: this.price, descending: true }, this.name]
+defaultOrderBy: { price: "desc", name: "asc" }
 ```
 
 ## saving

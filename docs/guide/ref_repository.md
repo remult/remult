@@ -43,25 +43,6 @@ Determines the order in which the result will be sorted in
 See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
 
 ## findFirst
-### load
-### where
-filters the data
-#### example
-```ts
-where p => p.price.isGreaterOrEqualTo(5)
-```
-
-#### see
-For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
-
-### orderBy
-Determines the order in which the result will be sorted in
-#### see
-See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
-
-### useCache
-default true
-### createIfNotFound
 ## findId
 ## fromJson
 creates a json representation of the object
@@ -83,5 +64,6 @@ Determines the order in which the result will be sorted in
 #### see
 See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
 
+### pageSize
 ### progress
 ## save

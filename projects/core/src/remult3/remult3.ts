@@ -53,16 +53,29 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] check why realworld - allowApiInsert - the first param was any.
 [V] custom api filter - remove first parameter
 [V] test api with and - uncomment and see error
-[] prepare entities
+
+[] Numberic Id Entity Base
+[] test auto increment id
+[] swagger is missing values from inheritance
+[] graph ql
+[] saving etc child before parent.
+[] forein key
+[] do dbReadOnly implicitly of dbautoincrement
+
+
+
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
 [] react admin
 [] מה דעתך על להמיר את הREACT TUTORIAL לשימוש בASYNC ןAWAIT?‎‎
 
+
+
+[] consider "class-validator", integration a
+[] consider zod
+
+[] investigate value list column type safety without members
 [] remult-angular-code-samples
-
-
-
 
 [] find a solution for expect(task).toEqual({id:1,blabla:'asda}) - currently it doesn't work well with entity.
 [] create a todo app using "normal" node js - and create a refactoring video
@@ -76,7 +89,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] https://docusaurus.io/
 
 [] google sheets gateway
-[] consider "class-validator", integration
+
 [] typeorm gateway - https://typeorm.io/#/separating-entity-definition
 [] sqlite
 [] check sending field types to custom filter
@@ -157,6 +170,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
 [] rethink entity inheritence - saving of child overwritten the saving of base
 [] reconsider type FieldValidator - that hides lambda
+[] consider column name casing in postgres
 
 [] db migrations
 [] should fieldType automatically serialize it's Fields?
@@ -405,6 +419,7 @@ export interface IterableResult<entityType> {
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
+
 
 
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, NgZone, OnInit, ViewChild } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller,   Filter } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller, Filter, IntegerField } from 'remult';
 
 import { Products } from './products';
 import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
@@ -60,7 +60,7 @@ export class ProductsComponent implements OnInit {
 
 
   }
-  grid = new GridSettings(this.remult.repo(stam), { allowCrud: true });
+  grid = new GridSettings(this.remult.repo(TestId), { allowCrud: true });
 }
 
 
@@ -88,4 +88,19 @@ export class stam extends IdEntity {
   async myMethod(remult?: Remult) {
 
   }
+}
+
+
+@Entity("testId", {
+  allowApiCrud: true,
+  dbAutoIncrementId: true
+})
+export class TestId extends EntityBase {
+  @IntegerField({
+    dbReadOnly:true
+  })
+  id: number;
+  @Field()
+  name: string;
+
 }
