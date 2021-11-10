@@ -171,6 +171,8 @@ import { entityEventListener } from "../__EntityValueProvider";
 ## review with Yoni
 [] discuss previous page functionality - I don't think it's required to use a back cursor (since we don't have start on row where) - 
     one can use a page number based implementation - even if internal.
+    alternatively - there is a problem with next and then back that will say there is a previous page even if there isn't could be not fun for a siimple pagination problem
+    maybe ask for one more row always - both in next and prev to salve the problem of boundries.
 [] talk about back paging - beyond the boundries, it would seem that when you do next
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
 [] rethink entity inheritence - saving of child overwritten the saving of base
