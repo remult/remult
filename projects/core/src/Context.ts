@@ -270,8 +270,8 @@ export class Allow {
 
 
 
-export const iterateConfig = {
-    pageSize: 200
+export const queryConfig = {
+    defaultPageSize: 200
 };
 
 

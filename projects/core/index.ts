@@ -80,7 +80,6 @@ export {
     EventDispatcher,
     EventSource,
     HttpProvider,
-    IterateToArrayOptions,
     Unobserve,
     UserInfo
 } from './src/context';

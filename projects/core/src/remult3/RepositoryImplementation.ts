@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, PartialEB } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, iterateConfig, setControllerSettings } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
@@ -14,6 +14,7 @@ import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorI
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
+import { Paginator } from ".";
 
 
 
@@ -1373,6 +1374,9 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
     constructor(private options: QueryOptions<entityType>, private repo: RepositoryImplementation<entityType>) {
         if (!this.options)
             this.options = {};
+        if (!this.options.pageSize) {
+            this.options.pageSize = queryConfig.defaultPageSize
+        }
     }
     private _count: number = undefined;
     async getArray(page?: number) {
@@ -1404,8 +1408,34 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
         }
         return i;
     }
+    async paginate(pNextPageFilter?: EntityFilter<entityType>): Promise<Paginator<entityType>> {
+        this.options.orderBy = Sort.createUniqueEntityOrderBy(this.repo.metadata, this.options.orderBy);
+        let items =
 
-    //@ts-ignore
+            await this.repo.find({
+                where: { $and: [this.options.where, pNextPageFilter] } as EntityFilter<entityType>,
+                orderBy: this.options.orderBy,
+                limit: this.options.pageSize,
+                load: this.options.load
+            });
+        let nextPage: () => Promise<Paginator<entityType>> = undefined;
+        let hasNextPage = items.length == this.options.pageSize;
+        if (hasNextPage) {
+            let nextPageFilter = await this.repo.createAfterFilter(this.options.orderBy, items[items.length - 1]);
+            nextPage = () => this.paginate(nextPageFilter);
+        }
+        return {
+            count: () => this.count(),
+            hasNextPage,
+            hasPreviousPage: false,
+            items,
+            nextPage,
+            previousPage: undefined
+        }
+
+    }
+
+
     [Symbol.asyncIterator]() {
 
         if (!this.options.where) {
@@ -1413,9 +1443,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
         }
         let ob = this.options.orderBy;
         this.options.orderBy = Sort.createUniqueEntityOrderBy(this.repo.metadata, ob);
-        let pageSize = iterateConfig.pageSize;
-        if (this.options.pageSize)
-            pageSize = this.options.pageSize;
+
 
 
         let itemIndex = -1;
@@ -1431,13 +1459,13 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
                 this.options.progress.progress(j++ / await this.count());
             }
             if (items === undefined || itemIndex == items.length) {
-                if (items && items.length < pageSize)
+                if (items && items.length < this.options.pageSize)
                     return { value: <entityType>undefined, done: true };
                 let prev = items;
                 items = await this.repo.find({
                     where: { $and: [this.options.where, nextPageFilter] } as EntityFilter<entityType>,
                     orderBy: this.options.orderBy,
-                    limit: pageSize,
+                    limit: this.options.pageSize,
                     load: this.options.load
                 });
                 itemIndex = 0;

@@ -1,7 +1,7 @@
 
 
 import { createData, } from './RowProvider.spec';
-import { Remult, iterateConfig } from '../context';
+import { Remult, queryConfig } from '../context';
 import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityFilter } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldMetadata } from '../column-interfaces';
@@ -13,7 +13,7 @@ import { SqlDatabase } from '../..';
 
 
 describe("test paged foreach ", () => {
-    iterateConfig.pageSize = 2;
+    queryConfig.defaultPageSize = 2;
 
     it("basic foreach with where", async () => {
         let [c] = await createData(async insert => {
@@ -98,6 +98,45 @@ describe("test paged foreach ", () => {
         }
 
         expect(i).toBe(5);
+    });
+    it("paginate", async () => {
+        let [c] = await createData(async insert => {
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
+        });
+        let p = await c.query().paginate();
+        expect(p.items.length).toBe(2);
+        expect(await p.count()).toBe(5);
+        expect(p.items.map(x => x.id)).toEqual([1, 2]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([3, 4]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([5]);
+        expect(p.hasNextPage).toBe(false);
+    });
+    it("paginate on boundries", async () => {
+        let [c] = await createData(async insert => {
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+        });
+        let p = await c.query().paginate();
+        expect(p.items.length).toBe(2);
+        expect(await p.count()).toBe(4);
+        expect(p.items.map(x => x.id)).toEqual([1, 2]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([3, 4]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([]);
+        expect(p.hasNextPage).toBe(false);
     });
     it("test toArray", async () => {
         let [c] = await createData(async insert => {

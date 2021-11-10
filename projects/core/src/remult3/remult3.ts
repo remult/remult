@@ -1,7 +1,7 @@
 
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
-import { IterateToArrayOptions, Unobserve } from "../context";
+import { Unobserve } from "../context";
 import { EntityOptions as EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
@@ -417,6 +417,7 @@ export interface QueryResult<entityType> {
     getArray(page?: number): Promise<entityType[]>;
     count(): Promise<number>;
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;
+    paginate(): Promise<Paginator<entityType>>
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
