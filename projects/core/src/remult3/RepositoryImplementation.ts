@@ -1446,10 +1446,9 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
 
 
         let itemIndex = -1;
-        let items: entityType[];
+        let currentPage: Paginator<entityType> = undefined;
 
         let itStrategy: (() => Promise<IteratorResult<entityType>>);
-        let nextPageFilter: EntityFilter<entityType>;
 
         let j = 0;
 
@@ -1457,30 +1456,28 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
             if (this.options.progress) {
                 this.options.progress.progress(j++ / await this.count());
             }
-            if (items === undefined || itemIndex == items.length) {
-                if (items && items.length < this.options.pageSize)
+            if (currentPage === undefined || itemIndex == currentPage.items.length) {
+                if (currentPage && !currentPage.hasNextPage)
                     return { value: <entityType>undefined, done: true };
-                let prev = items;
-                items = await this.repo.find({
-                    where: { $and: [this.options.where, nextPageFilter] } as EntityFilter<entityType>,
-                    orderBy: this.options.orderBy,
-                    limit: this.options.pageSize,
-                    load: this.options.load
-                });
+                let prev = currentPage;
+                if (currentPage)
+                    currentPage = await currentPage.nextPage();
+                else
+                    currentPage = await this.paginate();
+
                 itemIndex = 0;
-                if (items.length == 0) {
+                if (currentPage.items.length == 0) {
                     return { value: <entityType>undefined, done: true };
                 } else {
-                    if (prev?.length > 0) {
-                        if (this.repo.getEntityRef(prev[0]).getId() == this.repo.getEntityRef(items[0]).getId())
+                    if (prev?.items.length > 0) {
+                        if (this.repo.getEntityRef(prev.items[0]).getId() == this.repo.getEntityRef(currentPage.items[0]).getId())
                             throw new Error("Iterate failure, returned same first row");
                     }
-                    nextPageFilter = await this.repo.createAfterFilter(this.options.orderBy, items[items.length - 1]);
                 }
 
             }
-            if (itemIndex < items.length)
-                return { value: items[itemIndex++], done: false };
+            if (itemIndex < currentPage.items.length)
+                return { value: currentPage.items[itemIndex++], done: false };
 
 
         };
