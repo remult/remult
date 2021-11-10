@@ -1418,6 +1418,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
                 limit: this.options.pageSize,
                 load: this.options.load
             });
+
         let nextPage: () => Promise<Paginator<entityType>> = undefined;
         let hasNextPage = items.length == this.options.pageSize;
         if (hasNextPage) {
@@ -1427,10 +1428,8 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
         return {
             count: () => this.count(),
             hasNextPage,
-            hasPreviousPage: false,
             items,
-            nextPage,
-            previousPage: undefined
+            nextPage
         }
 
     }

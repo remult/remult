@@ -169,6 +169,9 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] discuss previous page functionality - I don't think it's required to use a back cursor (since we don't have start on row where) - 
+    one can use a page number based implementation - even if internal.
+[] talk about back paging - beyond the boundries, it would seem that when you do next
 [] react metadata doesn't really work - and you need to specify the "valueType: Category"
 [] rethink entity inheritence - saving of child overwritten the saving of base
 [] reconsider type FieldValidator - that hides lambda
@@ -426,9 +429,7 @@ export interface Paginator<entityType> {
     items: entityType[];
     count(): Promise<number>;
     hasNextPage: boolean;
-    hasPreviousPage: boolean;
     nextPage(): Promise<Paginator<entityType>>;
-    previousPage(): Promise<Paginator<entityType>>;
 }
 
 
