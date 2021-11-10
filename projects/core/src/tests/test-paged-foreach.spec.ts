@@ -61,9 +61,9 @@ describe("test paged foreach ", () => {
         }
         expect(i).toBe(5);
 
-        expect((await c.query({
+        expect((await c.findFirst({}, {
             orderBy: { categoryName: "asc" }
-        }).first()).id).toBe(5);
+        })).id).toBe(5);
 
     });
 

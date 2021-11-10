@@ -223,7 +223,10 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.query(options).first().then(async r => {
+        r = this.find(options).then(async items => {
+            let r: entityType = undefined;
+            if (items.length > 0)
+                r = items[0];
             if (!r && options.createIfNotFound) {
                 r = this.create();
                 if (options.where) {
@@ -1385,19 +1388,6 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
             page: page,
             load: this.options.load
         });
-    }
-
-
-    async first() {
-        let r = await this.repo.find({
-            where: this.options.where,
-            orderBy: this.options.orderBy,
-            load: this.options.load,
-            limit: 1
-        });
-        if (r.length == 0)
-            return undefined;
-        return r[0];
     }
 
     async count() {

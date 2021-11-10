@@ -415,7 +415,6 @@ export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
 }
 export interface QueryResult<entityType> {
     getArray(page?: number): Promise<entityType[]>;
-    first(): Promise<entityType>;
     count(): Promise<number>;
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;
     [Symbol.asyncIterator](): {

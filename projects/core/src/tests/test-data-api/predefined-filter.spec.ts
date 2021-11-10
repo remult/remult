@@ -158,7 +158,7 @@ describe("data api", () => {
       await i(2, 'yael', 'b');
       await i(3, 'yoni', 'a');
     });
-    expect((await c.query({ where: { id: 1 } }).first()).categoryName).toBe('noam');
+    expect((await c.findFirst({ id: 1 })).categoryName).toBe('noam');
     expect((await c.findId(1)).categoryName).toBe('noam');
   });
 
@@ -181,7 +181,7 @@ describe("", () => {
     expect(r.length).toBe(1, 'array length');
     expect(r[0].id).toBe(2, 'value of first row');
     expect(await c.count()).toBe(1, 'count');
-    expect(await c.query({ where: { id: 1 } }).first()).toBe(undefined, 'find first');
+    expect(await c.findFirst({ id: 1 })).toBe(undefined, 'find first');
     expect((await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew()).toBe(true, 'lookup ');
   });
 })
