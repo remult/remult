@@ -24,7 +24,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({ where: { categoryName: { $gte: "n" } } })) {
+        for await (const x of c.query({ where: { categoryName: { $gte: "n" } } })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
         }
         expect(i).toBe(4);
@@ -38,7 +38,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({
+        for await (const x of c.query({
             where: { categoryName: { ">=": "n" } }
         })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
@@ -54,14 +54,14 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({
+        for await (const x of c.query({
             orderBy: { categoryName: "asc" }
         })) {
             expect(x.id).toBe([5, 1, 4, 2, 3][i++])
         }
         expect(i).toBe(5);
 
-        expect((await c.iterate({
+        expect((await c.query({
             orderBy: { categoryName: "asc" }
         }).first()).id).toBe(5);
 
@@ -76,7 +76,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({
+        for await (const x of c.query({
             orderBy: { categoryName: "desc" }
         })) {
             expect(x.id).toBe([3, 2, 4, 1, 5][i++])
@@ -93,7 +93,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         var i = 0;
-        for await (const x of c.iterate()) {
+        for await (const x of c.query()) {
             expect(x.id).toBe(++i);
         }
 
@@ -110,7 +110,7 @@ describe("test paged foreach ", () => {
         var i = 0;
 
 
-        for (const x of await c.iterate().toArray()) {
+        for (const x of await c.query({ pageSize: 10 }).getArray()) {
             expect(x.id).toBe(++i);
         }
         expect(i).toBe(5);
@@ -264,7 +264,7 @@ describe("test paged foreach ", () => {
         await remult.repo(p).create({ id: 4, name: 'p4', c: c3 }).save();
         await remult.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
         let i = 0;
-        for await (const x of remult.repo(p).iterate({
+        for await (const x of remult.repo(p).query({
             orderBy: { c: "asc", id: "asc" }
         })) {
             i++;

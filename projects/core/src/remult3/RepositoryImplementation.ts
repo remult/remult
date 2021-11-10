@@ -2,9 +2,9 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, IterateOptions, IterableResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, PartialEB } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, PartialEB } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, iterateConfig, IterateToArrayOptions, setControllerSettings } from "../context";
+import { allEntities, Remult, isBackend, iterateConfig, setControllerSettings } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
@@ -111,120 +111,12 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
 
-    iterate(options?: IterateOptions<entityType>): IterableResult<entityType> {
-        let opts: IterateOptions<entityType> = {};
-        if (options) {
-            opts = <any>options;
-        }
-
-        let cont = this;
-        let _count: number;
-        let self = this;
-        let r = new class {
-
-            async toArray(options?: IterateToArrayOptions) {
-                if (!options) {
-                    options = {};
-                }
+    query(options?: QueryOptions<entityType>): QueryResult<entityType> {
 
 
-                return cont.find({
-                    where: opts.where,
-                    orderBy: opts.orderBy,
-                    limit: options.limit,
-                    page: options.page,
-                    load: opts.load
-                });
-            }
-            async first() {
-                let r = await cont.find({
-                    where: opts.where,
-                    orderBy: opts.orderBy,
-                    load: opts.load,
-                    limit: 1
-                });
-                if (r.length == 0)
-                    return undefined;
-                return r[0];
-            }
-
-            async count() {
-                if (_count === undefined)
-                    _count = await cont.count(opts.where);
-                return _count;
-
-            }
-            async forEach(what: (item: entityType) => Promise<any>) {
-                let i = 0;
-                for await (const x of this) {
-                    await what(x);
-                    i++;
-                }
-                return i;
-            }
-
-            //@ts-ignore
-            [Symbol.asyncIterator]() {
-
-                if (!opts.where) {
-                    opts.where = {};
-                }
-                let ob = opts.orderBy;
-                opts.orderBy = Sort.createUniqueEntityOrderBy(self.metadata, ob);
-                let pageSize = iterateConfig.pageSize;
-                if (opts.pageSize)
-                    pageSize = opts.pageSize;
+        return new QueryResultImpl(options, this);
 
 
-                let itemIndex = -1;
-                let items: entityType[];
-
-                let itStrategy: (() => Promise<IteratorResult<entityType>>);
-                let nextPageFilter: EntityFilter<entityType>;
-
-                let j = 0;
-
-                itStrategy = async () => {
-                    if (opts.progress) {
-                        opts.progress.progress(j++ / await this.count());
-                    }
-                    if (items === undefined || itemIndex == items.length) {
-                        if (items && items.length < pageSize)
-                            return { value: <entityType>undefined, done: true };
-                        let prev = items;
-                        items = await cont.find({
-                            where: { $and: [opts.where, nextPageFilter] } as EntityFilter<entityType>,
-                            orderBy: opts.orderBy,
-                            limit: pageSize,
-                            load: opts.load
-                        });
-                        itemIndex = 0;
-                        if (items.length == 0) {
-                            return { value: <entityType>undefined, done: true };
-                        } else {
-                            if (prev?.length > 0) {
-                                if (cont.getEntityRef(prev[0]).getId() == cont.getEntityRef(items[0]).getId())
-                                    throw new Error("Iterate failure, returned same first row");
-                            }
-                            nextPageFilter = await self.createAfterFilter(opts.orderBy, items[items.length - 1]);
-                        }
-
-                    }
-                    if (itemIndex < items.length)
-                        return { value: items[itemIndex++], done: false };
-
-
-                };
-                return {
-                    next: async () => {
-                        let r = itStrategy();
-                        return r;
-                    }
-                };
-            }
-
-        }
-        return r;
     }
 
 
@@ -331,7 +223,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.iterate(options).first().then(async r => {
+        r = this.query(options).first().then(async r => {
             if (!r && options.createIfNotFound) {
                 r = this.create();
                 if (options.where) {
@@ -1472,6 +1364,117 @@ export class EntityBase {
     delete() { return this._.delete(); }
     isNew() { return this._.isNew(); }
     get $() { return this._.fields }
+}
+
+class QueryResultImpl<entityType> implements QueryResult<entityType> {
+    constructor(private options: QueryOptions<entityType>, private repo: RepositoryImplementation<entityType>) {
+        if (!this.options)
+            this.options = {};
+    }
+    private _count: number = undefined;
+    async getArray(page?: number) {
+
+
+        if (page < 1)
+            page = 1;
+
+        return this.repo.find({
+            where: this.options.where,
+            orderBy: this.options.orderBy,
+            limit: page,
+            page: page,
+            load: this.options.load
+        });
+    }
+
+
+    async first() {
+        let r = await this.repo.find({
+            where: this.options.where,
+            orderBy: this.options.orderBy,
+            load: this.options.load,
+            limit: 1
+        });
+        if (r.length == 0)
+            return undefined;
+        return r[0];
+    }
+
+    async count() {
+        if (this._count === undefined)
+            this._count = await this.repo.count(this.options.where);
+        return this._count;
+
+    }
+    async forEach(what: (item: entityType) => Promise<any>) {
+        let i = 0;
+        for await (const x of this) {
+            await what(x);
+            i++;
+        }
+        return i;
+    }
+
+    //@ts-ignore
+    [Symbol.asyncIterator]() {
+
+        if (!this.options.where) {
+            this.options.where = {};
+        }
+        let ob = this.options.orderBy;
+        this.options.orderBy = Sort.createUniqueEntityOrderBy(this.repo.metadata, ob);
+        let pageSize = iterateConfig.pageSize;
+        if (this.options.pageSize)
+            pageSize = this.options.pageSize;
+
+
+        let itemIndex = -1;
+        let items: entityType[];
+
+        let itStrategy: (() => Promise<IteratorResult<entityType>>);
+        let nextPageFilter: EntityFilter<entityType>;
+
+        let j = 0;
+
+        itStrategy = async () => {
+            if (this.options.progress) {
+                this.options.progress.progress(j++ / await this.count());
+            }
+            if (items === undefined || itemIndex == items.length) {
+                if (items && items.length < pageSize)
+                    return { value: <entityType>undefined, done: true };
+                let prev = items;
+                items = await this.repo.find({
+                    where: { $and: [this.options.where, nextPageFilter] } as EntityFilter<entityType>,
+                    orderBy: this.options.orderBy,
+                    limit: pageSize,
+                    load: this.options.load
+                });
+                itemIndex = 0;
+                if (items.length == 0) {
+                    return { value: <entityType>undefined, done: true };
+                } else {
+                    if (prev?.length > 0) {
+                        if (this.repo.getEntityRef(prev[0]).getId() == this.repo.getEntityRef(items[0]).getId())
+                            throw new Error("Iterate failure, returned same first row");
+                    }
+                    nextPageFilter = await this.repo.createAfterFilter(this.options.orderBy, items[items.length - 1]);
+                }
+
+            }
+            if (itemIndex < items.length)
+                return { value: items[itemIndex++], done: false };
+
+
+        };
+        return {
+            next: async () => {
+                let r = itStrategy();
+                return r;
+            }
+        };
+    }
+
 }
 
 class cacheEntityInfo<entityType> {

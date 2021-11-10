@@ -301,14 +301,14 @@ export interface EntityMetadata<entityType = any> {
 }
 
 
-export declare type PartialEB<T> =  Omit<Partial<T>, keyof import('./RepositoryImplementation').EntityBase> ;
+export declare type PartialEB<T> = Omit<Partial<T>, keyof import('./RepositoryImplementation').EntityBase>;
 export interface Repository<entityType> {
     /**creates a json representation of the object */
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     metadata: EntityMetadata<entityType>;
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
-    iterate(options?: IterateOptions<entityType>): IterableResult<entityType>;
+    query(options?: QueryOptions<entityType>): QueryResult<entityType>;
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
@@ -409,22 +409,26 @@ export interface FindFirstOptionsBase<entityType> extends LoadOptions<entityType
 
     createIfNotFound?: boolean;
 }
-export interface IterateOptions<entityType> extends FindOptionsBase<entityType> {
+export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
     pageSize?: number,
     progress?: { progress: (progress: number) => void };
 }
-export interface IterableResult<entityType> {
-    toArray(options?: IterateToArrayOptions): Promise<entityType[]>;
+export interface QueryResult<entityType> {
+    getArray(page?: number): Promise<entityType[]>;
     first(): Promise<entityType>;
     count(): Promise<number>;
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
-
-
-
-
+}
+export interface Paginator<entityType> {
+    items: entityType[];
+    count(): Promise<number>;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    nextPage(): Promise<Paginator<entityType>>;
+    previousPage(): Promise<Paginator<entityType>>;
 }
 
 

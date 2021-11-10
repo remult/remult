@@ -269,10 +269,7 @@ export class Allow {
 
 
 
-export interface IterateToArrayOptions {
-    limit?: number;
-    page?: number;
-}
+
 export const iterateConfig = {
     pageSize: 200
 };

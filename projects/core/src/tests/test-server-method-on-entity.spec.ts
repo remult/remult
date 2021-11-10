@@ -245,7 +245,7 @@ describe("complex entity relations on server entity and backend method", () => {
 it("test that entity backend method respects api filter", async () => {
     let remult = new Remult(ActionTestConfig.db);
     let repo = remult.repo(dWithPrefilter);
-    await repo.iterate().forEach(x => x.delete());
+    await repo.query().forEach(x => x.delete());
     let d1 = await repo.create({ id: 1, b: 1 }).save();
     await repo.create({ id: 2, b: 1 }).save();
     await repo.create({ id: 3, b: 2 }).save();
