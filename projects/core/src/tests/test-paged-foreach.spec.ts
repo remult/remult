@@ -119,6 +119,21 @@ describe("test paged foreach ", () => {
         expect(p.items.map(x => x.id)).toEqual([5]);
         expect(p.hasNextPage).toBe(false);
     });
+    it("paginate", async () => {
+        let [c] = await createData(async insert => {
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
+        });
+        let p = await c.query({
+            pageSize: 3
+        });
+
+        expect((await p.getArray()).map(x => x.id)).toEqual([1, 2, 3]);
+        expect((await p.getArray(2)).map(x => x.id)).toEqual([4, 5]);
+    });
     it("paginate on boundries", async () => {
         let [c] = await createData(async insert => {
             await insert(1, 'noam');

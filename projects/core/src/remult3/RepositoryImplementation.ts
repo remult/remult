@@ -1388,7 +1388,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
         return this.repo.find({
             where: this.options.where,
             orderBy: this.options.orderBy,
-            limit: page,
+            limit: this.options.pageSize,
             page: page,
             load: this.options.load
         });

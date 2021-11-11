@@ -54,15 +54,16 @@ import { entityEventListener } from "../__EntityValueProvider";
 [V] custom api filter - remove first parameter
 [V] test api with and - uncomment and see error
 
-[] Numberic Id Entity Base
-[] test auto increment id
-[] swagger is missing values from inheritance
-[] graph ql
+[V] Numberic Id Entity Base
+[V] test auto increment id
+[V] swagger is missing values from inheritance
+[V] graph ql
 [] saving etc child before parent.
-[] forein key
+[V] forein key
 [] do dbReadOnly implicitly of dbautoincrement
 
-[] iterate => findMany
+[] iterate => query
+[] query.map
 
 [] react admin
 
