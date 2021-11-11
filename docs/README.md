@@ -8,15 +8,25 @@ actionLink: /guide/
 
 features:
 - title: API Included
-  details: |
-    Secured API is auto generated from model type definitions, and consumed by frontend strongly typed queries/mutations. 
-    The generated API can also be used by apps & third-parties.
-- title: No Boilerplate. No Scaffolding
-  details: Simple CRUD from frontend to database just works. Smart hooks make it super easy to control data transformation, validations and CRUD events.
-- title: Highly Declarative. Always Typed
-  details: Model metadata and declarative code affect both frontend and backend, eliminating redundant, error-prone duplication. The same coding style can be used to find and manipulate data in both frontend and backend code. 
+  details: Secured API is auto generated from model TypeScript classes, and consumed by frontend type safe queries/mutations The generated API can also be used by apps & third-parties.
 
-footer: Made by the Remult team with ❤️ 
+- title: No Boilerplate
+  details: Simple CRUD from frontend to database just works. Smart hooks make it super easy to control data transformation, validations and CRUD events.
+
+- title: Highly Declarative
+  details: Model metadata and declarative code affect both frontend and backend, eliminating redundant, error-prone duplication.
+
+- title: Always Type Safe 
+  details: The same type safe coding style can be used to find and manipulate data in both frontend and backend code. 
+
+- title: UI Framework Agnostic
+  details: Use Remult together with React, Angular, Vue.js, or any other UI framework.
+
+- title: Easy Setup
+  details: Bootstrap in minutes with an Express.js middleware in the backend and an http client wrapper in the frontend.
+
+
+footer: MIT Licensed | Made by the Remult team with ❤️ 
 ---
 ### Define Entity classes
 ```ts
