@@ -1,6 +1,6 @@
 # Introduction 
 
-**Remult** is a full-stack web application framework which uses your Typescript model class structure and metadata to handle the flow of data all the way from your backend database to your frontend app, and vice versa. 
+**Remult** is a fullstack CRUD framework which uses your TypeScript model class structure and metadata to handle the flow of data all the way from your backend database to your frontend app, and vice versa. 
 
 To do this, Remult provides the following core features:
 1. Mapping database-agnostic model-based CRUD operations to database commands (like an ORM)

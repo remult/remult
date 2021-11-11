@@ -1,7 +1,8 @@
 # Remult
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg) [![npm version](https://badge.fury.io/js/remult.svg)](https://badge.fury.io/js/remult)
 
-Remult is an unopinionated CRUD framework for fullstack TypeScript.
+Remult is an unopinionated CRUD framework for fullstack TypeScript development.
+
 ### Define Entity classes
 ```ts
 import { Entity, EntityBase, Field } from 'remult';
