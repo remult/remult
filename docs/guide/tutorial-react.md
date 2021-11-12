@@ -1,7 +1,7 @@
 # Todo App with React
 ### Build a production ready task list app with Remult using a React front-end
 
-In this tutorial we are going to create a simple app to manage a task list. We'll use React for the UI, Node + Express for the API server, and Remult as our full-stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. 
+In this tutorial we are going to create a simple app to manage a task list. We'll use React for the UI, Node.js + Express.js for the API server, and Remult as our full-stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. 
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -131,7 +131,7 @@ The server is now running and listening on port 3002. `ts-node-dev` is watching 
 
 ### Finishing up the Starter Project
 
-#### Proxy API requests from Webpack DevServer to Node and run the React app
+#### Proxy API requests from React DevServer to the API server and run the React app
 The React app created in this tutorial is intended to be served from the same domain as its API. 
 However, for development, the API server will be listening on `http://localhost:3002`, while the React app is served from `http://localhost:3002`. 
 
@@ -1133,7 +1133,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    "build": "react-scripts build && tsc -p tsconfig.server.json"
    ```
 
-4. Modify the project's `start` npm script to start the production Node server.
+4. Modify the project's `start` npm script to start the production Node.js server.
 
    *package.json*
    ```json

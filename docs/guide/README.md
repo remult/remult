@@ -4,7 +4,7 @@
 
 To do this, Remult provides the following core features:
 1. Mapping database-agnostic model-based CRUD operations to database commands (like an ORM)
-2. Automatically generating secured REST api routes for your Node backend
+2. Automatically generating secured REST api routes for your Node.js backend
 3. Handling frontend model-based queries and updates by calling the backend api
 
 

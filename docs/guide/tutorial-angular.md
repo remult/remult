@@ -1,7 +1,7 @@
 # Todo App with Angular
 ### Build a production ready task list app with Remult using an Angular front-end
 
-In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node + Express for the API server, and Remult as our full-stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. 
+In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node.js + Express.js for the API server, and Remult as our full-stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. 
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -132,7 +132,7 @@ The server is now running and listening on port 3002. `ts-node-dev` is watching 
 
 ### Finishing up the Starter Project
 
-#### Proxy API requests from Webpack DevServer to Node and run the Angular app
+#### Proxy API requests from Angular DevServer to the API server and run the Angular app
 The Angular app created in this tutorial is intended to be served from the same domain as its API. 
 However, for development, the API server will be listening on `http://localhost:3002`, while the Angular app is served from `http://localhost:4200`. 
 
