@@ -3,8 +3,11 @@
         "*.json": "jsonc"
     },
     "cSpell.words": [
+        "Prefilter",
         "angular",
         "angular's",
+        "openapi",
+        "paramtypes",
         "postgres",
         "remult",
         "scroller",
