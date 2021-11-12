@@ -154,18 +154,26 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] Rename Allowed and InstanceAllowed, and Allow
 [] field container type vs entity type vs target
 
-[] Docs
-    [] rewrite readme.md > Entities + CRUD, BackendMethods, Authorization
-        [V] make sure readme is updated in npmjs.com
-    [] getting started > npm i, connect to db, initExpress, init frontend
-    [] Tutorials > Angular,React,Vue
-    [] API reference in Docs
-        [] determine a few main types which should appear (Remult, Entity, Field, Controller, BackendMethod, etc...)
-            [] EntityOptions members should be listed in the "Entity" reference page etc (if possible)
-        [] review existing texts
+## Docs
+[] readme
+    [] install
+    [] add remult express middleware
+    [] define entities
+    [] API ready
+    [] frontend sames as backend
+    [] share validation code
+[] getting started > npm i, connect to db, initExpress, init frontend
+[] Tutorials > Angular,React,Vue
+[] API reference in Docs
+    [] determine a few main types which should appear (Remult, Entity, Field, Controller, BackendMethod, etc...)
+        [] EntityOptions members should be listed in the "Entity" reference page etc (if possible)
+    [] review existing texts
+[] package.json fill everything description + keywords etc... correct version
 
-[] Housekeeping
-    [] Remote unnecessary files from repo
+[] remove "next" tag in npm 
+
+## Housekeeping
+[] Remote unnecessary files from repo
 
 
 ## review with Yoni
