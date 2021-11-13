@@ -44,11 +44,6 @@ import { entityEventListener } from "../__EntityValueProvider";
     [] backend method - talk about transaction and unit of work
 
     [] Propose to skip authorize implementation. - un intrusive, un opinionated
-
-
-
-
-
 */
 
 
