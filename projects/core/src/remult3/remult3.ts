@@ -66,6 +66,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 [] query.map
 
 [] react admin
+    [] look into validation errors
 
 [] https://rjsf-team.github.io/react-jsonschema-form/
 [] https://github.com/build-security/react-rbac-ui-manager/blob/main/example/index.tsx
@@ -170,6 +171,10 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 ## review with Yoni
+[] ask on the whatsapp group who uses react admin - and present to them what i've done.
+[] consider naming caption, label - like react admin:)
+[] consider moving key and caption from metadata to ref - to make them easier to access.
+[] consider being able to duplicate a row for editing.
 [] discuss previous page functionality - I don't think it's required to use a back cursor (since we don't have start on row where) - 
     one can use a page number based implementation - even if internal.
     alternatively - there is a problem with next and then back that will say there is a previous page even if there isn't could be not fun for a siimple pagination problem
