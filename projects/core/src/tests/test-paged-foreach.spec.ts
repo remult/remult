@@ -1,7 +1,7 @@
 
 
 import { createData, } from './RowProvider.spec';
-import { Remult, iterateConfig } from '../context';
+import { Remult, queryConfig } from '../context';
 import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityFilter } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldMetadata } from '../column-interfaces';
@@ -13,7 +13,7 @@ import { SqlDatabase } from '../..';
 
 
 describe("test paged foreach ", () => {
-    iterateConfig.pageSize = 2;
+    queryConfig.defaultPageSize = 2;
 
     it("basic foreach with where", async () => {
         let [c] = await createData(async insert => {
@@ -24,7 +24,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({ where: { categoryName: { $gte: "n" } } })) {
+        for await (const x of c.query({ where: { categoryName: { $gte: "n" } } })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
         }
         expect(i).toBe(4);
@@ -38,7 +38,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({
+        for await (const x of c.query({
             where: { categoryName: { ">=": "n" } }
         })) {
             expect(x.id).toBe([1, 2, 3, 4][i++]);
@@ -54,16 +54,16 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({
+        for await (const x of c.query({
             orderBy: { categoryName: "asc" }
         })) {
             expect(x.id).toBe([5, 1, 4, 2, 3][i++])
         }
         expect(i).toBe(5);
 
-        expect((await c.iterate({
+        expect((await c.findFirst({}, {
             orderBy: { categoryName: "asc" }
-        }).first()).id).toBe(5);
+        })).id).toBe(5);
 
     });
 
@@ -76,7 +76,7 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         let i = 0;
-        for await (const x of c.iterate({
+        for await (const x of c.query({
             orderBy: { categoryName: "desc" }
         })) {
             expect(x.id).toBe([3, 2, 4, 1, 5][i++])
@@ -93,11 +93,65 @@ describe("test paged foreach ", () => {
             await insert(5, 'ido');
         });
         var i = 0;
-        for await (const x of c.iterate()) {
+        for await (const x of c.query()) {
             expect(x.id).toBe(++i);
         }
 
         expect(i).toBe(5);
+    });
+    it("paginate", async () => {
+        let [c] = await createData(async insert => {
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
+        });
+        let p = await c.query().paginate();
+        expect(p.items.length).toBe(2);
+        expect(await p.count()).toBe(5);
+        expect(p.items.map(x => x.id)).toEqual([1, 2]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([3, 4]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([5]);
+        expect(p.hasNextPage).toBe(false);
+    });
+    it("paginate", async () => {
+        let [c] = await createData(async insert => {
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+            await insert(5, 'ido');
+        });
+        let p = await c.query({
+            pageSize: 3
+        });
+
+        expect((await p.getArray()).map(x => x.id)).toEqual([1, 2, 3]);
+        expect((await p.getArray(2)).map(x => x.id)).toEqual([4, 5]);
+    });
+    it("paginate on boundries", async () => {
+        let [c] = await createData(async insert => {
+            await insert(1, 'noam');
+            await insert(2, 'yael');
+            await insert(3, 'yoni');
+            await insert(4, 'shay');
+        });
+        let p = await c.query().paginate();
+        expect(p.items.length).toBe(2);
+        expect(await p.count()).toBe(4);
+        expect(p.items.map(x => x.id)).toEqual([1, 2]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([3, 4]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([]);
+        expect(p.hasNextPage).toBe(false);
     });
     it("test toArray", async () => {
         let [c] = await createData(async insert => {
@@ -110,7 +164,7 @@ describe("test paged foreach ", () => {
         var i = 0;
 
 
-        for (const x of await c.iterate().toArray()) {
+        for (const x of await c.query({ pageSize: 10 }).getArray()) {
             expect(x.id).toBe(++i);
         }
         expect(i).toBe(5);
@@ -264,7 +318,7 @@ describe("test paged foreach ", () => {
         await remult.repo(p).create({ id: 4, name: 'p4', c: c3 }).save();
         await remult.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
         let i = 0;
-        for await (const x of remult.repo(p).iterate({
+        for await (const x of remult.repo(p).query({
             orderBy: { c: "asc", id: "asc" }
         })) {
             i++;

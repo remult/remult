@@ -48,10 +48,10 @@ export class ProductsComponent implements OnInit {
 
   }
   async run() {
-    for await (const s of this.repo.iterate()) {
+    for await (const s of this.repo.query()) {
 
     }
-    let z = this.repo.iterate()[Symbol.asyncIterator]();
+    let z = this.repo.query()[Symbol.asyncIterator]();
 
     let r = await z.next();
 

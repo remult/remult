@@ -12,8 +12,8 @@ export {
     EntityOrderBy,
     EntityFilter,
     FindOptions,
-    IterableResult,
-    IterateOptions,
+    QueryResult ,
+    QueryOptions,
     Repository,
     FieldType,
     FindFirstOptions,
@@ -80,7 +80,6 @@ export {
     EventDispatcher,
     EventSource,
     HttpProvider,
-    IterateToArrayOptions,
     Unobserve,
     UserInfo
 } from './src/context';
