@@ -23,16 +23,16 @@ export interface EntityOptions<entityType = any> {
   caption?: string;
   /**
    * Determines if this Entity is available for get requests using Rest Api 
-   * @see [allowed](http://remult.github.io/guide/allowed.html)*/
+   * @see [allowed](http://remult.dev/guide/allowed.html)*/
   allowApiRead?: Allowed;
 
   /** 
    * Determines if this entity can be updated through the api.
-   * @see [allowed](http://remult.github.io/guide/allowed.html)*/
+   * @see [allowed](http://remult.dev/guide/allowed.html)*/
   allowApiUpdate?: AllowedForInstance<entityType>;
-  /** @see [allowed](http://remult.github.io/guide/allowed.html)*/
+  /** @see [allowed](http://remult.dev/guide/allowed.html)*/
   allowApiDelete?: AllowedForInstance<entityType>;
-  /** @see [allowed](http://remult.github.io/guide/allowed.html)*/
+  /** @see [allowed](http://remult.dev/guide/allowed.html)*/
   allowApiInsert?: AllowedForInstance<entityType>;
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed;
