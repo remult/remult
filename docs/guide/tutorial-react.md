@@ -1100,7 +1100,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{3-4,11-12,19-23}
+   ```ts{2-3,11-12,19-23}
    import express from 'express';
    import compression from 'compression';
    import helmet from 'helmet';
