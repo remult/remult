@@ -1,6 +1,6 @@
 {
   "name": "remult",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "scripts": {
     "ng": "ng",
     "ng-serve": "cd projects/test-angular && ng serve --port 4201",
