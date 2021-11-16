@@ -3,7 +3,7 @@
   "schematics": "./schematics/collection.json",
   "version": "0.3.3",
   "description": "an angular module for remult",
-  "homepage": "https://remult.github.io/",
+  "homepage": "https://remult.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/remult/remult"
