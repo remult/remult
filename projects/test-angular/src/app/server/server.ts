@@ -46,6 +46,7 @@ serverInit().then(async (dataSource) => {
     let remultApi = remultExpress({
         dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
+        defaultGetLimit:5
     });
 
     app.use(remultApi);

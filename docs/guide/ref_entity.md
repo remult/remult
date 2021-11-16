@@ -15,17 +15,17 @@ A human readable name for the entity
 ## allowApiRead
 Determines if this Entity is available for get requests using Rest Api
 ### see
-[allowed](http://remult.dev/guide/allowed.html)
+[allowed](http://remult.github.io/guide/allowed.html)
 ## allowApiUpdate
 Determines if this entity can be updated through the api.
 ### see
-[allowed](http://remult.dev/guide/allowed.html)
+[allowed](http://remult.github.io/guide/allowed.html)
 ## allowApiDelete
 ### see
-[allowed](http://remult.dev/guide/allowed.html)
+[allowed](http://remult.github.io/guide/allowed.html)
 ## allowApiInsert
 ### see
-[allowed](http://remult.dev/guide/allowed.html)
+[allowed](http://remult.github.io/guide/allowed.html)
 ## allowApiCrud
 sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
 ## apiPrefilter

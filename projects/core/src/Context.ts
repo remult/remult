@@ -28,16 +28,15 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
     }
     async get(url: string): Promise<any> {
         return await retry(() => toPromise(this.http.get(url)));
-
     }
-
 }
 async function retry<T>(what: () => Promise<T>): Promise<T> {
     while (true) {
         try {
             return await what();
         } catch (err) {
-            if (err.message?.startsWith("Error occurred while trying to proxy")) {
+            if (err.message?.startsWith("Error occurred while trying to proxy") ||
+                err.message?.startsWith("Error occured while trying to proxy")) {
                 await new Promise((res, req) => {
                     setTimeout(() => {
                         res({})
@@ -49,6 +48,7 @@ async function retry<T>(what: () => Promise<T>): Promise<T> {
         }
     }
 }
+
 export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
     let r: Promise<T>;
     if (p["toPromise"] !== undefined) {

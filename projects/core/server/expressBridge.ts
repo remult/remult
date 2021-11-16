@@ -25,13 +25,17 @@ export function remultExpress(
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
       initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>,
-      logApiEndPoints?: boolean
+      logApiEndPoints?: boolean,
+      defaultGetLimit?: number
     }): RemultExpressBridge {
   let app = express.Router();
   if (!options) {
     options = {};
   }
   actionInfo.runningOnServer = true;
+  if (options.defaultGetLimit) {
+    DataApi.defaultGetLimit = options.defaultGetLimit;
+  }
 
   if (options.bodySizeLimit === undefined) {
     options.bodySizeLimit = '10mb';
@@ -351,7 +355,7 @@ class ExpressBridge {
         post: secureBase(b.allowed, false, {
 
           "produces": ["application/json"],
-          "tags":[b.tag],
+          "tags": [b.tag],
           "requestBody": {
             "content": {
               "application/json": {

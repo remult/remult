@@ -1141,6 +1141,18 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
     }
 
 }
+
+export function JsonField<entityType = any, valueType = any>(
+    ...options: (FieldOptions<entityType, valueType> |
+      ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+    return Field({
+      valueConverter: {
+        toDb: x => x,
+        fromDb: x => x,
+        fieldTypeInDb: 'json'
+      }
+    }, ...options);
+  }
 export function DateOnlyField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
     return Field({
         valueConverter: DateOnlyValueConverter

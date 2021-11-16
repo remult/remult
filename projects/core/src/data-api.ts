@@ -28,7 +28,7 @@ export class DataApi<T = any> {
         return this.post(res, body);
     }
   }
-
+  static defaultGetLimit = 0;
   async get(response: DataApiResponse, id: any) {
     if (this.options.allowRead == false) {
       response.forbidden();
@@ -44,6 +44,7 @@ export class DataApi<T = any> {
       response.error(err);
     }
   }
+
 
   async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     if (this.options.allowRead == false) {
@@ -94,8 +95,8 @@ export class DataApi<T = any> {
 
         }
         let limit = +request.get("_limit");
-        if (!limit)
-          limit = 200;
+        if (!limit && DataApi.defaultGetLimit)
+          limit = DataApi.defaultGetLimit;
         findOptions.limit = limit;
         findOptions.page = +request.get("_page");
 

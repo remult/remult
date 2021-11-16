@@ -26,6 +26,7 @@ export {
     SortSegments,
     ValueListFieldType,
     DateOnlyField,
+    JsonField,
     IntegerField,
     CaptionTransformer
 } from './src/remult3';

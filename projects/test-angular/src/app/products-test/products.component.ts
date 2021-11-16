@@ -27,40 +27,22 @@ export class ProductsComponent implements OnInit {
 
   }
   ngOnInit(): void {
-    new Remult(axios).repo(stam).create({ name: '1234' }).save().then(y => console.log(y));
-  }
-  items: stam[] = [];
-  repo = this.remult.repo(stam);
-  load() {
-    this.repo.find({ page: this.page }).then(r => this.items.push(...r));
-  }
-  nextPage() {
-    this.page++;
-    this.load();
+
   }
 
+  grid = new GridSettings(this.remult.repo(TestId), {
+    allowCrud: true, gridButtons: [{
+      name: "create",
+      click: () => ProductsComponent.createMany() 
+    }]
+  });
   @BackendMethod({ allowed: true })
-  static async myMethod(remult?: Remult) {
-
-  }
-  @BackendMethod({ allowed: true })
-  async myMethod2(remult?: Remult) {
-
-  }
-  async run() {
-    for await (const s of this.repo.query()) {
+  static async createMany(remult?: Remult) {
+    for (let index = 0; index < 500; index++) {
+      await remult.repo(TestId).create({ name: 'test' }).save();
 
     }
-    let z = this.repo.query()[Symbol.asyncIterator]();
-
-    let r = await z.next();
-
-
-
-
-
   }
-  grid = new GridSettings(this.remult.repo(TestId), { allowCrud: true });
 }
 
 
@@ -97,7 +79,7 @@ export class stam extends IdEntity {
 })
 export class TestId extends EntityBase {
   @IntegerField({
-    dbReadOnly:true
+    dbReadOnly: true
   })
   id: number;
   @Field()
