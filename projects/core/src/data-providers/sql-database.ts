@@ -302,11 +302,8 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     return this.find({ where: resultFilter }).then(y => {
       return y[0];
     });
-
   }
-
 }
-
 export async function isDbReadonly(x: FieldMetadata) {
   return (x.dbReadOnly || x.isServerExpression || await x.getDbName() != x.options.dbName)
 }

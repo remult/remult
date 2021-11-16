@@ -121,7 +121,7 @@ export class PostgresSchemaBuilder {
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of e.fields) {
-                    if (!await isDbReadonly(x)) {
+                    if (!await isDbReadonly(x)||x == e.idMetadata.field && e.options.dbAutoIncrementId) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
