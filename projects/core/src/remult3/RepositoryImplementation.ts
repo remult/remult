@@ -133,12 +133,44 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }
         return x;
     }
-
-    async delete(entity: entityType): Promise<void> {
-        await this.getEntityRef(entity).delete();
+    async delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;
+    async delete(item: entityType): Promise<void>;
+    async delete(item: entityType | (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void> {
+        if (typeof item === "string" || typeof item === "number")
+            return this.edp.delete(item);
+        else
+            await this.getEntityRef(item as entityType).delete();
     }
-    async save(entity: entityType): Promise<entityType> {
-        return await this.getEntityRef(entity).save();
+
+    async save(entity: entityType, originalIdOrCreate?: boolean | number | string): Promise<entityType> {
+        let ref = getEntityRef(entity, false);
+        if (ref)
+            return await ref.save();
+        else if (entity instanceof EntityBase) {
+            return await this.getEntityRef(entity).save();
+        }
+        else {
+            let id = entity[this.metadata.idMetadata.field.key];
+            if (id === undefined || originalIdOrCreate === true) {
+                return await this.getEntityRef(this.create(entity)).save();
+            }
+            else {
+                if (originalIdOrCreate !== undefined)
+                    id = originalIdOrCreate;
+
+                let row = new rowHelperImplementation(this._info, Object.assign({}, entity), this, this.edp, this.remult, false);
+                let obj = row.copyDataToObject();
+                for (const key in entity) {
+                    if (Object.prototype.hasOwnProperty.call(entity, key)) {
+                        const element = entity[key];
+                        entity[key]=obj[key];
+                    }
+                }
+                const updatedRow = await this.edp.update(id, entity);
+                return this.mapRawDataToResult(updatedRow, undefined);
+
+            }
+        }
     }
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
 
@@ -456,7 +488,7 @@ abstract class rowHelperBase<T>
         return !!!this.error && this.errors == undefined;
 
     }
-    protected copyDataToObject() {
+    copyDataToObject() {
         let d: any = {};
         for (const col of this.columnsInfo) {
             let lu = this.lookups.get(col.key);
@@ -539,6 +571,8 @@ abstract class rowHelperBase<T>
 
     }
 }
+
+
 export class rowHelperImplementation<T> extends rowHelperBase<T> implements EntityRef<T> {
 
 
@@ -1144,15 +1178,15 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
 
 export function JsonField<entityType = any, valueType = any>(
     ...options: (FieldOptions<entityType, valueType> |
-      ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+        ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return Field({
-      valueConverter: {
-        toDb: x => x,
-        fromDb: x => x,
-        fieldTypeInDb: 'json'
-      }
+        valueConverter: {
+            toDb: x => x,
+            fromDb: x => x,
+            fieldTypeInDb: 'json'
+        }
     }, ...options);
-  }
+}
 export function DateOnlyField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
     return Field({
         valueConverter: DateOnlyValueConverter

@@ -131,11 +131,14 @@ export interface Repository<entityType> {
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
     query(options?: QueryOptions<entityType>): QueryResult<entityType>;
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
-    findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
+    findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
     create(item?: PartialEB<entityType>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
-    save(item: entityType): Promise<entityType>;
+    save(item: PartialEB<entityType>): Promise<entityType>;
+    save(item: PartialEB<entityType>, originalId?: entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)): Promise<entityType>;
+    save(item: PartialEB<entityType>, create?: boolean): Promise<entityType>;
+    delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;
     delete(item: entityType): Promise<void>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }

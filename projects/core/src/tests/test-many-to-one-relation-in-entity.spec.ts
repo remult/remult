@@ -112,6 +112,23 @@ describe("many to one relation", () => {
         expect(p.category.id).toBe(1);
 
     });
+    it("test repo save", async () => {
+
+        let remult = new Remult(new InMemoryDataProvider);
+        let category = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
+        let p = await remult.repo(Products).save({ name: 'p1', category });
+        expect(p.category.id).toBe(1);
+    });
+    it("test repo save2", async () => {
+
+        let remult = new Remult(new InMemoryDataProvider);
+        let category = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
+        let p = await remult.repo(Products).create({ name: 'p1' }).save();
+        expect(p.category).toBeNull();
+         p = await remult.repo(Products).save({ id: 0, category });
+        expect(p.category.id).toBe(1);
+        expect(p.name).toBe('p1');
+    });
     it("test that it is loaded onDemand", async () => {
         let mem = new InMemoryDataProvider();
         let remult = new Remult();

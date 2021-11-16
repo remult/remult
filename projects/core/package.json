@@ -14,6 +14,7 @@
   "dependencies": {
     "uuid": "^8.3.2",
     "body-parser": "^1.18.3",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "tslib":"^2.3.1"
   }
 }

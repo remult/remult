@@ -153,7 +153,7 @@ export class Remult {
         await this._userChangeEvent.fire();
     }
     static apiBaseUrl = 'api';
-    isAllowedForInstance(instance: any, x: AllowedForInstance<any>) {
+    isAllowedForInstance(instance: any, x: AllowedForInstance<any>): boolean {
         if (Array.isArray(x)) {
             {
                 for (const item of x) {
@@ -167,7 +167,7 @@ export class Remult {
         } else return this.isAllowed(x as Allowed);
     }
 
-    isAllowed(roles: Allowed) {
+    isAllowed(roles: Allowed): boolean {
         if (roles == undefined)
             return undefined;
         if (roles instanceof Array) {
