@@ -23,7 +23,7 @@ export class TasksService {
 
     @BackendMethod({ allowed: true })
     static async setAll(completed: boolean, remult?: Remult) {
-        for await (const task of remult!.repo(Task).iterate()) {
+        for await (const task of remult!.repo(Task).query()) {
             task.completed = completed;
             await task.save();
         }
@@ -95,7 +95,7 @@ export class SetTaskCompletedController {
     completed: boolean = false;
     @BackendMethod({ allowed: true })
     async updateCompleted() {
-        for await (const task of this.remult.repo(Task).iterate()) {
+        for await (const task of this.remult.repo(Task).query()) {
             task.completed = this.completed;
             await task.save();
         }

@@ -633,7 +633,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    *src/app/app.component.ts*
    ```ts
    async setAll(completed: boolean) {
-     for await (const task of this.tasksRepo.iterate()) {
+     for await (const task of this.tasksRepo.query()) {
         task.completed = completed;
         await task.save();
      }
@@ -641,7 +641,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    }
    ```
 
-   The `iterate` method is an alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. The `iterate` method doesn't return an array (as the `find` method) and instead returns an `iteratable` object which supports iterations using the JavaScript `for await` statement.
+   The `query` method is an alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. The `query` method doesn't return an array (as the `find` method) and instead returns an `iteratable` object which supports iterations using the JavaScript `for await` statement.
 
 
 2. Add the two buttons to the `app.component.html` template, immediately before the unordered list element. Both of the buttons' `click` events will call the `setAll` function with the relevant value of the `completed` argument.
@@ -671,7 +671,7 @@ A simple way to prevent this is to expose an API endpoint for `setAll` requests,
    
        @BackendMethod({ allowed: true })
        static async setAll(completed: boolean, remult?: Remult) {
-           for await (const task of remult!.repo(Task).iterate()) {
+           for await (const task of remult!.repo(Task).query()) {
                task.completed = completed;
                await task.save();
            }
@@ -1009,7 +1009,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
    
        @BackendMethod({ allowed: Roles.admin })
        static async setAll(completed: boolean, remult?: Remult) {
-           for await (const task of remult!.repo(Task).iterate()) {
+           for await (const task of remult!.repo(Task).query()) {
                task.completed = completed;
                await task.save();
            }

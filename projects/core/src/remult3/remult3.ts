@@ -235,10 +235,10 @@ export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
     progress?: { progress: (progress: number) => void };
 }
 export interface QueryResult<entityType> {
-    getArray(page?: number): Promise<entityType[]>;
+    getPage(pageNumber?: number): Promise<entityType[]>;
     count(): Promise<number>;
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;
-    paginate(): Promise<Paginator<entityType>>
+    paginator(): Promise<Paginator<entityType>>
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };

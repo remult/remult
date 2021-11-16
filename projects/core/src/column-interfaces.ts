@@ -15,10 +15,10 @@ export interface FieldOptions<entityType = any, valueType = any> {
     valueType?: any;
 
 
-    caption?: string ;
+    caption?: string;
     displayValue?: (entity: entityType, value: valueType) => string;
     defaultValue?: (entity: entityType) => valueType | Promise<valueType>;
-    validate?: FieldValidator<entityType, valueType> | FieldValidator<entityType, valueType>[];
+    validate?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (void | Promise<void>)) | ((entity: entityType, col: FieldRef<entityType, valueType>) => (void | Promise<void>))[];
     inputType?: string;
     allowNull?: boolean;
 

@@ -1379,7 +1379,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
         }
     }
     private _count: number = undefined;
-    async getArray(page?: number) {
+    async getPage(page?: number) {
 
 
         if (page < 1)
@@ -1408,7 +1408,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
         }
         return i;
     }
-    async paginate(pNextPageFilter?: EntityFilter<entityType>): Promise<Paginator<entityType>> {
+    async paginator(pNextPageFilter?: EntityFilter<entityType>): Promise<Paginator<entityType>> {
         this.options.orderBy = Sort.createUniqueEntityOrderBy(this.repo.metadata, this.options.orderBy);
         let items =
 
@@ -1423,7 +1423,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
         let hasNextPage = items.length == this.options.pageSize;
         if (hasNextPage) {
             let nextPageFilter = await this.repo.createAfterFilter(this.options.orderBy, items[items.length - 1]);
-            nextPage = () => this.paginate(nextPageFilter);
+            nextPage = () => this.paginator(nextPageFilter);
         }
         return {
             count: () => this.count(),
@@ -1463,7 +1463,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
                 if (currentPage)
                     currentPage = await currentPage.nextPage();
                 else
-                    currentPage = await this.paginate();
+                    currentPage = await this.paginator();
 
                 itemIndex = 0;
                 if (currentPage.items.length == 0) {
@@ -1471,7 +1471,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
                 } else {
                     if (prev?.items.length > 0) {
                         if (this.repo.getEntityRef(prev.items[0]).getId() == this.repo.getEntityRef(currentPage.items[0]).getId())
-                            throw new Error("Iterate failure, returned same first row");
+                            throw new Error("pagination failure, returned same first row");
                     }
                 }
 
