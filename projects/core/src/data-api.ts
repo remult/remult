@@ -8,9 +8,7 @@ import { ErrorInfo } from './data-interfaces';
 
 export class DataApi<T = any> {
 
-  options: DataApiSettings<T>;
   constructor(private repository: Repository<T>, private remult: Remult) {
-    this.options = this._getApiSettings();
   }
   httpGet(res: DataApiResponse, req: DataApiRequest) {
     if (req.get("__action") == "count") {
@@ -30,7 +28,7 @@ export class DataApi<T = any> {
   }
   static defaultGetLimit = 0;
   async get(response: DataApiResponse, id: any) {
-    if (this.options.allowRead == false) {
+    if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
     }
@@ -47,17 +45,17 @@ export class DataApi<T = any> {
 
 
   async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
-    if (this.options.allowRead == false) {
+    if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
     }
     try {
       let findOptions: FindOptions<T> = { load: () => [] };
-      if (this.options?.apiPrefilter) {
-        findOptions.where = await Filter.resolve(this.options.apiPrefilter);
+      if (this.repository.metadata.options?.apiPrefilter) {
+        findOptions.where = await Filter.resolve(this.repository.metadata.options.apiPrefilter);
       }
       findOptions.where = this.buildWhere(request, filterBody);
-      if (this.options.requireId) {
+      if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
         let hasId = false;
         let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
         if (w) {
@@ -113,7 +111,7 @@ export class DataApi<T = any> {
   private buildWhere(request: DataApiRequest, filterBody: any): EntityFilter<any> {
     var where: EntityFilter<any>[] = [];
 
-    where.push(this.options?.apiPrefilter);
+    where.push(this.repository.metadata.options.apiPrefilter);
     if (request) {
       where.push(buildFilterFromRequestParameters(this.repository.metadata, {
         get: key => {
@@ -137,7 +135,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: { $and: [this.options?.apiPrefilter, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
+        where: { $and: [this.repository.metadata.options.apiPrefilter, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
       })
         .then(async r => {
           if (r.length == 0)
@@ -154,8 +152,9 @@ export class DataApi<T = any> {
   async put(response: DataApiResponse, id: any, body: any) {
 
     await this.doOnId(response, id, async row => {
-      await (this.repository.getEntityRef(row) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
-      if (!this._getApiSettings().allowUpdate(row)) {
+      let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>;
+      await ref._updateEntityBasedOnApi(body);
+      if (!ref.apiUpdateAllowed) {
         response.forbidden();
         return;
       }
@@ -163,35 +162,11 @@ export class DataApi<T = any> {
       response.success(this.repository.getEntityRef(row).toApiJson());
     });
   }
-  _getApiSettings(): DataApiSettings<T> {
 
-    let options = this.repository.metadata.options;
-    if (options.allowApiCrud !== undefined) {
-      if (options.allowApiDelete === undefined)
-        options.allowApiDelete = options.allowApiCrud;
-      if (options.allowApiInsert === undefined)
-        options.allowApiInsert = options.allowApiCrud;
-      if (options.allowApiUpdate === undefined)
-        options.allowApiUpdate = options.allowApiCrud;
-      if (options.allowApiRead === undefined)
-        options.allowApiRead = options.allowApiCrud;
-    }
-
-    return {
-      allowRead: this.remult.isAllowed(options.allowApiRead),
-      allowUpdate: (e) => this.remult.isAllowedForInstance(e, options.allowApiUpdate),
-      allowDelete: (e) => this.remult.isAllowedForInstance(e, options.allowApiDelete),
-      allowInsert: (e) => this.remult.isAllowedForInstance(e, options.allowApiInsert),
-      requireId: this.remult.isAllowed(options.apiRequireId),
-      apiPrefilter: options.apiPrefilter
-
-
-    }
-  }
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
 
-      if (!this._getApiSettings().allowDelete(row)) {
+      if (!this.repository.getEntityRef(row).apiDeleteAllowed) {
         response.forbidden();
         return;
       }
@@ -206,7 +181,7 @@ export class DataApi<T = any> {
     try {
       let newr = this.repository.create();
       await (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
-      if (!this._getApiSettings().allowInsert(newr)) {
+      if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
         response.forbidden();
         return;
       }

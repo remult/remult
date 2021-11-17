@@ -63,6 +63,9 @@ export interface EntityRef<entityType> {
     metadata: EntityMetadata<entityType>
     toApiJson(): any;
     validate(): Promise<boolean>;
+    readonly apiUpdateAllowed: boolean;
+    readonly apiDeleteAllowed: boolean;
+    readonly apiInsertAllowed: boolean;
 }
 export type Fields<entityType> = {
     [Properties in keyof entityType]: FieldRef<entityType, entityType[Properties]>
@@ -118,6 +121,10 @@ export interface EntityMetadata<entityType = any> {
     readonly caption: string;
     readonly options: EntityOptions;
     readonly entityType: ClassType<entityType>;
+    readonly apiUpdateAllowed: boolean;
+    readonly apiReadAllowed: boolean;
+    readonly apiDeleteAllowed: boolean;
+    readonly apiInsertAllowed: boolean;
     getDbName(): Promise<string>;
 }
 

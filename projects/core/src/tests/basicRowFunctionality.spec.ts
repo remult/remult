@@ -1247,7 +1247,7 @@ describe("data api", () => {
 
     }
     Entity('a', { allowApiCrud: false })(type);
-    expect(new DataApi(sc.repo(type), sc)._getApiSettings().allowRead).toBe(false);
+    expect(sc.repo(type).metadata.apiReadAllowed).toBe(false);
   });
   it("allow api read depends also on api crud", async () => {
     let sc = new Remult();
@@ -1255,7 +1255,7 @@ describe("data api", () => {
 
     }
     Entity('a', { allowApiCrud: false, allowApiRead: true })(type);
-    expect(new DataApi(sc.repo(type), sc)._getApiSettings().allowRead).toBe(true);
+    expect(sc.repo(type).metadata.apiReadAllowed).toBe(true);
 
   });
 

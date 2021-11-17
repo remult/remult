@@ -163,7 +163,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 for (const key in entity) {
                     if (Object.prototype.hasOwnProperty.call(entity, key)) {
                         const element = entity[key];
-                        entity[key]=obj[key];
+                        entity[key] = obj[key];
                     }
                 }
                 const updatedRow = await this.edp.update(id, entity);
@@ -594,6 +594,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             }
         }
     }
+    get apiUpdateAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiUpdate) }
+    get apiDeleteAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiDelete) }
+    get apiInsertAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiInsert) }
     metadata: EntityMetadata<T>;
     getId() {
         if (this.info.idMetadata.field instanceof CompoundIdField)
@@ -1061,7 +1064,19 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     options = this.entityInfo;
 
-    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, remult: Remult, public readonly entityType: ClassType<T>, public readonly key: string) {
+    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private remult: Remult, public readonly entityType: ClassType<T>, public readonly key: string) {
+        if (this.options.allowApiCrud !== undefined) {
+            if (this.options.allowApiDelete === undefined)
+                this.options.allowApiDelete = this.options.allowApiCrud;
+            if (this.options.allowApiInsert === undefined)
+                this.options.allowApiInsert = this.options.allowApiCrud;
+            if (this.options.allowApiUpdate === undefined)
+                this.options.allowApiUpdate = this.options.allowApiCrud;
+            if (this.options.allowApiRead === undefined)
+                this.options.allowApiRead = this.options.allowApiCrud;
+        }
+        if (this.options.allowApiRead === undefined)
+            this.options.allowApiRead = true;
         if (!this.key)
             this.key = entityType.name;
         if (!entityInfo.dbName)
@@ -1093,6 +1108,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.idMetadata.field = [...this.fields][0];
         }
     }
+    get apiUpdateAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) }
+    get apiReadAllowed() { return this.remult.isAllowed(this.options.allowApiRead) }
+    get apiDeleteAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) }
+    get apiInsertAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) }
 
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {
