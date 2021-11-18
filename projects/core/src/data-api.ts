@@ -194,15 +194,6 @@ export class DataApi<T = any> {
   }
 
 }
-export interface DataApiSettings<rowType> {
-  allowUpdate: (row: rowType) => boolean,
-  allowInsert: (row: rowType) => boolean,
-  allowDelete: (row: rowType) => boolean,
-  requireId: boolean,
-  allowRead?: boolean,
-  apiPrefilter?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>)
-
-}
 
 export interface DataApiResponse {
   success(data: any): void;
