@@ -6,9 +6,8 @@ import { Sort } from '../sort';
 
 
 export interface JsonEntityStorage {
-  getItem(entityDbName: string): string;
+  getItem(entityDbName: string): string | null;
   setItem(entityDbName: string, json: string);
-
 }
 
 export class JsonDataProvider implements DataProvider {
