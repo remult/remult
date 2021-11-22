@@ -148,8 +148,20 @@ export class Remult {
     get userChange() {
         return this._userChangeEvent.dispatcher;
     }
-    async setUser(info: UserInfo) {
-        this._user = info;
+    async setUser(info: UserInfo | { sub?: string, name?: string, permissions?: string[] }) {
+        this._user = info as UserInfo;
+        let auth = info as { sub?: string, name?: string, permissions?: string[] };
+        if (auth) {
+            if (!this._user.id && auth.sub)
+                this._user.id = auth.sub;
+            if (!this._user.name && auth.name)
+                this._user.name = auth.name;
+            if (!this._user.roles && auth.permissions) {
+                this._user.roles = auth.permissions;
+            }
+        }
+        if (!this._user.roles)
+            this._user.roles = [];
         await this._userChangeEvent.fire();
     }
     static apiBaseUrl = 'api';
