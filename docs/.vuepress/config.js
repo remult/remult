@@ -39,10 +39,7 @@ module.exports = {
         text: 'Guide',
         link: '/guide/',
       },
-      {
-        text: 'Blog',
-        link: '/blog/',
-      },
+   
       /*  {
           text: 'Tutorials',
           link: '/tutorials/',
@@ -58,35 +55,7 @@ module.exports = {
             }*/
     ],
     sidebar: {
-      '/blog/': [
-        {
-          title: 'Blog',
-          collapsable: false,
-          children: [
-            'architecture',
-            'further-learning',
-            'VSCode-keyboard-shortcuts'
-
-          ]
-        },
-        {
-          title: 'Setup and configuration',
-          collapsable: false,
-          children: [
-            '05-Installing-a-Dev-Machine',
-            'using-postgres-on-your-dev-machine'
-          ]
-        },
-        {
-          title: 'experimental',
-          collapsable: false,
-          children: [
-            'angular-for-non-web-developers',
-            'adding-an-angular-component-and-route',
-            'dialog'
-            //  'grid-settings-and-data-grid',
-          ]
-        }],
+      
       '/guide/': [
         {
           title: 'Getting Started',
