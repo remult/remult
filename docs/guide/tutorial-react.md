@@ -239,7 +239,7 @@ Let's implement this feature within the main `App` function.
 Add the highlighted code lines to the `App` function file:
 
 *src/App.tsx*
-```tsx{2-5,8-9,13-19}
+```tsx{2-5,8-12,15-23}
 import { useState } from 'react';
 import { remult } from './common';
 import { Task } from './Task';
@@ -247,20 +247,23 @@ import { Task } from './Task';
 const taskRepo = remult.repo(Task);
 
 function App() {
-   const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
-   const createTask = () => newTask.save().then(() => setNewTask({ newTask: taskRepo.create() }))
+  const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
+  const createTask = async () => {
+    await newTask.save();
+    setNewTask({ newTask: taskRepo.create() });
+  }
 
-   return (
-      <div>
-         <input value={newTask.title}
-            onChange={(e) =>
-               setNewTask({
-               newTask: newTask.assign({ title: e.target.value })
-               })}
-         />
-         <button onClick={createTask}>Create Task</button>
-      </div>
-   );
+  return (
+    <div>
+      <input value={newTask.title}
+        onChange={(e) =>
+          setNewTask({
+            newTask: newTask.assign({ title: e.target.value })
+          })}
+      />
+      <button onClick={createTask}>Create Task</button>
+    </div>
+  );
 }
 
 export default App;
@@ -289,20 +292,25 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
 1. Add the following code to the `App` function:
 
    *src/App.tsx*
-   ```tsx{4-8,21-26}
+   ```tsx{4-10,26-31}
    function App() {
      const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
    
      const [tasks, setTasks] = useState([] as Task[]);
    
-     const loadTasks = useCallback(() =>
-       taskRepo.find().then(tasks => setTasks(tasks)), []);
+     const loadTasks = useCallback(async () => {
+       const tasks = await taskRepo.find();
+       setTasks(tasks);
+     }, []);
      useEffect(() => { loadTasks() }, [loadTasks]);
    
-     const createTask = () => newTask.save().then(() => setNewTask({ newTask: taskRepo.create() }))
+     const createTask = async () => {
+       await newTask.save();
+       setNewTask({ newTask: taskRepo.create() });
+     }
+   
      return (
        <div>
-   
          <input value={newTask.title}
            onChange={(e) =>
              setNewTask({
@@ -312,11 +320,10 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
          <button onClick={createTask}>Create Task</button>
          <ul>
            {tasks.map(task => (
-               <li key={task.id}>
-                    {task.title}
-               </li>))}
+             <li key={task.id}>
+               {task.title}
+             </li>))}
          </ul>
-   
        </div>
      );
    }
@@ -327,10 +334,12 @@ Don't forget to import `useCallback` and `useEffect` from `react` for this code 
 3. To refresh the list of tasks after a new task is created, add a `loadTasks` method call to the `createNewTask` method of the `App` function.
 
    *src/App.tsx*
-   ```ts{3}
-   const createTask = () => newTask.save()
-     .then(() => setNewTask({ newTask: taskRepo.create() }))
-     .then(loadTasks);
+   ```ts{4}
+   const createTask = async () => {
+     await newTask.save();
+     setNewTask({ newTask: taskRepo.create() });
+     loadTasks();
+   }
    ```
 
 After the browser refreshes, the list of `tasks` appears. Create a new `task` and it's added to the list.
@@ -342,7 +351,10 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
 
    *src/App.tsx*
    ```ts
-   const deleteTask = (task: Task) => task.delete().then(loadTasks);
+   const deleteTask = async (task: Task) => {
+     await task.delete();
+     loadTasks();
+   }
    ```
 
 2. Add the `Delete` button to the task list item template element in `App.tsx`.
@@ -366,24 +378,27 @@ The `TaskEditor` will have an html `input` for the titles, and the `Save` button
 
 1. Create a file called `src/TaskEditor.tsx`, and place the following code in it:
    ```tsx
-   import { useEffect, useState } from "react"
-   import { Task } from "./Task"
-
+   import { useEffect, useState } from "react";
+   import { Task } from "./Task";
+   
    export const TaskEditor: React.FC<{ task: Task }> = (props) => {
-      const [{ task }, setTask] = useState(props);
-      useEffect(() => setTask(props), [props]);
-      const save = () => task.save().then(task => setTask({ task }));
-      return <span>
-         <input
+       const [{ task }, setTask] = useState(props);
+       useEffect(() => setTask(props), [props]);
+       const save = async () => {
+           await task.save();
+           setTask({ task });
+       };
+       return <span>
+           <input
                value={task.title}
                onChange={e =>
-                  setTask({ task: task.assign({ title: e.target.value }) })
+                   setTask({ task: task.assign({ title: e.target.value }) })
                }
-         />
-         <button onClick={() => save()}
+           />
+           <button onClick={() => save()}
                disabled={!task._.wasChanged()}
-         >save</button>
-      </span>
+           >save</button>
+       </span>
    }
    ```
 
@@ -487,19 +502,25 @@ function App() {
 
   const [tasks, setTasks] = useState([] as Task[]);
 
-  const loadTasks = useCallback(() =>
-    taskRepo.find().then(tasks => setTasks(tasks)), []);
+  const loadTasks = useCallback(async () => {
+    const tasks = await taskRepo.find();
+    setTasks(tasks);
+  }, []);
   useEffect(() => { loadTasks() }, [loadTasks]);
 
-  const createTask = () => newTask.save()
-    .then(() => setNewTask({ newTask: taskRepo.create() }))
-    .then(loadTasks);
+  const createTask = async () => {
+    await newTask.save();
+    setNewTask({ newTask: taskRepo.create() });
+    loadTasks();
+  }
 
-  const deleteTask = (t: Task) => t.delete().then(loadTasks);
+  const deleteTask = async (task: Task) => {
+    await task.delete();
+    loadTasks();
+  }
 
   return (
     <div>
-
       <input value={newTask.title}
         onChange={(e) =>
           setNewTask({
@@ -514,7 +535,6 @@ function App() {
             <button onClick={() => deleteTask(task)}>Delete</button>
           </li>))}
       </ul>
-
     </div>
   );
 }
@@ -524,13 +544,16 @@ export default App;
 
 *src/TaskEditor.tsx*
 ```tsx
-import { useEffect, useState } from "react"
-import { Task } from "./Task"
+import { useEffect, useState } from "react";
+import { Task } from "./Task";
 
 export const TaskEditor: React.FC<{ task: Task }> = (props) => {
     const [{ task }, setTask] = useState(props);
     useEffect(() => setTask(props), [props]);
-    const save = () => task.save().then(task => setTask({ task }));
+    const save = async () => {
+        await task.save();
+        setTask({ task });
+    };
     return <span>
         <input
             checked={task.completed}
@@ -562,11 +585,13 @@ Uncompleted tasks are important and should appear above completed tasks in the t
 In the `loadTasks` method of the `App` function, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
 
 *src/App.tsx*
-```ts
-const loadTasks = useCallback(() =>
-  taskRepo.find({
+```ts{2-4}
+const loadTasks = useCallback(async () => {
+  const tasks = await taskRepo.find({
     orderBy: { completed: "asc" }
-  }).then(tasks => setTasks(tasks)), []);
+  });
+  setTasks(tasks);
+}, []);
 ```
 
 ::: warning Note
@@ -579,11 +604,13 @@ Let's hide all completed tasks, using server side filtering.
 
    *src/App.tsx*
    ```ts{4}
-   const loadTasks = useCallback(() =>
-     taskRepo.find({
+   const loadTasks = useCallback(async () => {
+     const tasks = await taskRepo.find({
        orderBy: { completed: "asc" },
        where: { completed: false }
-     }).then(tasks => setTasks(tasks)), []);
+     });
+     setTasks(tasks);
+   }, []);
    ```
    ::: warning Note
    Because the `completed` field is of type `boolean`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
@@ -602,18 +629,20 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
 2. In the `loadTasks` method of the `App` function, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`, also register the `hideCompleted` in the array that is sent as the second parameter to `useCallback`.
 
    *src/App.tsx*
-   ```ts{4-5}
-   const loadTasks = useCallback(() =>
-     taskRepo.find({
+   ```ts{4,7}
+   const loadTasks = useCallback(async () => {
+     const tasks = await taskRepo.find({
        orderBy: { completed: "asc" },
-       where: hideCompleted ? { completed: false } : {}
-     }).then(tasks => setTasks(tasks)), [hideCompleted]);
+       where: { completed: hideCompleted ? false : undefined }
+     });
+     setTasks(tasks);
+   }, [hideCompleted]);
    ```
 
 3. Add a `checkbox` input element immediately before the unordered list element in `App.tsx`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
 
    *src/App.tsx*
-   ```tsx{10-18}
+   ```tsx{10-20}
    return (
      <div>
        <input value={newTask.title}
@@ -623,15 +652,17 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
            })}
        />
        <button onClick={createTask}>Create Task</button>
-       <input
-         id="hideCompleted"
-         type="checkbox"
-         checked={hideCompleted}
-         onChange={e =>
-           setHideCompleted(e.target.checked)
-         }
-       />
-       <label htmlFor="hideCompleted">Hide completed</label>
+       <div>
+         <input
+           id="hideCompleted"
+           type="checkbox"
+           checked={hideCompleted}
+           onChange={e =>
+             setHideCompleted(e.target.checked)
+           }
+         />
+         <label htmlFor="hideCompleted">Hide completed</label>
+       </div>
        <ul>
          {tasks.map(task => (
            <li key={task.id}>
@@ -639,7 +670,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
              <button onClick={() => deleteTask(task)}>Delete</button>
            </li>))}
        </ul>
-       </div>
+     </div>
    );
    ```
 
@@ -671,11 +702,16 @@ Task titles are required. Let's add a validity check for this rule, and display 
    </div>
    ```
 3. We'll also need to adjust the `createTask` method to rerender the component
-   ```tsx{4}
-   const createTask = () => newTask.save()
-     .then(() => setNewTask({ newTask: taskRepo.create() }))
-     .then(loadTasks)
-     .catch(() => setNewTask({ newTask }));
+   ```tsx{2,6-8}
+   const createTask = async () => {
+     try {
+       await newTask.save();
+       setNewTask({ newTask: taskRepo.create() });
+       loadTasks();
+     } catch {
+       setNewTask({ newTask });
+     }
+   }
    ```
 
 After the browser refreshes, try creating a new `task` without title - the "Should not be empty" error message is displayed.
@@ -705,7 +741,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    *src/App.tsx*
    ```ts
    const setAll = async (completed: boolean) => {
-     for await (const task of taskRepo.query()) {
+     for (const task of await taskRepo.find()) {
        task.completed = completed;
        await task.save();
      }
@@ -743,7 +779,7 @@ A simple way to prevent this is to expose an API endpoint for `setAll` requests,
    
        @BackendMethod({ allowed: true })
        static async setAll(completed: boolean, remult?: Remult) {
-           for await (const task of remult!.repo(Task).query()) {
+           for (const task of await remult!.repo(Task).find()) {
                task.completed = completed;
                await task.save();
            }
@@ -821,13 +857,15 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 replace the loadTasks method with the following code:
 
 *src/App.tsx*
-```tsx{2}
-const loadTasks = useCallback(() => {
-  if (remult.authenticated())
-    taskRepo.find({
-      orderBy: { completed: "asc" },
-      where: hideCompleted ? { completed: false } : {}
-    }).then(tasks => setTasks(tasks));
+```tsx{2-3}
+const loadTasks = useCallback(async () => {
+  if (!taskRepo.metadata.apiReadAllowed)
+    return
+  const tasks = await taskRepo.find({
+    orderBy: { completed: "asc" },
+    where: { completed: hideCompleted ? false : undefined }
+  });
+  setTasks(tasks);
 }, [hideCompleted]);
 ```
 
@@ -968,9 +1006,10 @@ In this section, we'll be using the following packages:
    *src/App.tsx*
    ```tsx
    const [username, setUsername] = useState("");
-   const signIn = () => 
-     auth.signIn(username).then(loadTasks);
-   
+   const signIn = async () => {
+     await auth.signIn(username);
+     loadTasks();
+   }
    const signOut = () => {
      auth.signOut();
      setTasks([]);

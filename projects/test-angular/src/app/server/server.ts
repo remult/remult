@@ -27,9 +27,16 @@ import { remultExpress } from '../../../../core/server/expressBridge';
 const getDatabase = () => {
     if (1 + 1 == 3)
         return undefined;
-    return createPostgresConnection({ configuration: "heroku" })
+    return createPostgresConnection({
+        configuration: {
+            user: "postgres",
+            password: "MASTERKEY",
+            host: "localhost",
+            database: "postgres"
+        }
+    })
 }
- 
+
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
@@ -46,7 +53,7 @@ serverInit().then(async (dataSource) => {
     let remultApi = remultExpress({
         dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
-        defaultGetLimit:5
+        defaultGetLimit: 5
     });
 
     app.use(remultApi);
@@ -132,13 +139,13 @@ interface findResponse<entityType> {
     nextPage(): Promise<findResponse<entityType>>,
     previousPage(): Promise<findResponse<entityType[]>>,
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;//why number
-    map<T>(how: (item: entityType,index:number) => Promise<T>): Promise<T[]>;
+    map<T>(how: (item: entityType, index: number) => Promise<T>): Promise<T[]>;
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
 }
 
-[].map((a,b,c)=>{})
+[].map((a, b, c) => { })
 
 // async function yoniFinction() {
 //     const { items, count, isLast } = (await find<a>());

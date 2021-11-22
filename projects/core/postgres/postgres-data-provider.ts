@@ -121,7 +121,7 @@ export class PostgresSchemaBuilder {
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of e.fields) {
-                    if (!await isDbReadonly(x)||x == e.idMetadata.field && e.options.dbAutoIncrementId) {
+                    if (!await isDbReadonly(x) || x == e.idMetadata.field && e.options.dbAutoIncrementId) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
@@ -209,24 +209,33 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 
 }
 
-export async function createPostgresConnection(options: {
+export async function createPostgresConnection(options?: {
     connectionString?: string,
     sslInDev?: boolean,
     configuration?: "heroku" | PoolConfig,
     autoCreateTables?: boolean
 }) {
+    if (!options)
+        options = {};
     let config: PoolConfig = {};
-    if (options.configuration == "heroku") {
-        config = {
-            connectionString: process.env.DATABASE_URL,
-            ssl: process.env.NODE_ENV !== "production" && !options.sslInDev ? false : {
-                rejectUnauthorized: false
+    if (options.configuration)
+        if (options.configuration == "heroku") {
+            config = {
+                connectionString: process.env.DATABASE_URL,
+                ssl: process.env.NODE_ENV !== "production" && !options.sslInDev ? false : {
+                    rejectUnauthorized: false
+                }
             }
-        }
+        } else
+            config = options.configuration;
+    else {
+        if (!options.connectionString)
+            options.connectionString = process.env.DATABASE_URL;
     }
     if (!config.connectionString && options.connectionString) {
         config.connectionString = options.connectionString;
     }
+
 
     const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)));
     let remult = new Remult();

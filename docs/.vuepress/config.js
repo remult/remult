@@ -116,6 +116,7 @@ module.exports = {
           collapsable: false,
           children: [
             'rest-api',
+            'adding-postgres',
             'adding-swagger',
             'adding-graphql',
             'lazy-loading-of-related-entities',
