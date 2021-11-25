@@ -1,13 +1,14 @@
 import { Remult } from '../context';
 
 import { Field, Entity, EntityBase } from '../remult3';
-import { testAllDataProviders } from './testHelper.spec';
+import { testAll } from './db-tests-setup';
+
 
 
 
 describe("custom id column", () => {
-    it("basic test", () => testAllDataProviders(async ({remult}) => {
-       
+    testAll("basic test", async ({ remult }) => {
+
         let type = class extends EntityBase {
             a: number;
             b: number;
@@ -27,9 +28,9 @@ describe("custom id column", () => {
         expect(c.metadata.idMetadata.field.key).toBe(c.metadata.fields.a.key);
 
 
-    }));
-    it("basic test id column not first column", () => testAllDataProviders(async ({remult}) => {
-       
+    });
+    testAll("basic test id column not first column", async ({ remult }) => {
+
         let type = class extends EntityBase {
             a: number;
             id: number;
@@ -50,6 +51,6 @@ describe("custom id column", () => {
         expect((await c.findId(6)).a).toBe(2);
 
 
-    }));
+    });
 
 });

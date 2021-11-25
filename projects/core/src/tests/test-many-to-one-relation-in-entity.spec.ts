@@ -7,10 +7,12 @@ import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
-import { Done, testAllDataProviders, TestDataApiResponse } from './testHelper.spec';
+import {  testAllDataProviders } from './testHelper.spec';
 import { DataApi } from '../data-api';
 
 import { actionInfo } from '../server-action';
+import { Done } from './Done';
+import { TestDataApiResponse } from './TestDataApiResponse';
 
 
 

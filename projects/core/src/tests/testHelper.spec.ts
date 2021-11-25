@@ -1,4 +1,4 @@
-
+import './frontend-database-tests-setup.spec';
 
 import { AllowedForInstance, Remult } from "../context";
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from "../data-api";
@@ -9,6 +9,9 @@ import { SqlDatabase } from "../data-providers/sql-database";
 import { WebSqlDataProvider } from "../data-providers/web-sql-data-provider";
 import { EntityMetadata } from "../remult3";
 import { Action, actionInfo, serverActionField } from "../server-action";
+import { testConfiguration } from '../shared-tests/entityWithValidations';
+import { TestDataApiResponse } from './TestDataApiResponse';
+
 
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 999999;
@@ -45,16 +48,6 @@ export function fitForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) =
 }
 
 
-export class Done {
-  happened = false;
-  ok() {
-    this.happened = true;
-  }
-  test(message = 'expected to be done') {
-    expect(this.happened).toBe(true, message);
-  }
-
-}
 export const ActionTestConfig = {
   db: new InMemoryDataProvider()
 }
@@ -69,7 +62,7 @@ Action.provider = {
 
         action[serverActionField].
           __register(
-            (url: string, queue: boolean,allowed:AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => {
+            (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => {
 
               if (Remult.apiBaseUrl + '/' + url == urlreq) {
                 found = true;
@@ -129,6 +122,10 @@ export async function testInMemoryDb(runAsync: (db: {
   remult.setDataProvider(db);
   await runAsync({ db, remult });
 }
+
+
+
+
 export async function testRestDb(runAsync: (db: {
   db: DataProvider,
   remult: Remult
@@ -150,7 +147,7 @@ export async function testAllDataProviders(runAsync: (db: {
   await testRestDb(runAsync);
 }
 
-export var restDbTestingServer = false;
+
 
 function urlToReq(url: string) {
 
@@ -183,30 +180,6 @@ function urlToReq(url: string) {
   return req;
 }
 
-export class TestDataApiResponse implements DataApiResponse {
-  progress(progress: number): void {
-
-  }
-  success(data: any): void {
-    fail('didnt expect success: ' + JSON.stringify(data));
-  }
-  forbidden() {
-    fail('didnt expect forbidden:');
-  }
-  created(data: any): void {
-    fail('didnt expect created: ' + JSON.stringify(data));
-  }
-  deleted(): void {
-    fail('didnt expect deleted:');
-  }
-  notFound(): void {
-    fail('not found');
-  }
-  error(data) {
-    fail('error: ' + data + " " + JSON.stringify(data));
-  }
-
-}
 export class MockRestDataProvider implements DataProvider {
   constructor(private remult: Remult) {
 
@@ -223,11 +196,11 @@ export class MockRestDataProvider implements DataProvider {
         let result;
         r.deleted = () => { };
         try {
-          restDbTestingServer = true;
+          testConfiguration.restDbRunningOnServer = true;
           await dataApi.delete(r, urlSplit[urlSplit.length - 1]);
         }
         finally {
-          restDbTestingServer = false;
+          testConfiguration.restDbRunningOnServer = false;
         }
         return result;
       },
@@ -238,11 +211,11 @@ export class MockRestDataProvider implements DataProvider {
 
         r.success = data => { result = data };
         try {
-          restDbTestingServer = true;
+          testConfiguration.restDbRunningOnServer = true;
           await dataApi.httpGet(r, urlToReq(url));
         }
         finally {
-          restDbTestingServer = false;
+          testConfiguration.restDbRunningOnServer = false;
         }
         return result;
       },
@@ -253,11 +226,11 @@ export class MockRestDataProvider implements DataProvider {
         r.created = data => { result = data };
         r.success = data => { result = data };
         try {
-          restDbTestingServer = true;
+          testConfiguration.restDbRunningOnServer = true;
           await dataApi.httpPost(r, urlToReq(url), data);
         }
         finally {
-          restDbTestingServer = false;
+          testConfiguration.restDbRunningOnServer = false;
         }
         return result;
       },
@@ -267,11 +240,11 @@ export class MockRestDataProvider implements DataProvider {
         let result;
         r.success = data => { result = data };
         try {
-          restDbTestingServer = true;
+          testConfiguration.restDbRunningOnServer = true;
           await dataApi.put(r, urlSplit[urlSplit.length - 1], data);
         }
         finally {
-          restDbTestingServer = false;
+          testConfiguration.restDbRunningOnServer = false;
         }
         return result;
       }

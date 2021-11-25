@@ -1,4 +1,6 @@
-import { Done, testAllDataProviders, TestDataApiResponse } from './testHelper.spec';
+import { testAllDataProviders } from './testHelper.spec';
+import { TestDataApiResponse } from "./TestDataApiResponse";
+import { Done } from "./Done";
 import { Remult } from '../context';
 
 import { JsonDataProvider } from '../data-providers/json-data-provider';
@@ -10,6 +12,7 @@ import { DataApi } from '../data-api';
 
 import { Categories as newCategories } from './remult-3-entities';
 import { Field, Entity, EntityBase, IntegerField } from '../remult3';
+import { tasks } from './tasks';
 
 
 @Entity('entityWithAutoId', { dbAutoIncrementId: true })
@@ -59,16 +62,6 @@ describe("test json database", () => {
     });
 
 });
-@Entity('tasks', { allowApiCrud: true })
-class tasks extends EntityBase {
-    @Field()
-    id: number;
-    @Field()
-    name: string;
-    @Field()
-    completed: boolean=false;
-
-}
 describe("test tasks", () => {
     it("test tasks", async () => {
         let storage = '';
@@ -110,24 +103,5 @@ describe("test tasks", () => {
         });
         d.test();
     });
-    it("test tasks", () => testAllDataProviders(async ({ remult }) => {
-
-        let c = remult.repo(tasks);
-        let t = c.create();
-        t.id = 1;
-        await t._.save();
-        t = c.create();
-        t.id = 2;
-        t.completed = true;
-        await t._.save();
-        t = c.create();
-        t.id = 3;
-        t.completed = true;
-        await t._.save();
-        await c.create({ id: 4, completed: false }).save();
-
-        expect(await c.count({ completed: false })).toBe(2);
-        expect(await c.count({ completed: { $ne: true } })).toBe(2);
-        expect(await c.count({ completed: true })).toBe(2);
-    }));
+    
 });

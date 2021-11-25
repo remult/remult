@@ -1,4 +1,6 @@
-import { Done, testAllDataProviders, TestDataApiResponse, testInMemoryDb, testRestDb, testSql } from './testHelper.spec';
+import { testAllDataProviders, testInMemoryDb, testRestDb, testSql } from './testHelper.spec';
+import { TestDataApiResponse } from "./TestDataApiResponse";
+import { Done } from "./Done";
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';

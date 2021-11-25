@@ -1,4 +1,5 @@
-import { ActionTestConfig, testAllDataProviders, TestDataApiResponse, testRestDb } from './testHelper.spec';
+import { ActionTestConfig, testAllDataProviders, testRestDb } from './testHelper.spec';
+import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter } from '../remult3';

@@ -160,7 +160,7 @@ export class Remult {
                 this._user.roles = auth.permissions;
             }
         }
-        if (!this._user.roles)
+        if (this._user && !this._user?.roles)
             this._user.roles = [];
         await this._userChangeEvent.fire();
     }
@@ -199,7 +199,7 @@ export class Remult {
         if (!this.user)
             return false;
         if (typeof roles === 'string')
-            if (this.user.roles?.indexOf(roles.toString()) >= 0)
+            if (this.user?.roles?.indexOf(roles.toString()) >= 0)
                 return true;
 
 

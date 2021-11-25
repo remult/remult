@@ -1,7 +1,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import { Done, testAllDataProviders } from './testHelper.spec';
+import {  testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Remult } from '../context';
 import { OneToMany } from '../column';
@@ -21,6 +21,7 @@ import { EntityOptions } from '../entity';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { ClassType } from '../../classType';
+import { Done } from './Done';
 
 
 

@@ -1,4 +1,5 @@
-import { Done, TestDataApiResponse } from "../testHelper.spec";
+import { TestDataApiResponse } from "../TestDataApiResponse";
+import { Done } from "../Done";
 import { createData } from '../RowProvider.spec';
 import { DataApi } from '../../data-api';
 import { Remult } from '../../context';

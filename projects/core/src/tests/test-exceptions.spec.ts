@@ -1,4 +1,4 @@
-import { Done } from './testHelper.spec';
+import { Done } from "./Done";
 import { processHttpException, Remult, toPromise } from '../context';
 
 

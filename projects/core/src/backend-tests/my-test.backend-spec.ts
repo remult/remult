@@ -4,11 +4,12 @@ import { Entity, Field } from "../remult3";
 import { KnexDataProvider } from '../../remult-knex';
 import * as Knex from 'knex';
 import { config } from 'dotenv';
+config();
+
 describe("test", () => {
     let remult: Remult;
     let knex: Knex.Knex;
     beforeAll(async () => {
-        config();
         knex =
             Knex.default({
                 client: 'pg',
@@ -31,7 +32,7 @@ describe("test", () => {
         expect(t[0].title).toBe('noam');
         expect(t[0].completed).toBe(false);
     })
-    fit("test2", async () => {
+    it("test2", async () => {
         await knex("tasks").insert({ id: 'a', title: 'noam', completed: false });
         expect((await remult.repo(Task).find({ where: { id: 'b' } })).length).toBe(0);
         expect((await remult.repo(Task).find({ where: { id: 'a' } })).length).toBe(1);
@@ -48,3 +49,7 @@ export class Task extends IdEntity {
     @Field()
     completed: boolean = false;
 }
+
+
+
+
