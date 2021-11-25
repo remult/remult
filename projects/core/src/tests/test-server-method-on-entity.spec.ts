@@ -1,4 +1,4 @@
-import { ActionTestConfig, testAllDataProviders, testRestDb } from './testHelper.spec';
+import { ActionTestConfig,  testRestDb } from './testHelper.spec';
 import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
@@ -8,6 +8,8 @@ import { DataApi } from '../data-api';
 
 import { assign } from '../../assign';
 import { Filter } from '../filter/filter-interfaces';
+import { dWithPrefilter } from './dWithPrefilter';
+import { d } from './d';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -275,77 +277,6 @@ it("test api filter cant be overwritten", async () => {
     });
 
 })
-it("test filter doesn't collapse", async () => {
-    return testAllDataProviders(async ({ remult }) => {
-        let repo = remult.repo(dWithPrefilter);
-        let d1 = await repo.create({ id: 1, b: 1 }).save();
-        await repo.create({ id: 2, b: 2 }).save();
-        let d4 = await repo.create({ id: 4, b: 2 }).save();
-
-        let f: EntityFilter<dWithPrefilter> = { id: 1, $and: [{ id: 2 }] };
-        expect(await repo.count(f)).toBe(0);
-        expect((await repo.find({ where: f })).length).toBe(0);
-        let json = Filter.entityFilterToJson(repo.metadata, f);
-        f = Filter.entityFilterFromJson(repo.metadata, json);
-        expect(await repo.count(f)).toBe(0);
-        expect((await repo.find({ where: f })).length).toBe(0);
-    });
-
-})
-
-it("test filter doesn't collapse", async () => {
-    return testAllDataProviders(async ({ remult }) => {
-        let repo = remult.repo(d);
-        let d1 = await repo.create({ id: 1, b: 1 }).save();
-        await repo.create({ id: 2, b: 2 }).save();
-        let d4 = await repo.create({ id: 4, b: 2 }).save();
-
-        let f: EntityFilter<d> = { id: [1, 2] };
-        expect(await repo.count(f)).toBe(2);
-        expect((await repo.find({ where: f })).length).toBe(2);
-        let json = Filter.entityFilterToJson(repo.metadata, f);
-        console.log(json);
-        f = Filter.entityFilterFromJson(repo.metadata, json);
-        expect(await repo.count(f)).toBe(2);
-        expect((await repo.find({ where: f })).length).toBe(2);
-    });
-
-})
 
 
 
-@Entity<dWithPrefilter>('d', {
-    apiPrefilter: { b: 2 },
-    allowApiCrud: true
-})
-class dWithPrefilter extends EntityBase {
-    @Field()
-    id: number;
-    @Field()
-    b: number;
-
-    static count = 0;
-    @BackendMethod({ allowed: true })
-    async doIt() {
-        dWithPrefilter.count++;
-        return true;
-    }
-
-}
-@Entity('d1', {
-    allowApiCrud: true
-})
-class d extends EntityBase {
-    @Field()
-    id: number;
-    @Field()
-    b: number;
-
-    static count = 0;
-    @BackendMethod({ allowed: true })
-    async doIt() {
-        dWithPrefilter.count++;
-        return true;
-    }
-
-}

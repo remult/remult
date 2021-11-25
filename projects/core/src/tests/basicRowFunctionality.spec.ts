@@ -1,10 +1,8 @@
-
-
-import { createData, testAllDbs } from './RowProvider.spec';
+import { createData } from "./createData";
 import { DataApi } from '../data-api';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import {  testAllDataProviders, MockRestDataProvider,  testSql, testInMemoryDb, testRestDb } from './testHelper.spec';
+import { MockRestDataProvider } from './testHelper.spec';
 import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Done } from "./Done";
 
@@ -28,6 +26,7 @@ import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
 import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
+import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 
 //SqlDatabase.LogToConsole = true;
 
@@ -69,26 +68,7 @@ describe("test object column stored as string", () => {
 });
 
 
-@Entity('testNumbers', { allowApiCrud: true })
-class testNumbers extends EntityBase {
-  @IntegerField()
-  id: number;
-  @Field()
-  a: number;
-}
-describe("test numbers", () => {
-  it("test that integer and int work", async () => {
-    await testAllDbs(async ({ remult }) => {
-      let e = await remult.repo(testNumbers).create({
-        id: 1.5,
-        a: 1.5
-      }).save();
-      expect(e.id).toBe(2);
-      expect(e.a).toBe(1.5);
 
-    });
-  })
-});
 
 
 describe('Test basic row functionality', () => {
@@ -278,30 +258,7 @@ describe("data api", () => {
   remult.setDataProvider(new InMemoryDataProvider());
 
 
-  it("put with validations on column fails", () => testAllDataProviders(async ({ remult }) => {
-
-    var s = remult.repo(entityWithValidationsOnColumn);
-    let c = s.create();
-
-    c.myId = 1;
-    c.name = 'noam';
-    await c._.save();
-    let api = new DataApi(s, remult);
-    let t = new TestDataApiResponse();
-    let d = new Done();
-    t.error = async (data: any) => {
-      expect(data.modelState.name).toBe('invalid on column');
-      d.ok();
-    };
-    await api.put(t, 1, {
-      name: '1'
-    });
-    d.test();
-    var x = await s.find({ where: { myId: 1 } });
-    expect(x[0].name).toBe('noam');
-
-  }));
-  it("validate with validations on column fails",async  () =>  {
+  it("validate with validations on column fails", async () => {
     let remult = new Remult(new InMemoryDataProvider());
     var s = remult.repo(entityWithValidationsOnColumn);
     let c = s.create();
@@ -317,7 +274,7 @@ describe("data api", () => {
 
 
   });
-  it("validate with validations on column fails 1",async () =>  {
+  it("validate with validations on column fails 1", async () => {
     let remult = new Remult(new InMemoryDataProvider());
     var s = remult.repo(entityWithValidationsOnColumn);
     let c = s.create();
@@ -331,7 +288,7 @@ describe("data api", () => {
     expect(await c._.validate()).toBe(true);
 
   });
-  it("put with validations on entity fails",async () => {
+  it("put with validations on entity fails", async () => {
     let remult = new Remult(new InMemoryDataProvider());
     var s = remult.repo(entityWithValidations);
     let c = s.create();
@@ -416,24 +373,7 @@ describe("data api", () => {
     d.test();
   });
 
-  it("post with logic works and max in entity", async () => {
-    await testAllDbs(async ({ remult }) => {
-      let c = remult.repo(entityWithValidations);
 
-      var api = new DataApi(c, remult);
-      let t = new TestDataApiResponse();
-      let d = new Done();
-      t.created = async (data: any) => {
-        expect(data.name).toBe('noam honig');
-        expect(data.myId).toBe(1);
-        d.ok();
-      };
-      entityWithValidations.savingRowCount = 0;
-      await api.post(t, { name: 'noam honig', myId: 1 });
-      expect(entityWithValidations.savingRowCount).toBe(1);
-      d.test();
-    })
-  });
 
   it("post fails on duplicate index", async () => {
 
@@ -562,32 +502,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  it("get array works with filter in body", async () => {
-    await testAllDbs(async ({ createData, remult }) => {
-      let c = await createData(async (i) => {
-        await i(1, 'noam', undefined, Status.open);
-        await i(2, 'yael', undefined, Status.closed);
-        await i(3, 'yoni', undefined, Status.hold);
-      });
-      var api = new DataApi(c, remult);
-      let t = new TestDataApiResponse();
-      let d = new Done();
-      t.success = data => {
-        expect(data.length).toBe(2);
-        expect(data[0].id).toBe(2);
-        expect(data[1].id).toBe(3);
-        d.ok();
-      };
-      await api.getArray(t, {
-        get: x => {
-          return undefined;
-        }
-      }, {
-        status_in: '[1, 2]'
-      });
-      d.test();
-    });
-  });
+
   it("get array works with filter in body and in array statement", async () => {
     let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', undefined, Status.open);
@@ -639,26 +554,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  it("entity order by works", async () => {
 
-    let type = class extends newCategories { };
-    Entity<typeof type.prototype>('', {
-      defaultOrderBy: { categoryName: "asc" },
-
-    })(type);
-    await testAllDbs(async ({ createData }) => {
-      let c = await createData(async insert => {
-        await insert(1, 'noam');
-        await insert(2, "yoni");
-        await insert(3, "yael");
-      }, type);
-
-      var x = await c.find();
-      expect(x[0].id).toBe(1);
-      expect(x[1].id).toBe(3);
-      expect(x[2].id).toBe(2);
-    })
-  });
   it("delete with validation fails", async () => {
 
     var deleting = new Done();
@@ -808,40 +704,7 @@ describe("data api", () => {
     expect(count).toBe(1);
 
   });
-  it("put with validation works", async () => {
-    await testAllDbs(async ({ createData, remult }) => {
-      let count = 0;
-      let type = class extends newCategories { };
-      Entity<typeof type.prototype>(undefined, {
-        allowApiCrud: true,
-        saving: () => {
-          if (!testConfiguration.restDbRunningOnServer)
-            count++;
-        }
-      })(type);
-      let c = await createData(async insert =>
-        await insert(1, 'noam'), type);
 
-
-      var api = new DataApi(c, remult);
-      let t = new TestDataApiResponse();
-      let d = new Done();
-      t.success = async (data: any) => {
-        d.ok();
-      };
-      count = 0;
-      await api.put(t, 1, {
-        categoryName: 'noam 1'
-      });
-      d.test();
-      var x = await c.find({
-        where: { id: 1 }
-      });
-
-      expect(x[0].categoryName).toBe('noam 1');
-      expect(count).toBe(1);
-    });
-  });
   it("afterSave works", async () => {
 
     let count = 0;
@@ -1405,16 +1268,6 @@ describe("data api", () => {
 
 
 
-  it("count", () => testAllDataProviders(async ({ remult }) => {
-
-    expect(await remult.repo(newCategories).count()).toBe(0);
-    let c = remult.repo(newCategories).create();
-    c.id = 5;
-    c.categoryName = 'test';
-    await c._.save();
-    expect(await remult.repo(newCategories).count()).toBe(1);
-  }));
-
 });
 describe("rest call use url get or fallback to post", () => {
   it("should get", () => {
@@ -1739,51 +1592,8 @@ describe("test bool value", () => {
     expect(col.valueConverter.fromJson(true)).toBe(true);
     expect(col.valueConverter.fromJson(false)).toBe(false);
   });
-  it("saves correctoly to db", async () => {
-    await testAllDbs(async ({ remult }) => {
-      let type = class extends EntityBase {
-        id: number;
-        ok: Boolean = false;
-      }
-      Entity('asdf', { allowApiCrud: true })(type);
-      Field({
-        valueType: Number
-      })(type.prototype, 'id');
-      Field({ valueType: Boolean })(type.prototype, "ok");
-      let r = remult.repo(type).create();
-      r.id = 1;
-      r.ok = true;
-      await r._.save();
-      expect(r.ok).toBe(true);
-      r.ok = false;
-      await r._.save();
-      expect(r.ok).toBe(false);
-    });
-  });
-  it("saves correctly to db", async () => {
-    await testAllDbs(async ({ remult }) => {
-      let type = class extends EntityBase {
-        id: number;
-        ok: Boolean = false;
-      }
-      Entity<typeof type.prototype>('asdf', {
-        allowApiCrud: true,
-        saving: (x) => {
-          x.ok = true;
-        }
-      })(type);
-      Field({
-        valueType: Number
-      })(type.prototype, 'id');
-      Field({ valueType: Boolean })(type.prototype, "ok");
-      let r = remult.repo(type).create();
-      r.id = 1;
-      expect(r.ok).toBe(false);
-      await r._.save();
-      expect(r.ok).toBe(true);
 
-    });
-  });
+
 
 
 });
@@ -1994,19 +1804,6 @@ class CompoundIdEntity extends EntityBase {
   b: number;
   @Field()
   c: number;
-}
-@Entity('', { allowApiCrud: true })
-export class entityWithValidationsOnColumn extends EntityBase {
-  @Field()
-  myId: number;
-  @Field<entityWithValidations, string>({
-    validate: (t, c) => {
-      if (!t.name || t.name.length < 3)
-        c.error = 'invalid on column';
-    }
-  })
-  name: string;
-
 }
 @Entity<entityWithValidationsOnEntityEvent>('', {
   validation: (t => {

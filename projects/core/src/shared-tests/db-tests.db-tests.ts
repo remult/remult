@@ -1,12 +1,23 @@
 
 import { DataApi } from "../data-api";
-import { DateOnlyField, Entity, EntityBase, Field } from "../remult3";
+import { DateOnlyField, Entity, EntityBase, EntityFilter, Field, IntegerField } from "../remult3";
+import { c } from "../tests/c";
+
 import { Done } from "../tests/Done";
+import { h } from "../tests/h";
 import { Categories as newCategories } from "../tests/remult-3-entities";
 import { tasks } from "../tests/tasks";
 import { TestDataApiResponse } from "../tests/TestDataApiResponse";
-import { testAll } from "./db-tests-setup";
-import { entityWithValidations } from "./entityWithValidations";
+import { testAll, testAllDbs } from "./db-tests-setup";
+import { entityWithValidations, testConfiguration } from "./entityWithValidations";
+import { Remult } from "../context";
+import { dWithPrefilter } from "../tests/dWithPrefilter";
+import { entityFilterToJson, Filter } from "../filter/filter-interfaces";
+import { d } from "../tests/d";
+import { entityForCustomFilter1 } from "../tests/entityForCustomFilter";
+import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
+import { Validators } from "../validators";
+import { Status } from "../tests/testModel/models";
 
 
 testAll("what", async ({ remult }) => {
@@ -140,6 +151,363 @@ testAll("test tasks", async ({ remult }) => {
     expect(await c.count({ completed: { $ne: true } })).toBe(2);
     expect(await c.count({ completed: true })).toBe(2);
 });
+testAll("test filtering of null/''", async ({ remult }) => {
+    let repo = remult.repo(h);
+    let a = await repo.create({ id: 'a' }).save();
+    let b = await repo.create({ id: 'b' }).save();
+    let c = await repo.create({ id: 'c', refH: b }).save();
+    expect(await repo.count({ refH: null })).toBe(2);
+    expect(await repo.count({ refH: { "!=": null } })).toBe(1);
+})
+    ;
+
+testAll("test paging with complex object", async ({ remult }) => {
+
+
+    let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
+    let c2 = await remult.repo(c).create({ id: 2, name: 'c2' }).save();
+    let c3 = await remult.repo(c).create({ id: 3, name: 'c3' }).save();
+
+    await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
+    await remult.repo(p).create({ id: 2, name: 'p2', c: c2 }).save();
+    await remult.repo(p).create({ id: 3, name: 'p3', c: c3 }).save();
+    await remult.repo(p).create({ id: 4, name: 'p4', c: c3 }).save();
+    await remult.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
+    let i = 0;
+    for await (const x of remult.repo(p).query({
+        orderBy: { c: "asc", id: "asc" }
+    })) {
+        i++;
+    }
+    expect(i).toBe(5);
+})
+testAll("test paging with complex object_2", async ({ remult }) => {
+
+    let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
+
+    await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
+    expect((await remult.repo(p).findFirst({ c: c1 })).id).toBe(1);
+});
+
+
+
+
+testAll("test filter doesn't collapse", async ({ remult }) => {
+    let repo = remult.repo(dWithPrefilter);
+    let d1 = await repo.create({ id: 1, b: 1 }).save();
+    await repo.create({ id: 2, b: 2 }).save();
+    let d4 = await repo.create({ id: 4, b: 2 }).save();
+
+    let f: EntityFilter<dWithPrefilter> = { id: 1, $and: [{ id: 2 }] };
+    expect(await repo.count(f)).toBe(0);
+    expect((await repo.find({ where: f })).length).toBe(0);
+    let json = Filter.entityFilterToJson(repo.metadata, f);
+    f = Filter.entityFilterFromJson(repo.metadata, json);
+    expect(await repo.count(f)).toBe(0);
+    expect((await repo.find({ where: f })).length).toBe(0);
+});
+
+
+
+testAll("test filter doesn't collapse", async ({ remult }) => {
+    let repo = remult.repo(d);
+    let d1 = await repo.create({ id: 1, b: 1 }).save();
+    await repo.create({ id: 2, b: 2 }).save();
+    let d4 = await repo.create({ id: 4, b: 2 }).save();
+
+    let f: EntityFilter<d> = { id: [1, 2] };
+    expect(await repo.count(f)).toBe(2);
+    expect((await repo.find({ where: f })).length).toBe(2);
+    let json = Filter.entityFilterToJson(repo.metadata, f);
+    console.log(json);
+    f = Filter.entityFilterFromJson(repo.metadata, json);
+    expect(await repo.count(f)).toBe(2);
+    expect((await repo.find({ where: f })).length).toBe(2);
+});
+testAll("test that it works with inheritance", async ({ remult }) => {
+
+    let c = remult.repo(entityForCustomFilter1);
+    for (let id = 0; id < 5; id++) {
+        await c.create({ id }).save();
+    }
+    expect(await (c.count(entityForCustomFilter1.oneAndThree()))).toBe(2);
+    expect((await (c.findFirst(entityForCustomFilter1.testNumericValue(2)))).id).toBe(2);
+    expect((await (c.findFirst(entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
+})
+testAll("put with validations on column fails", async ({ remult }) => {
+
+    var s = remult.repo(entityWithValidationsOnColumn);
+    let c = s.create();
+
+    c.myId = 1;
+    c.name = 'noam';
+    await c._.save();
+    let api = new DataApi(s, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.error = async (data: any) => {
+        expect(data.modelState.name).toBe('invalid on column');
+        d.ok();
+    };
+    await api.put(t, 1, {
+        name: '1'
+    });
+    d.test();
+    var x = await s.find({ where: { myId: 1 } });
+    expect(x[0].name).toBe('noam');
+
+});
+testAllDbs("Insert", async ({ createData }) => {
+    let forCat = await createData(async x => { });
+    let rows = await forCat.find();
+    expect(rows.length).toBe(0);
+    let c = forCat.create();
+    c.id = 1;
+    c.categoryName = 'noam';
+    await c._.save();
+    rows = await forCat.find();
+    expect(rows.length).toBe(1);
+    expect(rows[0].id).toBe(1);
+    expect(rows[0].categoryName).toBe('noam');
+});
+
+testAllDbs("test delete", async ({ createData }) => {
+    let c = await createData(async insert => await insert(5, 'noam'));
+
+    let rows = await c.find();
+    expect(rows.length).toBe(1);
+    expect(rows[0].id).toBe(5);
+    await rows[0]._.delete();
+    rows = await c.find();
+    expect(rows.length).toBe(0);
+});
+testAllDbs("test filter packer", async ({ insertFourRows }) => {
+    let r = await insertFourRows();
+    let rows = await r.find();
+    expect(rows.length).toBe(4);
+
+    rows = await r.find({
+        where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'x' }))
+
+    });
+    expect(rows.length).toBe(2);
+    rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: 4 })) });
+    expect(rows.length).toBe(1);
+    expect(rows[0].categoryName).toBe('yael');
+    rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'y', categoryName: 'yoni' })) });
+    expect(rows.length).toBe(1);
+    expect(rows[0].id).toBe(2);
+    rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [2, 4] } })) });
+    expect(rows.length).toBe(2);
+});
+testAllDbs("Test unique Validation,", async ({ remult }) => {
+    let type = class extends newCategories {
+        a: string
+    };
+    Entity('categories')(type);
+    Field<typeof type.prototype, string>({
+        validate: async (en, col) => {
+            if (en._.isNew() || en.a != en._.fields.a.originalValue) {
+                if (await c.count({ a: en.a }))
+                    en._.fields.a.error = 'already exists';
+            }
+        }
+    })(type.prototype, "a");
+    var c = remult.repo(type);
+
+    var cat = c.create();
+    cat.a = '12';
+    cat.id = 1;
+    await cat._.save();
+    cat = c.create();
+    cat.a = '12';
+
+    var saved = false;
+    try {
+        await cat._.save();
+        saved = true;
+    }
+    catch (err) {
+        expect(cat._.fields.a.error).toEqual("already exists");
+    }
+    expect(saved).toBe(false);
+});
+
+
+testAllDbs("Test unique Validation 2", async ({ remult }) => {
+    let type = class extends newCategories {
+        a: string
+    };
+    Entity('sdfgds')(type);
+    Field<typeof type.prototype, string>({
+        validate: Validators.unique
+    })(type.prototype, "a");
+    var c = remult.repo(type);
+    var cat = c.create();
+    cat.a = '12';
+
+    await cat._.save();
+    cat = c.create();
+    cat.a = '12';
+
+    var saved = false;
+    try {
+        await cat._.save();
+        saved = true;
+    }
+    catch (err) {
+        expect(cat._.fields.a.error).toEqual("already exists");
+    }
+    expect(saved).toBe(false);
+});
+
+@Entity('testNumbers', { allowApiCrud: true })
+class testNumbers extends EntityBase {
+    @IntegerField()
+    id: number;
+    @Field()
+    a: number;
+}
+
+testAllDbs("test that integer and int work", async ({ remult }) => {
+    let e = await remult.repo(testNumbers).create({
+        id: 1.5,
+        a: 1.5
+    }).save();
+    expect(e.id).toBe(2);
+    expect(e.a).toBe(1.5);
+
+});
+
+testAllDbs("post with logic works and max in entity", async ({ remult }) => {
+    let c = remult.repo(entityWithValidations);
+
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.created = async (data: any) => {
+        expect(data.name).toBe('noam honig');
+        expect(data.myId).toBe(1);
+        d.ok();
+    };
+    entityWithValidations.savingRowCount = 0;
+    await api.post(t, { name: 'noam honig', myId: 1 });
+    expect(entityWithValidations.savingRowCount).toBe(1);
+    d.test();
+})
+testAllDbs("get array works with filter in body", async ({ createData, remult }) => {
+    let c = await createData(async (i) => {
+        await i(1, 'noam', undefined, Status.open);
+        await i(2, 'yael', undefined, Status.closed);
+        await i(3, 'yoni', undefined, Status.hold);
+    });
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+        expect(data.length).toBe(2);
+        expect(data[0].id).toBe(2);
+        expect(data[1].id).toBe(3);
+        d.ok();
+    };
+    await api.getArray(t, {
+        get: x => {
+            return undefined;
+        }
+    }, {
+        status_in: '[1, 2]'
+    });
+    d.test();
+});
+testAllDbs("entity order by works", async ({ createData }) => {
+
+    let type = class extends newCategories { };
+    Entity<typeof type.prototype>('', {
+        defaultOrderBy: { categoryName: "asc" },
+
+    })(type);
+
+    let c = await createData(async insert => {
+        await insert(1, 'noam');
+        await insert(2, "yoni");
+        await insert(3, "yael");
+    }, type);
+
+    var x = await c.find();
+    expect(x[0].id).toBe(1);
+    expect(x[1].id).toBe(3);
+    expect(x[2].id).toBe(2);
+})
+testAllDbs("put with validation works", async ({ createData, remult }) => {
+    let count = 0;
+    let type = class extends newCategories { };
+    Entity<typeof type.prototype>(undefined, {
+        allowApiCrud: true,
+        saving: () => {
+            if (!testConfiguration.restDbRunningOnServer)
+                count++;
+        }
+    })(type);
+    let c = await createData(async insert =>
+        await insert(1, 'noam'), type);
+
+
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = async (data: any) => {
+        d.ok();
+    };
+    count = 0;
+    await api.put(t, 1, {
+        categoryName: 'noam 1'
+    });
+    d.test();
+    var x = await c.find({
+        where: { id: 1 }
+    });
+
+    expect(x[0].categoryName).toBe('noam 1');
+    expect(count).toBe(1);
+});
+testAllDbs("saves correctly to db", async ({ remult }) => {
+    let type = class extends EntityBase {
+        id: number;
+        ok: Boolean = false;
+    }
+    Entity('asdf', { allowApiCrud: true })(type);
+    Field({
+        valueType: Number
+    })(type.prototype, 'id');
+    Field({ valueType: Boolean })(type.prototype, "ok");
+    let r = remult.repo(type).create();
+    r.id = 1;
+    r.ok = true;
+    await r._.save();
+    expect(r.ok).toBe(true);
+    r.ok = false;
+    await r._.save();
+    expect(r.ok).toBe(false);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Entity('teststringWithNull', { allowApiCrud: true })
 class testStringWithNull extends EntityBase {
@@ -160,3 +528,15 @@ export class stam extends EntityBase {
 }
 
 
+@Entity('p', { allowApiCrud: true })
+class p extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    name: string;
+    @Field()
+    c: c;
+    constructor(private remult: Remult) {
+        super();
+    }
+}

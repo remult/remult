@@ -1,6 +1,6 @@
 
 
-import { createData, } from './RowProvider.spec';
+import { createData } from "./createData";
 import { Remult, queryConfig } from '../context';
 import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityFilter } from '../remult3';
 import { Categories } from './remult-3-entities';
@@ -8,7 +8,7 @@ import { FieldMetadata } from '../column-interfaces';
 import { Sort } from '../sort';
 import { CompoundIdField } from '../column';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
-import { testAllDataProviders, testInMemoryDb, testRestDb, testSql } from './testHelper.spec';
+
 import { SqlDatabase } from '../..';
 
 
@@ -305,33 +305,7 @@ describe("test paged foreach ", () => {
 
 
     });
-    it("test paging with complex object", () => testAllDataProviders(async ({ remult }) => {
-
-
-        let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
-        let c2 = await remult.repo(c).create({ id: 2, name: 'c2' }).save();
-        let c3 = await remult.repo(c).create({ id: 3, name: 'c3' }).save();
-
-        await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
-        await remult.repo(p).create({ id: 2, name: 'p2', c: c2 }).save();
-        await remult.repo(p).create({ id: 3, name: 'p3', c: c3 }).save();
-        await remult.repo(p).create({ id: 4, name: 'p4', c: c3 }).save();
-        await remult.repo(p).create({ id: 5, name: 'p5', c: c3 }).save();
-        let i = 0;
-        for await (const x of remult.repo(p).query({
-            orderBy: { c: "asc", id: "asc" }
-        })) {
-            i++;
-        }
-        expect(i).toBe(5);
-    }))
-    it("test paging with complex object_2", () => testAllDataProviders(async ({ remult }) => {
-
-        let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
-
-        await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
-        expect((await remult.repo(p).findFirst({ c: c1 })).id).toBe(1);
-    }))
+  
 })
 
 @Entity<theTable>('', {
@@ -346,25 +320,3 @@ class theTable extends EntityBase {
     c: string;
 }
 
-@Entity('c', { allowApiCrud: true })
-class c extends EntityBase {
-    @Field()
-    id: number;
-    @Field()
-    name: string;
-    constructor(private remult: Remult) {
-        super();
-    }
-}
-@Entity('p', { allowApiCrud: true })
-class p extends EntityBase {
-    @Field()
-    id: number;
-    @Field()
-    name: string;
-    @Field()
-    c: c;
-    constructor(private remult: Remult) {
-        super();
-    }
-}

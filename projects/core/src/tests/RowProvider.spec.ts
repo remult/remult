@@ -22,6 +22,7 @@ import { EntityOptions } from '../entity';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { ClassType } from '../../classType';
 import { Done } from './Done';
+import { createData } from './createData';
 
 
 
@@ -39,92 +40,6 @@ export class Language {
 
   }
 
-}
-
-
-
-
-export async function testAllDbs<T extends CategoriesForTesting>(doTest: (helper: {
-  remult: Remult,
-  createData: (doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>,
-    entity?: {
-      new(): CategoriesForTesting
-    }) => Promise<Repository<T>>,
-  insertFourRows: () => Promise<Repository<T>>
-}) => Promise<any>) {
-  let webSql = new WebSqlDataProvider('test');
-  var sql = new SqlDatabase(webSql);
-
-  for (const r of await (await sql.execute("select name from sqlite_master where type='table'")).rows) {
-    switch (r.name) {
-      case "__WebKitDatabaseInfoTable__":
-        break;
-      default:
-        await sql.execute("drop table if exists " + r.name);
-    }
-  }
-  await testAllDataProviders(async ({ db }) => {
-    if (!db)
-      throw new Error("you forget to set a db for the test");
-    let remult = new Remult();
-    remult.setDataProvider(db);
-
-    let createData = async (doInsert, entity?) => {
-      if (!entity)
-        entity = newCategories;
-      let rep = remult.repo(entity) as Repository<T>;
-      if (doInsert)
-        await doInsert(async (id, name, description, status) => {
-
-          let c = rep.create();
-
-          c.id = id;
-          c.categoryName = name;
-          c.description = description;
-          if (status)
-            c.status = status;
-          await rep.save(c);
-
-        });
-      return rep;
-    };
-
-    await doTest({
-      remult,
-      createData,
-      insertFourRows: async () => {
-        return createData(async i => {
-          await i(1, 'noam', 'x');
-          await i(4, 'yael', 'x');
-          await i(2, 'yoni', 'y');
-          await i(3, 'maayan', 'y');
-        });
-      }
-    });
-  });
-
-}
-export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
-  new(): CategoriesForTesting
-}): Promise<[Repository<CategoriesForTesting>, Remult]> {
-  let remult = new Remult();
-  remult.setDataProvider(new InMemoryDataProvider());
-  if (!entity)
-    entity = newCategories;
-  let rep = remult.repo(entity);
-  if (doInsert)
-    await doInsert(async (id, name, description, status) => {
-
-      let c = rep.create();
-      c.id = id;
-      c.categoryName = name;
-      c.description = description;
-      if (status)
-        c.status = status;
-      await rep.save(c);
-
-    });
-  return [rep, remult];
 }
 
 export async function insertFourRows() {
@@ -374,39 +289,9 @@ describe("test row provider", () => {
     var cat = new Remult().repo(newCategories).create();
     expect(cat._.repository.metadata.key).toBe('Categories');
   });
-  it("Insert", async () => {
-    await testAllDbs(async ({ createData }) => {
-      let forCat = await createData(async x => { });
-      let rows = await forCat.find();
-      expect(rows.length).toBe(0);
-      let c = forCat.create();
-      c.id = 1;
-      c.categoryName = 'noam';
-      await c._.save();
-      rows = await forCat.find();
-      expect(rows.length).toBe(1);
-      expect(rows[0].id).toBe(1);
-      expect(rows[0].categoryName).toBe('noam');
-    })
-  });
 
 
 
-  it("test delete", async () => {
-
-    await testAllDbs(async ({ createData }) => {
-      let c = await createData(async insert => await insert(5, 'noam'));
-
-      let rows = await c.find();
-      expect(rows.length).toBe(1);
-      expect(rows[0].id).toBe(5);
-      await rows[0]._.delete();
-      rows = await c.find();
-      expect(rows.length).toBe(0);
-    })
-
-
-  });
   it("test update", async () => {
     let [c] = await createData(async insert => await insert(5, 'noam'));
     let r = await c.find();
@@ -441,28 +326,7 @@ describe("test row provider", () => {
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(2);
   });
-  it("test filter packer", async () => {
-    await testAllDbs(async ({ insertFourRows }) => {
-      let r = await insertFourRows();
-      let rows = await r.find();
-      expect(rows.length).toBe(4);
 
-      rows = await r.find({
-        where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'x' }))
-
-      });
-      expect(rows.length).toBe(2);
-      rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: 4 })) });
-      expect(rows.length).toBe(1);
-      expect(rows[0].categoryName).toBe('yael');
-      rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { description: 'y', categoryName: 'yoni' })) });
-      expect(rows.length).toBe(1);
-      expect(rows[0].id).toBe(2);
-      rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [2, 4] } })) });
-      expect(rows.length).toBe(2);
-    })
-
-  });
   it("test in filter packer", async () => {
     let [r] = await insertFourRows();
     let rows = await r.find();
@@ -595,70 +459,7 @@ describe("test row provider", () => {
     }
     expect(saved).toBe(false);
   });
-  it("Test unique Validation,", async () => {
-    await testAllDbs(async ({ remult }) => {
-      let type = class extends newCategories {
-        a: string
-      };
-      EntityDecorator('categories')(type);
-      ColumnDecorator<typeof type.prototype, string>({
-        validate: async (en, col) => {
-          if (en._.isNew() || en.a != en._.fields.a.originalValue) {
-            if (await c.count({ a: en.a }))
-              en._.fields.a.error = 'already exists';
-          }
-        }
-      })(type.prototype, "a");
-      var c = remult.repo(type);
 
-      var cat = c.create();
-      cat.a = '12';
-      cat.id = 1;
-      await cat._.save();
-      cat = c.create();
-      cat.a = '12';
-
-      var saved = false;
-      try {
-        await cat._.save();
-        saved = true;
-      }
-      catch (err) {
-        expect(cat._.fields.a.error).toEqual("already exists");
-      }
-      expect(saved).toBe(false);
-    });
-
-  });
-  it("Test unique Validation 2", async () => {
-    await testAllDbs(async ({ remult }) => {
-      let type = class extends newCategories {
-        a: string
-      };
-      EntityDecorator('sdfgds')(type);
-      ColumnDecorator<typeof type.prototype, string>({
-        validate: Validators.unique
-      })(type.prototype, "a");
-      var c = remult.repo(type);
-      var cat = c.create();
-      cat.a = '12';
-
-      await cat._.save();
-      cat = c.create();
-      cat.a = '12';
-
-      var saved = false;
-      try {
-        await cat._.save();
-        saved = true;
-      }
-      catch (err) {
-        expect(cat._.fields.a.error).toEqual("already exists");
-      }
-      expect(saved).toBe(false);
-    });
-
-  });
   it("Test unique Validation and is not empty", async () => {
     var remult = new Remult();
     remult.setDataProvider(new InMemoryDataProvider());

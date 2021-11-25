@@ -1,18 +1,19 @@
 import { Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, FieldType } from '../remult3';
+import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter } from '../remult3';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
 import { ValueListValueConverter } from '../../valueConverters';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
-import {  testAllDataProviders } from './testHelper.spec';
+
 import { DataApi } from '../data-api';
 
 import { actionInfo } from '../server-action';
 import { Done } from './Done';
 import { TestDataApiResponse } from './TestDataApiResponse';
+import { h } from './h';
 
 
 
@@ -620,31 +621,6 @@ z = {
 }
 
 
-@FieldType<h>({
-    valueConverter: {
-        toJson: x => x != undefined ? x : '',
-        fromJson: x => x ? x : null
-    },
-})
-@Entity<h>('h', {
-    saving: self => {
-        if (self.refH)
-            self.refHId = self.refH.id;
-        else
-            self.refHId = '';
-    },
-    allowApiCrud: true
-
-})
-class h extends EntityBase {
-    @Field()
-    id: string;
-    @Field()
-    refH: h;
-    @Field()
-    refHId: string;
-}
-
 describe("Test entity relation and count finds", () => {
     it("test it", async () => {
         let mem = new InMemoryDataProvider();
@@ -734,14 +710,5 @@ describe("Test entity relation and count finds", () => {
         done.test();
         expect(fetches).toBe(1);
     });
-    it("test filtering of null/''", () =>
-        testAllDataProviders(async ({ remult }) => {
-            let repo = remult.repo(h);
-            let a = await repo.create({ id: 'a' }).save();
-            let b = await repo.create({ id: 'b' }).save();
-            let c = await repo.create({ id: 'c', refH: b }).save();
-            expect(await repo.count({ refH: null })).toBe(2);
-            expect(await repo.count({ refH: { "!=": null } })).toBe(1);
-        })
-    );
+  
 });

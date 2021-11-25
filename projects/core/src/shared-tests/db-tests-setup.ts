@@ -1,6 +1,9 @@
 import { Remult } from "../context";
 import { DataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
+import { Repository } from "../remult3";
+import { Categories, CategoriesForTesting } from "../tests/remult-3-entities";
+import { Status } from "../tests/testModel/models";
 
 
 export function itWithFocus(key: string, what: () => Promise<void>, focus = false) {
@@ -17,6 +20,12 @@ export function testAll(key: string, what: dbTestWhatSignature, focus = false) {
         x(key, what, focus);
     })
 }
+
+
+
+
+
+
 const databasesTesters = [] as dbTestMethodSignature[];
 const loadedTests = [] as ((tested: dbTestMethodSignature) => void)[];
 export function addDatabaseToTest(tester: dbTestMethodSignature) {
@@ -48,3 +57,52 @@ export declare type dbTestWhatSignature = (db: {
 export declare type dbTestMethodSignature = (key: string, what: dbTestWhatSignature, focus: boolean) => void;
 
 
+
+export async function testAllDbs<T extends CategoriesForTesting>(key: string, doTest: (helper: {
+    remult: Remult,
+    createData: (doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>,
+        entity?: {
+            new(): CategoriesForTesting
+        }) => Promise<Repository<T>>,
+    insertFourRows: () => Promise<Repository<T>>
+}) => Promise<any>, focus = false) {
+
+    testAll(key, async ({ remult }) => {
+
+
+
+        let createData = async (doInsert, entity?) => {
+            if (!entity)
+                entity = Categories;
+            let rep = remult.repo(entity) as Repository<T>;
+            if (doInsert)
+                await doInsert(async (id, name, description, status) => {
+
+                    let c = rep.create();
+
+                    c.id = id;
+                    c.categoryName = name;
+                    c.description = description;
+                    if (status)
+                        c.status = status;
+                    await rep.save(c);
+
+                });
+            return rep;
+        };
+
+        await doTest({
+            remult,
+            createData,
+            insertFourRows: async () => {
+                return createData(async i => {
+                    await i(1, 'noam', 'x');
+                    await i(4, 'yael', 'x');
+                    await i(2, 'yoni', 'y');
+                    await i(3, 'maayan', 'y');
+                });
+            }
+        });
+    }, focus);
+
+}

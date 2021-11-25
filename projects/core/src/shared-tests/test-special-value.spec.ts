@@ -1,5 +1,5 @@
 import { Entity, EntityBase, Field, FieldType } from "../remult3";
-import { testAllDataProviders, testInMemoryDb } from "./testHelper.spec";
+import { testAll } from "./db-tests-setup";
 
 @FieldType<GroupsValue>({
     valueConverter: {
@@ -61,23 +61,19 @@ class testGroups extends EntityBase {
     g: GroupsValue;
 }
 
-it("test save and load", () =>
-    testAllDataProviders(async ({ remult }) => {
-        let re = remult.repo(testGroups);
-        await re.create({ id: 1 }).save();
-        let x = await re.findFirst();
-        expect(x.g.evilGet()).toBe('');
-        x.g = x.g.addGroup("xx");
-        expect(x.$.g.valueChanged()).toBe(true);
-        await x.save();
-        expect(x.g.evilGet()).toBe('xx');
-    })
-);
-it("test2 save and load", () =>
-    testAllDataProviders(async ({ remult }) => {
-        let re = remult.repo(testGroups);
-        await re.create({ id: 1, g: new GroupsValue(undefined) }).save();
-        let x = await re.findFirst();
-        expect(x.g.evilGet()).toBe('');
-    })
-);
+testAll("test save and load", async ({ remult }) => {
+    let re = remult.repo(testGroups);
+    await re.create({ id: 1 }).save();
+    let x = await re.findFirst();
+    expect(x.g.evilGet()).toBe('');
+    x.g = x.g.addGroup("xx");
+    expect(x.$.g.valueChanged()).toBe(true);
+    await x.save();
+    expect(x.g.evilGet()).toBe('xx');
+});
+testAll("test2 save and load", async ({ remult }) => {
+    let re = remult.repo(testGroups);
+    await re.create({ id: 1, g: new GroupsValue(undefined) }).save();
+    let x = await re.findFirst();
+    expect(x.g.evilGet()).toBe('');
+});

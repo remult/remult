@@ -1,6 +1,6 @@
 import { TestDataApiResponse } from "../TestDataApiResponse";
 import { Done } from "../Done";
-import { createData } from '../RowProvider.spec';
+import { createData } from "../createData";
 
 import { DataApi } from '../../data-api';
 

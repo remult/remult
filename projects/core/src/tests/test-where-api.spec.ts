@@ -1,11 +1,12 @@
-import { testAllDataProviders, testInMemoryDb, testRestDb, testSql } from './testHelper.spec';
+import { testInMemoryDb, testRestDb, testSql } from './testHelper.spec';
 import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Done } from "./Done";
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
-import { createData, insertFourRows, testAllDbs } from './RowProvider.spec';
+import { insertFourRows } from './RowProvider.spec';
+import { createData } from "./createData";
 import { Entity, EntityBase, Field, EntityFilter, FindOptions, Repository } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
@@ -15,6 +16,7 @@ import { DataApi } from '../data-api';
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider';
 import { ClassType } from '../../classType';
 import { CustomSqlFilterBuilder } from '../filter/filter-consumer-bridge-to-sql-request';
+import { entityForCustomFilter } from './entityForCustomFilter';
 
 
 describe("test where stuff", () => {
@@ -110,19 +112,7 @@ describe("custom filter", () => {
         })
 
     );
-    it("test that it works with inheritance", () =>
-        testAllDataProviders(async ({ remult }) => {
-
-            let c = remult.repo(entityForCustomFilter1);
-            for (let id = 0; id < 5; id++) {
-                await c.create({ id }).save();
-            }
-            expect(await (c.count(entityForCustomFilter1.oneAndThree()))).toBe(2);
-            expect((await (c.findFirst(entityForCustomFilter1.testNumericValue(2)))).id).toBe(2);
-            expect((await (c.findFirst(entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
-        })
-
-    );
+    ;
     it("test that it works with sql", async () => {
         let w = new WebSqlDataProvider("testWithFilter");
 
@@ -284,43 +274,7 @@ describe("custom filter", () => {
 });
 
 
-@Entity('entityForCustomFilter', { allowApiCrud: true })
-class entityForCustomFilter extends EntityBase {
-    @Field()
-    id: number;
-    static filter = Filter.createCustom<entityForCustomFilter, {
-        oneAndThree?: boolean,
-        dbOneOrThree?: boolean,
-        two?: boolean
-    }>(async (remult, c) => {
 
-        let r: EntityFilter<entityForCustomFilter>[] = [];
-        if (c.oneAndThree)
-            r.push({ id: [1, 3] });
-        if (c.two)
-            r.push({ id: 2 });
-        if (c.dbOneOrThree) {
-            let e = remult.repo(entityForCustomFilter).metadata;
-            r.push(
-                {
-                    $and: [
-                        SqlDatabase.customFilter(async x => x.sql = await e.fields.id.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")"),
-                        ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3)
-
-                    ]
-                }
-            );
-        }
-        return { $and: r };
-    });
-    static oneAndThree = Filter.createCustom<entityForCustomFilter>(() => ({ id: [1, 3] }));
-    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((r, val) => ({ id: val }));
-    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number }>((r, val) => ({ id: val.val }));
-}
-@Entity('entityForCustomFilter1', { allowApiCrud: true })
-class entityForCustomFilter1 extends entityForCustomFilter {
-
-}
 
 declare type Draft<T> = WritableDraft<T>;
 declare type WritableDraft<T> = {
