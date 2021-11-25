@@ -17,10 +17,13 @@ import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
-import { stam } from '../products-test/products.component';
+import { stam, TestId } from '../products-test/products.component';
 import { EntityBase, Filter } from '../../../../core';
 import { DataApi } from '../../../../core/src/data-api';
 import { remultExpress } from '../../../../core/server/expressBridge';
+import * as knex from 'knex';
+
+
 
 
 
@@ -91,77 +94,14 @@ serverInit().then(async (dataSource) => {
 });
 
 
-class a extends EntityBase {
-    title: string;
-}
-class b {
-    title: string;
-    $: string;
-}
-
-function findNoam<entityType>(): {
-    count(): Promise<number>;
-    isFirst: boolean;
-    isLast: boolean;
-    next(rows: number): Promise<entityType[]>;
-    previous(rows: number): Promise<entityType[]>;
-
-    [Symbol.asyncIterator](): {
-        next: () => Promise<IteratorResult<entityType, entityType>>;
-    };
-} {
-    return undefined;
-}
-
-async function myCode() {
-    for (const task of await findNoam<a>().next(100)) {
-
-    }
-    for await (const task of findNoam<a>()) {
-
-    }
-    let manyOfa = findNoam<a>();
-}
-function find<entityType>(options?: {
-    page: number,
-    limit: number
-}): Promise<findResponse<entityType>> {
-    return undefined;
+async function test() {
+    let database = knex.default({
+        client: 'pg',
+        connection: process.env.DATABASE_URL
+    });
+    var x = database("tasks").select("id","name");
+    
+    console.log(await x);
 
 }
-
-//find many
-interface findResponse<entityType> {
-    items: entityType[]
-    count(): Promise<number>, //tbd
-    hasNextPage: boolean,
-    hasPreviousPage: boolean,
-    nextPage(): Promise<findResponse<entityType>>,
-    previousPage(): Promise<findResponse<entityType[]>>,
-    forEach(what: (item: entityType) => Promise<any>): Promise<number>;//why number
-    map<T>(how: (item: entityType, index: number) => Promise<T>): Promise<T[]>;
-    [Symbol.asyncIterator](): {
-        next: () => Promise<IteratorResult<entityType, entityType>>;
-    };
-}
-
-[].map((a, b, c) => { })
-
-// async function yoniFinction() {
-//     const { items, count, isLast } = (await find<a>());
-
-// }
-// function gateWayFind(): {
-//     items: entityType[],
-//     count?: number,
-//     nextToken,
-//     backToken
-
-// } {
-
-// }
-
-/*
-our api get - or our api data provider, will return an array when stupid - or an object when not - and we'll wrap it.
-
-*/
+test();

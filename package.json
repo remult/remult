@@ -28,8 +28,7 @@
     "schemas:copy:collection": "copyfiles -V -u 3 projects/angular/schematics/collection.json dist/angular/schematics/",
     "postschemas:build": "npm run schemas:copy:schemas && npm run schemas:copy:files && npm run schemas:copy:collection",
     "server-test": "./node_modules/.bin/tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
-    "server-test1":"ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
-
+    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
   },
   "private": true,
   "dependencies": {
@@ -60,6 +59,7 @@
     "express-jwt": "^6.0.0",
     "graphql": "^16.0.0",
     "jsonwebtoken": "^8.5.1",
+    "knex": "^0.95.14",
     "mssql": "^4.2.3",
     "password-hash": "^1.2.2",
     "pg": "^8.3.0",
