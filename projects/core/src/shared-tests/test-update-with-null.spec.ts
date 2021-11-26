@@ -1,5 +1,6 @@
 import { Entity, EntityBase, Field } from "../remult3";
 import { testAll } from "./db-tests-setup";
+import { deleteAll } from "./deleteAll";
 
 
 @Entity('testNull', { allowApiCrud: true })
@@ -15,7 +16,7 @@ class testNull extends EntityBase {
 }
 
 testAll("test that update null works", async ({ remult }) => {
-    let r = remult.repo(testNull);
+    let r = await deleteAll( remult.repo(testNull));
     let i = r.create({ id: 1, myCol: { value: 'abc' } });
     await i.save();
     expect(i.myCol?.value).toBe("abc");

@@ -1,3 +1,4 @@
+import { ClassType } from "../../classType";
 import { Remult } from "../context";
 import { DataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
@@ -22,10 +23,6 @@ export function testAll(key: string, what: dbTestWhatSignature, focus = false) {
 }
 
 
-
-
-
-
 const databasesTesters = [] as dbTestMethodSignature[];
 const loadedTests = [] as ((tested: dbTestMethodSignature) => void)[];
 export function addDatabaseToTest(tester: dbTestMethodSignature) {
@@ -42,7 +39,7 @@ export function testInMemory(key: string, what: dbTestWhatSignature, focus = fal
         let remult = new Remult();
         let db = new InMemoryDataProvider();
         remult.setDataProvider(db);
-        await what({ db, remult });
+        await what({ db, remult, createEntity: async (x) => remult.repo(x) });
     }, focus);
 }
 
@@ -52,7 +49,8 @@ databasesTesters.push(testInMemory);
 
 export declare type dbTestWhatSignature = (db: {
     db: DataProvider,
-    remult: Remult
+    remult: Remult,
+    createEntity<entityType>(entity: ClassType<entityType>): Promise<Repository<entityType>>
 }) => Promise<void>;
 export declare type dbTestMethodSignature = (key: string, what: dbTestWhatSignature, focus: boolean) => void;
 
@@ -67,19 +65,16 @@ export async function testAllDbs<T extends CategoriesForTesting>(key: string, do
     insertFourRows: () => Promise<Repository<T>>
 }) => Promise<any>, focus = false) {
 
-    testAll(key, async ({ remult }) => {
-
+    testAll(key, async ({ remult, createEntity }) => {
 
 
         let createData = async (doInsert, entity?) => {
             if (!entity)
                 entity = Categories;
-            let rep = remult.repo(entity) as Repository<T>;
+            let rep = await createEntity(entity) as Repository<T>;
             if (doInsert)
                 await doInsert(async (id, name, description, status) => {
-
                     let c = rep.create();
-
                     c.id = id;
                     c.categoryName = name;
                     c.description = description;

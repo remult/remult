@@ -1,5 +1,6 @@
+import { ClassType } from '../../classType';
 import { Remult } from '../context';
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, Repository } from '../remult3';
 
 
 export var testConfiguration = { restDbRunningOnServer: false };
@@ -33,8 +34,8 @@ export class entityWithValidations extends EntityBase {
         super();
     }
 
-    static async create4RowsInDp(ctx: Remult) {
-        let s = ctx.repo(entityWithValidations);
+    static async create4RowsInDp(createEntity: (entity: ClassType<any>) => Promise<Repository<entityWithValidations>>) {
+        let s = await createEntity(entityWithValidations);
         let c = s.create();
         c.myId = 1;
         c.name = 'noam';

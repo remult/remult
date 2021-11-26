@@ -1,5 +1,6 @@
 import { Entity, EntityBase, Field, FieldType } from "../remult3";
 import { testAll } from "./db-tests-setup";
+import { deleteAll } from "./deleteAll";
 
 @FieldType<GroupsValue>({
     valueConverter: {
@@ -62,7 +63,7 @@ class testGroups extends EntityBase {
 }
 
 testAll("test save and load", async ({ remult }) => {
-    let re = remult.repo(testGroups);
+    let re =await  deleteAll( remult.repo(testGroups));
     await re.create({ id: 1 }).save();
     let x = await re.findFirst();
     expect(x.g.evilGet()).toBe('');
@@ -72,7 +73,7 @@ testAll("test save and load", async ({ remult }) => {
     expect(x.g.evilGet()).toBe('xx');
 });
 testAll("test2 save and load", async ({ remult }) => {
-    let re = remult.repo(testGroups);
+    let re =await  deleteAll( remult.repo(testGroups));
     await re.create({ id: 1, g: new GroupsValue(undefined) }).save();
     let x = await re.findFirst();
     expect(x.g.evilGet()).toBe('');

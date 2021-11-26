@@ -3,6 +3,7 @@ import { Status } from './testModel/models';
 import { Remult } from '../context';
 import { Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Repository } from '../remult3';
+import { deleteAll } from '../shared-tests/deleteAll';
 
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting;
@@ -11,7 +12,7 @@ export async function createData(doInsert?: (insert: (id: number, name: string, 
   remult.setDataProvider(new InMemoryDataProvider());
   if (!entity)
     entity = newCategories;
-  let rep = remult.repo(entity);
+  let rep =await  deleteAll( remult.repo(entity));
   if (doInsert)
     await doInsert(async (id, name, description, status) => {
 

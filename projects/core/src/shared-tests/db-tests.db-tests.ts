@@ -20,24 +20,24 @@ import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 
 
-testAll("what", async ({ remult }) => {
-    await remult.repo(stam).create({ id: 1, title: 'noam' }).save();
+testAll("what", async ({ remult, createEntity }) => {
+    await (await createEntity(stam)).create({ id: 1, title: 'noam' }).save();
     expect(await remult.repo(stam).count()).toBe(1);
 }, false);
 testAll("filter works on all db",
-    async ({ remult }) => {
-        let s = await entityWithValidations.create4RowsInDp(remult);
+    async ({ createEntity }) => {
+        let s = await entityWithValidations.create4RowsInDp(createEntity);
         expect((await s.find({ where: { myId: [1, 3] } })).length).toBe(2);
     });
 testAll("filter works on all db or",
-    async ({ remult }) => {
+    async ({ createEntity }) => {
 
-        let s = await entityWithValidations.create4RowsInDp(remult);
+        let s = await entityWithValidations.create4RowsInDp(createEntity);
         expect((await s.find({ where: { $or: [{ myId: 1 }, { myId: 3 }] } })).length).toBe(2);
 
     });
-testAll("entity with different id column still works well", async ({ remult }) => {
-    let s = remult.repo(entityWithValidations);
+testAll("entity with different id column still works well", async ({ createEntity }) => {
+    let s = await createEntity(entityWithValidations);
     let c = s.create();
     c.myId = 1; c.name = 'noam';
     await c._.save();
@@ -47,8 +47,8 @@ testAll("entity with different id column still works well", async ({ remult }) =
     expect((await s.find()).length).toBe(1);
 });
 
-testAll("empty find works", async ({ remult }) => {
-    let c = remult.repo(newCategories).create();
+testAll("empty find works", async ({ remult, createEntity }) => {
+    let c = (await createEntity(newCategories)).create();
     c.id = 5;
     c.categoryName = 'test';
     await c._.save();
@@ -58,9 +58,9 @@ testAll("empty find works", async ({ remult }) => {
 
 
 });
-testAll("partial updates", async ({ remult }) => {
+testAll("partial updates", async ({ remult, createEntity }) => {
 
-    let c = remult.repo(newCategories).create({
+    let c = (await createEntity(newCategories)).create({
         id: 5, categoryName: 'test', description: 'desc'
     });
     await c._.save();
@@ -75,8 +75,8 @@ testAll("partial updates", async ({ remult }) => {
 
 });
 testAll("put with validations on entity fails",
-    async ({ remult }) => {
-        let s = remult.repo(entityWithValidations);
+    async ({ remult, createEntity }) => {
+        let s = await createEntity(entityWithValidations);
         let c = s.create();
         c.myId = 1;
         c.name = 'noam';
@@ -98,17 +98,17 @@ testAll("put with validations on entity fails",
         expect(x[0].name).toBe('noam');
 
     });
-testAll("test date with null works", async ({ remult }) => {
+testAll("test date with null works", async ({ createEntity }) => {
 
-    let repo = remult.repo(testDateWithNull);
+    let repo = await createEntity(testDateWithNull);
     let r = repo.create({ id: 0 });
     await r.save();
     r = await repo.findFirst();
     expect(r.d).toBeNull();
     expect(await repo.count({ d: null })).toBe(1);
 });
-testAll("test original value of date", async ({ remult }) => {
-    let r = await remult.repo(testDateWithNull).create({ id: 1, d: new Date(1976, 6, 16) }).save();
+testAll("test original value of date", async ({ createEntity }) => {
+    let r = await (await createEntity(testDateWithNull)).create({ id: 1, d: new Date(1976, 6, 16) }).save();
 
     expect(r.$.d.originalValue.getFullYear()).toBe(1976);
 
@@ -122,18 +122,18 @@ class testDateWithNull extends EntityBase {
     d: Date;
 }
 
-testAll("test string with null works", async ({ remult }) => {
+testAll("test string with null works", async ({ createEntity }) => {
 
-    let repo = remult.repo(testStringWithNull);
+    let repo = await createEntity(testStringWithNull);
     let r = repo.create({ id: 0 });
     await r.save();
     r = await repo.findFirst();
     expect(r.d).toBeNull();
 });
 
-testAll("test tasks", async ({ remult }) => {
+testAll("test tasks", async ({ createEntity }) => {
 
-    let c = remult.repo(tasks);
+    let c = await createEntity(tasks);
     let t = c.create();
     t.id = 1;
     await t._.save();
@@ -151,8 +151,8 @@ testAll("test tasks", async ({ remult }) => {
     expect(await c.count({ completed: { $ne: true } })).toBe(2);
     expect(await c.count({ completed: true })).toBe(2);
 });
-testAll("test filtering of null/''", async ({ remult }) => {
-    let repo = remult.repo(h);
+testAll("test filtering of null/''", async ({ createEntity }) => {
+    let repo = await createEntity(h);
     let a = await repo.create({ id: 'a' }).save();
     let b = await repo.create({ id: 'b' }).save();
     let c = await repo.create({ id: 'c', refH: b }).save();
@@ -161,8 +161,9 @@ testAll("test filtering of null/''", async ({ remult }) => {
 })
     ;
 
-testAll("test paging with complex object", async ({ remult }) => {
-
+testAll("test paging with complex object", async ({ remult, createEntity }) => {
+    await createEntity(c);
+    await createEntity(p);
 
     let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
     let c2 = await remult.repo(c).create({ id: 2, name: 'c2' }).save();
@@ -181,19 +182,19 @@ testAll("test paging with complex object", async ({ remult }) => {
     }
     expect(i).toBe(5);
 })
-testAll("test paging with complex object_2", async ({ remult }) => {
+testAll("test paging with complex object_2", async ({ remult, createEntity }) => {
 
-    let c1 = await remult.repo(c).create({ id: 1, name: 'c1' }).save();
+    let c1 = await (await createEntity(c)).create({ id: 1, name: 'c1' }).save();
 
-    await remult.repo(p).create({ id: 1, name: 'p1', c: c1 }).save();
+    await (await createEntity(p)).create({ id: 1, name: 'p1', c: c1 }).save();
     expect((await remult.repo(p).findFirst({ c: c1 })).id).toBe(1);
 });
 
 
 
 
-testAll("test filter doesn't collapse", async ({ remult }) => {
-    let repo = remult.repo(dWithPrefilter);
+testAll("test filter doesn't collapse", async ({ createEntity }) => {
+    let repo = await createEntity(dWithPrefilter);
     let d1 = await repo.create({ id: 1, b: 1 }).save();
     await repo.create({ id: 2, b: 2 }).save();
     let d4 = await repo.create({ id: 4, b: 2 }).save();
@@ -209,8 +210,8 @@ testAll("test filter doesn't collapse", async ({ remult }) => {
 
 
 
-testAll("test filter doesn't collapse", async ({ remult }) => {
-    let repo = remult.repo(d);
+testAll("test filter doesn't collapse", async ({ createEntity }) => {
+    let repo = await createEntity(d);
     let d1 = await repo.create({ id: 1, b: 1 }).save();
     await repo.create({ id: 2, b: 2 }).save();
     let d4 = await repo.create({ id: 4, b: 2 }).save();
@@ -219,14 +220,14 @@ testAll("test filter doesn't collapse", async ({ remult }) => {
     expect(await repo.count(f)).toBe(2);
     expect((await repo.find({ where: f })).length).toBe(2);
     let json = Filter.entityFilterToJson(repo.metadata, f);
-    console.log(json);
+    
     f = Filter.entityFilterFromJson(repo.metadata, json);
     expect(await repo.count(f)).toBe(2);
     expect((await repo.find({ where: f })).length).toBe(2);
 });
-testAll("test that it works with inheritance", async ({ remult }) => {
+testAll("test that it works with inheritance", async ({ createEntity }) => {
 
-    let c = remult.repo(entityForCustomFilter1);
+    let c = await createEntity(entityForCustomFilter1);
     for (let id = 0; id < 5; id++) {
         await c.create({ id }).save();
     }
@@ -234,9 +235,9 @@ testAll("test that it works with inheritance", async ({ remult }) => {
     expect((await (c.findFirst(entityForCustomFilter1.testNumericValue(2)))).id).toBe(2);
     expect((await (c.findFirst(entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
 })
-testAll("put with validations on column fails", async ({ remult }) => {
+testAll("put with validations on column fails", async ({ remult, createEntity }) => {
 
-    var s = remult.repo(entityWithValidationsOnColumn);
+    var s = await createEntity(entityWithValidationsOnColumn);
     let c = s.create();
 
     c.myId = 1;
@@ -300,7 +301,7 @@ testAllDbs("test filter packer", async ({ insertFourRows }) => {
     rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [2, 4] } })) });
     expect(rows.length).toBe(2);
 });
-testAllDbs("Test unique Validation,", async ({ remult }) => {
+testAll("Test unique Validation,", async ({ createEntity }) => {
     let type = class extends newCategories {
         a: string
     };
@@ -313,7 +314,7 @@ testAllDbs("Test unique Validation,", async ({ remult }) => {
             }
         }
     })(type.prototype, "a");
-    var c = remult.repo(type);
+    var c = await createEntity(type);
 
     var cat = c.create();
     cat.a = '12';
@@ -334,7 +335,7 @@ testAllDbs("Test unique Validation,", async ({ remult }) => {
 });
 
 
-testAllDbs("Test unique Validation 2", async ({ remult }) => {
+testAll("Test unique Validation 2", async ({ createEntity }) => {
     let type = class extends newCategories {
         a: string
     };
@@ -342,7 +343,7 @@ testAllDbs("Test unique Validation 2", async ({ remult }) => {
     Field<typeof type.prototype, string>({
         validate: Validators.unique
     })(type.prototype, "a");
-    var c = remult.repo(type);
+    var c = await createEntity(type);
     var cat = c.create();
     cat.a = '12';
 
@@ -369,8 +370,8 @@ class testNumbers extends EntityBase {
     a: number;
 }
 
-testAllDbs("test that integer and int work", async ({ remult }) => {
-    let e = await remult.repo(testNumbers).create({
+testAll("test that integer and int work", async ({ createEntity }) => {
+    let e = await (await createEntity(testNumbers)).create({
         id: 1.5,
         a: 1.5
     }).save();
@@ -379,8 +380,8 @@ testAllDbs("test that integer and int work", async ({ remult }) => {
 
 });
 
-testAllDbs("post with logic works and max in entity", async ({ remult }) => {
-    let c = remult.repo(entityWithValidations);
+testAll("post with logic works and max in entity", async ({ remult, createEntity }) => {
+    let c = await createEntity(entityWithValidations);
 
     var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
@@ -418,7 +419,7 @@ testAllDbs("get array works with filter in body", async ({ createData, remult })
         status_in: '[1, 2]'
     });
     d.test();
-});
+}, false);
 testAllDbs("entity order by works", async ({ createData }) => {
 
     let type = class extends newCategories { };
@@ -470,7 +471,7 @@ testAllDbs("put with validation works", async ({ createData, remult }) => {
     expect(x[0].categoryName).toBe('noam 1');
     expect(count).toBe(1);
 });
-testAllDbs("saves correctly to db", async ({ remult }) => {
+testAll("saves correctly to db", async ({ createEntity }) => {
     let type = class extends EntityBase {
         id: number;
         ok: Boolean = false;
@@ -480,7 +481,7 @@ testAllDbs("saves correctly to db", async ({ remult }) => {
         valueType: Number
     })(type.prototype, 'id');
     Field({ valueType: Boolean })(type.prototype, "ok");
-    let r = remult.repo(type).create();
+    let r = (await createEntity(type)).create();
     r.id = 1;
     r.ok = true;
     await r._.save();
