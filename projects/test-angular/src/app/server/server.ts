@@ -95,21 +95,3 @@ serverInit().then(async (dataSource) => {
     app.listen(port);
 });
 
-
-async function test() {
-    let k = knex.default({
-        client: 'pg',
-        connection: process.env.DATABASE_URL
-    });
-    var x = k("tasks").select("id", "name");
-    let z = k.where("a", 1);
-    z.where("b", 2);
-    let qb: Knex.QueryBuilder;
-
-    z.where(async b => {
-        await Promise.resolve();
-        b.where("c", 3);
-    });
-    console.log(z.toSQL().sql)
-}
-test();
