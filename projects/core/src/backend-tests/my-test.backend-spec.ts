@@ -18,38 +18,8 @@ describe("test", () => {
         remult = new Remult(new KnexDataProvider(knex));
 
     });
-    beforeEach(async () => {
-        await knex("tasks").delete();
-    });
-    it("test1", async () => {
-        await knex("tasks").insert({ id: 'a', title: 'noam', completed: false });
-        let z = await knex("tasks").count();
-        expect(z[0].count).toBe('1');
-        expect(await remult.repo(Task).count()).toBe(1);
-        let t = await remult.repo(Task).find();
-        expect(t.length).toBe(1);
-        expect(t[0].id).toBe('a');
-        expect(t[0].title).toBe('noam');
-        expect(t[0].completed).toBe(false);
-    })
-    it("test2", async () => {
-        await knex("tasks").insert({ id: 'a', title: 'noam', completed: false });
-        expect((await remult.repo(Task).find({ where: { id: 'b' } })).length).toBe(0);
-        expect((await remult.repo(Task).find({ where: { id: 'a' } })).length).toBe(1);
-    })
+  
 
 });
-
-@Entity("tasks", {
-    allowApiCrud: true
-})
-export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-}
-
-
 
 

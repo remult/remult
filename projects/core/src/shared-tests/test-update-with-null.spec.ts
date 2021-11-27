@@ -15,8 +15,8 @@ class testNull extends EntityBase {
 
 }
 
-testAll("test that update null works", async ({ remult }) => {
-    let r = await deleteAll( remult.repo(testNull));
+testAll("test that update null works", async ({ createEntity }) => {
+    let r = await createEntity(testNull);
     let i = r.create({ id: 1, myCol: { value: 'abc' } });
     await i.save();
     expect(i.myCol?.value).toBe("abc");
@@ -24,4 +24,4 @@ testAll("test that update null works", async ({ remult }) => {
     expect(i.myCol).toBe(null);
     await i.save();
     expect(i.myCol).toBe(null);
-});
+},false);

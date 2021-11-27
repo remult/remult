@@ -137,7 +137,7 @@ export class PostgresSchemaBuilder {
                 }
 
                 let sql = 'create table ' + await e.getDbName() + ' (' + result + '\r\n)';
-                console.log(sql);
+                //console.log(sql);
                 await this.pool.execute(sql);
             }
         });
@@ -156,7 +156,7 @@ export class PostgresSchemaBuilder {
         WHERE table_name=${cmd.addParameterAndReturnSqlToken((await e.getDbName()).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((await c(e).getDbName()).toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
                 let sql = `alter table ${await e.getDbName()} add column ${postgresColumnSyntax(c(e), await c(e).getDbName())}`;
-                console.log(sql);
+                //console.log(sql);
                 await this.pool.execute(sql);
             }
         }
@@ -177,7 +177,7 @@ export class PostgresSchemaBuilder {
                 if (!await isDbReadonly(col))
                     if (!cols.includes((await col.getDbName()).toLocaleLowerCase())) {
                         let sql = `alter table ${await e.getDbName()} add column ${postgresColumnSyntax(col, await col.getDbName())}`;
-                        console.log(sql);
+                        //console.log(sql);
                         await this.pool.execute(sql);
                     }
             }

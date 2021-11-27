@@ -22,6 +22,7 @@ import { EntityBase, Filter } from '../../../../core';
 import { DataApi } from '../../../../core/src/data-api';
 import { remultExpress } from '../../../../core/server/expressBridge';
 import * as knex from 'knex';
+import { Knex } from 'knex';
 
 
 
@@ -56,7 +57,8 @@ serverInit().then(async (dataSource) => {
     let remultApi = remultExpress({
         dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
-        defaultGetLimit: 5
+        defaultGetLimit: 5,
+        logApiEndPoints: false
     });
 
     app.use(remultApi);
@@ -95,13 +97,19 @@ serverInit().then(async (dataSource) => {
 
 
 async function test() {
-    let database = knex.default({
+    let k = knex.default({
         client: 'pg',
         connection: process.env.DATABASE_URL
     });
-    var x = database("tasks").select("id","name");
-    
-    console.log(await x);
+    var x = k("tasks").select("id", "name");
+    let z = k.where("a", 1);
+    z.where("b", 2);
+    let qb: Knex.QueryBuilder;
 
+    z.where(async b => {
+        await Promise.resolve();
+        b.where("c", 3);
+    });
+    console.log(z.toSQL().sql)
 }
 test();

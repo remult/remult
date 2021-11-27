@@ -263,7 +263,6 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     await this.iAmUsed();
 
     let r = this.sql.createCommand();
-    let f = new FilterConsumerBridgeToSqlRequest(r);
     let cols = '';
     let vals = '';
     let added = false;

@@ -1,5 +1,5 @@
 import { Remult } from "../context";
-import { KnexDataProvider } from '../../remult-knex';
+import { KnexDataProvider, KnexSchemaBuilder } from '../../remult-knex';
 import * as Knex from 'knex';
 import { config } from 'dotenv';
 import { createPostgresConnection, PostgresSchemaBuilder } from "../../postgres";
@@ -8,16 +8,30 @@ import { addDatabaseToTest, dbTestWhatSignature, itWithFocus } from "../shared-t
 config();
 let myKnex = Knex.default({
     client: 'pg',
-    connection: process.env.DATABASE_URL
+    connection: process.env.DATABASE_URL,
+    //   debug:true
 });
 export function testKnexSqlImpl(key: string, what: dbTestWhatSignature, focus = false) {
     itWithFocus(key + " - knex", async () => {
         let db = new KnexDataProvider(myKnex);
         let remult = new Remult(db);
-        await what({ db, remult, createEntity: async (x) => remult.repo(x) });
+        await what({
+            db, remult,
+            createEntity:
+                async (entity: ClassType<any>) => {
+
+                    let repo = remult.repo(entity);
+                    let sb = new KnexSchemaBuilder(myKnex);
+                    await myKnex.schema.dropTableIfExists(await repo.metadata.getDbName());
+                    await sb.createIfNotExist(repo.metadata);
+                    await sb.verifyAllColumns(repo.metadata);
+                    await myKnex(await repo.metadata.getDbName()).delete();
+                    return repo;
+                }
+        });
     }, focus);
 }
-//addDatabaseToTest(testKnexSqlImpl);
+addDatabaseToTest(testKnexSqlImpl);
 let pg = createPostgresConnection({
     autoCreateTables: false
 });
@@ -29,15 +43,17 @@ export function testPostgresImplementation(key: string, what: dbTestWhatSignatur
         let remult = new Remult(db);
 
         await what({
-            db, remult, createEntity: async (entity: ClassType<any>) => {
-                let repo = remult.repo(entity);
-                let sb = new PostgresSchemaBuilder(db);
-                await sb.createIfNotExist(repo.metadata);
-                await sb.verifyAllColumns(repo.metadata);
-                await db.execute("delete from " + await repo.metadata.getDbName());
-
-                return repo;
-            }
+            db, remult,
+            createEntity:
+                async (entity: ClassType<any>) => {
+                    let repo = remult.repo(entity);
+                    let sb = new PostgresSchemaBuilder(db);
+                    await db.execute("drop table if exists " + await repo.metadata.getDbName());
+                    await sb.createIfNotExist(repo.metadata);
+                    await sb.verifyAllColumns(repo.metadata);
+                    await db.execute("delete from " + await repo.metadata.getDbName());
+                    return repo;
+                }
         });
     }, focus);
 }

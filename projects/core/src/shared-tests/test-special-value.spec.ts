@@ -62,8 +62,8 @@ class testGroups extends EntityBase {
     g: GroupsValue;
 }
 
-testAll("test save and load", async ({ remult }) => {
-    let re =await  deleteAll( remult.repo(testGroups));
+testAll("test save and load", async ({ createEntity }) => {
+    let re = await createEntity(testGroups);
     await re.create({ id: 1 }).save();
     let x = await re.findFirst();
     expect(x.g.evilGet()).toBe('');
@@ -72,8 +72,8 @@ testAll("test save and load", async ({ remult }) => {
     await x.save();
     expect(x.g.evilGet()).toBe('xx');
 });
-testAll("test2 save and load", async ({ remult }) => {
-    let re =await  deleteAll( remult.repo(testGroups));
+testAll("test2 save and load", async ({ createEntity }) => {
+    let re = await createEntity(testGroups);
     await re.create({ id: 1, g: new GroupsValue(undefined) }).save();
     let x = await re.findFirst();
     expect(x.g.evilGet()).toBe('');
