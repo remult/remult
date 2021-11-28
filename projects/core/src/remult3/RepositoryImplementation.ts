@@ -418,7 +418,7 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
     if (!r)
         columnsOfType.set(entity, r = []);
 
-    let info = getEntitySettings(entity);
+    let info = getEntitySettings(entity)(remult);
     let key = getEntityKey(entity);
 
 
@@ -429,11 +429,29 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
         if (baseCols) {
             r.unshift(...baseCols.filter(x => !r.find(y => y.key == x.key)));
         }
+
+
+        let baseSettingsFactory = getEntitySettings(base, false);
+        if (baseSettingsFactory) {
+            let baseSettings = baseSettingsFactory(remult);
+            info = { ...baseSettings, ...info };
+            let functions :(keyof EntityOptions)[] = ["saving","saved","deleting","deleted","validation"]
+            for (const key of functions as string[]) {
+                if (baseSettings[key]) {
+                    let x = info[key];
+                    info[key] = (a, b) => {
+                        x(a, b);
+                        baseSettings[key](a, b);
+                    }
+                }
+            }
+
+        }
         base = Object.getPrototypeOf(base);
     }
 
 
-    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info(remult), remult, entity, key);
+    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info, remult, entity, key);
 }
 
 abstract class rowHelperBase<T>
