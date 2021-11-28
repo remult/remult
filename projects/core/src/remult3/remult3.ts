@@ -66,6 +66,9 @@ export interface EntityRef<entityType> {
     readonly apiUpdateAllowed: boolean;
     readonly apiDeleteAllowed: boolean;
     readonly apiInsertAllowed: boolean;
+    // new to talk with Yoni;
+    subscribe(listener: () => void): Unobserve;
+    readonly isLoading:boolean;
 }
 export type Fields<entityType> = {
     [Properties in keyof entityType]: FieldRef<entityType, entityType[Properties]>

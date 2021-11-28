@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, PartialEB } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 
@@ -409,7 +409,12 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
 
 abstract class rowHelperBase<T>
 {
-    error: string;
+    _error: string;
+    get error() { return this._error; }
+    set error(val: string) {
+        this._error = val;
+        this._fire();
+    }
     constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected remult: Remult) {
         for (const col of columnsInfo) {
             let ei = getEntitySettings(col.valueType, false);
@@ -421,14 +426,60 @@ abstract class rowHelperBase<T>
                 Object.defineProperty(instance, col.key, {
                     get: () =>
                         lookup.item,
-                    set: (val) =>
-                        lookup.set(val),
+                    set: (val) => {
+                        lookup.set(val);
+                        this._fire();
+                    },
                     enumerable: true
                 });
                 instance[col.key] = val;
+            } else {
+                let val = instance[col.key];
+                Object.defineProperty(instance, col.key, {
+                    get: () =>
+                        val,
+                    set: (value) => {
+                        val = value;
+                        this._fire();
+                    },
+                    enumerable: true
+                });
+
             }
         }
     }
+    _fire() {
+        if (this._subscribers)
+            this._subscribers.forEach(x => x());
+    }
+    private _subscribers: (() => void)[];
+    subscribe(listener: () => void): Unobserve {
+        if (!this._subscribers) {
+            this._subscribers = [];
+            for (const col of this.columnsInfo) {
+                let ei = getEntitySettings(col.valueType, false);
+
+                if (ei && this.remult) {
+
+                } else {
+                    let val = this.instance[col.key];
+                    Object.defineProperty(this.instance, col.key, {
+                        get: () =>
+                            val,
+                        set: (value) => {
+                            val = value;
+                            this._fire();
+                        },
+                        enumerable: true
+                    });
+
+                }
+            }
+        }
+        this._subscribers.push(listener);
+        return () => this._subscribers = this._subscribers.filter(x => x != listener);
+    }
+    isLoading = false;
     lookups = new Map<string, LookupColumn<any>>();
     async waitLoad() {
         await Promise.all([...this.lookups.values()].map(x => x.waitLoad()));
@@ -576,7 +627,6 @@ abstract class rowHelperBase<T>
 export class rowHelperImplementation<T> extends rowHelperBase<T> implements EntityRef<T> {
 
 
-
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, remult: Remult, private _isNew: boolean) {
         super(info.columnsInfo, instance, remult);
         this.metadata = info;
@@ -649,54 +699,63 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 
     async save(): Promise<T> {
-        await this.__validateEntity();
-        let doNotSave = false;
-        if (this.info.entityInfo.saving) {
-            await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
-        }
-
-        this.__assertValidity();
-
-        let d = this.copyDataToObject();
-        if (this.info.idMetadata.field instanceof CompoundIdField)
-            d.id = undefined;
-        let updatedRow: any;
         try {
-            if (this.isNew()) {
-                updatedRow = await this.edp.insert(d);
+            this.isLoading = true;
+            await this.__validateEntity();
+            let doNotSave = false;
+            if (this.info.entityInfo.saving) {
+                await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
             }
-            else {
-                let changesOnly = {};
-                let wasChanged = false;
-                for (const key in d) {
-                    if (Object.prototype.hasOwnProperty.call(d, key)) {
-                        const element = d[key];
-                        if (element !== this.originalValues[key]) {
-                            changesOnly[key] = element;
-                            wasChanged = true;
-                        }
-                    }
-                }
-                if (!wasChanged)
-                    return this.instance;
-                if (doNotSave) {
-                    updatedRow = (await this.edp.find({ where: this.getIdFilter() }))[0];
+
+            this.__assertValidity();
+
+            let d = this.copyDataToObject();
+            if (this.info.idMetadata.field instanceof CompoundIdField)
+                d.id = undefined;
+            let updatedRow: any;
+            try {
+
+                this._fire();
+                if (this.isNew()) {
+                    updatedRow = await this.edp.insert(d);
                 }
                 else {
+                    let changesOnly = {};
+                    let wasChanged = false;
+                    for (const key in d) {
+                        if (Object.prototype.hasOwnProperty.call(d, key)) {
+                            const element = d[key];
+                            if (element !== this.originalValues[key]) {
+                                changesOnly[key] = element;
+                                wasChanged = true;
+                            }
+                        }
+                    }
+                    if (!wasChanged)
+                        return this.instance;
+                    if (doNotSave) {
+                        updatedRow = (await this.edp.find({ where: this.getIdFilter() }))[0];
+                    }
+                    else {
 
-                    updatedRow = await this.edp.update(this.id, changesOnly);
+                        updatedRow = await this.edp.update(this.id, changesOnly);
+                    }
                 }
-            }
-            await this.loadDataFrom(updatedRow);
-            if (this.info.entityInfo.saved)
-                await this.info.entityInfo.saved(this.instance);
+                await this.loadDataFrom(updatedRow);
+                if (this.info.entityInfo.saved)
+                    await this.info.entityInfo.saved(this.instance);
 
-            this.saveOriginalData();
-            this._isNew = false;
-            return this.instance;
+                this.saveOriginalData();
+                this._isNew = false;
+                return this.instance;
+            }
+            catch (err) {
+                await this.catchSaveErrors(err);
+            }
         }
-        catch (err) {
-            await this.catchSaveErrors(err);
+        finally {
+            this.isLoading = false;
+            this._fire();
         }
 
     }
@@ -861,7 +920,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
 
 }
 export class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
-    constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType>, private rowBase: rowHelperBase<entityType>) {
+    constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType> , private rowBase: rowHelperBase<entityType>) {
 
     }
     valueIsNull(): boolean {
@@ -899,6 +958,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         if (!this.rowBase.errors)
             this.rowBase.errors = {};
         this.rowBase.errors[this.metadata.key] = error;
+        this.rowBase._fire();
     }
     get displayValue(): string {
         if (this.value != undefined) {
