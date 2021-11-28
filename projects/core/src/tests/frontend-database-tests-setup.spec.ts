@@ -15,6 +15,8 @@ export function testWebSqlImpl(key: string, what: dbTestWhatSignature, focus = f
       switch (r.name) {
         case "__WebKitDatabaseInfoTable__":
           break;
+        case "sqlite_sequence":
+          break;
         default:
           await sql.execute("drop table if exists " + r.name);
       }

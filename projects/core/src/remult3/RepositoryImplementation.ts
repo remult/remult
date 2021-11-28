@@ -730,6 +730,17 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             this.__assertValidity();
 
             let d = this.copyDataToObject();
+            let ignoreKeys = [];
+            for (const field of this.metadata.fields) {
+                if (field.dbReadOnly || field == this.metadata.idMetadata.field && this.metadata.options.dbAutoIncrementId) {
+                    d[field.key] = undefined;
+                    ignoreKeys.push(field.key);
+                    let f = this.fields.find(field);
+                    f.value = f.originalValue;
+
+                }
+            }
+
             if (this.info.idMetadata.field instanceof CompoundIdField)
                 d.id = undefined;
             let updatedRow: any;
@@ -745,7 +756,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                     for (const key in d) {
                         if (Object.prototype.hasOwnProperty.call(d, key)) {
                             const element = d[key];
-                            if (element !== this.originalValues[key]) {
+                            if (element !== this.originalValues[key] && !ignoreKeys.includes(key)) {
                                 changesOnly[key] = element;
                                 wasChanged = true;
                             }

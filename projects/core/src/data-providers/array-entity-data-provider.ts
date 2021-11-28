@@ -1,7 +1,7 @@
 import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { customDatabaseFilterToken, Filter, FilterConsumer } from '../filter/filter-interfaces';
 import { FieldMetadata } from '../column-interfaces';
-import { EntityMetadata,  EntityFilter } from '../remult3';
+import { EntityMetadata, EntityFilter } from '../remult3';
 import { CompoundIdField } from '../column';
 import { Sort } from '../sort';
 
@@ -128,7 +128,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
             if (idMatches(r)) {
                 let newR = { ...r };
                 for (const f of this.entity.fields) {
-                    if (!f.dbReadOnly && !f.isServerExpression) {
+                    if (!f.dbReadOnly && !f.isServerExpression && !(f == this.entity.idMetadata.field && this.entity.options.dbAutoIncrementId)) {
                         if (keys.includes(f.key)) {
                             newR[f.key] = f.valueConverter.toJson(data[f.key]);
                         }
@@ -279,7 +279,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
         if (s.toLowerCase().indexOf(val) < 0)
             this.ok = false;
     }
-   
+
 }
 
 

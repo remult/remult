@@ -50,7 +50,7 @@ testAll("entity with different id column still works well", async ({ createEntit
     await c._.save();
     expect(c.name).toBe('yael');
     expect((await s.find()).length).toBe(1);
-},false);
+}, false);
 
 testAll("empty find works", async ({ remult, createEntity }) => {
     let c = (await createEntity(newCategories)).create();
@@ -155,7 +155,7 @@ testAll("test tasks", async ({ createEntity }) => {
     expect(await c.count({ completed: false })).toBe(2);
     expect(await c.count({ completed: { $ne: true } })).toBe(2);
     expect(await c.count({ completed: true })).toBe(2);
-},false);
+}, false);
 testAll("test filtering of null/''", async ({ createEntity }) => {
     let repo = await createEntity(h);
     let a = await repo.create({ id: 'a' }).save();
@@ -305,7 +305,7 @@ testAllDbs("test filter packer", async ({ insertFourRows }) => {
     expect(rows[0].id).toBe(2);
     rows = await r.find({ where: Filter.entityFilterFromJson(r.metadata, entityFilterToJson(r.metadata, { id: { $ne: [2, 4] } })) });
     expect(rows.length).toBe(2);
-},false);
+}, false);
 testAll("Test unique Validation,", async ({ createEntity }) => {
     let type = class extends newCategories {
         a: string
@@ -443,7 +443,7 @@ testAllDbs("entity order by works", async ({ createData }) => {
     expect(x[0].id).toBe(1);
     expect(x[1].id).toBe(3);
     expect(x[2].id).toBe(2);
-},false)
+}, false)
 testAllDbs("put with validation works", async ({ createData, remult }) => {
     let count = 0;
     let type = class extends newCategories { };
@@ -496,7 +496,26 @@ testAll("saves correctly to db", async ({ createEntity }) => {
     expect(r.ok).toBe(false);
 });
 
+@Entity("autoi", { allowApiCrud: true, dbAutoIncrementId: true })
+class autoIncrement extends EntityBase {
+    @IntegerField()
+    id: number;
+    @IntegerField()
+    stam: number;
+}
 
+testAll("auto increment can't be affected by insert or update", async ({ createEntity }) => { 
+    let repo = await createEntity(autoIncrement);
+    let r = await repo.create({id:1234,stam:1}).save();
+    let x = r.id;
+    expect(x==1234).toBe(false);
+    
+    r.id = 4321;
+    await r.save();
+    expect(r.id).toBe(x);
+
+
+},false)
 
 
 
@@ -546,3 +565,4 @@ class p extends EntityBase {
         super();
     }
 }
+
