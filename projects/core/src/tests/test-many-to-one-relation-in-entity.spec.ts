@@ -128,7 +128,7 @@ describe("many to one relation", () => {
         let category = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         let p = await remult.repo(Products).create({ name: 'p1' }).save();
         expect(p.category).toBeNull();
-         p = await remult.repo(Products).save({ id: 0, category });
+        p = await remult.repo(Products).save({ id: 0, category });
         expect(p.category.id).toBe(1);
         expect(p.name).toBe('p1');
     });
@@ -415,6 +415,55 @@ describe("many to one relation", () => {
         expect(fetches).toBe(1);
         p._.toApiJson();
         expect(fetches).toBe(1);
+    });
+    it("test that not too many reads are made when getting multiple entities", async () => {
+        let mem = new InMemoryDataProvider();
+        let remult = new Remult(mem);
+
+        await remult.repo(Products).create({
+            id: 10,
+            name: "prod 10",
+            category: await remult.repo(Categories).create({
+                id: 1, name: 'cat 1'
+            }).save()
+        }).save();
+        await remult.repo(Products).create({
+            id: 11,
+            name: "prod 11",
+            category: await remult.repo(Categories).create({
+                id: 2, name: 'cat 2'
+            }).save()
+        }).save();
+        await remult.repo(Products).create({
+            id: 12,
+            name: "prod 12",
+            category: await remult.repo(Categories).create({
+                id: 3, name: 'cat 3'
+            }).save()
+        }).save();
+        let fetches = 0;
+        remult = new Remult();
+        remult.setDataProvider({
+            transaction: undefined,
+            getEntityDataProvider: e => {
+                let r = mem.getEntityDataProvider(e);
+                return {
+                    find: x => {
+                        fetches++;
+                        return r.find(x);
+                    }, count: r.count, delete: r.delete, insert: r.insert, update: r.update
+                }
+
+            }
+        });
+        let r= await remult.repo(Products).find({ load: x => [x.category] });
+        expect(fetches).toBe(2);
+        for (const z of r) {
+            await z.$.category.load();
+        }
+        expect(fetches).toBe(2);
+
+
     });
     it("test update only updates what's needed", async () => {
         let mem = new InMemoryDataProvider();
@@ -710,5 +759,5 @@ describe("Test entity relation and count finds", () => {
         done.test();
         expect(fetches).toBe(1);
     });
-  
+
 });

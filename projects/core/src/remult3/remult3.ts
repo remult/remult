@@ -111,7 +111,7 @@ export interface FieldRef<entityType = any, valueType = any> {
 export interface IdMetadata<entityType = any> {
 
     field: FieldMetadata<any>;
-    getIdFilter(id: any): EntityFilter<entityType>;
+    getIdFilter(...ids: any[]): EntityFilter<entityType>;
     isIdField(col: FieldMetadata): boolean;
     createIdInFilter(items: entityType[]): EntityFilter<entityType>;
 

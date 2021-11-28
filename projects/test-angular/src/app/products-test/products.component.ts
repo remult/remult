@@ -27,25 +27,44 @@ export class ProductsComponent implements OnInit {
 
   }
   ngOnInit(): void {
-
+    this.remult.repo(stam).find();
   }
+  async click() {
+    let s = this.remult.repo(stam);
+    let t = this.remult.repo(TestId);
+    for (const i of [...await s.find(), ...await t.find()]) {
+      await i.delete();
+    }
+    for (let index = 0; index < 10; index++) {
 
-  grid = new GridSettings(this.remult.repo(TestId), {
-    allowCrud: true, gridButtons: [{
-      name: "create",
-      click: () => ProductsComponent.createMany() 
-    }]
-  });
-  @BackendMethod({ allowed: true })
-  static async createMany(remult?: Remult) {
-    for (let index = 0; index < 500; index++) {
-      await remult.repo(TestId).create({ name: 'test' }).save();
+      await s.create({
+        name: index + '',
+        testId: await t.create({
+          id: index,
+          name: index + ''
+        }).save()
+      }).save();
 
     }
   }
+
 }
 
 
+
+@Entity("testId", {
+  allowApiCrud: true,
+  dbAutoIncrementId: true
+})
+export class TestId extends EntityBase {
+  @IntegerField({
+    dbReadOnly: true
+  })
+  id: number;
+  @Field()
+  name: string;
+
+}
 @Entity<stam>('stam', {
   allowApiCrud: true,
   saving: self => {
@@ -65,6 +84,8 @@ export class stam extends IdEntity {
 
   @Field({ serverExpression: () => 'noam' })
   test: string = '';
+  @Field()
+  testId: TestId;
 
   @BackendMethod({ allowed: true })
   async myMethod(remult?: Remult) {
@@ -73,16 +94,3 @@ export class stam extends IdEntity {
 }
 
 
-@Entity("testId", {
-  allowApiCrud: true,
-  dbAutoIncrementId: true
-})
-export class TestId extends EntityBase {
-  @IntegerField({
-    dbReadOnly: true
-  })
-  id: number;
-  @Field()
-  name: string;
-
-}

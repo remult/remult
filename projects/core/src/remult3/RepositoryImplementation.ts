@@ -64,6 +64,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
     idCache = new Map<any, any>();
     getCachedById(id: any): entityType {
+        id = id + '';
         this.getCachedByIdAsync(id);
         let r = this.idCache.get(id);
         if (r instanceof Promise)
@@ -71,7 +72,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return r;
     }
     async getCachedByIdAsync(id: any): Promise<entityType> {
-
+        id = id + '';
         let r = this.idCache.get(id);
         if (r instanceof Promise)
             return await r;
@@ -93,7 +94,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
     addToCache(item: entityType) {
         if (item)
-            this.idCache.set(this.getEntityRef(item).getId(), item);
+            this.idCache.set(this.getEntityRef(item).getId() + '', item);
     }
 
 
@@ -192,6 +193,34 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let loadFields: FieldMetadata[] = undefined;
         if (options.load)
             loadFields = options.load(this.metadata.fields);
+
+        for (const col of this.metadata.fields) {
+            let ei = getEntitySettings(col.valueType, false);
+
+            if (ei) {
+                let load = !col.options.lazy;
+                if (loadFields !== undefined)
+                    load = loadFields.includes(col);
+                if (load) {
+                    let repo = this.remult.repo(col.valueType) as RepositoryImplementation<any>;
+                    let toLoad = [];
+                    for (const r of rawRows) {
+                        let val = r[col.key];
+                        if (val !== undefined && val !== null && !toLoad.includes(val) && !repo.idCache.has(val)) {
+                            toLoad.push(val);
+                        }
+                    }
+                    if (toLoad.length > 0) {
+                        let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
+                        for (const r of rows) {
+                            repo.addToCache(r)
+                        }
+                    }
+                }
+
+            }
+        }
+
         let result = await Promise.all(rawRows.map(async r =>
             await this.mapRawDataToResult(r, loadFields)
         ));
@@ -434,16 +463,7 @@ abstract class rowHelperBase<T>
                 });
                 instance[col.key] = val;
             } else {
-                let val = instance[col.key];
-                Object.defineProperty(instance, col.key, {
-                    get: () =>
-                        val,
-                    set: (value) => {
-                        val = value;
-                        this._fire();
-                    },
-                    enumerable: true
-                });
+
 
             }
         }
@@ -920,7 +940,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
 
 }
 export class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
-    constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType> , private rowBase: rowHelperBase<entityType>) {
+    constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType>, private rowBase: rowHelperBase<entityType>) {
 
     }
     valueIsNull(): boolean {
@@ -1213,11 +1233,19 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         isIdField: (col: FieldMetadata<any>): boolean => {
             return col.key == this.idMetadata.field.key;
         },
-        getIdFilter: (id: any): EntityFilter<any> => {
-            if (this.idMetadata.field instanceof CompoundIdField)
-                return this.idMetadata.field.isEqualTo(id);
+        getIdFilter: (...ids: any[]): EntityFilter<any> => {
+            if (this.idMetadata.field instanceof CompoundIdField) {
+                let field = this.idMetadata.field;
+                return {
+                    $or: ids.map(x => field.isEqualTo(x))
+                }
+            }
+            if (ids.length == 1)
+                return {
+                    [this.idMetadata.field.key]: ids[0]
+                }
             else return {
-                [this.idMetadata.field.key]: id
+                [this.idMetadata.field.key]: ids
             }
 
         }
