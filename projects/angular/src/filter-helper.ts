@@ -51,7 +51,7 @@ export class FilterHelper<rowType> {
           f = { $gte: v, $lt: (new Date(v.getFullYear(), v.getMonth(), v.getDate() + 1)) };
         }
       }
-      let w = { [c.key]: val } as EntityFilter<any>;
+      let w = { [c.key]: f } as EntityFilter<any>;
       if (opt.where) {
         let x = opt.where;
         opt.where = { $and: [x, w] } as EntityFilter<any>;

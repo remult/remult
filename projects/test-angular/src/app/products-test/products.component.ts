@@ -26,6 +26,7 @@ export class ProductsComponent implements OnInit {
   constructor(private remult: Remult) {
 
   }
+  grid = new GridSettings(this.remult.repo(stam));
   ngOnInit(): void {
     this.remult.repo(stam).find();
   }
