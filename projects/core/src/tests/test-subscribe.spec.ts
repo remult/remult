@@ -26,13 +26,15 @@ describe("test subscribe", () => {
         });
         i.title = 'a';
         expect(state.title).toBe('a');
+        i.title='ab';
+        expect(state.title).toBe("ab");
         expect(state.wasChanged).toBe(true);
         expect(state.isNew).toBe(true);
         let x =  i.save();
         expect(i._.isLoading).toBe(true);
         await x;
         expect(i._.isLoading).toBe(false);
-        expect(state.title).toBe('a');
+        expect(state.title).toBe('ab');
         expect(state.wasChanged).toBe(false);
         expect(state.isNew).toBe(false);
         i.$.title.error = 'error';
