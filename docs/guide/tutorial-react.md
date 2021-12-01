@@ -964,7 +964,7 @@ In this section, we'll be using the following packages:
    import { AuthService } from "./AuthService";
    
    axios.interceptors.request.use(config => {
-       const token = AuthService.fromStorage();;
+       const token = AuthService.fromStorage();
        if (token)
            config.headers!["Authorization"] = "Bearer " + token;
        return config;
