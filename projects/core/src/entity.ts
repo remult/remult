@@ -1,7 +1,7 @@
 import { Allowed, Remult, AllowedForInstance } from "./context";
 
 import { FieldMetadata as FieldMetadata } from './column-interfaces';
-import { EntityOrderBy, FieldsMetadata,  EntityFilter } from "./remult3";
+import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef } from "./remult3";
 
 
 
@@ -79,6 +79,7 @@ export interface EntityOptions<entityType = any> {
   deleted?: (row: entityType) => Promise<any> | any
 
   validation?: (e: entityType) => Promise<any> | any;
+  entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void;
 
 }
 

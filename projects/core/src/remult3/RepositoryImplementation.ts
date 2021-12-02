@@ -435,7 +435,7 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
         if (baseSettingsFactory) {
             let baseSettings = baseSettingsFactory(remult);
             info = { ...baseSettings, ...info };
-            let functions :(keyof EntityOptions)[] = ["saving","saved","deleting","deleted","validation"]
+            let functions: (keyof EntityOptions)[] = ["saving", "saved", "deleting", "deleted", "validation"]
             for (const key of functions as string[]) {
                 if (baseSettings[key]) {
                     let x = info[key];
@@ -457,10 +457,13 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
 abstract class rowHelperBase<T>
 {
     _error: string;
-    get error() { return this._error; }
+    get error() {
+        this._reportObserved();
+        return this._error;
+    }
     set error(val: string) {
         this._error = val;
-        this._fire();
+        this._reportChanged();
     }
     constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected remult: Remult) {
         for (const col of columnsInfo) {
@@ -471,11 +474,14 @@ abstract class rowHelperBase<T>
                 this.lookups.set(col.key, lookup);
                 let val = instance[col.key];
                 Object.defineProperty(instance, col.key, {
-                    get: () =>
-                        lookup.item,
+                    get: () => {
+                        this._reportObserved();
+                        return lookup.item;
+
+                    },
                     set: (val) => {
                         lookup.set(val);
-                        this._fire();
+                        this._reportChanged();
                     },
                     enumerable: true
                 });
@@ -486,12 +492,35 @@ abstract class rowHelperBase<T>
             }
         }
     }
-    _fire() {
+    _reportChanged() {
         if (this._subscribers)
-            this._subscribers.forEach(x => x());
+            this._subscribers.forEach(x => x.reportChanged());
     }
-    private _subscribers: (() => void)[];
-    subscribe(listener: () => void): Unobserve {
+    _reportObserved() {
+        if (this._subscribers)
+            this._subscribers.forEach(x => x.reportObserved());
+    }
+    private _subscribers: {
+        reportChanged: () => void,
+        reportObserved: () => void
+    }[];
+    subscribe(listener: (() => void) | {
+        reportChanged: () => void,
+        reportObserved: () => void
+    }): Unobserve {
+
+        let list: {
+            reportChanged: () => void,
+            reportObserved: () => void
+        };
+        if (typeof listener === "function")
+            list = {
+                reportChanged: () => listener(),
+                reportObserved: () => { }
+            }
+        else
+            list = listener;
+
         if (!this._subscribers) {
             this._subscribers = [];
             for (const col of this.columnsInfo) {
@@ -502,11 +531,13 @@ abstract class rowHelperBase<T>
                 } else {
                     let val = this.instance[col.key];
                     Object.defineProperty(this.instance, col.key, {
-                        get: () =>
-                            val,
+                        get: () => {
+                            this._reportObserved();
+                            return val;
+                        },
                         set: (value) => {
                             val = value;
-                            this._fire();
+                            this._reportChanged();
                         },
                         enumerable: true
                     });
@@ -514,10 +545,19 @@ abstract class rowHelperBase<T>
                 }
             }
         }
-        this._subscribers.push(listener);
+        this._subscribers.push(list);
         return () => this._subscribers = this._subscribers.filter(x => x != listener);
     }
-    isLoading = false;
+    _isLoading = false;
+    get isLoading() {
+        this._reportObserved();
+        return this._isLoading;
+    }
+    set isLoading(val: boolean) {
+        this._isLoading = val;
+        this._reportChanged();
+    }
+
     lookups = new Map<string, LookupColumn<any>>();
     async waitLoad() {
         await Promise.all([...this.lookups.values()].map(x => x.waitLoad()));
@@ -572,8 +612,10 @@ abstract class rowHelperBase<T>
     __clearErrors() {
         this.errors = undefined;
         this.error = undefined;
+        this._reportChanged();
     }
     hasErrors(): boolean {
+        this._reportObserved();
         return !!!this.error && this.errors == undefined;
 
     }
@@ -681,6 +723,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
             }
         }
+        if (this.info.options.entityRefInit)
+            this.info.options.entityRefInit(this, instance);
+        if (Remult.entityRefInit)
+            Remult.entityRefInit(this, instance);
     }
     get apiUpdateAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiUpdate) }
     get apiDeleteAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiDelete) }
@@ -701,12 +747,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
     wasDeleted(): boolean {
+        this._reportObserved();
         return this._wasDeleted;
     }
 
     undoChanges() {
         this.loadDataFrom(this.originalValues);
         this.__clearErrors();
+        this._reportChanged();
     }
     async reload(): Promise<T> {
         await this.edp.find({ where: this.getIdFilter() }).then(async newData => {
@@ -714,6 +762,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             this.saveOriginalData();
 
         });
+        this._reportChanged();
         return this.instance;
     }
 
@@ -764,7 +813,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let updatedRow: any;
             try {
 
-                this._fire();
+                this._reportChanged();
                 if (this.isNew()) {
                     updatedRow = await this.edp.insert(d);
                 }
@@ -804,7 +853,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         }
         finally {
             this.isLoading = false;
-            this._fire();
+            this._reportChanged();
         }
 
     }
@@ -878,9 +927,11 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 
     isNew(): boolean {
+        this._reportObserved();
         return this._isNew;
     }
     wasChanged(): boolean {
+        this._reportObserved();
         for (const col of this.fields) {
             if (col.valueChanged())
                 return true;
@@ -973,6 +1024,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
 
     }
     valueIsNull(): boolean {
+        this.rowBase._reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
             return lu.id === undefined || lu.id === null;
@@ -980,6 +1032,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         return this.value === null;
     }
     originalValueIsNull(): boolean {
+        this.rowBase._reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         return this.rawOriginalValue() === null;
     }
@@ -999,6 +1052,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
 
 
     get error(): string {
+        this.rowBase._reportObserved();
         if (!this.rowBase.errors)
             return undefined;
         return this.rowBase.errors[this.metadata.key];
@@ -1007,9 +1061,10 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         if (!this.rowBase.errors)
             this.rowBase.errors = {};
         this.rowBase.errors[this.metadata.key] = error;
-        this.rowBase._fire();
+        this.rowBase._reportChanged();
     }
     get displayValue(): string {
+        this.rowBase._reportObserved();
         if (this.value != undefined) {
             if (this.settings.displayValue)
                 return this.settings.displayValue(this.container, this.value);
@@ -1023,6 +1078,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     get value() { return this.container[this.metadata.key] };
     set value(value: any) { this.container[this.metadata.key] = value };
     get originalValue(): any {
+        this.rowBase._reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu)
             return lu.get(this.rawOriginalValue());
@@ -1033,6 +1089,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     }
 
     get inputValue(): string {
+        this.rowBase._reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu)
             return lu.id != undefined ? lu.id.toString() : null;
@@ -1047,6 +1104,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
             this.value = this.metadata.valueConverter.fromInput(val, this.settings.inputType);
     };
     valueChanged(): boolean {
+        this.rowBase._reportObserved();
         let val = this.value;
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {

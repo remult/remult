@@ -3,7 +3,7 @@ import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
 import { Action, actionInfo } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { Repository } from "./remult3";
+import { EntityRef, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 
@@ -101,6 +101,7 @@ export class Remult {
     clearAllCache(): any {
         this.repCache.clear();
     }
+    static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
 
     authenticated() {
         return this.user.id !== undefined;
