@@ -49,6 +49,7 @@
     "@types/mssql": "^4.0.10",
     "@types/pg": "^7.4.11",
     "axios": "^0.22.0",
+    "class-validator": "^0.13.2",
     "convert-csv-to-array": "^1.0.3",
     "core-js": "^2.5.4",
     "cors": "^2.8.5",

@@ -78,7 +78,7 @@ export interface EntityOptions<entityType = any> {
   /** Will be called after an Entity is deleted */
   deleted?: (row: entityType) => Promise<any> | any
 
-  validation?: (e: entityType) => Promise<any> | any;
+  validation?: (row: entityType, ref: EntityRef<entityType>) => Promise<any> | any;
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void;
 
 }

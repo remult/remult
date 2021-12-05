@@ -17,6 +17,26 @@ import { assign } from "../../assign";
 import { Paginator } from ".";
 
 
+let classValidatorValidate: ((item: any, ref: {
+    fields: Fields<any>
+}) => Promise<void>) | undefined = undefined;
+import("class-validator")
+    .then((v) => {
+        classValidatorValidate = (item, ref) => {
+            return v.validate(item).then(errors => {
+                for (const err of errors) {
+                    for (const key in err.constraints) {
+                        if (Object.prototype.hasOwnProperty.call(err.constraints, key)) {
+                            const element = err.constraints[key];
+                            ref.fields.find(err.property).error = element;
+                        }
+                    }
+                }
+            });
+        }
+    })
+    .catch(() => {
+    });
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
     async createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>> {
@@ -645,13 +665,16 @@ abstract class rowHelperBase<T>
     }
     async validate() {
         this.__clearErrors();
+        if (classValidatorValidate)
+            await classValidatorValidate(this.instance, this);
         await this.__performColumnAndEntityValidations();
         let r = this.hasErrors();
         return r;
     }
     async __validateEntity() {
         this.__clearErrors();
-
+        if (classValidatorValidate)
+            await classValidatorValidate(this.instance, this);
         await this.__performColumnAndEntityValidations();
         this.__assertValidity();
     }
@@ -948,7 +971,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         }
 
         if (this.info.entityInfo.validation)
-            await this.info.entityInfo.validation(this.instance);
+            await this.info.entityInfo.validation(this.instance, this);
         if (this.repository.listeners)
             for (const listener of this.repository.listeners.filter(x => x.validating)) {
                 await listener.validating(this.instance);
