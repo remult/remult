@@ -93,7 +93,7 @@ app.listen(3002, () => console.log("Server started"));
 ```
 * see [createKnexDataProvider Function](#createknexdataprovider-function)
 
-## Using MongoDB
+## MongoDB
 ```sh
 npm i mongodb
 ```
