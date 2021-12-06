@@ -228,7 +228,7 @@ app.listen(3002, () => console.log("Server started"));
 
 * Note that if no `dataProvider`  is provided to `remultExpress` this db will be used as the default
 
-## Frontend Database
+## Frontend Databases
 Although the common use case of `Remult` on the front end, is to call the backend using rest api, in some use cases using a local in browser database can be useful.
 
 ### Local Storage
