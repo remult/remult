@@ -17,11 +17,11 @@ export class KnexDataProvider implements DataProvider {
     }
     async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
         let t = await this.knex.transaction();
-        try{
+        try {
             await action(new KnexDataProvider(t));
             await t.commit();
         }
-        catch{
+        catch {
             await t.rollback();
         }
 
@@ -68,6 +68,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
                 column: await s.field.getDbName(),
                 order: s.isDescending ? "desc" : "asc"
             }))));
+        }
+        if (options.limit) {
+            query = query.limit(options.limit);
+            if (options.page)
+                query = query.offset((options.page - 1) * options.limit);
         }
         const r = await query;
 
@@ -117,7 +122,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
                 }
             }
         }
-        
+
 
         let where = await f.resolveWhere();
         await this.knex(await this.entity.getDbName()).update(updateObject).where(b => where.forEach(w => w(b)));
