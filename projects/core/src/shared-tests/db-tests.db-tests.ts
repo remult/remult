@@ -504,18 +504,19 @@ class autoIncrement extends EntityBase {
     stam: number;
 }
 
-testAll("auto increment can't be affected by insert or update", async ({ createEntity }) => { 
+testAll("auto increment can't be affected by insert or update", async ({ createEntity }) => {
     let repo = await createEntity(autoIncrement);
-    let r = await repo.create({id:1234,stam:1}).save();
+    let r = await repo.create({ id: 1234, stam: 1 }).save();
     let x = r.id;
-    expect(x==1234).toBe(false);
-    
+    expect(x == 1234).toBe(false);
+
     r.id = 4321;
     await r.save();
     expect(r.id).toBe(x);
 
 
-},false)
+}, false)
+
 
 
 

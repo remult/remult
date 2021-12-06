@@ -4,7 +4,7 @@ import * as Knex from 'knex';
 import { config } from 'dotenv';
 import { createPostgresConnection, PostgresSchemaBuilder } from "../../postgres";
 import { ClassType } from "../../classType";
-import { addDatabaseToTest, dbTestWhatSignature, itWithFocus } from "../shared-tests/db-tests-setup";
+import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll } from "../shared-tests/db-tests-setup";
 config();
 let myKnex = Knex.default({
     client: 'pg',
@@ -59,3 +59,13 @@ export function testPostgresImplementation(key: string, what: dbTestWhatSignatur
 }
 addDatabaseToTest(testPostgresImplementation);
 import '../shared-tests'
+import { Categories } from "../tests/remult-3-entities";
+
+testAll("transactions", async ({ db, createEntity }) => {
+    let x = await createEntity(Categories);
+
+    await db.transaction(async db => {
+        let remult = new Remult(db);
+        expect(await remult.repo(Categories).count()).toBe(0);
+    });
+});

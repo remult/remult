@@ -15,8 +15,17 @@ export class KnexDataProvider implements DataProvider {
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
         return new KnexEntityDataProvider(entity, this.knex);
     }
-    transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
-        throw new Error("Method not implemented.");
+    async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
+        let t = await this.knex.transaction();
+        try{
+            await action(new KnexDataProvider(t));
+            await t.commit();
+        }
+        catch{
+            await t.rollback();
+        }
+
+
     }
     supportsCustomFilter?: boolean;
 
