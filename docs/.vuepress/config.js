@@ -77,7 +77,8 @@ module.exports = {
           children: [
             'entity-relations',
             'backendMethods',
-            'field-types'
+            'field-types',
+            'databases'
           ]
         },
         {
@@ -87,6 +88,7 @@ module.exports = {
             'rest-api',
             'adding-postgres',
             'adding-knex',
+            'adding-mongodb',
             'adding-swagger',
             'adding-graphql',
             'lazy-loading-of-related-entities',
