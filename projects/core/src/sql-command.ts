@@ -1,7 +1,6 @@
 import { EntityMetadata } from './remult3';
 
 export interface SqlImplementation {
-    insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityMetadata<any>):Promise<any>;
     getLimitSqlSyntax(limit: number, offset: number);
     createCommand(): SqlCommand;
     transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;

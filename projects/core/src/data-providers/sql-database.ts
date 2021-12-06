@@ -46,7 +46,6 @@ export class SqlDatabase implements DataProvider {
           getLimitSqlSyntax: this.sql.getLimitSqlSyntax,
           entityIsUsedForTheFirstTime: y => x.entityIsUsedForTheFirstTime(y),
           transaction: z => x.transaction(z),
-          insertAndReturnAutoIncrementId: x.insertAndReturnAutoIncrementId
         }));
       }
       finally {
@@ -136,19 +135,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     await this.iAmUsed();
 
-    let select = 'select ';
-    let colKeys: FieldMetadata[] = [];
-    for (const x of this.entity.fields) {
-      if (x.isServerExpression) {
 
-      }
-      else {
-        if (colKeys.length > 0)
-          select += ', ';
-        select += await x.getDbName();
-        colKeys.push(x);
-      }
-    }
+    let { colKeys, select } = await this.buildSelect();
+    select = 'select ' + select;
 
     select += '\n from ' + await this.entity.getDbName();
     let r = this.sql.createCommand();
@@ -197,19 +186,39 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     return r.execute(select).then(r => {
       return r.rows.map(y => {
-        let result: any = {};
-        for (let index = 0; index < colKeys.length; index++) {
-          const col = colKeys[index];
-          try {
-            result[col.key] = col.valueConverter.fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
-          }
-          catch (err) {
-            throw new Error("Failed to load from db:" + col.key + "\r\n" + err);
-          }
-        }
-        return result;
+        return this.buildResultRow(colKeys, y, r);
       });
     });
+  }
+
+  private buildResultRow(colKeys: FieldMetadata<any>[], y: any, r: SqlResult) {
+    let result: any = {};
+    for (let index = 0; index < colKeys.length; index++) {
+      const col = colKeys[index];
+      try {
+        result[col.key] = col.valueConverter.fromDb(y[r.getColumnKeyInResultForIndexInSelect(index)]);
+      }
+      catch (err) {
+        throw new Error("Failed to load from db:" + col.key + "\r\n" + err);
+      }
+    }
+    return result;
+  }
+
+  private async buildSelect() {
+    let select = '';
+    let colKeys: FieldMetadata[] = [];
+    for (const x of this.entity.fields) {
+      if (x.isServerExpression) {
+      }
+      else {
+        if (colKeys.length > 0)
+          select += ', ';
+        select += await x.getDbName();
+        colKeys.push(x);
+      }
+    }
+    return { colKeys, select };
   }
 
   async update(id: any, data: any): Promise<any> {
@@ -221,12 +230,11 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let statement = 'update ' + await this.entity.getDbName() + ' set ';
     let added = false;
-    let resultFilter = this.entity.idMetadata.getIdFilter(id);
-    if (data.id != undefined)
-      resultFilter = this.entity.idMetadata.getIdFilter(data.id);
+    
+    
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
-        resultFilter = x.resultIdFilter(id, data);
+        
       } if (await isDbReadonly(x)) { }
       else if (data[x.key] !== undefined) {
         let v = x.valueConverter.toDb(data[x.key]);
@@ -242,9 +250,11 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     }
 
     statement += await f.resolveWhere();
-
-    return r.execute(statement).then(() => {
-      return this.find({ where: Filter.fromEntityFilter(this.entity, resultFilter) }).then(y => y[0]);
+    let { colKeys, select } = await this.buildSelect();
+    statement += ' returning ' + select;
+    
+    return r.execute(statement).then(sqlResult => {
+      return this.buildResultRow(colKeys, sqlResult.rows[0], sqlResult) ;
     });
 
 
@@ -266,11 +276,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let cols = '';
     let vals = '';
     let added = false;
-    let resultFilter: Filter;
-    if (this.entity.idMetadata.field instanceof CompoundIdField)
-      resultFilter = this.entity.idMetadata.field.resultIdFilter(undefined, data);
-    else
-      resultFilter = Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(data[this.entity.idMetadata.field.key]));
+
     for (const x of this.entity.fields) {
 
       if (await isDbReadonly(x)) { }
@@ -293,14 +299,11 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
     let statement = `insert into ${await this.entity.getDbName()} (${cols}) values (${vals})`;
-    if (this.entity.options.dbAutoIncrementId) {
-      let newId = await this.strategy.insertAndReturnAutoIncrementId(r, statement, this.entity);
-      resultFilter = new Filter(x => x.isEqualTo(this.entity.idMetadata.field, newId));
-    }
-    else await r.execute(statement);
-    return this.find({ where: resultFilter }).then(y => {
-      return y[0];
-    });
+
+    let { colKeys, select } = await this.buildSelect();
+    statement += ' returning ' + select;
+    return await r.execute(statement).then(sql=>this.buildResultRow(colKeys,sql.rows[0],sql));
+
   }
 }
 export async function isDbReadonly(x: FieldMetadata) {

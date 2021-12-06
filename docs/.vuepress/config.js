@@ -86,6 +86,7 @@ module.exports = {
           children: [
             'rest-api',
             'adding-postgres',
+            'adding-knex',
             'adding-swagger',
             'adding-graphql',
             'lazy-loading-of-related-entities',

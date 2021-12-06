@@ -30,12 +30,7 @@ export class PostgresDataProvider implements SqlImplementation {
     }
     constructor(private pool: PostgresPool) {
     }
-    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityMetadata) {
-        let r = await command.execute(insertStatementString);
-
-        r = await this.createCommand().execute("SELECT currval(pg_get_serial_sequence('" + await entity.getDbName() + "','" + await entity.idMetadata.field.getDbName() + "'));");
-        return +r.rows[0].currval;
-    }
+    
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
         let client = await this.pool.connect();
 
@@ -45,7 +40,6 @@ export class PostgresDataProvider implements SqlImplementation {
                 createCommand: () => new PostgresBridgeToSQLCommand(client),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
-                insertAndReturnAutoIncrementId: this.insertAndReturnAutoIncrementId,
                 getLimitSqlSyntax: this.getLimitSqlSyntax
             });
             await client.query('COMMIT');

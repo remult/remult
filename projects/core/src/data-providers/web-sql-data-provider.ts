@@ -19,10 +19,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-    async insertAndReturnAutoIncrementId(command: SqlCommand, insertStatementString: string, entity: EntityMetadata) {
-        let r = <WebSqlBridgeToSQLQueryResult>await command.execute(insertStatementString);
-        return r.r.insertId;
-    }
+  
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
