@@ -427,3 +427,11 @@ function logSql<T extends {
     //console.log(who.toSQL().sql);
     return who;
 }
+
+export async function createKnexDataProvider(config: Knex.Config, autoCreateTables = true) {
+    let k = knex(config)
+    let result = new KnexDataProvider(k);
+    if (autoCreateTables)
+        await new KnexSchemaBuilder(k).verifyStructureOfAllEntities(new Remult(result));
+    return result;
+}

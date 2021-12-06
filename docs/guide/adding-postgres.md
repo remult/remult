@@ -6,7 +6,7 @@ npm i --save-dev @types/pg
 ```
 
 And adjust the server's `index.ts`
-```ts{3,7-8}
+```ts{3,7-9}
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createPostgresConnection } from 'remult/postgres';
@@ -14,7 +14,8 @@ import { createPostgresConnection } from 'remult/postgres';
 const app = express();
 app.use(remultExpress({
     dataProvider: () => createPostgresConnection({
-         connectionString:"postgres://postgres:MASTERKEY@localhost/postgres" })
+         connectionString:"postgres://postgres:MASTERKEY@localhost/postgres" 
+    })
 }));
 app.listen(3002, () => console.log("Server started"));
 ```
