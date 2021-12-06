@@ -20,7 +20,7 @@ import { Paginator } from ".";
 let classValidatorValidate: ((item: any, ref: {
     fields: Fields<any>
 }) => Promise<void>) | undefined = undefined;
-import("class-validator"+"")
+import("class-validator".toString())
     .then((v) => {
         classValidatorValidate = (item, ref) => {
             return v.validate(item).then(errors => {
