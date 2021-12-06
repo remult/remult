@@ -61,6 +61,7 @@
     "graphql": "^16.0.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
+    "mongodb": "^4.2.1",
     "mssql": "^4.2.3",
     "password-hash": "^1.2.2",
     "pg": "^8.3.0",

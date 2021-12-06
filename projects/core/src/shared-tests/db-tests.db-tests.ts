@@ -1,4 +1,3 @@
-
 import { DataApi } from "../data-api";
 import { DateOnlyField, Entity, EntityBase, EntityFilter, Field, IntegerField } from "../remult3";
 import { c } from "../tests/c";
@@ -78,7 +77,7 @@ testAll("partial updates", async ({ remult, createEntity }) => {
     expect(l.description).toBe('new desc');
 
 
-});
+},false);
 testAll("put with validations on entity fails",
     async ({ remult, createEntity }) => {
         let s = await createEntity(entityWithValidations);
@@ -111,7 +110,7 @@ testAll("test date with null works", async ({ createEntity }) => {
     r = await repo.findFirst();
     expect(r.d).toBeNull();
     expect(await repo.count({ d: null })).toBe(1);
-});
+},false);
 testAll("test original value of date", async ({ createEntity }) => {
     let r = await (await createEntity(testDateWithNull)).create({ id: 1, d: new Date(1976, 6, 16) }).save();
 
@@ -163,7 +162,7 @@ testAll("test filtering of null/''", async ({ createEntity }) => {
     let c = await repo.create({ id: 'c', refH: b }).save();
     expect(await repo.count({ refH: null })).toBe(2);
     expect(await repo.count({ refH: { "!=": null } })).toBe(1);
-})
+},false)
     ;
 
 testAll("test paging with complex object", async ({ remult, createEntity }) => {
@@ -275,7 +274,7 @@ testAllDbs("Insert", async ({ createData }) => {
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(1);
     expect(rows[0].categoryName).toBe('noam');
-});
+},false);
 
 testAllDbs("test delete", async ({ createData }) => {
     let c = await createData(async insert => await insert(5, 'noam'));
@@ -286,7 +285,7 @@ testAllDbs("test delete", async ({ createData }) => {
     await rows[0]._.delete();
     rows = await c.find();
     expect(rows.length).toBe(0);
-});
+},false);
 testAllDbs("test filter packer", async ({ insertFourRows }) => {
     let r = await insertFourRows();
     let rows = await r.find();

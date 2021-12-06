@@ -1,6 +1,7 @@
 import { Remult } from "../context";
 import { KnexDataProvider, KnexSchemaBuilder } from '../../remult-knex';
 import * as Knex from 'knex';
+import { MongoClient } from 'mongodb';
 import { config } from 'dotenv';
 import { createPostgresConnection, PostgresSchemaBuilder } from "../../postgres";
 import { ClassType } from "../../classType";
@@ -60,6 +61,7 @@ export function testPostgresImplementation(key: string, what: dbTestWhatSignatur
 addDatabaseToTest(testPostgresImplementation);
 import '../shared-tests'
 import { Categories } from "../tests/remult-3-entities";
+import { MongoDataProvider } from "../../remult-mongo";
 
 testAll("transactions", async ({ db, createEntity }) => {
     let x = await createEntity(Categories);
@@ -69,3 +71,27 @@ testAll("transactions", async ({ db, createEntity }) => {
         expect(await remult.repo(Categories).count()).toBe(0);
     });
 });
+
+
+let client = new MongoClient("mongodb://localhost:27017/local");
+let mongoDbPromise = client.connect().then(c => c.db("test"));
+
+export function testMongo(key: string, what: dbTestWhatSignature, focus = false) {
+    itWithFocus(key + " - mongo", async () => {
+        let mongoDb = await mongoDbPromise;
+        let db = new MongoDataProvider(mongoDb, client);
+        let remult = new Remult(db);
+        await what({
+            db, remult,
+            createEntity:
+                async (entity: ClassType<any>) => {
+
+                    let repo = remult.repo(entity);
+                    await mongoDb.collection(await repo.metadata.getDbName()).deleteMany({})
+
+                    return repo;
+                }
+        });
+    }, focus);
+}
+addDatabaseToTest(testMongo);
