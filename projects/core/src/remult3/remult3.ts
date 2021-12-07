@@ -134,8 +134,7 @@ export interface EntityMetadata<entityType = any> {
     getDbName(): Promise<string>;
 }
 
-
-export declare type PartialEB<T> = Omit<Partial<T>, keyof import('./RepositoryImplementation').EntityBase>;
+export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>
 export interface Repository<entityType> {
     /**creates a json representation of the object */
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
@@ -146,11 +145,11 @@ export interface Repository<entityType> {
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
-    create(item?: PartialEB<entityType>): entityType;
+    create(item?: Partial<OmitEB<entityType>>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
-    save(item: PartialEB<entityType>): Promise<entityType>;
-    save(item: PartialEB<entityType>, originalId?: entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)): Promise<entityType>;
-    save(item: PartialEB<entityType>, create?: boolean): Promise<entityType>;
+    save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    save(item: Partial<OmitEB<entityType>>, originalId?: entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)): Promise<entityType>;
+    save(item: Partial<OmitEB<entityType>>, create?: boolean): Promise<entityType>;
     delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;
     delete(item: entityType): Promise<void>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
@@ -183,17 +182,17 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
-    [Properties in keyof PartialEB<entityType>]?: "asc" | "desc"
+    [Properties in keyof Partial<OmitEB<entityType>>]?: "asc" | "desc"
 }
 
 
 
 export declare type EntityFilter<entityType> = {
-    [Properties in keyof PartialEB<entityType>]?: (
-        PartialEB<entityType>[Properties] extends number | Date ? ComparisonValueFilter<PartialEB<entityType>[Properties]> :
-        PartialEB<entityType>[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
-        PartialEB<entityType>[Properties] extends boolean ? ValueFilter<boolean> :
-        ValueFilter<PartialEB<entityType>[Properties]>) & ContainsStringValueFilter;
+    [Properties in keyof Partial<OmitEB<entityType>>]?: (
+        Partial<OmitEB<entityType>>[Properties] extends number | Date ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> :
+        Partial<OmitEB<entityType>>[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
+        Partial<OmitEB<entityType>>[Properties] extends boolean ? ValueFilter<boolean> :
+        ValueFilter<Partial<OmitEB<entityType>>[Properties]>) & ContainsStringValueFilter;
 } & {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
