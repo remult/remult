@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions,OmitEB } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -378,7 +378,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }
         let r = await Filter.fromEntityFilter(this.metadata, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
-            r = await Filter.translateCustomWhere(r, this.metadata, this.metadata, this.remult);
+            r = await Filter.translateCustomWhere(r, this.metadata, this.remult);
         }
         return r;
 

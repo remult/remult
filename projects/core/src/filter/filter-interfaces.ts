@@ -131,7 +131,7 @@ export class Filter {
 
     }
 
-    static async translateCustomWhere<T>(r: Filter, entity: EntityMetadata<T>, filterFactories: EntityMetadata<T>, remult: Remult) {
+    static async translateCustomWhere<T>(r: Filter, entity: EntityMetadata<T>, remult: Remult) {
         let f = new customTranslator(async (filterKey, custom) => {
             let r: Filter[] = [];
             for (const key in entity.entityType) {
@@ -139,7 +139,7 @@ export class Filter {
                 const element = entity.entityType[key] as customFilterInfo<any>;
                 if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
                     if (element.customFilterInfo.key == filterKey) {
-                        r.push(await Filter.fromEntityFilter(filterFactories, await element.customFilterInfo.customFilterTranslator( remult, custom)));
+                        r.push(await Filter.fromEntityFilter(entity, await element.customFilterInfo.customFilterTranslator(remult, custom)));
                     }
                 }
             }
