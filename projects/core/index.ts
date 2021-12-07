@@ -28,6 +28,7 @@ export {
     DateOnlyField,
     JsonField,
     IntegerField,
+    Paginator,
     CaptionTransformer
 } from './src/remult3';
 export { EntityOptions } from './src/entity';
