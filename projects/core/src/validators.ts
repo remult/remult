@@ -1,3 +1,4 @@
+import { isBackend } from "..";
 import { FieldRef } from "./remult3";
 
 export class Validators {
@@ -12,8 +13,6 @@ export class Validators {
     static unique = Object.assign(async (entity: any, col: FieldRef<any, any>, message = 'already exists') => {
         if (!col.entityRef)
             throw "unique validation may only work on columns that are attached to an entity";
-
-
         if (col.entityRef.isNew() || col.valueChanged()) {
             if (await col.entityRef.repository.count({ [col.metadata.key]: col.value }))
                 col.error = message;
@@ -21,6 +20,14 @@ export class Validators {
     }, {
         withMessage: (message: string) => {
             return (entity, col: FieldRef<any, any>) => Validators.unique(entity, col, message)
+        }
+    });
+    static uniqueOnBackend = Object.assign(async (entity: any, col: FieldRef<any, any>, message = 'already exists') => {
+        if (isBackend())
+            return Validators.unique(entity, col, message)
+    }, {
+        withMessage: (message: string) => {
+            return (entity, col: FieldRef<any, any>) => Validators.uniqueOnBackend(entity, col, message)
         }
     });
 }

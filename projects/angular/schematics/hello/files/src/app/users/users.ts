@@ -27,7 +27,7 @@ import { terms } from "../terms";
 )
 export class Users extends IdEntity {
     @Field({
-        validate: [Validators.required, Validators.unique],
+        validate: [Validators.required, Validators.uniqueOnBackend],
         caption: terms.username
     })
     name: string = '';
