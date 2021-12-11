@@ -6,6 +6,7 @@ export {
     FieldsMetadata,
     Entity,
     EntityBase,
+    ControllerBase,
     FieldRef,
     Fields,
     EntityMetadata,
