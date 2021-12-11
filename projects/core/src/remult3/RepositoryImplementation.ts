@@ -523,7 +523,7 @@ abstract class rowHelperBase<T>
                     },
                     enumerable: true
                 });
-                lookup.set(val); 
+                lookup.set(val);
             } else {
 
 
@@ -1654,6 +1654,15 @@ export class EntityBase {
     delete() { return this._.delete(); }
     isNew() { return this._.isNew(); }
     get $() { return this._.fields }
+}
+export class ControllerBase {
+
+    constructor(protected remult: Remult) {
+
+    }
+    get $() { return getFields(this) }
+    get _() { return getControllerRef(this) }
+
 }
 
 class QueryResultImpl<entityType> implements QueryResult<entityType> {
