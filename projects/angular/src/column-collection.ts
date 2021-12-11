@@ -1,9 +1,9 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter } from "remult";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
-import { decorateColumnSettings, getEntitySettings } from 'remult/src/remult3';
+import { decorateColumnSettings, getEntitySettings, RefSubscriber } from 'remult/src/remult3';
 import { ValueListValueConverter } from "remult/valueConverters";
 import { ClassType } from "remult/classType";
 import { ExtendedValueListItem } from "./angular/remult-core.module";
@@ -409,6 +409,9 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
     }
 
 
+  }
+  subscribe(listener: RefSubscriber): Unobserve {
+    throw new Error("Method not implemented.");
   }
   valueIsNull() {
     return this.value === null;

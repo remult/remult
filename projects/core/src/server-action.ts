@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -258,7 +258,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
                                     }
                                     else {
-                                     
+
                                         let rows = await repo.find({
                                             where: {
                                                 ...repo.metadata.idMetadata.getIdFilter(d.rowInfo.id),
@@ -290,7 +290,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                 }
                                 else {
                                     let y = new constructor(remult, ds);
-                                    let controllerRef = getControllerRef(y, remult);
+                                    let controllerRef = getControllerRef(y, remult) as controllerRefImpl;
                                     await controllerRef._updateEntityBasedOnApi(d.fields);
                                     if (!remult.isAllowedForInstance(y, allowed))
                                         throw 'not allowed';
@@ -355,7 +355,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 }
 
                 else {
-                    let defs = getControllerRef(self, undefined);
+                    let defs = getControllerRef(self, undefined) as controllerRefImpl;
                     try {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{

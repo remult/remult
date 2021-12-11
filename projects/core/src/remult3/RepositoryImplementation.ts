@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB } from "./remult3";
+import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -14,7 +14,7 @@ import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorI
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
-import { Paginator } from ".";
+import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
 
 let classValidatorValidate: ((item: any, ref: {
@@ -478,12 +478,12 @@ abstract class rowHelperBase<T>
 {
     _error: string;
     get error() {
-        this._reportObserved();
+        this._subscribers?.reportObserved();
         return this._error;
     }
     set error(val: string) {
         this._error = val;
-        this._reportChanged();
+        this._subscribers?.reportChanged();
     }
     constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected remult: Remult) {
         for (const col of columnsInfo) {
@@ -493,71 +493,72 @@ abstract class rowHelperBase<T>
                 let lookup = new LookupColumn(remult.repo(col.valueType) as RepositoryImplementation<T>, undefined);
                 this.lookups.set(col.key, lookup);
                 let val = instance[col.key];
+                let refImpl: FieldRefImplementation<any, any>;
                 Object.defineProperty(instance, col.key, {
                     get: () => {
-                        this._reportObserved();
+                        if (this._subscribers) {
+                            this._subscribers.reportObserved();
+                            if (!refImpl) {
+                                refImpl = this.fields.find(col.key) as FieldRefImplementation<any, any>;
+                                if (!refImpl._subscribers) {
+                                    refImpl._subscribers = new SubscribableImp();
+                                }
+                            }
+                            refImpl._subscribers.reportObserved();
+
+                        }
                         return lookup.item;
 
                     },
                     set: (val) => {
                         lookup.set(val);
-                        this._reportChanged();
+                        this._subscribers?.reportChanged();
+                        if (!refImpl) {
+                            refImpl = this.fields.find(col.key) as FieldRefImplementation<any, any>;
+                            if (!refImpl._subscribers) {
+                                refImpl._subscribers = new SubscribableImp();
+                            }
+                        }
+                        refImpl._subscribers.reportChanged();
                     },
                     enumerable: true
                 });
-                instance[col.key] = val;
+                lookup.set(val); 
             } else {
 
 
             }
         }
     }
-    _reportChanged() {
-        if (this._subscribers)
-            this._subscribers.forEach(x => x.reportChanged());
-    }
-    _reportObserved() {
-        if (this._subscribers)
-            this._subscribers.forEach(x => x.reportObserved());
-    }
-    private _subscribers: {
-        reportChanged: () => void,
-        reportObserved: () => void
-    }[];
-    subscribe(listener: (() => void) | {
-        reportChanged: () => void,
-        reportObserved: () => void
-    }): Unobserve {
 
-        let list: {
-            reportChanged: () => void,
-            reportObserved: () => void
-        };
-        if (typeof listener === "function")
-            list = {
-                reportChanged: () => listener(),
-                reportObserved: () => { }
-            }
-        else
-            list = listener;
+    _subscribers: SubscribableImp;
+    subscribe(listener: RefSubscriber): Unobserve {
+        this.initSubscribers();
+        return this._subscribers.subscribe(listener);
 
+    }
+    _isLoading = false;
+    initSubscribers() {
         if (!this._subscribers) {
-            this._subscribers = [];
+            this._subscribers = new SubscribableImp();;
             for (const col of this.columnsInfo) {
                 let ei = getEntitySettings(col.valueType, false);
 
                 if (ei && this.remult) {
-
                 } else {
                     let val = this.instance[col.key];
+                    let refImpl = this.fields.find(col.key) as FieldRefImplementation<any, any>;
+                    refImpl._subscribers = new SubscribableImp();
                     Object.defineProperty(this.instance, col.key, {
                         get: () => {
-                            this._reportObserved();
+                            this._subscribers.reportObserved();
+                            refImpl._subscribers.reportObserved();
                             return val;
                         },
                         set: (value) => {
                             val = value;
-                            this._reportChanged();
+                            this._subscribers.reportChanged();
+                            refImpl._subscribers.reportChanged();
                         },
                         enumerable: true
                     });
@@ -565,17 +566,15 @@ abstract class rowHelperBase<T>
                 }
             }
         }
-        this._subscribers.push(list);
-        return () => this._subscribers = this._subscribers.filter(x => x != listener);
     }
-    _isLoading = false;
+
     get isLoading() {
-        this._reportObserved();
+        this._subscribers?.reportObserved();
         return this._isLoading;
     }
     set isLoading(val: boolean) {
         this._isLoading = val;
-        this._reportChanged();
+        this._subscribers?.reportChanged();
     }
 
     lookups = new Map<string, LookupColumn<any>>();
@@ -629,13 +628,23 @@ abstract class rowHelperBase<T>
         throw err;
 
     }
-    __clearErrors() {
+    __clearErrorsAndReportChanged() {
         this.errors = undefined;
         this.error = undefined;
-        this._reportChanged();
+        this._reportChangedToEntityAndFields();
+
+    }
+    _reportChangedToEntityAndFields() {
+        if (this._subscribers) {
+            this._subscribers.reportChanged();
+            for (const field of this.fields) {
+                let ref = field as FieldRefImplementation<any, any>;
+                ref._subscribers.reportChanged();
+            }
+        }
     }
     hasErrors(): boolean {
-        this._reportObserved();
+        this._subscribers?.reportObserved();
         return !!!this.error && this.errors == undefined;
 
     }
@@ -664,7 +673,7 @@ abstract class rowHelperBase<T>
         this.originalValues = this.copyDataToObject();
     }
     async validate() {
-        this.__clearErrors();
+        this.__clearErrorsAndReportChanged();
         if (classValidatorValidate)
             await classValidatorValidate(this.instance, this);
         await this.__performColumnAndEntityValidations();
@@ -672,7 +681,7 @@ abstract class rowHelperBase<T>
         return r;
     }
     async __validateEntity() {
-        this.__clearErrors();
+        this.__clearErrorsAndReportChanged();
         if (classValidatorValidate)
             await classValidatorValidate(this.instance, this);
         await this.__performColumnAndEntityValidations();
@@ -770,14 +779,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
     wasDeleted(): boolean {
-        this._reportObserved();
+        this._subscribers?.reportObserved();
         return this._wasDeleted;
     }
 
     undoChanges() {
         this.loadDataFrom(this.originalValues);
-        this.__clearErrors();
-        this._reportChanged();
+        this.__clearErrorsAndReportChanged();
+
     }
     async reload(): Promise<T> {
         await this.edp.find({ where: this.getIdFilter() }).then(async newData => {
@@ -785,7 +794,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             this.saveOriginalData();
 
         });
-        this._reportChanged();
+        this._reportChangedToEntityAndFields();
         return this.instance;
     }
 
@@ -836,7 +845,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let updatedRow: any;
             try {
 
-                this._reportChanged();
+                this._subscribers?.reportChanged();
                 if (this.isNew()) {
                     updatedRow = await this.edp.insert(d);
                 }
@@ -876,7 +885,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         }
         finally {
             this.isLoading = false;
-            this._reportChanged();
+            this._reportChangedToEntityAndFields();
         }
 
     }
@@ -890,7 +899,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 
     async delete() {
-        this.__clearErrors();
+        this.__clearErrorsAndReportChanged();
         if (this.info.entityInfo.deleting)
             await this.info.entityInfo.deleting(this.instance);
         this.__assertValidity();
@@ -950,11 +959,11 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 
     isNew(): boolean {
-        this._reportObserved();
+        this._subscribers?.reportObserved();
         return this._isNew;
     }
     wasChanged(): boolean {
-        this._reportObserved();
+        this._subscribers?.reportObserved();
         for (const col of this.fields) {
             if (col.valueChanged())
                 return true;
@@ -986,7 +995,7 @@ function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
 export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): Fields<fieldsContainerType> {
     return getControllerRef(container, remult).fields;
 }
-export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): controllerRefImpl<fieldsContainerType> {
+export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): ControllerRef<fieldsContainerType> {
 
     let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
@@ -1011,7 +1020,7 @@ export function getControllerRef<fieldsContainerType>(container: fieldsContainer
 }
 
 
-export class controllerRefImpl<T = any> extends rowHelperBase<T>  {
+export class controllerRefImpl<T = any> extends rowHelperBase<T> implements ControllerRef<T> {
     constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult) {
         super(columnsInfo, instance, remult);
 
@@ -1046,8 +1055,15 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType>, private rowBase: rowHelperBase<entityType>) {
 
     }
+    _subscribers: SubscribableImp;
+    subscribe(listener: RefSubscriber): Unobserve {
+        if (!this._subscribers) {
+            this.rowBase.initSubscribers();
+        }
+        return this._subscribers.subscribe(listener);
+    }
     valueIsNull(): boolean {
-        this.rowBase._reportObserved();
+        this.reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
             return lu.id === undefined || lu.id === null;
@@ -1055,7 +1071,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         return this.value === null;
     }
     originalValueIsNull(): boolean {
-        this.rowBase._reportObserved();
+        this.reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         return this.rawOriginalValue() === null;
     }
@@ -1071,11 +1087,18 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     }
     target: ClassType<any> = this.settings.target;
 
-
+    reportObserved() {
+        this._subscribers?.reportObserved();
+        this.rowBase._subscribers?.reportObserved();
+    }
+    reportChanged() {
+        this._subscribers?.reportChanged();
+        this.rowBase._subscribers?.reportChanged();
+    }
 
 
     get error(): string {
-        this.rowBase._reportObserved();
+        this.reportObserved();
         if (!this.rowBase.errors)
             return undefined;
         return this.rowBase.errors[this.metadata.key];
@@ -1084,10 +1107,10 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         if (!this.rowBase.errors)
             this.rowBase.errors = {};
         this.rowBase.errors[this.metadata.key] = error;
-        this.rowBase._reportChanged();
+        this.reportChanged();
     }
     get displayValue(): string {
-        this.rowBase._reportObserved();
+        this.reportObserved();
         if (this.value != undefined) {
             if (this.settings.displayValue)
                 return this.settings.displayValue(this.container, this.value);
@@ -1101,7 +1124,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     get value() { return this.container[this.metadata.key] };
     set value(value: any) { this.container[this.metadata.key] = value };
     get originalValue(): any {
-        this.rowBase._reportObserved();
+        this.reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu)
             return lu.get(this.rawOriginalValue());
@@ -1112,7 +1135,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     }
 
     get inputValue(): string {
-        this.rowBase._reportObserved();
+        this.reportObserved();
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu)
             return lu.id != undefined ? lu.id.toString() : null;
@@ -1127,7 +1150,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
             this.value = this.metadata.valueConverter.fromInput(val, this.settings.inputType);
     };
     valueChanged(): boolean {
-        this.rowBase._reportObserved();
+        this.reportObserved();
         let val = this.value;
         let lu = this.rowBase.lookups.get(this.metadata.key);
         if (lu) {
@@ -1757,4 +1780,38 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
 class cacheEntityInfo<entityType> {
     value: entityType = {} as entityType;
     promise: Promise<entityType>
+}
+class SubscribableImp implements Subscribable {
+    reportChanged() {
+        if (this._subscribers)
+            this._subscribers.forEach(x => x.reportChanged());
+    }
+    reportObserved() {
+        if (this._subscribers)
+            this._subscribers.forEach(x => x.reportObserved());
+    }
+    private _subscribers: RefSubscriberBase[];
+    subscribe(listener: (() => void) | {
+        reportChanged: () => void,
+        reportObserved: () => void
+    }): Unobserve {
+
+        let list: {
+            reportChanged: () => void,
+            reportObserved: () => void
+        };
+        if (typeof listener === "function")
+            list = {
+                reportChanged: () => listener(),
+                reportObserved: () => { }
+            }
+        else
+            list = listener;
+
+        if (!this._subscribers) {
+            this._subscribers = [];
+        }
+        this._subscribers.push(list);
+        return () => this._subscribers = this._subscribers.filter(x => x != listener);
+    }
 }

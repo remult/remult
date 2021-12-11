@@ -47,7 +47,7 @@ import { entityEventListener } from "../__EntityValueProvider";
 */
 
 
-export interface EntityRef<entityType> {
+export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges();
     save(): Promise<entityType>;
@@ -66,13 +66,25 @@ export interface EntityRef<entityType> {
     readonly apiUpdateAllowed: boolean;
     readonly apiDeleteAllowed: boolean;
     readonly apiInsertAllowed: boolean;
-    // new to talk with Yoni;
-    subscribe(listener: (() => void) | {
-        reportChanged: () => void,
-        reportObserved: () => void
-    }): Unobserve;
     readonly isLoading: boolean;
 }
+export interface ControllerRef<entityType> extends Subscribable {
+    hasErrors(): boolean;
+    fields: Fields<entityType>;
+    error: string;
+    validate(): Promise<boolean>;
+    readonly isLoading: boolean;
+}
+export interface RefSubscriberBase {
+    reportChanged: () => void,
+    reportObserved: () => void
+}
+export declare type RefSubscriber = (() => void) | RefSubscriberBase;
+export interface Subscribable {
+    // new to talk with Yoni;
+    subscribe(listener: RefSubscriber): Unobserve;
+}
+
 export type Fields<entityType> = {
     [Properties in keyof entityType]: FieldRef<entityType, entityType[Properties]>
 } & {
@@ -96,7 +108,7 @@ export type SortSegments<entityType> = {
     [Properties in keyof entityType]: SortSegment & { descending(): SortSegment }
 }
 
-export interface FieldRef<entityType = any, valueType = any> {
+export interface FieldRef<entityType = any, valueType = any> extends Subscribable {
     error: string;
     displayValue: string;
     value: valueType;
