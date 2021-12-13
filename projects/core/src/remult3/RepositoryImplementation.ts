@@ -1821,6 +1821,6 @@ class SubscribableImp implements Subscribable {
             this._subscribers = [];
         }
         this._subscribers.push(list);
-        return () => this._subscribers = this._subscribers.filter(x => x != listener);
+        return () => this._subscribers = this._subscribers.filter(x => x != list);
     }
 }
