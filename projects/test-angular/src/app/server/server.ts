@@ -57,7 +57,7 @@ serverInit().then(async (dataSource) => {
     let remultApi = remultExpress({
         dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
-        logApiEndPoints: false
+        logApiEndPoints: true
     });
 
     app.use(remultApi);
@@ -88,23 +88,9 @@ serverInit().then(async (dataSource) => {
             res.send('No Result' + index);
         }
     });
-    let client = new MongoClient("mongodb://localhost:27017/local");
-    try {
-        await client.connect();
-        const database = await client.db("local");
-        const tasks = database.collection("tasks");
-        console.log(await tasks.insertOne({id:1,title:'a'}));
-        console.log(await tasks.count({
-            title:'a'
-        }));
-        
-        console.log("connected");
-    } catch (err) {
-        console.log(err);
+  
 
-    }
-
-    let port = process.env.PORT || 3001;
+    let port = process.env.PORT || 3004;
     app.listen(port);
 });
 

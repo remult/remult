@@ -27,7 +27,7 @@
     "schemas:copy:files": "copyfiles -a -p -V -u 2 projects/angular/schematics/*/files/** dist/angular/",
     "schemas:copy:collection": "copyfiles -V -u 3 projects/angular/schematics/collection.json dist/angular/schematics/",
     "postschemas:build": "npm run schemas:copy:schemas && npm run schemas:copy:files && npm run schemas:copy:collection",
-    "server-test": "./node_modules/.bin/tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
+    "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
     "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
   },
   "private": true,
