@@ -200,7 +200,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             options = {};
 
         opt = {};
-        if (!options.orderBy) {
+        if (!options.orderBy|| Object.keys(options.orderBy).length === 0) {
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
         opt.where = await this.translateWhereToFilter(options.where);
@@ -543,12 +543,14 @@ abstract class rowHelperBase<T>
             this._subscribers = new SubscribableImp();;
             for (const col of this.columnsInfo) {
                 let ei = getEntitySettings(col.valueType, false);
-
+                let refImpl = this.fields.find(col.key) as FieldRefImplementation<any, any>;
+                refImpl._subscribers = new SubscribableImp();
                 if (ei && this.remult) {
+
                 } else {
                     let val = this.instance[col.key];
-                    let refImpl = this.fields.find(col.key) as FieldRefImplementation<any, any>;
-                    refImpl._subscribers = new SubscribableImp();
+
+
                     Object.defineProperty(this.instance, col.key, {
                         get: () => {
                             this._subscribers.reportObserved();

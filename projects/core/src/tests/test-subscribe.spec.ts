@@ -82,7 +82,43 @@ describe("test subscribe", () => {
         await i.save();
         expect(entityRefInitCount).toBe(1);
         expect(remultInitCount).toBe(1);
-        Remult.entityRefInit;
+        Remult.entityRefInit = undefined;
+    });
+    it("test subscribe with many to one", async () => {
+        const remult = new Remult(new InMemoryDataProvider());
+        const repo = remult.repo(entityWithManyToOne);
+        for (const del of await repo.find()) {
+            await del.delete();
+        }
+        let refRowA = await remult.repo(myEntity).create({ title: 'a' }).save();
+        let refRowB = await remult.repo(myEntity).create({ title: 'b' }).save();
+        let reflect = { title: '' };
+        let r = repo.create();
+        let sub = r._.subscribe(() => reflect.title = r.entity?.title);
+        r.entity = refRowA;
+        expect(reflect.title).toBe('a');
+        sub();
+        r.entity = refRowB;
+        expect(reflect.title).toBe('a');
+    });
+    it("test subscribe to field with many to one", async () => {
+        const remult = new Remult(new InMemoryDataProvider());
+        const repo = remult.repo(entityWithManyToOne);
+        for (const del of await repo.find()) {
+            await del.delete();
+        }
+        let refRowA = await remult.repo(myEntity).create({ title: 'a' }).save();
+        let refRowB = await remult.repo(myEntity).create({ title: 'b' }).save();
+        let reflect = { title: '' };
+        let r = repo.create();
+        
+        
+        let sub = r.$.entity.subscribe(() => reflect.title = r.entity?.title);
+        r.entity = refRowA;
+        expect(reflect.title).toBe('a');
+        sub();
+        r.entity = refRowB;
+        expect(reflect.title).toBe('a');
     });
 
 })
@@ -96,4 +132,14 @@ class myEntity extends EntityBase {
         validate: Validators.required
     })
     title: string = '';
+}
+
+@Entity("entityWithManyToOne", {
+    allowApiCrud: true
+})
+class entityWithManyToOne extends EntityBase {
+    @Field()
+    id: number = 0;
+    @Field(o => o.valueType = myEntity)
+    entity?: myEntity;
 }

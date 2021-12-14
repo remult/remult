@@ -77,7 +77,7 @@ testAll("partial updates", async ({ remult, createEntity }) => {
     expect(l.description).toBe('new desc');
 
 
-},false);
+}, false);
 testAll("put with validations on entity fails",
     async ({ remult, createEntity }) => {
         let s = await createEntity(entityWithValidations);
@@ -110,7 +110,7 @@ testAll("test date with null works", async ({ createEntity }) => {
     r = await repo.findFirst();
     expect(r.d).toBeNull();
     expect(await repo.count({ d: null })).toBe(1);
-},false);
+}, false);
 testAll("test original value of date", async ({ createEntity }) => {
     let r = await (await createEntity(testDateWithNull)).create({ id: 1, d: new Date(1976, 6, 16) }).save();
 
@@ -162,7 +162,7 @@ testAll("test filtering of null/''", async ({ createEntity }) => {
     let c = await repo.create({ id: 'c', refH: b }).save();
     expect(await repo.count({ refH: null })).toBe(2);
     expect(await repo.count({ refH: { "!=": null } })).toBe(1);
-},false)
+}, false)
     ;
 
 testAll("test paging with complex object", async ({ remult, createEntity }) => {
@@ -274,7 +274,7 @@ testAllDbs("Insert", async ({ createData }) => {
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe(1);
     expect(rows[0].categoryName).toBe('noam');
-},false);
+}, false);
 
 testAllDbs("test delete", async ({ createData }) => {
     let c = await createData(async insert => await insert(5, 'noam'));
@@ -285,7 +285,7 @@ testAllDbs("test delete", async ({ createData }) => {
     await rows[0]._.delete();
     rows = await c.find();
     expect(rows.length).toBe(0);
-},false);
+}, false);
 testAllDbs("test filter packer", async ({ insertFourRows }) => {
     let r = await insertFourRows();
     let rows = await r.find();
@@ -442,6 +442,14 @@ testAllDbs("entity order by works", async ({ createData }) => {
     expect(x[0].id).toBe(1);
     expect(x[1].id).toBe(3);
     expect(x[2].id).toBe(2);
+    var x = await c.find({ orderBy: {} });
+    expect(x[0].id).toBe(1);
+    expect(x[1].id).toBe(3);
+    expect(x[2].id).toBe(2);
+    var x = (await c.query({ orderBy: {},pageSize:100 }).paginator()).items;
+    expect(x[0].id).toBe(1);
+    expect(x[1].id).toBe(3);
+    expect(x[2].id).toBe(2);
 }, false)
 testAllDbs("put with validation works", async ({ createData, remult }) => {
     let count = 0;
@@ -519,8 +527,8 @@ testAll("auto increment can't be affected by insert or update", async ({ createE
 testAll("Paging",
     async ({ createEntity }) => {
         let s = await entityWithValidations.create4RowsInDp(createEntity);
-        expect((await s.find({ limit:3 })).length).toBe(3);
-        expect((await s.find({ limit:3,page:2 })).length).toBe(1);
+        expect((await s.find({ limit: 3 })).length).toBe(3);
+        expect((await s.find({ limit: 3, page: 2 })).length).toBe(1);
     }, false);
 
 

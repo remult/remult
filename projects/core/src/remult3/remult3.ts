@@ -86,7 +86,7 @@ export interface Subscribable {
 }
 
 export type Fields<entityType> = {
-    [Properties in keyof entityType]: FieldRef<entityType, entityType[Properties]>
+    [Properties in keyof OmitEB<entityType>]: FieldRef<entityType, entityType[Properties]>
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>,
     [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>
@@ -95,7 +95,7 @@ export type Fields<entityType> = {
 
 }
 export type FieldsMetadata<entityType> = {
-    [Properties in keyof entityType]: FieldMetadata
+    [Properties in keyof OmitEB<entityType>]: FieldMetadata
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata,
     [Symbol.iterator]: () => IterableIterator<FieldMetadata>

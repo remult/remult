@@ -51,7 +51,7 @@ export class Sort {
 
   }
   static createUniqueSort<T>(entityMetadata: EntityMetadata<T>, orderBy: Sort): Sort {
-    if (!orderBy)
+    if (!orderBy || Object.keys(orderBy).length === 0)
       orderBy = Sort.translateOrderByToSort(entityMetadata, entityMetadata.options.defaultOrderBy);
     if (!orderBy)
       orderBy = new Sort({ field: entityMetadata.idMetadata.field });
@@ -70,7 +70,7 @@ export class Sort {
     return orderBy;
   }
   static createUniqueEntityOrderBy<T>(entityMetadata: EntityMetadata<T>, orderBy: EntityOrderBy<T>): EntityOrderBy<T> {
-    if (!orderBy)
+    if (!orderBy || Object.keys(orderBy).length === 0)
       orderBy = entityMetadata.options.defaultOrderBy;
     if (!orderBy)
       orderBy = { [entityMetadata.idMetadata.field.key]: "asc" } as EntityOrderBy<T>
