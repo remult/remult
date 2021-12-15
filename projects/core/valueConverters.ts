@@ -83,7 +83,7 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
   displayValue: (value: Date) => {
     if (!value)
       return '';
-    return value.toLocaleDateString(undefined, { timeZone: 'UTC' })
+    return value.toLocaleDateString(undefined)
   }
 }
 export const CharDateValueConverter: ValueConverter<Date> = {

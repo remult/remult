@@ -1571,7 +1571,8 @@ describe("test date storage", () => {
 
     let val = new Date(1976, 5, 16);
     expect(DateOnlyValueConverter.toJson(val)).toBe('1976-06-16')
-  });
+    expect(DateOnlyValueConverter.displayValue(val)).toBe("6/16/1976");
+  }); 
 });
 @Entity(undefined)
 class myEntity {
