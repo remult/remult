@@ -10,5 +10,8 @@
     "@vuepress/plugin-google-analytics": "^1.8.2",
     "vuepress": "^1.8.2",
     "vuepress-plugin-code-copy": "^1.0.6"
+  },
+  "dependencies": {
+    "broken-link-checker": "^0.7.8"
   }
 }

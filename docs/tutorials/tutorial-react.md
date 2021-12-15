@@ -226,11 +226,11 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
    import '../Task';
    ```
 
-The [@Entity](./ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](./ref_entity.md#allowapicrud) property to `true`.
+The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The [@Field](./ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
+The [@Field](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
 
 ### Create new tasks
 
@@ -271,7 +271,7 @@ function App() {
 export default App;
 ```
 
-The `tasksRepo` constant variable contains a Remult [Repository](./ref_repository.md) object used to fetch and create `Task` entity objects.
+The `tasksRepo` constant variable contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
 
 The `remult` field we've add to the `App` function (using a constructor argument), will be instantiated by React's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
 
@@ -876,7 +876,7 @@ Let's add a sign in area to the todo app, with an `input` for typing in a `usern
 
 In this section, we'll be using the following packages:
 * [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) to create JSON web tokens
-* [jwt-decode](hhttps://github.com/auth0/jwt-decode) for client-side JWT decoding.
+* [jwt-decode](https://github.com/auth0/jwt-decode) for client-side JWT decoding.
 * [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
 
 

@@ -248,11 +248,11 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
    import '../app/task';
    ```
 
-The [@Entity](./ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](./ref_entity.md#allowapicrud) property to `true`.
+The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The [@Field](./ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
+The [@Field](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
 
 ### Create new tasks
 
@@ -289,7 +289,7 @@ Let's implement this feature within the main `AppComponent` class.
 
    The `remult` field of the `AppComponent` class will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
 
-   The `tasksRepo` field contains a Remult [Repository](./ref_repository.md) object used to fetch and create `Task` entity objects.
+   The `tasksRepo` field contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
 
    The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
