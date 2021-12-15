@@ -3,8 +3,8 @@ home: true
 
 heroImage: /logo.png
 tagline: Unopinionated CRUD for fullstack TypeScript
-actionText: Quick Start →
-actionLink: /guide/
+actionText: Get Started →
+actionLink: /tutorials/tutorial-react
 
 features:
 - title: API Included
