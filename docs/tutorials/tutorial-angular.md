@@ -95,13 +95,6 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    app.listen(3002, () => console.log("Server started"));
    ```
 
-   ::: tip swagger
-   You can easily add swagger by following [this article](/blog/adding-swagger.html)
-   :::
-   ::: tip graphql
-   You can easily add swagger by following [this article](/blog/adding-graphql.html)
-   :::
-
 5. In the root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
 
    *tsconfig.server.json*
@@ -217,6 +210,10 @@ export class AppModule { }
 
 ### Setup completed
 At this point our starter project is up and running. We are now ready to start creating the task list app.
+
+::: tip Bonus 
+Setup [Swagger UI](../docs/adding-swagger) and/or a [GraphQL backend](../docs/adding-graphql) in seconds.
+:::
 
 ## Entities and CRUD Operations
 

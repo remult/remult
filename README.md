@@ -141,4 +141,4 @@ export class Article extends EntityBase {
 ```
 
 ## Getting started
-The best way to learn Remult is by following a tutorial of a simple fullstack Todo app using [React](https://remult.dev/guide/tutorial-react.html) or [Angular](https://remult.dev/guide/tutorial-angular.html).
+The best way to learn Remult is by following a tutorial of a simple fullstack Todo app using [React](https://remult.dev/tutorials/tutorial-react.html) or [Angular](https://remult.dev/tutorials/tutorial-angular.html).
