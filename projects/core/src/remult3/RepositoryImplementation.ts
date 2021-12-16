@@ -7,6 +7,7 @@ import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
+import { v4 as uuid } from 'uuid';
 
 
 import { entityEventListener } from "../__EntityValueProvider";
@@ -200,7 +201,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             options = {};
 
         opt = {};
-        if (!options.orderBy|| Object.keys(options.orderBy).length === 0) {
+        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
         opt.where = await this.translateWhereToFilter(options.where);
@@ -1445,6 +1446,12 @@ export function ValueListFieldType<entityType = any, valueType extends ValueList
         valueConverter: new ValueListValueConverter(type),
         displayValue: (item, val) => val.caption
     }, ...options)
+}
+export function UUIDField<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+    return Field({
+        allowApiUpdate: false,
+        defaultValue: () => uuid()
+    }, ...options);
 }
 
 export function Field<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
