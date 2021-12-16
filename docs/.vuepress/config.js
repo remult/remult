@@ -36,27 +36,26 @@ module.exports = {
     smoothScroll: true,
     nav: [
       {
-        text: 'Guide',
-        link: '/guide/',
+        text: 'Docs',
+        link: '/docs/',
       },
-   
-      /*  {
-          text: 'Tutorials',
-          link: '/tutorials/',
-        },*/
-      /*,
-            {
-              text: 'Config',
-              link: '/config/'
-            },
-            {
-              text: 'VuePress',
-              link: 'https://v1.vuepress.vuejs.org'
-            }*/
+      {
+        text: 'Tutorials',
+        items: [
+          {
+            text: 'React',
+            link: '/tutorials/tutorial-react'
+          },
+          {
+            text: 'Angular',
+            link: '/tutorials/tutorial-angular'
+          }
+        ]
+      }
     ],
     sidebar: {
-      
-      '/guide/': [
+
+      '/docs/': [
         {
           title: 'Getting Started',
           collapsable: false,
@@ -64,16 +63,8 @@ module.exports = {
             '']
         },
         {
-          title: 'Tutorials',
-          collapsable: false,
-          children: [
-            'tutorial-react',
-            'tutorial-angular'
-          ]
-        },
-        {
           title: 'Concepts',
-          collapsable: false,
+          collapsable: true,
           children: [
             'entity-relations',
             'backendMethods',
@@ -83,7 +74,7 @@ module.exports = {
         },
         {
           title: 'Advanced Topics',
-          collapsable: false,
+          collapsable: true,
           children: [
             'rest-api',
             'adding-swagger',
@@ -95,7 +86,7 @@ module.exports = {
         },
         {
           title: 'API Reference',
-          collapsable: false,
+          collapsable: true,
           children: [
             'ref_entity',
             'ref_field',
@@ -108,7 +99,21 @@ module.exports = {
           ]
         }
 
-      ]
+      ],
+
+      '/tutorials/tutorial-react': [
+        {
+          title: 'Tutorial',
+          path: '/tutorials/tutorial-react',
+          collapsable: false
+        }],
+      '/tutorials/tutorial-angular': [
+        {
+          title: 'Tutorial',
+          path: '/tutorials/tutorial-angular',
+          collapsable: false
+        }]
+
     }
   },
 

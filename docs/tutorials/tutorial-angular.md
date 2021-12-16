@@ -1,9 +1,13 @@
 # Todo App with Angular
-### Build a production ready task list app with Remult using an Angular front-end
+### Build a production ready task list app with Remult using an Angular frontend
 
-In this tutorial we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node.js + Express.js for the API server, and Remult as our full-stack framework. For deployment to production, we'll use Heroku and a PostgreSQL database. 
+In this tutorial we are going to create a simple app to manage a task list. We'll use `Angular` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database. 
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
+
+::: tip Prefer React?
+Check out the [React tutorial](./tutorial-react).
+:::
 
 ### Prerequisites
 
@@ -37,7 +41,7 @@ This tutorial requires setting up an Angular project, an API Server project and 
 
 The default Angular app main screen should be displayed.
 
-At this point our starter project is up and running. We are now ready to [start creating the task list app](#entities).
+At this point our starter project is up and running. We are now ready to [start creating the task list app](#entities-and-crud-operations).
 :::
 
 We'll start by creating an Angular project, so if Angular CLI is not already installed - then install it.
@@ -90,13 +94,6 @@ In our development environment we'll use [ts-node-dev](https://www.npmjs.com/pac
    app.use(remultExpress());
    app.listen(3002, () => console.log("Server started"));
    ```
-
-   ::: tip swagger
-   You can easily add swagger by following [this article](/blog/adding-swagger.html)
-   :::
-   ::: tip graphql
-   You can easily add swagger by following [this article](/blog/adding-graphql.html)
-   :::
 
 5. In the root folder, create a TypeScript config file `tsconfig.server.json` for the server project.
 
@@ -214,6 +211,10 @@ export class AppModule { }
 ### Setup completed
 At this point our starter project is up and running. We are now ready to start creating the task list app.
 
+::: tip Bonus 
+Setup [Swagger UI](../docs/adding-swagger) and/or a [GraphQL backend](../docs/adding-graphql) in seconds.
+:::
+
 ## Entities and CRUD Operations
 
 Let's start coding the app by defining the `Task` entity class.
@@ -247,11 +248,11 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
    import '../app/task';
    ```
 
-The [@Entity](./ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](./ref_entity.md#allowapicrud) property to `true`.
+The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The [@Field](./ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
+The [@Field](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
 
 ### Create new tasks
 
@@ -288,7 +289,7 @@ Let's implement this feature within the main `AppComponent` class.
 
    The `remult` field of the `AppComponent` class will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
 
-   The `tasksRepo` field contains a Remult [Repository](./ref_repository.md) object used to fetch and create `Task` entity objects.
+   The `tasksRepo` field contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
 
    The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
