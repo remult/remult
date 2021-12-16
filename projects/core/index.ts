@@ -3,7 +3,7 @@
  */
 export {
     Field,
-    UUIDField,
+    UuidField,
     FieldsMetadata,
     Entity,
     EntityBase,

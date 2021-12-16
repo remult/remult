@@ -1447,7 +1447,7 @@ export function ValueListFieldType<entityType = any, valueType extends ValueList
         displayValue: (item, val) => val.caption
     }, ...options)
 }
-export function UUIDField<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+export function UuidField<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return Field({
         allowApiUpdate: false,
         defaultValue: () => uuid()
