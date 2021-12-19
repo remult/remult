@@ -1162,7 +1162,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    app.use(remultExpress());
    app.use(express.static('build'));
    app.use('/*', async (req, res) => {
-       res.sendFile('./build/index.html');
+       res.sendFile(process.cwd() + '/build/index.html');
    });
    app.listen(process.env.PORT || 3002, () => console.log("Server started"));
    ```
