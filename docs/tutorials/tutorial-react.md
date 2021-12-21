@@ -23,9 +23,12 @@ This tutorial requires setting up a React project, an API Server project and a f
 :::details TLDR: Follow these steps to skip the manual setup and dive straight into coding the app
 
 1. Clone the [remult-react-todo](https://github.com/remult/remult-react-todo) repository and install its dependencies.
+
    ```sh
-   git clone https://github.com/remult/remult-react-todo.git
+   md remult-react-todo
    cd remult-react-todo
+   git init
+   git pull https://github.com/remult/remult-react-todo.git
    npm i
    ```
 2. Open your IDE.
