@@ -276,12 +276,9 @@ export default App;
 
 The `tasksRepo` constant variable contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
 
-The `remult` field we've add to the `App` function (using a constructor argument), will be instantiated by React's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
-
 The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
 
-The `createNewTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` member is replaced with a new `Task` object.
-
+The `createTask` function stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` member is replaced with a new `Task` object.
 
 ### Run and create tasks
 Using the browser, create a few new tasks. Then, navigate to the `tasks` API route at <http://localhost:3002/api/tasks> to see the tasks have been successfully stored on the server.
@@ -684,11 +681,11 @@ After the browser refreshes, a "Hide completed" checkbox appears above the task 
 ## Validation
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
 
-### Validate task title length
+### Validate the title field
 
 Task titles are required. Let's add a validity check for this rule, and display an appropriate error message in the UI.
 
-1. In the `Task` entity class, modify the `Field` decorator for the `title` field to include an argument which implements the `ColumnOptions` interface. Implement the interface using an anonymous object and set the object's `validate` property to `Validators.required`.
+1. In the `Task` entity class, modify the `Field` decorator for the `title` field to include an argument which implements the `ColumnOptions` interface. Implement the interface using an object literal and set the object's `validate` property to `Validators.required`.
 
    *src/Task.ts*
    ```ts{1-3}
@@ -698,7 +695,7 @@ Task titles are required. Let's add a validity check for this rule, and display 
     title: string = '';
    ```
 
-2. In the `App.tsx` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
+2. In the `App.tsx` template, add a `div` element immediately after the `div` element containing the new task title `input`. Place the `newTask.$.title.error` text as its contents.
 
    *src/App.tsx*
    ```tsx
@@ -706,7 +703,10 @@ Task titles are required. Let's add a validity check for this rule, and display 
      {newTask.$.title.error}
    </div>
    ```
-3. We'll also need to adjust the `createTask` method to rerender the component
+
+3. We'll also need to adjust the `createTask` method to notify React the state of the `newTask` has changed.
+
+   *src/App.tsx*
    ```tsx{2,6-8}
    const createTask = async () => {
      try {
@@ -830,7 +830,7 @@ Remult provides a flexible mechanism which enables placing **code-based authoriz
 User authentication remains outside the scope of Remult. In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
 
 ### Tasks CRUD operations require sign in
-This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Remult` object and returns the result of the remult's `authenticated` method.
+This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Remult` object and returns the result of the Remult's `authenticated` method.
 
 *src/Task.ts*
 ```ts{2}

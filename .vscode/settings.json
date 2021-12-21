@@ -9,10 +9,16 @@
         "openapi",
         "paramtypes",
         "postgres",
+        "postgresql",
         "remult",
+        "remult's",
         "scroller",
+        "tldr",
         "unchecks",
         "unopinionated"
     ],
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "cSpell.ignoreWords": [
+        "allowapicrud"
+    ]
 }
