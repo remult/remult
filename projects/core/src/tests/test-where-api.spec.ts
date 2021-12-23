@@ -28,6 +28,7 @@ describe("test where stuff", () => {
     });
     it("test and", async () => {
         expect(await repo.count({ categoryName: 'yoni' })).toBe(1);
+        expect(await repo.count({ categoryName: { $gte: 'yoni' } })).toBe(1);
         expect(await repo.count({ id: 1 })).toBe(1);
         expect(await repo.count({ id: 1, categoryName: 'yoni' })).toBe(0);
         expect(await repo.count({ id: 1, $and: [{ categoryName: 'yoni' }] })).toBe(0);

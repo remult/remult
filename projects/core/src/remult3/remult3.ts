@@ -201,9 +201,9 @@ export declare type EntityOrderBy<entityType> = {
 
 export declare type EntityFilter<entityType> = {
     [Properties in keyof Partial<OmitEB<entityType>>]?: (
-        Partial<OmitEB<entityType>>[Properties] extends number | Date ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> :
-        Partial<OmitEB<entityType>>[Properties] extends string ? ContainsStringValueFilter & ComparisonValueFilter<string> :
-        Partial<OmitEB<entityType>>[Properties] extends boolean ? ValueFilter<boolean> :
+        Partial<OmitEB<entityType>>[Properties] extends (number | Date | undefined) ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> :
+        Partial<OmitEB<entityType>>[Properties] extends (string | undefined) ? ContainsStringValueFilter & ComparisonValueFilter<string> :
+        Partial<OmitEB<entityType>>[Properties] extends (boolean | undefined) ? ValueFilter<boolean> :
         ValueFilter<Partial<OmitEB<entityType>>[Properties]>) & ContainsStringValueFilter;
 } & {
     $or?: EntityFilter<entityType>[];
