@@ -23,8 +23,10 @@ This tutorial requires setting up an Angular project, an API Server project and 
 
 1. Clone the [remult-angular-todo](https://github.com/remult/remult-angular-todo) repository and install its dependencies.
    ```sh
-   git clone https://github.com/remult/remult-angular-todo.git
+   md remult-angular-todo
    cd remult-angular-todo
+   git init
+   git pull https://github.com/remult/remult-angular-todo.git
    npm i
    ```
 2. Open your IDE.
