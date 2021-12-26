@@ -21,23 +21,23 @@ import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 let classValidatorValidate: ((item: any, ref: {
     fields: Fields<any>
 }) => Promise<void>) | undefined = undefined;
-import("class-validator".toString())
-    .then((v) => {
-        classValidatorValidate = (item, ref) => {
-            return v.validate(item).then(errors => {
-                for (const err of errors) {
-                    for (const key in err.constraints) {
-                        if (Object.prototype.hasOwnProperty.call(err.constraints, key)) {
-                            const element = err.constraints[key];
-                            ref.fields.find(err.property).error = element;
-                        }
-                    }
-                }
-            });
-        }
-    })
-    .catch(() => {
-    });
+// import("class-validator".toString())
+//     .then((v) => {
+//         classValidatorValidate = (item, ref) => {
+//             return v.validate(item).then(errors => {
+//                 for (const err of errors) {
+//                     for (const key in err.constraints) {
+//                         if (Object.prototype.hasOwnProperty.call(err.constraints, key)) {
+//                             const element = err.constraints[key];
+//                             ref.fields.find(err.property).error = element;
+//                         }
+//                     }
+//                 }
+//             });
+//         }
+//     })
+//     .catch(() => {
+//     });
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
     async createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>> {
