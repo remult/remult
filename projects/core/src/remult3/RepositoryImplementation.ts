@@ -662,7 +662,7 @@ abstract class rowHelperBase<T>
                 val = this.instance[col.key];
             if (val !== undefined) {
                 val = col.valueConverter.toJson(val);
-                if (val !== undefined)
+                if (val !== undefined && val !== null)
                     val = col.valueConverter.fromJson(
                         JSON.parse(
                             JSON.stringify(val)));
@@ -845,7 +845,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             }
 
             if (this.info.idMetadata.field instanceof CompoundIdField)
-                d.id = undefined;
+                delete (d.id);
             let updatedRow: any;
             try {
 
@@ -859,7 +859,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                     for (const key in d) {
                         if (Object.prototype.hasOwnProperty.call(d, key)) {
                             const element = d[key];
-                            if (element !== this.originalValues[key] && !ignoreKeys.includes(key)) {
+                            if (this.fields.find(key).valueChanged() && !ignoreKeys.includes(key)) {
                                 changesOnly[key] = element;
                                 wasChanged = true;
                             }

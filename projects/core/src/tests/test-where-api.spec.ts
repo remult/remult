@@ -365,16 +365,16 @@ describe("missing fields are added in array column", async () => {
         expect((await rep.find({ orderBy: { completed: "asc", title: "asc" } })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count({ completed: false })).toBe(0);
         let t = (await rep.findFirst({ title: 't1' }));
-        expect(t.completed).toBe(undefined);
+        expect(t.completed).toBe(null);
         t.completed = undefined;
         await t.save();
-        expect(t.completed).toBe(undefined);
+        expect(t.completed).toBe(null);
         t.completed = null;
         await t.save();
         expect(t.completed).toBe(null);
         t = rep.create({ title: '4' });
         await t.save();
-        expect(t.completed).toBe(undefined);
+        expect(t.completed).toBe(null);
 
     });
     it("test api with and", () => {
