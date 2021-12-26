@@ -89,7 +89,8 @@ export type Fields<entityType> = {
     [Properties in keyof OmitEB<entityType>]: FieldRef<entityType, entityType[Properties]>
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>,
-    [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>
+    [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>,
+    toArray(): FieldRef<entityType, any>[]
 
 
 
@@ -98,7 +99,8 @@ export type FieldsMetadata<entityType> = {
     [Properties in keyof OmitEB<entityType>]: FieldMetadata
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata,
-    [Symbol.iterator]: () => IterableIterator<FieldMetadata>
+    [Symbol.iterator]: () => IterableIterator<FieldMetadata>,
+    toArray(): FieldRef<FieldMetadata, any>[]
 
 
 }

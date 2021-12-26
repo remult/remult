@@ -808,7 +808,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let _items = [];
             let r = {
                 find: (c: FieldMetadata<T> | string) => r[typeof c === "string" ? c : c.key],
-                [Symbol.iterator]: () => _items[Symbol.iterator]()
+                [Symbol.iterator]: () => _items[Symbol.iterator](),
+                toArray: () => _items
             };
             for (const c of this.info.columnsInfo) {
                 _items.push(r[c.key] = new FieldRefImplementation(c, this.info.fields[c.key], this.instance, this, this));
@@ -1031,7 +1032,8 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
         let _items = [];
         let r = {
             find: (c: FieldMetadata<T> | string) => r[typeof c === "string" ? c : c.key],
-            [Symbol.iterator]: () => _items[Symbol.iterator]()
+            [Symbol.iterator]: () => _items[Symbol.iterator](),
+            toArray: () => _items
         };
 
         for (const col of columnsInfo) {
@@ -1302,6 +1304,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         let r = {
             find: (c: FieldMetadata<any> | string) => r[typeof c === "string" ? c : c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator](),
+            toArray: () => _items
 
         };
 
