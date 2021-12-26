@@ -80,13 +80,20 @@ export abstract class Action<inParam, outParam>{
                 res.success(r);
             }
             catch (err) {
-                res.error(err);
+                if (err instanceof ForbiddenError)
+                    res.forbidden();
+                else
+                    res.error(err);
             }
 
         });
     }
 }
-
+class ForbiddenError extends Error {
+    constructor() {
+        super("Forbidden");
+    }
+}
 
 export class myServerAction extends Action<inArgs, result>
 {
@@ -100,7 +107,7 @@ export class myServerAction extends Action<inArgs, result>
         await ds.transaction(async ds => {
             remult.setDataProvider(ds);
             if (!remult.isAllowedForInstance(undefined, this.options.allowed))
-                throw 'not allowed';
+                throw new ForbiddenError();
 
             info.args = await prepareReceivedArgs(this.types, info.args, remult, ds, res);
             try {
@@ -271,7 +278,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                         await (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
                                     }
                                     if (!remult.isAllowedForInstance(y, allowed))
-                                        throw 'not allowed';
+                                        throw new ForbiddenError();
                                     let defs = getEntityRef(y) as rowHelperImplementation<any>;
                                     await defs.__validateEntity();
                                     try {
@@ -293,7 +300,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                     let controllerRef = getControllerRef(y, remult) as controllerRefImpl;
                                     await controllerRef._updateEntityBasedOnApi(d.fields);
                                     if (!remult.isAllowedForInstance(y, allowed))
-                                        throw 'not allowed';
+                                        throw new ForbiddenError();
 
                                     await controllerRef.__validateEntity();
                                     try {
