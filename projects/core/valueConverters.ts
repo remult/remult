@@ -115,7 +115,7 @@ export const BoolValueConverter: ValueConverter<Boolean> = {
     if (value !== undefined && value !== null) {
       return value.toString().trim().toLowerCase() == 'true';
     }
-    return undefined;
+    return value;
   },
   toJson: x => x,
   fromInput: x => BoolValueConverter.fromJson(x),

@@ -23,8 +23,10 @@ This tutorial requires setting up an Angular project, an API server project and 
 
 1. Clone the [remult-angular-todo](https://github.com/remult/remult-angular-todo) repository and install its dependencies.
    ```sh
-   git clone https://github.com/remult/remult-angular-todo.git
+   md remult-angular-todo
    cd remult-angular-todo
+   git init
+   git pull https://github.com/remult/remult-angular-todo.git
    npm i
    ```
 2. Open your IDE.
@@ -277,11 +279,11 @@ Let's implement this feature within the main `AppComponent` class.
      title = 'remult-angular-todo';
      constructor(public remult: Remult) {
      }
-     tasksRepo = this.remult.repo(Task);
-     newTask = this.tasksRepo.create();
-     async createNewTask() {
+     taskRepo = this.remult.repo(Task);
+     newTask = this.taskRepo.create();
+     async createTask() {
        await this.newTask.save();
-       this.newTask = this.tasksRepo.create();
+       this.newTask = this.taskRepo.create();
      }
    }
 
@@ -291,11 +293,11 @@ Let's implement this feature within the main `AppComponent` class.
 
    * The `remult` field of the `AppComponent` class will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
 
-   * The `tasksRepo` field contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
+   * The `taskRepo` field contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
 
    * The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
-   * The `createNewTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` field is replaced with a new `Task` object.
+   * The `createTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` field is replaced with a new `Task` object.
 
 2. Replace the contents of `app.component.html` with the following HTML:
 
@@ -304,7 +306,7 @@ Let's implement this feature within the main `AppComponent` class.
    <title>{{title}}</title>
    <div>
       <input [(ngModel)]="newTask.title" placeholder="Title">
-      <button (click)="createNewTask()">Create new task</button>
+      <button (click)="createTask()">Create new task</button>
    </div>
    ```
 
@@ -327,7 +329,7 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
    ```ts
    tasks: Task[] = [];
    async loadTasks() {
-     this.tasks = await this.tasksRepo.find();
+     this.tasks = await this.taskRepo.find();
    }
    ngOnInit() {
      this.loadTasks();
@@ -346,13 +348,13 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
    </ul>
    ```
 
-3. To refresh the list of tasks after a new task is created, add a `loadTasks` method call to the `createNewTask` method of the `AppComponent` class.
+3. To refresh the list of tasks after a new task is created, add a `loadTasks` method call to the `createTask` method of the `AppComponent` class.
 
    *src/app/app.component.ts*
    ```ts{4}
-   async createNewTask() {
+   async createTask() {
       await this.newTask.save();
-      this.newTask = this.tasksRepo.create();
+      this.newTask = this.taskRepo.create();
       this.loadTasks();
    }
    ```
@@ -469,16 +471,16 @@ export class AppComponent {
   title = 'remult-angular-todo';
   constructor(public remult: Remult) {
   }
-  tasksRepo = this.remult.repo(Task);
-  newTask = this.tasksRepo.create();
-  async createNewTask() {
+  taskRepo = this.remult.repo(Task);
+  newTask = this.taskRepo.create();
+  async createTask() {
     await this.newTask.save();
-    this.newTask = this.tasksRepo.create();
+    this.newTask = this.taskRepo.create();
     this.loadTasks();
   }
   tasks: Task[] = [];
   async loadTasks() {
-    this.tasks = await this.tasksRepo.find();
+    this.tasks = await this.taskRepo.find();
   }
   ngOnInit() {
     this.loadTasks();
@@ -495,7 +497,7 @@ export class AppComponent {
 <title>{{title}}</title>
 <div>
   <input [(ngModel)]="newTask.title" placeholder="Title">
-  <button (click)="createNewTask()">Create new task</button>
+  <button (click)="createTask()">Create new task</button>
 </div>
 <ul>
   <li *ngFor="let task of tasks">
@@ -519,7 +521,7 @@ In the `loadTasks` method of the `AppComponent` class, add an object literal arg
 *src/app/app.component.ts*
 ```ts{2-4}
 async loadTasks() {
-  this.tasks = await this.tasksRepo.find({
+  this.tasks = await this.taskRepo.find({
     orderBy: { completed: "asc" }
   });
 }
@@ -537,7 +539,7 @@ Let's hide all completed tasks, using server side filtering.
    *src/app/app.component.ts*
    ```ts{3}
    async loadTasks() {
-     this.tasks = await this.tasksRepo.find({
+     this.tasks = await this.taskRepo.find({
        where: { completed: false },
        orderBy: { completed: "asc" }
      });
@@ -563,7 +565,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    *src/app/app.component.ts*
    ```ts{3}
    async loadTasks() {
-     this.tasks = await this.tasksRepo.find({
+     this.tasks = await this.taskRepo.find({
        where: this.hideCompleted ? { completed: false } : {},
        orderBy: { completed: "asc" }
      });
@@ -636,7 +638,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    *src/app/app.component.ts*
    ```ts
    async setAll(completed: boolean) {
-     for await (const task of this.tasksRepo.query()) {
+     for await (const task of this.taskRepo.query()) {
         task.completed = completed;
         await task.save();
      }
@@ -755,7 +757,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 <ng-container *ngIf="remult.authenticated()">
   <div>
     <input [(ngModel)]="newTask.title" placeholder="Title">
-    <button (click)="createNewTask()">Create new task</button>
+    <button (click)="createTask()">Create new task</button>
     <div *ngIf="newTask.$.title.error">
       {{newTask.$.title.error}}
    </div>
@@ -784,7 +786,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ```ts{2}
 async loadTasks() {
   if (this.remult.authenticated())
-    this.tasks = await this.tasksRepo.find({
+    this.tasks = await this.taskRepo.find({
       where: this.hideCompleted ? { completed: false } : {},
       orderBy: { completed: "asc" }
     });

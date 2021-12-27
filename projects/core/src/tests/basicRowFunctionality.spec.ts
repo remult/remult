@@ -1263,6 +1263,7 @@ describe("data api", () => {
   it("columnsAreOk", () => {
     let c = new Remult().repo(newCategories).create();
     expect([...c._.fields].length).toBe(6);
+    expect(c._.fields.toArray().length).toBe(6);
 
   });
 

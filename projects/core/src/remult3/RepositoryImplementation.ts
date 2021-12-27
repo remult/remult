@@ -21,23 +21,23 @@ import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 let classValidatorValidate: ((item: any, ref: {
     fields: Fields<any>
 }) => Promise<void>) | undefined = undefined;
-import("class-validator".toString())
-    .then((v) => {
-        classValidatorValidate = (item, ref) => {
-            return v.validate(item).then(errors => {
-                for (const err of errors) {
-                    for (const key in err.constraints) {
-                        if (Object.prototype.hasOwnProperty.call(err.constraints, key)) {
-                            const element = err.constraints[key];
-                            ref.fields.find(err.property).error = element;
-                        }
-                    }
-                }
-            });
-        }
-    })
-    .catch(() => {
-    });
+// import("class-validator".toString())
+//     .then((v) => {
+//         classValidatorValidate = (item, ref) => {
+//             return v.validate(item).then(errors => {
+//                 for (const err of errors) {
+//                     for (const key in err.constraints) {
+//                         if (Object.prototype.hasOwnProperty.call(err.constraints, key)) {
+//                             const element = err.constraints[key];
+//                             ref.fields.find(err.property).error = element;
+//                         }
+//                     }
+//                 }
+//             });
+//         }
+//     })
+//     .catch(() => {
+//     });
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
     async createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>> {
@@ -662,7 +662,7 @@ abstract class rowHelperBase<T>
                 val = this.instance[col.key];
             if (val !== undefined) {
                 val = col.valueConverter.toJson(val);
-                if (val !== undefined)
+                if (val !== undefined && val !== null)
                     val = col.valueConverter.fromJson(
                         JSON.parse(
                             JSON.stringify(val)));
@@ -808,7 +808,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let _items = [];
             let r = {
                 find: (c: FieldMetadata<T> | string) => r[typeof c === "string" ? c : c.key],
-                [Symbol.iterator]: () => _items[Symbol.iterator]()
+                [Symbol.iterator]: () => _items[Symbol.iterator](),
+                toArray: () => _items
             };
             for (const c of this.info.columnsInfo) {
                 _items.push(r[c.key] = new FieldRefImplementation(c, this.info.fields[c.key], this.instance, this, this));
@@ -844,7 +845,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             }
 
             if (this.info.idMetadata.field instanceof CompoundIdField)
-                d.id = undefined;
+                delete (d.id);
             let updatedRow: any;
             try {
 
@@ -858,7 +859,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                     for (const key in d) {
                         if (Object.prototype.hasOwnProperty.call(d, key)) {
                             const element = d[key];
-                            if (element !== this.originalValues[key] && !ignoreKeys.includes(key)) {
+                            if (this.fields.find(key).valueChanged() && !ignoreKeys.includes(key)) {
                                 changesOnly[key] = element;
                                 wasChanged = true;
                             }
@@ -1031,7 +1032,8 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
         let _items = [];
         let r = {
             find: (c: FieldMetadata<T> | string) => r[typeof c === "string" ? c : c.key],
-            [Symbol.iterator]: () => _items[Symbol.iterator]()
+            [Symbol.iterator]: () => _items[Symbol.iterator](),
+            toArray: () => _items
         };
 
         for (const col of columnsInfo) {
@@ -1302,6 +1304,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         let r = {
             find: (c: FieldMetadata<any> | string) => r[typeof c === "string" ? c : c.key],
             [Symbol.iterator]: () => _items[Symbol.iterator](),
+            toArray: () => _items
 
         };
 

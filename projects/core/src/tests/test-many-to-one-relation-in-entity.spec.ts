@@ -456,7 +456,7 @@ describe("many to one relation", () => {
 
             }
         });
-        let r= await remult.repo(Products).find({ load: x => [x.category] });
+        let r = await remult.repo(Products).find({ load: x => [x.category] });
         expect(fetches).toBe(2);
         for (const z of r) {
             await z.$.category.load();
@@ -761,3 +761,37 @@ describe("Test entity relation and count finds", () => {
     });
 
 });
+
+@Entity("testUpdateDate")
+export class testUpdateDate extends EntityBase {
+    @Field()
+    id: number;
+    @Field()
+    date: Date = new Date(176, 6, 16);
+}
+it("test that it doesn't save if it doesn't need to", async () => {
+    let mem = new InMemoryDataProvider();
+    let updates = 0;
+    let repo = new Remult({
+        transaction: undefined,
+        getEntityDataProvider: e => {
+            let r = mem.getEntityDataProvider(e);
+            return {
+                find: x => {
+                    return r.find(x);
+                }, count: r.count, delete: r.delete, insert: x => r.insert(x), update: (id, x) => { updates++; return r.update(id, x) }
+            }
+
+        }
+    }).repo(testUpdateDate);
+    await Promise.all(await repo.find().then(x => x.map(y => repo.delete(y))));
+    var r = await repo.create({ id: 1 }).save();
+    expect(updates).toBe(0);
+    await r.save();
+    expect(updates).toBe(0);
+    r.date = new Date(1978, 3, 15);
+    await r.save();
+    expect(updates).toBe(1);
+
+})
+

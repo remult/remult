@@ -1,6 +1,6 @@
 import { Sort } from './sort';
 import { Filter } from './filter/filter-interfaces';
-import { EntityMetadata } from './remult3';
+import { EntityMetadata, OmitEB } from './remult3';
 
 
 export interface DataProvider {
@@ -46,9 +46,9 @@ export function extractSort(sort: any): Sort {
 }
 
 
-export interface ErrorInfo {
+export interface ErrorInfo<entityType = any> {
   message?: string;
-  modelState?: { [key: string]: string };
+  modelState?: { [key: string]: string } & { [Properties in keyof Partial<OmitEB<entityType>>]?: string };
   stack?: string;
   exception?: any;
 }

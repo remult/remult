@@ -28,25 +28,10 @@ export class ProductsComponent implements OnInit {
   }
   grid = new GridSettings(this.remult.repo(stam));
   ngOnInit(): void {
-    this.remult.repo(stam).find();
+    stam.myMethod();
   }
   async click() {
-    let s = this.remult.repo(stam);
-    let t = this.remult.repo(TestId);
-    for (const i of [...await s.find(), ...await t.find()]) {
-      await i.delete();
-    }
-    for (let index = 0; index < 10; index++) {
 
-      await s.create({
-        name: index + '',
-        testId: await t.create({
-          id: index,
-          name: index + ''
-        }).save()
-      }).save();
-
-    }
   }
 
 }
@@ -88,8 +73,8 @@ export class stam extends IdEntity {
   @Field()
   testId: TestId;
 
-  @BackendMethod({ allowed: true })
-  async myMethod(remult?: Remult) {
+  @BackendMethod({ allowed: false })
+  static async myMethod(remult?: Remult) {
 
   }
 }
