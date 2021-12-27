@@ -7,7 +7,7 @@
 * Type-safe backend query builder
 
 #### Use the same model classes for both frontend and backend code
-With Remult it is simple to keep your code DRY and increase development speed and maintainability by defining a single Typescript model class (for each domain object) and sharing it between your frontend and backend code. 
+With Remult it is simple to keep your code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) and increase development speed and maintainability by defining a single TypeScript model class (for each domain object) and sharing it between your frontend and backend code. 
 
 As Remult is "aware" of the runtime context (frontend or backend), data validations and entity lifecycle hooks can be written in layer-agnostic TypeScript which will run, as needed, on either the frontend, the backend, or both.
 
