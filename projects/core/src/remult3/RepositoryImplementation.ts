@@ -820,12 +820,21 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         return this._columns;
 
     }
-
+    private _saving = false;
     async save(): Promise<T> {
         try {
+            if (this._saving)
+                throw new Error("cannot save while entity is already saving");
+            this._saving = true;
+            if (this.wasDeleted())
+                throw new Error("cannot save a deleted row");
             this.isLoading = true;
             await this.__validateEntity();
             let doNotSave = false;
+            for (const col of this.fields) {
+                if (col.metadata.options.saving)
+                    await col.metadata.options.saving(this.instance, col);
+            }
             if (this.info.entityInfo.saving) {
                 await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
             }
@@ -890,6 +899,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         finally {
             this.isLoading = false;
             this._reportChangedToEntityAndFields();
+            this._saving = false;
         }
 
     }
