@@ -1138,6 +1138,9 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     private rawOriginalValue(): any {
         return this.rowBase.originalValues[this.metadata.key];
     }
+    setId(id: (string | number)) {
+        this.value = id;
+    }
 
     get inputValue(): string {
         this.reportObserved();

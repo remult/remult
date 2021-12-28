@@ -38,7 +38,7 @@ export class Filter {
         let result: Filter[] = [];
         for (const key in whereItem) {
             if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
-                const fieldToFilter: any = whereItem[key];
+                let fieldToFilter: any = whereItem[key];
                 {
                     if (key == "$or") {
                         result.push(new OrFilter(...fieldToFilter.map(x => Filter.fromEntityFilter(entity, x))))
@@ -57,6 +57,8 @@ export class Filter {
                         let fh = new filterHelper(entity.fields[key]);
                         let found = false;
                         if (fieldToFilter !== undefined && fieldToFilter != null) {
+                            if (fieldToFilter.$id)
+                                fieldToFilter = fieldToFilter.$id;
                             for (const key in fieldToFilter) {
                                 if (Object.prototype.hasOwnProperty.call(fieldToFilter, key)) {
                                     const element = fieldToFilter[key];

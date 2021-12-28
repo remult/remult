@@ -504,7 +504,7 @@ describe("many to one relation", () => {
         let remult = new Remult();
         remult.setDataProvider(mem);
         let cat = await remult.repo(Categories).create({
-            id: 1, name: 'cat 2'
+            id: 1, name: 'cat 1'
         }).save();
         let p = await remult.repo(Products).create({
             id: 10,
@@ -512,6 +512,8 @@ describe("many to one relation", () => {
             category: cat
         }).save();
         let fetches = 0;
+        await remult.repo(Categories).create({id:2,name:'cat2'}).save();
+        await remult.repo(Categories).create({id:3,name:'cat3'}).save();
         remult = new Remult();
         remult.setDataProvider({
             transaction: undefined,
@@ -531,6 +533,19 @@ describe("many to one relation", () => {
         expect(fetches).toBe(1);
         expect(p.$.category.valueIsNull()).toBe(false);
         expect(fetches).toBe(1);
+        await p.$.category.load();
+        expect(fetches).toBe(2);
+        p.category = 2 as any;
+        expect(fetches).toBe(2);
+        await p.$.category.load();
+        expect(fetches).toBe(3);
+        expect(p.category.name).toBe("cat2");
+        p.$.category.setId(3);
+        expect(fetches).toBe(3);
+        await p.$.category.load();
+        expect(fetches).toBe(4);
+        expect(p.category.name).toBe("cat3");
+        
     });
     it("test to and from json ", async () => {
         let mem = new InMemoryDataProvider();
@@ -651,6 +666,24 @@ describe("many to one relation", () => {
         expect(sqlr.supplier).toBe('sup1');
         expect(await remult.repo(Products).count({ supplier: sup })).toBe(1);
         expect(await remult.repo(Products).count({ supplier: [sup] })).toBe(1);
+
+
+    });
+    it("test filter with id", async () => {
+        let mem = new InMemoryDataProvider();
+        let remult = new Remult();
+        remult.setDataProvider(mem);
+        const c1 = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
+        const c2 = await remult.repo(Categories).create({ id: 2, name: 'cat 2' }).save();
+        const c3 = await remult.repo(Categories).create({ id: 3, name: 'cat 3' }).save();
+        await remult.repo(Products).create({ id: 10, category: c1 }).save();
+        await remult.repo(Products).create({ id: 20, category: c2 }).save();
+        await remult.repo(Products).create({ id: 30, category: c3 }).save();
+        expect(await remult.repo(Products).count({ category: { $id: 1 } })).toBe(1);
+        expect(await remult.repo(Products).count({ category: { $id: [2, 3] } })).toBe(2);
+        expect(await remult.repo(Products).count({ category: { $id: { $ne: 1 } } })).toBe(2);
+        expect(await remult.repo(Products).count({ category: { $id: { $ne: [2, 3] } } })).toBe(1);
+        
 
 
     });
