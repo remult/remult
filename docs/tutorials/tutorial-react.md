@@ -14,11 +14,11 @@ Check out the [Angular tutorial](./tutorial-angular).
 
 This tutorial assumes you are familiar with `TypeScript` and `React`.
 
-Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed. <!-- consider specifying Node minimum version with npm -->
+Before you begin, make sure you have [Node.js](https://nodejs.org) installed. <!-- consider specifying Node minimum version with npm -->
 
 
 ## Setup for the Tutorial
-This tutorial requires setting up a React project, an API Server project and a few lines of code to add Remult.
+This tutorial requires setting up a React project, an API server project and a few lines of code to add Remult.
 
 :::details TLDR: Follow these steps to skip the manual setup and dive straight into coding the app
 
@@ -61,13 +61,13 @@ cd remult-react-todo
 ```
 
 #### Installing required packages
-We  need [axios](https://github.com/axios/axios) for our http requests,  `express` to serve our app's API and, of course, `remult`.
+We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API and, of course, `Remult`.
 ```sh
 npm i axios express remult
 npm i --save-dev @types/express
 ```
 #### The API server project
-The starter API server TypeScript project contains a single module which initializes `Express`, starts Remult and begins listening for API requests.
+The starter API server TypeScript project contains a single module which initializes `Express`, loads the Remult middleware `remultExpress`, and begins listening for API requests.
 
 In our development environment we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server.
 
@@ -134,17 +134,15 @@ The server is now running and listening on port 3002. `ts-node-dev` is watching 
 
 #### Proxy API requests from React DevServer to the API server and run the React app
 The React app created in this tutorial is intended to be served from the same domain as its API. 
-However, for development, the API server will be listening on `http://localhost:3002`, while the React app is served from `http://localhost:3002`. 
+However, for development, the API server will be listening on `http://localhost:3002`, while the React app is served from the default `http://localhost:3000`. 
 
-We'll use the feature to divert all calls for `http://localhost:3002/api` to our dev API server.
+We'll use the [proxy](https://create-react-app.dev/docs/proxying-api-requests-in-development/) feature of webpack dev server to divert all calls for `http://localhost:3000/api` to our dev API server.
 
-1. Configure the proxy by adding the following JSON to the main section of the project's package.json file.
-
-
+1. Configure the proxy by adding the following entry to the main section of the project's package.json file.
 
    *package.json*
    ```json
-   "proxy": "http://localhost:3002",
+   "proxy": "http://localhost:3002"
    ```
 
 2. Create an `npm` script `dev-react` to serve the React app, by adding the following entry to the `scripts` section of `package.json`.
@@ -155,15 +153,16 @@ We'll use the feature to divert all calls for `http://localhost:3002/api` to our
    ```
 
    ::: warning Note
-   The existing `start` and `build` npm scripts created by React CLI will be modified in the [Deployment](#deployment) section of this tutorial to scripts that will `start` and `build` the full-stack app.
+   The existing `start` and `build` npm scripts created by CRA will be modified in the [Deployment](#deployment) section of this tutorial to scripts that will `start` and `build` the full-stack app.
    :::
 
-3. Add the following flag to the `compilerOptions` section of the `tsconfig.json`
+3. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
    
    *tsconfig.json*
    ```json
    "experimentalDecorators": true
    ```
+
 4. Start the React app in a new terminal. **Don't stop the `dev-node` script. `dev-react` and `dev-node` should be running concurrently.**
 
    ```sh
@@ -176,10 +175,11 @@ The default React app main screen should be displayed.
 If you are using Visual Studio Code and would like to run both `dev-node` and `dev-react` scripts using a single Visual Studio Code `task`, create a `.vscode/tasks.json` file with the contents found [here](https://gist.github.com/noam-honig/a303635aded118169c4604fc7c5e988b) and run the `dev` task.
 :::
 
-#### Setting up a React DI Provider for Remult
-Our React starter project is almost ready. All that's left is to add for the front-end `Remult` object. The `Remult` object provided will be used to communicate with the API server.
+#### Setting up a global Remult object for the React app
+Our React starter project is almost ready. All that's left is to add a global `Remult` object which will be used to communicate with the API server via a `Promise` based HTTP client (in this case - `Axios`).
 
-Add a file called `src/common.ts` and place the following content in it:
+Create an `common.ts` file in the `src/` folder with the following code:
+
 *src/common.ts*
 ```ts
 import axios from "axios";
@@ -187,7 +187,6 @@ import { Remult } from "remult";
 
 export const remult = new Remult(axios); 
 ```
-We use [axios](https://github.com/axios/axios) for the http requests
 
 ### Setup completed
 At this point our starter project is up and running. We are now ready to start creating the task list app.
@@ -203,7 +202,7 @@ Let's start coding the app by defining the `Task` entity class.
 The `Task` entity class will be used:
 * As a model class for client-side code
 * As a model class for server-side code
-* By `remult` to generate API endpoints and database commands
+* By `remult` to generate API endpoints, API queries and database commands
 
 The `Task` entity class we're creating will have an `id` field and a `title` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
@@ -229,7 +228,7 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
    import '../Task';
    ```
 
-The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
+The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
@@ -237,14 +236,12 @@ The [@Field](../docs/ref_field.md) decorator tells Remult the `title` property i
 
 ### Create new tasks
 
-The first feature of our app is letting the user create a new task by typing a task title and clicking a button.
+The first feature of our app is letting the user create a new task by typing a task title and clicking a button. Let's implement this feature within the main `App` function component.
 
-Let's implement this feature within the main `App` function.
-
-Add the highlighted code lines to the `App` function file:
+Replace the contents of `App.tsx` with the following:
 
 *src/App.tsx*
-```tsx{2-5,8-12,15-23}
+```tsx
 import { useState } from 'react';
 import { remult } from './common';
 import { Task } from './Task';
@@ -253,6 +250,7 @@ const taskRepo = remult.repo(Task);
 
 function App() {
   const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
+
   const createTask = async () => {
     await newTask.save();
     setNewTask({ newTask: taskRepo.create() });
@@ -274,82 +272,81 @@ function App() {
 export default App;
 ```
 
-The `tasksRepo` constant variable contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
+Here's a quick overview of the different parts of the code snippet:
 
-The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
+* `tasksRepo` is a Remult [Repository](../docs/ref_repository.md) object used to fetch and create Task entity objects.
 
-The `createTask` function stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` member is replaced with a new `Task` object.
+* The `newTask` field contains a new, empty, instance of a Task entity object, instantiated using Remult. 
+
+* The `createTask` function stores the newly created task to the backend database (through an API POST endpoint handled by Remult), and the `newTask` member is replaced with a new Task object.
 
 ### Run and create tasks
 Using the browser, create a few new tasks. Then, navigate to the `tasks` API route at <http://localhost:3002/api/tasks> to see the tasks have been successfully stored on the server.
 
 ::: warning Wait, where is the backend database?
-By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file that contains the created tasks.
+By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file containing the created tasks.
 :::
 
 
 ### Display the list of tasks
-To display the list of existing tasks, we'll add a `Task` array field to the `App` function, load data from the server, and display it in an unordered list.
+To display the list of existing tasks, we'll add a `Task` array field to the `App` function component, load data from the server, and display it in an unordered list.
 
-1. Add the following code to the `App` function:
+Add the highlighted code to the `App` function component:
 
-   *src/App.tsx*
-   ```tsx{4-10,26-31}
-   function App() {
-     const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
-   
-     const [tasks, setTasks] = useState([] as Task[]);
-   
-     const loadTasks = useCallback(async () => {
-       const tasks = await taskRepo.find();
-       setTasks(tasks);
-     }, []);
-     useEffect(() => { loadTasks() }, [loadTasks]);
-   
-     const createTask = async () => {
-       await newTask.save();
-       setNewTask({ newTask: taskRepo.create() });
-     }
-   
-     return (
-       <div>
+*src/App.tsx*
+```tsx{4-11,16,28-33}
+function App() {
+   const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
+
+   const [tasks, setTasks] = useState([] as Task[]);
+
+   const loadTasks = useCallback(async () => {
+      const tasks = await taskRepo.find();
+      setTasks(tasks);
+   }, []);
+
+   useEffect(() => { loadTasks() }, [loadTasks]);
+
+   const createTask = async () => {
+      await newTask.save();
+      setNewTask({ newTask: taskRepo.create() });
+      loadTasks();
+   }
+
+   return (
+      <div>
          <input value={newTask.title}
-           onChange={(e) =>
-             setNewTask({
+            onChange={(e) =>
+               setNewTask({
                newTask: newTask.assign({ title: e.target.value })
-             })}
+               })}
          />
          <button onClick={createTask}>Create Task</button>
          <ul>
-           {tasks.map(task => (
-             <li key={task.id}>
+            {tasks.map(task => (
+               <li key={task.id}>
                {task.title}
-             </li>))}
+               </li>))
+            }
          </ul>
-       </div>
-     );
-   }
-   ```
-::: danger Import useCallback
-Don't forget to import `useCallback` and `useEffect` from `react` for this code to work.
-:::
-3. To refresh the list of tasks after a new task is created, add a `loadTasks` method call to the `createNewTask` method of the `App` function.
+      </div>
+   );
+}
+```
 
-   *src/App.tsx*
-   ```ts{4}
-   const createTask = async () => {
-     await newTask.save();
-     setNewTask({ newTask: taskRepo.create() });
-     loadTasks();
-   }
-   ```
+We've added the following things:
 
-After the browser refreshes, the list of `tasks` appears. Create a new `task` and it's added to the list.
+* `tasks` is a Task array React state to hold the list.
+* `loadTasks` is a React callback which uses the Remult repository's [find](../docs/ref_repository.html#find) method to fetch tasks from the server.
+* React useEffect hook is used to call `loadTasks` once when the React component is loaded.
+* `createTask` now calls `loadTasks` to refresh the list of tasks after a new task is created.
+
+After the browser refreshes, the list of tasks appears. Create a new task and it's added to the list.
 
 ### Delete tasks
-Let's add a `Delete` button next to each task on the list, which will delete that task in the backend database and refresh the list of tasks.
+Let's add a *Delete* button next to each task on the list, which will delete that task in the backend database and refresh the list of tasks.
 
-1. Add the following `deleteTask` method to the `App` function.
+1. Add the following `deleteTask` callback to the `App` function component.
 
    *src/App.tsx*
    ```ts
@@ -359,7 +356,7 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
    }
    ```
 
-2. Add the `Delete` button to the task list item template element in `App.tsx`.
+2. Add the *Delete* button to the task list `tsx`.
 
    *src/App.tsx*
    ```tsx{5}
@@ -372,13 +369,14 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
    </ul>
    ```
 
-After the browser refreshes, a `Delete` button appears next to each task in the list. Delete a `task` by clicking the button.
+After the browser refreshes, a *Delete* button appears next to each task in the list. Delete a task by clicking the button.
 
 ### Making the task titles editable
-To make the titles of the tasks in the list editable, let's add a new React element called `TaskEditor` and use it in our `App` function.
-The `TaskEditor` will have an html `input` for the titles, and the `Save` button to save the changes to the backend database. We'll use the `wasChanged` method of the entity class to disable the `Save` button while there are no changes to save.
+To make the titles of the tasks in the list editable, let's add a `TaskEditor` React functional component and use it in our `App` function component.
 
-1. Create a file called `src/TaskEditor.tsx`, and place the following code in it:
+The `TaskEditor` tsx will contain an `input` for editing the titles, and a *Save* button to save the changes to the backend database. We'll use the `wasChanged` method of Remult's `EntityRef` object (accessed using the `_` member of the entity object) to disable the *Save* button while there are no changes to save.
+
+1. Create a `TaskEditor.tsx` file in the `src` folder, and place the following code in it:
    ```tsx
    import { useEffect, useState } from "react";
    import { Task } from "./Task";
@@ -584,7 +582,7 @@ The RESTful API created by Remult supports server-side sorting and filtering. Le
 ### Show uncompleted tasks first
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `loadTasks` method of the `App` function, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
+In the `loadTasks` method of the `App` function component, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
 
 *src/App.tsx*
 ```ts{2-4}
@@ -602,7 +600,7 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 ### Hide completed tasks
 Let's hide all completed tasks, using server side filtering.
 
-1. In the `loadTasks` method of the `App` function, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)`.
+1. In the `loadTasks` method of the `App` function component, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)`.
 
    *src/App.tsx*
    ```ts{4}
@@ -621,14 +619,14 @@ Let's hide all completed tasks, using server side filtering.
 ### Optionally hide completed tasks
 Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
 
-1. Add a `hideCompleted` boolean field to the `App` function.
+1. Add a `hideCompleted` boolean field to the `App` function component.
 
    *src/App.tsx*
    ```ts
    const [hideCompleted, setHideCompleted] = useState(false);
    ```
 
-2. In the `loadTasks` method of the `App` function, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`, also register the `hideCompleted` in the array that is sent as the second parameter to `useCallback`.
+2. In the `loadTasks` method of the `App` function component, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`, also register the `hideCompleted` in the array that is sent as the second parameter to `useCallback`.
 
    *src/App.tsx*
    ```ts{4,7}
@@ -741,7 +739,7 @@ When performing operations on multiple entity objects, performance consideration
 ### Set all tasks as un/completed
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAll` async function to the `App` function, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add a `setAll` async function to the `App` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
    *src/App.tsx*
    ```ts
@@ -773,7 +771,7 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-1. Create a new `TasksService` class and refactor the `for await` loop from the `setAll` function of the `App` function into a new, `static`, `setAll` function in the `TasksService` class,  which will run on the server.
+1. Create a new `TasksService` class and refactor the `for await` loop from the `setAll` function of the `App` function component into a new, `static`, `setAll` function in the `TasksService` class,  which will run on the server.
 
    *src/TasksService.ts*
    ```ts
@@ -1006,7 +1004,7 @@ In this section, we'll be using the following packages:
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-6. Add the following code to the `App` function, and replace the start of the `return` statement, .
+6. Add the following code to the `App` function component, and replace the start of the `return` statement, .
 
    *src/App.tsx*
    ```tsx

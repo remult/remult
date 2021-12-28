@@ -13,11 +13,11 @@ Check out the [React tutorial](./tutorial-react).
 
 This tutorial assumes you are familiar with `TypeScript` and `Angular`.
 
-Before you begin, make sure you have [Node.js](https://nodejs.org/en/) installed. <!-- consider specifying Node minimum version with npm -->
+Before you begin, make sure you have [Node.js](https://nodejs.org) installed. <!-- consider specifying Node minimum version with npm -->
 
 
 ## Setup for the Tutorial
-This tutorial requires setting up an Angular project, an API Server project and a few lines of code to add Remult.
+This tutorial requires setting up an Angular project, an API server project and a few lines of code to add Remult.
 
 :::details TLDR: Follow these steps to skip the manual setup and dive straight into coding the app
 
@@ -66,13 +66,13 @@ cd remult-angular-todo
 ```
 
 #### Installing required packages
-We need `express` to serve our app's API and, of course, `remult`.
+We need `Express` to serve our app's API and, of course, `Remult`.
 ```sh
 npm i express remult
 npm i --save-dev @types/express
 ```
 #### The API server project
-The starter API server TypeScript project contains a single module which initializes `Express`, starts Remult and begins listening for API requests.
+The starter API server TypeScript project contains a single module which initializes `Express`, loads the Remult middleware `remultExpress`, and begins listening for API requests.
 
 In our development environment we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server.
 
@@ -133,7 +133,7 @@ The server is now running and listening on port 3002. `ts-node-dev` is watching 
 
 #### Proxy API requests from Angular DevServer to the API server and run the Angular app
 The Angular app created in this tutorial is intended to be served from the same domain as its API. 
-However, for development, the API server will be listening on `http://localhost:3002`, while the Angular app is served from `http://localhost:4200`. 
+However, for development, the API server will be listening on `http://localhost:3002`, while the Angular app is served from the default `http://localhost:4200`. 
 
 We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-server) feature of webpack dev server to divert all calls for `http://localhost:4200/api` to our dev API server.
 
@@ -173,7 +173,7 @@ If you are using Visual Studio Code and would like to run both `dev-node` and `d
 :::
 
 #### Setting up an Angular DI Provider for Remult
-Our Angular starter project is almost ready. All that's left is to add a dependency injection provider for the front-end `Remult` object. The `Remult` object provided will be used to communicate with the API server.
+Our Angular starter project is almost ready. All that's left is to add a dependency injection provider for the front-end `Remult` object. The `Remult` object provided will be used to communicate with the API server via a `Promise` based HTTP client (in this case - Angular's `HttpClient`).
 
 This requires making the following changes to `app.module.ts`:
 1. Import Angular's [HttpClientModule](https://angular.io/api/common/http/HttpClientModule)
@@ -224,7 +224,7 @@ Let's start coding the app by defining the `Task` entity class.
 The `Task` entity class will be used:
 * As a model class for client-side code
 * As a model class for server-side code
-* By `remult` to generate API endpoints and database commands
+* By `remult` to generate API endpoints, API queries and database commands
 
 The `Task` entity class we're creating will have an `id` field and a `title` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
@@ -250,7 +250,7 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
    import '../app/task';
    ```
 
-The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and database collection/table), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
+The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
@@ -289,13 +289,15 @@ Let's implement this feature within the main `AppComponent` class.
 
    ```
 
-   The `remult` field of the `AppComponent` class will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
+   Here's a quick overview of the different parts of the code snippet:
 
-   The `taskRepo` field contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
+   * The `remult` field of the `AppComponent` class will be instantiated by Angular's dependency injection. We've declared it as a `public` field so we can use it in the HTML template later on.
 
-   The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
+   * The `taskRepo` field contains a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
+
+   * The `newTask` field contains a new, empty, instance of a `Task` entity object, instantiated using Remult. 
    
-   The `createTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` field is replaced with a new `Task` object.
+   * The `createTask` method stores the newly created `task` to the backend database (through an API `POST` endpoint handled by Remult), and the `newTask` field is replaced with a new `Task` object.
 
 2. Replace the contents of `app.component.html` with the following HTML:
 
@@ -314,7 +316,7 @@ Let's implement this feature within the main `AppComponent` class.
 Using the browser, create a few new tasks. Then, navigate to the `tasks` API route at <http://localhost:4200/api/tasks> to see the tasks have been successfully stored on the server.
 
 ::: warning Wait, where is the backend database?
-By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file that contains the created tasks.
+By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file containing the created tasks.
 :::
 
 
@@ -360,7 +362,7 @@ To display the list of existing tasks, we'll add a `Task` array field to the `Ap
 After the browser refreshes, the list of `tasks` appears. Create a new `task` and it's added to the list.
 
 ### Delete tasks
-Let's add a `Delete` button next to each task on the list, which will delete that task in the backend database and refresh the list of tasks.
+Let's add a *Delete* button next to each task on the list, which will delete that task in the backend database and refresh the list of tasks.
 
 1. Add the following `deleteTask` method to the `AppComponent` class.
 
@@ -372,7 +374,7 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
    }
    ```
 
-2. Add the `Delete` button to the task list item template element in `app.component.html`.
+2. Add the *Delete* button to the task list item template element in `app.component.html`.
 
    *src/app/app.component.html*
    ```html{3}
@@ -382,10 +384,10 @@ Let's add a `Delete` button next to each task on the list, which will delete tha
    </li>
    ```
 
-After the browser refreshes, a `Delete` button appears next to each task in the list. Delete a `task` by clicking the button.
+After the browser refreshes, a *Delete* button appears next to each task in the list. Delete a task by clicking the button.
 
 ### Making the task titles editable
-To make the titles of the tasks in the list editable, let's add an html `input` for the titles, and a `Save` button to save the changes to the backend database. We'll use the `wasChanged` method of the entity class to disable the `Save` button while there are no changes to save.
+To make the titles of the tasks in the list editable, let's add an html `input` for the titles, and a *Save* button to save the changes to the backend database. We'll use the `wasChanged` method of Remult's `EntityRef` object (accessed using the `_` member of the entity object) to disable the *Save* button while there are no changes to save.
 
 Replace the task `title` template expression in `app.component.html` with the highlighted lines:
 
