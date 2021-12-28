@@ -18,8 +18,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
     caption?: string;
     displayValue?: (entity: entityType, value: valueType) => string;
     defaultValue?: (entity: entityType) => valueType | Promise<valueType>;
-    validate?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (void | Promise<void>)) | ((entity: entityType, col: FieldRef<entityType, valueType>) => (void | Promise<void>))[];
-    saving?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (void | Promise<void>));
+    validate?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>)) | ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>))[];
+    saving?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>));
     inputType?: string;
     allowNull?: boolean;
 
