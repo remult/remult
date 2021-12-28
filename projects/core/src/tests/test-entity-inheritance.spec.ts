@@ -13,7 +13,7 @@ export class parent extends EntityBase {
     id: number = 0;
     @Field()
     myField: string = '';
-    @Field<parent>({ saving: self => { self.autoSavedField = "auto" } })
+    @Field<parent>({ saving: self => self.autoSavedField = "auto" })
     autoSavedField: string = '';
 }
 @Entity<child>("child", {
