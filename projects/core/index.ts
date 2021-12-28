@@ -21,6 +21,7 @@ export {
     FindFirstOptions,
     ComparisonValueFilter,
     ValueFilter,
+    IdFilter,
     ContainsStringValueFilter,
     getFields,
     EntityRef,
