@@ -234,7 +234,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
 export interface ContainsStringValueFilter {
     $contains?: string,
 }
-export type IdFilter<valueType extends { id: (string | number) }> = ValueFilter<valueType> | {
+export type IdFilter<valueType> = ValueFilter<valueType> | {
     $id: ValueFilter<valueType extends { id: number } ? number : string>;
 }
 
