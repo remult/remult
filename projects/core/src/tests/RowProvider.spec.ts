@@ -263,7 +263,7 @@ describe("Closed List  column", () => {
 });
 
 
-@ValueListFieldType(valueList)
+@ValueListFieldType()
 class valueList {
   static firstName = new valueList();
   static listName = new valueList();

@@ -1447,11 +1447,12 @@ export function IntegerField<entityType = any>(...options: (FieldOptions<entityT
         valueConverter: IntegerValueConverter
     }, ...options)
 }
-export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(type: ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return FieldType<valueType>({
-        valueConverter: new ValueListValueConverter(type),
-        displayValue: (item, val) => val.caption
-    }, ...options)
+export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+    return (type: ClassType<valueType>) =>
+        FieldType<valueType>({
+            valueConverter: new ValueListValueConverter(type),
+            displayValue: (item, val) => val.caption
+        }, ...options)(type)
 }
 export function UuidField<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return Field({

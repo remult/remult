@@ -6,7 +6,7 @@ import { Field, Entity, getFields, FieldType, ValueListFieldType } from '../remu
 import { IdEntity } from '../id-entity';
 
 
-@ValueListFieldType(myType)
+@ValueListFieldType()
 export class myType {
     static x = new myType((n) => 'x' + n);
     static y = new myType((n) => 'y' + n);

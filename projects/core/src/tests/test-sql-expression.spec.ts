@@ -137,21 +137,21 @@ describe("Postgres create db", () => {
 
 });
 
-@ValueListFieldType(intId)
+@ValueListFieldType()
 class intId {
     static z = new intId(0, '');
     constructor(public id: number, public caption: string) {
 
     }
 }
-@ValueListFieldType(stringId)
+@ValueListFieldType()
 class stringId {
     static z = new stringId('0', '');
     constructor(public id: string, public caption: string) {
 
     }
 }
-@ValueListFieldType(stringId2)
+@ValueListFieldType()
 class stringId2 {
     static z = new stringId2();
     constructor(public id?: string, public caption?: string) {
