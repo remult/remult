@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="http://typeorm.io/">
+  <a href="http://remult.dev/">
     <img src="https://github.com/remult/remult/raw/master/docs/.vuepress/public/logo.png" width="140" height="140">
   </a>
   <h1>Remult</h1>
