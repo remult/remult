@@ -1,5 +1,13 @@
-# Remult
-![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg) [![npm version](https://badge.fury.io/js/remult.svg)](https://badge.fury.io/js/remult)
+<div align="center">
+  <a href="http://typeorm.io/">
+    <img src="https://github.com/remult/remult/raw/master/docs/.vuepress/public/logo.png" width="140" height="140">
+  </a>
+  <h1>Remult</h1>
+	<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg">
+	<a href="https://badge.fury.io/js/remult">
+		<img alt="npm version" src="https://badge.fury.io/js/remult.svg">
+	</a>
+</div>
 
 ## What is Remult?
 
