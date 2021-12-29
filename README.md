@@ -3,7 +3,9 @@
     <img src="https://github.com/remult/remult/raw/master/docs/.vuepress/public/logo.png" width="140" height="140">
   </a>
   <h1>Remult</h1>
-	<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg">
+	<a href="https://raw.githubusercontent.com/remult/remult/master/LICENSE">
+		<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg">
+	</a>
 	<a href="https://badge.fury.io/js/remult">
 		<img alt="npm version" src="https://badge.fury.io/js/remult.svg">
 	</a>
