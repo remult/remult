@@ -387,7 +387,7 @@ Let's add a *Delete* button next to each task on the list, which will delete tha
 After the browser refreshes, a *Delete* button appears next to each task in the list. Delete a task by clicking the button.
 
 ### Making the task titles editable
-To make the titles of the tasks in the list editable, let's add an html `input` for the titles, and a *Save* button to save the changes to the backend database. We'll use the `wasChanged` method of Remult's `EntityRef` object (accessed using the `_` member of the entity object) to disable the *Save* button while there are no changes to save.
+To make the titles of the tasks in the list editable, let's add an `input` for the titles, and a *Save* button to save the changes to the backend database. We'll use the `wasChanged` method of Remult's `EntityRef` object (accessed using the `_` member of the entity object) to disable the *Save* button while there are no changes to save.
 
 Replace the task `title` template expression in `app.component.html` with the highlighted lines:
 
@@ -411,7 +411,7 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    completed: boolean = false;
    ```
 
-2. Add a an html `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 
+2. Add a an `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 
    
    Set the `text-decoration` style attribute expression of the task `title` input element to evaluate to `line-through` when the value of `completed` is `true`.
 

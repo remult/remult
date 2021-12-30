@@ -402,23 +402,24 @@ The `TaskEditor` tsx will contain an `input` for editing the titles, and a *Save
    }
    ```
 
-Replace the task `title` template expression in `App.tsx` with the highlighted lines:
+2. Replace the task title `tsx` expression in `App.tsx` with the highlighted line:
 
-*src/App.tsx*
-```tsx{3}
-<ul>
-    {tasks.map(task => (<li key={task.id}>
-        <TaskEditor task={task} />
-        <button onClick={() => deleteTask(task)}>Delete</button>
-    </li>))}
-</ul>
-```
-::: danger Import TaskEditor
-Don't forget to import `TaskEditor` from `./TaskEditor.ts` for this code to work.
-```ts
-import { TaskEditor } from './TaskEditor';
-```
-:::
+   *src/App.tsx*
+   ```tsx{3}
+   <ul>
+      {tasks.map(task => (<li key={task.id}>
+         <TaskEditor task={task} />
+         <button onClick={() => deleteTask(task)}>Delete</button>
+      </li>))}
+   </ul>
+   ```
+
+   ::: danger Import TaskEditor
+   Don't forget to import `TaskEditor` into `App.tsx` for this code to work.
+   ```ts
+   import { TaskEditor } from './TaskEditor';
+   ```
+   :::
 
 ### Mark tasks as completed
 Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
