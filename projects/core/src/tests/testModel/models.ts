@@ -1,7 +1,7 @@
 
 import { FieldType as FieldType, ValueListFieldType } from "../../remult3";
 
-@ValueListFieldType(Status)
+@ValueListFieldType()
 export class Status {
   static open = new Status(0, "open");
   static closed = new Status(1, "closed");

@@ -86,7 +86,7 @@ export interface Subscribable {
 }
 
 export type Fields<entityType> = {
-    [Properties in keyof OmitEB<entityType>]: FieldRef<entityType, entityType[Properties]>
+    [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends { id: (number | string) } ? IdFieldRef<entityType, entityType[Properties]> : FieldRef<entityType, entityType[Properties]>
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>,
     [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>,
@@ -108,6 +108,9 @@ export type FieldsMetadata<entityType> = {
 
 export type SortSegments<entityType> = {
     [Properties in keyof entityType]: SortSegment & { descending(): SortSegment }
+}
+export interface IdFieldRef<entityType, valueType> extends FieldRef<entityType, valueType> {
+    setId(id: valueType extends { id: number } ? number : valueType extends { id: string } ? string : (string | number))
 }
 
 export interface FieldRef<entityType = any, valueType = any> extends Subscribable {
@@ -206,6 +209,8 @@ export declare type EntityFilter<entityType> = {
         Partial<OmitEB<entityType>>[Properties] extends (number | Date | undefined) ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> :
         Partial<OmitEB<entityType>>[Properties] extends (string | undefined) ? ContainsStringValueFilter & ComparisonValueFilter<string> :
         Partial<OmitEB<entityType>>[Properties] extends (boolean | undefined) ? ValueFilter<boolean> :
+        Partial<OmitEB<entityType>>[Properties] extends ({ id: (number) } | undefined) ? IdFilter<number, Partial<OmitEB<entityType>>[Properties]> :
+        Partial<OmitEB<entityType>>[Properties] extends ({ id: (string) } | undefined) ? IdFilter<string, Partial<OmitEB<entityType>>[Properties]> :
         ValueFilter<Partial<OmitEB<entityType>>[Properties]>) & ContainsStringValueFilter;
 } & {
     $or?: EntityFilter<entityType>[];
@@ -229,6 +234,9 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
 }
 export interface ContainsStringValueFilter {
     $contains?: string,
+}
+export type IdFilter<idType, valueType extends { id: idType }> = ValueFilter<valueType> | {
+    $id: ValueFilter<idType>;
 }
 
 
