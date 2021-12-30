@@ -461,10 +461,6 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
 
 After the browser refreshes, a checkbox appears next to each task in the list. Mark a few tasks as completed using the checkboxes.
 
-::: tip
-To save the change of `task.completed` immediately when the user checks or unchecks the checkbox, simply add a `change` event handler to the checkbox element and call `task.save()`.
-:::
-
 ### Code review
 We've implemented the following features of the todo app:
 * Creating new tasks
