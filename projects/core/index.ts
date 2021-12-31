@@ -9,6 +9,7 @@ export {
     EntityBase,
     ControllerBase,
     FieldRef,
+    IdFieldRef,
     Fields,
     EntityMetadata,
     EntityOrderBy,
