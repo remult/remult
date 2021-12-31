@@ -19,10 +19,12 @@
 * Type-safe frontend API client
 * Type-safe backend query builder
 
-### Remult :heart: Monorepos
+#### Remult :heart: Monorepos
 
 Using a `monorepo` approach, with model types shared between frontend and backend code, Remult can enforce data validation and constraints, defined once, on both frontend and REST API level.
 
+## Getting started
+The best way to learn Remult is by following a tutorial of a simple Todo app with a Node.js Express backend. There's one [using a React frontend](https://remult.dev/tutorials/tutorial-react.html) and one [using Angular](https://remult.dev/tutorials/tutorial-angular.html).
 
 ## Installation
 ```sh
@@ -149,6 +151,3 @@ export class Article extends EntityBase {
     content: string;
 }
 ```
-
-## Getting started
-The best way to learn Remult is by following a tutorial of a simple fullstack Todo app using [React](https://remult.dev/tutorials/tutorial-react.html) or [Angular](https://remult.dev/tutorials/tutorial-angular.html).
