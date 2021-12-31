@@ -46,6 +46,15 @@ export function fitForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) =
     });
   });
 }
+export async function testAsIfOnBackend(what: () => Promise<any>) {
+  try {
+    actionInfo.runningOnServer = true;
+    await what();
+  }
+  finally {
+    actionInfo.runningOnServer = false;
+  }
+}
 
 
 export const ActionTestConfig = {
