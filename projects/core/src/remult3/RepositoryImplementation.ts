@@ -373,7 +373,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             let z = where;
             where = {
                 $and: [
-                    z, this.metadata.options.backendPrefilter
+                    z, await Filter.resolve(this.metadata.options.backendPrefilter)
                 ]
             } as EntityFilter<entityType>;
         }

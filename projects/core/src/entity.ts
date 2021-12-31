@@ -46,7 +46,7 @@ export interface EntityOptions<entityType = any> {
    * @example
    * fixedWhereFilter: () => this.archive.isEqualTo(false)
    */
-  backendPrefilter?: EntityFilter<entityType>;
+  backendPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
   /** An order by to be used, in case no order by was specified
    * @example
    * defaultOrderBy: { name: "asc" }

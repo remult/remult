@@ -186,6 +186,27 @@ describe("", () => {
     expect((await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew()).toBe(true, 'lookup ');
   });
 })
+@EntityDecorator<stam1>('categories', {
+  backendPrefilter: async () => ({ description: 'b' })
+})
+class stam2 extends newCategories {
+
+}
+describe("", () => {
+  it("works with predefined Entity Filter lambda", async () => {
+    let [c] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, stam2);
+    let r = await c.find();
+    expect(r.length).toBe(1, 'array length');
+    expect(r[0].id).toBe(2, 'value of first row');
+    expect(await c.count()).toBe(1, 'count');
+    expect(await c.findFirst({ id: 1 })).toBe(undefined, 'find first');
+    expect((await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew()).toBe(true, 'lookup ');
+  });
+})
 
 @EntityDecorator<CategoriesForThisTest>(undefined, {
   allowApiUpdate: true,
