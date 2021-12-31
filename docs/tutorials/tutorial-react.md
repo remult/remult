@@ -402,23 +402,24 @@ The `TaskEditor` tsx will contain an `input` for editing the titles, and a *Save
    }
    ```
 
-Replace the task `title` template expression in `App.tsx` with the highlighted lines:
+2. Replace the task title `tsx` expression in `App.tsx` with the highlighted line:
 
-*src/App.tsx*
-```tsx{3}
-<ul>
-    {tasks.map(task => (<li key={task.id}>
-        <TaskEditor task={task} />
-        <button onClick={() => deleteTask(task)}>Delete</button>
-    </li>))}
-</ul>
-```
-::: danger Import TaskEditor
-Don't forget to import `TaskEditor` from `./TaskEditor.ts` for this code to work.
-```ts
-import { TaskEditor } from './TaskEditor';
-```
-:::
+   *src/App.tsx*
+   ```tsx{3}
+   <ul>
+      {tasks.map(task => (<li key={task.id}>
+         <TaskEditor task={task} />
+         <button onClick={() => deleteTask(task)}>Delete</button>
+      </li>))}
+   </ul>
+   ```
+
+   ::: danger Import TaskEditor
+   Don't forget to import `TaskEditor` into `App.tsx` for this code to work.
+   ```ts
+   import { TaskEditor } from './TaskEditor';
+   ```
+   :::
 
 ### Mark tasks as completed
 Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
@@ -459,10 +460,6 @@ Let's add a new feature - marking tasks in the todo list as completed using a `c
    ```
 
 After the browser refreshes, a checkbox appears next to each task in the list. Mark a few tasks as completed using the checkboxes.
-
-::: tip
-To save the change of `task.completed` immediately when the user checks or unchecks the checkbox, simply add a `change` event handler to the checkbox element and call `task.save()`.
-:::
 
 ### Code review
 We've implemented the following features of the todo app:
