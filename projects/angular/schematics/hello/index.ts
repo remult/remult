@@ -128,8 +128,8 @@ export function hello(_options: Schema): Rule {
       json.dependencies["express"] = "^4.16.4";
       json.dependencies["reflect-metadata"] = "^0.1.12";
       json.dependencies["compression"] = "^1.7.3";
-      json.dependencies["express-graphql"] = "^0.12.0";
-      json.dependencies["graphql"] = "^16.0.0";
+      //json.dependencies["express-graphql"] = "^0.12.0";
+      //json.dependencies["graphql"] = "^16.0.0";
       json.dependencies["swagger-ui-express"] = "^4.1.6";
       json.dependencies["heroku-ssl-redirect"] = "^0.1.1";
       json.devDependencies["ts-node-dev"] = "^1.1.6";

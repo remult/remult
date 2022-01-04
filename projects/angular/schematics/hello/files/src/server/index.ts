@@ -7,8 +7,6 @@ import sslRedirect from 'heroku-ssl-redirect'
 import { createPostgresConnection } from 'remult/postgres';
 import * as swaggerUi from 'swagger-ui-express';
 import { buildSchema } from 'graphql';
-import { graphqlHTTP } from 'express-graphql';
-import { remultGraphql } from 'remult/graphql';
 import * as helmet from 'helmet';
 import * as jwt from 'express-jwt';
 import * as compression from 'compression';
@@ -38,13 +36,7 @@ async function startup() {
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(api.openApiDoc({ title: 'remult-react-todo' })));
 
-    const { schema, rootValue } = remultGraphql(api);
-    if (process.env.NODE_ENV !== "production")
-        app.use('/api/graphql', graphqlHTTP({
-            schema: buildSchema(schema),
-            rootValue,
-            graphiql: true,
-        }));
+
 
     app.use(express.static('dist/my-project'));
     app.use('/*', async (req, res) => {

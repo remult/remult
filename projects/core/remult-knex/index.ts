@@ -1,12 +1,10 @@
 import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter, Remult } from ".."
 import knex, { Knex } from 'knex';
-
 import { FilterConsumer } from "../src/filter/filter-interfaces";
 import { CustomSqlFilterObject } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { isDbReadonly } from "../src/data-providers/sql-database";
 import { allEntities } from "../src/context";
 import { DateOnlyValueConverter } from "../valueConverters";
-import { jitOnlyGuardedExpression } from "@angular/compiler/src/render3/util";
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {

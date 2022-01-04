@@ -1,7 +1,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
-import {  testAllDataProviders } from './testHelper.spec';
+import { testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Remult } from '../context';
 import { OneToMany } from '../column';
@@ -210,7 +210,7 @@ describe("grid filter stuff", () => {
     expect(ds.selectAllIntermitent()).toBe(false);
     expect(ds.selectAllChecked()).toBe(true);
     expect(ds.selectedRows.length).toBe(4);
-    let w = (await  (await ds.getFilterWithSelectedRows())).where;
+    let w = (await (await ds.getFilterWithSelectedRows())).where;
     expect(await c.count(w)).toBe(4);
   });
 });
@@ -1149,17 +1149,26 @@ describe("test datetime column", () => {
   it("displays empty date well empty", () => {
     expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson('0000-00-00'))).toBe('');
   });
-  it("date works", () => {
+  fit("Date only stuff", () => {
+    function test(d: Date, expected: string) {
+      expect(DateOnlyValueConverter.toJson(d)).toBe(expected);
+      const ed = DateOnlyValueConverter.fromJson(expected);
+      expect(ed.getFullYear()).toEqual(d.getFullYear());
+      expect(ed.getMonth()).toEqual(d.getMonth());
+      expect(ed.getDay()).toEqual(d.getDay());
 
-    expect(DateOnlyValueConverter.toJson(new Date('1976-06-16'))).toBe('1976-06-16');
+    }
+    test(new Date('1976-06-16'), '1976-06-16');
+    test(new Date('1976-6-16'), '1976-06-16');
+    test(new Date(1976, 5, 16), '1976-06-16');
+    test(new Date(2021, 9, 30), '2021-10-30');
+    test(new Date(2021, 9, 31), '2021-10-31');
+    test(new Date(2021, 2, 26), '2021-03-26');
+    test(new Date(2021, 2, 26), '2021-03-26');
+  });
 
-  });
-  it("date works2", () => {
-    expect(DateOnlyValueConverter.toJson(new Date('1976-6-16'))).toBe('1976-06-16');
-  });
-  it("date works3", () => {
-    expect(DateOnlyValueConverter.toJson(new Date(1976, 5, 16))).toBe('1976-06-16');
-  });
+
+
   it("date Storage works 1", () => {
 
     let col = decorateColumnSettings<Date>({

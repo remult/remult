@@ -100,7 +100,7 @@ export type FieldsMetadata<entityType> = {
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata,
     [Symbol.iterator]: () => IterableIterator<FieldMetadata>,
-    toArray(): FieldRef<FieldMetadata, any>[]
+    toArray(): FieldMetadata<any>[]
 
 
 }
