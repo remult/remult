@@ -752,7 +752,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 
 ### Hide UI for non-authenticated users
 *src/app/app.component.html*
-```html{2,25}
+```html{2,27}
 <title>{{title}}</title>
 <ng-container *ngIf="remult.authenticated()">
   <div>
@@ -807,19 +807,13 @@ In this section, we'll be using the following packages:
    npm i jsonwebtoken @auth0/angular-jwt express-jwt
    npm i --save-dev  @types/jsonwebtoken @types/express-jwt 
    ```
-2. Create a file called `src/app/auth.service.ts ` and place the following code in it:
-   *src/app/auth.service.ts*
+2. Create a file called `src/app/user.ts` and aplace the following code in it:
+   *src/app/user.ts*
    ```ts
-   import { Injectable } from '@angular/core';
-   import { JwtHelperService } from '@auth0/angular-jwt';
    import * as jwt from 'jsonwebtoken';
-   import { BackendMethod, Remult } from 'remult';
+   import { BackendMethod } from "remult";
    
-   @Injectable({
-       providedIn: 'root'
-   })
-   export class AuthService {
-
+   export class User {
        @BackendMethod({ allowed: true })
        static async signIn(username: string) {
            const validUsers = [
@@ -831,42 +825,14 @@ In this section, we'll be using the following packages:
                throw new Error("Invalid User");
            return jwt.sign(user, getJwtTokenSignKey());
        }
-
-       async signIn(username: string) {
-           this.setAuthToken(await AuthService.signIn(username));
-       }
-   
-       setAuthToken(token: string) {
-           this.remult.setUser(new JwtHelperService().decodeToken(token));
-           sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-       }
-
-       signOut() {
-           this.remult.setUser(undefined!);
-           sessionStorage.removeItem(AUTH_TOKEN_KEY);
-       }
-       
-       static fromStorage(): string {
-           return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
-       }
-   
-       constructor(private remult: Remult) {
-           const token = AuthService.fromStorage();
-           if (token) {
-               this.setAuthToken(token);
-           }
-       }
    }
-   
    export function getJwtTokenSignKey() {
-       if (process.env.NODE_ENV === "production")
-           return process.env.TOKEN_SIGN_KEY!;
+       if (process.env['NODE_ENV'] === "production")
+           return process.env['TOKEN_SIGN_KEY']!;
        return "my secret key";
    }
-
-   const AUTH_TOKEN_KEY = "authToken";
    ```
-   * Note that tThe (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
+   * Note that The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
    
    The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 
@@ -884,7 +850,51 @@ In this section, we'll be using the following packages:
 
    **For this change to take effect, our Angular app's dev server must be restarted by terminating the `dev-ng` script and running it again.**
    :::
-4. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
+
+4. Create a file called `src/app/auth.service.ts ` and place the following code in it:
+   *src/app/auth.service.ts*
+   ```ts
+   import { Injectable } from '@angular/core';
+   import { JwtHelperService } from '@auth0/angular-jwt';
+   import { Remult } from 'remult';
+   import { User } from './user';
+   
+   @Injectable({
+       providedIn: 'root'
+   })
+   export class AuthService {
+   
+       async signIn(username: string) {
+           this.setAuthToken(await User.signIn(username));
+       }
+   
+       setAuthToken(token: string) {
+           this.remult.setUser(new JwtHelperService().decodeToken(token));
+           sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+       }
+   
+       signOut() {
+           this.remult.setUser(undefined!);
+           sessionStorage.removeItem(AUTH_TOKEN_KEY);
+       }
+   
+       static fromStorage(): string {
+           return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
+       }
+   
+       constructor(private remult: Remult) {
+           const token = AuthService.fromStorage();
+           if (token) {
+               this.setAuthToken(token);
+           }
+       }
+   }
+   
+   const AUTH_TOKEN_KEY = "authToken";
+   ```
+   
+
+5. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
 
    *src/app/app.module.ts*
    ```ts
@@ -897,13 +907,13 @@ In this section, we'll be using the following packages:
    ::: warning Imports
    This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/angular-jwt`.
    :::
-5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+6. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
    ```ts{2-3,9-13}
    import * as express from 'express';
    import * as expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../app/auth.service';
+   import { getJwtTokenSignKey } from '../app/user';
    import { remultExpress } from 'remult/remult-express';
    import '../app/task';
    import '../app/tasks.service';
@@ -922,7 +932,7 @@ In this section, we'll be using the following packages:
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-6. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
+7. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
 
    *src/app/app.component.ts*
    ```ts
@@ -945,7 +955,7 @@ In this section, we'll be using the following packages:
    This code requires imports for `AuthService` from `./auth.service`.
    :::
 
-7. Add the following `HTML` after the `title` element of the `app.component.html` template, replacing the `<ng-container>` open tag.
+8. Add the following `HTML` after the `title` element of the `app.component.html` template, replacing the `<ng-container>` open tag.
 
    *src/app/app.component.html*
    ```html
@@ -1026,7 +1036,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
 
-   *src/app/auth.service.ts*
+   *src/app/user.ts*
    ```ts{4}
    @BackendMethod({ allowed: true })
    static async signIn(username: string) {
@@ -1058,7 +1068,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
 1. Install `compression` and `helmet`.
 
    ```sh
-   npm i compression helmet
+   npm i compression helmet@4.6.0
    npm i @types/compression --save-dev
    ```
 
@@ -1068,7 +1078,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    ```ts{4-5,11-12,19-23}
    import * as express from 'express';
    import * as expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../app/auth.service';
+   import { getJwtTokenSignKey } from '../app/user';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
    import { remultExpress } from 'remult/remult-express';
@@ -1084,11 +1094,11 @@ In addition, to follow a few basic production best practices, we'll use [compres
        algorithms: ['HS256']
    }));
    app.use(remultExpress());
-   app.use(express.static('dist'));       
+   app.use(express.static('dist/remult-angular-todo'));
    app.use('/*', async (req, res) => {
-      res.sendFile('./dist/remult-angular-todo/index.html');
+      res.sendFile(process.cwd() + '/dist/remult-angular-todo/index.html');
    });
-   app.listen(process.env.PORT || 3002, () => console.log("Server started"));
+   app.listen(process.env['PORT'] || 3002, () => console.log("Server started"));
    ```
 
 3. Modify the project's `build` npm script to also transpile the API server's TypeScript code to JavaScript (using `tsc`).
@@ -1129,7 +1139,7 @@ For this tutorial, we will use `postgres` as a production database.
    import * as expressJwt from 'express-jwt';
    import * as sslRedirect from 'heroku-ssl-redirect'
    import { createPostgresConnection } from 'remult/postgres';
-   import { getJwtTokenSignKey } from '../app/auth.service';
+   import { getJwtTokenSignKey } from '../app/user';
    import { remultExpress } from 'remult/remult-express';
    import '../app/task';
    import '../app/tasks.service';
@@ -1144,18 +1154,18 @@ For this tutorial, we will use `postgres` as a production database.
        algorithms: ['HS256']
    }));
    const dataProvider = async () => {
-       if (process.env.NODE_ENV === "production")
+       if (process.env['NODE_ENV'] === "production")
            return createPostgresConnection({ configuration: "heroku" })
        return undefined;
    }
    app.use(remultExpress({
        dataProvider
    }));
-   app.use(express.static('dist'));
+   app.use(express.static('dist/remult-angular-todo'));
    app.use('/*', async (req, res) => {
-      res.sendFile('./dist/remult-angular-todo/index.html');
+      res.sendFile(process.cwd() + '/dist/remult-angular-todo/index.html');
    });
-   app.listen(process.env.PORT || 3002, () => console.log("Server started"));
+   app.listen(process.env['PORT'] || 3002, () => console.log("Server started"));
    ```
 2. Create a Heroku `app`:
 
