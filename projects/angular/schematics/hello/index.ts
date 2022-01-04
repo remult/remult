@@ -83,14 +83,20 @@ export function hello(_options: Schema): Rule {
       }
     });
 
-    try {
-      tree.delete('./src/app/app.component.html');
-      tree.delete('./src/app/app.component.ts');
-      tree.delete('./src/app/app.component.scss');
-      tree.delete('./src/app/app-routing.module.ts');
-      tree.delete('./src/app/app.component.spec.ts');
+    for (const file of
+      [
+        './.vscode/tasks.json'
+        , './src/app/app.component.html'
+        , './src/app/app.component.ts'
+        , './src/app/app.component.scss'
+        , './src/app/app-routing.module.ts'
+        , './src/app/app.component.spec.ts']
+    ) {
+      try {
+        tree.delete(file);
+      }
+      catch { }
     }
-    catch { }
 
     //    addDeclarationToModule()
     const sourceTemplates = url('./files');
