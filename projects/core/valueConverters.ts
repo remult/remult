@@ -61,7 +61,8 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
     if (!value || value == '' || value == '0000-00-00')
       return null;
     let d = new Date(Date.parse(value));
-    return new Date(d.valueOf() + d.getTimezoneOffset() * 60000);
+    d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+    return d;
   },
   inputType: InputTypes.date,
   toDb: (val: Date) => {

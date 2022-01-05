@@ -1149,24 +1149,24 @@ describe("test datetime column", () => {
   it("displays empty date well empty", () => {
     expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson('0000-00-00'))).toBe('');
   });
-  fit("Date only stuff", () => {
+  it("Date only stuff", () => {
     function test(d: Date, expected: string) {
       expect(DateOnlyValueConverter.toJson(d)).toBe(expected);
       const ed = DateOnlyValueConverter.fromJson(expected);
-      expect(ed.getFullYear()).toEqual(d.getFullYear());
-      expect(ed.getMonth()).toEqual(d.getMonth());
-      expect(ed.getDay()).toEqual(d.getDay());
+      expect(ed.getFullYear()).toEqual(d.getFullYear(),"year");
+      expect(ed.getMonth()).toEqual(d.getMonth(),"month");
+      expect(ed.getDate()).toEqual(d.getDate(),"day");
 
     }
-    test(new Date('1976-06-16'), '1976-06-16');
-    test(new Date('1976-6-16'), '1976-06-16');
+    test(new Date(2021, 2, 26), '2021-03-26');
+    test(new Date(2021, 9, 31), '2021-10-31');
+    //test(new Date('1976-06-16'), '1976-06-16');
+    //test(new Date('1976-6-16'), '1976-06-16');
     test(new Date(1976, 5, 16), '1976-06-16');
     test(new Date(2021, 9, 30), '2021-10-30');
-    test(new Date(2021, 9, 31), '2021-10-31');
     test(new Date(2021, 2, 26), '2021-03-26');
-    test(new Date(2021, 2, 26), '2021-03-26');
+    "".toString();
   });
-
 
 
   it("date Storage works 1", () => {
