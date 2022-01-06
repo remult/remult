@@ -884,7 +884,7 @@ In this section, we'll be using the following packages:
    npm i jsonwebtoken jwt-decode  express-jwt
    npm i --save-dev  @types/jsonwebtoken @types/express-jwt
    ```
-2. Create a file called `src/app/AuthService.ts ` and place the following code in it:
+2. Create a file called `src/AuthService.ts ` and place the following code in it:
    *src/AuthService.ts*
    ```ts
    import jwtDecode from 'jwt-decode';
@@ -1046,7 +1046,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 * Only users belonging to the `admin` role can create, delete or edit the titles of tasks.
 * Only users belonging to the `admin` role can mark all tasks as completed or uncompleted.
 
-1. Create a `roles.ts` file in the `src/app/` folder, with the following `Roles` class definition:
+1. Create a `roles.ts` file in the `src/` folder, with the following `Roles` class definition:
 
    *src/Roles.ts*
    ```ts
