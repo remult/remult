@@ -10,6 +10,7 @@ import { CompoundIdField } from '../column';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 
 import { SqlDatabase } from '../..';
+import { testRestDb } from "./testHelper.spec";
 
 
 describe("test paged foreach ", () => {
@@ -118,6 +119,48 @@ describe("test paged foreach ", () => {
         p = await p.nextPage();
         expect(p.items.map(x => x.id)).toEqual([5]);
         expect(p.hasNextPage).toBe(false);
+    });
+    it("paginate3", async () => {
+        let [c] = await createData(async insert => {
+            await insert(1, 'aoam');
+            await insert(2, 'bael');
+            await insert(3, 'coni');
+            await insert(4, 'dhay');
+            await insert(5, 'edo');
+        });
+        let p = await c.query({ where: { $or: [{ categoryName: { $contains: "" } }, { categoryName: { $contains: "" } }] } ,orderBy:{categoryName:"asc"}}).paginator();
+        expect(p.items.length).toBe(2);
+        expect(await p.count()).toBe(5);
+        expect(p.items.map(x => x.id)).toEqual([1, 2]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([3, 4]);
+        expect(p.hasNextPage).toBe(true);
+        p = await p.nextPage();
+        expect(p.items.map(x => x.id)).toEqual([5]);
+        expect(p.hasNextPage).toBe(false);
+    });
+    it("paginate2", async () => {
+        testRestDb(async ({ remult }) => {
+            let c = remult.repo(Categories);
+            await c.save({ id: 1, categoryName: 'aoam' }, true);
+            await c.save({ id: 2, categoryName: 'bael' }, true);
+            await c.save({ id: 3, categoryName: 'coni' }, true);
+            await c.save({ id: 4, categoryName: 'dhay' }, true);
+            await c.save({ id: 5, categoryName: 'edo' }, true);
+
+            let p = await c.query({ where: { $or: [{ categoryName: { $contains: "" } }, { categoryName: { $contains: "" } }] } ,orderBy:{categoryName:"asc"}}).paginator();
+            expect(p.items.length).toBe(2);
+            expect(await p.count()).toBe(5);
+            expect(p.items.map(x => x.id)).toEqual([1, 2]);
+            expect(p.hasNextPage).toBe(true);
+            p = await p.nextPage();
+            expect(p.items.map(x => x.id)).toEqual([3, 4]);
+            expect(p.hasNextPage).toBe(true);
+            p = await p.nextPage();
+            expect(p.items.map(x => x.id)).toEqual([5]);
+            expect(p.hasNextPage).toBe(false);
+        })
     });
     it("paginate", async () => {
         let [c] = await createData(async insert => {
@@ -305,7 +348,7 @@ describe("test paged foreach ", () => {
 
 
     });
-  
+
 })
 
 @Entity<theTable>('', {
@@ -319,4 +362,6 @@ class theTable extends EntityBase {
     @Field()
     c: string;
 }
+
+
 

@@ -34,6 +34,13 @@ describe("test where stuff", () => {
         expect(await repo.count({ id: 1, $and: [{ categoryName: 'yoni' }] })).toBe(0);
         expect(await repo.count({ $and: [{ id: 1 }, { categoryName: 'yoni' }] })).toBe(0);
     });
+    it("test two values", async () => {
+        expect(await repo.count({ $and: [{ id: 1 }, { id: 2 }] })).toBe(0);
+    });
+    it("test two values", async () => {
+        const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: 1 }, { id: 2 }] }).toJson();
+        expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(0);
+    });
 
     it("test basics", async () => {
         let fo: FindOptions<CategoriesForTesting> = {
@@ -101,6 +108,7 @@ describe("custom filter", () => {
         let json3 = Filter.entityFilterToJson(c.metadata, Filter.entityFilterFromJson(c.metadata, json));
         expect(json3).toEqual(json);
     })
+
     it("test that it works", () =>
         testRestDb(async ({ remult }) => {
             let c = remult.repo(entityForCustomFilter);

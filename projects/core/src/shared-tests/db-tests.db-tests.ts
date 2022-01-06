@@ -28,6 +28,11 @@ testAll("filter works on all db",
         let s = await entityWithValidations.create4RowsInDp(createEntity);
         expect((await s.find({ where: { myId: [1, 3] } })).length).toBe(2);
     }, false);
+testAll("filter with and",
+    async ({ createEntity }) => {
+        let s = await entityWithValidations.create4RowsInDp(createEntity);
+        expect((await s.find({ where: { $and: [{ myId: 1 }, { myId: 3 }] } })).length).toBe(0);
+    }, false);
 testAll("test empty in",
     async ({ createEntity }) => {
         let s = await entityWithValidations.create4RowsInDp(createEntity);
@@ -446,7 +451,7 @@ testAllDbs("entity order by works", async ({ createData }) => {
     expect(x[0].id).toBe(1);
     expect(x[1].id).toBe(3);
     expect(x[2].id).toBe(2);
-    var x = (await c.query({ orderBy: {},pageSize:100 }).paginator()).items;
+    var x = (await c.query({ orderBy: {}, pageSize: 100 }).paginator()).items;
     expect(x[0].id).toBe(1);
     expect(x[1].id).toBe(3);
     expect(x[2].id).toBe(2);

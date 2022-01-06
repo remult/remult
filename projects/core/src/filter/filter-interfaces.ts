@@ -418,12 +418,25 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
 
     });
     let val = filterInfo.get('OR');
-    if (val)
+    if (val) {
+        const nonArray = [], array = [];
+        for (const v of val) {
+            if (Array.isArray(v)) {
+                array.push(v);
+            }
+            else nonArray.push(v);
+        }
+        array.push(nonArray);
         where.push({
-            $or: val.map(x =>
-                buildFilterFromRequestParameters(entity, { get: (key: string) => x[key] })
+            $and: array.map(v => ({
+                $or: v.map(x =>
+                    buildFilterFromRequestParameters(entity, { get: (key: string) => x[key] }))
+            })
             )
         });
+
+
+    }
 
     for (const key in entity.entityType) {
 
