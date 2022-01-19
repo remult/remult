@@ -6,7 +6,7 @@ import { Field, getFields, ValueListFieldType } from 'remult';
 
 
 
-@ValueListFieldType(FamilyStatus, {
+@ValueListFieldType( {
 
 })
 export class FamilyStatus {

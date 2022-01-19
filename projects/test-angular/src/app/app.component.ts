@@ -2,11 +2,11 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, Route, ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
-import { BackendMethod, Remult,    UserInfo } from 'remult';
+import { BackendMethod, Remult, UserInfo } from 'remult';
 
 
 import { openDialog, RouteHelperService } from '@remult/angular';
-import { DialogService } from '../../../angular/schematics/hello/files/src/app/common/dialog';
+
 
 //import { PasswordColumn, Users } from '../../projects/angular/schematics/hello/files/src/app/users/users';
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -27,7 +27,7 @@ export class AppComponent implements OnInit {
     public router: Router,
     public activeRoute: ActivatedRoute,
     private routeHelper: RouteHelperService,
-    public dialogService: DialogService,
+
     public remult: Remult) {
 
 
@@ -65,10 +65,10 @@ export class AppComponent implements OnInit {
     //       result.roles.push(Roles.admin);
     //     }
     //   }
-    result={
-      id:'1',
-      name:"noam",
-      roles:[]
+    result = {
+      id: '1',
+      name: "noam",
+      roles: []
     }
     if (result) {
       return (await import('jsonwebtoken'.toString())).sign(result, process.env.TOKEN_SIGN_KEY);
@@ -174,10 +174,10 @@ export class AppComponent implements OnInit {
   //@ts-ignore ignoring this to match angular 7 and 8
   @ViewChild('sidenav') sidenav: MatSidenav;
   routeClicked() {
-    if (this.dialogService.isScreenSmall())
-      this.sidenav.close();
+
+    this.sidenav.close();
+
+
 
   }
-
-
 }
