@@ -48,7 +48,7 @@ export function extractSort(sort: any): Sort {
 
 export interface ErrorInfo<entityType = any> {
   message?: string;
-  modelState?: { [key: string]: string } & { [Properties in keyof Partial<OmitEB<entityType>>]?: string };
+  modelState?: { [Properties in keyof Partial<OmitEB<entityType>>]?: string };
   stack?: string;
   exception?: any;
 }
