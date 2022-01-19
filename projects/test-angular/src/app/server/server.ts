@@ -17,13 +17,11 @@ import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
-import { stam, TestId } from '../products-test/products.component';
-import { EntityBase, Filter } from '../../../../core';
-import { DataApi } from '../../../../core/src/data-api';
 import { remultExpress } from '../../../../core/server/expressBridge';
 import * as knex from 'knex';
 import { Knex } from 'knex';
 import { MongoClient } from 'mongodb';
+import { stam } from '../products-test/products.component';
 
 
 
@@ -57,7 +55,9 @@ serverInit().then(async (dataSource) => {
     let remultApi = remultExpress({
         dataProvider: getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
-        logApiEndPoints: true
+        logApiEndPoints: true,
+        initApi: async remult => {
+        }
     });
 
     app.use(remultApi);
@@ -88,7 +88,7 @@ serverInit().then(async (dataSource) => {
             res.send('No Result' + index);
         }
     });
-  
+
 
     let port = process.env.PORT || 3001;
     app.listen(port);

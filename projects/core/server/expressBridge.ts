@@ -29,6 +29,7 @@ export function remultExpress(
       disableAutoApi?: boolean,
       queueStorage?: QueueStorage
       initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>,
+      initApi?: (remult: Remult) => void | Promise<void>,
       logApiEndPoints?: boolean,
       defaultGetLimit?: number
     }): RemultExpressBridge {
@@ -63,6 +64,14 @@ export function remultExpress(
     return new JsonDataProvider(new JsonEntityFileStorage('./db'))
 
   });
+  if (options.initApi) {
+    dataProvider = dataProvider.then(async dp => {
+      var remult = new Remult(dp);
+      await options.initApi(remult);
+      return dp;
+    });
+  }
+
 
 
   let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
