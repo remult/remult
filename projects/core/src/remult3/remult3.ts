@@ -165,8 +165,8 @@ export interface Repository<entityType> {
     create(item?: Partial<OmitEB<entityType>>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
-    save(item: Partial<OmitEB<entityType>>, originalId?: entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)): Promise<entityType>;
-    save(item: Partial<OmitEB<entityType>>, create?: boolean): Promise<entityType>;
+    insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
     delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;
     delete(item: entityType): Promise<void>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;

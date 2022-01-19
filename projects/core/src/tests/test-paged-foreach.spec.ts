@@ -128,7 +128,7 @@ describe("test paged foreach ", () => {
             await insert(4, 'dhay');
             await insert(5, 'edo');
         });
-        let p = await c.query({ where: { $or: [{ categoryName: { $contains: "" } }, { categoryName: { $contains: "" } }] } ,orderBy:{categoryName:"asc"}}).paginator();
+        let p = await c.query({ where: { $or: [{ categoryName: { $contains: "" } }, { categoryName: { $contains: "" } }] }, orderBy: { categoryName: "asc" } }).paginator();
         expect(p.items.length).toBe(2);
         expect(await p.count()).toBe(5);
         expect(p.items.map(x => x.id)).toEqual([1, 2]);
@@ -143,13 +143,13 @@ describe("test paged foreach ", () => {
     it("paginate2", async () => {
         testRestDb(async ({ remult }) => {
             let c = remult.repo(Categories);
-            await c.save({ id: 1, categoryName: 'aoam' }, true);
-            await c.save({ id: 2, categoryName: 'bael' }, true);
-            await c.save({ id: 3, categoryName: 'coni' }, true);
-            await c.save({ id: 4, categoryName: 'dhay' }, true);
-            await c.save({ id: 5, categoryName: 'edo' }, true);
+            await c.insert({ id: 1, categoryName: 'aoam' });
+            await c.insert({ id: 2, categoryName: 'bael' });
+            await c.insert({ id: 3, categoryName: 'coni' });
+            await c.insert({ id: 4, categoryName: 'dhay' });
+            await c.insert({ id: 5, categoryName: 'edo' });
 
-            let p = await c.query({ where: { $or: [{ categoryName: { $contains: "" } }, { categoryName: { $contains: "" } }] } ,orderBy:{categoryName:"asc"}}).paginator();
+            let p = await c.query({ where: { $or: [{ categoryName: { $contains: "" } }, { categoryName: { $contains: "" } }] }, orderBy: { categoryName: "asc" } }).paginator();
             expect(p.items.length).toBe(2);
             expect(await p.count()).toBe(5);
             expect(p.items.map(x => x.id)).toEqual([1, 2]);

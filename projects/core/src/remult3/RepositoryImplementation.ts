@@ -163,8 +163,29 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         else
             await this.getEntityRef(item as entityType).delete();
     }
+    async insert(entity: entityType): Promise<entityType> {
+        let ref = getEntityRef(entity, false);
+        if (ref) {
+            if (!ref.isNew())
+                throw "Item is not new";
+            return await ref.save();
+        } else {
+            return await this.getEntityRef(this.create(entity)).save();
+        }
+    }
+    async update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
+        let row = new rowHelperImplementation(this._info, Object.assign({}, entity), this, this.edp, this.remult, false);
+        let obj = row.copyDataToObject();
+        for (const key in entity) {
+            if (Object.prototype.hasOwnProperty.call(entity, key)) {
+                entity[key] = obj[key];
+            }
+        }
+        const updatedRow = await this.edp.update(id, entity);
+        return this.mapRawDataToResult(updatedRow, undefined);
+    }
 
-    async save(entity: entityType, originalIdOrCreate?: boolean | number | string): Promise<entityType> {
+    async save(entity: entityType): Promise<entityType> {
         let ref = getEntityRef(entity, false);
         if (ref)
             return await ref.save();
@@ -173,25 +194,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }
         else {
             let id = entity[this.metadata.idMetadata.field.key];
-            if (id === undefined || originalIdOrCreate === true) {
-                return await this.getEntityRef(this.create(entity)).save();
-            }
-            else {
-                if (originalIdOrCreate !== undefined)
-                    id = originalIdOrCreate;
-
-                let row = new rowHelperImplementation(this._info, Object.assign({}, entity), this, this.edp, this.remult, false);
-                let obj = row.copyDataToObject();
-                for (const key in entity) {
-                    if (Object.prototype.hasOwnProperty.call(entity, key)) {
-                        const element = entity[key];
-                        entity[key] = obj[key];
-                    }
-                }
-                const updatedRow = await this.edp.update(id, entity);
-                return this.mapRawDataToResult(updatedRow, undefined);
-
-            }
+            if (id === undefined)
+                return this.insert(entity);
+            return this.update(id, entity);
         }
     }
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
