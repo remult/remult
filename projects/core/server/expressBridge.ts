@@ -20,6 +20,10 @@ import { allEntities, AllowedForInstance } from '../src/context';
 export function remultExpress(
   options?:
     {
+      /** Determines the Data Provider 
+    
+    * @see  [Optional Databases](https://remult.dev/docs/databases.html)
+    */
       dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
