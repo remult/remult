@@ -6,7 +6,7 @@
         "declaration": true,
         "stripInternal": true,
         "experimentalDecorators": true,
-        
+        "sourceMap": false,
         "module": "commonjs",
         "moduleResolution": "node",
         "target": "es5",
