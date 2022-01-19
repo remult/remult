@@ -143,8 +143,10 @@ describe("test paged foreach ", () => {
     it("paginate2", async () => {
         testRestDb(async ({ remult }) => {
             let c = remult.repo(Categories);
-            await c.insert({ id: 1, categoryName: 'aoam' });
-            await c.insert({ id: 2, categoryName: 'bael' });
+            await c.insert([
+                { id: 1, categoryName: 'aoam' },
+                { id: 2, categoryName: 'bael' }
+            ]);
             await c.insert({ id: 3, categoryName: 'coni' });
             await c.insert({ id: 4, categoryName: 'dhay' });
             await c.insert({ id: 5, categoryName: 'edo' });

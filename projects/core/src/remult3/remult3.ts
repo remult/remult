@@ -164,7 +164,9 @@ export interface Repository<entityType> {
     count(where?: EntityFilter<entityType>): Promise<number>;
     create(item?: Partial<OmitEB<entityType>>): entityType;
     getEntityRef(item: entityType): EntityRef<entityType>;
+    save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
     delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;

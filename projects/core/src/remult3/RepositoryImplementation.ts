@@ -163,14 +163,20 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         else
             await this.getEntityRef(item as entityType).delete();
     }
-    async insert(entity: entityType): Promise<entityType> {
-        let ref = getEntityRef(entity, false);
-        if (ref) {
-            if (!ref.isNew())
-                throw "Item is not new";
-            return await ref.save();
+    insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
+    insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    async insert(entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[]): Promise<entityType | entityType[]> {
+        if (Array.isArray(entity)) {
+            return Promise.all(entity.map(x => this.insert(x)));
         } else {
-            return await this.getEntityRef(this.create(entity)).save();
+            let ref = getEntityRef(entity, false) as EntityRef<entityType>;
+            if (ref) {
+                if (!ref.isNew())
+                    throw "Item is not new";
+                return await ref.save();
+            } else {
+                return await this.getEntityRef(this.create(entity)).save();
+            }
         }
     }
     async update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
@@ -185,18 +191,24 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return this.mapRawDataToResult(updatedRow, undefined);
     }
 
-    async save(entity: entityType): Promise<entityType> {
-        let ref = getEntityRef(entity, false);
-        if (ref)
-            return await ref.save();
-        else if (entity instanceof EntityBase) {
-            return await this.getEntityRef(entity).save();
-        }
-        else {
-            let id = entity[this.metadata.idMetadata.field.key];
-            if (id === undefined)
-                return this.insert(entity);
-            return this.update(id, entity);
+    save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
+    save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    async save(entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[]): Promise<entityType | entityType[]> {
+        if (Array.isArray(entity)) {
+            return Promise.all(entity.map(x => this.insert(x)));
+        } else {
+            let ref = getEntityRef(entity, false) as EntityRef<entityType>;
+            if (ref)
+                return await ref.save();
+            else if (entity instanceof EntityBase) {
+                return await this.getEntityRef(entity as unknown as entityType).save();
+            }
+            else {
+                let id = entity[this.metadata.idMetadata.field.key];
+                if (id === undefined)
+                    return this.insert(entity);
+                return this.update(id, entity);
+            }
         }
     }
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
