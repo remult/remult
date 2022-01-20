@@ -26,6 +26,10 @@ describe("test where stuff", () => {
         [repo] = await insertFourRows();
         done();
     });
+    it("test in statement", async () => {
+        expect(await repo.count({ id: [undefined] })).toBe(0);
+        expect(await repo.count({ id: [1,undefined,3] })).toBe(2);
+    });
     it("test and", async () => {
         expect(await repo.count({ categoryName: 'yoni' })).toBe(1);
         expect(await repo.count({ categoryName: { $gte: 'yoni' } })).toBe(1);

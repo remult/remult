@@ -512,8 +512,8 @@ describe("many to one relation", () => {
             category: cat
         }).save();
         let fetches = 0;
-        await remult.repo(Categories).create({id:2,name:'cat2'}).save();
-        await remult.repo(Categories).create({id:3,name:'cat3'}).save();
+        await remult.repo(Categories).create({ id: 2, name: 'cat2' }).save();
+        await remult.repo(Categories).create({ id: 3, name: 'cat3' }).save();
         remult = new Remult();
         remult.setDataProvider({
             transaction: undefined,
@@ -545,7 +545,7 @@ describe("many to one relation", () => {
         await p.$.category.load();
         expect(fetches).toBe(4);
         expect(p.category.name).toBe("cat3");
-        
+
     });
     it("test to and from json ", async () => {
         let mem = new InMemoryDataProvider();
@@ -683,13 +683,36 @@ describe("many to one relation", () => {
         expect(await remult.repo(Products).count({ category: { $id: [2, 3] } })).toBe(2);
         expect(await remult.repo(Products).count({ category: { $id: { $ne: 1 } } })).toBe(2);
         expect(await remult.repo(Products).count({ category: { $id: { $ne: [2, 3] } } })).toBe(1);
-        
-
-
     });
-
-
+    it("test cache", async () => {
+        const remult = new Remult(new InMemoryDataProvider());
+        const cat = await remult.repo(Categories).insert({ id: 1, name: "c1", archive: true });
+        cat["x"] = true;
+        const p = await remult.repo(Products2).insert({ id: 1, name: "p1", cat });
+        await p.$.cat.load();
+        expect(p.cat["x"]).toBe(true);
+        expect((p.cat as Categories).archive).toBe(true);
+    });
+    it("test cache2", async () => {
+        const remult = new Remult(new InMemoryDataProvider());
+        const cat = await remult.repo(Categories).insert({ id: 1, name: "c1", archive: true });
+        cat["x"] = true;
+        const p = await remult.repo(Products2).insert({ id: 1, name: "p1", cat: { id: 1, name: "b" } });
+        await p.$.cat.load();
+        expect((p.cat as Categories).archive).toBe(true);
+    });
 });
+
+
+@Entity("products2")
+class Products2 extends EntityBase {
+    @Field()
+    id: number = 0;
+    @Field()
+    name: string = '';
+    @Field(o => o.valueType = Categories)
+    cat: { id: number, name: string };
+}
 
 
 export type test<Type> = {
