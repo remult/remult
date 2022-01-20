@@ -2,6 +2,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { Entity, EntityBase, Field, EntityFilter } from '../remult3';
 import { Filter } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider';
+import { getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
 
 
 
@@ -21,11 +22,12 @@ export class entityForCustomFilter extends EntityBase {
         if (c.two)
             r.push({ id: 2 });
         if (c.dbOneOrThree) {
-            let e = remult.repo(entityForCustomFilter).metadata;
+            let meta = remult.repo(entityForCustomFilter).metadata;
+            const e = await getDbNameProvider(meta);
             r.push(
                 {
                     $and: [
-                        SqlDatabase.customFilter(async (x) => x.sql = await e.fields.id.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")"),
+                        SqlDatabase.customFilter(async (x) => x.sql = e.nameOf(meta.fields.id) + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3) + ")"),
                         ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3)
                     ]
                 }

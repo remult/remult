@@ -1,8 +1,7 @@
 import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter, Remult } from ".."
 import knex, { Knex } from 'knex';
 import { FilterConsumer } from "../src/filter/filter-interfaces";
-import { CustomSqlFilterObject } from "../src/filter/filter-consumer-bridge-to-sql-request";
-import { isDbReadonly } from "../src/data-providers/sql-database";
+import { CustomSqlFilterObject, dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities } from "../src/context";
 import { DateOnlyValueConverter } from "../valueConverters";
 
@@ -33,14 +32,16 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
     }
     async count(where: Filter): Promise<number> {
-        const br = new FilterConsumerBridgeToKnexRequest();
+        const e = await this.init();
+        const br = new FilterConsumerBridgeToKnexRequest(e);
         where.__applyToConsumer(br);
         let r = await br.resolveWhere();
         return +(
-            await this.knex(await this.entity.getDbName())
+            await this.knex(e.entityName)
                 .count().where(b => r.forEach(w => w(b))))[0].count;
     }
     async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+        const e = await this.init();
         let cols = [] as string[];
         let colKeys: FieldMetadata[] = [];
         for (const x of this.entity.fields) {
@@ -48,13 +49,13 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
             }
             else {
-                cols.push(await x.getDbName());
+                cols.push(e.nameOf(x));
                 colKeys.push(x);
             }
         }
-        let query = this.knex(await this.entity.getDbName()).select(cols);
+        let query = this.knex(e.entityName).select(cols);
         if (options?.where) {
-            const br = new FilterConsumerBridgeToKnexRequest();
+            const br = new FilterConsumerBridgeToKnexRequest(e);
             options.where.__applyToConsumer(br);
             let r = await br.resolveWhere();
             query.where(b => r.forEach(y => y(b)));
@@ -62,10 +63,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
         }
         if (options.orderBy) {
 
-            query = query.orderBy(await Promise.all(options.orderBy.Segments.map(async s => ({
-                column: await s.field.getDbName(),
+            query = query.orderBy(options.orderBy.Segments.map(s => ({
+                column: e.nameOf(s.field),
                 order: s.isDescending ? "desc" : "asc"
-            }))));
+            })));
         }
         if (options.limit) {
             query = query.limit(options.limit);
@@ -95,9 +96,12 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
 
     }
+    async init() {
+        return await getDbNameProvider(this.entity);
+    }
     async update(id: any, data: any): Promise<any> {
-
-        let f = new FilterConsumerBridgeToKnexRequest();
+        const e = await this.init();
+        let f = new FilterConsumerBridgeToKnexRequest(e);
         Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
 
         let resultFilter = this.entity.idMetadata.getIdFilter(id);
@@ -108,14 +112,12 @@ class KnexEntityDataProvider implements EntityDataProvider {
         let updateObject = {};
         for (const x of this.entity.fields) {
 
-            if (await isDbReadonly(x)) { }
+            if (e.isDbReadonly(x)) { }
 
             else if (data[x.key] !== undefined) {
                 let v = x.valueConverter.toDb(data[x.key]);
                 if (v !== undefined) {
-
-
-                    let key = await x.getDbName();
+                    let key = await e.nameOf(x);
                     updateObject[key] = v;
                 }
             }
@@ -123,19 +125,19 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
 
         let where = await f.resolveWhere();
-        await this.knex(await this.entity.getDbName()).update(updateObject).where(b => where.forEach(w => w(b)));
+        await this.knex(e.entityName).update(updateObject).where(b => where.forEach(w => w(b)));
         return this.find({ where: Filter.fromEntityFilter(this.entity, resultFilter) }).then(y => y[0]);
     }
     async delete(id: any): Promise<void> {
-
-        let f = new FilterConsumerBridgeToKnexRequest();
+        const e = await this.init();
+        let f = new FilterConsumerBridgeToKnexRequest(e);
         Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
         let where = await f.resolveWhere();
-        await this.knex(await this.entity.getDbName()).delete().where(b => where.forEach(w => w(b)));
+        await this.knex(e.entityName).delete().where(b => where.forEach(w => w(b)));
 
     }
     async insert(data: any): Promise<any> {
-
+        const e = await this.init();
         let resultFilter: Filter;
         if (this.entity.idMetadata.field instanceof CompoundIdField)
             resultFilter = this.entity.idMetadata.field.resultIdFilter(undefined, data);
@@ -144,20 +146,18 @@ class KnexEntityDataProvider implements EntityDataProvider {
         let insertObject = {};
         for (const x of this.entity.fields) {
 
-            if (await isDbReadonly(x)) { }
+            if (e.isDbReadonly(x)) { }
 
             else {
                 let v = x.valueConverter.toDb(data[x.key]);
                 if (v != undefined) {
-
-
-                    let key = await x.getDbName();
+                    let key = await e.nameOf(x);
                     insertObject[key] = v;
                 }
             }
         }
 
-        let insert = this.knex(await this.entity.getDbName()).insert(insertObject);
+        let insert = this.knex(e.entityName).insert(insertObject);
         if (this.entity.options.dbAutoIncrementId) {
             let newId = await insert.returning(this.entity.idMetadata.field.key);
             resultFilter = new Filter(x => x.isEqualTo(this.entity.idMetadata.field, newId));
@@ -186,7 +186,7 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         return this.result;
     }
 
-    constructor() { }
+    constructor(private nameProvider: dbNameProvider) { }
 
     custom(key: string, customItem: any): void {
         throw new Error("Custom filter should be translated before it gets here");
@@ -197,7 +197,7 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         this.promises.push((async () => {
             for (const element of orElements) {
 
-                let f = new FilterConsumerBridgeToKnexRequest();
+                let f = new FilterConsumerBridgeToKnexRequest(this.nameProvider);
                 f._addWhere = false;
                 element.__applyToConsumer(f);
                 let where = await f.resolveWhere();
@@ -215,18 +215,17 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
     }
     isNull(col: FieldMetadata): void {
-        this.promises.push(col.getDbName().then(col => { this.result.push(b => b.whereNull(col)) }));
+        this.result.push(b => b.whereNull(this.nameProvider.nameOf(col)));
 
     }
     isNotNull(col: FieldMetadata): void {
-        this.promises.push(col.getDbName().then(col => { this.result.push(b => b.whereNotNull(col)) }));
+        this.result.push(b => b.whereNotNull(this.nameProvider.nameOf(col)));
     }
     isIn(col: FieldMetadata, val: any[]): void {
-        this.promises.push(
-            col.getDbName().then(colName => {
-                this.result.push(knex =>
-                    knex.whereIn(colName, val.map(x => col.valueConverter.toDb(x))))
-            }));
+
+        this.result.push(knex =>
+            knex.whereIn(this.nameProvider.nameOf(col), val.map(x => col.valueConverter.toDb(x))))
+
     }
     isEqualTo(col: FieldMetadata, val: any): void {
         this.add(col, val, "=");
@@ -247,20 +246,19 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         this.add(col, val, "<");
     }
     public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-        this.promises.push(col.getDbName().then(colName => {
 
-            this.result.push(b => b.whereRaw(
-                'lower (' + colName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
-        }));
+
+        this.result.push(b => b.whereRaw(
+            'lower (' + this.nameProvider.nameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
         this.promises.push((async () => {
 
         })());
     }
 
     private add(col: FieldMetadata, val: any, operator: string) {
-        this.promises.push(col.getDbName().then(colName => {
-            this.result.push(b => b.where(colName, operator, col.valueConverter.toDb(val)))
-        }));
+
+        this.result.push(b => b.where(this.nameProvider.nameOf(col), operator, col.valueConverter.toDb(val)))
+
 
 
     }
@@ -301,26 +299,27 @@ export class KnexSchemaBuilder {
             }
         }
     }
-    async createIfNotExist(e: EntityMetadata): Promise<void> {
-        if (! await this.knex.schema.hasTable(await e.getDbName())) {
+    async createIfNotExist(entity: EntityMetadata): Promise<void> {
+        const e = await getDbNameProvider(entity);
+        if (! await this.knex.schema.hasTable(e.entityName)) {
             let cols = new Map<FieldMetadata, { name: string, readonly: boolean }>();
-            for (const f of e.fields) {
+            for (const f of entity.fields) {
                 cols.set(f, {
-                    name: await f.getDbName(),
-                    readonly: await isDbReadonly(f)
+                    name: e.nameOf(f),
+                    readonly: e.isDbReadonly(f)
                 });
             }
-            await logSql(this.knex.schema.createTable(await e.getDbName(),
+            await logSql(this.knex.schema.createTable(e.entityName,
                 b => {
-                    for (const x of e.fields) {
-                        if (!cols.get(x).readonly || x == e.idMetadata.field && e.options.dbAutoIncrementId) {
+                    for (const x of entity.fields) {
+                        if (!cols.get(x).readonly || x == entity.idMetadata.field && entity.options.dbAutoIncrementId) {
 
 
-                            if (x == e.idMetadata.field && e.options.dbAutoIncrementId)
+                            if (x == entity.idMetadata.field && entity.options.dbAutoIncrementId)
                                 b.increments(cols.get(x).name);
                             else {
                                 buildColumn(x, cols.get(x).name, b);
-                                if (x == e.idMetadata.field)
+                                if (x == entity.idMetadata.field)
                                     b.primary([cols.get(x).name]);
                             }
                         }
@@ -332,16 +331,17 @@ export class KnexSchemaBuilder {
     }
 
 
-    async addColumnIfNotExist<T extends EntityMetadata>(e: T, c: ((e: T) => FieldMetadata)) {
-        if (await isDbReadonly(c(e)))
+    async addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)) {
+        let e = await getDbNameProvider(entity);
+        if (e.isDbReadonly(c(entity)))
             return;
 
 
-        let col = c(e);
-        let colName = await col.getDbName();
+        let col = c(entity);
+        let colName = e.nameOf(col);
 
-        if (!await this.knex.schema.hasColumn(await e.getDbName(), colName)) {
-            await this.knex.schema.alterTable(await e.getDbName(), b => {
+        if (!await this.knex.schema.hasColumn(e.entityName, colName)) {
+            await this.knex.schema.alterTable(e.entityName, b => {
                 buildColumn(col, colName, b);
             });
         }
@@ -349,11 +349,12 @@ export class KnexSchemaBuilder {
 
 
     }
-    async verifyAllColumns<T extends EntityMetadata>(e: T) {
+    async verifyAllColumns<T extends EntityMetadata>(entity: T) {
+        let e = await getDbNameProvider(entity);
         try {
-            for (const col of e.fields) {
-                if (!await isDbReadonly(col)) {
-                    await this.addColumnIfNotExist(e, () => col);
+            for (const col of entity.fields) {
+                if (!e.isDbReadonly(col)) {
+                    await this.addColumnIfNotExist(entity, () => col);
                 }
             }
         }

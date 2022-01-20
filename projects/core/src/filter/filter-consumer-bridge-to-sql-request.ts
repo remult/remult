@@ -1,6 +1,8 @@
 import { SqlCommand } from "../sql-command";
 import { Filter, FilterConsumer } from './filter-interfaces';
 import { FieldMetadata } from "../column-interfaces";
+import { EntityMetadata } from "../..";
+
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   private where = "";
@@ -17,9 +19,9 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     return this.where;
   }
 
-  constructor(private r: SqlCommand) { }
+  constructor(private r: SqlCommand, private nameProvider: dbNameProvider) { }
 
-  custom(key:string,customItem: any): void {
+  custom(key: string, customItem: any): void {
     throw new Error("Custom filter should be translated before it gets here");
   }
 
@@ -27,7 +29,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     let statement = '';
     this.promises.push((async () => {
       for (const element of orElements) {
-        let f = new FilterConsumerBridgeToSqlRequest(this.r);
+        let f = new FilterConsumerBridgeToSqlRequest(this.r, this.nameProvider);
         f._addWhere = false;
         element.__applyToConsumer(f);
         let where = await f.resolveWhere();
@@ -47,16 +49,16 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 
   }
   isNull(col: FieldMetadata): void {
-    this.promises.push((async () => this.addToWhere(await col.getDbName() + ' is null'))());
+    this.promises.push((async () => this.addToWhere(this.nameProvider.nameOf(col) + ' is null'))());
 
   }
   isNotNull(col: FieldMetadata): void {
-    this.promises.push((async () => this.addToWhere(await col.getDbName() + ' is not null'))());
+    this.promises.push((async () => this.addToWhere(this.nameProvider.nameOf(col) + ' is not null'))());
   }
   isIn(col: FieldMetadata, val: any[]): void {
     this.promises.push((async () => {
       if (val && val.length > 0)
-        this.addToWhere(await col.getDbName() + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(x))).join(",") + ")");
+        this.addToWhere(this.nameProvider.nameOf(col) + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(x))).join(",") + ")");
       else
         this.addToWhere('1 = 0 /*isIn with no values*/');
     })());
@@ -81,13 +83,13 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.promises.push((async () => {
-      this.addToWhere('lower (' + await col.getDbName() + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
+      this.addToWhere('lower (' + this.nameProvider.nameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
     })());
   }
 
   private add(col: FieldMetadata, val: any, operator: string) {
     this.promises.push((async () => {
-      let x = await col.getDbName() + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val));
+      let x = this.nameProvider.nameOf(col) + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val));
       this.addToWhere(x);
     })());
 
@@ -130,4 +132,31 @@ export class CustomSqlFilterBuilder {
       val = field.valueConverter.toDb(val);
     return this.r.addParameterAndReturnSqlToken(val)
   }
+}
+
+export async function getDbNameProvider(meta: EntityMetadata): Promise<dbNameProvider> {
+
+  var result = new dbNameProviderImpl();
+  for (const f of meta.fields) {
+    result.map.set(f.key, await f.getDbName());
+  }
+  result.entityName = await meta.getDbName();
+  return result;
+}
+export class dbNameProviderImpl {
+
+  map = new Map<string, string>();
+  nameOf(field: FieldMetadata<any>) {
+    return this.map.get(field.key);
+  }
+  entityName: string;
+  isDbReadonly(x: FieldMetadata) {
+    return (x.dbReadOnly || x.isServerExpression || this.nameOf(x) != x.options.dbName)
+  }
+}
+export interface dbNameProvider {
+  nameOf(field: FieldMetadata<any>): string;
+  entityName: string;
+  isDbReadonly(x: FieldMetadata): boolean;
+
 }

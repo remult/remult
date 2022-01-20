@@ -1,13 +1,12 @@
-import { DataProvider, EntityDataProvider, Entity, SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
+import { SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
 
 import { Pool, PoolConfig, QueryResult } from 'pg';
 
-import { connect } from 'net';
 import { allEntities, Remult } from '../src/context';
 
 
-import { isDbReadonly } from '../src/data-providers/sql-database';
 import { postgresColumnSyntax } from './postgresColumnSyntax';
+import { getDbNameProvider } from '../src/filter/filter-consumer-bridge-to-sql-request';
 
 
 export interface PostgresPool extends PostgresCommandSource {
@@ -30,7 +29,7 @@ export class PostgresDataProvider implements SqlImplementation {
     }
     constructor(private pool: PostgresPool) {
     }
-    
+
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
         let client = await this.pool.connect();
 
@@ -91,46 +90,47 @@ export async function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remu
 export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities(remult: Remult) {
         console.log("start verify structure");
-        for (const entity of allEntities) {
-            let metadata = remult.repo(entity).metadata;
-
+        for (const entityClass of allEntities) {
+            let entity = remult.repo(entityClass).metadata;
+            let e = await getDbNameProvider(entity);
             try {
-                if (!metadata.options.sqlExpression) {
-                    if ((await metadata.getDbName()).toLowerCase().indexOf('from ') < 0) {
-                        await this.createIfNotExist(metadata);
-                        await this.verifyAllColumns(metadata);
+                if (!entity.options.sqlExpression) {
+                    if ((await e.entityName).toLowerCase().indexOf('from ') < 0) {
+                        await this.createIfNotExist(entity);
+                        await this.verifyAllColumns(entity);
                     }
                 }
             }
             catch (err) {
-                console.log("failed verify structore of " + await metadata.getDbName() + " ", err);
+                console.log("failed verify structore of " + e.entityName + " ", err);
             }
         }
     }
-    async createIfNotExist(e: EntityMetadata): Promise<void> {
+    async createIfNotExist(entity: EntityMetadata): Promise<void> {
         var c = this.pool.createCommand();
+        let e = await getDbNameProvider(entity);
 
-        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken((await e.getDbName()).toLowerCase()) + this.additionalWhere).then(async r => {
+        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken((e.entityName).toLowerCase()) + this.additionalWhere).then(async r => {
 
             if (r.rows.length == 0) {
                 let result = '';
-                for (const x of e.fields) {
-                    if (!await isDbReadonly(x) || x == e.idMetadata.field && e.options.dbAutoIncrementId) {
+                for (const x of entity.fields) {
+                    if (!e.isDbReadonly(x) || x == entity.idMetadata.field && entity.options.dbAutoIncrementId) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
 
-                        if (x == e.idMetadata.field && e.options.dbAutoIncrementId)
-                            result += await x.getDbName() + ' serial';
+                        if (x == entity.idMetadata.field && entity.options.dbAutoIncrementId)
+                            result += e.nameOf(x) + ' serial';
                         else {
-                            result += postgresColumnSyntax(x, await x.getDbName());
-                            if (x == e.idMetadata.field)
+                            result += postgresColumnSyntax(x, e.nameOf(x));
+                            if (x == entity.idMetadata.field)
                                 result += ' primary key';
                         }
                     }
                 }
 
-                let sql = 'create table ' + await e.getDbName() + ' (' + result + '\r\n)';
+                let sql = 'create table ' + e.entityName + ' (' + result + '\r\n)';
                 //console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -138,18 +138,20 @@ export class PostgresSchemaBuilder {
     }
 
 
-    async addColumnIfNotExist<T extends EntityMetadata>(e: T, c: ((e: T) => FieldMetadata)) {
-        if (await isDbReadonly(c(e)))
+    async addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)) {
+        let e = await getDbNameProvider(entity);
+        if (e.isDbReadonly(c(entity)))
             return;
         try {
             let cmd = this.pool.createCommand();
 
+            const colName = e.nameOf(c(entity));
             if (
                 (await cmd.execute(`select 1   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken((await e.getDbName()).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((await c(e).getDbName()).toLocaleLowerCase())}` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.entityName).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((colName).toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
-                let sql = `alter table ${await e.getDbName()} add column ${postgresColumnSyntax(c(e), await c(e).getDbName())}`;
+                let sql = `alter table ${e.entityName} add column ${postgresColumnSyntax(c(entity), colName)}`;
                 //console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -158,19 +160,19 @@ export class PostgresSchemaBuilder {
             console.log(err);
         }
     }
-    async verifyAllColumns<T extends EntityMetadata>(e: T) {
+    async verifyAllColumns<T extends EntityMetadata>(entity: T) {
         try {
             let cmd = this.pool.createCommand();
-
+            let e = await getDbNameProvider(entity);
 
             let cols = (await cmd.execute(`select column_name   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken((await e.getDbName()).toLocaleLowerCase())} ` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.entityName).toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
-            for (const col of e.fields) {
-                if (!await isDbReadonly(col))
-                    if (!cols.includes((await col.getDbName()).toLocaleLowerCase())) {
-                        let sql = `alter table ${await e.getDbName()} add column ${postgresColumnSyntax(col, await col.getDbName())}`;
+            for (const col of entity.fields) {
+                if (!e.isDbReadonly(col))
+                    if (!cols.includes(e.nameOf(col).toLocaleLowerCase())) {
+                        let sql = `alter table ${e.entityName} add column ${postgresColumnSyntax(col, e.nameOf(col))}`;
                         //console.log(sql);
                         await this.pool.execute(sql);
                     }

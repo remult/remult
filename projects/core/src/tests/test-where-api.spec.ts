@@ -15,7 +15,7 @@ import { DataApi } from '../data-api';
 
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider';
 import { ClassType } from '../../classType';
-import { CustomSqlFilterBuilder } from '../filter/filter-consumer-bridge-to-sql-request';
+import { CustomSqlFilterBuilder, getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
 import { entityForCustomFilter } from './entityForCustomFilter';
 
 
@@ -28,7 +28,7 @@ describe("test where stuff", () => {
     });
     it("test in statement", async () => {
         expect(await repo.count({ id: [undefined] })).toBe(0);
-        expect(await repo.count({ id: [1,undefined,3] })).toBe(2);
+        expect(await repo.count({ id: [1, undefined, 3] })).toBe(2);
     });
     it("test and", async () => {
         expect(await repo.count({ categoryName: 'yoni' })).toBe(1);
@@ -134,7 +134,8 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(SqlDatabase.customFilter(async x => x.sql = await c.metadata.fields.id.getDbName() + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
+        const e = await getDbNameProvider(c.metadata);
+        expect(await (c.count(SqlDatabase.customFilter(async x => x.sql = e.nameOf(c.metadata.fields.id) + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
         expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });

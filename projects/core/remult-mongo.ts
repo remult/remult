@@ -1,5 +1,6 @@
 import { MongoClient, Db, FindOptions } from 'mongodb';
 import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter } from '.';
+import { dbNameProvider, getDbNameProvider } from './src/filter/filter-consumer-bridge-to-sql-request';
 import { FilterConsumer } from './src/filter/filter-interfaces';
 
 export class MongoDataProvider implements DataProvider {
@@ -29,35 +30,36 @@ class MongoEntityDataProvider implements EntityDataProvider {
     constructor(private db: Db, private entity: EntityMetadata<any>) {
 
     }
-    async translateFromJson(row: any) {
+    translateFromJson(row: any, nameProvider: dbNameProvider) {
         let result = {};
         for (const col of this.entity.fields) {
-            result[col.key] = col.valueConverter.fromDb(row[await col.getDbName()]);
+            result[col.key] = col.valueConverter.fromDb(row[nameProvider.nameOf(col)]);
             if (isNull(result[col.key]))
                 result[col.key] = null;
         }
         return result;
     }
-    async translateToJson(row: any) {
+    translateToJson(row: any, nameProvider: dbNameProvider) {
         let result = {};
         for (const col of this.entity.fields) {
             let val = col.valueConverter.toDb(row[col.key]);
             if (val === null)
                 val = NULL;
-            result[await col.getDbName()] = val;
+            result[nameProvider.nameOf(col)] = val;
         }
         return result;
     }
     async count(where: Filter): Promise<number> {
-        let x = new FilterConsumerBridgeToKnexMongo();
+        const { collection, e } = await this.collection();
+        let x = new FilterConsumerBridgeToMongo(e);
         where.__applyToConsumer(x);
         let w = await x.resolveWhere();
 
-        return await (await this.collection()).countDocuments(w);
+        return await collection.countDocuments(w);
     }
     async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
-        let collection = await this.collection()
-        let x = new FilterConsumerBridgeToKnexMongo();
+        let { collection, e } = await this.collection()
+        let x = new FilterConsumerBridgeToMongo(e);
         if (options?.where)
             options.where.__applyToConsumer(x);
         let where = await x.resolveWhere();
@@ -73,17 +75,17 @@ class MongoEntityDataProvider implements EntityDataProvider {
         if (options.orderBy) {
             op.sort = {};
             for (const s of options.orderBy.Segments) {
-                op.sort[await s.field.getDbName()] = s.isDescending ? -1 : 1;
+                op.sort[e.nameOf(s.field)] = s.isDescending ? -1 : 1;
             }
         }
         return await Promise.all(await collection.find(
             where,
             op
-        ).map(x => this.translateFromJson(x)).toArray());
+        ).map(x => this.translateFromJson(x, e)).toArray());
     }
     async update(id: any, data: any): Promise<any> {
-        let collection = await this.collection();
-        let f = new FilterConsumerBridgeToKnexMongo();
+        let { collection, e } = await this.collection();
+        let f = new FilterConsumerBridgeToMongo(e);
         Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
         let resultFilter = this.entity.idMetadata.getIdFilter(id);
         if (data.id != undefined)
@@ -109,22 +111,25 @@ class MongoEntityDataProvider implements EntityDataProvider {
 
     }
     async delete(id: any): Promise<void> {
-        let f = new FilterConsumerBridgeToKnexMongo();
+        const { e, collection } = await this.collection();
+        let f = new FilterConsumerBridgeToMongo(e);
         Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
-        (await this.collection()).deleteOne(await f.resolveWhere());
+        collection.deleteOne(await f.resolveWhere());
     }
     async insert(data: any): Promise<any> {
-        let collection = await this.collection();
-        let r = await collection.insertOne(await this.translateToJson(data));
-        return await this.translateFromJson(await collection.findOne({ _id: r.insertedId }))
+        let { collection, e } = await this.collection();
+        let r = await collection.insertOne(await this.translateToJson(data, e));
+        return await this.translateFromJson(await collection.findOne({ _id: r.insertedId }), e)
     }
 
     private async collection() {
-        return this.db.collection(await this.entity.getDbName());
+        const e = await getDbNameProvider(this.entity);
+        const collection = this.db.collection(e.entityName);
+        return { e, collection }
     }
 }
 
-class FilterConsumerBridgeToKnexMongo implements FilterConsumer {
+class FilterConsumerBridgeToMongo implements FilterConsumer {
 
     _addWhere = true;
     promises: Promise<void>[] = [];
@@ -143,7 +148,7 @@ class FilterConsumerBridgeToKnexMongo implements FilterConsumer {
         else return {}
     }
 
-    constructor() { }
+    constructor(private nameProvider: dbNameProvider) { }
 
     custom(key: string, customItem: any): void {
         throw new Error("Custom filter should be translated before it gets here");
@@ -154,7 +159,7 @@ class FilterConsumerBridgeToKnexMongo implements FilterConsumer {
             let result = [];
             for (const element of orElements) {
 
-                let f = new FilterConsumerBridgeToKnexMongo();
+                let f = new FilterConsumerBridgeToMongo(this.nameProvider);
                 f._addWhere = false;
                 element.__applyToConsumer(f);
                 let where = await f.resolveWhere();
@@ -180,16 +185,15 @@ class FilterConsumerBridgeToKnexMongo implements FilterConsumer {
         this.add(col, NULL, "$ne");
     }
     isIn(col: FieldMetadata, val: any[]): void {
-        this.promises.push(
-            col.getDbName().then(colName => {
-                this.result.push(() => (
-                    {
-                        [colName]: {
-                            $in: val.map(x => col.valueConverter.toDb(x))
-                        }
-                    }
-                ));
-            }))
+
+        this.result.push(() => (
+            {
+                [this.nameProvider.nameOf(col)]: {
+                    $in: val.map(x => col.valueConverter.toDb(x))
+                }
+            }
+        ));
+
     }
     isEqualTo(col: FieldMetadata, val: any): void {
         this.add(col, val, "$eq");
@@ -210,23 +214,20 @@ class FilterConsumerBridgeToKnexMongo implements FilterConsumer {
         this.add(col, val, "$lt");
     }
     public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-        throw "error";
+        throw "containsCaseInsensitive not yet implemented";
         // this.promises.push(col.getDbName().then(colName => {
 
         //     this.result.push(b => b.whereRaw(
         //         'lower (' + colName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
         // }));
-        this.promises.push((async () => {
-
-        })());
     }
 
     private add(col: FieldMetadata, val: any, operator: string) {
-        this.promises.push(col.getDbName().then(colName => {
-            this.result.push(() => ({
-                [colName]: { [operator]: isNull(val) ? val : col.valueConverter.toDb(val) }
-            }))
-        }));
+
+        this.result.push(() => ({
+            [this.nameProvider.nameOf(col)]: { [operator]: isNull(val) ? val : col.valueConverter.toDb(val) }
+        }))
+
 
 
     }

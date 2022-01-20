@@ -103,6 +103,10 @@ describe("grid filter stuff", () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
+    }, {
+      entityName: '',
+      nameOf: () => 'col',
+      isDbReadonly: () => false
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
@@ -112,6 +116,10 @@ describe("grid filter stuff", () => {
     let x = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
+    }, {
+      entityName: '',
+      nameOf: () => 'col',
+      isDbReadonly: () => false
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
@@ -1153,9 +1161,9 @@ describe("test datetime column", () => {
     function test(d: Date, expected: string) {
       expect(DateOnlyValueConverter.toJson(d)).toBe(expected);
       const ed = DateOnlyValueConverter.fromJson(expected);
-      expect(ed.getFullYear()).toEqual(d.getFullYear(),"year");
-      expect(ed.getMonth()).toEqual(d.getMonth(),"month");
-      expect(ed.getDate()).toEqual(d.getDate(),"day");
+      expect(ed.getFullYear()).toEqual(d.getFullYear(), "year");
+      expect(ed.getMonth()).toEqual(d.getMonth(), "month");
+      expect(ed.getDate()).toEqual(d.getDate(), "day");
 
     }
     test(new Date(2021, 2, 26), '2021-03-26');

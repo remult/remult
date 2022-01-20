@@ -4,7 +4,8 @@ import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 import { EntityMetadata } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
-import { isDbReadonly, SqlDatabase } from "./sql-database";
+import { SqlDatabase } from "./sql-database";
+import { getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
@@ -19,7 +20,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
     }
-  
+
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
@@ -28,19 +29,21 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     }
 
     async dropTable(entity: EntityMetadata) {
-        let sql = 'drop  table if exists ' + await entity.getDbName();
+        let e = await getDbNameProvider(entity);
+        let sql = 'drop  table if exists ' + e.entityName;
         if (SqlDatabase.LogToConsole)
             console.log(sql);
         await this.createCommand().execute(sql);
     }
     async createTable(entity: EntityMetadata<any>) {
         let result = '';
+        let e = await getDbNameProvider(entity);
         for (const x of entity.fields) {
-            if (!await isDbReadonly(x)) {
+            if (!e.isDbReadonly(x)) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
-                result += this.addColumnSqlSyntax(x, await x.getDbName());
+                result += this.addColumnSqlSyntax(x, e.nameOf(x));
                 if (x.key == entity.idMetadata.field.key) {
                     result += ' primary key';
                     if (entity.options.dbAutoIncrementId)
@@ -48,7 +51,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 }
             }
         }
-        let sql = 'create table if not exists ' + await entity.getDbName() + ' (' + result + '\r\n)';
+        let sql = 'create table if not exists ' + e.entityName + ' (' + result + '\r\n)';
         if (SqlDatabase.LogToConsole)
             console.log(sql);
         await this.createCommand().execute(sql);
