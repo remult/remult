@@ -295,7 +295,7 @@ export class KnexSchemaBuilder {
                 }
             }
             catch (err) {
-                console.log("failed verify structore of " + await metadata.getDbName() + " ", err);
+                console.log("failed verify structure of " + await metadata.getDbName() + " ", err);
             }
         }
     }

@@ -102,7 +102,7 @@ export class PostgresSchemaBuilder {
                 }
             }
             catch (err) {
-                console.log("failed verify structore of " + e.entityName + " ", err);
+                console.log("failed verify structure of " + e.entityName + " ", err);
             }
         }
     }
