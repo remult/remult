@@ -169,7 +169,8 @@ app.use(remultExpress({
             password: 'MASTERKEY',
             options: {
                 enableArithAbort: true,
-                encrypt:false
+                encrypt: false,
+                instanceName: `sqlexpress`
             }
         },
     })
