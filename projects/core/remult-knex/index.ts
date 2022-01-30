@@ -204,6 +204,7 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     or(orElements: Filter[]) {
         let statement = '';
         this.promises.push((async () => {
+            const result = [] as ((builder: Knex.QueryBuilder) => void)[];
             for (const element of orElements) {
 
                 let f = new FilterConsumerBridgeToKnexRequest(this.nameProvider);
@@ -211,30 +212,27 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
                 element.__applyToConsumer(f);
                 let where = await f.resolveWhere();
                 if (where.length > 0) {
-                    this.result.push(b => {
+                    result.push(b => {
                         b.orWhere(b => {
                             where.forEach(x => x(b));
                         });
                     })
                 }
             }
-
-
+            if (result.length > 0) {
+                this.result.push(b => b.where(x => result.find(y => y(x))));
+            }
         })());
-
     }
     isNull(col: FieldMetadata): void {
         this.result.push(b => b.whereNull(this.nameProvider.nameOf(col)));
-
     }
     isNotNull(col: FieldMetadata): void {
         this.result.push(b => b.whereNotNull(this.nameProvider.nameOf(col)));
     }
     isIn(col: FieldMetadata, val: any[]): void {
-
         this.result.push(knex =>
             knex.whereIn(this.nameProvider.nameOf(col), val.map(x => col.valueConverter.toDb(x))))
-
     }
     isEqualTo(col: FieldMetadata, val: any): void {
         this.add(col, val, "=");

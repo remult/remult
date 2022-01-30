@@ -537,12 +537,41 @@ testAll("Paging",
     }, false);
 
 
+testAll("filter", async ({ createEntity }) => {
+    const s = await createEntity(testFilter);
+    await s.insert({ id: 1, a: 'a', b: 'b', c: 'c' });
+    expect(await s.count({
+        a: 'z',
+        $and: [testFilter.search('')]
+
+    })).toBe(0);
+}, false);
 
 
 
 
 
 
+@Entity("testfilter", { allowApiCrud: true })
+class testFilter {
+    @Field()
+    id: number = 0;
+    @Field()
+    a: string = '';
+    @Field()
+    b: string = '';
+    @Field()
+    c: string = '';
+    static search = Filter.createCustom<testFilter, string>((remult, str) => ({
+        $and: [{
+            $or: [
+                { a: 'a' },
+                { b: 'a' },
+                { c: 'a' }
+            ]
+        }]
+    }))
+}
 
 
 
@@ -583,4 +612,6 @@ class p extends EntityBase {
         super();
     }
 }
+
+
 
