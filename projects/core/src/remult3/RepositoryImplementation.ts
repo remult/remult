@@ -10,6 +10,7 @@ import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
 
 
+
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
@@ -1630,6 +1631,18 @@ interface columnInfo {
     key: string;
     settings: (remult: Remult) => FieldOptions
 
+}
+export declare type BuildEntityFields<entityType> = {
+    [Properties in keyof Partial<OmitEB<entityType>>]: any
+}
+export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, fields: BuildEntityFields<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
+    Entity(key, ...options)(c);
+    for (const fieldKey in fields) {
+        if (Object.prototype.hasOwnProperty.call(fields, fieldKey)) {
+            const element = fields[fieldKey];
+            element(c.prototype, fieldKey);
+        }
+    }
 }
 
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {

@@ -1,5 +1,7 @@
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, BuildEntity } from '../remult3';
 import { testAll } from './db-tests-setup';
+
+
 
 
 
@@ -11,9 +13,10 @@ describe("custom id column", () => {
             a: number;
             b: number;
         }
-        Entity('custom', { allowApiCrud: true })(type);
-        Field()(type.prototype, 'a');
-        Field()(type.prototype, 'b');
+        BuildEntity(type, 'custom', {
+            a: Field(),
+            b: Field()
+        }, { allowApiCrud: true })
         let c = await createEntity(type);
         let r = c.create();
         r.a = 1;
@@ -27,7 +30,7 @@ describe("custom id column", () => {
 
 
     });
-    testAll("basic test id column not first column", async ({  createEntity }) => {
+    testAll("basic test id column not first column", async ({ createEntity }) => {
 
         let type = class extends EntityBase {
             a: number;
