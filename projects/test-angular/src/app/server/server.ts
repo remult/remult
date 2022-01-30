@@ -3,6 +3,7 @@ let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import * as express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
 import * as cors from 'cors';
+import * as Knex from 'knex';
 
 import * as fs from 'fs';
 //import '../app.module';
@@ -19,7 +20,7 @@ import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 import { remultExpress } from '../../../../core/server/expressBridge';
 import * as knex from 'knex';
-import { Knex } from 'knex';
+
 import { MongoClient } from 'mongodb';
 import { stam } from '../products-test/products.component';
 
@@ -94,3 +95,21 @@ serverInit().then(async (dataSource) => {
     app.listen(port);
 });
 
+
+const k = Knex.default({
+    client: 'better-sqlite3', // or 'better-sqlite3'
+    connection: {
+        filename: ":memory:"
+    },
+});
+k.schema.dropTableIfExists('test').then(async () => {
+    await k.schema.createTable('test', async tb => {
+        tb.integer('a');
+        tb.date('d');
+    })
+    await k('test').insert({ a: 1, d: new Date() });
+    const rows = await k('test').select();
+    console.table(rows);
+    console.log(typeof rows[0].d);
+
+});

@@ -36,9 +36,16 @@ class KnexEntityDataProvider implements EntityDataProvider {
         const br = new FilterConsumerBridgeToKnexRequest(e);
         where.__applyToConsumer(br);
         let r = await br.resolveWhere();
-        return +(
+        const result = (
             await this.knex(e.entityName)
-                .count().where(b => r.forEach(w => w(b))))[0].count;
+                .count().where(b => r.forEach(w => w(b))));
+        var row = result[0];
+        for (const key in row) {
+            if (Object.prototype.hasOwnProperty.call(row, key)) {
+                const element = row[key];
+                return +element;
+            }
+        }
     }
     async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
         const e = await this.init();
@@ -159,7 +166,9 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
         let insert = this.knex(e.entityName).insert(insertObject);
         if (this.entity.options.dbAutoIncrementId) {
-            let newId = await insert.returning(this.entity.idMetadata.field.key);
+            let result = await insert.returning(this.entity.idMetadata.field.key);
+            let newId = result[0].id;
+
             resultFilter = new Filter(x => x.isEqualTo(this.entity.idMetadata.field, newId));
         }
         else await insert;

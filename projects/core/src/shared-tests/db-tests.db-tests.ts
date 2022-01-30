@@ -532,8 +532,8 @@ testAll("auto increment can't be affected by insert or update", async ({ createE
 testAll("Paging",
     async ({ createEntity }) => {
         let s = await entityWithValidations.create4RowsInDp(createEntity);
-        expect((await s.find({ limit: 3 })).length).toBe(3);
-        expect((await s.find({ limit: 3, page: 2 })).length).toBe(1);
+        expect((await s.find({ limit: 3, orderBy: { myId: "asc" } })).length).toBe(3);
+        expect((await s.find({ limit: 3, orderBy: { myId: "asc" }, page: 2 })).length).toBe(1);
     }, false);
 
 

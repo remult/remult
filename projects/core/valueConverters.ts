@@ -47,7 +47,7 @@ export const DateOnlyValueConverter: ValueConverter<Date> = {
   toInput: x => DateOnlyValueConverter.toJson(x),
   toJson: (val: Date) => {
     var d = val;
-    if (typeof d === "string")
+    if (typeof d === "string" || typeof (d) === "number")
       d = new Date(d);
     if (!d || d == null)
       return null;

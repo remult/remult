@@ -7,32 +7,63 @@ import { createPostgresConnection, PostgresSchemaBuilder } from "../../postgres"
 import { ClassType } from "../../classType";
 import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll } from "../shared-tests/db-tests-setup";
 config();
-let myKnex = Knex.default({
+function testKnexSqlImpl(knex: Knex.Knex, name: string) {
+    return (key: string, what: dbTestWhatSignature, focus = false) => {
+        itWithFocus(key + " " + name + " - knex", async () => {
+            let db = new KnexDataProvider(knex);
+            let remult = new Remult(db);
+            await what({
+                db, remult,
+                createEntity:
+                    async (entity: ClassType<any>) => {
+
+                        let repo = remult.repo(entity);
+                        let sb = new KnexSchemaBuilder(knex);
+                        await knex.schema.dropTableIfExists(await repo.metadata.getDbName());
+                        await sb.createIfNotExist(repo.metadata);
+                        await sb.verifyAllColumns(repo.metadata);
+                        await knex(await repo.metadata.getDbName()).delete();
+                        return repo;
+                    }
+            });
+        }, focus);
+    }
+}
+
+export const testKnexPGSqlImpl = testKnexSqlImpl(Knex.default({
     client: 'pg',
     connection: process.env.DATABASE_URL,
-    //   debug:true
-});
-export function testKnexSqlImpl(key: string, what: dbTestWhatSignature, focus = false) {
-    itWithFocus(key + " - knex", async () => {
-        let db = new KnexDataProvider(myKnex);
-        let remult = new Remult(db);
-        await what({
-            db, remult,
-            createEntity:
-                async (entity: ClassType<any>) => {
+    //debug:true
+}), "postgres");
 
-                    let repo = remult.repo(entity);
-                    let sb = new KnexSchemaBuilder(myKnex);
-                    await myKnex.schema.dropTableIfExists(await repo.metadata.getDbName());
-                    await sb.createIfNotExist(repo.metadata);
-                    await sb.verifyAllColumns(repo.metadata);
-                    await myKnex(await repo.metadata.getDbName()).delete();
-                    return repo;
-                }
-        });
-    }, focus);
-}
-addDatabaseToTest(testKnexSqlImpl);
+
+addDatabaseToTest(testKnexPGSqlImpl);
+if (process.env['TESTS_SQL_SERVER'])
+    addDatabaseToTest(testKnexSqlImpl(Knex.default({
+        client: 'mssql',
+        connection: {
+            server: '127.0.0.1',
+            database: 'test2',
+            user: 'sa',
+            password: 'MASTERKEY',
+            options: {
+                enableArithAbort: true,
+                encrypt: false,
+                instanceName: 'sqlexpress'
+            }
+        }//,debug: true
+    }), "sql server"));
+if (true)
+    addDatabaseToTest(testKnexSqlImpl(Knex.default({
+        client: 'better-sqlite3', // or 'better-sqlite3'
+        connection: {
+            filename: ":memory:"
+        },
+        //debug: true
+    }), "sqlite3"));
+
+
+
 let pg = createPostgresConnection({
     autoCreateTables: false
 });
