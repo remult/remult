@@ -5,7 +5,7 @@ import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 import { Remult, getFields } from 'remult';
 
 
-import { DataAreaSettings, DataControlSettings, FieldCollection } from '../../../interfaces/src/public_api';
+import { DataAreaSettings, DataControlSettings, FieldCollection } from '../../../interfaces/';
 
 @Component({
   selector: 'data-area',

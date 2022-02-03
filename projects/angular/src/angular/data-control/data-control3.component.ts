@@ -3,10 +3,10 @@
 import { Component, Input } from '@angular/core';
 
 import { ErrorStateMatcher } from '@angular/material/core';
-import {  FieldMetadata, Entity, ValueListItem } from 'remult';
+import { FieldMetadata, Entity, ValueListItem } from 'remult';
 
-import { FieldCollection } from '../../../interfaces/src/column-collection';
-import { DataControlSettings, decorateDataSettings } from '../../../interfaces/src/public_api';
+
+import { DataControlSettings, decorateDataSettings, FieldCollection } from '../../../interfaces/src/public_api';
 
 @Component({
   selector: 'data-control3',
