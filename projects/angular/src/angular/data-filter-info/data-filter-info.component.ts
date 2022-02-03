@@ -3,8 +3,8 @@ import { Directionality } from '@angular/cdk/bidi';
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { openDialog } from '../remult-core.module';
 import {  FieldMetadata, Remult } from 'remult';
-import { GridSettings } from '../../../interfaces/src/public_api';
-import { DataControlSettings } from '../../../interfaces/src/public_api';
+import { GridSettings } from '../../../interfaces';
+import { DataControlSettings } from '../../../interfaces';
 
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { FilterDialogComponent } from '../filter-dialog/filter-dialog.component';

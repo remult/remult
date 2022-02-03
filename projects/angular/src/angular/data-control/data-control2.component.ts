@@ -3,7 +3,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { FloatLabelType } from '@angular/material/form-field';
 import { Entity, ValueListItem, FieldMetadata, FieldRef } from 'remult';
 
-import { DataControlSettings, decorateDataSettings, FieldCollection } from '../../../interfaces/src/public_api';
+import { DataControlSettings, decorateDataSettings, FieldCollection } from '../../../interfaces';
 
 
 @Component({

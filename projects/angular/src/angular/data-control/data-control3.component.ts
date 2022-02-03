@@ -6,7 +6,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { FieldMetadata, Entity, ValueListItem } from 'remult';
 
 
-import { DataControlSettings, decorateDataSettings, FieldCollection } from '../../../interfaces/src/public_api';
+import { DataControlSettings, decorateDataSettings, FieldCollection } from '../../../interfaces';
 
 @Component({
   selector: 'data-control3',
