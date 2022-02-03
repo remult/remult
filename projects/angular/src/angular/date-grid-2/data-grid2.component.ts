@@ -7,8 +7,8 @@ import { FieldMetadata, Remult, Entity } from 'remult';
 import { SelectValueDialogComponent } from '../add-filter-dialog/add-filter-dialog.component';
 import { Directionality } from '@angular/cdk/bidi';
 
-import { DataControlSettings, getFieldDefinition } from '../../data-control-interfaces';
-import { GridButton, GridSettings, RowButton } from '../../grid-settings';
+import { DataControlSettings, getFieldDefinition } from '../../../interfaces/src/public_api';
+import { GridButton, GridSettings, RowButton } from '../../../interfaces/src/public_api';
 import { openDialog } from '../remult-core.module';
 
 @Component({

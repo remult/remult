@@ -4,7 +4,7 @@ import { FloatLabelType } from '@angular/material/form-field';
 import { Entity, ValueListItem, FieldMetadata, FieldRef } from 'remult';
 
 import { FieldCollection } from '../../../interfaces/src/column-collection';
-import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
+import { DataControlSettings, decorateDataSettings } from '../../../interfaces/src/public_api';
 
 
 @Component({
