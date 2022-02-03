@@ -4,8 +4,8 @@
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 import { Remult, getFields } from 'remult';
 
-import { FieldCollection } from '../../../interfaces/src/column-collection';
-import { DataAreaSettings, DataControlSettings } from '../../../interfaces/src/public_api';
+
+import { DataAreaSettings, DataControlSettings, FieldCollection } from '../../../interfaces/src/public_api';
 
 @Component({
   selector: 'data-area',
@@ -47,7 +47,7 @@ export class DataArea2Component implements OnChanges {
   }
   getColWidth(map: DataControlSettings) {
     let x = this.settings.fields.__dataControlStyle(map);
-  
+
     return x;
   }
   _getRowColumnClass(col: any) {
