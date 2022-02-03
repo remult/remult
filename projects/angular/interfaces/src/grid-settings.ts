@@ -1,10 +1,11 @@
 import { FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository, Filter } from "remult";
 
-import { DataList } from "./angular/dataList";
+
 
 import { FieldCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
+import { DataList } from "./dataList";
 import { FilterHelper } from "./filter-helper";
 
 

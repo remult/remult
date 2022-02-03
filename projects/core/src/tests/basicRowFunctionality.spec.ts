@@ -11,7 +11,7 @@ import { Status } from './testModel/models';
 import { Remult, Allowed } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
-import { DataList } from '../../../angular/src/angular/dataList';
+import { DataList } from '../../../angular/interfaces/src/dataList';
 import { UrlBuilder } from '../../urlBuilder';
 
 import { SqlDatabase } from '../data-providers/sql-database';

@@ -4,9 +4,8 @@
 import { Component, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 import { Remult, getFields } from 'remult';
 
-import { FieldCollection } from '../../column-collection';
-import { DataAreaSettings } from '../../data-area-settings';
-import { DataControlSettings } from '../../data-control-interfaces';
+import { FieldCollection } from '../../../interfaces/src/column-collection';
+import { DataAreaSettings, DataControlSettings } from '../../../interfaces/src/public_api';
 
 @Component({
   selector: 'data-area',

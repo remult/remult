@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import {  FieldMetadata, Entity, ValueListItem } from 'remult';
 
-import { FieldCollection } from '../../column-collection';
+import { FieldCollection } from '../../../interfaces/src/column-collection';
 import { DataControlSettings, decorateDataSettings } from '../../data-control-interfaces';
 
 @Component({
