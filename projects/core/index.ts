@@ -6,6 +6,7 @@ export {
     UuidField,
     FieldsMetadata,
     Entity,
+    BuildEntity,
     EntityBase,
     ControllerBase,
     FieldRef,
