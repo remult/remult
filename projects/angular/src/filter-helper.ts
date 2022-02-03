@@ -2,8 +2,9 @@
 
 import { FieldRef, EntityFilter, FindOptions, Repository, getEntityRef } from "remult";
 import { FieldMetadata } from "remult";
-import { getFieldDefinition } from '..';
+
 import { getEntitySettings } from 'remult/src/remult3';
+import { getFieldDefinition } from "./data-control-interfaces";
 
 export class FilterHelper<rowType> {
   filterRow: rowType;
