@@ -1,12 +1,12 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve } from "remult";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve, Repository, EntityOrderBy, EntityFilter } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings, getEntitySettings, RefSubscriber } from 'remult/src/remult3';
 import { ValueListValueConverter } from "remult/valueConverters";
 import { ClassType } from "remult/classType";
-import { ExtendedValueListItem } from "./angular/remult-core.module";
+
 
 
 
@@ -471,4 +471,46 @@ function fixResult(result: ValueListItem[], inField: FieldMetadata | FieldRef<an
   if (field?.valueType === Number) {
     result.splice(0, result.length, ...result.map(x => ({ ...x, id: x.id?.toString() })));
   }
+}
+
+
+/** returns an array of values that can be used in the value list property of a data control object */
+
+export async function getValueList<T>(repository: Repository<T>, args?: {
+  idField?: (e: EntityMetadata<T>) => FieldMetadata,
+  captionField?: (e: EntityMetadata<T>) => FieldMetadata
+  orderBy?: EntityOrderBy<T>,
+  where?: EntityFilter<T>
+}): Promise<ExtendedValueListItem[]> {
+  if (!args) {
+    args = {};
+  }
+  if (!args.idField) {
+    args.idField = x => x.idMetadata.field;
+  }
+  if (!args.captionField) {
+    let idCol = args.idField(repository.metadata);
+    for (const keyInItem of repository.metadata.fields) {
+      if (keyInItem != idCol) {
+        args.captionField = x => x.fields.find(keyInItem);
+        break;
+      }
+    }
+  }
+  let r = (await repository.find({
+    where: args.where,
+    orderBy: args.orderBy,
+    limit: 1000
+  })).map(x => {
+    return {
+      id: repository.getEntityRef(x).fields.find(args.idField(repository.metadata)).value,
+      caption: repository.getEntityRef(x).fields.find(args.captionField(repository.metadata)).value,
+      entity: x
+    }
+  });
+  return r;
+
+}
+export interface ExtendedValueListItem extends ValueListItem {
+  entity?: any;
 }
