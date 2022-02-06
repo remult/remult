@@ -39,7 +39,7 @@ export class RouteHelperService {
 export declare type AngularComponent = { new(...args: any[]): any };
 // @dynamic
 @Injectable()
-export class AuthenticatedGuard implements CanActivate {
+export class AuthenticatedInGuard implements CanActivate {
     constructor(protected remult: Remult, private router: Router, private helper: RouteHelperService) {
 
     }
@@ -54,7 +54,7 @@ export class AuthenticatedGuard implements CanActivate {
         }
         
         if (!(route instanceof dummyRoute)) {
-            let x = AuthenticatedGuard.componentToNavigateIfNotAllowed;
+            let x = AuthenticatedInGuard.componentToNavigateIfNotAllowed;
             if (x != undefined) {
                 this.helper.navigateToComponent(x);
             } else
