@@ -10,6 +10,7 @@ import { Directionality } from '@angular/cdk/bidi';
 import { DataControlSettings, getFieldDefinition } from '../../../interfaces';
 import { GridButton, GridSettings, RowButton } from '../../../interfaces';
 import { openDialog } from '../remult-core.module';
+import { RemultAngularPluginsService } from '../RemultAngularPluginsService';
 
 @Component({
   selector: 'data-grid',
@@ -21,7 +22,7 @@ import { openDialog } from '../remult-core.module';
 
 
 export class DataGrid2Component implements OnChanges {
-  constructor(private remult: Remult, dir: Directionality) {
+  constructor(private remult: Remult, dir: Directionality, public plugin: RemultAngularPluginsService) {
     this.rightToLeft = dir.value === 'rtl';
   }
 

@@ -315,7 +315,14 @@ export class FieldCollection<rowType = any> {
 
   private _lastColumnCount: number;
   private _lastNumOfColumnsInGrid: number;
-  private _initColumnsArrays() {
+  private augmented = new Map<DataControlSettings, boolean>();
+  augment(augmenter: dataControlAugmenter, s: DataControlSettings) {
+    if (this.augmented.get(s))
+      return;
+    augmenter(getFieldDefinition(s.field), s);
+    this.augmented.set(s, true);
+  }
+  private _initColumnsArrays(augmenter: dataControlAugmenter) {
     if (this._lastColumnCount != this.items.length || this._lastNumOfColumnsInGrid != this.numOfColumnsInGrid) {
       this._lastNumOfColumnsInGrid = this.numOfColumnsInGrid;
       this._lastColumnCount = this.items.length;
@@ -323,6 +330,7 @@ export class FieldCollection<rowType = any> {
       this.nonGridColumns = [];
       let i = 0;
       for (let c of this.items) {
+        this.augment(augmenter, c);
         if (i++ < this._lastNumOfColumnsInGrid)
           this.gridColumns.push(c);
         else
@@ -330,12 +338,12 @@ export class FieldCollection<rowType = any> {
       }
     }
   }
-  getGridColumns() {
-    this._initColumnsArrays();
+  getGridColumns(augmenter: dataControlAugmenter) {
+    this._initColumnsArrays(augmenter);
     return this.gridColumns;
   }
-  getNonGridColumns() {
-    this._initColumnsArrays();
+  getNonGridColumns(augmenter: dataControlAugmenter) {
+    this._initColumnsArrays(augmenter);
     return this.nonGridColumns;
   }
 }
@@ -514,3 +522,5 @@ export async function getValueList<T>(repository: Repository<T>, args?: {
 export interface ExtendedValueListItem extends ValueListItem {
   entity?: any;
 }
+
+export declare type dataControlAugmenter = (f: FieldMetadata, op: DataControlSettings) => void;

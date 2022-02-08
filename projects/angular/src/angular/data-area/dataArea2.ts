@@ -6,6 +6,7 @@ import { Remult, getFields } from 'remult';
 
 
 import { DataAreaSettings, DataControlSettings, FieldCollection } from '../../../interfaces/';
+import { RemultAngularPluginsService } from '../RemultAngularPluginsService';
 
 @Component({
   selector: 'data-area',
@@ -16,7 +17,7 @@ import { DataAreaSettings, DataControlSettings, FieldCollection } from '../../..
 
 })
 export class DataArea2Component implements OnChanges {
-  constructor(private remult: Remult) {
+  constructor(private remult: Remult, private plugin: RemultAngularPluginsService) {
 
   }
 
@@ -62,7 +63,7 @@ export class DataArea2Component implements OnChanges {
 
     if (this.settings["columns"] && !this.settings.fields)
       this.settings.fields = this.settings["columns"]
-    let cols = this.settings.fields.getNonGridColumns();
+    let cols = this.settings.fields.getNonGridColumns(this.plugin.dataControlAugmenter);
     if (cols == this.lastAllCols)
       return this.lastCols;
     this.lastAllCols = cols;

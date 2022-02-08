@@ -31,6 +31,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { BidiModule } from '@angular/cdk/bidi';
 import { Repository, EntityOrderBy, EntityFilter, EntityMetadata } from 'remult';
+import { RemultAngularPluginsService } from './RemultAngularPluginsService';
 
 
 
@@ -53,7 +54,7 @@ import { Repository, EntityOrderBy, EntityFilter, EntityMetadata } from 'remult'
     deps: [HttpClient, MatDialog]
   },
     NotAuthenticatedGuard, AuthenticatedGuard, RouteHelperService,
-    BusyService,
+    BusyService,RemultAngularPluginsService,
 
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
   ,

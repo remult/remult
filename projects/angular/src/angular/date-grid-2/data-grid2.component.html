@@ -28,7 +28,8 @@
               </button>
             </ng-container>
           </mat-menu>
-          <div class="dataGridHeaderCell headerWithFilter" *ngFor="let map of settings.columns.getGridColumns()"
+          <div class="dataGridHeaderCell headerWithFilter"
+            *ngFor="let map of settings.columns.getGridColumns(this.plugin.dataControlAugmenter)"
             [style.flex]="getColFlex(map)" [style.width]="getColWidth(map)" draggable="true"
             (dragstart)="dragStart(map)" (dragover)="dragOver(map,$event)" (drop)="onDrop(map)">
 

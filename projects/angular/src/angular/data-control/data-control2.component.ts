@@ -4,6 +4,7 @@ import { FloatLabelType } from '@angular/material/form-field';
 import { Entity, ValueListItem, FieldMetadata, FieldRef } from 'remult';
 
 import { DataControlSettings, decorateDataSettings, FieldCollection } from '../../../interfaces';
+import { RemultAngularPluginsService } from '../RemultAngularPluginsService';
 
 
 @Component({
@@ -18,6 +19,10 @@ export class DataControl2Component {
       field: value
     };
     decorateDataSettings(this.map.field, this.map);
+    this.settings.augment(this.plugin.dataControlAugmenter, this.map);
+  }
+  constructor(private plugin: RemultAngularPluginsService) {
+
   }
   theId: any;
   @Input() record: any;
