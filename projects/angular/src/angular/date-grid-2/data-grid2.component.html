@@ -79,7 +79,7 @@
             </ng-container>
 
           </mat-menu>
-          <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns()"
+          <div class="dataGridDataCell" *ngFor="let map of settings.columns.getGridColumns(this.plugin.dataControlAugmenter)"
             [className]="_getRowColumnClass(map,record)" [style.flex]="getColFlex(map)"
             [style.width]="getColWidth(map)">
             <data-control3 [settings]="settings.columns" [map]="map" [record]="record" [rightToLeft]="rightToLeft">
