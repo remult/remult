@@ -27,9 +27,8 @@ export class ProductsComponent implements OnInit {
   constructor(private remult: Remult) {
 
   }
-  grid = new GridSettings(this.remult.repo(stam));
+  grid = new GridSettings(this.remult.repo(stam), { allowCrud: true });
   ngOnInit(): void {
-    stam.myMethod();
   }
   async click() {
 
@@ -38,30 +37,9 @@ export class ProductsComponent implements OnInit {
 }
 
 
-
-@Entity("testId", {
-  allowApiCrud: true,
-  dbAutoIncrementId: true
-})
-export class TestId extends EntityBase {
-  @IntegerField({
-    dbReadOnly: true
-  })
-  id: number;
-  @Field()
-  name: string;
-
-}
 @Entity<stam>('stam', {
   allowApiCrud: true,
-  saving: self => {
-    console.log(self.test);
-    if (isBackend() && false) {
-      var x = undefined;
-      x.toString();
-      self.$.name.error = 'name error';
-    }
-  }
+
 })
 export class stam extends IdEntity {
   @Field({ dbName: 'name' })
@@ -71,8 +49,7 @@ export class stam extends IdEntity {
 
   @Field({ serverExpression: () => 'noam' })
   test: string = '';
-  @Field()
-  testId: TestId;
+
 
   @BackendMethod({ allowed: false })
   static async myMethod(remult?: Remult) {
