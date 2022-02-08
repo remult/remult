@@ -1,4 +1,4 @@
-import { dataControlAugmenter, DataControlSettings } from "@remult/angular/interfaces";
+import { dataControlAugmenter, DataControlSettings } from '../../interfaces';
 import { FieldMetadata } from "remult";
 
 

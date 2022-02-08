@@ -18,3 +18,4 @@ export * from './src/angular/date-grid-2/data-grid2.component';
 export * from './src/angular/data-area/dataArea2';
 export * from './src/lookup';
 
+export * from './src/angular/RemultAngularPluginsService';
