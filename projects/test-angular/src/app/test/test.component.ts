@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { async } from '@angular/core/testing';
-import { DataAreaSettings } from '@remult/angular';
+import { DataAreaSettings } from '@remult/angular/interfaces';
 
 import { Field, getFields, ValueListFieldType } from 'remult';
 
 
 
-@ValueListFieldType( {
+@ValueListFieldType({
 
 })
 export class FamilyStatus {

@@ -18,6 +18,9 @@ export class CustomModuleLoader {
                 case "@remult/angular":
                     request = request = process.cwd() + root + '/angular';
                     break;
+                    case "@remult/angular/interfaces":
+                    request = request = process.cwd() + root + '/angular/interfaces';
+                    break;
                 case "remult/server":
                     request = request = process.cwd() + root + '/core/server';
                     break;

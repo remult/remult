@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DataControl, GridSettings } from '@remult/angular';
+import { DataControl, GridSettings } from '@remult/angular/interfaces';
 import { Remult, Field, getFields } from 'remult';
 import { Categories } from './categories';
 

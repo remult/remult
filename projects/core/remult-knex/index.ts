@@ -1,7 +1,7 @@
-import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter, Remult } from ".."
+import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityFilter, EntityMetadata, FieldMetadata, Filter, Remult } from ".."
 import knex, { Knex } from 'knex';
-import { FilterConsumer } from "../src/filter/filter-interfaces";
-import { CustomSqlFilterObject, dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
+import { customDatabaseFilterToken, FilterConsumer } from "../src/filter/filter-interfaces";
+import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities } from "../src/context";
 import { DateOnlyValueConverter } from "../valueConverters";
 
@@ -24,9 +24,19 @@ export class KnexDataProvider implements DataProvider {
 
 
     }
+    static customFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any> {
+        return {
+            [customDatabaseFilterToken]: {
+                buildKnex: build
+            }
+        }
+
+    }
     supportsCustomFilter?: boolean;
 
 }
+export type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>
+
 class KnexEntityDataProvider implements EntityDataProvider {
     constructor(private entity: EntityMetadata<any>, private knex: Knex) {
 
@@ -202,7 +212,6 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     }
 
     or(orElements: Filter[]) {
-        let statement = '';
         this.promises.push((async () => {
             const result = [] as ((builder: Knex.QueryBuilder) => void)[];
             for (const element of orElements) {
@@ -272,17 +281,14 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
 
 
-    databaseCustom(databaseCustom: CustomSqlFilterObject): void {
-        throw "error";
-        //   this.promises.push((async () => {
-        //     if (databaseCustom?.buildSql) {
-        //       let item = new CustomSqlFilterBuilder(this.knex);
-        //       await databaseCustom.buildSql(item);
-        //       if (item.sql) {
-        //         this.addToWhere("(" + item.sql + ")");
-        //       }
-        //     }
-        //   })());
+    databaseCustom(databaseCustom: {
+        buildKnex: CustomKnexFilterBuilderFunction
+    }): void {
+        this.promises.push((async () => {
+            if (databaseCustom?.buildKnex) {
+                this.result.push(await databaseCustom.buildKnex());
+            }
+        })());
     }
 }
 

@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, NgZone, OnInit, ViewChild } from '@
 import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller, Filter, IntegerField } from 'remult';
 
 import { Products } from './products';
-import { DialogConfig, getValueList, GridSettings, InputField, openDialog } from '@remult/angular';
-import { DataAreaSettings, DataControl } from '@remult/angular';
+import { getValueList, GridSettings, InputField } from '@remult/angular/interfaces';
+
 import axios, { AxiosResponse } from 'axios';
 import { CdkScrollable, CdkVirtualScrollViewport, ScrollDispatcher } from '@angular/cdk/scrolling';
 import { filter, map, pairwise, throttleTime } from 'rxjs/operators';
 import { timer } from 'rxjs';
+import { DialogConfig } from '../../../../angular';
 
 
 @Controller("blabla")
