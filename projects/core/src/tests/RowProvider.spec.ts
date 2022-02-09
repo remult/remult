@@ -5,11 +5,11 @@ import { testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
 import { Remult } from '../context';
 import { OneToMany } from '../column';
-import { FilterHelper } from '../../../angular/src/filter-helper';
+import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings, DataControlInfo } from '../../../angular';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
 import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
@@ -1092,7 +1092,7 @@ describe("test area", () => {
     let area = new DataAreaSettings({ fields: () => [n] });
     expect(area.fields.items.length).toBe(1);
     expect(area.fields.__showArea()).toBe(true);
-    expect(area.fields.getNonGridColumns().length).toBe(1);
+    expect(area.fields.getNonGridColumns(()=>{}).length).toBe(1);
   });
 });
 

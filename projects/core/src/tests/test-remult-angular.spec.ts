@@ -1,5 +1,6 @@
-import { DataControl } from '../../../angular';
+import { DataControl } from '../../../angular/interfaces';
 import { DataControl2Component } from '../../../angular/src/angular/data-control/data-control2.component';
+import { RemultAngularPluginsService } from '../../../angular/src/angular/RemultAngularPluginsService';
 import { Field, getFields } from '../remult3';
 
 
@@ -16,7 +17,7 @@ class classWithColumn {
 describe("remult angular", () => {
 
     it("stand alone data control", async () => {
-        let dc = new DataControl2Component();
+        let dc = new DataControl2Component(new RemultAngularPluginsService(), undefined);
         let c = new classWithColumn();
         c.a = '1';
         dc.field = c._.a;

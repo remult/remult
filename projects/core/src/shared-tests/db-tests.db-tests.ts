@@ -17,9 +17,8 @@ import { entityForCustomFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
-import { testKnexPGSqlImpl, testPostgresImplementation } from "../backend-tests/backend-database-test-setup.backend-spec";
 import { SqlDatabase } from "../..";
-import { KnexDataProvider } from "../../remult-knex";
+
 
 
 testAll("what", async ({ remult, createEntity }) => {
@@ -549,50 +548,6 @@ testAll("filter", async ({ createEntity }) => {
 
     })).toBe(0);
 }, false);
-testPostgresImplementation("sql filter", async ({ createEntity }) => {
-    let s = await entityWithValidations.create4RowsInDp(createEntity);
-    expect((await s.find({
-        where: SqlDatabase.customFilter(async build => {
-            build.sql = s.metadata.fields.myId.options.dbName + ' in (1,3)';
-        })
-    })).length).toBe(2);
-}, false);
-testPostgresImplementation("sql filter2", async ({ createEntity }) => {
-    let s = await entityWithValidations.create4RowsInDp(createEntity);
-    expect((await s.find({
-        where:
-        {
-            $or: [
-                SqlDatabase.customFilter(async build => {
-                    build.sql = s.metadata.fields.myId.options.dbName + ' in (1,3)';
-                })
-                , {
-                    myId: 2
-                }]
-        }
-    })).length).toBe(3);
-}, false);
-testKnexPGSqlImpl("knex filter", async ({ createEntity }) => {
-    let s = await entityWithValidations.create4RowsInDp(createEntity);
-    expect((await s.find({
-        where: KnexDataProvider.customFilter(async () => {
-            return build => build.whereIn(s.metadata.fields.myId.options.dbName, [1, 3])
-        })
-    })).length).toBe(2);
-}, false);
-testKnexPGSqlImpl("knex filter2", async ({ createEntity }) => {
-    let s = await entityWithValidations.create4RowsInDp(createEntity);
-    expect((await s.find({
-        where: {
-            $or: [KnexDataProvider.customFilter(async () => {
-                return build => build.whereIn(s.metadata.fields.myId.options.dbName, [1, 3])
-            }), {
-                myId: 4
-            }]
-        }
-    })).length).toBe(3);
-}, false);
-
 
 
 
