@@ -20,15 +20,26 @@ export interface DataControlSettings<entityType = any, valueType = any> {
     allowClick?: (row: entityType, val: FieldRef<entityType, valueType>) => boolean;
     clickIcon?: string;
 
-    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((remult:Remult) => Promise<ValueListItem[]>) | ((remult) => ValueListItem[]);
+    valueList?: ValueListItem[] | string[] | any[] | Promise<ValueListItem[]> | ((remult: Remult) => Promise<ValueListItem[]>) | ((remult) => ValueListItem[]);
     inputType?: string; //used: password,date,tel,text,checkbox,number
     hideDataOnInput?: boolean;//consider also setting the width of the data on input - for datas with long input
     useContainsFilter?: boolean;
 
     width?: string;
+    customComponent?: {
+        component: any,
+        args?: any
+    };
 }
 
-
+export interface CustomDataComponent {
+    args: CustomComponentArgs;
+}
+export declare type CustomComponentArgs = {
+    fieldRef: FieldRef,
+    settings: DataControlSettings,
+    args?: any
+}
 
 
 

@@ -1,13 +1,8 @@
-import { ChangeDetectionStrategy, Component, NgZone, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ComponentFactoryResolver, Input, NgZone, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller, Filter, IntegerField, FieldRef } from 'remult';
 
-import { Products } from './products';
-import { DataAreaSettings, getValueList, GridSettings, InputField } from '@remult/angular/interfaces';
+import { CustomDataComponent, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField } from '@remult/angular/interfaces';
 
-import axios, { AxiosResponse } from 'axios';
-import { CdkScrollable, CdkVirtualScrollViewport, ScrollDispatcher } from '@angular/cdk/scrolling';
-import { filter, map, pairwise, throttleTime } from 'rxjs/operators';
-import { timer } from 'rxjs';
 import { DialogConfig } from '../../../../angular';
 import { RemultAngularPluginsService } from '../../../../angular/src/angular/RemultAngularPluginsService';
 
@@ -25,22 +20,41 @@ import { RemultAngularPluginsService } from '../../../../angular/src/angular/Rem
 })
 export class ProductsComponent implements OnInit {
   page = 0;
-  constructor(private remult: Remult, plugin: RemultAngularPluginsService) {
+  constructor(private remult: Remult, plugin: RemultAngularPluginsService, private componentFactoryResolver: ComponentFactoryResolver) {
     plugin.dataControlAugmenter = (f, s) => {
       if (f.options.aha)
         s.click = () => alert("aha");
     }
   }
-  grid = new GridSettings(this.remult.repo(stam), { allowCrud: true });
+
+  @ViewChild('theId', { read: ViewContainerRef, static: true }) theId: ViewContainerRef;
+
+  grid = new GridSettings(this.remult.repo(stam), {
+    allowCrud: true,
+    rowsLoaded: (rows) => {
+      this.area = new DataAreaSettings({
+        fields: () => [
+          {
+            field: this.grid.items[0].$.name,
+            customComponent: {
+              component: AComponent
+            }
+          }]
+      })
+    }
+  });
   area: DataAreaSettings;
   field: FieldRef<any, any>;
   ngOnInit(): void {
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(AComponent);
+
+    const viewContainerRef = this.theId;
+    viewContainerRef.clear();
+
+    const componentRef = viewContainerRef.createComponent<AComponent>(componentFactory);
     setTimeout(() => {
-      this.area = new DataAreaSettings({
-        fields: () => [this.grid.items[0].$.name]
-      });
-      this.field = this.grid.items[0].$.name;
-    }, 500);
+
+    }, 1000);
   }
   async click() {
 
@@ -75,3 +89,22 @@ declare module 'remult' {
     aha?: boolean
   }
 }
+
+
+
+@Component({
+  selector: 'app-a',
+  template: `Component <input *ngIf="args?.fieldRef" [(ngModel)]="args.fieldRef.inputValue">`,
+})
+export class AComponent implements CustomDataComponent {
+  @Input()
+  args: { fieldRef: FieldRef<any, any>; settings: DataControlSettings<any, any> };
+
+}
+
+
+@Component({
+  selector: 'app-b',
+  template: `Component b`,
+})
+export class BComponent { }

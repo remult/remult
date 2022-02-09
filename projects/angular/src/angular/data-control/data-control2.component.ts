@@ -1,9 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component, ComponentFactoryResolver, Input, ViewChild, ViewContainerRef } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FloatLabelType } from '@angular/material/form-field';
 import { Entity, ValueListItem, FieldMetadata, FieldRef } from 'remult';
 
-import { DataControlSettings, decorateDataSettings, FieldCollection } from '../../../interfaces';
+import { CustomDataComponent, DataControlSettings, decorateDataSettings, FieldCollection, getFieldDefinition } from '../../../interfaces';
 import { RemultAngularPluginsService } from '../RemultAngularPluginsService';
 
 
@@ -20,11 +20,33 @@ export class DataControl2Component {
     };
     decorateDataSettings(this.map.field, this.map);
     this.settings.augment(this.plugin.dataControlAugmenter, this.map);
+    this.initCustomComponent();
   }
-  constructor(private plugin: RemultAngularPluginsService) {
+  constructor(private plugin: RemultAngularPluginsService, private componentFactoryResolver: ComponentFactoryResolver) {
 
   }
-  theId: any;
+  @ViewChild('theId', { read: ViewContainerRef, static: true })
+  theId: ViewContainerRef;
+  done = false;
+  initCustomComponent() {
+    if (this.map?.customComponent?.component) {
+      if (this.done)
+        return;
+      this.done = true;
+      const componentFactory = this.componentFactoryResolver.resolveComponentFactory<CustomDataComponent>(this.map.customComponent.component);
+
+      const viewContainerRef = this.theId;
+      viewContainerRef.clear();
+
+      const componentRef = viewContainerRef.createComponent<CustomDataComponent>(componentFactory);
+      const fieldRef = this.map.field as FieldRef;
+      componentRef.instance.args = {
+        fieldRef,
+        settings: this.map
+      }
+    }
+  }
+
   @Input() record: any;
   @Input() notReadonly = false;
   @Input() settings: FieldCollection = new FieldCollection(undefined, () => true, undefined, undefined, () => undefined);
@@ -71,7 +93,7 @@ export class DataControl2Component {
     return this.settings._getEditable(this.map, this.record);
   }
   ngOnChanges(): void {
-
+    this.initCustomComponent();
   }
   isSelect(): boolean {
     if (this.map.valueList && this._getEditable())

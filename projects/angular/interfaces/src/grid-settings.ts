@@ -1,15 +1,10 @@
 import { FieldMetadata, Sort, FieldsMetadata, EntityOrderBy, EntityFilter, FindOptions, getEntityRef, Repository, Filter } from "remult";
 
-
-
 import { FieldCollection } from "./column-collection";
 import { DataAreaSettings, IDataAreaSettings } from "./data-area-settings";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 import { DataList } from "./dataList";
 import { FilterHelper } from "./filter-helper";
-
-
-
 
 export class GridSettings<rowType>  {
   undoChanges(r: rowType) {
@@ -417,6 +412,9 @@ export class GridSettings<rowType>  {
         this.setCurrentRow(this.restList.items[0]);
 
       }
+      if (this.settings?.rowsLoaded) {
+        this.settings?.rowsLoaded(this.restList.items);
+      }
       return this.restList;
     });
     if (this.settings && this.settings.knowTotalRows) {
@@ -461,13 +459,9 @@ export class GridSettings<rowType>  {
       return this.restList.items;
     return undefined;
   }
-
-
-
-
-
 }
 export interface IDataSettings<rowType> {
+  rowsLoaded?: (items: rowType[]) => void;
   allowUpdate?: boolean,
   allowInsert?: boolean,
   allowDelete?: boolean,
