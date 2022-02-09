@@ -32,13 +32,13 @@ export interface DataControlSettings<entityType = any, valueType = any> {
     };
 }
 
-export interface CustomDataComponent {
-    args: CustomComponentArgs;
+export interface CustomDataComponent<argsType = any> {
+    args: CustomComponentArgs<argsType>;
 }
-export declare type CustomComponentArgs = {
+export declare type CustomComponentArgs<argsType = any> = {
     fieldRef: FieldRef,
     settings: DataControlSettings,
-    args?: any
+    args?: argsType
 }
 
 
