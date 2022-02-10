@@ -1,20 +1,20 @@
-import {   Fields, FieldsMetadata } from "remult";
+import { Fields, FieldsMetadata } from "remult";
 
 import { FieldCollection } from "./column-collection";
 import { DataControlInfo, DataControlSettings } from "./data-control-interfaces";
 
-export interface IDataAreaSettings<rowType=any > {
+export interface IDataAreaSettings<rowType = any> {
   fields?: (rowType: FieldsMetadata<rowType>) => DataAreaFieldsSetting<rowType>[];
   numberOfColumnAreas?: number;
   labelWidth?: number;
 }
 
-export class DataAreaSettings<rowType =any>
+export class DataAreaSettings<rowType = any>
 {
   lines: DataControlSettings[][] = [];
-  constructor(public settings?: IDataAreaSettings<rowType>, public fields?: FieldCollection<rowType>, entity?:FieldsMetadata<rowType>) {
+  constructor(public settings?: IDataAreaSettings<rowType>, public fields?: FieldCollection<rowType>, entity?: FieldsMetadata<rowType>) {
     if (fields == undefined) {
-      fields = new FieldCollection<rowType>(() => undefined, () => true, undefined, () => true,()=>undefined);
+      fields = new FieldCollection<rowType>(() => undefined, () => true, undefined, () => true, () => undefined);
       fields.numOfColumnsInGrid = 0;
       this.fields = fields;
     }
@@ -34,7 +34,7 @@ export class DataAreaSettings<rowType =any>
         } else {
           fields.add(<DataControlSettings<rowType>>colSettings);
           let x = fields.items[fields.items.length - 1];
-          x.width='';
+          x.width = '';
           this.lines.push([x]);
 
         }
@@ -47,5 +47,5 @@ export class DataAreaSettings<rowType =any>
 }
 
 
-export type DataAreaFieldsSetting<rowType > = DataControlInfo<rowType> | DataControlInfo<rowType>[];
+export type DataAreaFieldsSetting<rowType = any> = DataControlInfo<rowType> | DataControlInfo<rowType>[];
 
