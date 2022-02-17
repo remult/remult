@@ -55,3 +55,44 @@ describe("custom id column", () => {
     });
 
 });
+//typing game
+
+// var z = <Z>(y: Z) => {
+
+// }
+// z<number>(1);
+
+
+
+
+// function myBackendMethod<T>(types: T, values: values<T>) {
+
+// }
+
+// type values<T> = {
+//     [Property in keyof T]: T[Property] extends new (...args: any[]) => infer R ? R : any;
+// };
+
+// const a1 = AccountManager;
+
+
+
+// const a = {
+//     a: String.prototype,
+//     b: AccountManager.prototype
+// };
+
+
+
+
+// var zzz: AccountManager = undefined!;
+
+// myBackendMethod({
+//     a: String,
+//     b: AccountManager
+// }, {
+//     b: new AccountManager(),
+//     a: "asdf"
+// })
+
+
