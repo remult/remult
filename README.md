@@ -9,8 +9,11 @@
 	<a href="https://raw.githubusercontent.com/remult/remult/master/LICENSE">
 		<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg">
 	</a>
-	<a href="https://badge.fury.io/js/remult">
+	<a href="https://www.npmjs.com/package/remult">
 		<img alt="npm version" src="https://badge.fury.io/js/remult.svg">
+	</a>
+	<a href="https://www.npmjs.com/package/remult">
+		<img alt="npm downloads" src="https://img.shields.io/npm/dm/remult">
 	</a>
 </div>
 
