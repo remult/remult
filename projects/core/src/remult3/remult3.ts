@@ -96,7 +96,7 @@ export type Fields<entityType> = {
 
 }
 export type FieldsMetadata<entityType> = {
-    [Properties in keyof OmitEB<entityType>]: FieldMetadata
+    [Properties in keyof OmitEB<entityType>]: FieldMetadata<entityType[Properties]>
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata,
     [Symbol.iterator]: () => IterableIterator<FieldMetadata>,
