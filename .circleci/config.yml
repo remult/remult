@@ -13,5 +13,5 @@ orbs:
 workflows:
     build:
       jobs:
-        - build:
+        - node/run:
             npm-run: core-build 
