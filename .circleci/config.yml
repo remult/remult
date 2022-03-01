@@ -16,3 +16,6 @@ workflows:
         - node/run:
             name: build
             npm-run: core-build 
+        - node/run:
+            name: test
+            npm-run: test
