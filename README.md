@@ -3,11 +3,17 @@
     <img src="https://github.com/remult/remult/raw/master/docs/.vuepress/public/logo.png" width="140" height="140">
   </a>
   <h1>Remult</h1>
+	<a href="https://circleci.com/gh/remult/remult/tree/master">
+		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=svg">
+	</a>
 	<a href="https://raw.githubusercontent.com/remult/remult/master/LICENSE">
 		<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg">
 	</a>
-	<a href="https://badge.fury.io/js/remult">
+	<a href="https://www.npmjs.com/package/remult">
 		<img alt="npm version" src="https://badge.fury.io/js/remult.svg">
+	</a>
+	<a href="https://www.npmjs.com/package/remult">
+		<img alt="npm downloads" src="https://img.shields.io/npm/dm/remult">
 	</a>
 </div>
 
