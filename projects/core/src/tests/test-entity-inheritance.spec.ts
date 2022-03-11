@@ -4,7 +4,10 @@ import { Entity, EntityBase, Field } from "../remult3";
 
 
 @Entity<parent>("parent", {
-    saving: self => {
+    saving: async self => {
+        await new Promise((r) => setTimeout(() => {
+            r({})
+        }, 10))
         self.myField += ",parent";
     }
 })
@@ -17,11 +20,21 @@ export class parent extends EntityBase {
     autoSavedField: string = '';
 }
 @Entity<child>("child", {
-    saving: self => {
+    saving: async self => {
+
+        await new Promise((r) => setTimeout(() => {
+            r({})
+        }, 10))
         self.myField += "child";
     }
 })
 export class child extends parent {
+
+}
+@Entity<child2>("child2", {
+
+})
+export class child2 extends parent {
 
 }
 
@@ -29,6 +42,13 @@ it("saving works well ", async () => {
     let remult = new Remult(new InMemoryDataProvider());
     let x = await remult.repo(child).create().save();
     expect(x.myField).toBe("child,parent");
+    expect(x.autoSavedField).toBe("auto");
+
+})
+it("saving works well when child doesnt have saving", async () => {
+    let remult = new Remult(new InMemoryDataProvider());
+    let x = await remult.repo(child2).create().save();
+    expect(x.myField).toBe(",parent");
     expect(x.autoSavedField).toBe("auto");
 
 })

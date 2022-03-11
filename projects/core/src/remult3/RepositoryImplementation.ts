@@ -476,11 +476,11 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
             info = { ...baseSettings, ...info };
             let functions: (keyof EntityOptions)[] = ["saving", "saved", "deleting", "deleted", "validation"]
             for (const key of functions as string[]) {
-                if (baseSettings[key]) {
+                if (baseSettings[key] && baseSettings[key] !== info[key]) {
                     let x = info[key];
-                    info[key] = (a, b) => {
-                        x(a, b);
-                        baseSettings[key](a, b);
+                    info[key] = async (a, b) => {
+                        await x(a, b);
+                        await baseSettings[key](a, b);
                     }
                 }
             }
