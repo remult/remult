@@ -163,10 +163,27 @@ export const IntegerValueConverter: ValueConverter<number> =
 export const DefaultValueConverter: ValueConverter<any> = {
   fromJson: x => x,
   toJson: x => x,
-  fromDb: x => x == null ? null : x ? JSON.parse(DefaultValueConverter.fromJson(x)) : undefined,
-  toDb: x => x !== undefined ? x === null ? null : JSON.stringify(DefaultValueConverter.toJson(x)) : undefined,
+  fromDb: x => JsonStringValueConverter.fromDb(x),
+  toDb: x => JsonStringValueConverter.toDb(x),
   fromInput: x => DefaultValueConverter.fromJson(x),
   toInput: x => DefaultValueConverter.toJson(x)
+}
+export const JsonStringValueConverter: ValueConverter<any> = {
+  fromJson: x => x,
+  toJson: x => x,
+  fromDb: x => x == null ? null : x ? JSON.parse(JsonStringValueConverter.fromJson(x)) : undefined,
+  toDb: x => x !== undefined ? x === null ? null : JSON.stringify(JsonStringValueConverter.toJson(x)) : undefined,
+  fromInput: x => JsonStringValueConverter.fromJson(x),
+  toInput: x => JsonStringValueConverter.toJson(x)
+}
+export const JsonValueConverter: ValueConverter<any> = {
+  fromJson: x => x,
+  toJson: x => x,
+  fromDb: x => x,
+  toDb: x => x,
+  fromInput: x => JsonStringValueConverter.fromJson(x),
+  toInput: x => JsonStringValueConverter.toJson(x),
+  fieldTypeInDb: 'json'
 }
 export class ValueListValueConverter<T extends ValueListItem> implements ValueConverter<T>{
   private info = ValueListInfo.get(this.type);

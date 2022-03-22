@@ -1,5 +1,5 @@
 import { BackendMethod } from '../server-action';
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, IntegerField } from '../remult3';
 
 
 
@@ -9,9 +9,9 @@ import { Field, Entity, EntityBase } from '../remult3';
     allowApiCrud: true
 })
 export class dWithPrefilter extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number;
-    @Field()
+    @IntegerField()
     b: number;
 
     static count = 0;

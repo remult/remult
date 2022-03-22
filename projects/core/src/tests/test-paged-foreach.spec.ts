@@ -2,7 +2,7 @@
 
 import { createData } from "./createData";
 import { Remult, queryConfig } from '../context';
-import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityFilter } from '../remult3';
+import { Entity, EntityBase, Field, EntityOrderBy, RepositoryImplementation, EntityFilter, StringField } from '../remult3';
 import { Categories } from './remult-3-entities';
 import { FieldMetadata } from '../column-interfaces';
 import { Sort } from '../sort';
@@ -357,11 +357,11 @@ describe("test paged foreach ", () => {
     id: t => new CompoundIdField(t.a, t.b)
 })
 class theTable extends EntityBase {
-    @Field()
+    @StringField()
     a: string;
-    @Field()
+    @StringField()
     b: string;
-    @Field()
+    @StringField()
     c: string;
 }
 

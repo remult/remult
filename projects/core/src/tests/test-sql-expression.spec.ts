@@ -4,7 +4,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase, IntegerField, DateOnlyField, ValueListFieldType } from '../remult3';
+import { Field, Entity, EntityBase, IntegerField, DateOnlyField, ValueListFieldType, NumberField, StringField } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
@@ -61,7 +61,7 @@ class expressionEntity extends EntityBase {
     @IntegerField()
     id: number;
     static yes: boolean;
-    @Field({
+    @StringField({
         sqlExpression: async () => expressionEntity.yes ? "'1+1'" : undefined
     })
     col: string;
@@ -72,9 +72,9 @@ class expressionEntity extends EntityBase {
 
 @Entity('testSqlExpression')
 class testSqlExpression extends EntityBase {
-    @Field()
+    @NumberField()
     code: number;
-    @Field<testSqlExpression>(
+    @NumberField<testSqlExpression>(
         {
             sqlExpression: async (x) => {
                 return await x.fields.code.getDbName() + ' * 5';
@@ -92,7 +92,7 @@ class testSqlExpression extends EntityBase {
 })
 class testServerExpression1 extends EntityBase {
 
-    @Field()
+    @NumberField()
     code: number;
 
 }
@@ -166,10 +166,10 @@ class testCreate extends IdEntity {
 
     @DateOnlyField()
     theDate: Date;
-    @Field()
+    @Field(() => intId)
     i: intId;
-    @Field()
+    @Field(() => stringId)
     s: stringId;
-    @Field()
+    @Field(() => stringId2)
     s2: stringId2;
 }

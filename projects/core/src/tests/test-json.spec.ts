@@ -11,7 +11,7 @@ import { IdEntity } from '../id-entity';
 import { DataApi } from '../data-api';
 
 import { Categories as newCategories } from './remult-3-entities';
-import { Field, Entity, EntityBase, IntegerField } from '../remult3';
+import { Field, Entity, EntityBase, IntegerField, StringField } from '../remult3';
 import { tasks } from './tasks';
 
 
@@ -19,7 +19,7 @@ import { tasks } from './tasks';
 class entityWithAutoId extends EntityBase {
     @IntegerField()
     id: number;
-    @Field()
+    @StringField()
     name: string;
 }
 

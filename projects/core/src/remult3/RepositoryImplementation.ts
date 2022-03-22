@@ -1453,27 +1453,26 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
 
 }
 
-export function JsonField<entityType = any, valueType = any>(
+export function ObjectField<entityType = any, valueType = any>(
     ...options: (FieldOptions<entityType, valueType> |
         ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return Field({
-        valueConverter: {
-            toDb: x => x,
-            fromDb: x => x,
-            fieldTypeInDb: 'json'
-        }
-    }, ...options);
+    return Field(undefined, ...options);
 }
 export function DateOnlyField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
-    return Field({
+    return Field(() => Date, {
         valueConverter: DateOnlyValueConverter
     }, ...options);
 }
+export function DateField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+    return Field(() => Date, ...options);
+}
 export function IntegerField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
-    return Field({
-        valueType: Number,
+    return Field(() => Number, {
         valueConverter: IntegerValueConverter
     }, ...options)
+}
+export function NumberField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    return Field(() => Number, ...options)
 }
 export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return (type: ClassType<valueType>) =>
@@ -1482,20 +1481,29 @@ export function ValueListFieldType<entityType = any, valueType extends ValueList
                 o.displayValue = (item, val) => val.caption
         }, ...options)(type)
 }
-export function UuidField<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return Field({
+export function UuidField<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+    return Field(() => String, {
         allowApiUpdate: false,
         defaultValue: () => uuid()
     }, ...options);
 }
+export function StringField<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+    return Field(() => String, ...options);
+}
+export function BooleanField<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
+    return Field(() => Boolean, ...options);
+}
 
-export function Field<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
 
 
 
     return (target, key, c?) => {
         let factory = (remult: Remult) => {
             let r = buildOptions(options, remult);
+            if (!r.valueType && valueType) {
+                r.valueType = valueType();
+            }
             if (!r.key) {
                 r.key = key;
             }

@@ -1,4 +1,4 @@
-import { Field, Entity, EntityBase, FieldType } from '../remult3';
+import { Field, Entity, EntityBase, FieldType, StringField } from '../remult3';
 
 
 
@@ -19,10 +19,10 @@ import { Field, Entity, EntityBase, FieldType } from '../remult3';
     allowApiCrud: true
 })
 export class h extends EntityBase {
-    @Field()
+    @StringField()
     id: string;
-    @Field()
+    @Field(() => h)
     refH: h;
-    @Field()
+    @StringField()
     refHId: string;
 }

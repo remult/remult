@@ -1,4 +1,4 @@
-import { Entity, EntityBase, Field, FieldType } from "../remult3";
+import { Entity, EntityBase, Field, FieldType, IntegerField } from "../remult3";
 import { testAll } from "./db-tests-setup";
 import { deleteAll } from "./deleteAll";
 
@@ -56,9 +56,9 @@ export class GroupsValue {
 
 @Entity("testGroups", { allowApiCrud: true })
 class testGroups extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number = 0;
-    @Field()
+    @Field(() => GroupsValue)
     g: GroupsValue;
 }
 

@@ -1,18 +1,18 @@
 
 import { Remult } from '../context';
-import { Field, Entity, EntityBase, FindOptions, Repository } from '../remult3';
+import { Field, Entity, EntityBase, FindOptions, Repository, StringField } from '../remult3';
 
 @Entity('my entity')
 class myEntity extends EntityBase {
 
-    @Field()
-    @Field({ caption: '123' })
+    @StringField()
+    @StringField({ caption: '123' })
     a: string;
 
-    @Field({ caption: '123' })
-    @Field()
+    @StringField({ caption: '123' })
+    @StringField()
     b: string;
-    @Field((o, c) => o.caption = "456")
+    @StringField((o, c) => o.caption = "456")
     c: string;
 
 }
@@ -40,11 +40,11 @@ describe("test decorator precedence", () => {
 
 @Entity('profile')
 class profile extends EntityBase {
-    @Field()
+    @StringField()
     username: string;
 }
 @Entity('user')
 class user extends profile {
-    @Field()
+    @StringField()
     email: string;
 }
