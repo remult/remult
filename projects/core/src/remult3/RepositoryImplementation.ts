@@ -862,7 +862,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let d = this.copyDataToObject();
             let ignoreKeys = [];
             for (const field of this.metadata.fields) {
-                if (field.dbReadOnly ) {
+                if (field.dbReadOnly) {
                     d[field.key] = undefined;
                     ignoreKeys.push(field.key);
                     let f = this.fields.find(field);
@@ -1420,7 +1420,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     };
 
 
-    
+
 
 
 
@@ -1476,7 +1476,7 @@ export function AutoIncrementField<entityType = any>(...options: (FieldOptions<e
         valueConverter: { ...IntegerValueConverter, fieldTypeInDb: 'autoincrement' }
     }, ...options)
 }
-export function isAutoIncrement(f:FieldMetadata){
+export function isAutoIncrement(f: FieldMetadata) {
     return f.options.valueConverter?.fieldTypeInDb === 'autoincrement';
 }
 export function NumberField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
@@ -1495,8 +1495,11 @@ export function UuidField<entityType = any>(...options: (FieldOptions<entityType
         defaultValue: () => uuid()
     }, ...options);
 }
-export function StringField<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+export function StringField<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
     return Field(() => String, ...options);
+}
+export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
+    maxLength?: number;
 }
 export function BooleanField<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
     return Field(() => Boolean, ...options);

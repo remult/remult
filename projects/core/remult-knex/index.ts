@@ -4,7 +4,7 @@ import { customDatabaseFilterToken, FilterConsumer } from "../src/filter/filter-
 import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities } from "../src/context";
 import { DateOnlyValueConverter } from "../valueConverters";
-import { isAutoIncrement } from "../src/remult3";
+import { isAutoIncrement, StringFieldOptions } from "../src/remult3";
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -427,7 +427,8 @@ export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTabl
         else b.specificType(dbName, x.valueConverter.fieldTypeInDb);
     }
     else {
-        let c = b.string(dbName);
+
+        let c = b.string(dbName, (<StringFieldOptions>x.options).maxLength);
         if (!x.allowNull)
             c.defaultTo('').notNullable();
     }

@@ -546,7 +546,12 @@ testAll("filter", async ({ createEntity }) => {
     })).toBe(0);
 }, false);
 
-
+testAll("large string field", async ({ createEntity }) => {
+    const s = await createEntity(stam);
+    await s.insert({ title: "1234567890".repeat(100) });
+    const r = await s.findFirst();
+    expect(r.title).toBe("1234567890".repeat(100));
+},true)
 
 
 
@@ -593,7 +598,7 @@ class testStringWithNull extends EntityBase {
 export class stam extends EntityBase {
     @IntegerField()
     id: number = 0;
-    @StringField()
+    @StringField({ maxLength: 1500 })
     title: string = '';
 }
 
