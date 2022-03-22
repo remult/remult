@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import { BooleanField, DateOnlyField, Entity, EntityBase, EntityFilter, Field, IntegerField, NumberField, StringField } from "../remult3";
+import { AutoIncrementField, BooleanField, DateOnlyField, Entity, EntityBase, EntityFilter, Field, IntegerField, NumberField, StringField } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -17,7 +17,6 @@ import { entityForCustomFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
-import { SqlDatabase } from "../..";
 
 
 
@@ -508,9 +507,9 @@ testAll("saves correctly to db", async ({ createEntity }) => {
     expect(r.ok).toBe(false);
 });
 
-@Entity("autoi", { allowApiCrud: true, dbAutoIncrementId: true })
+@Entity("autoi", { allowApiCrud: true })
 class autoIncrement extends EntityBase {
-    @IntegerField()
+    @AutoIncrementField()
     id: number;
     @IntegerField()
     stam: number;

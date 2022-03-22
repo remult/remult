@@ -862,7 +862,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let d = this.copyDataToObject();
             let ignoreKeys = [];
             for (const field of this.metadata.fields) {
-                if (field.dbReadOnly || field == this.metadata.idMetadata.field && this.metadata.options.dbAutoIncrementId) {
+                if (field.dbReadOnly ) {
                     d[field.key] = undefined;
                     ignoreKeys.push(field.key);
                     let f = this.fields.find(field);
@@ -1345,8 +1345,6 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
         this.fields = r as unknown as FieldsMetadata<T>;
 
-        this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
-
         this.caption = buildCaption(entityInfo.caption, this.key, remult);
 
         if (entityInfo.id) {
@@ -1422,7 +1420,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     };
 
 
-    dbAutoIncrementId: boolean;
+    
 
 
 
@@ -1470,6 +1468,16 @@ export function IntegerField<entityType = any>(...options: (FieldOptions<entityT
     return Field(() => Number, {
         valueConverter: IntegerValueConverter
     }, ...options)
+}
+export function AutoIncrementField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    return Field(() => Number, {
+        allowApiUpdate: false,
+        dbReadOnly: true,
+        valueConverter: { ...IntegerValueConverter, fieldTypeInDb: 'autoincrement' }
+    }, ...options)
+}
+export function isAutoIncrement(f:FieldMetadata){
+    return f.options.valueConverter?.fieldTypeInDb === 'autoincrement';
 }
 export function NumberField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
     return Field(() => Number, ...options)

@@ -2,7 +2,7 @@ import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 
 
-import { EntityMetadata } from "../remult3";
+import { EntityMetadata, isAutoIncrement } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
 import { getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
@@ -39,15 +39,20 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         let result = '';
         let e = await getDbNameProvider(entity);
         for (const x of entity.fields) {
-            if (!e.isDbReadonly(x)) {
+            if (!e.isDbReadonly(x) || isAutoIncrement(x)) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
-                result += this.addColumnSqlSyntax(x, e.nameOf(x));
-                if (x.key == entity.idMetadata.field.key) {
-                    result += ' primary key';
-                    if (entity.options.dbAutoIncrementId)
-                        result += " autoincrement";
+                if (isAutoIncrement(x)) {
+                    if (x.key != entity.idMetadata.field.key)
+                        throw "in web sql, autoincrement is only allowed for primary key"
+                    result += e.nameOf(x) + ' integer primary key autoincrement';
+                }
+                else {
+                    result += this.addColumnSqlSyntax(x, e.nameOf(x));
+                    if (x.key == entity.idMetadata.field.key) {
+                        result += ' primary key';
+                    }
                 }
             }
         }

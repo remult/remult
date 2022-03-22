@@ -4,6 +4,7 @@ import { customDatabaseFilterToken, FilterConsumer } from "../src/filter/filter-
 import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities } from "../src/context";
 import { DateOnlyValueConverter } from "../valueConverters";
+import { isAutoIncrement } from "../src/remult3";
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -175,7 +176,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         }
 
         let insert = this.knex(e.entityName).insert(insertObject);
-        if (this.entity.options.dbAutoIncrementId) {
+        if (isAutoIncrement(this.entity.idMetadata.field)) {
             let result = await insert.returning(this.entity.idMetadata.field.key);
             let newId = result[0].id;
 
@@ -325,10 +326,10 @@ export class KnexSchemaBuilder {
             await logSql(this.knex.schema.createTable(e.entityName,
                 b => {
                     for (const x of entity.fields) {
-                        if (!cols.get(x).readonly || x == entity.idMetadata.field && entity.options.dbAutoIncrementId) {
+                        if (!cols.get(x).readonly || isAutoIncrement(x)) {
 
 
-                            if (x == entity.idMetadata.field && entity.options.dbAutoIncrementId)
+                            if (isAutoIncrement(x))
                                 b.increments(cols.get(x).name);
                             else {
                                 buildColumn(x, cols.get(x).name, b);

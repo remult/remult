@@ -20,7 +20,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestEntityDa
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey, EntityMetadata, DateOnlyField, StringField, DateField } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey, EntityMetadata, DateOnlyField, StringField, DateField, AutoIncrementField } from '../remult3';
 import { DateOnlyValueConverter } from '../../valueConverters';
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
@@ -1331,10 +1331,8 @@ describe("column validation", () => {
       name: string;
       c3: Date
     }
-    Entity('t1', {
-      dbAutoIncrementId: true
-    })(type);
-    IntegerField()(type.prototype, "id");
+    Entity('t1')(type);
+    AutoIncrementField()(type.prototype, "id");
     StringField()(type.prototype, "name");
     DateField()(type.prototype, "c3");
 
@@ -1369,10 +1367,8 @@ describe("test web sql identity", () => {
       name: string;
 
     }
-    Entity('t1', {
-      dbAutoIncrementId: true
-    })(type);
-    IntegerField()(type.prototype, "id");
+    Entity('t1')(type);
+    AutoIncrementField()(type.prototype, "id");
     StringField()(type.prototype, "name");
 
 

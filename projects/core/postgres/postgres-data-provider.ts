@@ -7,6 +7,7 @@ import { allEntities, Remult } from '../src/context';
 
 import { postgresColumnSyntax } from './postgresColumnSyntax';
 import { getDbNameProvider } from '../src/filter/filter-consumer-bridge-to-sql-request';
+import { isAutoIncrement } from '../src/remult3';
 
 
 export interface PostgresPool extends PostgresCommandSource {
@@ -115,12 +116,12 @@ export class PostgresSchemaBuilder {
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of entity.fields) {
-                    if (!e.isDbReadonly(x) || x == entity.idMetadata.field && entity.options.dbAutoIncrementId) {
+                    if (!e.isDbReadonly(x) || isAutoIncrement(x)) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
 
-                        if (x == entity.idMetadata.field && entity.options.dbAutoIncrementId)
+                        if (isAutoIncrement( x))
                             result += e.nameOf(x) + ' serial';
                         else {
                             result += postgresColumnSyntax(x, e.nameOf(x));
