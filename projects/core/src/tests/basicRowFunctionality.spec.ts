@@ -20,7 +20,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestEntityDa
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey, EntityMetadata, DateOnlyField, StringField, DateField, AutoIncrementField } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, Fields, getEntityKey } from '../remult3';
 
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
@@ -46,7 +46,7 @@ class Phone {
 }
 @Entity('')
 class tableWithPhone extends EntityBase {
-  @IntegerField()
+  @Fields.Integer()
   id: number;
   @Field(() => Phone)
   phone: Phone;
@@ -181,9 +181,9 @@ describe('Test basic row functionality', () => {
 });
 @Entity('myTestEntity')
 class myTestEntity extends EntityBase {
-  @IntegerField()
+  @Fields.Integer()
   id: number;
-  @StringField({ key: 'name' })
+  @Fields.String({ key: 'name' })
   name1: string;
 }
 
@@ -844,7 +844,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    StringField({ includeInApi: false })(type.prototype, "categoryName");
+    Fields.String({ includeInApi: false })(type.prototype, "categoryName");
     Entity('')(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -904,7 +904,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    StringField({ allowApiUpdate: false })(type.prototype, "categoryName");
+    Fields.String({ allowApiUpdate: false })(type.prototype, "categoryName");
     Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -941,7 +941,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    StringField({ includeInApi: false })(type.prototype, "categoryName");
+    Fields.String({ includeInApi: false })(type.prototype, "categoryName");
     Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -1333,9 +1333,9 @@ describe("column validation", () => {
       c3: Date
     }
     Entity('t1')(type);
-    AutoIncrementField()(type.prototype, "id");
-    StringField()(type.prototype, "name");
-    DateField()(type.prototype, "c3");
+    Fields.AutoIncrement()(type.prototype, "id");
+    Fields.String()(type.prototype, "name");
+    Fields.Date()(type.prototype, "c3");
 
     let f = c.repo(type);
     let d = new Date(2020, 1, 2, 3, 4, 5, 6);
@@ -1369,8 +1369,8 @@ describe("test web sql identity", () => {
 
     }
     Entity('t1')(type);
-    AutoIncrementField()(type.prototype, "id");
-    StringField()(type.prototype, "name");
+    Fields.AutoIncrement()(type.prototype, "id");
+    Fields.String()(type.prototype, "name");
 
 
     let f = c.repo(type);
@@ -1663,8 +1663,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity('x')(type);
-    IntegerField()(type.prototype, 'a');
-    DateField()(type.prototype, 'b');
+    Fields.Integer()(type.prototype, 'a');
+    Fields.Date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
     let z = new RestDataProvider("", {
@@ -1693,8 +1693,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity('x')(type);
-    IntegerField()(type.prototype, 'a');
-    DateField()(type.prototype, 'b');
+    Fields.Integer()(type.prototype, 'a');
+    Fields.Date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
     let r = await entityFilterToJson(c.metadata, { b: new Date("2021-05-16T08:32:19.905Z") });
@@ -1706,8 +1706,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity('x')(type);
-    IntegerField()(type.prototype, 'a');
-    DateField()(type.prototype, 'b');
+    Fields.Integer()(type.prototype, 'a');
+    Fields.Date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
     let done = new Done();
@@ -1797,11 +1797,11 @@ describe("check allowedDataType", () => {
   id: x => new CompoundIdField(x.a, x.b),
 })
 class CompoundIdEntity extends EntityBase {
-  @IntegerField()
+  @Fields.Integer()
   a: number;
-  @IntegerField()
+  @Fields.Integer()
   b: number;
-  @IntegerField()
+  @Fields.Integer()
   c: number;
 }
 @Entity<entityWithValidationsOnEntityEvent>('', {
@@ -1811,16 +1811,16 @@ class CompoundIdEntity extends EntityBase {
   })
 })
 export class entityWithValidationsOnEntityEvent extends EntityBase {
-  @IntegerField()
+  @Fields.Integer()
   myId: number;
-  @StringField()
+  @Fields.String()
   name: string;
 }
 @Entity<EntityWithLateBoundDbName>('stam', {
   sqlExpression: async (t) => '(select ' + t.id.options.dbName + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
-  @IntegerField({ dbName: 'CategoryID' })
+  @Fields.Integer({ dbName: 'CategoryID' })
   id: number;
 
 }

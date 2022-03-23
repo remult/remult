@@ -1,6 +1,6 @@
 import { InMemoryDataProvider } from "../..";
 import { Remult } from "../context";
-import { Entity, EntityBase, Field, NumberField, StringField } from "../remult3";
+import { Entity, EntityBase, Field, Fields } from "../remult3";
 import { Validators } from "../validators";
 
 describe("test subscribe", () => {
@@ -128,7 +128,7 @@ let entityRefInitCount = 0;
     entityRefInit: () => entityRefInitCount++
 })
 class myEntity extends EntityBase {
-    @StringField({
+    @Fields.String({
         validate: Validators.required
     })
     title: string = '';
@@ -138,7 +138,7 @@ class myEntity extends EntityBase {
     allowApiCrud: true
 })
 class entityWithManyToOne extends EntityBase {
-    @NumberField()
+    @Fields.Number()
     id: number = 0;
     @Field(() => myEntity)
     entity?: myEntity;

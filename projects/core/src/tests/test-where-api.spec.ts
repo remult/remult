@@ -7,7 +7,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { insertFourRows } from './RowProvider.spec';
 import { createData } from "./createData";
-import { Entity, EntityBase, Field, EntityFilter, FindOptions, Repository, BooleanField, StringField } from '../remult3';
+import { Entity, EntityBase, Field, EntityFilter, FindOptions, Repository, Fields } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
@@ -313,18 +313,18 @@ x<{
 
 @Entity('tasks')
 class task extends EntityBase {
-    @StringField()
+    @Fields.String()
     title: string = '';
-    @BooleanField()
+    @Fields.Boolean()
     completed: boolean = false;
 }
 
 
 @Entity('taskWithNull')
 class taskWithNull extends EntityBase {
-    @StringField()
+    @Fields.String()
     title: string = '';
-    @BooleanField({ allowNull: true })
+    @Fields.Boolean({ allowNull: true })
     completed: boolean;
 }
 describe("missing fields are added in array column", async () => {

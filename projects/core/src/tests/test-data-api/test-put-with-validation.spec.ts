@@ -4,7 +4,7 @@ import { createData } from "../createData";
 import { DataApi } from '../../data-api';
 import { Remult } from '../../context';
 import { Categories } from "../remult-3-entities";
-import { Field, Entity, EntityBase, StringField, IntegerField, ValueListInfo } from "../../remult3";
+import { Field, Entity, EntityBase,  ValueListInfo, Fields } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
@@ -56,8 +56,8 @@ describe("data api", () => {
             val: string;
         }
         Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
-        IntegerField()(type.prototype, 'id');
-        StringField<EntityBase>({
+        Fields.Integer()(type.prototype, 'id');
+        Fields.String<EntityBase>({
             allowApiUpdate: (c, x) => x._.isNew()
         })(type.prototype, 'val');
         let remult = new Remult();
@@ -88,8 +88,8 @@ describe("data api", () => {
             val: string;
         }
         Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
-        IntegerField()(type.prototype, 'id');
-        StringField<typeof type.prototype>({
+        Fields.Integer()(type.prototype, 'id');
+        Fields.String<typeof type.prototype>({
             allowApiUpdate: (c, x) => x.val != "yael"
         })(type.prototype, 'val');
         let remult = new Remult();

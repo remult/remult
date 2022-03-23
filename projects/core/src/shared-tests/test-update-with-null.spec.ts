@@ -1,11 +1,11 @@
-import { Entity, EntityBase, Field, IntegerField, ObjectField, StringField } from "../remult3";
+import { Entity, EntityBase, Field, Fields } from "../remult3";
 import { testAll } from "./db-tests-setup";
 import { deleteAll } from "./deleteAll";
 
 
 @Entity('testNull', { allowApiCrud: true })
 class testNull extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number = 0;
 
     @Field(undefined, { allowNull: true })

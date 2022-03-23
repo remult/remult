@@ -1,12 +1,12 @@
 import { Remult } from '../context';
-import { Entity, EntityBase, Field, IntegerField, StringField } from '../remult3';
+import { Entity, EntityBase, Field, Fields } from '../remult3';
 
 
 @Entity('c', { allowApiCrud: true })
 export class c extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
-    @StringField()
+    @Fields.String()
     name: string;
     constructor(private remult: Remult) {
         super();

@@ -1,17 +1,17 @@
-import { EntityBase, Field, Entity, Repository, IntegerField, StringField, NumberField, BooleanField, DateField } from "../remult3";
+import { EntityBase, Field, Entity, Repository, Fields } from "../remult3";
 import { Status } from "./testModel/models";
 
 @Entity('Products')
 export class Products {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
-    @StringField()
+    @Fields.String()
     name: string;
-    @NumberField()
+    @Fields.Number()
     price: number;
-    @BooleanField()
+    @Fields.Boolean()
     archived: boolean;
-    @DateField()
+    @Fields.Date()
     availableFrom: Date;
 }
 
@@ -27,19 +27,19 @@ let r: Repository<CategoriesForTesting>;
     allowApiCrud: true
 })
 export class Categories extends EntityBase {
-    @NumberField({
+    @Fields.Number({
         dbName: 'CategoryID'
     })
     id: number = 0;
-    @StringField({ allowNull: true })
+    @Fields.String({ allowNull: true })
     categoryName: string;
-    @StringField()
+    @Fields.String()
     description: string;
-    @NumberField<Categories>({
+    @Fields.Number<Categories>({
         serverExpression: c => c.categoryName ? c.categoryName.length : undefined
     })
     categoryNameLength: number;
-    @NumberField<Categories>({
+    @Fields.Number<Categories>({
         serverExpression: (c) => Promise.resolve(c.categoryName ? c.categoryName.length : undefined)
     })
     categoryNameLengthAsync: number;

@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -20,7 +20,7 @@ import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
 
 let classValidatorValidate: ((item: any, ref: {
-    fields: Fields<any>
+    fields: FieldsRef<any>
 }) => Promise<void>) | undefined = undefined;
 // import("class-validator".toString())
 //     .then((v) => {
@@ -624,7 +624,7 @@ abstract class rowHelperBase<T>
 
         }
     }
-    abstract get fields(): Fields<T>;
+    abstract get fields(): FieldsRef<T>;
     catchSaveErrors(err: any): any {
         let e = err;
 
@@ -819,9 +819,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         return this.instance;
     }
 
-    private _columns: Fields<T>;
+    private _columns: FieldsRef<T>;
 
-    get fields(): Fields<T> {
+    get fields(): FieldsRef<T> {
         if (!this._columns) {
             let _items = [];
             let r = {
@@ -833,7 +833,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 _items.push(r[c.key] = new FieldRefImplementation(c, this.info.fields[c.key], this.instance, this, this));
             }
 
-            this._columns = r as unknown as Fields<T>;
+            this._columns = r as unknown as FieldsRef<T>;
         }
         return this._columns;
 
@@ -1024,7 +1024,7 @@ function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
     return r.map(x => decorateColumnSettings(x.settings(remult), remult));
 }
 
-export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): Fields<fieldsContainerType> {
+export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): FieldsRef<fieldsContainerType> {
     return getControllerRef(container, remult).fields;
 }
 export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): ControllerRef<fieldsContainerType> {
@@ -1068,7 +1068,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
             _items.push(r[col.key] = new FieldRefImplementation<any, any>(col, new columnDefsImpl(col, undefined, remult), instance, undefined, this));
         }
 
-        this.fields = r as unknown as Fields<T>;
+        this.fields = r as unknown as FieldsRef<T>;
 
 
     }
@@ -1081,7 +1081,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
     }
     errors: { [key: string]: string; };
     originalValues: any;
-    fields: Fields<T>;
+    fields: FieldsRef<T>;
 
 }
 export class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
@@ -1450,37 +1450,64 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
     }
 
 }
+export const Fields1 = {
+    String: () => {
+        return (a) => {
 
-export function ObjectField<entityType = any, valueType = any>(
-    ...options: (FieldOptions<entityType, valueType> |
-        ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return Field(undefined, ...options);
+        }
+    }
 }
-export function DateOnlyField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
-    return Field(() => Date, {
-        valueConverter: ValueConverters.DateOnly
-    }, ...options);
+export class Fields {
+
+    static Object<entityType = any, valueType = any>(
+        ...options: (FieldOptions<entityType, valueType> |
+            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+        return Field(undefined, ...options);
+    }
+    static DateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, {
+            valueConverter: ValueConverters.DateOnly
+        }, ...options);
+    }
+    static Date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, ...options);
+    }
+    static Integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+        return Field(() => Number, {
+            valueConverter: ValueConverters.Integer
+        }, ...options)
+    }
+    static AutoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+        return Field(() => Number, {
+            allowApiUpdate: false,
+            dbReadOnly: true,
+            valueConverter: { ...ValueConverters.Integer, fieldTypeInDb: 'autoincrement' }
+        }, ...options)
+    }
+
+    static Number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+        return Field(() => Number, ...options)
+    }
+
+    static Uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+        return Field(() => String, {
+            allowApiUpdate: false,
+            defaultValue: () => uuid()
+        }, ...options);
+    }
+    static String<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
+        return Field(() => String, ...options);
+    }
+    static Boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
+        return Field(() => Boolean, ...options);
+    }
 }
-export function DateField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
-    return Field(() => Date, ...options);
-}
-export function IntegerField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
-    return Field(() => Number, {
-        valueConverter: ValueConverters.Integer
-    }, ...options)
-}
-export function AutoIncrementField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
-    return Field(() => Number, {
-        allowApiUpdate: false,
-        dbReadOnly: true,
-        valueConverter: { ...ValueConverters.Integer, fieldTypeInDb: 'autoincrement' }
-    }, ...options)
-}
+
 export function isAutoIncrement(f: FieldMetadata) {
     return f.options.valueConverter?.fieldTypeInDb === 'autoincrement';
 }
-export function NumberField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
-    return Field(() => Number, ...options)
+export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
+    maxLength?: number;
 }
 export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return (type: ClassType<valueType>) =>
@@ -1571,21 +1598,6 @@ const typeCache = new Map<any, ValueListInfo<any>>();
 
 export function getValueList<T>(type: ClassType<T>): T[] {
     return ValueListInfo.get(type).getValues();
-}
-export function UuidField<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
-    return Field(() => String, {
-        allowApiUpdate: false,
-        defaultValue: () => uuid()
-    }, ...options);
-}
-export function StringField<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
-    return Field(() => String, ...options);
-}
-export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
-    maxLength?: number;
-}
-export function BooleanField<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
-    return Field(() => Boolean, ...options);
 }
 
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {

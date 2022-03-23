@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ComponentFactoryResolver, Input, NgZone, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, DateOnlyField, Controller, Filter, IntegerField, FieldRef } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, Fields.DateOnly, Controller, Filter, Fields.Integer, FieldRef } from 'remult';
 
 import { CustomDataComponent, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField } from '@remult/angular/interfaces';
 
@@ -70,7 +70,7 @@ export class ProductsComponent implements OnInit {
 export class stam extends IdEntity {
   @Field({ dbName: 'name', aha: true })
   name: string;
-  @DateOnlyField({ allowNull: true })
+  @Fields.DateOnly({ allowNull: true })
   stamDate?: Date
 
   @Field({ serverExpression: () => 'noam' })

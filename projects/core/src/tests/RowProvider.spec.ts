@@ -13,7 +13,7 @@ import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList as
 import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField, StringField, IntegerField, NumberField, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, Fields, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
 import { ValueConverters } from '../../valueConverters';
@@ -286,7 +286,7 @@ class valueList {
 
 @Entity('entity with value list')
 class entityWithValueList extends EntityBase {
-  @IntegerField()
+  @Fields.Integer()
   id: number = 0;
   @Field(() => Language)
   l: Language = Language.Hebrew;
@@ -402,7 +402,7 @@ describe("test row provider", () => {
       a: string;
     };
     EntityDecorator('')(type);
-    StringField<typeof type.prototype>({
+    Fields.String<typeof type.prototype>({
       validate: (entity, col) =>
         Validators.required(entity, col, "m")
     })(type.prototype, "a");
@@ -429,7 +429,7 @@ describe("test row provider", () => {
       a: string;
     };
     EntityDecorator('')(type);
-    StringField<typeof type.prototype>({
+    Fields.String<typeof type.prototype>({
       validate: (entity, col) => {
         if (!entity.a || entity.a.length == 0)
           col.error = "m";
@@ -456,7 +456,7 @@ describe("test row provider", () => {
       a: string
     };
     EntityDecorator('')(type);
-    StringField({
+    Fields.String({
       validate: Validators.required.withMessage("m")
     })(type.prototype, "a");
     var c = remult.repo(type);
@@ -481,7 +481,7 @@ describe("test row provider", () => {
       a: string
     };
     EntityDecorator('asdfa')(type);
-    StringField<typeof type.prototype>({
+    Fields.String<typeof type.prototype>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
     var c = remult.repo(type);
@@ -526,7 +526,7 @@ describe("test row provider", () => {
       validation: r => orderOfOperation += "EntityValidate,",
 
     })(type);
-    StringField({
+    Fields.String({
       validate: () => { orderOfOperation += "ColumnValidate," }
     })(type.prototype, "categoryName")
     var c = remult.repo(type);
@@ -783,7 +783,7 @@ describe("test row provider", () => {
   });
 })
 class myClass1 {
-  @IntegerField()
+  @Fields.Integer()
   @DataControl<myClass1>({
     getValue: self => self.a * 3
   })
@@ -800,7 +800,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass2 {
-  @DateOnlyField()
+  @Fields.DateOnly()
   @DataControl<myClass2>({
     readonly: true
   })
@@ -819,7 +819,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass3 {
-  @IntegerField({
+  @Fields.Integer({
     caption: '1st', ...{ caption: '2nd' }
   })
   @DataControl<myClass3>({
@@ -842,7 +842,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass4 {
-  @StringField()
+  @Fields.String()
   @DataControl<myClass4>({
     readonly: true
   })
@@ -889,7 +889,7 @@ describe("column collection", () => {
       categoryName: string;
     }
     EntityDecorator('asdf')(type);
-    StringField({
+    Fields.String({
       allowApiUpdate: false
     })(type.prototype, "categoryName");
     let c = ctx.repo(type);
@@ -1103,7 +1103,7 @@ describe("test area", () => {
 });
 
 class myClass {
-  @NumberField()
+  @Fields.Number()
   @DataControl<myClass>({
     valueChange: self => self.d.ok()
   })
@@ -1202,7 +1202,7 @@ class typefd {
 
 }
 class myClassfd {
-  @StringField()
+  @Fields.String()
   @DataControl({ click: () => { } })
   a: string;
   @Field(() => typefd)
@@ -1316,7 +1316,7 @@ describe("test grid basics", () => {
 
 @EntityDecorator<TestCategories1>('123')
 class TestCategories1 extends newCategories {
-  @StringField({
+  @Fields.String({
     validate: Validators.required
   })
   a: string;

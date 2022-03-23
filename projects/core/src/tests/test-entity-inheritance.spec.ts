@@ -1,6 +1,6 @@
 import { InMemoryDataProvider } from "../..";
 import { Remult } from "../context";
-import { Entity, EntityBase, Field, IntegerField, StringField } from "../remult3";
+import { Entity, EntityBase, Fields } from "../remult3";
 
 
 @Entity<parent>("parent", {
@@ -12,11 +12,11 @@ import { Entity, EntityBase, Field, IntegerField, StringField } from "../remult3
     }
 })
 export class parent extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number = 0;
-    @StringField()
+    @Fields.String()
     myField: string = '';
-    @StringField<parent>({ saving: self => self.autoSavedField = "auto" })
+    @Fields.String<parent>({ saving: self => self.autoSavedField = "auto" })
     autoSavedField: string = '';
 }
 @Entity<child>("child", {
@@ -73,9 +73,9 @@ it("test saving of delete", async () => {
     }
 })
 export class anError extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number = 0;
-    @StringField()
+    @Fields.String()
     name = '';
 }
 it("test error on save within saving", async () => {

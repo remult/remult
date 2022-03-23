@@ -1,7 +1,7 @@
 import { DataControl } from '../../../angular/interfaces';
 import { DataControl2Component } from '../../../angular/src/angular/data-control/data-control2.component';
 import { RemultAngularPluginsService } from '../../../angular/src/angular/RemultAngularPluginsService';
-import { Field, getFields, StringField } from '../remult3';
+import { Field, Fields, getFields } from '../remult3';
 
 
 class classWithColumn {
@@ -9,7 +9,7 @@ class classWithColumn {
     @DataControl<classWithColumn>({
         click: (r) => classWithColumn.click = r
     })
-    @StringField()
+    @Fields.String()
     a = '';
     _ = getFields(this);
 }

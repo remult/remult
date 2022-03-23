@@ -9,42 +9,6 @@ import { entityEventListener } from "../__EntityValueProvider";
 
 
 
-/*
-
-## Presentation notes:
-[] Review Setup
-    [] common.ts - explain remult
-    [] server/index
-
-[] Create Entity
-    [] create a class with title and completed.
-    [] decorate it
-    [] show swagger
-        [] talk about paging
-    [] add IdEntity
-    [] show swagger
-    [] Add Crud
-    [] show swagger
-    [] add a few tasks
-
-[] App.tsx
-    [] add task repo - it wraps axios - type of agent or service..
-    [] copy paste insert etc...
-
-[] skip line-through
-
-[] Order by and where -  PAGING 
-[] skip hide completed
-[] validation:
-    [] talk about saving,saved,validate...
-
-[] Backend
-    [] Iterate - explain that we run on all tasks on the server.
-    [] create taskService - for set all
-    [] backend method - talk about transaction and unit of work
-
-    [] Propose to skip authorize implementation. - un intrusive, un opinionated
-*/
 
 
 export interface EntityRef<entityType> extends Subscribable {
@@ -56,7 +20,7 @@ export interface EntityRef<entityType> extends Subscribable {
     isNew(): boolean;
     wasChanged(): boolean;
     wasDeleted(): boolean;
-    fields: Fields<entityType>;
+    fields: FieldsRef<entityType>;
     error: string;
     getId(): any;
     repository: Repository<entityType>;
@@ -70,7 +34,7 @@ export interface EntityRef<entityType> extends Subscribable {
 }
 export interface ControllerRef<entityType> extends Subscribable {
     hasErrors(): boolean;
-    fields: Fields<entityType>;
+    fields: FieldsRef<entityType>;
     error: string;
     validate(): Promise<boolean>;
     readonly isLoading: boolean;
@@ -85,7 +49,7 @@ export interface Subscribable {
     subscribe(listener: RefSubscriber): Unobserve;
 }
 
-export type Fields<entityType> = {
+export type FieldsRef<entityType> = {
     [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends { id: (number | string) } ? IdFieldRef<entityType, entityType[Properties]> : FieldRef<entityType, entityType[Properties]>
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>,

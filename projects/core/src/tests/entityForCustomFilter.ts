@@ -1,5 +1,5 @@
 import { SqlDatabase } from '../data-providers/sql-database';
-import { Entity, EntityBase, Field, EntityFilter, IntegerField } from '../remult3';
+import { Entity, EntityBase, Field, EntityFilter, Fields } from '../remult3';
 import { Filter } from '../filter/filter-interfaces';
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider';
 import { getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
@@ -8,7 +8,7 @@ import { getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-reque
 
 @Entity('entityForCustomFilter', { allowApiCrud: true })
 export class entityForCustomFilter extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
     static filter = Filter.createCustom<entityForCustomFilter, {
         oneAndThree?: boolean;

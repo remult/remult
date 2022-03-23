@@ -2,7 +2,7 @@ import { ActionTestConfig, testRestDb } from './testHelper.spec';
 import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod } from '../server-action';
-import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter, StringField, NumberField, BooleanField, IntegerField } from '../remult3';
+import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter, Fields } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 
@@ -16,7 +16,7 @@ class testServerMethodOnEntity extends EntityBase {
     constructor(private remult: Remult) {
         super();
     }
-    @StringField<testServerMethodOnEntity>({
+    @Fields.String<testServerMethodOnEntity>({
         validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";
@@ -63,9 +63,9 @@ class testServerMethodOnEntity extends EntityBase {
     }
 }))
 class testBoolCreate123 extends EntityBase {
-    @NumberField()
+    @Fields.Number()
     id: number;
-    @BooleanField({})
+    @Fields.Boolean({})
     ok123: Boolean = false;
     @BackendMethod({ allowed: true })
     async testIt() {
@@ -149,19 +149,19 @@ describe("test Server method in entity", () => {
 
 @Entity('a')
 class a extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
 }
 @Entity('b')
 class b extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
     @Field(()=>a)
     a: a;
 }
 @Entity('c')
 class c extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
     @Field(()=>b)
     b: b;

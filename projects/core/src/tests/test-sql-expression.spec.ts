@@ -4,7 +4,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase, IntegerField, DateOnlyField, ValueListFieldType, NumberField, StringField } from '../remult3';
+import { Field, Entity, EntityBase, ValueListFieldType, Fields, } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
@@ -58,10 +58,10 @@ describe("test sql database expressions", () => {
 });
 @Entity('expressionEntity')
 class expressionEntity extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
     static yes: boolean;
-    @StringField({
+    @Fields.String({
         sqlExpression: async () => expressionEntity.yes ? "'1+1'" : undefined
     })
     col: string;
@@ -72,9 +72,9 @@ class expressionEntity extends EntityBase {
 
 @Entity('testSqlExpression')
 class testSqlExpression extends EntityBase {
-    @NumberField()
+    @Fields.Number()
     code: number;
-    @NumberField<testSqlExpression>(
+    @Fields.Number<testSqlExpression>(
         {
             sqlExpression: async (x) => {
                 return await x.fields.code.getDbName() + ' * 5';
@@ -92,7 +92,7 @@ class testSqlExpression extends EntityBase {
 })
 class testServerExpression1 extends EntityBase {
 
-    @NumberField()
+    @Fields.Number()
     code: number;
 
 }
@@ -164,7 +164,7 @@ class stringId2 {
 @Entity('testCreate')
 class testCreate extends IdEntity {
 
-    @DateOnlyField()
+    @Fields.DateOnly()
     theDate: Date;
     @Field(() => intId)
     i: intId;

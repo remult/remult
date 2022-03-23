@@ -4,7 +4,7 @@ import { customDatabaseFilterToken, FilterConsumer } from "../src/filter/filter-
 import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities } from "../src/context";
 
-import { isAutoIncrement, StringFieldOptions } from "../src/remult3";
+import { isAutoIncrement, StringFieldOptions, Fields } from "../src/remult3";
 import { ValueConverters } from "../valueConverters";
 
 export class KnexDataProvider implements DataProvider {

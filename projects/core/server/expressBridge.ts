@@ -9,7 +9,7 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Field, Entity, Repository, getEntityKey, StringField, DateField, BooleanField, NumberField } from '../src/remult3';
+import { Field, Entity, Repository, getEntityKey, Fields } from '../src/remult3';
 
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
@@ -768,21 +768,21 @@ export class EntityQueueStorage implements QueueStorage {
   dbName: 'jobsInQueue'
 })
 export class JobsInQueueEntity extends IdEntity {
-  @StringField()
+  @Fields.String()
   userId: string;
-  @StringField()
+  @Fields.String()
   url: string;
-  @DateField()
+  @Fields.Date()
   submitTime: Date;
-  @DateField()
+  @Fields.Date()
   doneTime: Date;
-  @StringField()
+  @Fields.String()
   result: string;
-  @BooleanField()
+  @Fields.Boolean()
   done: boolean;
-  @BooleanField()
+  @Fields.Boolean()
   error: boolean;
-  @NumberField()
+  @Fields.Number()
   progress: number;
 }
 

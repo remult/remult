@@ -1,6 +1,6 @@
 import { Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, StringField, BooleanField, IntegerField, DateField } from '../remult3';
+import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, Fields } from '../remult3';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
@@ -21,27 +21,27 @@ import { h } from './h';
 
 @Entity('categories')
 class Categories extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
-    @StringField()
+    @Fields.String()
     name: string;
     @Field(() => Language)
     language: Language
-    @BooleanField()
+    @Fields.Boolean()
     archive: boolean = false;
 }
 @Entity('suppliers')
 class Suppliers extends EntityBase {
-    @StringField()
+    @Fields.String()
     supplierId: string;
-    @StringField()
+    @Fields.String()
     name: string;
 }
 @Entity('products')
 class Products extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
-    @StringField()
+    @Fields.String()
     name: string;
     @Field(() => Categories, {
         lazy: true
@@ -53,9 +53,9 @@ class Products extends EntityBase {
 }
 @Entity('products')
 class ProductsEager extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
-    @StringField()
+    @Fields.String()
     name: string;
     @Field(() => Categories)
     category: Categories;
@@ -63,7 +63,7 @@ class ProductsEager extends EntityBase {
 }
 @Entity('profile')
 class profile extends EntityBase {
-    @StringField()
+    @Fields.String()
     id: string;
     async rel() {
         return this.remult.repo(following).findFirst({ id: '1', profile: this }, {
@@ -72,7 +72,7 @@ class profile extends EntityBase {
 
 
     }
-    @BooleanField<profile>({
+    @Fields.Boolean<profile>({
         serverExpression: async self => {
             await self.rel();
             return false;
@@ -85,7 +85,7 @@ class profile extends EntityBase {
 }
 @Entity('following')
 class following extends EntityBase {
-    @StringField()
+    @Fields.String()
     id: string;
     @Field(() => profile)
     profile: profile;
@@ -706,9 +706,9 @@ describe("many to one relation", () => {
 
 @Entity("products2")
 class Products2 extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number = 0;
-    @StringField()
+    @Fields.String()
     name: string = '';
     @Field(() => Categories)
     cat: { id: number, name: string };
@@ -820,9 +820,9 @@ describe("Test entity relation and count finds", () => {
 
 @Entity("testUpdateDate")
 export class testUpdateDate extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
-    @DateField()
+    @Fields.Date()
     date: Date = new Date(176, 6, 16);
 }
 it("test that it doesn't save if it doesn't need to", async () => {

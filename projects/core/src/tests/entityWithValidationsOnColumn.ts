@@ -1,11 +1,11 @@
-import { Field, Entity, EntityBase, StringField, IntegerField } from '../remult3';
+import { Field, Entity, EntityBase, Fields } from '../remult3';
 import { entityWithValidations } from '../shared-tests/entityWithValidations';
 
 @Entity('', { allowApiCrud: true })
 export class entityWithValidationsOnColumn extends EntityBase {
-  @IntegerField()
+  @Fields.Integer()
   myId: number;
-  @StringField<entityWithValidations>({
+  @Fields.String<entityWithValidations>({
     validate: (t, c) => {
       if (!t.name || t.name.length < 3)
         c.error = 'invalid on column';

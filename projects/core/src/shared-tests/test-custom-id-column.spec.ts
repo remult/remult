@@ -1,4 +1,4 @@
-import { Field, Entity, EntityBase, BuildEntity, NumberField } from '../remult3';
+import { Field, Entity, EntityBase, BuildEntity, Fields } from '../remult3';
 import { testAll } from './db-tests-setup';
 
 
@@ -14,8 +14,8 @@ describe("custom id column", () => {
             b: number;
         }
         BuildEntity(type, 'custom', {
-            a: NumberField(),
-            b: NumberField()
+            a: Fields.Number(),
+            b: Fields.Number()
         }, { allowApiCrud: true })
         let c = await createEntity(type);
         let r = c.create();
@@ -37,8 +37,8 @@ describe("custom id column", () => {
             id: number;
         }
         Entity('custom2', { allowApiCrud: true })(type);
-        NumberField()(type.prototype, 'a');
-        NumberField()(type.prototype, 'id');
+        Fields.Number()(type.prototype, 'a');
+        Fields.Number()(type.prototype, 'id');
         let c = await createEntity(type);
         let r = c.create();
         r.a = 1;

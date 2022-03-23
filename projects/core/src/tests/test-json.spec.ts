@@ -11,15 +11,15 @@ import { IdEntity } from '../id-entity';
 import { DataApi } from '../data-api';
 
 import { Categories as newCategories } from './remult-3-entities';
-import { Field, Entity, EntityBase, IntegerField, StringField, AutoIncrementField } from '../remult3';
+import { Field, Entity, EntityBase, Fields } from '../remult3';
 import { tasks } from './tasks';
 
 
 @Entity('entityWithAutoId')
 class entityWithAutoId extends EntityBase {
-    @AutoIncrementField()
+    @Fields.AutoIncrement()
     id: number;
-    @StringField()
+    @Fields.String()
     name: string;
 }
 

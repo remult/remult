@@ -2,7 +2,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, FieldType, StringField, IntegerField, ObjectField } from '../remult3';
+import { Field, Entity, EntityBase, FieldType, Fields } from '../remult3';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { assign } from '../../assign';
 import { IdEntity } from '../id-entity';
@@ -165,9 +165,9 @@ class Phone4 {
 
 @Entity('objectColumnTest')
 class ObjectColumnTest extends EntityBase {
-    @IntegerField()
+    @Fields.Integer()
     id: number;
-    @ObjectField()
+    @Fields.Object()
     col: person;
     @Field(() => Phone, {
         valueConverter: {
@@ -193,9 +193,9 @@ class ObjectColumnTest extends EntityBase {
     phone3: Phone;
     @Field(() => Phone4)
     phone4: Phone4
-    @ObjectField()
+    @Fields.Object()
     tags: string[];
-    @ObjectField({ allowNull: true })
+    @Fields.Object({ allowNull: true })
     tags2: string[];
 }
 
@@ -216,6 +216,6 @@ it("Test original values address defaults", async () => {
 
 @Entity('somethingWithDefaults', {})
 class somethingWithDefaults extends IdEntity {
-    @StringField()
+    @Fields.String()
     name = 'noam';
 }

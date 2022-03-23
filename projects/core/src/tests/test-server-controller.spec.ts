@@ -1,7 +1,7 @@
 import { ActionTestConfig } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
-import { Field, Entity, getFields, FieldType, ValueListFieldType, StringField, DateField } from '../remult3';
+import { Field, Entity, getFields, FieldType, ValueListFieldType, Fields } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 
@@ -17,7 +17,7 @@ export class myType {
 }
 @Entity('testEntity')
 class testEntity extends IdEntity {
-    @StringField()
+    @Fields.String()
     name: string;
 }
 
@@ -27,7 +27,7 @@ class testBasics {
 
     }
 
-    @DateField()
+    @Fields.Date()
     theDate: Date;
     @Field(() => myType)
     myType: myType;
@@ -49,7 +49,7 @@ class testBasics {
     }
 
     static test: string;
-    @StringField<testBasics>({
+    @Fields.String<testBasics>({
         validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";
@@ -237,12 +237,12 @@ describe("controller with extends ", () => {
 
 @Controller("parent")
 class parent {
-    @StringField()
+    @Fields.String()
     parentField: string;
 }
 @Controller("child")
 class child extends parent {
-    @StringField()
+    @Fields.String()
     childField: string;
 
     @BackendMethod({ allowed: true })
