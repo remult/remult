@@ -119,3 +119,14 @@ k.schema.dropTableIfExists('test').then(async () => {
 function what<a = any, b = any>(type: () => ClassType<b>, oneMore: b) {
 
 }
+
+class x {
+    static a() {
+        return (a) => { }
+    }
+}
+
+@x.a()
+class b {
+
+}
