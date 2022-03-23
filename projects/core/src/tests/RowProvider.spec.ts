@@ -63,7 +63,7 @@ describe("grid filter stuff", () => {
     let ds = new GridSettings(c, {
 
       orderBy: { id: "asc" },
-      where: { categoryName: { $contains: 'a' } },
+      where: () => ({ categoryName: { $contains: 'a' } }),
       rowsInPage: 2
 
     });
@@ -78,7 +78,7 @@ describe("grid filter stuff", () => {
     let ds = new GridSettings(c, {
 
       orderBy: { id: "asc" },
-      where: { categoryName: { $contains: 'a' } },
+      where: () => ({ categoryName: { $contains: 'a' } }),
       rowsInPage: 2
 
     });
@@ -93,7 +93,7 @@ describe("grid filter stuff", () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
       orderBy: { id: "asc" },
-      where: { categoryName: { $contains: 'a' } },
+      where: () => ({ categoryName: { $contains: 'a' } }),
       rowsInPage: 2
     });
     await ds.reloadData();
@@ -1004,7 +1004,7 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: { categoryName: 'b' } });
+      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: () => ({ categoryName: 'b' }) });
       await ds.reloadData();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id).toBe(2);

@@ -340,8 +340,8 @@ export class GridSettings<rowType>  {
   rowsPerPage: number;
   rowsPerPageOptions = [10, 25, 50, 100];
   get(options: FindOptions<rowType>) {
-
-    this.settings.where = options.where;
+    if (options.where)
+      this.settings.where = () => options.where;
     if (options.orderBy)
       this._currentOrderBy = Sort.translateOrderByToSort(this.repository.metadata, options.orderBy);
     this.page = 1;
@@ -483,7 +483,7 @@ export interface IDataSettings<rowType> {
    * where p => p.price.isGreaterOrEqualTo(5)
    * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
    */
-  where?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>);
+  where?: (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>);
   /** Determines the order in which the result will be sorted in
    * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
    */
