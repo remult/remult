@@ -1,5 +1,5 @@
 
-import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
+import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
@@ -13,7 +13,7 @@ import { v4 as uuid } from 'uuid';
 
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { ValueConverters, ValueListValueConverter } from "../../valueConverters";
+import { ValueConverters } from "../../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
@@ -1485,7 +1485,7 @@ export function NumberField<entityType = any>(...options: (FieldOptions<entityTy
 export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return (type: ClassType<valueType>) =>
         FieldType<valueType>(o => {
-            o.valueConverter = new ValueListValueConverter(type),
+            o.valueConverter = ValueListInfo.get(type),
                 o.displayValue = (item, val) => val.caption
         }, ...options)(type)
 }
@@ -1493,9 +1493,84 @@ export interface ValueListFieldOptions<entityType, valueType> extends FieldOptio
     getValues?: () => valueType[];
 
 }
+export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T> {
+    static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
+        let r = typeCache.get(type);
+        if (!r)
+            r = new ValueListInfo(type);
+        typeCache.set(type, r);
+        return r;
+    }
+    private byIdMap = new Map<any, T>();
+    private values: T[] = [];
+    isNumeric = false;
+    private constructor(private valueListType: any) {
+
+        for (let member in this.valueListType) {
+            let s = this.valueListType[member] as T;
+            if (s instanceof this.valueListType) {
+                if (s.id === undefined)
+                    s.id = member;
+                if (s.caption === undefined)
+                    s.caption = makeTitle(member);
+                if (typeof s.id === 'number')
+                    this.isNumeric = true;
+                this.byIdMap.set(s.id, s);
+                this.values.push(s);
+            }
+        }
+        if (this.isNumeric) {
+            this.fieldTypeInDb = 'integer';
+        }
+
+        var options = Reflect.getMetadata(storableMember, valueListType) as ValueListFieldOptions<any, any>[];
+        if (options)
+            for (const op of options) {
+                if (op?.getValues)
+                    this.values = op.getValues();
+            }
+    }
+
+    getValues() {
+        return this.values;
+    }
+    byId(key: any) {
+        if (this.isNumeric)
+            key = +key;
+        return this.byIdMap.get(key);
+    }
+    fromJson(val: any): T {
+        return this.byId(val);
+    }
+    toJson(val: T) {
+        if (!val)
+            return undefined;
+        return val.id;
+    }
+    fromDb(val: any): T {
+        return this.fromJson(val);
+    }
+    toDb(val: T) {
+        return this.toJson(val);
+    }
+    toInput(val: T, inputType: string): string {
+        return this.toJson(val);
+    }
+    fromInput(val: string, inputType: string): T {
+        return this.fromJson(val);
+    }
+    displayValue?(val: T): string {
+        if (!val)
+            return '';
+        return val.caption;
+    }
+    fieldTypeInDb?: string;
+    inputType?: string;
+}
+const typeCache = new Map<any, ValueListInfo<any>>();
+
 export function getValueList<T>(type: ClassType<T>): T[] {
-    var c = new ValueListValueConverter(type);
-    return c.getOptions();
+    return ValueListInfo.get(type).getValues();
 }
 export function UuidField<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
     return Field(() => String, {

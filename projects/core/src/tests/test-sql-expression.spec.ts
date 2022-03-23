@@ -8,7 +8,7 @@ import { Field, Entity, EntityBase, IntegerField, DateOnlyField, ValueListFieldT
 
 import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
-import { ValueListValueConverter } from '../../valueConverters';
+
 import { SqlCommand, SqlResult } from '../sql-command';
 import { FilterConsumerBridgeToSqlRequest, getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
 

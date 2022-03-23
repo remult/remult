@@ -1,5 +1,5 @@
-import { FieldRef, FieldMetadata, Entity, ValueListItem, Remult } from "remult";
-import { ValueListValueConverter } from "remult/valueConverters";
+import { FieldRef, FieldMetadata, Entity, ValueListItem, Remult, ValueListInfo } from "remult";
+
 import { InputField } from "./column-collection";
 
 
@@ -94,8 +94,8 @@ export function decorateDataSettings(colInput: FieldMetadata | FieldRef<any, any
             }
         }
     }
-    if (x.valueList === undefined && col && col.valueConverter instanceof ValueListValueConverter)
-        x.valueList = col.valueConverter.getOptions();
+    if (x.valueList === undefined && col && col.valueConverter instanceof ValueListInfo)
+        x.valueList = col.valueConverter.getValues();
 
 
     if (!x.caption && col.caption)

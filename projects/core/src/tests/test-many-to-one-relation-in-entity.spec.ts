@@ -4,7 +4,7 @@ import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, Strin
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
-import { ValueListValueConverter } from '../../valueConverters';
+
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { SqlDatabase } from '../data-providers/sql-database';
 
@@ -25,7 +25,7 @@ class Categories extends EntityBase {
     id: number;
     @StringField()
     name: string;
-    @Field(() => Language, { valueConverter: new ValueListValueConverter(Language) })
+    @Field(() => Language)
     language: Language
     @BooleanField()
     archive: boolean = false;

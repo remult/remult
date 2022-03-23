@@ -13,10 +13,10 @@ import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList as
 import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField, StringField, IntegerField, NumberField, getValueList } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField, StringField, IntegerField, NumberField, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
-import { ValueConverters, ValueListValueConverter } from '../../valueConverters';
+import { ValueConverters } from '../../valueConverters';
 import { EntityOptions } from '../entity';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
@@ -231,17 +231,17 @@ describe("grid filter stuff", () => {
 describe("Closed List  column", () => {
 
   it("Basic Operations", () => {
-    let x = new ValueListValueConverter(Language);
+    let x = ValueListInfo.get(Language);
 
 
     expect(x.fromJson(0)).toBe(Language.Hebrew);
     expect(x.toJson(Language.Russian)).toBe(10);
 
-    expect(new ValueListValueConverter(Language).getOptions().length).toBe(3);
+    expect(ValueListInfo.get(Language).getValues().length).toBe(3);
   });
 
   it("test auto caption", () => {
-    let val = new ValueListValueConverter(valueList);
+    let val = ValueListInfo.get(valueList);
     expect(valueList.firstName.caption).toBe('First Name');
   });
   it("test with entity", async () => {
@@ -1241,7 +1241,7 @@ describe("value list column without id and caption", () => {
   });
   it("works with automatic id", () => {
     let col = new InputField<TestStatus>({
-      valueConverter: new ValueListValueConverter(TestStatus),
+      valueConverter: ValueListInfo.get(TestStatus),
       defaultValue: () => TestStatus.open
     });
 
@@ -1250,7 +1250,7 @@ describe("value list column without id and caption", () => {
     expect(col.inputValue).toBe('open');
     col.value = TestStatus.closed;
     expect(col.inputValue).toBe('cc');
-    let options = new ValueListValueConverter(TestStatus).getOptions();
+    let options = ValueListInfo.get(TestStatus).getValues();
     expect(options.length).toBe(3);
     expect(options[2].caption).toBe('hh');
     expect(options[2].id).toBe('hold');

@@ -4,11 +4,11 @@ import { createData } from "../createData";
 import { DataApi } from '../../data-api';
 import { Remult } from '../../context';
 import { Categories } from "../remult-3-entities";
-import { Field, Entity, EntityBase, StringField, IntegerField } from "../../remult3";
+import { Field, Entity, EntityBase, StringField, IntegerField, ValueListInfo } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
-import { ValueListValueConverter } from "../../../valueConverters";
+
 
 
 describe("data api", () => {
@@ -119,7 +119,7 @@ describe("data api", () => {
     });
 
     it("test value list type", () => {
-        let x = new ValueListValueConverter(Status);
+        let x = ValueListInfo.get(Status);
         expect(x.fieldTypeInDb).toBe("integer");
     });
 

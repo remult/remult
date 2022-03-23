@@ -40,6 +40,7 @@ export {
     ValueListFieldType,
     getValueList,
     ValueListFieldOptions,
+    ValueListInfo,
     OmitEB,
     Paginator,
     CaptionTransformer
