@@ -13,7 +13,7 @@ import { v4 as uuid } from 'uuid';
 
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
+import { ValueConverters, ValueListValueConverter } from "../../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
@@ -1458,7 +1458,7 @@ export function ObjectField<entityType = any, valueType = any>(
 }
 export function DateOnlyField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
     return Field(() => Date, {
-        valueConverter: DateOnlyValueConverter
+        valueConverter: ValueConverters.DateOnly
     }, ...options);
 }
 export function DateField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
@@ -1466,14 +1466,14 @@ export function DateField<entityType = any>(...options: (FieldOptions<entityType
 }
 export function IntegerField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
     return Field(() => Number, {
-        valueConverter: IntegerValueConverter
+        valueConverter: ValueConverters.Integer
     }, ...options)
 }
 export function AutoIncrementField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
     return Field(() => Number, {
         allowApiUpdate: false,
         dbReadOnly: true,
-        valueConverter: { ...IntegerValueConverter, fieldTypeInDb: 'autoincrement' }
+        valueConverter: { ...ValueConverters.Integer, fieldTypeInDb: 'autoincrement' }
     }, ...options)
 }
 export function isAutoIncrement(f: FieldMetadata) {
@@ -1603,19 +1603,19 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
     if (settings.valueType == Number) {
         let x = settings as unknown as FieldOptions<any, Number>;
         if (!settings.valueConverter)
-            x.valueConverter = NumberValueConverter;
+            x.valueConverter = ValueConverters.Number;
     }
     if (settings.valueType == Date) {
         let x = settings as unknown as FieldOptions<any, Date>;
         if (!settings.valueConverter) {
-            x.valueConverter = DateValueConverter;
+            x.valueConverter = ValueConverters.Date;
         }
     }
 
     if (settings.valueType == Boolean) {
         let x = settings as unknown as FieldOptions<any, Boolean>;
         if (!x.valueConverter)
-            x.valueConverter = BoolValueConverter;
+            x.valueConverter = ValueConverters.Boolean;
     }
     if (!settings.valueConverter) {
         let ei = getEntitySettings(settings.valueType, false);
@@ -1626,7 +1626,7 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
             };
         }
         else
-            settings.valueConverter = DefaultValueConverter;
+            settings.valueConverter = ValueConverters.Default;
     }
     if (!settings.valueConverter.toJson) {
         settings.valueConverter.toJson = x => x;

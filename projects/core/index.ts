@@ -108,3 +108,4 @@ export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-b
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
+export { ValueConverters } from './valueConverters';

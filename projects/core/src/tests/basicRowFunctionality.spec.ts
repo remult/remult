@@ -21,12 +21,13 @@ import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interface
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
 import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, IntegerField, getEntityKey, EntityMetadata, DateOnlyField, StringField, DateField, AutoIncrementField } from '../remult3';
-import { DateOnlyValueConverter } from '../../valueConverters';
+
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
 import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
+import { ValueConverters } from "../../valueConverters";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -1558,7 +1559,7 @@ describe("test date storage", () => {
   it("works", () => {
     let val = "1976-06-16";
     /** */
-    var d: Date = DateOnlyValueConverter.fromJson(val);
+    var d: Date = ValueConverters.DateOnly.fromJson(val);
     expect(d.getFullYear()).toBe(1976);
     expect(d.getMonth()).toBe(5);
     expect(d.getDate()).toBe(16);
@@ -1567,8 +1568,8 @@ describe("test date storage", () => {
   it("works", () => {
 
     let val = new Date(1976, 5, 16);
-    expect(DateOnlyValueConverter.toJson(val)).toBe('1976-06-16')
-    expect(DateOnlyValueConverter.displayValue(val)).toBe("6/16/1976");
+    expect(ValueConverters.DateOnly.toJson(val)).toBe('1976-06-16')
+    expect(ValueConverters.DateOnly.displayValue(val)).toBe("6/16/1976");
   });
 });
 @Entity(undefined)

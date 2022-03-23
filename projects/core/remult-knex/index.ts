@@ -3,8 +3,9 @@ import knex, { Knex } from 'knex';
 import { customDatabaseFilterToken, FilterConsumer } from "../src/filter/filter-interfaces";
 import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities } from "../src/context";
-import { DateOnlyValueConverter } from "../valueConverters";
+
 import { isAutoIncrement, StringFieldOptions } from "../src/remult3";
+import { ValueConverters } from "../valueConverters";
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -403,7 +404,7 @@ export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTabl
     }
     else if (x.valueType == Date) {
         if (!x.valueConverter.fieldTypeInDb)
-            if (x.valueConverter == DateOnlyValueConverter)
+            if (x.valueConverter == ValueConverters.DateOnly)
                 b.date(dbName);
             else
                 b.dateTime(dbName)

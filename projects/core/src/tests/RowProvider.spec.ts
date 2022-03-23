@@ -16,7 +16,7 @@ import { Categories, Categories as newCategories, CategoriesForTesting } from '.
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField, StringField, IntegerField, NumberField, getValueList } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
-import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
+import { ValueConverters, ValueListValueConverter } from '../../valueConverters';
 import { EntityOptions } from '../entity';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
@@ -31,7 +31,7 @@ import { createData } from './createData';
 
 
 @ValueListFieldType({
-  getValues:()=>[
+  getValues: () => [
     Language.Hebrew,
     Language.Russian,
     new Language(20, 'אמהרית')
@@ -1152,21 +1152,21 @@ describe("test datetime column", () => {
   });
   it("displays empty date well", () => {
 
-    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson(''))).toBe('');
+    expect(ValueConverters.DateOnly.displayValue(ValueConverters.DateOnly.fromJson(''))).toBe('');
   });
   it("displays null date well 1", () => {
 
-    expect(DateOnlyValueConverter.toJson(null)).toBe(null);
-    expect(DateOnlyValueConverter.toJson(null)).toBe(null);
-    expect(DateOnlyValueConverter.displayValue(null)).toBe('');
+    expect(ValueConverters.DateOnly.toJson(null)).toBe(null);
+    expect(ValueConverters.DateOnly.toJson(null)).toBe(null);
+    expect(ValueConverters.DateOnly.displayValue(null)).toBe('');
   });
   it("displays empty date well empty", () => {
-    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson('0000-00-00'))).toBe('');
+    expect(ValueConverters.DateOnly.displayValue(ValueConverters.DateOnly.fromJson('0000-00-00'))).toBe('');
   });
   it("Date only stuff", () => {
     function test(d: Date, expected: string) {
-      expect(DateOnlyValueConverter.toJson(d)).toBe(expected);
-      const ed = DateOnlyValueConverter.fromJson(expected);
+      expect(ValueConverters.DateOnly.toJson(d)).toBe(expected);
+      const ed = ValueConverters.DateOnly.fromJson(expected);
       expect(ed.getFullYear()).toEqual(d.getFullYear(), "year");
       expect(ed.getMonth()).toEqual(d.getMonth(), "month");
       expect(ed.getDate()).toEqual(d.getDate(), "day");
@@ -1187,7 +1187,7 @@ describe("test datetime column", () => {
 
     let col = decorateColumnSettings<Date>({
       valueType: Date,
-      valueConverter: DateOnlyValueConverter
+      valueConverter: ValueConverters.DateOnly
     }, new Remult());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
@@ -1226,7 +1226,7 @@ describe("data control overrides settings on column", () => {
 describe("Test char date storage", () => {
 
 
-  let x = CharDateValueConverter;
+  let x = ValueConverters.DateOnlyString;
   it("from db", () => {
     expect(x.toJson(x.fromDb('19760616'))).toBe('1976-06-16');
   });
@@ -1364,7 +1364,7 @@ class mockColumnDefs implements FieldMetadata {
     return this.dbName;
   }
   options: FieldOptions<any, any>;
-  valueConverter: ValueConverter<any> = DefaultValueConverter;
+  valueConverter: ValueConverter<any> = ValueConverters.Default;
   target: ClassType<any>;
   readonly: boolean;
   readonly dbReadOnly: boolean;
