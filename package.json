@@ -23,7 +23,8 @@
     "build-ref": "cd docs/tools && build-ref.bat",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
     "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
-    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
+    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts",
+    "test:ci": "jasmine-ts projects/core/src/test.ts"
   },
   "private": true,
   "dependencies": {
@@ -83,6 +84,7 @@
     "cp": "^0.2.0",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
+    "jasmine-ts": "^0.4.0",
     "karma": "~6.1.0",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.0.3",
