@@ -232,14 +232,14 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
 
    *src/app/task.ts*
    ```ts
-   import { Field, Entity, IdEntity } from "remult";
+   import { Fields, Entity, IdEntity } from "remult";
 
    @Entity("tasks", {
       allowApiCrud: true
    })
    export class Task extends IdEntity {
-      @Field()
-      title: string = '';
+       @Fields.String()
+       title = '';
    }
    ```
 
@@ -254,7 +254,7 @@ The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an ent
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The [@Field](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
+The [@Fields.String](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
 
 ### Create new tasks
 
@@ -403,12 +403,12 @@ Replace the task `title` template expression in `app.component.html` with the hi
 ### Mark tasks as completed
 Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
 
-1. Add a `completed` field of type `boolean` to the `Task` entity class, and decorate it with the `@Field` decorator.
+1. Add a `completed` field of type `boolean` to the `Task` entity class, and decorate it with the `@Fields.Boolean` decorator.
 
    *src/app/task.ts*
    ```ts
-   @Field()
-   completed: boolean = false;
+    @Fields.Boolean()
+    completed = false;
    ```
 
 2. Add a an `input` of type `checkbox` to the task list item element in `app.component.html`, and bind its `ngModel` to the task's `completed` field. 
@@ -443,16 +443,16 @@ Here are the code files we've modified to implement these features.
 
 *src/app/task.ts*
 ```ts
-import { Field, Entity, IdEntity } from "remult";
+import { Fields, Entity, IdEntity } from "remult";
 
 @Entity("tasks", {
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
+    @Fields.String()
+    title = '';
+    @Fields.Boolean()
+    completed = false;
 }
 ```
 
@@ -596,10 +596,10 @@ Task titles are required. Let's add a validity check for this rule, and display 
 
    *src/app/task.ts*
    ```ts{1-3}
-    @Field({
+    @Fields.String({
         validate: Validators.required
     })
-    title: string = '';
+    title = '';
    ```
 
 2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
@@ -993,7 +993,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
    *src/app/task.ts*
    ```ts{2,5-8,13}
-   import { Field, Entity, IdEntity, Validators, BackendMethod, Remult, Allow } from "remult";
+import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
    import { Roles } from "./roles";
    
    @Entity("tasks", {
@@ -1003,15 +1003,14 @@ Usually, not all application users have the same privileges. Let's define an `ad
        allowApiDelete: Roles.admin
    })
    export class Task extends IdEntity {
-       @Field({
+       @Fields.String({
            validate: Validators.required,
            allowApiUpdate: Roles.admin
        })
-       title: string = '';
-       @Field()
-       completed: boolean = false;
+       title = '';
+       @Fields.Boolean()
+       completed = false;
    }
-
    ```
 3. Modify the highlighted line in the `TasksService` class to reflect the authorization rule
    *src/app/tasks.service.ts*
