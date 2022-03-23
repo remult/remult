@@ -1482,12 +1482,20 @@ export function isAutoIncrement(f: FieldMetadata) {
 export function NumberField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
     return Field(() => Number, ...options)
 }
-export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
     return (type: ClassType<valueType>) =>
         FieldType<valueType>(o => {
             o.valueConverter = new ValueListValueConverter(type),
                 o.displayValue = (item, val) => val.caption
         }, ...options)(type)
+}
+export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
+    getValues?: () => valueType[];
+
+}
+export function getValueList<T>(type: ClassType<T>): T[] {
+    var c = new ValueListValueConverter(type);
+    return c.getOptions();
 }
 export function UuidField<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
     return Field(() => String, {
@@ -1556,7 +1564,7 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
 
 
 }
-const storableMember = Symbol("storableMember");
+export const storableMember = Symbol("storableMember");
 function buildOptions<entityType = any, valueType = any>(options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[], remult: Remult) {
     let r = {} as FieldOptions<entityType, valueType>;
     for (const o of options) {

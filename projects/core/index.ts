@@ -6,7 +6,7 @@ export {
     UuidField,
     DateField,
     DateOnlyField,
-    ObjectField ,
+    ObjectField,
     IntegerField,
     NumberField,
     StringField,
@@ -38,6 +38,8 @@ export {
     getEntityRef,
     SortSegments,
     ValueListFieldType,
+    getValueList,
+    ValueListFieldOptions,
     OmitEB,
     Paginator,
     CaptionTransformer

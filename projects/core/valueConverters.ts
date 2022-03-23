@@ -2,6 +2,7 @@ import { ClassType } from "./classType";
 import { InputTypes } from "./inputTypes";
 import { makeTitle } from "./src/column";
 import { ValueConverter, ValueListItem } from "./src/column-interfaces";
+import { storableMember, ValueListFieldOptions } from "./src/remult3";
 
 
 
@@ -246,6 +247,7 @@ class ValueListInfo<T extends ValueListItem> {
   private values: T[] = [];
   isNumeric = false;
   private constructor(private valueListType: any) {
+
     for (let member in this.valueListType) {
       let s = this.valueListType[member] as T;
       if (s instanceof this.valueListType) {
@@ -259,6 +261,13 @@ class ValueListInfo<T extends ValueListItem> {
         this.values.push(s);
       }
     }
+
+    var options = Reflect.getMetadata(storableMember, valueListType) as ValueListFieldOptions<any, any>[];
+    if (options)
+      for (const op of options) {
+        if (op?.getValues)
+          this.values = op.getValues();
+      }
   }
 
   getOptions() {
@@ -271,3 +280,5 @@ class ValueListInfo<T extends ValueListItem> {
   }
 }
 const typeCache = new Map<any, ValueListInfo<any>>();
+
+

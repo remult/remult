@@ -9,11 +9,11 @@ import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList as getValueListFromRepo, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
 import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField, StringField, IntegerField, NumberField } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField, StringField, IntegerField, NumberField, getValueList } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
 import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
@@ -30,11 +30,16 @@ import { createData } from './createData';
 
 
 
-@ValueListFieldType()
+@ValueListFieldType({
+  getValues:()=>[
+    Language.Hebrew,
+    Language.Russian,
+    new Language(20, 'אמהרית')
+  ]
+})
 export class Language {
   static Hebrew = new Language(0, 'עברית');
   static Russian = new Language(10, 'רוסית');
-  static Amharit = new Language(20, 'אמהרית');
   constructor(public id: number,
     public caption: string) {
 
@@ -670,7 +675,7 @@ describe("test row provider", () => {
     });
 
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
-    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    let cs = { valueList: getValueListFromRepo(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -688,7 +693,7 @@ describe("test row provider", () => {
     });
 
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
-    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    let cs = { valueList: getValueListFromRepo(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -706,7 +711,7 @@ describe("test row provider", () => {
     });
 
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
-    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    let cs = { valueList: getValueListFromRepo(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -738,7 +743,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
-    let cs = { field: c1._.fields.id.metadata, valueList: getValueList(c) } as DataControlSettings<newCategories>
+    let cs = { field: c1._.fields.id.metadata, valueList: getValueListFromRepo(c) } as DataControlSettings<newCategories>
     await cc.add(cs);
 
     let xx = cs.valueList as ValueListItem[];
@@ -1231,6 +1236,9 @@ describe("Test char date storage", () => {
 });
 
 describe("value list column without id and caption", () => {
+  it("getValueList", () => {
+    expect(getValueList(Language).length).toBe(3);
+  });
   it("works with automatic id", () => {
     let col = new InputField<TestStatus>({
       valueConverter: new ValueListValueConverter(TestStatus),
