@@ -551,7 +551,7 @@ testAll("large string field", async ({ createEntity }) => {
     await s.insert({ title: "1234567890".repeat(100) });
     const r = await s.findFirst();
     expect(r.title).toBe("1234567890".repeat(100));
-},true)
+}, false)
 
 
 
