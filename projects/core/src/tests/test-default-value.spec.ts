@@ -2,7 +2,7 @@ import { Remult } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
-import { EntityBase, Entity, Field } from '../remult3';
+import { EntityBase, Entity, Field, IntegerField } from '../remult3';
 
 
 
@@ -41,7 +41,7 @@ describe("test default value", () => {
 class testDefaultValue extends EntityBase {
     static testVal = 0;
     code: number;
-    @Field({
+    @IntegerField({
         defaultValue: () => testDefaultValue.testVal++
     })
     test: number;

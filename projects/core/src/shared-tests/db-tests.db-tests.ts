@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import { DateOnlyField, Entity, EntityBase, EntityFilter, Field, IntegerField } from "../remult3";
+import { AutoIncrementField, BooleanField, DateOnlyField, Entity, EntityBase, EntityFilter, Field, IntegerField, NumberField, StringField } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -17,7 +17,6 @@ import { entityForCustomFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
-import { SqlDatabase } from "../..";
 
 
 
@@ -127,7 +126,7 @@ testAll("test original value of date", async ({ createEntity }) => {
 
 @Entity('testDateWithNull', { allowApiCrud: true })
 class testDateWithNull extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number = 0;
     @DateOnlyField({ allowNull: true })
     d: Date;
@@ -317,7 +316,7 @@ testAll("Test unique Validation,", async ({ createEntity }) => {
         a: string
     };
     Entity('categories')(type);
-    Field<typeof type.prototype, string>({
+    StringField<typeof type.prototype>({
         validate: async (en, col) => {
             if (en._.isNew() || en.a != en._.fields.a.originalValue) {
                 if (await c.count({ a: en.a }))
@@ -351,7 +350,7 @@ testAll("Test unique Validation 2", async ({ createEntity }) => {
         a: string
     };
     Entity('sdfgds')(type);
-    Field<typeof type.prototype, string>({
+    StringField<typeof type.prototype>({
         validate: Validators.unique
     })(type.prototype, "a");
     var c = await createEntity(type);
@@ -377,7 +376,7 @@ testAll("Test unique Validation 2", async ({ createEntity }) => {
 class testNumbers extends EntityBase {
     @IntegerField()
     id: number;
-    @Field()
+    @NumberField()
     a: number;
 }
 
@@ -496,10 +495,8 @@ testAll("saves correctly to db", async ({ createEntity }) => {
         ok: Boolean = false;
     }
     Entity('asdf', { allowApiCrud: true })(type);
-    Field({
-        valueType: Number
-    })(type.prototype, 'id');
-    Field({ valueType: Boolean })(type.prototype, "ok");
+    NumberField()(type.prototype, 'id');
+    BooleanField()(type.prototype, "ok");
     let r = (await createEntity(type)).create();
     r.id = 1;
     r.ok = true;
@@ -510,9 +507,9 @@ testAll("saves correctly to db", async ({ createEntity }) => {
     expect(r.ok).toBe(false);
 });
 
-@Entity("autoi", { allowApiCrud: true, dbAutoIncrementId: true })
+@Entity("autoi", { allowApiCrud: true })
 class autoIncrement extends EntityBase {
-    @IntegerField()
+    @AutoIncrementField()
     id: number;
     @IntegerField()
     stam: number;
@@ -549,19 +546,24 @@ testAll("filter", async ({ createEntity }) => {
     })).toBe(0);
 }, false);
 
-
+testAll("large string field", async ({ createEntity }) => {
+    const s = await createEntity(stam);
+    await s.insert({ title: "1234567890".repeat(100) });
+    const r = await s.findFirst();
+    expect(r.title).toBe("1234567890".repeat(100));
+}, false)
 
 
 
 @Entity("testfilter", { allowApiCrud: true })
 class testFilter {
-    @Field()
+    @IntegerField()
     id: number = 0;
-    @Field()
+    @StringField()
     a: string = '';
-    @Field()
+    @StringField()
     b: string = '';
-    @Field()
+    @StringField()
     c: string = '';
     static search = Filter.createCustom<testFilter, string>((remult, str) => ({
         $and: [{
@@ -584,9 +586,9 @@ class testFilter {
 
 @Entity('teststringWithNull', { allowApiCrud: true })
 class testStringWithNull extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number = 0;
-    @Field({ allowNull: true })
+    @StringField({ allowNull: true })
     d: string;
 }
 
@@ -594,20 +596,20 @@ class testStringWithNull extends EntityBase {
 
 @Entity("a", { allowApiCrud: true })
 export class stam extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number = 0;
-    @Field()
+    @StringField({ maxLength: 1500 })
     title: string = '';
 }
 
 
 @Entity('p', { allowApiCrud: true })
 class p extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number;
-    @Field()
+    @StringField()
     name: string;
-    @Field()
+    @Field(() => c)
     c: c;
     constructor(private remult: Remult) {
         super();

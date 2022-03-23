@@ -1,6 +1,6 @@
 import { Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, IntegerField } from '../remult3';
 import { actionInfo } from '../server-action';
 
 
@@ -79,10 +79,10 @@ describe("test server expression value", () => {
 class testServerExpression extends EntityBase {
     static testVal = 1;
     static testVal2 = 10;
-    @Field()
+    @IntegerField()
     code: number;
-    @Field({ serverExpression: () => testServerExpression.testVal++ })
+    @IntegerField({ serverExpression: () => testServerExpression.testVal++ })
     test: number;
-    @Field({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
+    @IntegerField({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
     testPromise: number;
 }

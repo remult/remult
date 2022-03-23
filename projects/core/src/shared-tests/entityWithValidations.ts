@@ -1,6 +1,6 @@
 import { ClassType } from '../../classType';
 import { Remult } from '../context';
-import { Field, Entity, EntityBase, Repository } from '../remult3';
+import { Field, Entity, EntityBase, Repository, IntegerField, StringField } from '../remult3';
 
 
 export var testConfiguration = { restDbRunningOnServer: false };
@@ -25,9 +25,9 @@ export var testConfiguration = { restDbRunningOnServer: false };
     }
 })
 export class entityWithValidations extends EntityBase {
-    @Field()
+    @IntegerField()
     myId: number;
-    @Field()
+    @StringField()
     name: string;
     static savingRowCount = 0;
     constructor(private remult: Remult) {

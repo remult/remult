@@ -23,6 +23,7 @@ import * as knex from 'knex';
 
 import { MongoClient } from 'mongodb';
 import { stam } from '../products-test/products.component';
+import { ClassType } from '../../../../core/classType';
 
 
 
@@ -113,3 +114,8 @@ k.schema.dropTableIfExists('test').then(async () => {
     console.log(typeof rows[0].d);
 
 });
+
+
+function what<a = any, b = any>(type: () => ClassType<b>, oneMore: b) {
+
+}

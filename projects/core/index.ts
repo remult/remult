@@ -4,6 +4,14 @@
 export {
     Field,
     UuidField,
+    DateField,
+    DateOnlyField,
+    ObjectField,
+    IntegerField,
+    NumberField,
+    StringField,
+    StringFieldOptions,
+    BooleanField,
     FieldsMetadata,
     Entity,
     BuildEntity,
@@ -16,7 +24,7 @@ export {
     EntityOrderBy,
     EntityFilter,
     FindOptions,
-    QueryResult ,
+    QueryResult,
     QueryOptions,
     Repository,
     FieldType,
@@ -30,9 +38,9 @@ export {
     getEntityRef,
     SortSegments,
     ValueListFieldType,
-    DateOnlyField,
-    JsonField,
-    IntegerField,
+    getValueList,
+    ValueListFieldOptions,
+    ValueListInfo,
     OmitEB,
     Paginator,
     CaptionTransformer
@@ -101,3 +109,4 @@ export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-b
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
+export { ValueConverters } from './valueConverters';

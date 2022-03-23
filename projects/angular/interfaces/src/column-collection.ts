@@ -1,10 +1,10 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve, Repository, EntityOrderBy, EntityFilter } from "remult";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve, Repository, EntityOrderBy, EntityFilter,ValueListInfo } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings, getEntitySettings, RefSubscriber } from 'remult/src/remult3';
-import { ValueListValueConverter } from "remult/valueConverters";
+
 import { ClassType } from "remult/classType";
 
 
@@ -378,8 +378,8 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
 
     this.options = decorateColumnSettings(settings, settings.remult);
     this.dataControl = settings;
-    if (!this.dataControl.valueList && this.options.valueConverter instanceof ValueListValueConverter) {
-      this.dataControl.valueList = this.options.valueConverter.getOptions();
+    if (!this.dataControl.valueList && this.options.valueConverter instanceof ValueListInfo) {
+      this.dataControl.valueList = this.options.valueConverter.getValues();
     }
 
 

@@ -165,7 +165,7 @@ export class Remult {
             this._user.roles = [];
         await this._userChangeEvent.fire();
     }
-    static apiBaseUrl = 'api';
+    static apiBaseUrl = '/api';
     isAllowedForInstance(instance: any, x: AllowedForInstance<any>): boolean {
         if (Array.isArray(x)) {
             {

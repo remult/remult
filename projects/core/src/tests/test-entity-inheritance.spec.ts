@@ -1,27 +1,40 @@
 import { InMemoryDataProvider } from "../..";
 import { Remult } from "../context";
-import { Entity, EntityBase, Field } from "../remult3";
+import { Entity, EntityBase, Field, IntegerField, StringField } from "../remult3";
 
 
 @Entity<parent>("parent", {
-    saving: self => {
+    saving: async self => {
+        await new Promise((r) => setTimeout(() => {
+            r({})
+        }, 10))
         self.myField += ",parent";
     }
 })
 export class parent extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number = 0;
-    @Field()
+    @StringField()
     myField: string = '';
-    @Field<parent>({ saving: self => self.autoSavedField = "auto" })
+    @StringField<parent>({ saving: self => self.autoSavedField = "auto" })
     autoSavedField: string = '';
 }
 @Entity<child>("child", {
-    saving: self => {
+    saving: async self => {
+
+        await new Promise((r) => setTimeout(() => {
+            r({})
+        }, 10))
         self.myField += "child";
     }
 })
 export class child extends parent {
+
+}
+@Entity<child2>("child2", {
+
+})
+export class child2 extends parent {
 
 }
 
@@ -29,6 +42,13 @@ it("saving works well ", async () => {
     let remult = new Remult(new InMemoryDataProvider());
     let x = await remult.repo(child).create().save();
     expect(x.myField).toBe("child,parent");
+    expect(x.autoSavedField).toBe("auto");
+
+})
+it("saving works well when child doesnt have saving", async () => {
+    let remult = new Remult(new InMemoryDataProvider());
+    let x = await remult.repo(child2).create().save();
+    expect(x.myField).toBe(",parent");
     expect(x.autoSavedField).toBe("auto");
 
 })
@@ -53,10 +73,10 @@ it("test saving of delete", async () => {
     }
 })
 export class anError extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number = 0;
-    @Field()
-    name: string = '';
+    @StringField()
+    name = '';
 }
 it("test error on save within saving", async () => {
     let remult = new Remult(new InMemoryDataProvider());

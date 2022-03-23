@@ -2,7 +2,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, FieldType } from '../remult3';
+import { Field, Entity, EntityBase, FieldType, StringField, IntegerField, ObjectField } from '../remult3';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { assign } from '../../assign';
 import { IdEntity } from '../id-entity';
@@ -101,7 +101,7 @@ describe("test object column", () => {
 
         let r = remult.repo(ObjectColumnTest).metadata;
         expect(await remult.repo(ObjectColumnTest).count({ phone1: { $contains: "23" } })).toBe(1);
-        expect(await remult.repo(ObjectColumnTest).count(Filter.entityFilterFromJson(r, entityFilterToJson(r, {phone1:{$contains:"23"}})))).toBe(1);
+        expect(await remult.repo(ObjectColumnTest).count(Filter.entityFilterFromJson(r, entityFilterToJson(r, { phone1: { $contains: "23" } })))).toBe(1);
     });
     it("test basics with json", async () => {
 
@@ -146,7 +146,7 @@ describe("test object column", () => {
 
 });
 class Phone {
-    constructor(private phone: string) {
+    constructor(public phone: string) {
 
     }
 }
@@ -165,18 +165,18 @@ class Phone4 {
 
 @Entity('objectColumnTest')
 class ObjectColumnTest extends EntityBase {
-    @Field()
+    @IntegerField()
     id: number;
-    @Field()
+    @ObjectField()
     col: person;
-    @Field<Phone>({
+    @Field(() => Phone, {
         valueConverter: {
             fromJson: x => x ? new Phone(x) : null,
             toJson: x => x ? x.phone : ''
         }
     })
     phone1: Phone;
-    @Field<Phone>({
+    @Field(() => Phone, {
         valueConverter: {
             fromJson: x => x ? new Phone(x) : null,
             toJson: x => x ? x.phone : null
@@ -184,18 +184,18 @@ class ObjectColumnTest extends EntityBase {
         allowNull: true
     })
     phone2: Phone
-    @Field<Phone>({
+    @Field(() => Phone, {
         valueConverter: {
             fromJson: x => x ? new Phone(x) : null,
             toJson: x => x ? x.phone : ''
         }
     })
     phone3: Phone;
-    @Field()
+    @Field(() => Phone4)
     phone4: Phone4
-    @Field()
+    @ObjectField()
     tags: string[];
-    @Field({ allowNull: true })
+    @ObjectField({ allowNull: true })
     tags2: string[];
 }
 
@@ -216,6 +216,6 @@ it("Test original values address defaults", async () => {
 
 @Entity('somethingWithDefaults', {})
 class somethingWithDefaults extends IdEntity {
-    @Field()
-    name: string = 'noam';
+    @StringField()
+    name = 'noam';
 }

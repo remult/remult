@@ -98,7 +98,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
         let newR = {};
         let keys = Object.keys(data);
         for (const f of this.entity.fields) {
-            if (!f.dbReadOnly && !f.isServerExpression && !(f == this.entity.idMetadata.field && this.entity.options.dbAutoIncrementId)) {
+            if (!f.dbReadOnly && !f.isServerExpression) {
                 if (keys.includes(f.key)) {
                     newR[f.key] = f.valueConverter.toJson(data[f.key]);
                 }

@@ -90,7 +90,7 @@ export function testPostgresImplementation(key: string, what: dbTestWhatSignatur
     }, focus);
 }
 addDatabaseToTest(testPostgresImplementation);
-import '../shared-tests'
+
 import { Categories } from "../tests/remult-3-entities";
 import { MongoDataProvider } from "../../remult-mongo";
 
@@ -107,6 +107,8 @@ testAll("transactions", async ({ db, createEntity }) => {
 let client = new MongoClient("mongodb://localhost:27017/local");
 let mongoDbPromise = client.connect().then(c => c.db("test"));
 
+
+ 
 export function testMongo(key: string, what: dbTestWhatSignature, focus = false) {
     itWithFocus(key + " - mongo", async () => {
         let mongoDb = await mongoDbPromise;
@@ -126,3 +128,6 @@ export function testMongo(key: string, what: dbTestWhatSignature, focus = false)
     }, focus);
 }
 addDatabaseToTest(testMongo);
+
+
+import '../shared-tests'
