@@ -18,16 +18,17 @@ export class Filter {
             return await filter();
         return filter;
     }
-    static createCustom<entityType>(customFilterTranslator: (r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType> {
+    static createCustom<entityType>(customFilterTranslator: (r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key = ''): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType> {
 
-        let customFilterInfo = { key: '', customFilterTranslator };
+        let customFilterInfo = { key: key, customFilterTranslator };
         return Object.assign((x: any) => {
             let z = {};
             if (x == undefined)
                 x = {};
-
+            if (!customFilterInfo.key)
+                throw "Usage of custom filter before a key was assigned to it";
             return {
                 [customUrlToken + customFilterInfo.key]: x
             }

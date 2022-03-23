@@ -41,7 +41,7 @@ export class DataApi<T = any> {
     }
     try {
 
-      response.success({ count: +await this.repository.count(this.buildWhere(request, filterBody)) });
+      response.success({ count: +await this.repository.count(await this.buildWhere(request, filterBody)) });
     } catch (err) {
       response.error(err);
     }
@@ -55,10 +55,7 @@ export class DataApi<T = any> {
     }
     try {
       let findOptions: FindOptions<T> = { load: () => [] };
-      if (this.repository.metadata.options?.apiPrefilter) {
-        findOptions.where = await Filter.resolve(this.repository.metadata.options.apiPrefilter);
-      }
-      findOptions.where = this.buildWhere(request, filterBody);
+      findOptions.where = await this.buildWhere(request, filterBody);
       if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
         let hasId = false;
         let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
@@ -112,10 +109,14 @@ export class DataApi<T = any> {
       response.error(err);
     }
   }
-  private buildWhere(request: DataApiRequest, filterBody: any): EntityFilter<any> {
+  private async buildWhere(request: DataApiRequest, filterBody: any): Promise<EntityFilter<any>> {
     var where: EntityFilter<any>[] = [];
-
-    where.push(this.repository.metadata.options.apiPrefilter);
+    if (this.repository.metadata.options.apiPrefilter) {
+      if (typeof this.repository.metadata.options.apiPrefilter === "function")
+        where.push(await this.repository.metadata.options.apiPrefilter());
+      else
+        where.push(this.repository.metadata.options.apiPrefilter);
+    }
     if (request) {
       where.push(buildFilterFromRequestParameters(this.repository.metadata, {
         get: key => {

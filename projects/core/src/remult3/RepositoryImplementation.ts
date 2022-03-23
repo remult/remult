@@ -1766,7 +1766,8 @@ export function Entity<entityType>(key: string, ...options: (EntityOptions<entit
             if (Object.prototype.hasOwnProperty.call(target, customFilterMember)) {
                 const element = target[customFilterMember] as customFilterInfo<any>;
                 if (element?.customFilterInfo?.customFilterTranslator) {
-                    element.customFilterInfo.key = customFilterMember;
+                    if (!element.customFilterInfo.key)
+                        element.customFilterInfo.key = customFilterMember;
                 }
             }
         }
