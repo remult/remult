@@ -1,10 +1,11 @@
 import { Remult } from ".";
-import { IntegerValueConverter } from "./valueConverters";
+
 import { allEntities } from "./src/context";
 import { getEntityKey } from "./src/remult3";
 
 import { DataApi } from "./src/data-api";
 import { RemultExpressBridge } from "./server/expressBridge";
+import { ValueConverters } from "./valueConverters";
 
 export function remultGraphql(api: RemultExpressBridge) {
     let r = new Remult();
@@ -26,7 +27,7 @@ export function remultGraphql(api: RemultExpressBridge) {
                             type = "Boolean";
                         case Number:
                             {
-                                if (f.valueConverter === IntegerValueConverter)
+                                if (f.valueConverter?.fieldTypeInDb=='integer')
                                     type = "Int";
                                 else
                                     type = "Float";
