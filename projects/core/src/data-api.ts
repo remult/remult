@@ -35,6 +35,10 @@ export class DataApi<T = any> {
     await this.doOnId(response, id, async row => response.success(this.repository.getEntityRef(row).toApiJson()));
   }
   async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
+    if (!this.repository.metadata.apiReadAllowed) {
+      response.forbidden();
+      return;
+    }
     try {
 
       response.success({ count: +await this.repository.count(this.buildWhere(request, filterBody)) });

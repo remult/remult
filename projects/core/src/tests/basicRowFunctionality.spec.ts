@@ -1051,7 +1051,87 @@ describe("data api", () => {
   });
 
 
+  it("read is not Allowed", async () => {
+    let type = class extends newCategories {
 
+    };
+    Entity('', {
+
+      allowApiRead: false
+    })(type);
+    let [c, remult] = await createData(async i => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, type);
+
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.forbidden = () => {
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        if (x == "categoryName")
+          return "a";
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  it("get is not Allowed", async () => {
+    let type = class extends newCategories {
+
+    };
+    Entity('', {
+
+      allowApiRead: false
+    })(type);
+    let [c, remult] = await createData(async i => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, type);
+
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.forbidden = () => {
+      d.ok();
+    };
+    await api.get(t, 1);
+    d.test();
+  });
+  it("count is not Allowed", async () => {
+    let type = class extends newCategories {
+
+    };
+    Entity('', {
+
+      allowApiRead: false
+    })(type);
+    let [c, remult] = await createData(async i => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, type);
+
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.forbidden = () => {
+      d.ok();
+    };
+    await api.count(t, {
+      get: x => {
+        if (x == "categoryName")
+          return "a";
+        return undefined;
+      }
+    });
+    d.test();
+  });
 
   it("delete id  not Allowed", async () => {
     let type = class extends newCategories {
