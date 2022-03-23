@@ -210,14 +210,14 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
 
    *src/Task.ts*
    ```ts
-   import { Field, Entity, IdEntity } from "remult";
-
+   import { Fields, Entity, IdEntity } from "remult";
+   
    @Entity("tasks", {
-      allowApiCrud: true
+       allowApiCrud: true
    })
    export class Task extends IdEntity {
-      @Field()
-      title: string = '';
+       @Fields.String()
+       title = '';
    }
    ```
 
