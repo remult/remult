@@ -6,7 +6,6 @@ export class Status {
   static open = new Status(0, "open");
   static closed = new Status(1, "closed");
   static hold = new Status(2, "hold");
-
   constructor(public id: number, public name: string) {
 
   }

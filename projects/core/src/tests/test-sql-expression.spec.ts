@@ -4,7 +4,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase, ValueListFieldType, Fields, } from '../remult3';
+import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
@@ -173,3 +173,38 @@ class testCreate extends IdEntity {
     @Field(() => stringId2)
     s2: stringId2;
 }
+
+@ValueListFieldType({
+    getValues: () => [
+        new missingId()
+    ]
+})
+class missingId {
+
+}
+@ValueListFieldType({
+    getValues: () => [
+        new missingCaption('abc')
+    ]
+})
+class missingCaption {
+    constructor(public id: string) { }
+    caption!: string;
+
+}
+
+describe("Test Value List Items", () => {
+    it("require id", () => {
+        try {
+            getValueList(missingId);
+            expect(true).toBe(false, "should have failed and not reached this since it's missing an id");
+        }
+        catch {
+
+        }
+    })
+
+    it("caption is auto generated", () => {
+        expect(getValueList(missingCaption)[0].caption).toBe("Abc");
+    })
+})
