@@ -19,7 +19,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 
   constructor(private r: SqlCommand) { }
 
-  custom(key:string,customItem: any): void {
+  custom(key: string, customItem: any): void {
     throw new Error("Custom filter should be translated before it gets here");
   }
 
@@ -31,6 +31,8 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
         f._addWhere = false;
         element.__applyToConsumer(f);
         let where = await f.resolveWhere();
+        if (!where)
+          where = '1=1';
         if (where.length > 0) {
           if (statement.length > 0) {
             statement += " or ";

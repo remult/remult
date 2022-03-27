@@ -45,6 +45,20 @@ testAll("filter works on all db or",
         expect((await s.find({ where: { $or: [{ myId: 1 }, { myId: 3 }] } })).length).toBe(2);
 
     }, false);
+testAll("filter works on all db or_1",
+    async ({ createEntity }) => {
+
+        let s = await entityWithValidations.create4RowsInDp(createEntity);
+        expect((await s.find({ where: { $or: [{}, {}] } })).length).toBe(4);
+
+    }, false);
+testAll("filter works on all db or_2",
+    async ({ createEntity }) => {
+
+        let s = await entityWithValidations.create4RowsInDp(createEntity);
+        expect((await s.find({ where: { $or: [{}, { myId: 3 }] } })).length).toBe(4);
+
+    }, false);
 testAll("entity with different id column still works well", async ({ createEntity }) => {
     let s = await createEntity(entityWithValidations);
     let c = s.create();
