@@ -1,12 +1,11 @@
 # Backend only code
-One of the core advantages of remult is that you write your code once and it runs both on the server and in the browser.
+One of the main advantages of remult is that you write code once and it runs both on the server and in the browser.
 
-Although this can useful for most cases, if you are using an npm package that only makes sense in the remult of the Node JS Server and wouldn't work in a browser, the fact that the same code "compiles" both to the server and the client can cause problems.
+However, if you are using a library that only works on the server, the fact that the same code is bundled to the frontend can cause problems. For example, when you'll build an Angular project, you'll get `Module not found` errors.
 
-When you'll build the angular project you'll get errors of `Module not found`.
-In this article we'll walk thorough such a scenario and demonstrate how it can be solved.
+In this article, we'll walk through such a scenario and how it can be solved.
 
-For the purpose of this example, our customer would like us to document each call to the `updatePriceOnBackend` method in a log fie.
+For this example, our customer would like us to document each call to the `updatePriceOnBackend` method in a log file.
 
 Our first instinct would be to add in the `products.component.ts` file an import to `fs` (Node JS file system component) and write the following code:
 ```ts{1,10}
@@ -32,7 +31,7 @@ i ｢wdm｣: Failed to compile.
  ```
 :::
 
-The reason we get this error is that the `fs` module on which we rely here, is only relevant in the remult of a `Node JS` server and not in the remult of the browser.
+The reason we get this error is that the `fs` module on which we rely here is only relevant in the remult of a `Node JS` server and not in the remult of the browser.
 
 To solve this problem, we'll `abstract` the call to `fs` and `inject` it only when we are running on the server.
 
