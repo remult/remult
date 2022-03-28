@@ -1,5 +1,5 @@
 
-import { Allowed, BackendMethod, Remult, EntityOptions, Filter, IdEntity, FieldType, Entity, Field } from 'remult';
+import { Allowed, BackendMethod, Remult, EntityOptions, Filter, IdEntity, FieldType, Entity, Field, Fields } from 'remult';
 
 
 
@@ -30,17 +30,17 @@ export class GroupsValue {
 
 })
 export class Products extends IdEntity {
-  @Field()
+  @Fields.String()
   name: string;
-  @Field()
+  @Fields.Number()
   price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
-  @Field()
+  @Fields.Number()
   categoryCode: number;
-  @Field() // should be Date
+  @Fields.Date() // should be Date
   availableFrom1: Date;
-  @Field()
+  @Fields.Date()
   availableTo: Date;
-  @Field()
+  @Fields.Boolean()
   archive: boolean;
   static filter = Filter.createCustom<Products>(() => ({ name: "a" }));
 

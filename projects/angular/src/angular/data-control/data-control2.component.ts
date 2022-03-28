@@ -32,6 +32,10 @@ export class DataControl2Component {
     if (this.map?.customComponent?.component) {
       if (this.done)
         return;
+      const fieldRef = this.map.field as FieldRef;
+      if (!fieldRef.metadata) {
+        this.map.customComponent = undefined;
+      }
       this.done = true;
       const componentFactory = this.componentFactoryResolver.resolveComponentFactory<CustomDataComponent>(this.map.customComponent.component);
 
@@ -39,7 +43,7 @@ export class DataControl2Component {
       viewContainerRef.clear();
 
       const componentRef = viewContainerRef.createComponent<CustomDataComponent>(componentFactory);
-      const fieldRef = this.map.field as FieldRef;
+
       componentRef.instance.args = {
         fieldRef,
         settings: this.map

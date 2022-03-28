@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { async } from '@angular/core/testing';
 import { DataAreaSettings } from '@remult/angular/interfaces';
 
-import { Field, getFields, ValueListFieldType } from 'remult';
+import { Field, Fields, getFields, ValueListFieldType } from 'remult';
 
 
 
@@ -42,10 +42,10 @@ export class FamilyStatus {
   styleUrls: ['./test.component.scss']
 })
 export class TestComponent {
-  @Field()
+  @Fields.Number()
   a: number = 1;
 
-  @Field()
+  @Field(() => FamilyStatus)
   b: FamilyStatus = FamilyStatus.Active;
 
   area: DataAreaSettings;

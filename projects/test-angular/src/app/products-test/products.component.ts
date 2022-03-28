@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ComponentFactoryResolver, Input, NgZone, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, Fields.DateOnly, Controller, Filter, Fields.Integer, FieldRef } from 'remult';
+import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, Fields, Controller, Filter, FieldRef } from 'remult';
 
 import { CustomDataComponent, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField } from '@remult/angular/interfaces';
 
@@ -31,6 +31,17 @@ export class ProductsComponent implements OnInit {
 
   grid = new GridSettings(this.remult.repo(stam), {
     allowCrud: true,
+    columnSettings: s => [{
+      field: s.name,
+      customComponent: {
+        component: AComponent
+      },
+
+
+    },
+    { field: s.stamDate, caption: "very very very very very long caption" },
+    s.test,
+    s.id],
     rowsLoaded: (rows) => {
       this.area = new DataAreaSettings({
         fields: () => [
@@ -68,12 +79,12 @@ export class ProductsComponent implements OnInit {
 
 })
 export class stam extends IdEntity {
-  @Field({ dbName: 'name', aha: true })
+  @Fields.String({ dbName: 'name', aha: true })
   name: string;
   @Fields.DateOnly({ allowNull: true })
   stamDate?: Date
 
-  @Field({ serverExpression: () => 'noam' })
+  @Fields.String({ serverExpression: () => 'noam' })
   test: string = '';
 
 
@@ -94,7 +105,7 @@ declare module 'remult' {
 
 @Component({
   selector: 'app-a',
-  template: `Component <input *ngIf="args?.fieldRef" [(ngModel)]="args.fieldRef.inputValue">`,
+  template: `Component({{args?.fieldRef?.metadata?.caption}}) <input *ngIf="args?.fieldRef" [(ngModel)]="args.fieldRef.inputValue" >`,
 })
 export class AComponent implements CustomDataComponent {
   @Input()

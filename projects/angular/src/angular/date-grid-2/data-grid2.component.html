@@ -137,7 +137,7 @@
       <ol>
         <ng-container *ngFor="let c of settings.currList; let i=index">
           <li *ngIf="i<settings.columns.numOfColumnsInGrid">
-            <select [(ngModel)]="settings.currList[i]" class="form-control selectColumnCombo"
+            <select [(ngModel)]="settings.currList[i]" class="form-control selectColumnCombo" style="max-width:100px"
               (change)="settings.columns.colListChanged()">
               <option *ngFor="let o of settings.origList" [ngValue]="o">{{o.caption}}</option>
             </select>
