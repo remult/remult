@@ -35,6 +35,7 @@ export class DataControl2Component {
       const fieldRef = this.map.field as FieldRef;
       if (!fieldRef.metadata) {
         this.map.customComponent = undefined;
+        return;
       }
       this.done = true;
       const componentFactory = this.componentFactoryResolver.resolveComponentFactory<CustomDataComponent>(this.map.customComponent.component);
