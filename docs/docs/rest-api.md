@@ -1,8 +1,8 @@
 # Entity Rest Api Breakdown
 
-All entities automatically expose a rest api based on the parameters defined in it's decorator.
+All entities automatically expose a rest API based on the parameters defined in its decorator.
 
-The api supports the following actions (we'll use the `products` entity as an example, and a specific product with an id=7):
+The API supports the following actions (we'll use the `products` entity as an example, and a specific product with an id=7):
 
 
 | Http Method | Description | example | requires |
@@ -53,7 +53,7 @@ returns:
 ```
 
 ## Paginate
-By default the page size is 100 rows.
+The default page size is 100 rows.
 ```
 https://mySite.com/api/products?_limit=25
 ```

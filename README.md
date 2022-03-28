@@ -19,7 +19,7 @@
 
 ## What is Remult?
 
-**Remult** is a fullstack CRUD framework which uses your TypeScript model types to provide:
+**Remult** is a fullstack CRUD framework that uses your TypeScript model types to provide:
 
 * Secure REST API (highly configurable)
 * Type-safe frontend API client
@@ -27,7 +27,7 @@
 
 #### Remult :heart: Monorepos
 
-Using a `monorepo` approach, with model types shared between frontend and backend code, Remult can enforce data validation and constraints, defined once, on both frontend and REST API level.
+Using a `monorepo` approach, with model types shared between frontend and backend code, Remult can enforce data validation and constraints, defined once, on both frontend and REST API levels.
 
 ## Getting started
 The best way to learn Remult is by following a tutorial of a simple Todo app with a Node.js Express backend. There's one [using a React frontend](https://remult.dev/tutorials/tutorial-react.html) and one [using Angular](https://remult.dev/tutorials/tutorial-angular.html).
