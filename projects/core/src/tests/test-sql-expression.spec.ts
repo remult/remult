@@ -174,14 +174,7 @@ class testCreate extends IdEntity {
     s2: stringId2;
 }
 
-@ValueListFieldType({
-    getValues: () => [
-        new missingId()
-    ]
-})
-class missingId {
 
-}
 @ValueListFieldType({
     getValues: () => [
         new missingCaption('abc')
@@ -205,6 +198,15 @@ class missingCaption2 {
 describe("Test Value List Items", () => {
     it("require id", () => {
         try {
+
+            const missingId = class {
+
+            }
+            ValueListFieldType({
+                getValues: () => [
+                    new missingId()
+                ]
+            })(missingId)
             getValueList(missingId);
             expect(true).toBe(false, "should have failed and not reached this since it's missing an id");
         }

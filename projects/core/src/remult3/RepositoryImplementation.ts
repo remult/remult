@@ -1515,11 +1515,13 @@ export interface StringFieldOptions<entityType = any> extends FieldOptions<entit
     maxLength?: number;
 }
 export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return (type: ClassType<valueType>) =>
+    return (type: ClassType<valueType>) => {
         FieldType<valueType>(o => {
             o.valueConverter = ValueListInfo.get(type),
                 o.displayValue = (item, val) => val.caption
         }, ...options)(type)
+        ValueListInfo.get(type).loadFromDecoratorOptions();
+    }
 }
 export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
     getValues?: () => valueType[];
@@ -1560,7 +1562,8 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
     }
     private loadedFromOptions = false;
 
-    private loadFromDecoratorOptions() {
+    
+    loadFromDecoratorOptions() {
         if (this.loadedFromOptions)
             return;
         var options = Reflect.getMetadata(storableMember, this.valueListType) as ValueListFieldOptions<any, any>[];
