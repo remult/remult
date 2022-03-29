@@ -9,7 +9,7 @@ import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList as getValueListFromRepo, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getEntityValueList as getValueListFromRepo, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
 import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';

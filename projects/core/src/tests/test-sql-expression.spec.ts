@@ -190,6 +190,15 @@ class missingId {
 class missingCaption {
     constructor(public id: string) { }
     caption!: string;
+    static valueList = getValueList(missingCaption);
+}
+
+@ValueListFieldType()
+class missingCaption2 {
+    static item = new missingCaption2("abc");
+    constructor(public id: string, public caption?: string) {
+
+    }
 
 }
 
@@ -203,8 +212,14 @@ describe("Test Value List Items", () => {
 
         }
     })
+    it("getValuesWorks Early", () => {
+        expect(missingCaption.valueList.length).toBe(1);
+    });
 
     it("caption is auto generated", () => {
         expect(getValueList(missingCaption)[0].caption).toBe("Abc");
     })
+    it("test caption 2", () => {
+        expect(getValueList(missingCaption2)[0].caption).toBe("Abc");
+    });
 })

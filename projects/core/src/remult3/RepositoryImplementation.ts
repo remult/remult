@@ -1528,9 +1528,11 @@ export interface ValueListFieldOptions<entityType, valueType> extends FieldOptio
 export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T> {
     static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
         let r = typeCache.get(type);
-        if (!r)
+        if (!r) {
             r = new ValueListInfo(type);
-        typeCache.set(type, r);
+            typeCache.set(type, r);
+        }
+        r.loadFromDecoratorOptions(type);
         return r;
     }
     private byIdMap = new Map<any, T>();
@@ -1543,10 +1545,10 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
             if (s instanceof this.valueListType) {
                 if (s.id === undefined)
                     s.id = member;
-                if (s.caption === undefined)
-                    s.caption = makeTitle(member);
                 if (typeof s.id === 'number')
                     this.isNumeric = true;
+                if (s.caption === undefined)
+                    s.caption = makeTitle(s.id !== undefined ? s.id.toString() : member);
                 this.byIdMap.set(s.id, s);
                 this.values.push(s);
             }
@@ -1555,12 +1557,28 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
             this.fieldTypeInDb = 'integer';
         }
 
+        this.loadFromDecoratorOptions(valueListType);
+    }
+    private loadedFromOptions = false;
+
+    private loadFromDecoratorOptions(valueListType: any) {
+        if (this.loadedFromOptions)
+            return;
         var options = Reflect.getMetadata(storableMember, valueListType) as ValueListFieldOptions<any, any>[];
-        if (options)
+        if (options) {
+            this.loadedFromOptions = true;
             for (const op of options) {
-                if (op?.getValues)
-                    this.values = op.getValues();
+                if (op?.getValues) {
+                    this.values.splice(0, this.values.length, ...op.getValues());
+                    this.values.forEach(s => {
+                        if (s.caption === undefined && s.id !== undefined)
+                            s.caption = makeTitle(s.id);
+                    });
+                }
             }
+            if (this.values.find(s => s.id === undefined))
+                throw new Error(`Type ${valueListType} has values without an id`);
+        }
     }
 
     getValues() {

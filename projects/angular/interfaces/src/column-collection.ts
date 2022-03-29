@@ -1,5 +1,5 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve, Repository, EntityOrderBy, EntityFilter,ValueListInfo } from "remult";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve, Repository, EntityOrderBy, EntityFilter, ValueListInfo } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
@@ -484,7 +484,7 @@ function fixResult(result: ValueListItem[], inField: FieldMetadata | FieldRef<an
 
 /** returns an array of values that can be used in the value list property of a data control object */
 
-export async function getValueList<T>(repository: Repository<T>, args?: {
+export async function getEntityValueList<T>(repository: Repository<T>, args?: {
   idField?: (e: EntityMetadata<T>) => FieldMetadata,
   captionField?: (e: EntityMetadata<T>) => FieldMetadata
   orderBy?: EntityOrderBy<T>,
