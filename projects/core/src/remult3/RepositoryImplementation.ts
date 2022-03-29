@@ -1557,27 +1557,29 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
             this.fieldTypeInDb = 'integer';
         }
         var options = Reflect.getMetadata(storableMember, this.valueListType) as ValueListFieldOptions<any, any>[];
-        
+
         if (options) {
             for (const op of options) {
                 if (op?.getValues) {
                     this.values.splice(0, this.values.length, ...op.getValues());
+                    this.byIdMap.clear();
                     this.values.forEach(s => {
                         if (s.caption === undefined && s.id !== undefined)
                             s.caption = makeTitle(s.id);
+                        this.byIdMap.set(s.id, s);
                     });
                 }
             }
             if (this.values.find(s => s.id === undefined))
                 throw new Error(`ValueType ${this.valueListType} has values without an id`);
         }
-        else throw new Error(`ValueType not yet initialized, did you forget to call @ValueListFieldType on `+valueListType);
+        else throw new Error(`ValueType not yet initialized, did you forget to call @ValueListFieldType on ` + valueListType);
 
 
     }
 
-    
-  
+
+
     getValues() {
         return this.values;
     }

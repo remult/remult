@@ -4,7 +4,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList } from '../remult3';
+import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList, ValueListInfo } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
@@ -224,4 +224,7 @@ describe("Test Value List Items", () => {
     it("test caption 2", () => {
         expect(getValueList(missingCaption2)[0].caption).toBe("Abc");
     });
+    it ("find by id",()=>{
+        expect(ValueListInfo.get(missingCaption).byId("abc").caption).toBe("Abc");
+    })
 })
