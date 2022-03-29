@@ -24,6 +24,7 @@ import * as knex from 'knex';
 import { MongoClient } from 'mongodb';
 import { stam } from '../products-test/products.component';
 import { ClassType } from '../../../../core/classType';
+import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
 
 
 
@@ -59,6 +60,8 @@ serverInit().then(async (dataSource) => {
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initApi: async remult => {
+            SqlDatabase.LogToConsole = true;
+            await remult.repo(stam).findFirst();
         }
     });
 
@@ -95,24 +98,19 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
+export enum PriorityWithString {
+    Low = "Low",
+    High = "High",
+    Critical = "Critical",
+    "is wierd" = 3
+}
 
+export enum Priority {
+    Low,
+    High,
+    Critical,
+    "is wierd"
+}
 
-const k = Knex.default({
-    client: 'better-sqlite3', // or 'better-sqlite3'
-    connection: {
-        filename: ":memory:"
-    },
-});
-k.schema.dropTableIfExists('test').then(async () => {
-    await k.schema.createTable('test', async tb => {
-        tb.integer('a');
-        tb.date('d');
-    })
-    await k('test').insert({ a: 1, d: new Date() });
-    const rows = await k('test').select();
-    console.table(rows);
-    console.log(typeof rows[0].d);
-
-});
-
-
+let x = PriorityWithString.Low;
+console.log(x);

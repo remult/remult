@@ -329,7 +329,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.find(options).then(async items => {
+        r = this.find({ ...options, limit: 1 }).then(async items => {
             let r: entityType = undefined;
             if (items.length > 0)
                 r = items[0];

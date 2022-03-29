@@ -651,13 +651,42 @@ export enum Priority {
     Critical
 }
 testAll("task with enum", async ({ createEntity }) => {
-    const r =await  createEntity(tasksWithEnum);
+    const r = await createEntity(tasksWithEnum);
     await r.insert({
-        title:'a',
-        priority :Priority.Critical
+        title: 'a',
+        priority: Priority.Critical
     });
-    const item =await r.findFirst();
+    const item = await r.findFirst();
     expect(item.priority).toBe(Priority.Critical);
-    
-    
+    expect(await r.count({ priority: Priority.Critical })).toBe(1)
+    expect(await r.count({ priority: Priority.Low })).toBe(0)
+});
+
+@Entity('tasksWithStringEnum', {
+    allowApiCrud: true
+})
+export class tasksWithStringEnum extends IdEntity {
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object()
+    priority = PriorityWithString.Low;
+}
+
+export enum PriorityWithString {
+    Low = "Low",
+    High = "High",
+    Critical = "Critical"
+}
+testAll("task with enum string", async ({ createEntity }) => {
+    const r = await createEntity(tasksWithStringEnum);
+    await r.insert({
+        title: 'a',
+        priority: PriorityWithString.Critical
+    });
+    const item = await r.findFirst();
+    expect(item.priority).toBe(PriorityWithString.Critical);
+    expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
+    expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
 });
