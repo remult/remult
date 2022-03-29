@@ -8,7 +8,7 @@ import { getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-reque
 
 @Entity('entityForCustomFilter', { allowApiCrud: true })
 export class entityForCustomFilter extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
     static filter = Filter.createCustom<entityForCustomFilter, {
         oneAndThree?: boolean;

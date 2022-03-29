@@ -3,9 +3,9 @@ import { entityWithValidations } from '../shared-tests/entityWithValidations';
 
 @Entity('', { allowApiCrud: true })
 export class entityWithValidationsOnColumn extends EntityBase {
-  @Fields.Integer()
+  @Fields.integer()
   myId: number;
-  @Fields.String<entityWithValidations>({
+  @Fields.string<entityWithValidations>({
     validate: (t, c) => {
       if (!t.name || t.name.length < 3)
         c.error = 'invalid on column';

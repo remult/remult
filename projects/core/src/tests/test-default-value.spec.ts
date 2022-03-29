@@ -41,7 +41,7 @@ describe("test default value", () => {
 class testDefaultValue extends EntityBase {
     static testVal = 0;
     code: number;
-    @Fields.Integer({
+    @Fields.integer({
         defaultValue: () => testDefaultValue.testVal++
     })
     test: number;

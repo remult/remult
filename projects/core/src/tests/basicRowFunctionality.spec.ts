@@ -46,7 +46,7 @@ class Phone {
 }
 @Entity('')
 class tableWithPhone extends EntityBase {
-  @Fields.Integer()
+  @Fields.integer()
   id: number;
   @Field(() => Phone)
   phone: Phone;
@@ -181,9 +181,9 @@ describe('Test basic row functionality', () => {
 });
 @Entity('myTestEntity')
 class myTestEntity extends EntityBase {
-  @Fields.Integer()
+  @Fields.integer()
   id: number;
-  @Fields.String({ key: 'name' })
+  @Fields.string({ key: 'name' })
   name1: string;
 }
 
@@ -844,7 +844,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    Fields.String({ includeInApi: false })(type.prototype, "categoryName");
+    Fields.string({ includeInApi: false })(type.prototype, "categoryName");
     Entity('')(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -904,7 +904,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    Fields.String({ allowApiUpdate: false })(type.prototype, "categoryName");
+    Fields.string({ allowApiUpdate: false })(type.prototype, "categoryName");
     Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -941,7 +941,7 @@ describe("data api", () => {
 
       categoryName: string;
     };
-    Fields.String({ includeInApi: false })(type.prototype, "categoryName");
+    Fields.string({ includeInApi: false })(type.prototype, "categoryName");
     Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
 
@@ -1413,9 +1413,9 @@ describe("column validation", () => {
       c3: Date
     }
     Entity('t1')(type);
-    Fields.AutoIncrement()(type.prototype, "id");
-    Fields.String()(type.prototype, "name");
-    Fields.Date()(type.prototype, "c3");
+    Fields.autoIncrement()(type.prototype, "id");
+    Fields.string()(type.prototype, "name");
+    Fields.date()(type.prototype, "c3");
 
     let f = c.repo(type);
     let d = new Date(2020, 1, 2, 3, 4, 5, 6);
@@ -1449,8 +1449,8 @@ describe("test web sql identity", () => {
 
     }
     Entity('t1')(type);
-    Fields.AutoIncrement()(type.prototype, "id");
-    Fields.String()(type.prototype, "name");
+    Fields.autoIncrement()(type.prototype, "id");
+    Fields.string()(type.prototype, "name");
 
 
     let f = c.repo(type);
@@ -1743,8 +1743,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity('x')(type);
-    Fields.Integer()(type.prototype, 'a');
-    Fields.Date()(type.prototype, 'b');
+    Fields.integer()(type.prototype, 'a');
+    Fields.date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
     let z = new RestDataProvider("", {
@@ -1773,8 +1773,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity('x')(type);
-    Fields.Integer()(type.prototype, 'a');
-    Fields.Date()(type.prototype, 'b');
+    Fields.integer()(type.prototype, 'a');
+    Fields.date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
     let r = await entityFilterToJson(c.metadata, { b: new Date("2021-05-16T08:32:19.905Z") });
@@ -1786,8 +1786,8 @@ describe("test rest data provider translates data correctly", () => {
       b: Date;
     };
     Entity('x')(type);
-    Fields.Integer()(type.prototype, 'a');
-    Fields.Date()(type.prototype, 'b');
+    Fields.integer()(type.prototype, 'a');
+    Fields.date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
     let done = new Done();
@@ -1877,11 +1877,11 @@ describe("check allowedDataType", () => {
   id: x => new CompoundIdField(x.a, x.b),
 })
 class CompoundIdEntity extends EntityBase {
-  @Fields.Integer()
+  @Fields.integer()
   a: number;
-  @Fields.Integer()
+  @Fields.integer()
   b: number;
-  @Fields.Integer()
+  @Fields.integer()
   c: number;
 }
 @Entity<entityWithValidationsOnEntityEvent>('', {
@@ -1891,16 +1891,16 @@ class CompoundIdEntity extends EntityBase {
   })
 })
 export class entityWithValidationsOnEntityEvent extends EntityBase {
-  @Fields.Integer()
+  @Fields.integer()
   myId: number;
-  @Fields.String()
+  @Fields.string()
   name: string;
 }
 @Entity<EntityWithLateBoundDbName>('stam', {
   sqlExpression: async (t) => '(select ' + t.id.options.dbName + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
-  @Fields.Integer({ dbName: 'CategoryID' })
+  @Fields.integer({ dbName: 'CategoryID' })
   id: number;
 
 }

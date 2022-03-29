@@ -128,7 +128,7 @@ let entityRefInitCount = 0;
     entityRefInit: () => entityRefInitCount++
 })
 class myEntity extends EntityBase {
-    @Fields.String({
+    @Fields.string({
         validate: Validators.required
     })
     title: string = '';
@@ -138,7 +138,7 @@ class myEntity extends EntityBase {
     allowApiCrud: true
 })
 class entityWithManyToOne extends EntityBase {
-    @Fields.Number()
+    @Fields.number()
     id: number = 0;
     @Field(() => myEntity)
     entity?: myEntity;

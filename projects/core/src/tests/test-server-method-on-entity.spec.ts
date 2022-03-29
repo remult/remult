@@ -16,7 +16,7 @@ class testServerMethodOnEntity extends EntityBase {
     constructor(private remult: Remult) {
         super();
     }
-    @Fields.String<testServerMethodOnEntity>({
+    @Fields.string<testServerMethodOnEntity>({
         validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";
@@ -63,9 +63,9 @@ class testServerMethodOnEntity extends EntityBase {
     }
 }))
 class testBoolCreate123 extends EntityBase {
-    @Fields.Number()
+    @Fields.number()
     id: number;
-    @Fields.Boolean({})
+    @Fields.boolean({})
     ok123: Boolean = false;
     @BackendMethod({ allowed: true })
     async testIt() {
@@ -149,19 +149,19 @@ describe("test Server method in entity", () => {
 
 @Entity('a')
 class a extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
 }
 @Entity('b')
 class b extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
     @Field(()=>a)
     a: a;
 }
 @Entity('c')
 class c extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
     @Field(()=>b)
     b: b;

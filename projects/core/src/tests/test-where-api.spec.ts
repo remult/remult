@@ -313,18 +313,18 @@ x<{
 
 @Entity('tasks')
 class task extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     title: string = '';
-    @Fields.Boolean()
+    @Fields.boolean()
     completed: boolean = false;
 }
 
 
 @Entity('taskWithNull')
 class taskWithNull extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     title: string = '';
-    @Fields.Boolean({ allowNull: true })
+    @Fields.boolean({ allowNull: true })
     completed: boolean;
 }
 describe("missing fields are added in array column", async () => {

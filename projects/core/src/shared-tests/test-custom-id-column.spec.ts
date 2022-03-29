@@ -14,8 +14,8 @@ describe("custom id column", () => {
             b: number;
         }
         BuildEntity(type, 'custom', {
-            a: Fields.Number(),
-            b: Fields.Number()
+            a: Fields.number(),
+            b: Fields.number()
         }, { allowApiCrud: true })
         let c = await createEntity(type);
         let r = c.create();
@@ -37,8 +37,8 @@ describe("custom id column", () => {
             id: number;
         }
         Entity('custom2', { allowApiCrud: true })(type);
-        Fields.Number()(type.prototype, 'a');
-        Fields.Number()(type.prototype, 'id');
+        Fields.number()(type.prototype, 'a');
+        Fields.number()(type.prototype, 'id');
         let c = await createEntity(type);
         let r = c.create();
         r.a = 1;

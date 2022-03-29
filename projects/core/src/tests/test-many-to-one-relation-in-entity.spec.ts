@@ -21,27 +21,27 @@ import { h } from './h';
 
 @Entity('categories')
 class Categories extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.String()
+    @Fields.string()
     name: string;
     @Field(() => Language)
     language: Language
-    @Fields.Boolean()
+    @Fields.boolean()
     archive: boolean = false;
 }
 @Entity('suppliers')
 class Suppliers extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     supplierId: string;
-    @Fields.String()
+    @Fields.string()
     name: string;
 }
 @Entity('products')
 class Products extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.String()
+    @Fields.string()
     name: string;
     @Field(() => Categories, {
         lazy: true
@@ -53,9 +53,9 @@ class Products extends EntityBase {
 }
 @Entity('products')
 class ProductsEager extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.String()
+    @Fields.string()
     name: string;
     @Field(() => Categories)
     category: Categories;
@@ -63,7 +63,7 @@ class ProductsEager extends EntityBase {
 }
 @Entity('profile')
 class profile extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     id: string;
     async rel() {
         return this.remult.repo(following).findFirst({ id: '1', profile: this }, {
@@ -72,7 +72,7 @@ class profile extends EntityBase {
 
 
     }
-    @Fields.Boolean<profile>({
+    @Fields.boolean<profile>({
         serverExpression: async self => {
             await self.rel();
             return false;
@@ -85,7 +85,7 @@ class profile extends EntityBase {
 }
 @Entity('following')
 class following extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     id: string;
     @Field(() => profile)
     profile: profile;
@@ -706,9 +706,9 @@ describe("many to one relation", () => {
 
 @Entity("products2")
 class Products2 extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number = 0;
-    @Fields.String()
+    @Fields.string()
     name: string = '';
     @Field(() => Categories)
     cat: { id: number, name: string };
@@ -820,9 +820,9 @@ describe("Test entity relation and count finds", () => {
 
 @Entity("testUpdateDate")
 export class testUpdateDate extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.Date()
+    @Fields.date()
     date: Date = new Date(176, 6, 16);
 }
 it("test that it doesn't save if it doesn't need to", async () => {

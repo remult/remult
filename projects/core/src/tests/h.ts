@@ -19,10 +19,10 @@ import { Field, Entity, EntityBase, FieldType, Fields } from '../remult3';
     allowApiCrud: true
 })
 export class h extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     id: string;
     @Field(() => h)
     refH: h;
-    @Fields.String()
+    @Fields.string()
     refHId: string;
 }

@@ -9,9 +9,9 @@ import { dWithPrefilter } from './dWithPrefilter';
     allowApiCrud: true
 })
 export class d extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.Integer()
+    @Fields.integer()
     b: number;
 
     static count = 0;

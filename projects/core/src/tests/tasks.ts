@@ -2,10 +2,10 @@ import { Field, Entity, EntityBase, Fields } from '../remult3';
 
 @Entity('tasks', { allowApiCrud: true })
 export class tasks extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.String()
+    @Fields.string()
     name: string;
-    @Fields.Boolean()
+    @Fields.boolean()
     completed: boolean = false;
 }

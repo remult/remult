@@ -212,8 +212,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
     }
-    async find(options: FindOptions<entityType>): Promise<entityType[]> {
 
+    async find(options: FindOptions<entityType>): Promise<entityType[]> {
+        Remult.onFind(this._info, options);;
         let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
@@ -250,10 +251,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                         }
                     }
                     if (toLoad.length > 0) {
-                        let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
-                        for (const r of rows) {
-                            repo.addToCache(r)
-                        }
+                        await loadManyToOne(repo, toLoad);
                     }
                 }
 
@@ -265,6 +263,13 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         ));
         return result;
 
+
+        async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {//extracted a method to be able to see it in the call stack
+            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
+            for (const r of rows) {
+                repo.addToCache(r);
+            }
+        }
     }
 
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
@@ -1459,25 +1464,25 @@ export const Fields1 = {
 }
 export class Fields {
 
-    static Object<entityType = any, valueType = any>(
+    static object<entityType = any, valueType = any>(
         ...options: (FieldOptions<entityType, valueType> |
             ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
         return Field(undefined, ...options);
     }
-    static DateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, {
             valueConverter: ValueConverters.DateOnly
         }, ...options);
     }
-    static Date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, ...options);
     }
-    static Integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
         return Field(() => Number, {
             valueConverter: ValueConverters.Integer
         }, ...options)
     }
-    static AutoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
         return Field(() => Number, {
             allowApiUpdate: false,
             dbReadOnly: true,
@@ -1485,20 +1490,20 @@ export class Fields {
         }, ...options)
     }
 
-    static Number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
         return Field(() => Number, ...options)
     }
 
-    static Uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
         return Field(() => String, {
             allowApiUpdate: false,
             defaultValue: () => uuid()
         }, ...options);
     }
-    static String<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
+    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
         return Field(() => String, ...options);
     }
-    static Boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
+    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
         return Field(() => Boolean, ...options);
     }
 }

@@ -5,14 +5,14 @@ import { Field, Entity, EntityBase, FindOptions, Repository, Fields } from '../r
 @Entity('my entity')
 class myEntity extends EntityBase {
 
-    @Fields.String()
-    @Fields.String({ caption: '123' })
+    @Fields.string()
+    @Fields.string({ caption: '123' })
     a: string;
 
-    @Fields.String({ caption: '123' })
-    @Fields.String()
+    @Fields.string({ caption: '123' })
+    @Fields.string()
     b: string;
-    @Fields.String((o, c) => o.caption = "456")
+    @Fields.string((o, c) => o.caption = "456")
     c: string;
 
 }
@@ -40,11 +40,11 @@ describe("test decorator precedence", () => {
 
 @Entity('profile')
 class profile extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     username: string;
 }
 @Entity('user')
 class user extends profile {
-    @Fields.String()
+    @Fields.string()
     email: string;
 }

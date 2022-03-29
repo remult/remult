@@ -9,7 +9,7 @@ class classWithColumn {
     @DataControl<classWithColumn>({
         click: (r) => classWithColumn.click = r
     })
-    @Fields.String()
+    @Fields.string()
     a = '';
     _ = getFields(this);
 }

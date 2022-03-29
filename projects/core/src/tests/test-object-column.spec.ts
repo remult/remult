@@ -165,9 +165,9 @@ class Phone4 {
 
 @Entity('objectColumnTest')
 class ObjectColumnTest extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.Object()
+    @Fields.object()
     col: person;
     @Field(() => Phone, {
         valueConverter: {
@@ -193,9 +193,9 @@ class ObjectColumnTest extends EntityBase {
     phone3: Phone;
     @Field(() => Phone4)
     phone4: Phone4
-    @Fields.Object()
+    @Fields.object()
     tags: string[];
-    @Fields.Object({ allowNull: true })
+    @Fields.object({ allowNull: true })
     tags2: string[];
 }
 
@@ -216,6 +216,6 @@ it("Test original values address defaults", async () => {
 
 @Entity('somethingWithDefaults', {})
 class somethingWithDefaults extends IdEntity {
-    @Fields.String()
+    @Fields.string()
     name = 'noam';
 }

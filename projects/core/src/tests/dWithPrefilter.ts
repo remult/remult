@@ -9,9 +9,9 @@ import { Field, Entity, EntityBase, Fields } from '../remult3';
     allowApiCrud: true
 })
 export class dWithPrefilter extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.Integer()
+    @Fields.integer()
     b: number;
 
     static count = 0;

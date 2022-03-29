@@ -17,9 +17,9 @@ import { tasks } from './tasks';
 
 @Entity('entityWithAutoId')
 class entityWithAutoId extends EntityBase {
-    @Fields.AutoIncrement()
+    @Fields.autoIncrement()
     id: number;
-    @Fields.String()
+    @Fields.string()
     name: string;
 }
 

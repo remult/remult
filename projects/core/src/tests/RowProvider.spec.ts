@@ -286,7 +286,7 @@ class valueList {
 
 @Entity('entity with value list')
 class entityWithValueList extends EntityBase {
-  @Fields.Integer()
+  @Fields.integer()
   id: number = 0;
   @Field(() => Language)
   l: Language = Language.Hebrew;
@@ -402,7 +402,7 @@ describe("test row provider", () => {
       a: string;
     };
     EntityDecorator('')(type);
-    Fields.String<typeof type.prototype>({
+    Fields.string<typeof type.prototype>({
       validate: (entity, col) =>
         Validators.required(entity, col, "m")
     })(type.prototype, "a");
@@ -429,7 +429,7 @@ describe("test row provider", () => {
       a: string;
     };
     EntityDecorator('')(type);
-    Fields.String<typeof type.prototype>({
+    Fields.string<typeof type.prototype>({
       validate: (entity, col) => {
         if (!entity.a || entity.a.length == 0)
           col.error = "m";
@@ -456,7 +456,7 @@ describe("test row provider", () => {
       a: string
     };
     EntityDecorator('')(type);
-    Fields.String({
+    Fields.string({
       validate: Validators.required.withMessage("m")
     })(type.prototype, "a");
     var c = remult.repo(type);
@@ -481,7 +481,7 @@ describe("test row provider", () => {
       a: string
     };
     EntityDecorator('asdfa')(type);
-    Fields.String<typeof type.prototype>({
+    Fields.string<typeof type.prototype>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
     var c = remult.repo(type);
@@ -526,7 +526,7 @@ describe("test row provider", () => {
       validation: r => orderOfOperation += "EntityValidate,",
 
     })(type);
-    Fields.String({
+    Fields.string({
       validate: () => { orderOfOperation += "ColumnValidate," }
     })(type.prototype, "categoryName")
     var c = remult.repo(type);
@@ -783,7 +783,7 @@ describe("test row provider", () => {
   });
 })
 class myClass1 {
-  @Fields.Integer()
+  @Fields.integer()
   @DataControl<myClass1>({
     getValue: self => self.a * 3
   })
@@ -800,7 +800,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass2 {
-  @Fields.DateOnly()
+  @Fields.dateOnly()
   @DataControl<myClass2>({
     readonly: true
   })
@@ -819,7 +819,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass3 {
-  @Fields.Integer({
+  @Fields.integer({
     caption: '1st', ...{ caption: '2nd' }
   })
   @DataControl<myClass3>({
@@ -842,7 +842,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass4 {
-  @Fields.String()
+  @Fields.string()
   @DataControl<myClass4>({
     readonly: true
   })
@@ -889,7 +889,7 @@ describe("column collection", () => {
       categoryName: string;
     }
     EntityDecorator('asdf')(type);
-    Fields.String({
+    Fields.string({
       allowApiUpdate: false
     })(type.prototype, "categoryName");
     let c = ctx.repo(type);
@@ -1103,7 +1103,7 @@ describe("test area", () => {
 });
 
 class myClass {
-  @Fields.Number()
+  @Fields.number()
   @DataControl<myClass>({
     valueChange: self => self.d.ok()
   })
@@ -1202,7 +1202,7 @@ class typefd {
 
 }
 class myClassfd {
-  @Fields.String()
+  @Fields.string()
   @DataControl({ click: () => { } })
   a: string;
   @Field(() => typefd)
@@ -1316,7 +1316,7 @@ describe("test grid basics", () => {
 
 @EntityDecorator<TestCategories1>('123')
 class TestCategories1 extends newCategories {
-  @Fields.String({
+  @Fields.string({
     validate: Validators.required
   })
   a: string;

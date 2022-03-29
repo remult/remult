@@ -3,15 +3,15 @@ import { Status } from "./testModel/models";
 
 @Entity('Products')
 export class Products {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
-    @Fields.String()
+    @Fields.string()
     name: string;
-    @Fields.Number()
+    @Fields.number()
     price: number;
-    @Fields.Boolean()
+    @Fields.boolean()
     archived: boolean;
-    @Fields.Date()
+    @Fields.date()
     availableFrom: Date;
 }
 
@@ -27,19 +27,19 @@ let r: Repository<CategoriesForTesting>;
     allowApiCrud: true
 })
 export class Categories extends EntityBase {
-    @Fields.Number({
+    @Fields.number({
         dbName: 'CategoryID'
     })
     id: number = 0;
-    @Fields.String({ allowNull: true })
+    @Fields.string({ allowNull: true })
     categoryName: string;
-    @Fields.String()
+    @Fields.string()
     description: string;
-    @Fields.Number<Categories>({
+    @Fields.number<Categories>({
         serverExpression: c => c.categoryName ? c.categoryName.length : undefined
     })
     categoryNameLength: number;
-    @Fields.Number<Categories>({
+    @Fields.number<Categories>({
         serverExpression: (c) => Promise.resolve(c.categoryName ? c.categoryName.length : undefined)
     })
     categoryNameLengthAsync: number;

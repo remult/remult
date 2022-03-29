@@ -768,21 +768,21 @@ export class EntityQueueStorage implements QueueStorage {
   dbName: 'jobsInQueue'
 })
 export class JobsInQueueEntity extends IdEntity {
-  @Fields.String()
+  @Fields.string()
   userId: string;
-  @Fields.String()
+  @Fields.string()
   url: string;
-  @Fields.Date()
+  @Fields.date()
   submitTime: Date;
-  @Fields.Date()
+  @Fields.date()
   doneTime: Date;
-  @Fields.String()
+  @Fields.string()
   result: string;
-  @Fields.Boolean()
+  @Fields.boolean()
   done: boolean;
-  @Fields.Boolean()
+  @Fields.boolean()
   error: boolean;
-  @Fields.Number()
+  @Fields.number()
   progress: number;
 }
 

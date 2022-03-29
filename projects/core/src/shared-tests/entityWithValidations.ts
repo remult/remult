@@ -25,9 +25,9 @@ export var testConfiguration = { restDbRunningOnServer: false };
     }
 })
 export class entityWithValidations extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     myId: number;
-    @Fields.String()
+    @Fields.string()
     name: string;
     static savingRowCount = 0;
     constructor(private remult: Remult) {

@@ -58,10 +58,10 @@ describe("test sql database expressions", () => {
 });
 @Entity('expressionEntity')
 class expressionEntity extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number;
     static yes: boolean;
-    @Fields.String({
+    @Fields.string({
         sqlExpression: async () => expressionEntity.yes ? "'1+1'" : undefined
     })
     col: string;
@@ -72,9 +72,9 @@ class expressionEntity extends EntityBase {
 
 @Entity('testSqlExpression')
 class testSqlExpression extends EntityBase {
-    @Fields.Number()
+    @Fields.number()
     code: number;
-    @Fields.Number<testSqlExpression>(
+    @Fields.number<testSqlExpression>(
         {
             sqlExpression: async (x) => {
                 return await x.fields.code.getDbName() + ' * 5';
@@ -92,7 +92,7 @@ class testSqlExpression extends EntityBase {
 })
 class testServerExpression1 extends EntityBase {
 
-    @Fields.Number()
+    @Fields.number()
     code: number;
 
 }
@@ -164,7 +164,7 @@ class stringId2 {
 @Entity('testCreate')
 class testCreate extends IdEntity {
 
-    @Fields.DateOnly()
+    @Fields.dateOnly()
     theDate: Date;
     @Field(() => intId)
     i: intId;

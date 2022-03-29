@@ -5,7 +5,7 @@ import { deleteAll } from "./deleteAll";
 
 @Entity('testNull', { allowApiCrud: true })
 class testNull extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number = 0;
 
     @Field(undefined, { allowNull: true })

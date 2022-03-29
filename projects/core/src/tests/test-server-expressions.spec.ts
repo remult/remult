@@ -79,10 +79,10 @@ describe("test server expression value", () => {
 class testServerExpression extends EntityBase {
     static testVal = 1;
     static testVal2 = 10;
-    @Fields.Integer()
+    @Fields.integer()
     code: number;
-    @Fields.Integer({ serverExpression: () => testServerExpression.testVal++ })
+    @Fields.integer({ serverExpression: () => testServerExpression.testVal++ })
     test: number;
-    @Fields.Integer({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
+    @Fields.integer({ serverExpression: () => Promise.resolve(testServerExpression.testVal2++) })
     testPromise: number;
 }

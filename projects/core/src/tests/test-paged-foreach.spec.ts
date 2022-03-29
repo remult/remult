@@ -357,11 +357,11 @@ describe("test paged foreach ", () => {
     id: t => new CompoundIdField(t.a, t.b)
 })
 class theTable extends EntityBase {
-    @Fields.String()
+    @Fields.string()
     a: string;
-    @Fields.String()
+    @Fields.string()
     b: string;
-    @Fields.String()
+    @Fields.string()
     c: string;
 }
 

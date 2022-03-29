@@ -17,7 +17,7 @@ export class myType {
 }
 @Entity('testEntity')
 class testEntity extends IdEntity {
-    @Fields.String()
+    @Fields.string()
     name: string;
 }
 
@@ -27,7 +27,7 @@ class testBasics {
 
     }
 
-    @Fields.Date()
+    @Fields.date()
     theDate: Date;
     @Field(() => myType)
     myType: myType;
@@ -49,7 +49,7 @@ class testBasics {
     }
 
     static test: string;
-    @Fields.String<testBasics>({
+    @Fields.string<testBasics>({
         validate: (y, x) => {
             if (y.a == "errorc") {
                 x.error = "error on client";
@@ -237,12 +237,12 @@ describe("controller with extends ", () => {
 
 @Controller("parent")
 class parent {
-    @Fields.String()
+    @Fields.string()
     parentField: string;
 }
 @Controller("child")
 class child extends parent {
-    @Fields.String()
+    @Fields.string()
     childField: string;
 
     @BackendMethod({ allowed: true })

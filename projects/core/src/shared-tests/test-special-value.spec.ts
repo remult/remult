@@ -56,7 +56,7 @@ export class GroupsValue {
 
 @Entity("testGroups", { allowApiCrud: true })
 class testGroups extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number = 0;
     @Field(() => GroupsValue)
     g: GroupsValue;

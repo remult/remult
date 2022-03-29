@@ -12,11 +12,11 @@ import { Entity, EntityBase, Fields } from "../remult3";
     }
 })
 export class parent extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number = 0;
-    @Fields.String()
+    @Fields.string()
     myField: string = '';
-    @Fields.String<parent>({ saving: self => self.autoSavedField = "auto" })
+    @Fields.string<parent>({ saving: self => self.autoSavedField = "auto" })
     autoSavedField: string = '';
 }
 @Entity<child>("child", {
@@ -73,9 +73,9 @@ it("test saving of delete", async () => {
     }
 })
 export class anError extends EntityBase {
-    @Fields.Integer()
+    @Fields.integer()
     id: number = 0;
-    @Fields.String()
+    @Fields.string()
     name = '';
 }
 it("test error on save within saving", async () => {
