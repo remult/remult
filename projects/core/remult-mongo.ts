@@ -163,10 +163,11 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
                 f._addWhere = false;
                 element.__applyToConsumer(f);
                 let where = await f.resolveWhere();
-                if (where?.$and.length > 0) {
+                if (where?.$and?.length > 0) {
                     result.push(where);
-
                 }
+                else
+                    return; //since empty or is all rows;
             }
             this.result.push(() => ({
                 $or: result

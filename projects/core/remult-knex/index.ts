@@ -229,6 +229,8 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
                         });
                     })
                 }
+                else
+                    return;//empty or means all rows
             }
             if (result.length > 0) {
                 this.result.push(b => b.where(x => result.find(y => y(x))));
