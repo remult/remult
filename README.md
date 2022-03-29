@@ -54,17 +54,17 @@ app.listen(port, () => {
 
 ## Define model classes
 ```ts
-import { Entity, EntityBase, Field } from 'remult';
+import { Entity, EntityBase, Fields } from 'remult';
 
 @Entity('products', {
     allowApiCrud: true
 })
 export class Product extends EntityBase {
-  @Field()
-  name: string = '';
+  @Fields.string()
+  name = '';
 
-  @Field()
-  unitPrice: number = 0;
+  @Fields.number()
+  unitPrice = 0;
 }
 ```
 
@@ -106,17 +106,17 @@ import { Min } from 'class-validator';
     allowApiCrud: true
 })
 export class Product extends EntityBase {
-    @Field<Product>({
+    @Fields.string<Product>({
         validate: p => {
             if (p.name.trim().length == 0)
                 p.$.name.error = 'required';
         }
     })
-    name: string = '';
+    name = '';
 
-    @Field()
+    @Fields.number()
     @Min(0)
-    unitPrice: number = 0;
+    unitPrice = 0;
 }
 ```
 
@@ -147,13 +147,13 @@ catch {
     allowApiUpdate: (remult, article) => article.author.id == remult.user.id
 })
 export class Article extends EntityBase {
-    @Field({ allowApiUpdate: false })
-    slug: string;
+    @Fields.string({ allowApiUpdate: false })
+    slug = '';
     
-    @Field({ allowApiUpdate: false })
-    author: Profile;
+    @Field(() => Profile, { allowApiUpdate: false })
+    author!: Profile;
 
-    @Field()
-    content: string;
+    @Fields.string()
+    content = '';
 }
 ```

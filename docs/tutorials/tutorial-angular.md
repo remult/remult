@@ -238,7 +238,7 @@ The `Task` entity class we're creating will have an `id` field and a `title` fie
       allowApiCrud: true
    })
    export class Task extends IdEntity {
-       @Fields.String()
+       @Fields.string()
        title = '';
    }
    ```
@@ -254,7 +254,7 @@ The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an ent
 
 `IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
 
-The [@Fields.String](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
+The [@Fields.string](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
 
 ### Create new tasks
 
@@ -403,11 +403,11 @@ Replace the task `title` template expression in `app.component.html` with the hi
 ### Mark tasks as completed
 Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
 
-1. Add a `completed` field of type `boolean` to the `Task` entity class, and decorate it with the `@Fields.Boolean` decorator.
+1. Add a `completed` field of type `boolean` to the `Task` entity class, and decorate it with the `@Fields.boolean` decorator.
 
    *src/app/task.ts*
    ```ts
-    @Fields.Boolean()
+    @Fields.boolean()
     completed = false;
    ```
 
@@ -449,9 +449,9 @@ import { Fields, Entity, IdEntity } from "remult";
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Fields.String()
+    @Fields.string()
     title = '';
-    @Fields.Boolean()
+    @Fields.boolean()
     completed = false;
 }
 ```
@@ -596,7 +596,7 @@ Task titles are required. Let's add a validity check for this rule, and display 
 
    *src/app/task.ts*
    ```ts{1-3}
-    @Fields.String({
+    @Fields.string({
         validate: Validators.required
     })
     title = '';
@@ -1003,12 +1003,12 @@ import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
        allowApiDelete: Roles.admin
    })
    export class Task extends IdEntity {
-       @Fields.String({
+       @Fields.string({
            validate: Validators.required,
            allowApiUpdate: Roles.admin
        })
        title = '';
-       @Fields.Boolean()
+       @Fields.boolean()
        completed = false;
    }
    ```

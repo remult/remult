@@ -8,12 +8,11 @@ let's use the example in [entity relations](entity-relations)
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-    @Field({
-        valueType: Category,
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Field(() => Category, {
         lazy:true
     })
     category?: Category;
