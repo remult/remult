@@ -42,7 +42,7 @@ export class FamilyStatus {
   styleUrls: ['./test.component.scss']
 })
 export class TestComponent {
-  @Fields.Number()
+  @Fields.number()
   a: number = 1;
 
   @Field(() => FamilyStatus)

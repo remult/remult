@@ -1520,7 +1520,6 @@ export function ValueListFieldType<entityType = any, valueType extends ValueList
             o.valueConverter = ValueListInfo.get(type),
                 o.displayValue = (item, val) => val.caption
         }, ...options)(type)
-        ValueListInfo.get(type).loadFromDecoratorOptions();
     }
 }
 export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
@@ -1557,18 +1556,9 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
         if (this.isNumeric) {
             this.fieldTypeInDb = 'integer';
         }
-
-
-    }
-    private loadedFromOptions = false;
-
-    
-    loadFromDecoratorOptions() {
-        if (this.loadedFromOptions)
-            return;
         var options = Reflect.getMetadata(storableMember, this.valueListType) as ValueListFieldOptions<any, any>[];
+        
         if (options) {
-            this.loadedFromOptions = true;
             for (const op of options) {
                 if (op?.getValues) {
                     this.values.splice(0, this.values.length, ...op.getValues());
@@ -1579,16 +1569,19 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
                 }
             }
             if (this.values.find(s => s.id === undefined))
-                throw new Error(`Type ${this.valueListType} has values without an id`);
+                throw new Error(`ValueType ${this.valueListType} has values without an id`);
         }
+        else throw new Error(`ValueType not yet initialized, did you forget to call @ValueListFieldType on `+valueListType);
+
+
     }
 
+    
+  
     getValues() {
-        this.loadFromDecoratorOptions();
         return this.values;
     }
     byId(key: any) {
-        this.loadFromDecoratorOptions();
         if (this.isNumeric)
             key = +key;
         return this.byIdMap.get(key);

@@ -12,7 +12,7 @@ export class CategoriesComponent implements OnInit {
 
   constructor(private remult: Remult) { }
 
-  @Fields.String()
+  @Fields.string()
   @DataControl({
     valueList: [{ id: '1', caption: 'a' }, { id: '2', caption: 'b' }, { id: null, caption: 'null' }]
   })

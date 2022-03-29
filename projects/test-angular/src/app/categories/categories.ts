@@ -4,6 +4,6 @@ import { Field, Entity, IdEntity, Fields } from 'remult';
     allowApiCrud: true,
 })
 export class Categories extends IdEntity {
-    @Fields.String()
+    @Fields.string()
     name: string;
 }

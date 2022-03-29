@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import {  Fields, Entity, EntityBase, EntityFilter, Field } from "../remult3";
+import { Fields, Entity, EntityBase, EntityFilter, Field } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -17,6 +17,7 @@ import { entityForCustomFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
+import { IdEntity } from "../id-entity";
 
 
 
@@ -632,3 +633,31 @@ class p extends EntityBase {
 
 
 
+@Entity('tasksWithEnum', {
+    allowApiCrud: true
+})
+export class tasksWithEnum extends IdEntity {
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object()
+    priority = Priority.Low;
+}
+
+export enum Priority {
+    Low,
+    High,
+    Critical
+}
+testAll("task with enum", async ({ createEntity }) => {
+    const r =await  createEntity(tasksWithEnum);
+    await r.insert({
+        title:'a',
+        priority :Priority.Critical
+    });
+    const item =await r.findFirst();
+    expect(item.priority).toBe(Priority.Critical);
+    
+    
+});

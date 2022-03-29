@@ -183,7 +183,7 @@ class testCreate extends IdEntity {
 class missingCaption {
     constructor(public id: string) { }
     caption!: string;
-    static valueList = getValueList(missingCaption);
+
 }
 
 @ValueListFieldType()
@@ -215,7 +215,7 @@ describe("Test Value List Items", () => {
         }
     })
     it("getValuesWorks Early", () => {
-        expect(missingCaption.valueList.length).toBe(1);
+        expect(getValueList(missingCaption).length).toBe(1);
     });
 
     it("caption is auto generated", () => {

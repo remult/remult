@@ -13,6 +13,7 @@ export class Status {
     return this.name;
   }
 }
+@ValueListFieldType()
 export class TestStatus {
   static open = new TestStatus();
   static closed = new TestStatus('cc');

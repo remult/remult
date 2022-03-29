@@ -42,8 +42,8 @@ export class Task extends IdEntity {
     title = '';
     @Fields.boolean()
     completed = false;
-    @Field(() => Priority)
-    direction = Priority.Low;
+    @Fields.object()
+    priority = Priority.Low;
 }
 
 export enum Priority {
@@ -63,8 +63,8 @@ export class Task extends IdEntity {
     title = '';
     @Fields.boolean()
     completed = false;
-    @Field(() => Priority)
-    direction = Priority.Low;
+    @Fields.object()
+    priority = Priority.Low;
 }
 
 export enum Priority {

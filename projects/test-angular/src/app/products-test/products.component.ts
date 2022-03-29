@@ -79,12 +79,12 @@ export class ProductsComponent implements OnInit {
 
 })
 export class stam extends IdEntity {
-  @Fields.String({ dbName: 'name', aha: true })
+  @Fields.string({ dbName: 'name', aha: true })
   name: string;
-  @Fields.DateOnly({ allowNull: true })
+  @Fields.dateOnly({ allowNull: true })
   stamDate?: Date
 
-  @Fields.String({ serverExpression: () => 'noam' })
+  @Fields.string({ serverExpression: () => 'noam' })
   test: string = '';
 
 
