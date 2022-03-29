@@ -1532,7 +1532,6 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
             r = new ValueListInfo(type);
             typeCache.set(type, r);
         }
-        r.loadFromDecoratorOptions(type);
         return r;
     }
     private byIdMap = new Map<any, T>();
@@ -1557,14 +1556,14 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
             this.fieldTypeInDb = 'integer';
         }
 
-        this.loadFromDecoratorOptions(valueListType);
+
     }
     private loadedFromOptions = false;
 
-    private loadFromDecoratorOptions(valueListType: any) {
+    private loadFromDecoratorOptions() {
         if (this.loadedFromOptions)
             return;
-        var options = Reflect.getMetadata(storableMember, valueListType) as ValueListFieldOptions<any, any>[];
+        var options = Reflect.getMetadata(storableMember, this.valueListType) as ValueListFieldOptions<any, any>[];
         if (options) {
             this.loadedFromOptions = true;
             for (const op of options) {
@@ -1577,14 +1576,16 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
                 }
             }
             if (this.values.find(s => s.id === undefined))
-                throw new Error(`Type ${valueListType} has values without an id`);
+                throw new Error(`Type ${this.valueListType} has values without an id`);
         }
     }
 
     getValues() {
+        this.loadFromDecoratorOptions();
         return this.values;
     }
     byId(key: any) {
+        this.loadFromDecoratorOptions();
         if (this.isNumeric)
             key = +key;
         return this.byIdMap.get(key);
