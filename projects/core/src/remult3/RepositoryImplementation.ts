@@ -1617,9 +1617,22 @@ export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T>
     inputType?: string;
 }
 const typeCache = new Map<any, ValueListInfo<any>>();
+export function getValueList<T>(field: FieldRef<T>): T[];
+export function getValueList<T>(field: FieldMetadata<T>): T[];
+export function getValueList<T>(type: ClassType<T>): T[];
+export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef<T>): T[] {
+    {
+        const fr = (type as FieldRef<T>)?.metadata?.valueType;
+        if (fr)
+            return ValueListInfo.get<T>(fr).getValues();
+    }
+    {
+        const fr = (type as FieldMetadata<T>)?.valueType;
+        if (fr)
+            return ValueListInfo.get<T>(fr).getValues();
+    }
 
-export function getValueList<T>(type: ClassType<T>): T[] {
-    return ValueListInfo.get(type).getValues();
+    return ValueListInfo.get<T>(type as ClassType<T>).getValues();
 }
 
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {

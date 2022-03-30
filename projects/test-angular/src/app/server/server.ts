@@ -98,19 +98,4 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
-export enum PriorityWithString {
-    Low = "Low",
-    High = "High",
-    Critical = "Critical",
-    "is wierd" = 3
-}
 
-export enum Priority {
-    Low,
-    High,
-    Critical,
-    "is wierd"
-}
-
-let x = PriorityWithString.Low;
-console.log(x);

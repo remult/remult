@@ -273,7 +273,12 @@ describe("Closed List  column", () => {
     e = await c.findFirst();
     expect(e.v).toBe(valueList.listName);
     expect(e._.toApiJson().v).toBe('listName');
-  })
+  });
+  it("test entity with value list get values", () => {
+    var x = new Remult().repo(entityWithValueList);
+    expect(getValueList(x.metadata.fields.l).length).toBe(3);
+    expect(getValueList(x.create().$.l).length).toBe(3);
+  });
 });
 
 
