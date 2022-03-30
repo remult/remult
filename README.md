@@ -99,23 +99,26 @@ static async increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
 ## :ballot_box_with_check: Data validation and constraints - defined once
 
 ```ts
-import { Entity, EntityBase, Field } from 'remult';
-import { Min } from 'class-validator';
+import { Entity, EntityBase, Fields } from 'remult';
 
 @Entity('products', {
     allowApiCrud: true
 })
 export class Product extends EntityBase {
     @Fields.string<Product>({
-        validate: p => {
-            if (p.name.trim().length == 0)
-                p.$.name.error = 'required';
+        validate: product => {
+            if (product.name.trim().length == 0)
+                product.$.name.error = 'required';
         }
     })
     name = '';
 
-    @Fields.number()
-    @Min(0)
+    @Fields.number({
+        validate: (_, field) => {
+            if (field.value < 0)
+                field.error = "must not be less than 0";
+        }
+    })
     unitPrice = 0;
 }
 ```
@@ -136,7 +139,7 @@ catch {
 ```sh
 > curl -d "{""unitPrice"":-1}" -H "Content-Type: application/json" -X POST http://localhost:3001/api/products
 
-{"modelState":{"unitPrice":"unitPrice must not be less than 0","name":"required"},"message":"Name: required"}
+{"modelState":{"unitPrice":"must not be less than 0","name":"required"},"message":"Name: required"}
 ```
 
 ## :lock: Secure the API with fine-grained authorization
