@@ -2,7 +2,7 @@
 home: true
 
 heroImage: /logo.png
-tagline: Unopinionated CRUD for fullstack TypeScript
+tagline: A CRUD framework for fullstack TypeScript
 actionText: Get Started →
 actionLink: /tutorials/tutorial-react
 
