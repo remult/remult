@@ -17,6 +17,8 @@ workflows:
         - node/run:
             name: build
             npm-run: core-build 
-        - node/run:
+        - node/test:
             name: test
-            npm-run: test
+            setup: 
+              steps:
+                - browser-tools/install-browser-tools 
