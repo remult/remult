@@ -20,5 +20,4 @@ workflows:
         - node/test:
             name: test
             setup: 
-              steps:
-                - browser-tools/install-browser-tools 
+              - browser-tools/install-browser-tools 
