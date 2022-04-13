@@ -387,8 +387,16 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
                         addFilter(v);
                     });
                 }
-                else
-                    addFilter(val);
+                else {
+                    if (jsonArray) {
+                        if (typeof val === 'string')
+                            val = JSON.parse(val);
+                    }
+                    const array = separateArrayFromInnerArray(val);
+                    for (const x of array) {
+                        addFilter(x);
+                    }
+                }
             }
         }
         let c = new filterHelper(col);
@@ -420,14 +428,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
     });
     let val = filterInfo.get('OR');
     if (val) {
-        const nonArray = [], array = [];
-        for (const v of val) {
-            if (Array.isArray(v)) {
-                array.push(v);
-            }
-            else nonArray.push(v);
-        }
-        array.push(nonArray);
+        const array = separateArrayFromInnerArray(val);
         where.push({
             $and: array.map(v => ({
                 $or: v.map(x =>
@@ -435,8 +436,6 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
             })
             )
         });
-
-
     }
 
     for (const key in entity.entityType) {
@@ -451,6 +450,21 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
     }
 
     return { $and: where };
+
+    function separateArrayFromInnerArray(val: any) {
+        if (!Array.isArray(val))
+            return [val];
+        const nonArray = [], array = [];
+        for (const v of val) {
+            if (Array.isArray(v)) {
+                array.push(v);
+            }
+            else
+                nonArray.push(v);
+        }
+        array.push(nonArray);
+        return array;
+    }
 }
 
 

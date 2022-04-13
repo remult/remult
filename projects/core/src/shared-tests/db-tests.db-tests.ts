@@ -18,6 +18,7 @@ import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnC
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 import { IdEntity } from "../id-entity";
+import { testRest } from "../tests/frontend-database-tests-setup.spec";
 
 
 
@@ -30,6 +31,10 @@ testAll("filter works on all db",
         let s = await entityWithValidations.create4RowsInDp(createEntity);
         expect((await s.find({ where: { myId: [1, 3] } })).length).toBe(2);
     }, false);
+testAll("test in statement and ", async ({ createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    expect(await repo.count({ myId: [1, 3], $and: [{ myId: [3] }] })).toBe(1);
+}, false);
 testAll("filter with and",
     async ({ createEntity }) => {
         let s = await entityWithValidations.create4RowsInDp(createEntity);
