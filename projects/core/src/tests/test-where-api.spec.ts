@@ -7,7 +7,7 @@ import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories, CategoriesForTesting } from './remult-3-entities';
 import { insertFourRows } from './RowProvider.spec';
 import { createData } from "./createData";
-import { Entity, EntityBase, Field, EntityFilter, FindOptions, Repository } from '../remult3';
+import { Entity, EntityBase, Field, EntityFilter, FindOptions, Repository, Fields } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { RestDataProvider } from '../data-providers/rest-data-provider';
@@ -30,6 +30,7 @@ describe("test where stuff", () => {
         expect(await repo.count({ id: [undefined] })).toBe(0);
         expect(await repo.count({ id: [1, undefined, 3] })).toBe(2);
     });
+    
     it("test and", async () => {
         expect(await repo.count({ categoryName: 'yoni' })).toBe(1);
         expect(await repo.count({ categoryName: { $gte: 'yoni' } })).toBe(1);
@@ -43,7 +44,13 @@ describe("test where stuff", () => {
     });
     it("test two values", async () => {
         const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: 1 }, { id: 2 }] }).toJson();
+        console.log(json);
         expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(0);
+    });
+    it("test in and", async () => {
+        const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: [1,2] }, { id: [2] }] }).toJson();
+        console.log(json);
+        expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(1);
     });
 
     it("test basics", async () => {
@@ -313,18 +320,18 @@ x<{
 
 @Entity('tasks')
 class task extends EntityBase {
-    @Field()
+    @Fields.string()
     title: string = '';
-    @Field()
+    @Fields.boolean()
     completed: boolean = false;
 }
 
 
 @Entity('taskWithNull')
 class taskWithNull extends EntityBase {
-    @Field()
+    @Fields.string()
     title: string = '';
-    @Field({ allowNull: true })
+    @Fields.boolean({ allowNull: true })
     completed: boolean;
 }
 describe("missing fields are added in array column", async () => {

@@ -6,7 +6,6 @@ export class Status {
   static open = new Status(0, "open");
   static closed = new Status(1, "closed");
   static hold = new Status(2, "hold");
-
   constructor(public id: number, public name: string) {
 
   }
@@ -14,6 +13,7 @@ export class Status {
     return this.name;
   }
 }
+@ValueListFieldType()
 export class TestStatus {
   static open = new TestStatus();
   static closed = new TestStatus('cc');

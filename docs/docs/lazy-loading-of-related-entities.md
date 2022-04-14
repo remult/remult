@@ -1,5 +1,5 @@
 # Lazy loading of related entities
-When an `entity` is loaded, it's `many to one` relation field are also automatically loaded, using a cache mechanism to prevent the reload of an already loaded `entity`. To disable that, set the `lazy` option to `true`.
+When an `entity` is loaded, its `many to one` relation fields are also automatically loaded, using a cache mechanism to prevent the reload of an already loaded `entity`. To disable that, set the `lazy` option to `true`.
 
 let's use the example in [entity relations](entity-relations)
 
@@ -8,12 +8,11 @@ let's use the example in [entity relations](entity-relations)
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-    @Field({
-        valueType: Category,
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Field(() => Category, {
         lazy:true
     })
     category?: Category;
@@ -25,8 +24,8 @@ export class Task extends IdEntity {
   ```ts
   await task.$.category!.load()
   ```
-* If the field was not loaded, and you'll access it - it'll return `undefined` and will issue a request to load the related entity. once that entity is loaded, the field will return it's value.
-* To check if a field has value, you can use the `valueIsNull` method of it's `FieldRef`
+* If the field was not loaded, and you'll access it - it'll return `undefined` and will issue a request to load the related entity. once that entity is loaded, the field will return its value.
+* To check if a field has value, you can use the `valueIsNull` method of its `FieldRef`
   ```ts
   await task.$.category!.valueIsNull()
   ```

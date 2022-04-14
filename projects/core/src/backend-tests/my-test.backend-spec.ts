@@ -8,22 +8,6 @@ import { testKnexPGSqlImpl, testPostgresImplementation } from "./backend-databas
 import { entityWithValidations } from "../shared-tests/entityWithValidations";
 config();
 
-describe("test", () => {
-    let remult: Remult;
-    let knex: Knex.Knex;
-    beforeAll(async () => {
-        knex =
-            Knex.default({
-                client: 'pg',
-                connection: process.env.DATABASE_URL
-            });
-        remult = new Remult(new KnexDataProvider(knex));
-
-    });
-  
-
-});
-
 
 
 testPostgresImplementation("sql filter", async ({ createEntity }) => {

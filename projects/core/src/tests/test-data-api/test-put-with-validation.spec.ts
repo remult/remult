@@ -4,11 +4,11 @@ import { createData } from "../createData";
 import { DataApi } from '../../data-api';
 import { Remult } from '../../context';
 import { Categories } from "../remult-3-entities";
-import { Field, Entity, EntityBase } from "../../remult3";
+import { Field, Entity, EntityBase,  ValueListInfo, Fields } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
-import { ValueListValueConverter } from "../../../valueConverters";
+
 
 
 describe("data api", () => {
@@ -56,9 +56,8 @@ describe("data api", () => {
             val: string;
         }
         Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
-        Field({ valueType: Number })(type.prototype, 'id');
-        Field<EntityBase, string>({
-            valueType: String,
+        Fields.integer()(type.prototype, 'id');
+        Fields.string<EntityBase>({
             allowApiUpdate: (c, x) => x._.isNew()
         })(type.prototype, 'val');
         let remult = new Remult();
@@ -89,9 +88,8 @@ describe("data api", () => {
             val: string;
         }
         Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
-        Field({ valueType: Number })(type.prototype, 'id');
-        Field<typeof type.prototype, string>({
-            valueType: String,
+        Fields.integer()(type.prototype, 'id');
+        Fields.string<typeof type.prototype>({
             allowApiUpdate: (c, x) => x.val != "yael"
         })(type.prototype, 'val');
         let remult = new Remult();
@@ -121,7 +119,7 @@ describe("data api", () => {
     });
 
     it("test value list type", () => {
-        let x = new ValueListValueConverter(Status);
+        let x = ValueListInfo.get(Status);
         expect(x.fieldTypeInDb).toBe("integer");
     });
 

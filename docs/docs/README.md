@@ -1,8 +1,8 @@
 # Introduction 
 
-**Remult** is a fullstack CRUD framework which uses your TypeScript model types to provide:
+**Remult** is a fullstack CRUD framework that uses your TypeScript model types to provide:
 
-* Secured REST API (highly configurable)
+* Secure REST API (highly configurable)
 * Type-safe frontend API client
 * Type-safe backend query builder
 

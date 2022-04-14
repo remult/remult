@@ -33,6 +33,8 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
         f._addWhere = false;
         element.__applyToConsumer(f);
         let where = await f.resolveWhere();
+        if (!where)
+          return; //since if any member of or is empty, then the entire or is irrelevant
         if (where.length > 0) {
           if (statement.length > 0) {
             statement += " or ";

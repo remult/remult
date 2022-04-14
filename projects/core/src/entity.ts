@@ -9,8 +9,6 @@ import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef } from "./remult
 export interface EntityOptions<entityType = any> {
 
   id?: (entity: FieldsMetadata<entityType>) => FieldMetadata;
-  dbAutoIncrementId?: boolean;
-
   /**
    * The name of the table in the database that holds the data for this entity.
    * If no name is set, the `key` will be used instead.

@@ -54,10 +54,10 @@ Here's an example:
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
     @BackendMethod({ allowed: true })
     async toggleCompleted() {
         this.completed = !this.completed;
@@ -91,8 +91,8 @@ import { Task } from "./Task";
 export class SetTaskCompletedController {
     constructor(private remult: Remult) {
     }
-    @Field()
-    completed: boolean = false;
+    @Fields.boolean()
+    completed = false;
     @BackendMethod({ allowed: true })
     async updateCompleted() {
         for await (const task of this.remult.repo(Task).query()) {

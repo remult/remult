@@ -1,8 +1,8 @@
 
-import { FieldMetadata, FieldOptions, ValueListItem } from "../column-interfaces";
+import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, Fields, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -13,14 +13,14 @@ import { v4 as uuid } from 'uuid';
 
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { BoolValueConverter, DateOnlyValueConverter, DateValueConverter, NumberValueConverter, DefaultValueConverter, IntegerValueConverter, ValueListValueConverter } from "../../valueConverters";
+import { ValueConverters } from "../../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
 
 let classValidatorValidate: ((item: any, ref: {
-    fields: Fields<any>
+    fields: FieldsRef<any>
 }) => Promise<void>) | undefined = undefined;
 // import("class-validator".toString())
 //     .then((v) => {
@@ -212,8 +212,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
     }
-    async find(options: FindOptions<entityType>): Promise<entityType[]> {
 
+    async find(options: FindOptions<entityType>): Promise<entityType[]> {
+        Remult.onFind(this._info, options);;
         let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
@@ -250,10 +251,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                         }
                     }
                     if (toLoad.length > 0) {
-                        let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
-                        for (const r of rows) {
-                            repo.addToCache(r)
-                        }
+                        await loadManyToOne(repo, toLoad);
                     }
                 }
 
@@ -265,6 +263,13 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         ));
         return result;
 
+
+        async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {//extracted a method to be able to see it in the call stack
+            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
+            for (const r of rows) {
+                repo.addToCache(r);
+            }
+        }
     }
 
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
@@ -324,7 +329,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.find(options).then(async items => {
+        r = this.find({ ...options, limit: 1 }).then(async items => {
             let r: entityType = undefined;
             if (items.length > 0)
                 r = items[0];
@@ -476,11 +481,11 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
             info = { ...baseSettings, ...info };
             let functions: (keyof EntityOptions)[] = ["saving", "saved", "deleting", "deleted", "validation"]
             for (const key of functions as string[]) {
-                if (baseSettings[key]) {
+                if (baseSettings[key] && baseSettings[key] !== info[key]) {
                     let x = info[key];
-                    info[key] = (a, b) => {
-                        x(a, b);
-                        baseSettings[key](a, b);
+                    info[key] = async (a, b) => {
+                        await x(a, b);
+                        await baseSettings[key](a, b);
                     }
                 }
             }
@@ -624,7 +629,7 @@ abstract class rowHelperBase<T>
 
         }
     }
-    abstract get fields(): Fields<T>;
+    abstract get fields(): FieldsRef<T>;
     catchSaveErrors(err: any): any {
         let e = err;
 
@@ -819,9 +824,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         return this.instance;
     }
 
-    private _columns: Fields<T>;
+    private _columns: FieldsRef<T>;
 
-    get fields(): Fields<T> {
+    get fields(): FieldsRef<T> {
         if (!this._columns) {
             let _items = [];
             let r = {
@@ -833,7 +838,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 _items.push(r[c.key] = new FieldRefImplementation(c, this.info.fields[c.key], this.instance, this, this));
             }
 
-            this._columns = r as unknown as Fields<T>;
+            this._columns = r as unknown as FieldsRef<T>;
         }
         return this._columns;
 
@@ -862,7 +867,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let d = this.copyDataToObject();
             let ignoreKeys = [];
             for (const field of this.metadata.fields) {
-                if (field.dbReadOnly || field == this.metadata.idMetadata.field && this.metadata.options.dbAutoIncrementId) {
+                if (field.dbReadOnly) {
                     d[field.key] = undefined;
                     ignoreKeys.push(field.key);
                     let f = this.fields.find(field);
@@ -1024,7 +1029,7 @@ function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
     return r.map(x => decorateColumnSettings(x.settings(remult), remult));
 }
 
-export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): Fields<fieldsContainerType> {
+export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): FieldsRef<fieldsContainerType> {
     return getControllerRef(container, remult).fields;
 }
 export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): ControllerRef<fieldsContainerType> {
@@ -1068,7 +1073,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
             _items.push(r[col.key] = new FieldRefImplementation<any, any>(col, new columnDefsImpl(col, undefined, remult), instance, undefined, this));
         }
 
-        this.fields = r as unknown as Fields<T>;
+        this.fields = r as unknown as FieldsRef<T>;
 
 
     }
@@ -1081,7 +1086,7 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
     }
     errors: { [key: string]: string; };
     originalValues: any;
-    fields: Fields<T>;
+    fields: FieldsRef<T>;
 
 }
 export class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
@@ -1345,8 +1350,6 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
         this.fields = r as unknown as FieldsMetadata<T>;
 
-        this.dbAutoIncrementId = entityInfo.dbAutoIncrementId;
-
         this.caption = buildCaption(entityInfo.caption, this.key, remult);
 
         if (entityInfo.id) {
@@ -1422,7 +1425,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     };
 
 
-    dbAutoIncrementId: boolean;
+
 
 
 
@@ -1452,50 +1455,196 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
     }
 
 }
+export const Fields1 = {
+    String: () => {
+        return (a) => {
 
-export function JsonField<entityType = any, valueType = any>(
-    ...options: (FieldOptions<entityType, valueType> |
-        ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return Field({
-        valueConverter: {
-            toDb: x => x,
-            fromDb: x => x,
-            fieldTypeInDb: 'json'
         }
-    }, ...options);
+    }
 }
-export function DateOnlyField<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
-    return Field({
-        valueConverter: DateOnlyValueConverter
-    }, ...options);
+export class Fields {
+
+    static object<entityType = any, valueType = any>(
+        ...options: (FieldOptions<entityType, valueType> |
+            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+        return Field(undefined, ...options);
+    }
+    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, {
+            valueConverter: ValueConverters.DateOnly
+        }, ...options);
+    }
+    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, ...options);
+    }
+    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+        return Field(() => Number, {
+            valueConverter: ValueConverters.Integer
+        }, ...options)
+    }
+    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+        return Field(() => Number, {
+            allowApiUpdate: false,
+            dbReadOnly: true,
+            valueConverter: { ...ValueConverters.Integer, fieldTypeInDb: 'autoincrement' }
+        }, ...options)
+    }
+
+    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+        return Field(() => Number, ...options)
+    }
+
+    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+        return Field(() => String, {
+            allowApiUpdate: false,
+            defaultValue: () => uuid()
+        }, ...options);
+    }
+    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
+        return Field(() => String, ...options);
+    }
+    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
+        return Field(() => Boolean, ...options);
+    }
 }
-export function IntegerField<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
-    return Field({
-        valueType: Number,
-        valueConverter: IntegerValueConverter
-    }, ...options)
+
+export function isAutoIncrement(f: FieldMetadata) {
+    return f.options.valueConverter?.fieldTypeInDb === 'autoincrement';
 }
-export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return (type: ClassType<valueType>) =>
+export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
+    maxLength?: number;
+}
+export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+    return (type: ClassType<valueType>) => {
         FieldType<valueType>(o => {
-            o.valueConverter = new ValueListValueConverter(type),
+            o.valueConverter = ValueListInfo.get(type),
                 o.displayValue = (item, val) => val.caption
         }, ...options)(type)
+    }
 }
-export function UuidField<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-    return Field({
-        allowApiUpdate: false,
-        defaultValue: () => uuid()
-    }, ...options);
+export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
+    getValues?: () => valueType[];
+
+}
+export class ValueListInfo<T extends ValueListItem> implements ValueConverter<T> {
+    static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
+        let r = typeCache.get(type);
+        if (!r) {
+            r = new ValueListInfo(type);
+            typeCache.set(type, r);
+        }
+        return r;
+    }
+    private byIdMap = new Map<any, T>();
+    private values: T[] = [];
+    isNumeric = false;
+    private constructor(private valueListType: any) {
+
+        for (let member in this.valueListType) {
+            let s = this.valueListType[member] as T;
+            if (s instanceof this.valueListType) {
+                if (s.id === undefined)
+                    s.id = member;
+                if (typeof s.id === 'number')
+                    this.isNumeric = true;
+                if (s.caption === undefined)
+                    s.caption = makeTitle(s.id !== undefined ? s.id.toString() : member);
+                this.byIdMap.set(s.id, s);
+                this.values.push(s);
+            }
+        }
+        if (this.isNumeric) {
+            this.fieldTypeInDb = 'integer';
+        }
+        var options = Reflect.getMetadata(storableMember, this.valueListType) as ValueListFieldOptions<any, any>[];
+
+        if (options) {
+            for (const op of options) {
+                if (op?.getValues) {
+                    this.values.splice(0, this.values.length, ...op.getValues());
+                    this.byIdMap.clear();
+                    this.values.forEach(s => {
+                        if (s.caption === undefined && s.id !== undefined)
+                            s.caption = makeTitle(s.id);
+                        this.byIdMap.set(s.id, s);
+                    });
+                }
+            }
+            if (this.values.find(s => s.id === undefined))
+                throw new Error(`ValueType ${this.valueListType} has values without an id`);
+        }
+        else throw new Error(`ValueType not yet initialized, did you forget to call @ValueListFieldType on ` + valueListType);
+
+
+    }
+
+
+
+    getValues() {
+        return this.values;
+    }
+    byId(key: any) {
+        if (this.isNumeric)
+            key = +key;
+        return this.byIdMap.get(key);
+    }
+    fromJson(val: any): T {
+        return this.byId(val);
+    }
+    toJson(val: T) {
+        if (!val)
+            return undefined;
+        return val.id;
+    }
+    fromDb(val: any): T {
+        return this.fromJson(val);
+    }
+    toDb(val: T) {
+        return this.toJson(val);
+    }
+    toInput(val: T, inputType: string): string {
+        return this.toJson(val);
+    }
+    fromInput(val: string, inputType: string): T {
+        return this.fromJson(val);
+    }
+    displayValue?(val: T): string {
+        if (!val)
+            return '';
+        return val.caption;
+    }
+    fieldTypeInDb?: string;
+    inputType?: string;
+}
+const typeCache = new Map<any, ValueListInfo<any>>();
+export function getValueList<T>(field: FieldRef<T>): T[];
+export function getValueList<T>(field: FieldMetadata<T>): T[];
+export function getValueList<T>(type: ClassType<T>): T[];
+export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef<T>): T[] {
+    {
+        const fr = (type as FieldRef<T>)?.metadata?.valueType;
+        if (fr)
+            return ValueListInfo.get<T>(fr).getValues();
+    }
+    {
+        const fr = (type as FieldMetadata<T>)?.valueType;
+        if (fr)
+            return ValueListInfo.get<T>(fr).getValues();
+    }
+
+    return ValueListInfo.get<T>(type as ClassType<T>).getValues();
 }
 
-export function Field<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
 
 
 
     return (target, key, c?) => {
         let factory = (remult: Remult) => {
             let r = buildOptions(options, remult);
+            if (!r.valueType && valueType) {
+                r.valueType = valueType();
+            }
             if (!r.key) {
                 r.key = key;
             }
@@ -1537,7 +1686,7 @@ export function Field<entityType = any, valueType = any>(...options: (FieldOptio
 
 
 }
-const storableMember = Symbol("storableMember");
+export const storableMember = Symbol("storableMember");
 function buildOptions<entityType = any, valueType = any>(options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[], remult: Remult) {
     let r = {} as FieldOptions<entityType, valueType>;
     for (const o of options) {
@@ -1576,19 +1725,19 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
     if (settings.valueType == Number) {
         let x = settings as unknown as FieldOptions<any, Number>;
         if (!settings.valueConverter)
-            x.valueConverter = NumberValueConverter;
+            x.valueConverter = ValueConverters.Number;
     }
     if (settings.valueType == Date) {
         let x = settings as unknown as FieldOptions<any, Date>;
         if (!settings.valueConverter) {
-            x.valueConverter = DateValueConverter;
+            x.valueConverter = ValueConverters.Date;
         }
     }
 
     if (settings.valueType == Boolean) {
         let x = settings as unknown as FieldOptions<any, Boolean>;
         if (!x.valueConverter)
-            x.valueConverter = BoolValueConverter;
+            x.valueConverter = ValueConverters.Boolean;
     }
     if (!settings.valueConverter) {
         let ei = getEntitySettings(settings.valueType, false);
@@ -1599,7 +1748,7 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
             };
         }
         else
-            settings.valueConverter = DefaultValueConverter;
+            settings.valueConverter = ValueConverters.Default;
     }
     if (!settings.valueConverter.toJson) {
         settings.valueConverter.toJson = x => x;
@@ -1652,7 +1801,8 @@ export function Entity<entityType>(key: string, ...options: (EntityOptions<entit
             if (Object.prototype.hasOwnProperty.call(target, customFilterMember)) {
                 const element = target[customFilterMember] as customFilterInfo<any>;
                 if (element?.customFilterInfo?.customFilterTranslator) {
-                    element.customFilterInfo.key = customFilterMember;
+                    if (!element.customFilterInfo.key)
+                        element.customFilterInfo.key = customFilterMember;
                 }
             }
         }

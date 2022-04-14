@@ -1,6 +1,6 @@
 {
   "name": "remult",
-  "version": "0.12.7",
+  "version": "0.13.12",
   "scripts": {
     "ng": "ng",
     "ng-serve": "cd projects/test-angular && ng serve --port 4201",
@@ -8,8 +8,9 @@
     "test": "cd projects/test-angular && ng test core",
     "build": "npm run core-build && npm run remult-angular-build ",
     "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles readme.md dist/remult",
-    "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next && cd.. ",
-    "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public && cd.. && cd angular && npm publish  --access public && cd..  ",
+    "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next",
+    "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public  && cd.. && cd angular && npm publish  --access public",
+    "remove-next": "npm remult dist-tag rm next",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "update-versions": "ts-node --project projects/test-angular/tsconfig.server.json ./tools/update-versions.ts",
     "node-serve": "tsc-watch -p projects/test-angular/tsconfig.server.json --onSuccess \"npm run server:dev-run\"",
@@ -23,7 +24,8 @@
     "build-ref": "cd docs/tools && build-ref.bat",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
     "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
-    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
+    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts",
+    "test:ci": "jasmine-ts projects/core/src/test.ts"
   },
   "private": true,
   "dependencies": {
@@ -83,7 +85,8 @@
     "cp": "^0.2.0",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
-    "karma": "~6.1.0",
+    "jasmine-ts": "^0.4.0",
+    "karma": "~6.3.16",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.0.3",
     "karma-jasmine": "~4.0.0",

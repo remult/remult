@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import { DateOnlyField, Entity, EntityBase, EntityFilter, Field, IntegerField } from "../remult3";
+import { Fields, Entity, EntityBase, EntityFilter, Field } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -17,7 +17,8 @@ import { entityForCustomFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
-import { SqlDatabase } from "../..";
+import { IdEntity } from "../id-entity";
+import { testRest } from "../tests/frontend-database-tests-setup.spec";
 
 
 
@@ -30,6 +31,10 @@ testAll("filter works on all db",
         let s = await entityWithValidations.create4RowsInDp(createEntity);
         expect((await s.find({ where: { myId: [1, 3] } })).length).toBe(2);
     }, false);
+testAll("test in statement and ", async ({ createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    expect(await repo.count({ myId: [1, 3], $and: [{ myId: [3] }] })).toBe(1);
+}, false);
 testAll("filter with and",
     async ({ createEntity }) => {
         let s = await entityWithValidations.create4RowsInDp(createEntity);
@@ -45,6 +50,20 @@ testAll("filter works on all db or",
 
         let s = await entityWithValidations.create4RowsInDp(createEntity);
         expect((await s.find({ where: { $or: [{ myId: 1 }, { myId: 3 }] } })).length).toBe(2);
+
+    }, false);
+testAll("filter works on all db or_1",
+    async ({ createEntity }) => {
+
+        let s = await entityWithValidations.create4RowsInDp(createEntity);
+        expect((await s.find({ where: { $or: [{}, {}] } })).length).toBe(4);
+
+    }, false);
+testAll("filter works on all db or_2",
+    async ({ createEntity }) => {
+
+        let s = await entityWithValidations.create4RowsInDp(createEntity);
+        expect((await s.find({ where: { $or: [{}, { myId: 3 }] } })).length).toBe(4);
 
     }, false);
 testAll("entity with different id column still works well", async ({ createEntity }) => {
@@ -127,9 +146,9 @@ testAll("test original value of date", async ({ createEntity }) => {
 
 @Entity('testDateWithNull', { allowApiCrud: true })
 class testDateWithNull extends EntityBase {
-    @Field()
+    @Fields.integer()
     id: number = 0;
-    @DateOnlyField({ allowNull: true })
+    @Fields.dateOnly({ allowNull: true })
     d: Date;
 }
 
@@ -317,7 +336,7 @@ testAll("Test unique Validation,", async ({ createEntity }) => {
         a: string
     };
     Entity('categories')(type);
-    Field<typeof type.prototype, string>({
+    Fields.string<typeof type.prototype>({
         validate: async (en, col) => {
             if (en._.isNew() || en.a != en._.fields.a.originalValue) {
                 if (await c.count({ a: en.a }))
@@ -351,7 +370,7 @@ testAll("Test unique Validation 2", async ({ createEntity }) => {
         a: string
     };
     Entity('sdfgds')(type);
-    Field<typeof type.prototype, string>({
+    Fields.string<typeof type.prototype>({
         validate: Validators.unique
     })(type.prototype, "a");
     var c = await createEntity(type);
@@ -375,9 +394,9 @@ testAll("Test unique Validation 2", async ({ createEntity }) => {
 
 @Entity('testNumbers', { allowApiCrud: true })
 class testNumbers extends EntityBase {
-    @IntegerField()
+    @Fields.integer()
     id: number;
-    @Field()
+    @Fields.number()
     a: number;
 }
 
@@ -496,10 +515,8 @@ testAll("saves correctly to db", async ({ createEntity }) => {
         ok: Boolean = false;
     }
     Entity('asdf', { allowApiCrud: true })(type);
-    Field({
-        valueType: Number
-    })(type.prototype, 'id');
-    Field({ valueType: Boolean })(type.prototype, "ok");
+    Fields.number()(type.prototype, 'id');
+    Fields.boolean()(type.prototype, "ok");
     let r = (await createEntity(type)).create();
     r.id = 1;
     r.ok = true;
@@ -510,11 +527,11 @@ testAll("saves correctly to db", async ({ createEntity }) => {
     expect(r.ok).toBe(false);
 });
 
-@Entity("autoi", { allowApiCrud: true, dbAutoIncrementId: true })
+@Entity("autoi", { allowApiCrud: true })
 class autoIncrement extends EntityBase {
-    @IntegerField()
+    @Fields.autoIncrement()
     id: number;
-    @IntegerField()
+    @Fields.integer()
     stam: number;
 }
 
@@ -549,19 +566,24 @@ testAll("filter", async ({ createEntity }) => {
     })).toBe(0);
 }, false);
 
-
+testAll("large string field", async ({ createEntity }) => {
+    const s = await createEntity(stam);
+    await s.insert({ title: "1234567890".repeat(100) });
+    const r = await s.findFirst();
+    expect(r.title).toBe("1234567890".repeat(100));
+}, false)
 
 
 
 @Entity("testfilter", { allowApiCrud: true })
 class testFilter {
-    @Field()
+    @Fields.integer()
     id: number = 0;
-    @Field()
+    @Fields.string()
     a: string = '';
-    @Field()
+    @Fields.string()
     b: string = '';
-    @Field()
+    @Fields.string()
     c: string = '';
     static search = Filter.createCustom<testFilter, string>((remult, str) => ({
         $and: [{
@@ -584,9 +606,9 @@ class testFilter {
 
 @Entity('teststringWithNull', { allowApiCrud: true })
 class testStringWithNull extends EntityBase {
-    @Field()
+    @Fields.integer()
     id: number = 0;
-    @Field({ allowNull: true })
+    @Fields.string({ allowNull: true })
     d: string;
 }
 
@@ -594,20 +616,20 @@ class testStringWithNull extends EntityBase {
 
 @Entity("a", { allowApiCrud: true })
 export class stam extends EntityBase {
-    @Field()
+    @Fields.integer()
     id: number = 0;
-    @Field()
+    @Fields.string({ maxLength: 1500 })
     title: string = '';
 }
 
 
 @Entity('p', { allowApiCrud: true })
 class p extends EntityBase {
-    @Field()
+    @Fields.integer()
     id: number;
-    @Field()
+    @Fields.string()
     name: string;
-    @Field()
+    @Field(() => c)
     c: c;
     constructor(private remult: Remult) {
         super();
@@ -616,3 +638,60 @@ class p extends EntityBase {
 
 
 
+@Entity('tasksWithEnum', {
+    allowApiCrud: true
+})
+export class tasksWithEnum extends IdEntity {
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object()
+    priority = Priority.Low;
+}
+
+export enum Priority {
+    Low,
+    High,
+    Critical
+}
+testAll("task with enum", async ({ createEntity }) => {
+    const r = await createEntity(tasksWithEnum);
+    await r.insert({
+        title: 'a',
+        priority: Priority.Critical
+    });
+    const item = await r.findFirst();
+    expect(item.priority).toBe(Priority.Critical);
+    expect(await r.count({ priority: Priority.Critical })).toBe(1)
+    expect(await r.count({ priority: Priority.Low })).toBe(0)
+});
+
+@Entity('tasksWithStringEnum', {
+    allowApiCrud: true
+})
+export class tasksWithStringEnum extends IdEntity {
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object()
+    priority = PriorityWithString.Low;
+}
+
+export enum PriorityWithString {
+    Low = "Low",
+    High = "High",
+    Critical = "Critical"
+}
+testAll("task with enum string", async ({ createEntity }) => {
+    const r = await createEntity(tasksWithStringEnum);
+    await r.insert({
+        title: 'a',
+        priority: PriorityWithString.Critical
+    });
+    const item = await r.findFirst();
+    expect(item.priority).toBe(PriorityWithString.Critical);
+    expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
+    expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
+});

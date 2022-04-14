@@ -1,5 +1,5 @@
-# Running sql on the server
-Sometimes we need to run SQL on the server to do some advanced sql stuff.
+# Running SQL on the server
+Sometimes we need to run SQL on the server to do some advanced SQL stuff.
 
 We can do that using the `@BackendMethod`
 
@@ -17,16 +17,16 @@ static async updatePriceOnBackend(
 }
 ```
 
-The `SqlDatabase` parameter will be injected with an object that can run sql.
+The `SqlDatabase` parameter will be injected with an object that can run SQL.
 
-When executed with  `priceToUpdate = 5`, this code will run the following sql:
+When executed with  `priceToUpdate = 5`, this code will run the following SQL:
 ```sql
 update products set price = price + $1
 Arguments: { '$1': 5 }
 ```
 
 :::warning
-Running custom sql is dangerous and prone to sql injection hacking. Avoid building custom sql using values that are sent as parameters from outside the server.
+Running custom SQL is dangerous and prone to SQL injection hacking. Avoid building custom SQL using values that are sent as parameters from outside the server.
 
 Always use the `addParameterAndReturnSqlToken` method to generate database parameters (like the `$1` that you can see in the query) - this can help you reduce the risk of SQL injection
 :::

@@ -4,7 +4,7 @@ import { processHttpException, Remult, toPromise } from '../context';
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, Fields } from '../remult3';
 
 describe("test exception", () => {
     it("test save exception", async () => {
@@ -37,7 +37,7 @@ describe("test exception", () => {
             id: string;
         }
         Entity('test')(type);
-        Field()(type.prototype, "id");
+        Fields.string()(type.prototype, "id");
         var x = c.repo(type).create();
         try {
             await x._.save();

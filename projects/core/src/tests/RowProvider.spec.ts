@@ -9,14 +9,14 @@ import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { FieldCollection, DataAreaSettings, DataControlSettings, getValueList, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getEntityValueList as getValueListFromRepo, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
 import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
-import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, DateOnlyField } from '../remult3/RepositoryImplementation';
+import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, Fields, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
-import { CharDateValueConverter, DateOnlyValueConverter, DefaultValueConverter, ValueListValueConverter } from '../../valueConverters';
+import { ValueConverters } from '../../valueConverters';
 import { EntityOptions } from '../entity';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
@@ -30,11 +30,16 @@ import { createData } from './createData';
 
 
 
-
+@ValueListFieldType({
+  getValues: () => [
+    Language.Hebrew,
+    Language.Russian,
+    new Language(20, 'אמהרית')
+  ]
+})
 export class Language {
   static Hebrew = new Language(0, 'עברית');
   static Russian = new Language(10, 'רוסית');
-  static Amharit = new Language(20, 'אמהרית');
   constructor(public id: number,
     public caption: string) {
 
@@ -58,7 +63,7 @@ describe("grid filter stuff", () => {
     let ds = new GridSettings(c, {
 
       orderBy: { id: "asc" },
-      where: { categoryName: { $contains: 'a' } },
+      where: () => ({ categoryName: { $contains: 'a' } }),
       rowsInPage: 2
 
     });
@@ -73,7 +78,7 @@ describe("grid filter stuff", () => {
     let ds = new GridSettings(c, {
 
       orderBy: { id: "asc" },
-      where: { categoryName: { $contains: 'a' } },
+      where: () => ({ categoryName: { $contains: 'a' } }),
       rowsInPage: 2
 
     });
@@ -88,7 +93,7 @@ describe("grid filter stuff", () => {
     let [c] = await insertFourRows();
     let ds = new GridSettings<CategoriesForTesting>(c, {
       orderBy: { id: "asc" },
-      where: { categoryName: { $contains: 'a' } },
+      where: () => ({ categoryName: { $contains: 'a' } }),
       rowsInPage: 2
     });
     await ds.reloadData();
@@ -226,17 +231,17 @@ describe("grid filter stuff", () => {
 describe("Closed List  column", () => {
 
   it("Basic Operations", () => {
-    let x = new ValueListValueConverter(Language);
+    let x = ValueListInfo.get(Language);
 
 
     expect(x.fromJson(0)).toBe(Language.Hebrew);
     expect(x.toJson(Language.Russian)).toBe(10);
 
-    expect(new ValueListValueConverter(Language).getOptions().length).toBe(3);
+    expect(ValueListInfo.get(Language).getValues().length).toBe(3);
   });
 
   it("test auto caption", () => {
-    let val = new ValueListValueConverter(valueList);
+    let val = ValueListInfo.get(valueList);
     expect(valueList.firstName.caption).toBe('First Name');
   });
   it("test with entity", async () => {
@@ -248,6 +253,7 @@ describe("Closed List  column", () => {
     e.l = Language.Russian;
     await e._.save();
     e = await c.findFirst();
+    console.log(e.$.l.metadata.valueConverter);
     expect(e.l).toBe(Language.Russian);
     expect(e._.toApiJson().l).toBe(10);
   })
@@ -267,7 +273,12 @@ describe("Closed List  column", () => {
     e = await c.findFirst();
     expect(e.v).toBe(valueList.listName);
     expect(e._.toApiJson().v).toBe('listName');
-  })
+  });
+  it("test entity with value list get values", () => {
+    var x = new Remult().repo(entityWithValueList);
+    expect(getValueList(x.metadata.fields.l).length).toBe(3);
+    expect(getValueList(x.create().$.l).length).toBe(3);
+  });
 });
 
 
@@ -280,11 +291,11 @@ class valueList {
 
 @Entity('entity with value list')
 class entityWithValueList extends EntityBase {
-  @Field()
+  @Fields.integer()
   id: number = 0;
-  @Field({ valueConverter: new ValueListValueConverter(Language) })
+  @Field(() => Language)
   l: Language = Language.Hebrew;
-  @Field()
+  @Field(() => valueList)
   v: valueList = valueList.firstName;
 
 }
@@ -396,7 +407,7 @@ describe("test row provider", () => {
       a: string;
     };
     EntityDecorator('')(type);
-    ColumnDecorator<typeof type.prototype, string>({
+    Fields.string<typeof type.prototype>({
       validate: (entity, col) =>
         Validators.required(entity, col, "m")
     })(type.prototype, "a");
@@ -423,7 +434,7 @@ describe("test row provider", () => {
       a: string;
     };
     EntityDecorator('')(type);
-    ColumnDecorator<typeof type.prototype, string>({
+    Fields.string<typeof type.prototype>({
       validate: (entity, col) => {
         if (!entity.a || entity.a.length == 0)
           col.error = "m";
@@ -450,7 +461,7 @@ describe("test row provider", () => {
       a: string
     };
     EntityDecorator('')(type);
-    ColumnDecorator({
+    Fields.string({
       validate: Validators.required.withMessage("m")
     })(type.prototype, "a");
     var c = remult.repo(type);
@@ -475,7 +486,7 @@ describe("test row provider", () => {
       a: string
     };
     EntityDecorator('asdfa')(type);
-    ColumnDecorator<typeof type.prototype, string>({
+    Fields.string<typeof type.prototype>({
       validate: [Validators.required, Validators.unique]
     })(type.prototype, "a");
     var c = remult.repo(type);
@@ -520,7 +531,7 @@ describe("test row provider", () => {
       validation: r => orderOfOperation += "EntityValidate,",
 
     })(type);
-    ColumnDecorator({
+    Fields.string({
       validate: () => { orderOfOperation += "ColumnValidate," }
     })(type.prototype, "categoryName")
     var c = remult.repo(type);
@@ -669,7 +680,7 @@ describe("test row provider", () => {
     });
 
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
-    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    let cs = { valueList: getValueListFromRepo(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -687,7 +698,7 @@ describe("test row provider", () => {
     });
 
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
-    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    let cs = { valueList: getValueListFromRepo(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -705,7 +716,7 @@ describe("test row provider", () => {
     });
 
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, undefined);
-    let cs = { valueList: getValueList(c) } as DataControlSettings<Categories>
+    let cs = { valueList: getValueListFromRepo(c) } as DataControlSettings<Categories>
     await cc.buildDropDown(cs);
     let xx = cs.valueList as ValueListItem[];
     expect(xx.length).toBe(2);
@@ -737,7 +748,7 @@ describe("test row provider", () => {
     });
     let c1 = c.create();
     let cc = new FieldCollection(() => c.create(), () => true, undefined, () => true, () => undefined);
-    let cs = { field: c1._.fields.id.metadata, valueList: getValueList(c) } as DataControlSettings<newCategories>
+    let cs = { field: c1._.fields.id.metadata, valueList: getValueListFromRepo(c) } as DataControlSettings<newCategories>
     await cc.add(cs);
 
     let xx = cs.valueList as ValueListItem[];
@@ -777,7 +788,7 @@ describe("test row provider", () => {
   });
 })
 class myClass1 {
-  @Field()
+  @Fields.integer()
   @DataControl<myClass1>({
     getValue: self => self.a * 3
   })
@@ -794,7 +805,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass2 {
-  @DateOnlyField()
+  @Fields.dateOnly()
   @DataControl<myClass2>({
     readonly: true
   })
@@ -813,7 +824,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass3 {
-  @Field({
+  @Fields.integer({
     caption: '1st', ...{ caption: '2nd' }
   })
   @DataControl<myClass3>({
@@ -836,7 +847,7 @@ describe("field display stuff", () => {
   });
 })
 class myClass4 {
-  @Field()
+  @Fields.string()
   @DataControl<myClass4>({
     readonly: true
   })
@@ -883,7 +894,7 @@ describe("column collection", () => {
       categoryName: string;
     }
     EntityDecorator('asdf')(type);
-    ColumnDecorator({
+    Fields.string({
       allowApiUpdate: false
     })(type.prototype, "categoryName");
     let c = ctx.repo(type);
@@ -998,7 +1009,7 @@ describe("grid settings ",
         await i(8, "b");
       });
 
-      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: { categoryName: 'b' } });
+      let ds = new GridSettings<CategoriesForTesting>(c, { rowsInPage: 2, where: () => ({ categoryName: 'b' }) });
       await ds.reloadData();
       expect(ds.items.length).toBe(2);
       expect(ds.items[0].id).toBe(2);
@@ -1092,12 +1103,12 @@ describe("test area", () => {
     let area = new DataAreaSettings({ fields: () => [n] });
     expect(area.fields.items.length).toBe(1);
     expect(area.fields.__showArea()).toBe(true);
-    expect(area.fields.getNonGridColumns(()=>{}).length).toBe(1);
+    expect(area.fields.getNonGridColumns(() => { }).length).toBe(1);
   });
 });
 
 class myClass {
-  @Field()
+  @Fields.number()
   @DataControl<myClass>({
     valueChange: self => self.d.ok()
   })
@@ -1146,21 +1157,21 @@ describe("test datetime column", () => {
   });
   it("displays empty date well", () => {
 
-    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson(''))).toBe('');
+    expect(ValueConverters.DateOnly.displayValue(ValueConverters.DateOnly.fromJson(''))).toBe('');
   });
   it("displays null date well 1", () => {
 
-    expect(DateOnlyValueConverter.toJson(null)).toBe(null);
-    expect(DateOnlyValueConverter.toJson(null)).toBe(null);
-    expect(DateOnlyValueConverter.displayValue(null)).toBe('');
+    expect(ValueConverters.DateOnly.toJson(null)).toBe(null);
+    expect(ValueConverters.DateOnly.toJson(null)).toBe(null);
+    expect(ValueConverters.DateOnly.displayValue(null)).toBe('');
   });
   it("displays empty date well empty", () => {
-    expect(DateOnlyValueConverter.displayValue(DateOnlyValueConverter.fromJson('0000-00-00'))).toBe('');
+    expect(ValueConverters.DateOnly.displayValue(ValueConverters.DateOnly.fromJson('0000-00-00'))).toBe('');
   });
   it("Date only stuff", () => {
     function test(d: Date, expected: string) {
-      expect(DateOnlyValueConverter.toJson(d)).toBe(expected);
-      const ed = DateOnlyValueConverter.fromJson(expected);
+      expect(ValueConverters.DateOnly.toJson(d)).toBe(expected);
+      const ed = ValueConverters.DateOnly.fromJson(expected);
       expect(ed.getFullYear()).toEqual(d.getFullYear(), "year");
       expect(ed.getMonth()).toEqual(d.getMonth(), "month");
       expect(ed.getDate()).toEqual(d.getDate(), "day");
@@ -1181,7 +1192,7 @@ describe("test datetime column", () => {
 
     let col = decorateColumnSettings<Date>({
       valueType: Date,
-      valueConverter: DateOnlyValueConverter
+      valueConverter: ValueConverters.DateOnly
     }, new Remult());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).toLocaleDateString()).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString());
     expect(col.valueConverter.toDb(col.valueConverter.fromJson('1976-06-16')).getDate()).toBe(16);
@@ -1196,10 +1207,10 @@ class typefd {
 
 }
 class myClassfd {
-  @Field()
+  @Fields.string()
   @DataControl({ click: () => { } })
   a: string;
-  @Field()
+  @Field(() => typefd)
   b: typefd;
 }
 
@@ -1220,7 +1231,7 @@ describe("data control overrides settings on column", () => {
 describe("Test char date storage", () => {
 
 
-  let x = CharDateValueConverter;
+  let x = ValueConverters.DateOnlyString;
   it("from db", () => {
     expect(x.toJson(x.fromDb('19760616'))).toBe('1976-06-16');
   });
@@ -1230,9 +1241,12 @@ describe("Test char date storage", () => {
 });
 
 describe("value list column without id and caption", () => {
+  it("getValueList", () => {
+    expect(getValueList(Language).length).toBe(3);
+  });
   it("works with automatic id", () => {
     let col = new InputField<TestStatus>({
-      valueConverter: new ValueListValueConverter(TestStatus),
+      valueConverter: ValueListInfo.get(TestStatus),
       defaultValue: () => TestStatus.open
     });
 
@@ -1241,7 +1255,7 @@ describe("value list column without id and caption", () => {
     expect(col.inputValue).toBe('open');
     col.value = TestStatus.closed;
     expect(col.inputValue).toBe('cc');
-    let options = new ValueListValueConverter(TestStatus).getOptions();
+    let options = ValueListInfo.get(TestStatus).getValues();
     expect(options.length).toBe(3);
     expect(options[2].caption).toBe('hh');
     expect(options[2].id).toBe('hold');
@@ -1307,7 +1321,7 @@ describe("test grid basics", () => {
 
 @EntityDecorator<TestCategories1>('123')
 class TestCategories1 extends newCategories {
-  @ColumnDecorator({
+  @Fields.string({
     validate: Validators.required
   })
   a: string;
@@ -1355,7 +1369,7 @@ class mockColumnDefs implements FieldMetadata {
     return this.dbName;
   }
   options: FieldOptions<any, any>;
-  valueConverter: ValueConverter<any> = DefaultValueConverter;
+  valueConverter: ValueConverter<any> = ValueConverters.Default;
   target: ClassType<any>;
   readonly: boolean;
   readonly dbReadOnly: boolean;

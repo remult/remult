@@ -1,6 +1,6 @@
 import { InMemoryDataProvider } from "../..";
 import { Remult } from "../context";
-import { Entity, EntityBase, Field } from "../remult3";
+import { Entity, EntityBase, Field, Fields } from "../remult3";
 import { Validators } from "../validators";
 
 describe("test subscribe", () => {
@@ -111,8 +111,8 @@ describe("test subscribe", () => {
         let refRowB = await remult.repo(myEntity).create({ title: 'b' }).save();
         let reflect = { title: '' };
         let r = repo.create();
-        
-        
+
+
         let sub = r.$.entity.subscribe(() => reflect.title = r.entity?.title);
         r.entity = refRowA;
         expect(reflect.title).toBe('a');
@@ -128,7 +128,7 @@ let entityRefInitCount = 0;
     entityRefInit: () => entityRefInitCount++
 })
 class myEntity extends EntityBase {
-    @Field({
+    @Fields.string({
         validate: Validators.required
     })
     title: string = '';
@@ -138,8 +138,8 @@ class myEntity extends EntityBase {
     allowApiCrud: true
 })
 class entityWithManyToOne extends EntityBase {
-    @Field()
+    @Fields.number()
     id: number = 0;
-    @Field(o => o.valueType = myEntity)
+    @Field(() => myEntity)
     entity?: myEntity;
 }

@@ -1,4 +1,4 @@
-import { Field, Entity, EntityBase, BuildEntity } from '../remult3';
+import { Field, Entity, EntityBase, BuildEntity, Fields } from '../remult3';
 import { testAll } from './db-tests-setup';
 
 
@@ -14,8 +14,8 @@ describe("custom id column", () => {
             b: number;
         }
         BuildEntity(type, 'custom', {
-            a: Field(),
-            b: Field()
+            a: Fields.number(),
+            b: Fields.number()
         }, { allowApiCrud: true })
         let c = await createEntity(type);
         let r = c.create();
@@ -37,8 +37,8 @@ describe("custom id column", () => {
             id: number;
         }
         Entity('custom2', { allowApiCrud: true })(type);
-        Field({ valueType: Number })(type.prototype, 'a');
-        Field({ valueType: Number })(type.prototype, 'id');
+        Fields.number()(type.prototype, 'a');
+        Fields.number()(type.prototype, 'id');
         let c = await createEntity(type);
         let r = c.create();
         r.a = 1;
@@ -55,3 +55,44 @@ describe("custom id column", () => {
     });
 
 });
+//typing game
+
+// var z = <Z>(y: Z) => {
+
+// }
+// z<number>(1);
+
+
+
+
+// function myBackendMethod<T>(types: T, values: values<T>) {
+
+// }
+
+// type values<T> = {
+//     [Property in keyof T]: T[Property] extends new (...args: any[]) => infer R ? R : any;
+// };
+
+// const a1 = AccountManager;
+
+
+
+// const a = {
+//     a: String.prototype,
+//     b: AccountManager.prototype
+// };
+
+
+
+
+// var zzz: AccountManager = undefined!;
+
+// myBackendMethod({
+//     a: String,
+//     b: AccountManager
+// }, {
+//     b: new AccountManager(),
+//     a: "asdf"
+// })
+
+

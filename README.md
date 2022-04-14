@@ -19,15 +19,15 @@
 
 ## What is Remult?
 
-**Remult** is a fullstack CRUD framework which uses your TypeScript model types to provide:
+**Remult** is a fullstack CRUD framework that uses your TypeScript model types to provide:
 
-* Secured REST API (highly configurable)
+* Secure REST API (highly configurable)
 * Type-safe frontend API client
 * Type-safe backend query builder
 
 #### Remult :heart: Monorepos
 
-Using a `monorepo` approach, with model types shared between frontend and backend code, Remult can enforce data validation and constraints, defined once, on both frontend and REST API level.
+Using a `monorepo` approach, with model types shared between frontend and backend code, Remult can enforce data validation and constraints, defined once, on both frontend and REST API levels.
 
 ## Getting started
 The best way to learn Remult is by following a tutorial of a simple Todo app with a Node.js Express backend. There's one [using a React frontend](https://remult.dev/tutorials/tutorial-react.html) and one [using Angular](https://remult.dev/tutorials/tutorial-angular.html).
@@ -54,17 +54,17 @@ app.listen(port, () => {
 
 ## Define model classes
 ```ts
-import { Entity, EntityBase, Field } from 'remult';
+import { Entity, EntityBase, Fields } from 'remult';
 
 @Entity('products', {
     allowApiCrud: true
 })
 export class Product extends EntityBase {
-  @Field()
-  name: string = '';
+  @Fields.string()
+  name = '';
 
-  @Field()
-  unitPrice: number = 0;
+  @Fields.number()
+  unitPrice = 0;
 }
 ```
 
@@ -99,24 +99,27 @@ static async increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
 ## :ballot_box_with_check: Data validation and constraints - defined once
 
 ```ts
-import { Entity, EntityBase, Field } from 'remult';
-import { Min } from 'class-validator';
+import { Entity, EntityBase, Fields } from 'remult';
 
 @Entity('products', {
     allowApiCrud: true
 })
 export class Product extends EntityBase {
-    @Field<Product>({
-        validate: p => {
-            if (p.name.trim().length == 0)
-                p.$.name.error = 'required';
+    @Fields.string<Product>({
+        validate: product => {
+            if (product.name.trim().length == 0)
+                product.$.name.error = 'required';
         }
     })
-    name: string = '';
+    name = '';
 
-    @Field()
-    @Min(0)
-    unitPrice: number = 0;
+    @Fields.number({
+        validate: (_, field) => {
+            if (field.value < 0)
+                field.error = "must not be less than 0";
+        }
+    })
+    unitPrice = 0;
 }
 ```
 
@@ -136,7 +139,7 @@ catch {
 ```sh
 > curl -d "{""unitPrice"":-1}" -H "Content-Type: application/json" -X POST http://localhost:3001/api/products
 
-{"modelState":{"unitPrice":"unitPrice must not be less than 0","name":"required"},"message":"Name: required"}
+{"modelState":{"unitPrice":"must not be less than 0","name":"required"},"message":"Name: required"}
 ```
 
 ## :lock: Secure the API with fine-grained authorization
@@ -147,13 +150,13 @@ catch {
     allowApiUpdate: (remult, article) => article.author.id == remult.user.id
 })
 export class Article extends EntityBase {
-    @Field({ allowApiUpdate: false })
-    slug: string;
+    @Fields.string({ allowApiUpdate: false })
+    slug = '';
     
-    @Field({ allowApiUpdate: false })
-    author: Profile;
+    @Field(() => Profile, { allowApiUpdate: false })
+    author!: Profile;
 
-    @Field()
-    content: string;
+    @Fields.string()
+    content = '';
 }
 ```

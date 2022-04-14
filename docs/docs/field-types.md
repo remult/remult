@@ -4,30 +4,30 @@ The most commonly used field type is `Field` that is used to describe most field
 
 *example*
 ```ts
-@Field()
-title:string='';
+@Fields.string()
+title = '';
 ```
 
 There are also several more built in Field decorators for common use case:
-### @IntegerField
+### @Fields.integer
 Just like typescript, by default any number is a decimal (or float). 
-For cases where you don't want to have decimal values, you can use the `@IntegerField` decorator
+For cases where you don't want to have decimal values, you can use the `@Fields.integer` decorator
 
 *example*
 ```ts
-@IntegerField()
-quantity:number=0;
+@Fields.integer()
+quantity = 0;
 ```
 
-### @DateOnlyField
+### @Fields.dateOnly
 Just like typescript, by default any `Date` field includes the time as well.
-For cases where you only want a date, and don't want to meddle with time and time zone issues, use the `@DateOnlyField`
+For cases where you only want a date, and don't want to meddle with time and time zone issues, use the `@Fields.dateOnly`
 
 *example*
 ```ts
-@DateOnlyField()
+@Fields.dateOnly()
 fromDate?:Date;
-@DateOnlyField()
+@Fields.dateOnly()
 toDate?:Date;
 ```
 
@@ -38,12 +38,12 @@ Enum fields will work just like any other basic type.
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-    @Field()
-    direction: Priority = Priority.Low;
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object()
+    priority = Priority.Low;
 }
 
 export enum Priority {
@@ -59,12 +59,12 @@ String enums will also work
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-    @Field()
-    direction: Priority = Priority.Low;
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object()
+    priority = Priority.Low;
 }
 
 export enum Priority {
@@ -82,11 +82,11 @@ You can store JSON data and arrays in fields
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-    @Field()
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object()
     tags: string[] = [];
 }
 ```
@@ -101,11 +101,11 @@ For example, the following code will save the `tags` as a comma separated string
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-    @Field<Task, string[]>({
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Fields.object<Task, string[]>({
         valueConverter: {
             toDb: x => x ? x.join(',') : undefined,
             fromDb: x => x ? x.split(',') : undefined
@@ -123,7 +123,7 @@ import { Field, FieldOptions, Remult } from "remult";
 export function CommaSeparatedStringArrayField<entityType = any>(
     ...options: (FieldOptions<entityType, string[]> |
         ((options: FieldOptions<entityType, string[]>, remult: Remult) => void))[]) {
-    return Field({
+    return Fields.object({
         valueConverter: {
             toDb: x => x ? x.join(',') : undefined,
             fromDb: x => x ? x.split(',') : undefined
@@ -137,10 +137,10 @@ And then use it:
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
     @CommaSeparatedStringArrayField()
     tags: string[] = [];
 }
@@ -157,11 +157,11 @@ For example:
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
-    @Field<Task, Phone>({
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+    @Field<Task, Phone>(() => Phone, {
         valueConverter: {
             fromJson: x => x ? new Phone(x) : undefined!,
             toJson: x => x ? x.phone : undefined!
@@ -184,12 +184,12 @@ Alternatively you can decorate the `Phone` class with the `FieldType` decorator,
     allowApiCrud: true
 })
 export class Task extends IdEntity {
-    @Field()
-    title: string = '';
-    @Field()
-    completed: boolean = false;
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
 
-    @Field(options => options.valueType = Phone)
+    @Field(() => Phone)
     phone?: Phone;
 }
 

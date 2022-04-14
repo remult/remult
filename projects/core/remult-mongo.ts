@@ -98,7 +98,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
         let newR = {};
         let keys = Object.keys(data);
         for (const f of this.entity.fields) {
-            if (!f.dbReadOnly && !f.isServerExpression && !(f == this.entity.idMetadata.field && this.entity.options.dbAutoIncrementId)) {
+            if (!f.dbReadOnly && !f.isServerExpression) {
                 if (keys.includes(f.key)) {
                     newR[f.key] = f.valueConverter.toJson(data[f.key]);
                 }
@@ -163,10 +163,11 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
                 f._addWhere = false;
                 element.__applyToConsumer(f);
                 let where = await f.resolveWhere();
-                if (where?.$and.length > 0) {
+                if (where?.$and?.length > 0) {
                     result.push(where);
-
                 }
+                else
+                    return; //since empty or is all rows;
             }
             this.result.push(() => ({
                 $or: result

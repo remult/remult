@@ -3,7 +3,7 @@ import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
 import { Action, actionInfo } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { EntityRef, Repository } from "./remult3";
+import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 
@@ -98,6 +98,7 @@ export function isBackend() {
 }
 
 export class Remult {
+    static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
     clearAllCache(): any {
         this.repCache.clear();
     }
@@ -165,7 +166,7 @@ export class Remult {
             this._user.roles = [];
         await this._userChangeEvent.fire();
     }
-    static apiBaseUrl = 'api';
+    static apiBaseUrl = '/api';
     isAllowedForInstance(instance: any, x: AllowedForInstance<any>): boolean {
         if (Array.isArray(x)) {
             {

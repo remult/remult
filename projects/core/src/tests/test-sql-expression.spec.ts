@@ -4,11 +4,11 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase, IntegerField, DateOnlyField, ValueListFieldType } from '../remult3';
+import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList, ValueListInfo } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
-import { ValueListValueConverter } from '../../valueConverters';
+
 import { SqlCommand, SqlResult } from '../sql-command';
 import { FilterConsumerBridgeToSqlRequest, getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
 
@@ -58,10 +58,10 @@ describe("test sql database expressions", () => {
 });
 @Entity('expressionEntity')
 class expressionEntity extends EntityBase {
-    @IntegerField()
+    @Fields.integer()
     id: number;
     static yes: boolean;
-    @Field({
+    @Fields.string({
         sqlExpression: async () => expressionEntity.yes ? "'1+1'" : undefined
     })
     col: string;
@@ -72,9 +72,9 @@ class expressionEntity extends EntityBase {
 
 @Entity('testSqlExpression')
 class testSqlExpression extends EntityBase {
-    @Field()
+    @Fields.number()
     code: number;
-    @Field<testSqlExpression>(
+    @Fields.number<testSqlExpression>(
         {
             sqlExpression: async (x) => {
                 return await x.fields.code.getDbName() + ' * 5';
@@ -92,7 +92,7 @@ class testSqlExpression extends EntityBase {
 })
 class testServerExpression1 extends EntityBase {
 
-    @Field()
+    @Fields.number()
     code: number;
 
 }
@@ -165,12 +165,67 @@ class stringId2 {
 @Entity('testCreate')
 class testCreate extends IdEntity {
 
-    @DateOnlyField()
+    @Fields.dateOnly()
     theDate: Date;
-    @Field()
+    @Field(() => intId)
     i: intId;
-    @Field()
+    @Field(() => stringId)
     s: stringId;
-    @Field()
+    @Field(() => stringId2)
     s2: stringId2;
 }
+
+
+@ValueListFieldType({
+    getValues: () => [
+        new missingCaption('abc')
+    ]
+})
+class missingCaption {
+    constructor(public id: string) { }
+    caption!: string;
+
+}
+
+@ValueListFieldType()
+class missingCaption2 {
+    static item = new missingCaption2("abc");
+    constructor(public id: string, public caption?: string) {
+
+    }
+
+}
+
+describe("Test Value List Items", () => {
+    it("require id", () => {
+        try {
+
+            const missingId = class {
+
+            }
+            ValueListFieldType({
+                getValues: () => [
+                    new missingId()
+                ]
+            })(missingId)
+            getValueList(missingId);
+            expect(true).toBe(false, "should have failed and not reached this since it's missing an id");
+        }
+        catch {
+
+        }
+    })
+    it("getValuesWorks Early", () => {
+        expect(getValueList(missingCaption).length).toBe(1);
+    });
+
+    it("caption is auto generated", () => {
+        expect(getValueList(missingCaption)[0].caption).toBe("Abc");
+    })
+    it("test caption 2", () => {
+        expect(getValueList(missingCaption2)[0].caption).toBe("Abc");
+    });
+    it ("find by id",()=>{
+        expect(ValueListInfo.get(missingCaption).byId("abc").caption).toBe("Abc");
+    })
+})

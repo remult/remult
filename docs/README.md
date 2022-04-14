@@ -2,13 +2,13 @@
 home: true
 
 heroImage: /logo.png
-tagline: Unopinionated CRUD for fullstack TypeScript
+tagline: A CRUD framework for fullstack TypeScript
 actionText: Get Started →
 actionLink: /tutorials/tutorial-react
 
 features:
 - title: API Included
-  details: Secured API is auto-generated from model TypeScript classes, and consumed by frontend type-safe queries. The generated API can also be used by apps & third-parties.
+  details: Secure API is auto-generated from model TypeScript classes, and consumed by frontend type-safe queries. The generated API can also be used by apps & third-parties.
 
 - title: No Boilerplate
   details: Simple CRUD from frontend to database just works. Smart hooks make it super easy to control data transformation, validations and CRUD events.

@@ -18,16 +18,17 @@ export class Filter {
             return await filter();
         return filter;
     }
-    static createCustom<entityType>(customFilterTranslator: (r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType> {
+    static createCustom<entityType>(customFilterTranslator: (r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key = ''): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType> {
 
-        let customFilterInfo = { key: '', customFilterTranslator };
+        let customFilterInfo = { key: key, customFilterTranslator };
         return Object.assign((x: any) => {
             let z = {};
             if (x == undefined)
                 x = {};
-
+            if (!customFilterInfo.key)
+                throw "Usage of custom filter before a key was assigned to it";
             return {
                 [customUrlToken + customFilterInfo.key]: x
             }
@@ -386,8 +387,16 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
                         addFilter(v);
                     });
                 }
-                else
-                    addFilter(val);
+                else {
+                    if (jsonArray) {
+                        if (typeof val === 'string')
+                            val = JSON.parse(val);
+                    }
+                    const array = separateArrayFromInnerArray(val);
+                    for (const x of array) {
+                        addFilter(x);
+                    }
+                }
             }
         }
         let c = new filterHelper(col);
@@ -419,14 +428,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
     });
     let val = filterInfo.get('OR');
     if (val) {
-        const nonArray = [], array = [];
-        for (const v of val) {
-            if (Array.isArray(v)) {
-                array.push(v);
-            }
-            else nonArray.push(v);
-        }
-        array.push(nonArray);
+        const array = separateArrayFromInnerArray(val);
         where.push({
             $and: array.map(v => ({
                 $or: v.map(x =>
@@ -434,8 +436,6 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
             })
             )
         });
-
-
     }
 
     for (const key in entity.entityType) {
@@ -450,6 +450,21 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
     }
 
     return { $and: where };
+
+    function separateArrayFromInnerArray(val: any) {
+        if (!Array.isArray(val))
+            return [val];
+        const nonArray = [], array = [];
+        for (const v of val) {
+            if (Array.isArray(v)) {
+                array.push(v);
+            }
+            else
+                nonArray.push(v);
+        }
+        array.push(nonArray);
+        return array;
+    }
 }
 
 

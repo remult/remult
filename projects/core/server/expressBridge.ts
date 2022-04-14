@@ -9,8 +9,8 @@ import { registerEntitiesOnServer } from './register-entities-on-server';
 
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Field, Entity, Repository, getEntityKey } from '../src/remult3';
-import { NumberValueConverter } from '../valueConverters';
+import { Field, Entity, Repository, getEntityKey, Fields } from '../src/remult3';
+
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
@@ -77,7 +77,7 @@ export function remultExpress(
   let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
   if (options.logApiEndPoints !== undefined)
     bridge.logApiEndPoints = options.logApiEndPoints;
-  let apiArea = bridge.addArea('/' + Remult.apiBaseUrl);
+  let apiArea = bridge.addArea(Remult.apiBaseUrl);
 
 
 
@@ -768,21 +768,21 @@ export class EntityQueueStorage implements QueueStorage {
   dbName: 'jobsInQueue'
 })
 export class JobsInQueueEntity extends IdEntity {
-  @Field()
+  @Fields.string()
   userId: string;
-  @Field()
+  @Fields.string()
   url: string;
-  @Field()
+  @Fields.date()
   submitTime: Date;
-  @Field()
+  @Fields.date()
   doneTime: Date;
-  @Field()
+  @Fields.string()
   result: string;
-  @Field()
+  @Fields.boolean()
   done: boolean;
-  @Field()
+  @Fields.boolean()
   error: boolean;
-  @Field()
+  @Fields.number()
   progress: number;
 }
 

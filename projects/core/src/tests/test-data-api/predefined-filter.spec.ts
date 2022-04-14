@@ -10,6 +10,7 @@ import { isBackend, Remult } from '../../context';
 import { Categories as newCategories } from '../remult-3-entities';
 import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3';
 import { testAsIfOnBackend } from "../testHelper.spec";
+import { Filter } from "../../filter/filter-interfaces";
 
 
 
@@ -153,6 +154,132 @@ describe("data api", () => {
     });
     d.test();
   });
+  it("getArray works with predefined filter1 ", async () => {
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, CategoriesForThisTest);
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  it("getArray works with predefined filter 2", async () => {
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, CategoriesForThisTest2);
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  it("getArray works with predefined filter 3", async () => {
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, CategoriesForThisTest3);
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  it("getArray works with predefined filter 3 inherit", async () => {
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, CategoriesForThisTest3Inherit);
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  it("getArray works with predefined filter 4", async () => {
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, CategoriesForThisTest4);
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }
+    });
+    d.test();
+  });
+  it("getArray works with predefined filter and inheritance", async () => {
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, CategoriesForThisTestThatInherits);
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.success = data => {
+      expect(data.length).toBe(1);
+
+      d.ok();
+    };
+    await api.getArray(t, {
+      get: x => {
+        return undefined;
+      }
+    });
+    d.test();
+  });
 
   it("works with predefined Entity Filter", async () => {
     let [c] = await createData(async (i) => {
@@ -243,3 +370,41 @@ it("backend filter only works on backend", async () => {
 
 })
 class CategoriesForThisTest extends newCategories { }
+@EntityDecorator<CategoriesForThisTest>(undefined, {
+  allowApiUpdate: true,
+  allowApiDelete: true,
+  apiPrefilter: () => ({ description: 'b' })
+
+})
+class CategoriesForThisTest2 extends newCategories { }
+@EntityDecorator<CategoriesForThisTestThatInherits>(undefined, {
+  backendPrefilter: () => ({ categoryName: { $contains: 'a' } })
+
+})
+class CategoriesForThisTestThatInherits extends CategoriesForThisTest2 { }
+
+
+@EntityDecorator<CategoriesForThisTest3>(undefined, {
+  allowApiUpdate: true,
+  allowApiDelete: true,
+  apiPrefilter: CategoriesForThisTest3.myFilter()
+
+})
+class CategoriesForThisTest3 extends newCategories {
+  static myFilter = Filter.createCustom<CategoriesForThisTest3>(async (remult) => ({ description: 'b' }), "key");
+}
+@EntityDecorator<CategoriesForThisTest3Inherit>(undefined, {
+
+})
+class CategoriesForThisTest3Inherit extends CategoriesForThisTest3 {
+
+}
+@EntityDecorator<CategoriesForThisTest4>(undefined, {
+  allowApiUpdate: true,
+  allowApiDelete: true,
+  apiPrefilter: () => CategoriesForThisTest4.myFilter()
+
+})
+class CategoriesForThisTest4 extends newCategories {
+  static myFilter = Filter.createCustom<CategoriesForThisTest4>(async (remult) => ({ description: 'b' }));
+}

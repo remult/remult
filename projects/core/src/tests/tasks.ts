@@ -1,11 +1,11 @@
-import { Field, Entity, EntityBase } from '../remult3';
+import { Field, Entity, EntityBase, Fields } from '../remult3';
 
 @Entity('tasks', { allowApiCrud: true })
 export class tasks extends EntityBase {
-    @Field()
+    @Fields.integer()
     id: number;
-    @Field()
+    @Fields.string()
     name: string;
-    @Field()
+    @Fields.boolean()
     completed: boolean = false;
 }

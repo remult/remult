@@ -1,5 +1,6 @@
 import { FieldMetadata } from '../';
-import { DateOnlyValueConverter } from '../valueConverters';
+import { ValueConverters } from '../valueConverters';
+
 
 export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
     let result = dbName;
@@ -12,7 +13,7 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
     }
     else if (x.valueType == Date) {
         if (!x.valueConverter.fieldTypeInDb)
-            if (x.valueConverter == DateOnlyValueConverter)
+            if (x.valueConverter == ValueConverters.DateOnly)
                 result += " date";
             else
                 result += " timestamp";
