@@ -1,5 +1,6 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
+const ci = process.env.CI;
 
 module.exports = function (config) {
   config.set({
@@ -24,8 +25,8 @@ module.exports = function (config) {
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: !process.env.CI,
-    browsers: process.env.CI ? ['ChromeHeadless'] : ["Chrome"],
-    singleRun: false
+    autoWatch: !ci,
+    browsers: ci ? ['ChromeHeadless'] : ["Chrome"],
+    singleRun: ci
   });
 };
