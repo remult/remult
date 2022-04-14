@@ -1,6 +1,6 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
-const ci = process.env.CI;
+const ci = process.env.CI || true;
 
 module.exports = function (config) {
   config.set({
