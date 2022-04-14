@@ -21,12 +21,18 @@ module.exports = function (config) {
       reports: ['html', 'lcovonly'],
       fixWebpackSourcePaths: true
     },
-    reporters: ['progress', 'kjhtml'],
+    reporters: ['progress', 'kjhtml', 'coverage'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: !ci,
     browsers: ci ? ['ChromeHeadless'] : ["Chrome"],
-    singleRun: ci
+    singleRun: ci,
+    preprocessor: {
+      '**/**/*.ts': ['coverage']
+    },
+    coverageReporter: {
+      reporters: [{type: 'lcov'}]
+    },
   });
 };
