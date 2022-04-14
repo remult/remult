@@ -24,14 +24,8 @@ module.exports = function (config) {
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['Chrome1'],
-    customLaunchers: {
-      Chrome1: {
-        base: 'ChromeHeadless',
-        flags: []
-      }
-    },
+    autoWatch: !process.env.CI,
+    browsers: process.env.CI ? ['ChromeHeadless'] : ["Chrome"],
     singleRun: false
   });
 };
