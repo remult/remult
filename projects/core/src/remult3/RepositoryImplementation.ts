@@ -372,11 +372,12 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
     create(item?: Partial<OmitEB<entityType>>): entityType {
         let r = new this.entity(this.remult);
-        let z = this.getEntityRef(r);
         if (item)
             for (const field of this.metadata.fields) {
                 r[field.key] = item[field.key];
             }
+        let z = this.getEntityRef(r);
+
 
         return r;
     }

@@ -65,6 +65,7 @@ describe("test non active record", () => {
         var x: taskNonActiveRecord & { changed?: boolean } = { ...new taskNonActiveRecord(), title: 'a', changed: true };
         x = await repo.insert(x);
         expect(x.changed).toBe(undefined);
+        expect (x.id.length>1).toBe(true);
     });
 });
 
