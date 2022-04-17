@@ -5,6 +5,7 @@ import { CustomDataComponent, DataAreaSettings, DataControlSettings, getEntityVa
 
 import { DialogConfig } from '../../../../angular';
 import { RemultAngularPluginsService } from '../../../../angular/src/angular/RemultAngularPluginsService';
+import axios, { Axios } from 'axios';
 
 
 @Controller("blabla")
@@ -56,16 +57,14 @@ export class ProductsComponent implements OnInit {
   });
   area: DataAreaSettings;
   field: FieldRef<any, any>;
-  ngOnInit(): void {
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(AComponent);
+  async ngOnInit() {
+    try {
+      await stam.myMethod();
 
-    const viewContainerRef = this.theId;
-    viewContainerRef.clear();
-
-    const componentRef = viewContainerRef.createComponent<AComponent>(componentFactory);
-    setTimeout(() => {
-
-    }, 1000);
+    }
+    catch (err) {
+      console.log("THE ERROR",JSON.stringify( err));
+    }
   }
   async click() {
 
@@ -75,7 +74,7 @@ export class ProductsComponent implements OnInit {
 
 
 @Entity<stam>('stam', {
-  allowApiCrud: true,
+  allowApiCrud: false,
 
 })
 export class stam extends IdEntity {

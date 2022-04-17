@@ -84,7 +84,8 @@ export async function processHttpException(ex: any) {
         error = "Network Error";
     if (typeof error === 'string') {
         error = {
-            message: error
+            message: error,
+            httpStatusCode:z.status||z.response.status
         };
     }
     var result = Object.assign(error, {
