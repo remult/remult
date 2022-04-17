@@ -18,6 +18,9 @@
 	<a href="https://www.npmjs.com/package/remult">
 		<img alt="npm downloads" src="https://img.shields.io/npm/dm/remult">
 	</a>
+	<a href="https://snyk.io/test/npm/remult">
+		<img alt="snyk" src="https://snyk.io/test/npm/remult/badge.svg"/>
+		</a>
 </div>
 
 ## What is Remult?
