@@ -6,6 +6,7 @@
     "ng-serve": "cd projects/test-angular && ng serve --port 4201",
     "ng-serve-noam-ip-10.0.0.6": "ng serve --port 4201 --host 10.0.0.6",
     "test": "cd projects/test-angular && ng test core",
+    "test:ci": "cd projects/test-angular && ng test core --code-coverage",
     "build": "npm run core-build && npm run remult-angular-build ",
     "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles readme.md dist/remult",
     "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next",
@@ -24,8 +25,7 @@
     "build-ref": "cd docs/tools && build-ref.bat",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
     "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
-    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts",
-    "test:ci": "jasmine-ts projects/core/src/test.ts"
+    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
   },
   "private": true,
   "dependencies": {
