@@ -25,7 +25,8 @@
     "build-ref": "cd docs/tools && build-ref.bat",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
     "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node ./node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
-    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
+    "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts",
+    "server-test2": "cd projects/core && jest"
   },
   "private": true,
   "dependencies": {
@@ -73,6 +74,7 @@
     "@angular/cli": "~11.2.9",
     "@angular/compiler-cli": "~11.2.10",
     "@types/jasmine": "~3.6.0",
+    "@types/jest": "^27.4.1",
     "@types/node": "^12.11.1",
     "@types/pg": "^8.6.3",
     "@types/swagger-ui-express": "^4.1.3",
@@ -87,6 +89,7 @@
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
     "jasmine-ts": "^0.4.0",
+    "jest": "^27.5.1",
     "karma": "~6.3.16",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.0.3",
@@ -94,6 +97,7 @@
     "karma-jasmine-html-reporter": "~1.5.0",
     "ng-packagr": "^11.2.0",
     "protractor": "~7.0.0",
+    "ts-jest": "^27.1.4",
     "ts-node": "^8.10.2",
     "ts-node-dev": "^1.1.8",
     "tsc-watch": "^4.0.0",
