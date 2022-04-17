@@ -20,6 +20,7 @@ workflows:
             npm-run: core-build 
         - node/test:
             name: test
+            run-command: test:ci
             setup: 
               - browser-tools/install-chrome
               - browser-tools/install-chromedriver
