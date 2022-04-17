@@ -85,8 +85,13 @@ export async function processHttpException(ex: any) {
     if (typeof error === 'string') {
         error = {
             message: error,
-            httpStatusCode:z.status||z.response.status
         };
+    }
+    let httpStatusCode = z.status;
+    if (httpStatusCode === undefined)
+        httpStatusCode = z.response?.status;
+    if (httpStatusCode !== undefined && httpStatusCode !== null) {
+        error.httpStatusCode = httpStatusCode;
     }
     var result = Object.assign(error, {
         //     exception: ex disabled for now because JSON.stringify crashed with this
