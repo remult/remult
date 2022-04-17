@@ -15,6 +15,7 @@ import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '.
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance } from '../src/context';
+import { ClassType } from '../classType';
 
 
 export function remultExpress(
@@ -31,7 +32,9 @@ export function remultExpress(
       initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>,
       initApi?: (remult: Remult) => void | Promise<void>,
       logApiEndPoints?: boolean,
-      defaultGetLimit?: number
+      defaultGetLimit?: number,
+      entities?: ClassType<any>[],
+      controllers?: []
     }): RemultExpressBridge {
   let app = express.Router();
   if (!options) {
