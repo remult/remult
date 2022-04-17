@@ -695,3 +695,16 @@ testAll("task with enum string", async ({ createEntity }) => {
     expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
     expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
 });
+testAll("test transaction rollback", async ({ db }) => {
+    let fail = true;
+    try{
+        await db.transaction(async ()=>{
+            throw "error"
+        });
+        fail = false;
+    }
+    catch {
+
+    }
+    expect(fail).toBe(true);
+})
