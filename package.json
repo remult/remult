@@ -26,7 +26,7 @@
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
     "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node ./node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
     "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts",
-    "server-test2": "cd projects/core && jest"
+    "server-test2": "jest --config=projects/core/jest.config.js"
   },
   "private": true,
   "dependencies": {
