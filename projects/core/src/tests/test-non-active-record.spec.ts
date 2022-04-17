@@ -61,6 +61,11 @@ describe("test non active record", () => {
         await repo.delete({ ...item });
         expect(await repo.count()).toBe(1);
     });
+    it("test save doesn't return the messed up object", async () => {
+        var x: taskNonActiveRecord & { changed?: boolean } = { ...new taskNonActiveRecord(), title: 'a', changed: true };
+        x = await repo.insert(x);
+        expect(x.changed).toBe(undefined);
+    });
 });
 
 

@@ -374,7 +374,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let r = new this.entity(this.remult);
         let z = this.getEntityRef(r);
         if (item)
-            Object.assign(r, item);
+            for (const field of this.metadata.fields) {
+                r[field.key] = item[field.key];
+            }
 
         return r;
     }
