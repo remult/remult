@@ -34,7 +34,7 @@ export function remultExpress(
       logApiEndPoints?: boolean,
       defaultGetLimit?: number,
       entities?: ClassType<any>[],
-      controllers?: []
+      controllers?: ClassType<any>[]
     }): RemultExpressBridge {
   let app = express.Router();
   if (!options) {
