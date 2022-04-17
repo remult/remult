@@ -195,7 +195,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         if (!ref) {
             const instance = new this.entity(this.remult);
 
-            for (const field of this.metadata.fields) {
+            for (const field of this.fieldsOf(entity)) {
                 instance[field.key] = entity[field.key];
             }
             let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
@@ -369,11 +369,15 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return r;
     }
 
+    private fieldsOf(item: any) {
+        let keys = Object.keys(item);
+        return this.metadata.fields.toArray().filter(x => keys.includes(x.key));
+    }
 
     create(item?: Partial<OmitEB<entityType>>): entityType {
         let r = new this.entity(this.remult);
         if (item)
-            for (const field of this.metadata.fields) {
+            for (const field of this.fieldsOf(item)) {
                 r[field.key] = item[field.key];
             }
         let z = this.getEntityRef(r);
@@ -383,7 +387,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
     async fromJson(json: any, newRow?: boolean): Promise<entityType> {
         let obj = {};
-        for (const col of this.metadata.fields) {
+        for (const col of this.fieldsOf(json)) {
             if (json[col.key] !== undefined) {
                 obj[col.key] = col.valueConverter.fromJson(json[col.key]);
             }
