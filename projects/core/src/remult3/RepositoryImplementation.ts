@@ -161,8 +161,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     async delete(item: entityType | (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void> {
         if (typeof item === "string" || typeof item === "number")
             return this.edp.delete(item);
-        else
-            await this.getEntityRef(item as entityType).delete();
+        else {
+            return this.getRefForExistingRow(item as entityType, undefined).delete();
+        }
     }
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
@@ -181,15 +182,32 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }
     }
     async update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
-        let row = new rowHelperImplementation(this._info, Object.assign({}, entity), this, this.edp, this.remult, false);
-        let obj = row.copyDataToObject();
-        for (const key in entity) {
-            if (Object.prototype.hasOwnProperty.call(entity, key)) {
-                entity[key] = obj[key];
+
+        let ref = this.getRefForExistingRow(entity, id);
+
+        return (await ref.save()) as unknown as entityType;
+
+
+    }
+
+    private getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number) {
+        let ref = getEntityRef(entity, false);
+        if (!ref) {
+            const instance = new this.entity(this.remult);
+
+            for (const field of this.metadata.fields) {
+                instance[field.key] = entity[field.key];
             }
+            let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
+            if (id)
+                row.id = id;
+            else row.id = row.getId();
+            ref = row;
+            Object.defineProperty(instance, entityMember, {
+                get: () => row
+            });
         }
-        const updatedRow = await this.edp.update(id, entity);
-        return this.mapRawDataToResult(updatedRow, undefined);
+        return ref;
     }
 
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
@@ -981,7 +999,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         } else
             this.id = data[this.repository.metadata.idMetadata.field.key];
     }
-    private id;
+    id;
     public getOriginalId() {
         return this.id;
     }
@@ -1455,13 +1473,7 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
     }
 
 }
-export const Fields1 = {
-    String: () => {
-        return (a) => {
 
-        }
-    }
-}
 export class Fields {
 
     static object<entityType = any, valueType = any>(
