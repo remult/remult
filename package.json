@@ -1,6 +1,6 @@
 {
   "name": "remult",
-  "version": "0.13.15",
+  "version": "0.13.17",
   "scripts": {
     "ng": "ng",
     "ng-serve": "cd projects/test-angular && ng serve --port 4201",
@@ -24,7 +24,7 @@
     "build-ref-ts": "ts-node --project projects/test-angular/tsconfig.server.json ./docs/tools/docs-work.ts",
     "build-ref": "cd docs/tools && build-ref.bat",
     "copy:styles": "copyfiles -V -u 2  projects/angular/input-styles.scss dist/angular/",
-    "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
+    "server-test": "tsc-watch -p ./projects/core/tsconfig.backend-spec.json --onSuccess \"node ./node_modules/jasmine/bin/jasmine out-tsc/**/*.backend-spec.js",
     "server-test1": "ts-node-dev --respawn -- ./node_modules/jasmine/bin/jasmine **/*.backend-spec.ts"
   },
   "private": true,
