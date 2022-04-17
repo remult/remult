@@ -6,7 +6,10 @@
 	<a href="https://circleci.com/gh/remult/remult/tree/master">
 		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=svg">
 	</a>
-	<a href="https://raw.githubusercontent.com/remult/remult/master/LICENSE">
+	<a href="https://codecov.io/gh/remult/remult">
+        	<img src="https://codecov.io/gh/remult/remult/branch/master/graph/badge.svg?token=LYWQRUN3D1"/>
+      	</a>
+    	<a href="https://raw.githubusercontent.com/remult/remult/master/LICENSE">
 		<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg">
 	</a>
 	<a href="https://www.npmjs.com/package/remult">
