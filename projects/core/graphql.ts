@@ -56,10 +56,10 @@ export function remultGraphql(api: RemultExpressBridge) {
             root[key] = async ({ options, filter }, req) => {
                 let remult = await api.getRemult(req);
                 let repo = remult.repo(e);
-                let dapi = new DataApi(repo, remult);
+                let dApi = new DataApi(repo, remult);
                 let result: any;
                 let err: any;
-                await dapi.getArray({
+                await dApi.getArray({
                     success: x => result = x,
                     created: undefined,
                     deleted: undefined,
