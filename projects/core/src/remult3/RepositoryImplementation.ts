@@ -1228,13 +1228,20 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
 
 
     async __performValidation() {
-        let x = typeof (this.settings.validate);
-        if (Array.isArray(this.settings.validate)) {
-            for (const v of this.settings.validate) {
-                await v(this.container, this);
-            }
-        } else if (typeof this.settings.validate === 'function')
-            await this.settings.validate(this.container, this);
+        try {
+            let x = typeof (this.settings.validate);
+            if (Array.isArray(this.settings.validate)) {
+                for (const v of this.settings.validate) {
+                    await v(this.container, this);
+                }
+            } else if (typeof this.settings.validate === 'function')
+                await this.settings.validate(this.container, this);
+        } catch (error) {
+            if (typeof error === "string")
+                this.error = error;
+            else
+                this.error = error.message;
+        }
     }
     async validate() {
         await this.__performValidation();

@@ -4,10 +4,11 @@ import { createData } from "../createData";
 import { DataApi } from '../../data-api';
 import { Remult } from '../../context';
 import { Categories } from "../remult-3-entities";
-import { Field, Entity, EntityBase,  ValueListInfo, Fields } from "../../remult3";
+import { Field, Entity, EntityBase, ValueListInfo, Fields, getEntityRef } from "../../remult3";
 import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
+import { ErrorInfo } from "../../data-interfaces";
 
 
 
@@ -136,7 +137,41 @@ describe("data api", () => {
 })
 class CategoriesForThisTest extends Categories {
 
+}
 
+describe("Test validation with exception", () => {
+    it("", async () => {
+        const repo = new Remult(new InMemoryDataProvider()).repo(ExceptionValidation);
+        let e = repo.create({ name: 'a', name2: 'b' });
+        try {
+            await repo.save(e);
+        } catch (err: any) {
+            const info: ErrorInfo<ExceptionValidation> = err;
+            expect(info.modelState.name).toBe("say what?");
+            expect(getEntityRef(e).fields.name.error).toBe("say what?");
+            expect(info.modelState.name2).toBe("say what?2");
+            expect(getEntityRef(e).fields.name2.error).toBe("say what?2");
+        }
+    });
+});
 
+@Entity(undefined, {})
+export class ExceptionValidation {
+    @Fields.number()
+    id = 0;
+    @Fields.string<ExceptionValidation>({
+        validate: self => {
+            if (self.name.length < 5)
+                throw "say what?";
+        }
+    })
+    name = '';
+    @Fields.string<ExceptionValidation>({
+        validate: self => {
+            if (self.name.length < 5)
+                throw new Error("say what?2");
+        }
+    })
+    name2 = '';
 
 }
