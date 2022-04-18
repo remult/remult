@@ -887,96 +887,34 @@ In this section, we'll be using the following packages:
 2. Create a file called `src/AuthService.ts ` and place the following code in it:
    *src/AuthService.ts*
    ```ts
-   import jwtDecode from 'jwt-decode';
    import * as jwt from 'jsonwebtoken';
-   import { BackendMethod, Remult } from 'remult';
+   import { BackendMethod } from 'remult';
 
    export class AuthService {
-
-   @BackendMethod({ allowed: true })
-   static async signIn(username: string) {
-      const validUsers = [
-         { id: "1", name: "Jane", roles: [] },
-         { id: "2", name: "Steve", roles: [] }
-      ];
-      const user = validUsers.find(user => user.name === username);
-      if (!user)
-         throw new Error("Invalid User");
-      return jwt.sign(user, getJwtTokenSignKey());
-   }
-
-   async signIn(username: string) {
-      this.setAuthToken(await AuthService.signIn(username));
-   }
-   setAuthToken(token: string) {
-      this.remult.setUser(jwtDecode(token));
-      sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-   }
-   signOut() {
-      this.remult.setUser(undefined!);
-      sessionStorage.removeItem(AUTH_TOKEN_KEY);
-   }
-
-   static fromStorage(): string {
-      return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
-   }
-
-   constructor(private remult: Remult) {
-      const token = AuthService.fromStorage();
-      if (token) {
-         this.setAuthToken(token);
+      @BackendMethod({ allowed: true })
+      static async signIn(username: string) {
+         const validUsers = [
+               { id: "1", name: "Jane", roles: [] },
+               { id: "2", name: "Steve", roles: [] }
+         ];
+         const user = validUsers.find(user => user.name === username);
+         if (!user)
+               throw new Error("Invalid User");
+         return jwt.sign(user, getJwtTokenSignKey());
       }
-   }
    }
 
    export function getJwtTokenSignKey() {
-   if (process.env.NODE_ENV === "production")
-      return process.env.TOKEN_SIGN_KEY!;
-   return "my secret key";
+      if (process.env.NODE_ENV === "production")
+         return process.env.TOKEN_SIGN_KEY!;
+      return "my secret key";
    }
-
-   const AUTH_TOKEN_KEY = "authToken";
    ```
-   * Note that tThe (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
+   * Note that The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
    
    The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 
-3. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
-
-   *package.json*
-   ```json
-   "browser": {
-      "jsonwebtoken": false
-   }
-   ```
-
-   ::: danger This step is not optional
-   React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
-
-   **For this change to take effect, our React app's dev server must be restarted by terminating the `dev-react` script and running it again.**
-   :::
-4. To use `axios` for the http client used by `remult` replace the code in the `common.ts` file with the following code.
-
-   *src/common.ts*
-   ```ts
-   import axios from 'axios';
-   import { Remult } from "remult";
-   import { AuthService } from "./AuthService";
-   
-   axios.interceptors.request.use(config => {
-       const token = AuthService.fromStorage();
-       if (token)
-           config.headers!["Authorization"] = "Bearer " + token;
-       return config;
-   });
-   export const remult = new Remult(axios);
-   
-   export const auth = new AuthService(remult);
-   ```
-   ::: warning Imports
-   This code requires imports for `AuthService` from `./AuthService` and `JwtModule` from `@auth0/react-jwt`.
-   :::
-5. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+3. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
    ```ts{2-3,9-13}
@@ -997,9 +935,61 @@ In this section, we'll be using the following packages:
    app.listen(3002, () => console.log("Server started"));
    ```
 
+   The `expressJwt` module verifies for each request that the auth token is valid, and extracts the user info from it to be used on the server.
+
+
    `credentialsRequired` is set to `false` to allow unauthenticated API requests (e.g. the request to `signIn`).
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
+
+4. Add the following code that manages the auth token and includes it in the header of `axios` based requests in the `common.ts` file. The auth token is also stored in the `sessionStorage` to be retrieved when the user reloads the page.
+
+   *src/common.ts*
+   ```ts{2,7-27}
+   import axios from 'axios';
+   import jwtDecode from 'jwt-decode';
+   import { Remult } from "remult";
+
+   export const remult = new Remult(axios);
+
+   const AUTH_TOKEN_KEY = "authToken";
+
+   export function setAuthToken(token: string | null) {
+      if (token) {
+         remult.setUser(jwtDecode(token));
+         sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+      }
+      else {
+         remult.setUser(undefined!);
+         sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      }
+   }
+   //initialize the user based on session storage on application load
+   setAuthToken(sessionStorage.getItem(AUTH_TOKEN_KEY));
+
+   axios.interceptors.request.use(config => {
+      const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+      if (token)
+         config.headers!["Authorization"] = "Bearer " + token;
+      return config;
+   });
+   ```
+
+
+5. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
+
+   *package.json*
+   ```json
+   "browser": {
+      "jsonwebtoken": false
+   }
+   ```
+
+   ::: danger This step is not optional
+   React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
+
+   **For this change to take effect, our React app's dev server must be restarted by terminating the `dev-react` script and running it again.**
+   :::
 
 6. Add the following code to the `App` function component, and replace the start of the `return` statement, .
 
@@ -1007,11 +997,11 @@ In this section, we'll be using the following packages:
    ```tsx
    const [username, setUsername] = useState("");
    const signIn = async () => {
-     await auth.signIn(username);
+     setAuthToken(await AuthService.signIn(username));
      loadTasks();
    }
    const signOut = () => {
-     auth.signOut();
+     setAuthToken(null);
      setTasks([]);
    }
    if (!remult.authenticated())
@@ -1031,7 +1021,7 @@ In this section, we'll be using the following packages:
    ```
 
    ::: warning Imports
-   This code requires imports for `auth` from the existing import of `./common`.
+   This code requires imports for `AuthService` from `./AuthService` and `setAuthToken` from the existing import of `./common`.
    :::
 
 
