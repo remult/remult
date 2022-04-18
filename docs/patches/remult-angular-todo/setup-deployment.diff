@@ -48,7 +48,7 @@ index 1f0794d..f743208 100644
 @@ -1,13 +1,21 @@
  import * as express from 'express';
  import * as expressJwt from 'express-jwt';
- import { getJwtTokenSignKey } from '../app/auth.service';
+ import { getJwtSigningKey } from '../app/auth.service';
 +import * as compression from 'compression';
 +import * as helmet from 'helmet';
  import { initExpress } from 'remult/server';
@@ -57,7 +57,7 @@ index 1f0794d..f743208 100644
 +app.use(helmet({ contentSecurityPolicy: false }));
 +app.use(compression());
  app.use(expressJwt({
-     secret: getJwtTokenSignKey(),
+     secret: getJwtSigningKey(),
      credentialsRequired: false,
      algorithms: ['HS256']
  }));

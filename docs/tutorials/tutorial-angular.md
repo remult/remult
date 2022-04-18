@@ -807,7 +807,7 @@ In this section, we'll be using the following packages:
    npm i jsonwebtoken @auth0/angular-jwt express-jwt
    npm i --save-dev  @types/jsonwebtoken @types/express-jwt 
    ```
-2. Create a file called `src/app/user.ts` and aplace the following code in it:
+2. Create a file `src/app/user.ts` and place the following code in it:
    *src/app/user.ts*
    ```ts
    import * as jwt from 'jsonwebtoken';
@@ -823,10 +823,10 @@ In this section, we'll be using the following packages:
            const user = validUsers.find(user => user.name === username);
            if (!user)
                throw new Error("Invalid User");
-           return jwt.sign(user, getJwtTokenSignKey());
+           return jwt.sign(user, getJwtSigningKey());
        }
    }
-   export function getJwtTokenSignKey() {
+   export function getJwtSigningKey() {
        if (process.env['NODE_ENV'] === "production")
            return process.env['TOKEN_SIGN_KEY']!;
        return "my secret key";
@@ -851,7 +851,7 @@ In this section, we'll be using the following packages:
    **For this change to take effect, our Angular app's dev server must be restarted by terminating the `dev-ng` script and running it again.**
    :::
 
-4. Create a file called `src/app/auth.service.ts ` and place the following code in it:
+4. Create a file `src/app/auth.service.ts` and place the following code in it:
    *src/app/auth.service.ts*
    ```ts
    import { Injectable } from '@angular/core';
@@ -913,14 +913,14 @@ In this section, we'll be using the following packages:
    ```ts{2-3,9-13}
    import * as express from 'express';
    import * as expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../app/user';
+   import { getJwtSigningKey } from '../app/user';
    import { remultExpress } from 'remult/remult-express';
    import '../app/task';
    import '../app/tasks.service';
    
    const app = express();
    app.use(expressJwt({
-       secret: getJwtTokenSignKey(),
+       secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
@@ -1046,7 +1046,7 @@ import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
       const user = validUsers.find(user => user.name === username);
       if (!user)
         throw new Error("Invalid User");
-      return jwt.sign(user, getJwtTokenSignKey());
+      return jwt.sign(user, getJwtSigningKey());
    }
    ```
 
@@ -1077,7 +1077,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    ```ts{4-5,11-12,19-23}
    import * as express from 'express';
    import * as expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../app/user';
+   import { getJwtSigningKey } from '../app/user';
    import * as compression from 'compression';
    import * as helmet from 'helmet';
    import { remultExpress } from 'remult/remult-express';
@@ -1088,7 +1088,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
-       secret: getJwtTokenSignKey(),
+       secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
@@ -1138,7 +1138,7 @@ For this tutorial, we will use `postgres` as a production database.
    import * as expressJwt from 'express-jwt';
    import * as sslRedirect from 'heroku-ssl-redirect'
    import { createPostgresConnection } from 'remult/postgres';
-   import { getJwtTokenSignKey } from '../app/user';
+   import { getJwtSigningKey } from '../app/user';
    import { remultExpress } from 'remult/remult-express';
    import '../app/task';
    import '../app/tasks.service';
@@ -1148,7 +1148,7 @@ For this tutorial, we will use `postgres` as a production database.
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
-       secret: getJwtTokenSignKey(),
+       secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
