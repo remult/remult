@@ -105,10 +105,19 @@ testAll("transactions", async ({ db, createEntity }) => {
 
 
 let client = new MongoClient("mongodb://localhost:27017/local");
-let mongoDbPromise = client.connect().then(c => c.db("test"));
+let done: MongoClient;
+let mongoDbPromise = client.connect().then(c => {
+    done = c;
+    return c.db("test");
+
+});
+
+afterAll(async () => {
+    if (done)
+        done.close();
+});
 
 
- 
 export function testMongo(key: string, what: dbTestWhatSignature, focus = false) {
     itWithFocus(key + " - mongo", async () => {
         let mongoDb = await mongoDbPromise;
@@ -118,7 +127,6 @@ export function testMongo(key: string, what: dbTestWhatSignature, focus = false)
             db, remult,
             createEntity:
                 async (entity: ClassType<any>) => {
-
                     let repo = remult.repo(entity);
                     await mongoDb.collection(await repo.metadata.getDbName()).deleteMany({})
 
