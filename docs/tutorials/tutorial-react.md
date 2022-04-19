@@ -195,7 +195,7 @@ At this point our starter project is up and running. We are now ready to start c
 Setup [Swagger UI](../docs/adding-swagger) and/or a [GraphQL backend](../docs/adding-graphql) in seconds.
 :::
 
-## Entities and CRUD Operations
+## Entities 
 
 Let's start coding the app by defining the `Task` entity class.
 
@@ -204,374 +204,126 @@ The `Task` entity class will be used:
 * As a model class for server-side code
 * By `remult` to generate API endpoints, API queries and database commands
 
-The `Task` entity class we're creating will have an `id` field and a `title` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
-
-1. Create a file `Task.ts` in the `src/` folder, with the following code:
+The `Task` entity class we're creating will have an auto generated uuid `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+1. Create a directory called `shared` in the `src` directory - in this folder we'll place code that is shared by the frontend and backend.
+2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
    *src/Task.ts*
    ```ts
-   import { Fields, Entity, IdEntity } from "remult";
-   
+   import { Entity, Fields } from "remult";
    @Entity("tasks", {
-       allowApiCrud: true
+      allowApiCrud: true
    })
-   export class Task extends IdEntity {
-       @Fields.string()
-       title = '';
+   export class Task {
+      @Fields.uuid()
+      id!: string;
+      @Fields.string()
+      title = '';
+      @Fields.boolean()
+      completed = false;
    }
    ```
 
-2. Import the `Task` module into the API server's `index` module:
+
+4. Add the `Task` entity to the `entities` array in the server's `index.ts` file:
 
    *src/server/index.ts*
-   ```ts
-   import '../Task';
+   ```ts{3,7}
+   import express from 'express';
+   import { remultExpress } from 'remult/remult-express';
+   import { Task } from '../shared/Task';
+
+   let app = express();
+   app.use(remultExpress({
+      entities: [Task]
+   }));
+
+   app.listen(3002, () => console.log("Server started"));
    ```
 
 The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
 
-`IdEntity` is a base class for entity classes, which defines a unique string identifier field named `id`. <!-- consider linking to reference -->
+The `@Fields.uuid` decorator tells remult to automatically generate an id using `uuid`. We mark that property as optional, since the id will be auto-generated. 
 
-The [@Fields.string](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial.
+The [@Fields.string](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
-### Create new tasks
+### Insert seed test data
+*src/server/index.ts*
+```ts{8-19}
+import express from 'express';
+import { remultExpress } from 'remult/remult-express';
+import { Task } from '../shared/Task';
 
-The first feature of our app is letting the user create a new task by typing a task title and clicking a button. Let's implement this feature within the main `App` function component.
+let app = express();
+app.use(remultExpress({
+    entities: [Task],
+    initApi: async remult => {
+        const taskRepo = remult.repo(Task);
+        if (await taskRepo.count() === 0) {
+            await taskRepo.insert([
+                { title: "Task a" },
+                { title: "Task b", completed: true },
+                { title: "Task c" },
+                { title: "Task d" },
+                { title: "Task e", completed: true }
+            ]);
+        }
+    }
+}));
+
+app.listen(3002, () => console.log("Server started"));
+```
+
+The `initApi` hook is called once when the server is ready and can be used to perform init operations.
+we start by asking `remult` to provide us a [Repository](../docs/ref_repository.md) of type `Task`. The `Repository` will be used to perform CRUD operations on `Task`.
+Then we check if there are no rows, insert 5 rows to the db, to be used as test data.
+
+
+Once you save the `index.ts` file the backend will restart and create these 5 rows. Navigate to the `tasks` API route at <http://localhost:3002/api/tasks> to see the tasks have been successfully stored on the server.
+
+::: warning Wait, where is the backend database?
+In this tutorial we start by storing entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file containing the created tasks.
+
+`remult` supports many databases, including `postgres` (which we'll use later in this tutorial), `mongodb`  and many others - see [Optional Databases](https://remult.dev/docs/databases.html) for further info
+:::
+
+
+### Display the data using react
+The first feature of our app, is displaying the existing data.
 
 Replace the contents of `App.tsx` with the following:
 
 *src/App.tsx*
 ```tsx
-import { useState } from 'react';
-import { remult } from './common';
-import { Task } from './Task';
+import { useEffect, useState } from "react";
+import { remult } from "./common";
+import { Task } from "./shared/Task";
 
 const taskRepo = remult.repo(Task);
-
 function App() {
-  const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
-
-  const createTask = async () => {
-    await newTask.save();
-    setNewTask({ newTask: taskRepo.create() });
-  }
-
+  const [tasks, setTasks] = useState<Task[]>([]);
+  useEffect(() => {
+    taskRepo.find().then(setTasks);
+  }, []);
   return (
-    <div>
-      <input value={newTask.title}
-        onChange={(e) =>
-          setNewTask({
-            newTask: newTask.assign({ title: e.target.value })
-          })}
-      />
-      <button onClick={createTask}>Create Task</button>
+    <div >
+      {tasks.map(task => (
+        <div key={task.id}>
+          <input type="checkbox" checked={task.completed} />
+          {task.title}
+        </div>
+      ))}
     </div>
   );
 }
-
 export default App;
 ```
 
 Here's a quick overview of the different parts of the code snippet:
 
-* `tasksRepo` is a Remult [Repository](../docs/ref_repository.md) object used to fetch and create Task entity objects.
+`tasksRepo` is a Remult [Repository](../docs/ref_repository.md) object used to fetch and create Task entity objects.
 
-* The `newTask` field contains a new, empty, instance of a Task entity object, instantiated using Remult. 
-
-* The `createTask` function stores the newly created task to the backend database (through an API POST endpoint handled by Remult), and the `newTask` member is replaced with a new Task object.
-
-### Run and create tasks
-Using the browser, create a few new tasks. Then, navigate to the `tasks` API route at <http://localhost:3002/api/tasks> to see the tasks have been successfully stored on the server.
-
-::: warning Wait, where is the backend database?
-By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the workspace folder, with a `tasks.json` file containing the created tasks.
-:::
-
-
-### Display the list of tasks
-To display the list of existing tasks, we'll add a `Task` array field to the `App` function component, load data from the server, and display it in an unordered list.
-
-Add the highlighted code to the `App` function component:
-
-*src/App.tsx*
-```tsx{4-11,16,28-33}
-function App() {
-   const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
-
-   const [tasks, setTasks] = useState([] as Task[]);
-
-   const loadTasks = useCallback(async () => {
-      const tasks = await taskRepo.find();
-      setTasks(tasks);
-   }, []);
-
-   useEffect(() => { loadTasks() }, [loadTasks]);
-
-   const createTask = async () => {
-      await newTask.save();
-      setNewTask({ newTask: taskRepo.create() });
-      loadTasks();
-   }
-
-   return (
-      <div>
-         <input value={newTask.title}
-            onChange={(e) =>
-               setNewTask({
-               newTask: newTask.assign({ title: e.target.value })
-               })}
-         />
-         <button onClick={createTask}>Create Task</button>
-         <ul>
-            {tasks.map(task => (
-               <li key={task.id}>
-               {task.title}
-               </li>))
-            }
-         </ul>
-      </div>
-   );
-}
-```
-
-We've added the following things:
-
-* `tasks` is a Task array React state to hold the list.
-* `loadTasks` is a React callback which uses the Remult repository's [find](../docs/ref_repository.html#find) method to fetch tasks from the server.
-* React useEffect hook is used to call `loadTasks` once when the React component is loaded.
-* `createTask` now calls `loadTasks` to refresh the list of tasks after a new task is created.
-
-After the browser refreshes, the list of tasks appears. Create a new task and it's added to the list.
-
-### Delete tasks
-Let's add a *Delete* button next to each task on the list, which will delete that task in the backend database and refresh the list of tasks.
-
-1. Add the following `deleteTask` callback to the `App` function component.
-
-   *src/App.tsx*
-   ```ts
-   const deleteTask = async (task: Task) => {
-     await task.delete();
-     loadTasks();
-   }
-   ```
-
-2. Add the *Delete* button to the task list `tsx`.
-
-   *src/App.tsx*
-   ```tsx{5}
-   <ul>
-     {tasks.map(task => (
-         <li key={task.id}>
-             {task.title}
-             <button onClick={() => deleteTask(task)}>Delete</button>
-         </li>))}
-   </ul>
-   ```
-
-After the browser refreshes, a *Delete* button appears next to each task in the list. Delete a task by clicking the button.
-
-### Making the task titles editable
-To make the titles of the tasks in the list editable, let's add a `TaskEditor` React functional component and use it in our `App` function component.
-
-The `TaskEditor` tsx will contain an `input` for editing the titles, and a *Save* button to save the changes to the backend database. We'll use the `wasChanged` method of Remult's `EntityRef` object (accessed using the `_` member of the entity object) to disable the *Save* button while there are no changes to save.
-
-1. Create a `TaskEditor.tsx` file in the `src` folder, and place the following code in it:
-   ```tsx
-   import { useEffect, useState } from "react";
-   import { Task } from "./Task";
-   
-   export const TaskEditor: React.FC<{ task: Task }> = (props) => {
-       const [{ task }, setTask] = useState(props);
-       useEffect(() => setTask(props), [props]);
-       const save = async () => {
-           await task.save();
-           setTask({ task });
-       };
-       return <span>
-           <input
-               value={task.title}
-               onChange={e =>
-                   setTask({ task: task.assign({ title: e.target.value }) })
-               }
-           />
-           <button onClick={() => save()}
-               disabled={!task._.wasChanged()}
-           >save</button>
-       </span>
-   }
-   ```
-
-2. Replace the task title `tsx` expression in `App.tsx` with the highlighted line:
-
-   *src/App.tsx*
-   ```tsx{3}
-   <ul>
-      {tasks.map(task => (<li key={task.id}>
-         <TaskEditor task={task} />
-         <button onClick={() => deleteTask(task)}>Delete</button>
-      </li>))}
-   </ul>
-   ```
-
-   ::: danger Import TaskEditor
-   Don't forget to import `TaskEditor` into `App.tsx` for this code to work.
-   ```ts
-   import { TaskEditor } from './TaskEditor';
-   ```
-   :::
-
-### Mark tasks as completed
-Let's add a new feature - marking tasks in the todo list as completed using a `checkbox`. Titles of tasks marked as completed should have a `line-through` text decoration.
-
-1. Add a `completed` field of type `boolean` to the `Task` entity class, and decorate it with the `@Fields.boolean` decorator.
-
-   *src/Task.ts*
-   ```ts
-    @Fields.boolean()
-    completed = false;
-   ```
-
-2. Add a an html `input` of type `checkbox` to the `TaskEditor`. 
-   
-   Set the `text-decoration` style attribute expression of the task `title` input element to evaluate to `line-through` when the value of `completed` is `true`.
-
-   *src/TaskEditor.tsx*
-   ```tsx{2-8,14}
-   return <span>
-        <input
-            checked={task.completed}
-            type="checkbox"
-            onChange={e =>
-                setTask({ task: task.assign({ completed: e.target.checked }) })
-            }
-        />
-        <input
-            value={task.title}
-            onChange={e =>
-                setTask({ task: task.assign({ title: e.target.value }) })
-            }
-            style={{ textDecoration: task.completed ? 'line-through' : undefined! }}
-        />
-        <button onClick={() => save()}
-            disabled={!task._.wasChanged()}
-        >save</button>
-    </span>
-   ```
-
-After the browser refreshes, a checkbox appears next to each task in the list. Mark a few tasks as completed using the checkboxes.
-
-### Code review
-We've implemented the following features of the todo app:
-* Creating new tasks
-* Displaying the list of tasks
-* Updating and deleting tasks
-* Marking tasks as completed
-
-Here are the code files we've modified to implement these features.
-
-*src/Task.ts*
-```ts
-import { Fields, Entity, IdEntity } from "remult";
-
-@Entity("tasks", {
-    allowApiCrud: true
-})
-export class Task extends IdEntity {
-    @Fields.string()
-    title = '';
-    @Fields.boolean()
-    completed = false;
-}
-```
-
-*src/App.tsx*
-```tsx
-import { useCallback, useEffect, useState } from 'react';
-import { remult } from './common';
-import { Task } from './Task';
-import { TaskEditor } from './TaskEditor';
-
-const taskRepo = remult.repo(Task);
-
-function App() {
-  const [{ newTask }, setNewTask] = useState(() => ({ newTask: taskRepo.create() }));
-
-  const [tasks, setTasks] = useState([] as Task[]);
-
-  const loadTasks = useCallback(async () => {
-    const tasks = await taskRepo.find();
-    setTasks(tasks);
-  }, []);
-  useEffect(() => { loadTasks() }, [loadTasks]);
-
-  const createTask = async () => {
-    await newTask.save();
-    setNewTask({ newTask: taskRepo.create() });
-    loadTasks();
-  }
-
-  const deleteTask = async (task: Task) => {
-    await task.delete();
-    loadTasks();
-  }
-
-  return (
-    <div>
-      <input value={newTask.title}
-        onChange={(e) =>
-          setNewTask({
-            newTask: newTask.assign({ title: e.target.value })
-          })}
-      />
-      <button onClick={createTask}>Create Task</button>
-      <ul>
-        {tasks.map(task => (
-          <li key={task.id}>
-            <TaskEditor task={task} />
-            <button onClick={() => deleteTask(task)}>Delete</button>
-          </li>))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-*src/TaskEditor.tsx*
-```tsx
-import { useEffect, useState } from "react";
-import { Task } from "./Task";
-
-export const TaskEditor: React.FC<{ task: Task }> = (props) => {
-    const [{ task }, setTask] = useState(props);
-    useEffect(() => setTask(props), [props]);
-    const save = async () => {
-        await task.save();
-        setTask({ task });
-    };
-    return <span>
-        <input
-            checked={task.completed}
-            type="checkbox"
-            onChange={e =>
-                setTask({ task: task.assign({ completed: e.target.checked }) })
-            }
-        />
-        <input
-            value={task.title}
-            onChange={e =>
-                setTask({ task: task.assign({ title: e.target.value }) })
-            }
-            style={{ textDecoration: task.completed ? 'line-through' : undefined! }}
-        />
-        <button onClick={() => save()}
-            disabled={!task._.wasChanged()}
-        >save</button>
-    </span>
-}
-```
+After the browser refreshes, the list of tasks appears.
 
 ## Sorting and Filtering
 The RESTful API created by Remult supports server-side sorting and filtering. Let's use that to sort and filter the list of tasks.
@@ -579,15 +331,14 @@ The RESTful API created by Remult supports server-side sorting and filtering. Le
 ### Show uncompleted tasks first
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `loadTasks` method of the `App` function component, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
+In the `useEffect` hook `App` function component, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
 
 *src/App.tsx*
-```ts{2-4}
-const loadTasks = useCallback(async () => {
-  const tasks = await taskRepo.find({
-    orderBy: { completed: "asc" }
-  });
-  setTasks(tasks);
+```ts{3}
+useEffect(() => {
+   taskRepo.find({
+   orderBy: { completed: "asc" }
+   }).then(setTasks);
 }, []);
 ```
 
@@ -597,20 +348,19 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 ### Hide completed tasks
 Let's hide all completed tasks, using server side filtering.
 
-1. In the `loadTasks` method of the `App` function component, set the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)`.
+1. In the `useEffect` hook of the `App` function component, set the `where` property of the `options` argument of `find` to `{ completed: false }`}.
 
    *src/App.tsx*
    ```ts{4}
-   const loadTasks = useCallback(async () => {
-     const tasks = await taskRepo.find({
+   useEffect(() => {
+     taskRepo.find({
        orderBy: { completed: "asc" },
        where: { completed: false }
-     });
-     setTasks(tasks);
+     }).then(setTasks);
    }, []);
    ```
    ::: warning Note
-   Because the `completed` field is of type `boolean`, the argument of its `isEqualTo` method is **compile-time checked to be of the `boolean` type.**
+   Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type.**
    :::
 
 ### Optionally hide completed tasks
@@ -623,55 +373,240 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
    const [hideCompleted, setHideCompleted] = useState(false);
    ```
 
-2. In the `loadTasks` method of the `App` function component, change the `where` property of the `options` argument of `find` to an arrow function which accepts an argument of the `Task` entity class and returns an `isEqualTo(false)` filter if the `hideCompleted` field is `true`, also register the `hideCompleted` in the array that is sent as the second parameter to `useCallback`.
+2. In the `useEffect` hook of the `App` function component, change the `where` property of the `options` argument of `find`. Also register the `hideCompleted` in the array that is sent as the second parameter to `useEffect`.
 
    *src/App.tsx*
-   ```ts{4,7}
-   const loadTasks = useCallback(async () => {
-     const tasks = await taskRepo.find({
+   ```ts{3,6}
+   useEffect(() => {
+     taskRepo.find({
        orderBy: { completed: "asc" },
        where: { completed: hideCompleted ? false : undefined }
-     });
-     setTasks(tasks);
+     }).then(setTasks);
    }, [hideCompleted]);
    ```
 
-3. Add a `checkbox` input element immediately before the unordered list element in `App.tsx`, bind it to the `hideCompleted` field, and add a `change` handler which calls `loadTasks` when the value of the checkbox is changed.
+3. Add a `checkbox` input element immediately before the `tasks` map in `App.tsx`, bind it to the `hideCompleted` field, and add a `change` handler which sets the `setHideCompleted` when the value of the checkbox is changed.
 
    *src/App.tsx*
-   ```tsx{10-20}
+   ```tsx{3-7}
    return (
-     <div>
-       <input value={newTask.title}
-         onChange={(e) =>
-           setNewTask({
-             newTask: newTask.assign({ title: e.target.value })
-           })}
-       />
-       <button onClick={createTask}>Create Task</button>
-       <div>
-         <input
-           id="hideCompleted"
-           type="checkbox"
-           checked={hideCompleted}
-           onChange={e =>
-             setHideCompleted(e.target.checked)
-           }
-         />
-         <label htmlFor="hideCompleted">Hide completed</label>
-       </div>
-       <ul>
-         {tasks.map(task => (
-           <li key={task.id}>
-             <TaskEditor task={task} />
-             <button onClick={() => deleteTask(task)}>Delete</button>
-           </li>))}
-       </ul>
+     <div >
+       <input
+         type="checkbox"
+         checked={hideCompleted}
+         onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+       <hr />
+       {tasks.map(task => (
+         <div key={task.id}>
+           <input type="checkbox" checked={task.completed} />
+           {task.title}
+         </div>
+       ))}
      </div>
    );
    ```
 
 After the browser refreshes, a "Hide completed" checkbox appears above the task list. The user can toggle the display of uncompleted tasks using the checkbox.
+
+## CRUD Operations
+Let's make the `tasks` updatable, we'll start by adding a `handleChange` method and use an input for the `title` and `completed` fields.
+*src/App.tsx*
+```tsx{1-3,13-18}
+const handleChange = (task: Task, values: Partial<Task>) => {
+   setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+}
+return (
+   <div >
+     <input
+        type="checkbox"
+        checked={hideCompleted}
+        onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+     <hr />
+     {tasks.map(task => (
+        <div key={task.id}>
+           <input type="checkbox"
+           checked={task.completed}
+           onChange={e => handleChange(task, { completed: e.target.checked })}/>
+           <input
+           value={task.title}
+           onChange={e => handleChange(task, { title: e.target.value })} />
+        </div>
+     ))}
+   </div>
+);
+```
+
+Now, let's add a `save` button that'll save the `entity` to the server.
+*src/App.tsx*
+```tsx{1-4,20}
+const saveTask = async (task: Task) => {
+   const savedTask = await taskRepo.save(task);
+   setTasks(tasks.map(t => t === task ? savedTask : t));
+}
+return (
+   <div >
+     <input
+        type="checkbox"
+        checked={hideCompleted}
+        onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+     <hr />
+     {tasks.map(task => (
+        <div key={task.id}>
+           <input type="checkbox"
+           checked={task.completed}
+           onChange={e => handleChange(task, { completed: e.target.checked })} />
+           <input
+           value={task.title}
+           onChange={e => handleChange(task, { title: e.target.value })} />
+           <button onClick={() => saveTask(task)}>Save</button>
+        </div>
+     ))}
+   </div>
+);
+```
+### Add new Tasks
+*src/App.tsx*
+```tsx{1-3,22}
+const addTask = () => {
+   setTasks([...tasks, new Task()])
+}
+return (
+   <div >
+     <input
+        type="checkbox"
+        checked={hideCompleted}
+        onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+     <hr />
+     {tasks.map(task => (
+        <div key={task.id}>
+           <input type="checkbox"
+           checked={task.completed}
+           onChange={e => handleChange(task, { completed: e.target.checked })} />
+           <input
+           value={task.title}
+           onChange={e => handleChange(task, { title: e.target.value })} />
+           <button onClick={() => saveTask(task)}>Save</button>
+        </div>
+     ))}
+     <button onClick={addTask}>Add Task</button>
+   </div>
+);
+```
+
+* Note that the task is not saved to the server until you press the `Save` button. The `taskRepo.Save` method knows that this is a new row, because it has no `id`. Alternatively you can adjust it to use the `taskRepo.insert` method.
+
+### Delete a task
+*src/App.tsx*
+```tsx{1-4,21}
+const deleteTask = async (task: Task) => {
+  await taskRepo.delete(task);
+  setTasks(tasks.filter(t => t !== task));
+}
+return (
+  <div >
+    <input
+      type="checkbox"
+      checked={hideCompleted}
+      onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+    <hr />
+    {tasks.map(task => (
+      <div key={task.id}>
+        <input type="checkbox"
+          checked={task.completed}
+          onChange={e => handleChange(task, { completed: e.target.checked })} />
+        <input
+          value={task.title}
+          onChange={e => handleChange(task, { title: e.target.value })} />
+        <button onClick={() => saveTask(task)}>Save</button>
+        <button onClick={() => deleteTask(task)}>Delete</button>
+      </div>
+    ))}
+    <button onClick={addTask}>Add Task</button>
+  </div>
+);
+```
+
+### Code review
+We've implemented the following features of the todo app:
+* Creating new tasks
+* Displaying the list of tasks
+* Updating and deleting tasks
+* Marking tasks as completed
+
+Here are the code files we've modified to implement these features.
+
+*src/Task.ts*
+```ts
+import { Entity, Fields } from "remult";
+@Entity("tasks", {
+    allowApiCrud: true
+})
+export class Task {
+    @Fields.uuid()
+    id!: string;
+    @Fields.string()
+    title = '';
+    @Fields.boolean()
+    completed = false;
+}
+```
+
+*src/App.tsx*
+```tsx
+import { useEffect, useState } from "react";
+import { remult } from "./common";
+import { Task } from "./shared/Task";
+
+const taskRepo = remult.repo(Task);
+function App() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [hideCompleted, setHideCompleted] = useState(false);
+  useEffect(() => {
+    taskRepo.find({
+      orderBy: { completed: "asc" },
+      where: { completed: hideCompleted ? false : undefined }
+    }).then(setTasks);
+  }, [hideCompleted]);
+  const handleChange = (task: Task, values: Partial<Task>) => {
+    setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+  }
+  const saveTask = async (task: Task) => {
+    const savedTask = await taskRepo.save(task);
+    setTasks(tasks.map(t => t === task ? savedTask : t));
+  }
+  const addTask = () => {
+    setTasks([...tasks, new Task()])
+  }
+  const deleteTask = async (task: Task) => {
+    await taskRepo.delete(task);
+    setTasks(tasks.filter(t => t !== task));
+  }
+  return (
+    <div >
+      <input
+        type="checkbox"
+        checked={hideCompleted}
+        onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+      <hr />
+      {tasks.map(task => (
+        <div key={task.id}>
+          <input type="checkbox"
+            checked={task.completed}
+            onChange={e => handleChange(task, { completed: e.target.checked })} />
+          <input
+            value={task.title}
+            onChange={e => handleChange(task, { title: e.target.value })} />
+          <button onClick={() => saveTask(task)}>Save</button>
+          <button onClick={() => deleteTask(task)}>Delete</button>
+        </div>
+      ))}
+      <button onClick={addTask}>Add Task</button>
+    </div>
+  );
+}
+
+export default App;
+```
 
 ## Validation
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
@@ -680,7 +615,7 @@ Validating user entered data is usually required both on the client-side and on 
 
 Task titles are required. Let's add a validity check for this rule, and display an appropriate error message in the UI.
 
-1. In the `Task` entity class, modify the `Field` decorator for the `title` field to include an argument which implements the `ColumnOptions` interface. Implement the interface using an object literal and set the object's `validate` property to `Validators.required`.
+1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an argument which implements the `FieldOptions` interface. Implement the interface using an object literal and set the object's `validate` property to `Validators.required`.
 
    *src/Task.ts*
    ```ts{1-3}
@@ -690,33 +625,22 @@ Task titles are required. Let's add a validity check for this rule, and display 
     title = '';
    ```
 
-2. In the `App.tsx` template, add a `div` element immediately after the `div` element containing the new task title `input`. Place the `newTask.$.title.error` text as its contents.
+2. In the `App.tsx` template, adjust the `saveTask` function to catch errors .
 
    *src/App.tsx*
-   ```tsx
-   <div>
-     {newTask.$.title.error}
-   </div>
-   ```
-
-3. We'll also need to adjust the `createTask` method to notify React the state of the `newTask` has changed.
-
-   *src/App.tsx*
-   ```tsx{2,6-8}
-   const createTask = async () => {
+   ```tsx{2,5-7}
+   const saveTask = async (task: Task) => {
      try {
-       await newTask.save();
-       setNewTask({ newTask: taskRepo.create() });
-       loadTasks();
-     } catch {
-       setNewTask({ newTask });
+       const savedTask = await taskRepo.save(task);
+       setTasks(tasks.map(t => t === task ? savedTask : t));
+     } catch (error: any) {
+       alert(error.message);
      }
    }
    ```
 
-After the browser refreshes, try creating a new `task` without title - the "Should not be empty" error message is displayed.
 
-Attempting to modify titles of existing tasks to invalid values will also fail, but the error message is not displayed because we haven't added the template element to display it.
+After the browser refreshes, try creating a new `task` or saving an existing one without title - the "Should not be empty" error message is displayed.
 
 ### Implicit server-side validation
 The validation code we've added is called by Remult on the server-side to validate any API calls attempting to modify the `title` field.
@@ -729,6 +653,57 @@ curl -i -X POST http://localhost:3002/api/tasks -H "Content-Type: application/js
 
 An http error is returned and the validation error text is included in the response body,
 
+### Displaying the error next to the relevant Input
+To create a better UX, let's display the validation error next to the relevant input.
+1. Adjust the `tasks` array to also include an optional error
+   ```tsx{2,8}
+   import { useEffect, useState } from "react";
+   import { ErrorInfo } from "remult";
+   import { remult } from "./common";
+   import { Task } from "./shared/Task";
+   
+   const taskRepo = remult.repo(Task);
+   function App() {
+     const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
+     const [hideCompleted, setHideCompleted] = useState(false);
+   ```
+2. Adjust the `saveTask` function to store that error
+   ```tsx{6}
+   const saveTask = async (task: Task) => {
+     try {
+       const savedTask = await taskRepo.save(task);
+       setTasks(tasks.map(t => t === task ? savedTask : t));
+     } catch (error: any) {
+       setTasks(tasks.map(t => t === task ? { ...task, error } : t));
+     }
+   }   
+   ```
+3. Display the error next to the relevant `input` 
+   ```tsx{16}
+   return (
+     <div >
+       <input
+         type="checkbox"
+         checked={hideCompleted}
+         onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+       <hr />
+       {tasks.map(task => (
+         <div key={task.id}>
+           <input type="checkbox"
+             checked={task.completed}
+             onChange={e => handleChange(task, { completed: e.target.checked })} />
+           <input
+             value={task.title}
+             onChange={e => handleChange(task, { title: e.target.value })} />
+           {task.error?.modelState?.title}
+           <button onClick={() => saveTask(task)}>Save</button>
+           <button onClick={() => deleteTask(task)}>Delete</button>
+         </div>
+       ))}
+       <button onClick={addTask}>Add Task</button>
+     </div>
+   );   
+   ```
 
 ## Backend methods
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
@@ -736,23 +711,33 @@ When performing operations on multiple entity objects, performance consideration
 ### Set all tasks as un/completed
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAll` async function to the `App` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add the `reload` state to manually force re-execution of the `useEffect` hook
+   ```ts{1,7}
+   const [reload, setReload] = useState({});
+   useEffect(() => {
+     taskRepo.find({
+       orderBy: { completed: "asc" },
+       where: { completed: hideCompleted ? false : undefined }
+     }).then(setTasks);
+   }, [hideCompleted, reload]);   
+   ```
+   Now we can call the `setReload({})` function to cause the `useEffect` to run again.
+2. Add a `setAll` async function to the `App` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
    *src/App.tsx*
    ```ts
    const setAll = async (completed: boolean) => {
      for (const task of await taskRepo.find()) {
-       task.completed = completed;
-       await task.save();
+       await taskRepo.save({ ...task, completed });
      }
-     loadTasks();
+     setReload({});
    }
    ```
 
    The `query` method is an alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. The `query` method doesn't return an array (as the `find` method) and instead returns an `iteratable` object which supports iterations using the JavaScript `for await` statement.
 
 
-2. Add the two buttons to the `App.tsx` template, immediately before the unordered list element. Both of the buttons' `click` events will call the `setAll` function with the relevant value of the `completed` argument.
+3. Add the two buttons to the `App.tsx` template, immediately before the unordered list element. Both of the buttons' `click` events will call the `setAll` function with the relevant value of the `completed` argument.
 
    *src/App.tsx*
    ```tsx
@@ -768,42 +753,64 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-1. Create a new `TasksService` class and refactor the `for await` loop from the `setAll` function of the `App` function component into a new, `static`, `setAll` function in the `TasksService` class,  which will run on the server.
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for await` loop from the `setAll` function of the `App` function component into a new, `static`, `setAll` function in the `TasksService` class,  which will run on the server.
 
-   *src/TasksService.ts*
+   *src/shared/TasksController.ts*
    ```ts
    import { BackendMethod, Remult } from "remult";
    import { Task } from "./Task";
    
-   export class TasksService {
-   
+   export class TasksController {
        @BackendMethod({ allowed: true })
        static async setAll(completed: boolean, remult?: Remult) {
-           for (const task of await remult!.repo(Task).find()) {
-               task.completed = completed;
-               await task.save();
+           const taskRepo = remult!.repo(Task);
+           for await (const task of taskRepo.query()) {
+               await taskRepo.save({ ...task, completed });
            }
        }
    }
    ```
 
-2. Import the `Task` module into the API server's `index` module:
+2. Add the `TasksController` to the `controllers` array in the server's `index` module:
 
    *src/server/index.ts*
-   ```ts
-   import '../TasksService';
+   ```ts{4,9}
+   import express from 'express';
+   import { remultExpress } from 'remult/remult-express';
+   import { Task } from '../shared/Task';
+   import { TasksController } from '../shared/TasksController';
+   
+   let app = express();
+   app.use(remultExpress({
+       entities: [Task],
+       controllers: [TasksController],
+       initApi: async remult => {
+           const taskRepo = remult.repo(Task);
+           if (await taskRepo.count() == 0) {
+               await taskRepo.insert([
+                   { title: "Task a" },
+                   { title: "Task b", completed: true },
+                   { title: "Task c" },
+                   { title: "task d" },
+                   { title: "task e", completed: true }
+               ]);
+           }
+       }
+   }));
+   
+   app.listen(3002, () => console.log("Server started"));
    ```
 
 3. Call the `setAll` method in the `TasksService`
    *src/App.tsx*
    ```ts{2}
    const setAll = async (completed: boolean) => {
-     await TasksService.setAll(completed);
+     await TasksController.setAll(completed);
      loadTasks();
    }
    ```
-   ::: danger Import TasksService
-   Don't forget to import `TasksService`.
+   ::: danger Import TasksController
+   Don't forget to import `TasksController`.
    :::
 
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
@@ -854,19 +861,17 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 :::
 
 ### Load the tasks only if the user is authenticated
-replace the loadTasks method with the following code:
+Add the following code to the the `useEffect` hook with the following code:
 
 *src/App.tsx*
 ```tsx{2-3}
-const loadTasks = useCallback(async () => {
-  if (!taskRepo.metadata.apiReadAllowed)
-    return
-  const tasks = await taskRepo.find({
-    orderBy: { completed: "asc" },
-    where: { completed: hideCompleted ? false : undefined }
-  });
-  setTasks(tasks);
-}, [hideCompleted]);
+useEffect(() => {
+  if (taskRepo.metadata.apiReadAllowed)
+    taskRepo.find({
+      orderBy: { completed: "asc" },
+      where: { completed: hideCompleted ? false : undefined }
+    }).then(setTasks);
+}, [hideCompleted, reload]);
 ```
 
 ### User authentication
@@ -884,13 +889,13 @@ In this section, we'll be using the following packages:
    npm i jsonwebtoken jwt-decode  express-jwt
    npm i --save-dev  @types/jsonwebtoken @types/express-jwt
    ```
-2. Create a file called `src/AuthService.ts ` and place the following code in it:
-   *src/AuthService.ts*
+2. Create a file called `src/shared/AuthController.ts ` and place the following code in it:
+   *src/shared/AuthController.ts*
    ```ts
    import * as jwt from 'jsonwebtoken';
    import { BackendMethod } from 'remult';
 
-   export class AuthService {
+   export class AuthController {
       @BackendMethod({ allowed: true })
       static async signIn(username: string) {
          const validUsers = [
@@ -910,6 +915,21 @@ In this section, we'll be using the following packages:
       return "my secret key";
    }
    ```
+   And add it to the `controllers` array on the `server`
+   ```ts{5,10}
+   import express from 'express';
+   import { remultExpress } from 'remult/remult-express';
+   import { Task } from '../shared/Task';
+   import { TasksController } from '../shared/TasksController';
+   import { AuthController } from '../shared/AuthController';
+   
+   let app = express();
+   app.use(remultExpress({
+       entities: [Task],
+       controllers: [TasksController, AuthController],
+       initApi: async remult => {
+       ...
+   ```
    * Note that The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
    
    The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
@@ -917,22 +937,22 @@ In this section, we'll be using the following packages:
 3. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{2-3,9-13}
+   ```ts{2,63,9-13}
    import express from 'express';
    import expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../AuthService';
    import { remultExpress } from 'remult/remult-express';
-   import '../Task';
-   import '../TasksService';
+   import { Task } from '../shared/Task';
+   import { TasksController } from '../shared/TasksController';
+   import { AuthController, getJwtTokenSignKey } from '../shared/AuthController';
    
-   const app = express();
+   let app = express();
    app.use(expressJwt({
        secret: getJwtTokenSignKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   app.use(remultExpress());
-   app.listen(3002, () => console.log("Server started"));
+   app.use(remultExpress({
+   ...
    ```
 
    The `expressJwt` module verifies for each request that the auth token is valid, and extracts the user info from it to be used on the server.
@@ -997,8 +1017,8 @@ In this section, we'll be using the following packages:
    ```tsx
    const [username, setUsername] = useState("");
    const signIn = async () => {
-     setAuthToken(await AuthService.signIn(username));
-     loadTasks();
+     setAuthToken(await AuthController.signIn(username));
+     setReload({});
    }
    const signOut = () => {
      setAuthToken(null);
@@ -1021,7 +1041,7 @@ In this section, we'll be using the following packages:
    ```
 
    ::: warning Imports
-   This code requires imports for `AuthService` from `./AuthService` and `setAuthToken` from the existing import of `./common`.
+   This code requires imports for `AuthController` from `./shared/AuthController` and `setAuthToken` from the existing import of `./common`.
    :::
 
 
@@ -1036,9 +1056,9 @@ Usually, not all application users have the same privileges. Let's define an `ad
 * Only users belonging to the `admin` role can create, delete or edit the titles of tasks.
 * Only users belonging to the `admin` role can mark all tasks as completed or uncompleted.
 
-1. Create a `roles.ts` file in the `src/` folder, with the following `Roles` class definition:
+1. Create a `roles.ts` file in the `src/shared/` folder, with the following `Roles` class definition:
 
-   *src/Roles.ts*
+   *src/shared/Roles.ts*
    ```ts
    export const Roles = {
       admin: 'admin'
@@ -1068,20 +1088,20 @@ Usually, not all application users have the same privileges. Let's define an `ad
        completed = false;
    }
    ```
-3. Modify the highlighted line in the `TasksService` class to reflect the authorization rule
-   *src/TasksService.ts*
+3. Modify the highlighted line in the `TasksController` class to reflect the authorization rule
+   *src/shared/TasksController.ts*
    ```ts{3,7}
    import { BackendMethod, Remult } from "remult";
    import { Task } from "./Task";
    import { Roles } from "./Roles";
    
-   export class TasksService {
+   export class TasksController {
    
        @BackendMethod({ allowed: Roles.admin })
        static async setAll(completed: boolean, remult?: Remult) {
-           for await (const task of remult!.repo(Task).query()) {
-               task.completed = completed;
-               await task.save();
+           const taskRepo = remult!.repo(Task);
+           for await (const task of taskRepo.query()) {
+               await taskRepo.save({ ...task, completed });
            }
        }
    }
@@ -1089,7 +1109,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
 
-   *src/AuthService.ts*
+   *src/shared/AuthController.ts*
    ```ts{4}
    @BackendMethod({ allowed: true })
    static async signIn(username: string) {
@@ -1128,17 +1148,17 @@ In addition, to follow a few basic production best practices, we'll use [compres
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
    *src/server/index.ts*
-   ```ts{2-3,11-12,19-23}
+   ```ts{2-3,11-12,35-39}
    import express from 'express';
    import compression from 'compression';
    import helmet from 'helmet';
    import expressJwt from 'express-jwt';
-   import { getJwtTokenSignKey } from '../AuthService';
    import { remultExpress } from 'remult/remult-express';
-   import '../Task';
-   import '../TasksService';
+   import { Task } from '../shared/Task';
+   import { TasksController } from '../shared/TasksController';
+   import { AuthController, getJwtTokenSignKey } from '../shared/AuthController';
    
-   const app = express();
+   let app = express();
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
@@ -1146,7 +1166,23 @@ In addition, to follow a few basic production best practices, we'll use [compres
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   app.use(remultExpress());
+   app.use(remultExpress({
+       entities: [Task],
+       controllers: [TasksController, AuthController],
+       initApi: async remult => {
+           const taskRepo = remult.repo(Task);
+           if (await taskRepo.count() == 0) {
+               await taskRepo.insert([
+                   { title: "Task a" },
+                   { title: "Task b", completed: true },
+                   { title: "Task c" },
+                   { title: "task d" },
+                   { title: "task e", completed: true }
+               ]);
+           }
+       }
+   }));
+   
    app.use(express.static('build'));
    app.use('/*', async (req, res) => {
        res.sendFile(process.cwd() + '/build/index.html');
@@ -1185,19 +1221,19 @@ For this tutorial, we will use `postgres` as a production database.
 2. Add the highlighted code lines to `src/server/index.ts`.
 
    *src/server/index.ts*
-   ```ts{5-6,13,21-28}
+   ```ts{5-6,13,22-26}
    import express from 'express';
    import compression from 'compression';
    import helmet from 'helmet';
    import expressJwt from 'express-jwt';
    import sslRedirect from 'heroku-ssl-redirect'
    import { createPostgresConnection } from 'remult/postgres';
-   import { getJwtTokenSignKey } from '../AuthService';
    import { remultExpress } from 'remult/remult-express';
-   import '../Task';
-   import '../TasksService';
+   import { Task } from '../shared/Task';
+   import { TasksController } from '../shared/TasksController';
+   import { AuthController, getJwtTokenSignKey } from '../shared/AuthController';
    
-   const app = express();
+   let app = express();
    app.use(sslRedirect());
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
@@ -1206,17 +1242,31 @@ For this tutorial, we will use `postgres` as a production database.
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   const dataProvider = async () => {
-       if (process.env.NODE_ENV === "production")
-           return createPostgresConnection({ configuration: "heroku" })
-       return undefined;
-   }
    app.use(remultExpress({
-       dataProvider
+       dataProvider: async () => {
+           if (process.env.NODE_ENV === "production")
+               return createPostgresConnection({ configuration: "heroku" })
+           return undefined;
+       },
+       entities: [Task],
+       controllers: [TasksController, AuthController],
+       initApi: async remult => {
+           const taskRepo = remult.repo(Task);
+           if (await taskRepo.count() == 0) {
+               await taskRepo.insert([
+                   { title: "Task a" },
+                   { title: "Task b", completed: true },
+                   { title: "Task c" },
+                   { title: "task d" },
+                   { title: "task e", completed: true }
+               ]);
+           }
+       }
    }));
+   
    app.use(express.static('build'));
    app.use('/*', async (req, res) => {
-       res.sendFile('./build/index.html');
+       res.sendFile(process.cwd() + '/build/index.html');
    });
    app.listen(process.env.PORT || 3002, () => console.log("Server started"));
    ```
