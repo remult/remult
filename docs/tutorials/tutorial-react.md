@@ -1310,4 +1310,6 @@ If you run into trouble deploying the app to Heroku, try using Heroku's [documen
 
 That's it - our application is deployed to production, play with it and enjoy.
 
+To see a larger more complex code base, visit our [CRM example project](https://www.github.com/remult/crm-demo)
+
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
