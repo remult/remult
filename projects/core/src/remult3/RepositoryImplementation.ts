@@ -1663,14 +1663,16 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
 
 /**Decorates fields that should be used as fields.
  * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
- * FieldOptions.
+ * 
  * FieldOptions can be set in two ways:
  * @example
  * // as an object
  * .@Fields.string({ includeInApi:false })
+ * title='';
  * @example
  * // as an arrow function that receives `remult` as a parameter
  * .@Fields.string((options,remult) => options.includeInApi = true)
+ * title='';
  */
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
 
