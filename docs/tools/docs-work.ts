@@ -38,10 +38,11 @@ class DocFile {
             }
     }
     writeMembers(type: member, indent = 0) {
-
         if (type.children) {
             try {
-                type.children.sort((a, b) => a.sources[0].line - b.sources[0].line);
+                if (type.kindString === "Interface")
+                    type.children.sort((a, b) => a.id - b.id);
+                else type.children.sort((a, b) => a.sources[0].line - b.sources[0].line)
             } catch { }
             for (const m of type.children) {
                 if (m.flags.isPrivate)
@@ -54,21 +55,25 @@ class DocFile {
                 if (m.signatures) {
                     for (const s of m.signatures) {
                         this.writeMemberComments(s, indent);
-                       
-                        if (s.parameters?.length == 1) {
-                            let p = s.parameters[0];
-                            if (p.type.type == 'union') {
-                                for (const pp of p.type.types) {
-                                    if (pp.name.endsWith("Options")) {
-                                        let o = findType(pp.name);
+
+                        if (s.parameters?.length <= 2 && !m.flags.isStatic) {
+                            for (const p of s.parameters) {
+                                if (p.type.type == 'union') {
+                                    for (const pp of p.type.types) {
+                                        if (pp.name)
+                                            if (pp.name.endsWith("Options")) {
+                                                let o = findType(pp.name);
+                                                this.writeMembers(o, indent + 1);
+                                            }
+                                    }
+                                } else if (p.type.name)
+                                    if (p.type.name.endsWith("Options")) {
+                                        let o = findType(p.type.name);
                                         this.writeMembers(o, indent + 1);
                                     }
-                                }
-                            } else if (p.type.name)
-                                if (p.type.name.endsWith("Options")) {
-                                    let o = findType(p.type.name);
-                                    this.writeMembers(o, indent + 1);
-                                }
+                            }
+
+
                         }
                     }
                 }
@@ -78,7 +83,7 @@ class DocFile {
 
     }
     writeFile() {
-        fs.writeFileSync('./docs/guide/ref_' + this.fileName.toLowerCase() + '.md', this.s);
+        fs.writeFileSync('./docs/docs/ref_' + this.fileName.toLowerCase() + '.md', this.s);
     }
 }
 
@@ -103,13 +108,16 @@ try {
         let options = findType(pairs[1]);
         let f = new DocFile(type.name);
         f.addTitle(type.name);
-        f.writeMemberComments(type);
+        f.writeMemberComments(type.signatures[0]);
         f.writeMembers(options);
         f.writeFile();
     }
 
     for (const typeName of [
-        "Repository"
+        "Remult",
+        "Repository",
+        "QueryResult",
+        "Paginator"
     ]) {
         let type = findType(typeName);
 
@@ -129,7 +137,8 @@ catch (err) {
 }
 
 
- interface member {
+interface member {
+    kindString: string;
     name: string,
     parameters: {
         type: {
@@ -141,8 +150,10 @@ catch (err) {
     signatures: member[],
     sources: { line: number }[]
     flags: {
-        isPrivate
+        isPrivate: boolean,
+        isStatic: boolean
     },
+    id: number,
     children: member[],
     comment: {
         shortText: string,

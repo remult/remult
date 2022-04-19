@@ -70,6 +70,7 @@ module.exports = {
             'backendMethods',
             'field-types',
             'databases'
+            
           ]
         },
         {
@@ -90,12 +91,13 @@ module.exports = {
           children: [
             'ref_entity',
             'ref_field',
-            'ref_backendmethod',
+            'ref_remult',
             'ref_repository',
-            'ref_entitywhere',
-            'ref_entityorderby'
-
-
+            'entityFilter',
+            'allowed',
+            'ref_backendmethod',
+            'ref_queryresult',
+            `ref_paginator`
           ]
         }
 
