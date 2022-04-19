@@ -208,7 +208,7 @@ The `Task` entity class we're creating will have an auto generated uuid `id` fie
 1. Create a directory called `shared` in the `src` directory - in this folder we'll place code that is shared by the frontend and backend.
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-   *src/Task.ts*
+   *src/shared/Task.ts*
    ```ts
    import { Entity, Fields } from "remult";
    @Entity("tasks", {
@@ -535,7 +535,7 @@ We've implemented the following features of the todo app:
 
 Here are the code files we've modified to implement these features.
 
-*src/Task.ts*
+*src/shared/Task.ts*
 ```ts
 import { Entity, Fields } from "remult";
 @Entity("tasks", {
@@ -617,7 +617,7 @@ Task titles are required. Let's add a validity check for this rule, and display 
 
 1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an argument which implements the `FieldOptions` interface. Implement the interface using an object literal and set the object's `validate` property to `Validators.required`.
 
-   *src/Task.ts*
+   *src/shared/Task.ts*
    ```ts{1-3}
     @Fields.string({
         validate: Validators.required
@@ -834,7 +834,7 @@ User authentication remains outside the scope of Remult. In this tutorial, we'll
 ### Tasks CRUD operations require sign in
 This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Remult` object and returns the result of the Remult's `authenticated` method.
 
-*src/Task.ts*
+*src/shared/Task.ts*
 ```ts{2}
 @Entity("tasks", {
     allowApiCrud: Allow.authenticated
@@ -854,7 +854,7 @@ Although client CRUD requests to `tasks` API endpoints now require a signed in u
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `TasksService`.
 
-*src/Task.ts*
+*src/shared/TasksController.ts*
 ```ts
 @BackendMethod({ allowed: Allow.authenticated })
 ```
@@ -1068,7 +1068,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
-   *src/Task.ts*
+   *src/shared/Task.ts*
    ```ts{2,5-8,13}
    import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
    import { Roles } from "./Roles";
