@@ -886,8 +886,8 @@ In this section, we'll be using the following packages:
 
 1. Open a terminal and run the following command to install the required packages:
    ```sh
-   npm i jsonwebtoken jwt-decode  express-jwt
-   npm i --save-dev  @types/jsonwebtoken @types/express-jwt
+   npm i jsonwebtoken jwt-decode express-jwt
+   npm i --save-dev @types/jsonwebtoken @types/express-jwt
    ```
 2. Create a file called `src/shared/AuthController.ts ` and place the following code in it:
    *src/shared/AuthController.ts*
@@ -905,11 +905,11 @@ In this section, we'll be using the following packages:
          const user = validUsers.find(user => user.name === username);
          if (!user)
                throw new Error("Invalid User");
-         return jwt.sign(user, getJwtTokenSignKey());
+         return jwt.sign(user, getJwtSigningKey());
       }
    }
 
-   export function getJwtTokenSignKey() {
+   export function getJwtSigningKey() {
       if (process.env.NODE_ENV === "production")
          return process.env.TOKEN_SIGN_KEY!;
       return "my secret key";
@@ -947,7 +947,7 @@ In this section, we'll be using the following packages:
    
    let app = express();
    app.use(expressJwt({
-       secret: getJwtTokenSignKey(),
+       secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
@@ -984,7 +984,8 @@ In this section, we'll be using the following packages:
          sessionStorage.removeItem(AUTH_TOKEN_KEY);
       }
    }
-   //initialize the user based on session storage on application load
+
+   // Initialize the auth token from session storage when the application loads
    setAuthToken(sessionStorage.getItem(AUTH_TOKEN_KEY));
 
    axios.interceptors.request.use(config => {
@@ -1011,7 +1012,7 @@ In this section, we'll be using the following packages:
    **For this change to take effect, our React app's dev server must be restarted by terminating the `dev-react` script and running it again.**
    :::
 
-6. Add the following code to the `App` function component, and replace the start of the `return` statement, .
+6. Add the following code to the `App` function component, and replace the beginning of the `return` statement to include the user greeting and sign out button.
 
    *src/App.tsx*
    ```tsx
@@ -1037,7 +1038,7 @@ In this section, we'll be using the following packages:
        <p>
          Hi {remult.user.name} <button onClick={signOut}>Sign out </button>
        </p>
-       ... the rest of the tsx html part
+       //... the rest of the tsx html part
    ```
 
    ::: warning Imports
@@ -1120,7 +1121,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
       const user = validUsers.find(user => user.name === username);
       if (!user)
          throw new Error("Invalid User");
-      return jwt.sign(user, getJwtTokenSignKey());
+      return jwt.sign(user, getJwtSigningKey());
    }
    ```
 
@@ -1162,7 +1163,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
-       secret: getJwtTokenSignKey(),
+       secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
@@ -1238,7 +1239,7 @@ For this tutorial, we will use `postgres` as a production database.
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
    app.use(expressJwt({
-       secret: getJwtTokenSignKey(),
+       secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
    }));

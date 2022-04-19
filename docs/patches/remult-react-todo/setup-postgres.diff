@@ -25,7 +25,7 @@ index 08a462c..d4b3d02 100644
 --- a/src/server/index.ts
 +++ b/src/server/index.ts
 @@ -3,6 +3,9 @@ import expressJwt from 'express-jwt';
- import { getJwtTokenSignKey } from '../AuthService';
+ import { getJwtSigningKey } from '../AuthService';
  import compression from 'compression';
  import helmet from 'helmet';
 +import { Remult, SqlDatabase } from 'remult';

@@ -23,7 +23,7 @@ index f743208..d70cf9b 100644
 --- a/src/server/index.ts
 +++ b/src/server/index.ts
 @@ -3,6 +3,9 @@ import * as expressJwt from 'express-jwt';
- import { getJwtTokenSignKey } from '../app/auth.service';
+ import { getJwtSigningKey } from '../app/auth.service';
  import * as compression from 'compression';
  import * as helmet from 'helmet';
 +import { Remult, SqlDatabase } from 'remult';

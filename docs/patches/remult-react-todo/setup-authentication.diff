@@ -63,7 +63,7 @@ index 0000000..765cde9
 +    let user = validUsers.find(user => user.name === username);
 +    if (!user)
 +      throw new Error("Invalid User");
-+    return jwt.sign(user, getJwtTokenSignKey());
++    return jwt.sign(user, getJwtSigningKey());
 +  }
 +
 +  setAuthToken(token: string) {
@@ -80,7 +80,7 @@ index 0000000..765cde9
 +  }
 +}
 +
-+export function getJwtTokenSignKey() {
++export function getJwtSigningKey() {
 +  if (process.env.NODE_ENV === "production")
 +    return process.env.TOKEN_SIGN_KEY!;
 +  return "my secret key";
@@ -130,12 +130,12 @@ index 8e42794..6fd48fc 100644
 @@ -1,6 +1,13 @@
  import express from 'express';
 +import expressJwt from 'express-jwt';
-+import { getJwtTokenSignKey } from '../AuthService';
++import { getJwtSigningKey } from '../AuthService';
  import { initExpress } from 'remult/server';
  
  let app = express();
 +app.use(expressJwt({
-+    secret: getJwtTokenSignKey(),
++    secret: getJwtSigningKey(),
 +    credentialsRequired: false,
 +    algorithms: ['HS256']
 +}));
