@@ -22,6 +22,7 @@ await this.remult.repo(Products).find({
 })
 ```
 
+### load
 ### where
 filters the data
 #### example
@@ -44,9 +45,9 @@ await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
 await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
 ```
 
-### load
 ## findFirst
 returns the first item that matchers the `where` condition
+### load
 ### where
 filters the data
 #### example
@@ -69,7 +70,6 @@ await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
 await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
 ```
 
-### load
 ### useCache
 determines if to cache the result, and return the results from cache.
 ### createIfNotFound
@@ -85,10 +85,7 @@ for await (const task of taskRepo.query()) {
 }
 ```
 
-### pageSize
-The number of items to return in each step
-### progress
-A callback method to indicate the progress of the iteration
+### load
 ### where
 filters the data
 #### example
@@ -111,7 +108,10 @@ await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
 await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
 ```
 
-### load
+### pageSize
+The number of items to return in each step
+### progress
+A callback method to indicate the progress of the iteration
 ## count
 Returns a count of the items matching the criteria.
 ### see

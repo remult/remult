@@ -39,12 +39,15 @@ class DocFile {
             }
     }
     writeMembers(type: member, indent = 0) {
+
         if (type.children) {
             try {
-                if (type.kindString === "Interface")
+                if (type.name === "Repository")
                     type.children.sort((a, b) => a.id - b.id);
-                else type.children.sort((a, b) => a.sources[0].line - b.sources[0].line)
+                else
+                    type.children.sort((a, b) => a.sources[0].line - b.sources[0].line)
             } catch { }
+
             for (const m of type.children) {
                 if (m.flags.isPrivate)
                     continue;

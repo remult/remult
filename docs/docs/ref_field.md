@@ -15,8 +15,6 @@ FieldOptions can be set in two ways:
 @Fields.string((options,remult) => options.includeInApi = true)
 ```
 
-## valueType
-The value type for this field
 ## caption
 A human readable name for the field
 ## allowNull
@@ -80,6 +78,8 @@ Determines if the referenced entity will be loaded immediately or on demand.
 ### see[lazy
 loading of related entities](http://remult.dev/docs/lazy-loading-of-related-entities.html)
 
+## valueType
+The value type for this field
 ## target
 The entity type to which this field belongs
 ## key

@@ -18,7 +18,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
      * @see [allowed](http://remult.dev/docs/allowed.html)*/
     includeInApi?: Allowed;
     /** If this field data can be updated in the api.
- * @see [allowed](http://remult.dev/docs/allowed.html)*/
+    * @see [allowed](http://remult.dev/docs/allowed.html)*/
 
     allowApiUpdate?: AllowedForInstance<entityType>;
 
