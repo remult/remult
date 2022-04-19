@@ -6,13 +6,13 @@ FieldOptions can be set in two ways:
 ### example
 ```ts
 // as an object
-.@Fields.string({ includeInApi:false })
+@Fields.string({ includeInApi:false })
 ```
 
 ### example
 ```ts
 // as an arrow function that receives `remult` as a parameter
-.@Fields.string((options,remult) => options.includeInApi = true)
+@Fields.string((options,remult) => options.includeInApi = true)
 ```
 
 ## valueType
@@ -33,14 +33,14 @@ If this field data can be updated in the api.
 An arrow function that'll be used to perform validations on it
 ### example
 ```ts
-.@Fields.string({
+@Fields.string({
   validate: Validators.required
 })
 ```
 
 ### example
 ```ts
-.@Fields.string<Task>({
+@Fields.string<Task>({
    validate: task=>{
      if (task.title.length<3)
          throw "Too Short";
@@ -50,7 +50,7 @@ An arrow function that'll be used to perform validations on it
 
 ### example
 ```ts
-.@Fields.string({
+@Fields.string({
    validate: (_, fieldRef)=>{
      if (fieldRef.value.length<3)
          fieldRef.error = "Too Short";

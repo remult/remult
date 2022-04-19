@@ -5,13 +5,13 @@ EntityOptions can be set in two ways:
 ### example
 ```ts
 // as an object
-.@Entity("tasks",{ allowApiCrud:true })
+@Entity("tasks",{ allowApiCrud:true })
 ```
 
 ### example
 ```ts
 // as an arrow function that receives `remult` as a parameter
-.@Entity("tasks", (options,remult) => options.allowApiCrud = true)
+@Entity("tasks", (options,remult) => options.allowApiCrud = true)
 ```
 
 ## caption
@@ -72,7 +72,7 @@ If the `error` property of the entity's ref or any of it's fields will be set, t
 this is the place to run logic that we want to run in any case before an entity is saved.
 ### example
 ```ts
-.@Entity<Task>("tasks", {
+@Entity<Task>("tasks", {
 saving: async task => {
      task.lastUpdated = new Date()
  }

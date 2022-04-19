@@ -31,6 +31,7 @@ class DocFile {
                 if (t.tag == "example") {
                     if (!t.text.endsWith('\n'))
                         t.text += '\n';
+                    t.text = t.text.replace('.@', '@');
                     t.text = "```ts" + t.text + "```\n";
                 }
 

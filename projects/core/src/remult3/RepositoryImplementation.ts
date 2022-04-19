@@ -1833,7 +1833,20 @@ export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, f
 
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
- * EntityOptions can be set in two ways:
+ * @example
+ * import { Entity, Fields } from "remult";
+ * @Entity("tasks", {
+ *    allowApiCrud: true
+ * })
+ * export class Task {
+ *    @Fields.uuid()
+ *    id!: string;
+ *    @Fields.string()
+ *    title = '';
+ *    @Fields.boolean()
+ *    completed = false;
+ * }
+ * *EntityOptions can be set in two ways:*
  * @example
  * // as an object
  * .@Entity("tasks",{ allowApiCrud:true })
