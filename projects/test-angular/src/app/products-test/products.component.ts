@@ -58,13 +58,20 @@ export class ProductsComponent implements OnInit {
   area: DataAreaSettings;
   field: FieldRef<any, any>;
   async ngOnInit() {
-    try {
-      await stam.myMethod();
+    const r = new Remult().repo(stam);
+    for (const z of await r.find()) {
+      await z.delete();
+    }
+    let x = await r.create({ name: "noam" });
+    x.name = 'noam1';
+    await x.save();
+    x = await r.findFirst({ name: 'noam1' });
+    console.log({ shouldBeNoam1: x.name });
+    console.log({ should1: await r.count({ name: 'noam1' }) });
 
-    }
-    catch (err) {
-      console.log("THE ERROR",JSON.stringify( err));
-    }
+    await x.delete();
+    console.log({ should0: await r.count({ name: 'noam1' }) });
+
   }
   async click() {
 
@@ -74,7 +81,7 @@ export class ProductsComponent implements OnInit {
 
 
 @Entity<stam>('stam', {
-  allowApiCrud: false,
+  allowApiCrud: true,
 
 })
 export class stam extends IdEntity {

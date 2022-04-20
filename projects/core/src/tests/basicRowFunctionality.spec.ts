@@ -15,8 +15,8 @@ import { DataList } from '../../../angular/interfaces/src/dataList';
 import { UrlBuilder } from '../../urlBuilder';
 
 import { SqlDatabase } from '../data-providers/sql-database';
-import { async } from '@angular/core/testing';
-import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
+
+import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestDataProviderHttpProviderUsingFetch } from '../data-providers/rest-data-provider';
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
@@ -1957,5 +1957,124 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
 export class EntityWithLateBoundDbName extends EntityBase {
   @Fields.integer({ dbName: 'CategoryID' })
   id: number;
+
+}
+
+describe("test fetch", () => {
+
+  it("get", async () => {
+    let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      return new mockResponse({ status: 200, json: async () => 7 })
+    }).get('abc');
+    expect(z).toBe(7);
+  });
+  it("error", async () => {
+    try {
+      await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+        return new mockResponse({ status: 401, statusText: 'text', url: 'url', json: async () => ({}) })
+      }).get('abc');
+    } catch (err) {
+      expect(err).toEqual({
+        status: 401, message: 'text', url: 'url'
+      });
+    }
+  });
+  it("error4", async () => {
+    try {
+      await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+        return new mockResponse({
+          status: 401, statusText: 'text', url: 'url', json: async () => {
+            throw "error";
+          }
+        })
+      }).get('abc');
+    } catch (err) {
+      expect(err).toEqual({
+        status: 401, message: 'text', url: 'url'
+      });
+    }
+  });
+  it("error3", async () => {
+    try {
+      await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+        return new mockResponse({ status: 401, statusText: 'text', url: 'url', json: async () => ({ message: 'message' }) })
+      }).get('abc');
+    } catch (err) {
+      expect(err).toEqual({
+        status: 401, url: 'url',
+        message: 'message'
+      });
+    }
+  });
+  it("error2", async () => {
+    try {
+      await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+        throw Promise.resolve("123");
+      }).get('abc');
+    } catch (err) {
+      expect(err).toEqual("123");
+    }
+  });
+  it("post", async () => {
+    let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      return new mockResponse({ status: 200, json: async () => 7 })
+    }).post('abc', {});
+    expect(z).toBe(7);
+  });
+  it("put", async () => {
+    let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      return new mockResponse({ status: 200, json: async () => 7 })
+    }).put('abc', {});
+    expect(z).toBe(7);
+  });
+  it("delete", async () => {
+    let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      return new mockResponse({ status: 204, json: async () => 7 })
+    }).delete('abc');
+    expect(z).toBeUndefined();
+  });
+  it("rest doesn't suppor transactions", async () => {
+    const r = new RestDataProvider('', undefined);
+    let ok = false;
+    try {
+      await r.transaction(async () => { });
+      ok = true;
+    } catch { }
+    expect(ok).toBe(false);
+
+  })
+});
+class mockResponse implements Response {
+  constructor(val: Partial<Response>) {
+    Object.assign(this, val);
+  }
+  headers: Headers;
+  ok: boolean;
+  redirected: boolean;
+  status: number;
+  statusText: string;
+  type: ResponseType;
+  url: string;
+  clone(): Response {
+    throw new Error("Method not implemented.");
+  }
+  body: ReadableStream<Uint8Array>;
+  bodyUsed: boolean;
+  readonly trailer: Promise<Headers>;
+  arrayBuffer(): Promise<ArrayBuffer> {
+    throw new Error("Method not implemented.");
+  }
+  blob(): Promise<Blob> {
+    throw new Error("Method not implemented.");
+  }
+  formData(): Promise<FormData> {
+    throw new Error("Method not implemented.");
+  }
+  json(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  text(): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 
 }
