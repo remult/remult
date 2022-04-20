@@ -1,6 +1,6 @@
 import './frontend-database-tests-setup.spec';
 
-import { AllowedForInstance, Remult } from "../context";
+import { AllowedForInstance, HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from "../context";
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from "../data-api";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
@@ -196,7 +196,7 @@ export class MockRestDataProvider implements DataProvider {
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
 
     let dataApi = new DataApi(this.remult.repo(metadata.entityType), this.remult);
-    return new RestEntityDataProvider("", {
+    return new RestEntityDataProvider("", new HttpProviderBridgeToRestDataProviderHttpProvider ({
       delete: async url => {
 
 
@@ -257,7 +257,7 @@ export class MockRestDataProvider implements DataProvider {
         }
         return result;
       }
-    }, metadata);
+    }), metadata);
   }
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error('Method not implemented.');

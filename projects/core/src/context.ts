@@ -13,7 +13,7 @@ export interface HttpProvider {
     put(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
     get(url: string): Promise<any> | { toPromise(): Promise<any> };
 }
-class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
+export class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
     constructor(private http: HttpProvider) {
 
     }
@@ -30,7 +30,7 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
         return await retry(() => toPromise(this.http.get(url)));
     }
 }
-async function retry<T>(what: () => Promise<T>): Promise<T> {
+export async function retry<T>(what: () => Promise<T>): Promise<T> {
     while (true) {
         try {
             return await what();
@@ -142,13 +142,11 @@ export class Remult {
         if (auth) {
             if (!this._user.id && auth.sub)
                 this._user.id = auth.sub;
-            if (!this._user.name && auth.name)
-                this._user.name = auth.name;
             if (!this._user.roles && auth.permissions) {
                 this._user.roles = auth.permissions;
             }
         }
-        if (this._user && !this._user?.roles)
+        if (this._user && !this._user.roles)
             this._user.roles = [];
         await this._userChangeEvent.fire();
     }
@@ -188,10 +186,8 @@ export class Remult {
         }
         if (typeof roles === 'boolean')
             return roles;
-        if (!this.user)
-            return false;
         if (typeof roles === 'string')
-            if (this.user?.roles?.indexOf(roles.toString()) >= 0)
+            if (this.user.roles.indexOf(roles.toString()) >= 0)
                 return true;
 
 

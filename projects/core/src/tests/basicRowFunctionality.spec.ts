@@ -8,7 +8,7 @@ import { Done } from "./Done";
 
 import { Status } from './testModel/models';
 
-import { Remult, Allowed } from '../context';
+import { Remult, Allowed, retry, toPromise } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/interfaces/src/dataList';
@@ -1649,7 +1649,7 @@ describe("test date storage", () => {
 
     let val = new Date(1976, 5, 16);
     expect(ValueConverters.DateOnly.toJson(val)).toBe('1976-06-16')
-//    expect(ValueConverters.DateOnly.displayValue(val)).toBe("6/16/1976");
+    //    expect(ValueConverters.DateOnly.displayValue(val)).toBe("6/16/1976");
   });
 });
 @Entity(undefined)
@@ -1871,6 +1871,61 @@ describe("check allowedDataType", () => {
   });
 
 });
+describe("test http retry", () => {
+  it("test http retry for proxy", async () => {
+    let i = 0;
+
+    const r = await retry(async () => {
+      if (i++ == 0)
+        throw Error("Error occurred while trying to proxy");
+      return 7;
+    });
+    expect(i).toBe(2);
+    expect(r).toBe(7);
+
+  });
+  it("fails on other errors", async () => {
+    let ok = false;
+    try {
+      await retry(async () => { throw Error("Another error") });
+      ok = true;
+    }
+    catch { }
+    expect(ok).toBe(false);
+  })
+  it("fails on other errors that has no message", async () => {
+    let ok = false;
+    try {
+      await retry(async () => { throw "Another error" });
+      ok = true;
+    }
+    catch { }
+    expect(ok).toBe(false);
+  })
+})
+describe("test toPromise", () => {
+  it("handles rxjs style", async () => {
+    const r = await toPromise({
+      toPromise: async () => 7
+    });
+    expect(r).toBe(7);
+  });
+  it("handles normal promise", async () => {
+    const r = await toPromise(new Promise(r => r(7)));
+    expect(r).toBe(7);
+  });
+  it("handles axios results", async () => {
+    const r = await toPromise(new Promise(r => r({
+      data: 7,
+      headers: {},
+      request: {},
+      status: 200
+    })));
+    expect(r).toBe(7);
+  });
+});
+
+
 
 @Entity<CompoundIdEntity>(
   'compountIdEntity', {
