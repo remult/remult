@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
-import { Allow, Remult } from '../context';
+import { Allow, Remult, toPromise } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
@@ -1336,13 +1336,17 @@ describe("context", () => {
     expect(remult.user.name).toBe('');
   });
 });
-describe("test http provider for remult", async () => {
+it("test http provider for remult", async () => {
+
   var remult = new Remult({
-    get: async (url) => 7,
+    get: async (url) => {
+      return { count: 7 }
+    },
     delete: undefined,
     put: undefined,
     post: undefined
   });
+  // expect(await toPromise(Promise.resolve(7))).toBe(7);
   expect(await remult.repo(TestCategories1).count()).toBe(7);
 
 });

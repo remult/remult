@@ -169,7 +169,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     async insert(entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[]): Promise<entityType | entityType[]> {
         if (Array.isArray(entity)) {
-            return Promise.all(entity.map(x => this.insert(x)));
+            for (const item of entity) {
+                await this.insert(item);
+            }
         } else {
             let ref = getEntityRef(entity, false) as EntityRef<entityType>;
             if (ref) {
@@ -232,7 +234,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
-        Remult.onFind(this._info, options);;
+        Remult.onFind(this._info, options);
         let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};

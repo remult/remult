@@ -91,17 +91,13 @@ class LogSQLCommand implements SqlCommand {
       if (this.allQueries) {
         var d = new Date().valueOf() - start.valueOf();
         if (d > SqlDatabase.durationThreshold) {
-          console.log('Query:', sql);
-          console.log("Arguments:", this.args);
-          console.log("Duration", d / 1000);
+          console.log({ query: sql, arguments: this.args, duration: d / 1000 });
         }
       }
       return r;
     }
     catch (err) {
-      console.error('Error:', err);
-      console.error('Query:', sql);
-      console.error("Arguments", this.args);
+      console.error({ error: err, query: sql, arguments: this.args });
       throw err;
     }
   }

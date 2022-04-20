@@ -87,7 +87,28 @@ testAll("empty find works", async ({ remult, createEntity }) => {
     expect(l[0].categoryName).toBe('test');
 
 
-});
+}, false);
+testAll("test descending", async ({ createEntity }) => {
+    const repo = await createEntity(newCategories);
+    await repo.create({ id: 1, categoryName: 'a' }).save();
+    await repo.create({ id: 2, categoryName: 'b' }).save();
+
+    const rows = await repo.find({
+        orderBy: { categoryName: 'desc' },
+        page: -1
+    })
+    expect(rows[0].id).toBe(2);
+}, false);
+testAll("test descending 2", async ({ createEntity }) => {
+    const repo = await createEntity(newCategories);
+    await repo.insert([{ id: 1, categoryName: 'a' }, { id: 2, categoryName: 'b' }]);
+
+    const rows = await repo.find({
+        orderBy: { categoryName: 'desc' },
+        page: -1
+    })
+    expect(rows[0].id).toBe(2);
+}, false);
 testAll("partial updates", async ({ remult, createEntity }) => {
 
     let c = (await createEntity(newCategories)).create({
@@ -697,8 +718,8 @@ testAll("task with enum string", async ({ createEntity }) => {
 });
 testAll("test transaction rollback", async ({ db }) => {
     let fail = true;
-    try{
-        await db.transaction(async ()=>{
+    try {
+        await db.transaction(async () => {
             throw "error"
         });
         fail = false;
