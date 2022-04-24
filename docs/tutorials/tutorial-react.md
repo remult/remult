@@ -943,7 +943,7 @@ In this section, we'll be using the following packages:
 3. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{2,63,9-13}
+   ```ts{2,6,63,9-13}
    import express from 'express';
    import expressJwt from 'express-jwt';
    import { remultExpress } from 'remult/remult-express';

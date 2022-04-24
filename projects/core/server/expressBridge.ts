@@ -497,6 +497,8 @@ export class SiteArea {
       remult.setDataProvider(await this.bridge.dataProvider);
       if (req) {
         let user = req['user'];
+        if (!user)
+          user = req['auth'];
         if (user)
           remult.setUser(user);
       }
