@@ -893,7 +893,7 @@ In this section, we'll be using the following packages:
 1. Open a terminal and run the following command to install the required packages:
    ```sh
    npm i jsonwebtoken jwt-decode express-jwt
-   npm i --save-dev @types/jsonwebtoken @types/express-jwt
+   npm i --save-dev @types/jsonwebtoken 
    ```
 2. Create a file called `src/shared/AuthController.ts ` and place the following code in it:
    *src/shared/AuthController.ts*
@@ -945,14 +945,14 @@ In this section, we'll be using the following packages:
    *src/server/index.ts*
    ```ts{2,6,63,9-13}
    import express from 'express';
-   import expressJwt from 'express-jwt';
+   import { expressjwt } from 'express-jwt';
    import { remultExpress } from 'remult/remult-express';
    import { Task } from '../shared/Task';
    import { TasksController } from '../shared/TasksController';
-   import { AuthController, getJwtTokenSignKey } from '../shared/AuthController';
+   import { AuthController, getJwtSigningKey } from '../shared/AuthController';
    
    let app = express();
-   app.use(expressJwt({
+   app.use(expressjwt({
        secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
@@ -961,7 +961,7 @@ In this section, we'll be using the following packages:
    ...
    ```
 
-   The `expressJwt` module verifies for each request that the auth token is valid, and extracts the user info from it to be used on the server.
+   The `expressjwt` module verifies for each request that the auth token is valid, and extracts the user info from it to be used on the server.
 
 
    `credentialsRequired` is set to `false` to allow unauthenticated API requests (e.g. the request to `signIn`).
@@ -1163,7 +1163,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    import express from 'express';
    import compression from 'compression';
    import helmet from 'helmet';
-   import expressJwt from 'express-jwt';
+   import { expressjwt } from 'express-jwt';
    import { remultExpress } from 'remult/remult-express';
    import { Task } from '../shared/Task';
    import { TasksController } from '../shared/TasksController';
@@ -1172,7 +1172,7 @@ In addition, to follow a few basic production best practices, we'll use [compres
    let app = express();
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
-   app.use(expressJwt({
+   app.use(expressjwt({
        secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
@@ -1236,7 +1236,7 @@ For this tutorial, we will use `postgres` as a production database.
    import express from 'express';
    import compression from 'compression';
    import helmet from 'helmet';
-   import expressJwt from 'express-jwt';
+   import { expressjwt } from 'express-jwt';
    import sslRedirect from 'heroku-ssl-redirect'
    import { createPostgresConnection } from 'remult/postgres';
    import { remultExpress } from 'remult/remult-express';
@@ -1248,7 +1248,7 @@ For this tutorial, we will use `postgres` as a production database.
    app.use(sslRedirect());
    app.use(helmet({ contentSecurityPolicy: false }));
    app.use(compression());
-   app.use(expressJwt({
+   app.use(expressjwt({
        secret: getJwtSigningKey(),
        credentialsRequired: false,
        algorithms: ['HS256']
