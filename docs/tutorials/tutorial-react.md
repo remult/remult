@@ -331,7 +331,8 @@ The RESTful API created by Remult supports server-side sorting and filtering. Le
 ### Show uncompleted tasks first
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `useEffect` hook `App` function component, add an object literal argument to the `find` method call and set its `orderBy` property to an arrow function which accepts a `task` argument and returns its `completed` field.
+In the `useEffect` hook `App` function component, add an object literal argument to the `find` method call and set its `orderBy` with an object that contains the fields you want to order by.
+Use "asc" and "desc" to determine the sort order.
 
 *src/App.tsx*
 ```ts{3}
@@ -363,6 +364,7 @@ Let's hide all completed tasks, using server side filtering.
    Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type.**
    :::
 
+   * To see many more filtering options, see [EntityFilter](https://remult.dev/docs/entityFilter.html)
 ### Optionally hide completed tasks
 Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
 
@@ -384,6 +386,7 @@ Let's add the option to toggle the display of completed tasks using a checkbox a
      }).then(setTasks);
    }, [hideCompleted]);
    ```
+   * Note that settings the `completed` filter options to `undefined` removes that condition.
 
 3. Add a `checkbox` input element immediately before the `tasks` map in `App.tsx`, bind it to the `hideCompleted` field, and add a `change` handler which sets the `setHideCompleted` when the value of the checkbox is changed.
 
@@ -624,6 +627,9 @@ Task titles are required. Let's add a validity check for this rule, and display 
     })
     title = '';
    ```
+   ::: warning Imports
+   This code requires imports for `Validators` from the existing import of `remult`.
+   :::
 
 2. In the `App.tsx` template, adjust the `saveTask` function to catch errors .
 
@@ -753,7 +759,7 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for await` loop from the `setAll` function of the `App` function component into a new, `static`, `setAll` function in the `TasksService` class,  which will run on the server.
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for await` loop from the `setAll` function of the `App` function component into a new, `static`, `setAll` function in the `TasksController` class,  which will run on the server.
 
    *src/shared/TasksController.ts*
    ```ts
@@ -801,12 +807,12 @@ A simple way to prevent this is to expose an API endpoint for `setAll` requests,
    app.listen(3002, () => console.log("Server started"));
    ```
 
-3. Call the `setAll` method in the `TasksService`
+3. Call the `setAll` method in the `TasksController`
    *src/App.tsx*
    ```ts{2}
    const setAll = async (completed: boolean) => {
      await TasksController.setAll(completed);
-     loadTasks();
+     setReload({});
    }
    ```
    ::: danger Import TasksController
@@ -852,7 +858,7 @@ curl -i http://localhost:3002/api/tasks
 ::: danger Authorized server-side code can still modify tasks
 Although client CRUD requests to `tasks` API endpoints now require a signed in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
 
-To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `TasksService`.
+To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `TasksController`.
 
 *src/shared/TasksController.ts*
 ```ts
@@ -1069,17 +1075,19 @@ Usually, not all application users have the same privileges. Let's define an `ad
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
    *src/shared/Task.ts*
-   ```ts{2,5-8,13}
-   import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
+   ```ts{2,5-8,15}
+   import { Allow, Entity, Fields, Validators } from "remult";
    import { Roles } from "./Roles";
    
-   @Entity("tasks", {
+   @Entity<Task>("tasks", {
        allowApiRead: Allow.authenticated,
        allowApiUpdate: Allow.authenticated,
        allowApiInsert: Roles.admin,
        allowApiDelete: Roles.admin
    })
-   export class Task extends IdEntity {
+   export class Task {
+       @Fields.uuid()
+       id!: string;
        @Fields.string({
            validate: Validators.required,
            allowApiUpdate: Roles.admin
@@ -1087,6 +1095,8 @@ Usually, not all application users have the same privileges. Let's define an `ad
        title = '';
        @Fields.boolean()
        completed = false;
+       @Fields.date()
+       lastUpdated = new Date()
    }
    ```
 3. Modify the highlighted line in the `TasksController` class to reflect the authorization rule
