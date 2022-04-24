@@ -13,6 +13,7 @@ import { DataApi } from '../data-api';
 import { Categories as newCategories } from './remult-3-entities';
 import { Field, Entity, EntityBase, Fields } from '../remult3';
 import { tasks } from './tasks';
+import { deleteAll } from "../shared-tests/deleteAll";
 
 
 @Entity('entityWithAutoId')
@@ -28,10 +29,8 @@ describe("test json database", () => {
     let db = new JsonDataProvider(localStorage);
     let remult = new Remult();
     remult.setDataProvider(db);
-    async function deleteAll() {
-        for (const c of await remult.repo(newCategories).find()) {
-            await c._.delete();
-        }
+    async function deleteAll1() {
+        await deleteAll(remult.repo(newCategories));
     }
     it("test auto increment", async () => {
         let remult = new Remult();
@@ -44,7 +43,7 @@ describe("test json database", () => {
     });
 
     it("test basics", async () => {
-        await deleteAll();
+        await deleteAll1();
         expect(await remult.repo(newCategories).count()).toBe(0);
         let promisis = [];
         for (let index = 1; index < 4; index++) {
@@ -103,5 +102,17 @@ describe("test tasks", () => {
         });
         d.test();
     });
-    
+
+});
+
+it("test data api response fails on wrong answer", () => {
+    var r = new TestDataApiResponse();
+    r.progress(0.5);
+    expect(() => r.created({})).toThrowError();
+    expect(() => r.deleted()).toThrowError();
+    expect(() => r.error({})).toThrowError();
+    expect(() => r.forbidden()).toThrowError();
+    expect(() => r.notFound()).toThrowError();
+    expect(() => r.success({})).toThrowError();
+
 });

@@ -169,9 +169,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     async insert(entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[]): Promise<entityType | entityType[]> {
         if (Array.isArray(entity)) {
+            let r = [];
             for (const item of entity) {
-                await this.insert(item);
+                r.push(await this.insert(item));
             }
+            return r;
         } else {
             let ref = getEntityRef(entity, false) as EntityRef<entityType>;
             if (ref) {
@@ -216,7 +218,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     async save(entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[]): Promise<entityType | entityType[]> {
         if (Array.isArray(entity)) {
-            return Promise.all(entity.map(x => this.insert(x)));
+            return Promise.all(entity.map(x => this.save(x)));
         } else {
             let ref = getEntityRef(entity, false) as EntityRef<entityType>;
             if (ref)
@@ -440,25 +442,25 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
     let w = Filter.fromEntityFilter(entityDefs, where);
-
+    const emptyFunction = () => { };
     if (w) {
         w.__applyToConsumer({
-            custom: () => { },
-            databaseCustom: () => { },
-            containsCaseInsensitive: () => { },
-            isDifferentFrom: () => { },
+            custom: emptyFunction,
+            databaseCustom: emptyFunction,
+            containsCaseInsensitive: emptyFunction,
+            isDifferentFrom: emptyFunction,
             isEqualTo: (col, val) => {
                 r[col.key] = val;
             },
-            isGreaterOrEqualTo: () => { },
-            isGreaterThan: () => { },
-            isIn: () => { },
-            isLessOrEqualTo: () => { },
-            isLessThan: () => { },
-            isNotNull: () => { },
-            isNull: () => { },
+            isGreaterOrEqualTo: emptyFunction,
+            isGreaterThan: emptyFunction,
+            isIn: emptyFunction,
+            isLessOrEqualTo: emptyFunction,
+            isLessThan: emptyFunction,
+            isNotNull: emptyFunction,
+            isNull: emptyFunction,
 
-            or: () => { }
+            or: emptyFunction
         });
     }
 }

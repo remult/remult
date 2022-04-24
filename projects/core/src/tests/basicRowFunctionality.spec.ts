@@ -28,6 +28,7 @@ import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../../valueConverters";
+import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -1465,9 +1466,43 @@ describe("test web sql identity", () => {
   });
 });
 describe("compound id", () => {
-  it("id field is comound", () => {
+  it("id field is compound", () => {
     let ctx = new Remult();
     expect(ctx.repo(CompoundIdEntity).metadata.idMetadata.field instanceof CompoundIdField).toBe(true);
+  });
+  it("result id filter works with object", async () => {
+    let ctx = new Remult();
+    let repo = ctx.repo(CompoundIdEntity);
+    let id = repo.metadata.idMetadata.field as CompoundIdField;
+    var n = await getDbNameProvider(repo.metadata)
+    let f = new FilterConsumerBridgeToSqlRequest({
+      addParameterAndReturnSqlToken: x => x,
+      execute: undefined
+    }, n);
+    id.resultIdFilter(undefined, repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
+    expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
+
+  });
+  it("result id filter works with id", async () => {
+    let ctx = new Remult();
+    let repo = ctx.repo(CompoundIdEntity);
+    let id = repo.metadata.idMetadata.field as CompoundIdField;
+    var n = await getDbNameProvider(repo.metadata)
+    let f = new FilterConsumerBridgeToSqlRequest({
+      addParameterAndReturnSqlToken: x => x,
+      execute: undefined
+    }, n);
+    id.resultIdFilter("1,2", repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
+    expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
+
+  });
+  it("some things should not work", async () => {
+    let ctx = new Remult();
+    let repo = ctx.repo(CompoundIdEntity);
+    let id = repo.metadata.idMetadata.field as CompoundIdField;
+    expect(() => id.valueConverter).toThrowError();
+    expect(await id.getDbName()).toBe("");
+
   });
   it("compound sql",
     async () => {

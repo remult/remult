@@ -157,6 +157,29 @@ describe("remult-3-basics", () => {
         await repo.delete(1);
         expect(await repo.count()).toBe(0);
     });
+    it("test insert works with active record and fails on existing one", async () => {
+        const remult = new Remult(new InMemoryDataProvider());
+        let repo = remult.repo(Categories);
+        var r = await repo.insert(repo.create({ id: 1 }));
+        expect(await repo.count()).toBe(1);
+        let ok = false
+        try {
+            await repo.insert(r);
+            ok = true;
+        }
+        catch {
+
+        }
+        expect(ok).toBe(false);
+    });
+    it("save works with array", async () => {
+        const remult = new Remult(new InMemoryDataProvider());
+        let repo = remult.repo(Categories);
+        let items = (await repo.insert([{ id: 1 }, { id: 2 }])).map(y => ({ ...y, categoryName: y.id.toString() }));
+        await repo.save(items);
+        expect (items[0].categoryName).toBe('1');
+
+    });
 
 
 });
