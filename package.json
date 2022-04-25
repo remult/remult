@@ -11,6 +11,7 @@
     "core-build": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles readme.md dist/remult",
     "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next",
     "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public  && cd.. && cd angular && npm publish  --access public",
+    "release-core": "npm run core-build && npm run patch-versions && cd dist/remult && npm publish  --access public",
     "remove-next": "npm remult dist-tag rm next",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "update-versions": "ts-node --project projects/test-angular/tsconfig.server.json ./tools/update-versions.ts",
