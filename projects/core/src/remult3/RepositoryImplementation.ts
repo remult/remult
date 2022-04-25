@@ -156,9 +156,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }
         return x;
     }
-    async delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;
+    async delete(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number))): Promise<void>;
     async delete(item: entityType): Promise<void>;
-    async delete(item: entityType | (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void> {
+    async delete(item: entityType | (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number))): Promise<void> {
         if (typeof item === "string" || typeof item === "number")
             return this.edp.delete(item);
         else {
@@ -185,7 +185,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
     }
-    async update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
+    async update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
 
         let ref = this.getRefForExistingRow(entity, id);
 
@@ -1202,6 +1202,12 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     }
     setId(id: (string | number)) {
         this.value = id;
+    }
+    getId() {
+        let lu = this.rowBase.lookups.get(this.metadata.key);
+        if (lu)
+            return lu.id != undefined ? lu.id : null;
+        return this.value;
     }
 
     get inputValue(): string {

@@ -1,6 +1,6 @@
 import { Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, Fields } from '../remult3';
+import { Field, Entity, EntityBase, rowHelperImplementation, EntityFilter, Fields, getEntityRef } from '../remult3';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { Language } from './RowProvider.spec';
@@ -113,6 +113,7 @@ describe("many to one relation", () => {
         remult.clearAllCache();
         let p = await remult.repo(ProductsEager).findId(1);
         expect(p.category.id).toBe(1);
+        expect(p.$.category.getId()).toBe(1);
 
     });
     it("test repo save", async () => {
@@ -851,3 +852,30 @@ it("test that it doesn't save if it doesn't need to", async () => {
 
 })
 
+
+
+
+
+
+@Entity("contact")
+class Contact {
+    @Fields.uuid()
+    id!: string;
+    @Fields.string()
+    name = '';
+}
+@Entity("tag")
+class Tags {
+    @Fields.uuid()
+    id!: string;
+    @Field(() => Contact)
+    contact!: Contact;
+}
+describe("Test many to one without active record", () => {
+    it("should work", async () => {
+        const remult = new Remult(new InMemoryDataProvider());
+        const c = await remult.repo(Contact).insert({ name: 'c1' });
+        const t = await remult.repo(Tags).insert({ contact: c });
+        expect(getEntityRef(t).fields.contact.getId()).toBe(c.id);
+    });
+});

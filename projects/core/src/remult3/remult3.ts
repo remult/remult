@@ -50,7 +50,7 @@ export interface Subscribable {
 }
 
 export type FieldsRef<entityType> = {
-    [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends { id: (number | string) } ? IdFieldRef<entityType, entityType[Properties]> : FieldRef<entityType, entityType[Properties]>
+    [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends { id?: (number | string) } ? IdFieldRef<entityType, entityType[Properties]> : FieldRef<entityType, entityType[Properties]>
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>,
     [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>,
@@ -74,7 +74,8 @@ export type SortSegments<entityType> = {
     [Properties in keyof entityType]: SortSegment & { descending(): SortSegment }
 }
 export interface IdFieldRef<entityType, valueType> extends FieldRef<entityType, valueType> {
-    setId(id: valueType extends { id: number } ? number : valueType extends { id: string } ? string : (string | number))
+    setId(id: valueType extends { id?: number } ? number : valueType extends { id?: string } ? string : (string | number))
+    getId(): (valueType extends { id?: number } ? number : valueType extends { id?: string } ? string : (string | number))
 }
 
 export interface FieldRef<entityType = any, valueType = any> extends Subscribable {
@@ -124,7 +125,7 @@ export interface Repository<entityType> {
     /** returns the first item that matchers the `where` condition */
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
-    findId(id: entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
+    findId(id: entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects. 
      * 
      * It also has it's own paging mechanism that can be used n paging scenarios.
@@ -166,10 +167,10 @@ export interface Repository<entityType> {
      * @example
      * taskRepo.update(task.id,{...task,completed:true})
     */
-    update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
 
     /** Deletes an Item*/
-    delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;
+    delete(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number))): Promise<void>;
     delete(item: entityType): Promise<void>;
 
     /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
@@ -227,7 +228,7 @@ export declare type EntityFilter<entityType> = {
         Partial<OmitEB<entityType>>[Properties] extends (number | Date | undefined) ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> :
         Partial<OmitEB<entityType>>[Properties] extends (string | undefined) ? ContainsStringValueFilter & ComparisonValueFilter<string> :
         Partial<OmitEB<entityType>>[Properties] extends (boolean | undefined) ? ValueFilter<boolean> :
-        Partial<OmitEB<entityType>>[Properties] extends ({ id: (string | number) } | undefined) ? IdFilter<Partial<OmitEB<entityType>>[Properties]> :
+        Partial<OmitEB<entityType>>[Properties] extends ({ id?: (string | number) } | undefined) ? IdFilter<Partial<OmitEB<entityType>>[Properties]> :
         ValueFilter<Partial<OmitEB<entityType>>[Properties]>) & ContainsStringValueFilter;
 } & {
     $or?: EntityFilter<entityType>[];
@@ -253,7 +254,7 @@ export interface ContainsStringValueFilter {
     $contains?: string,
 }
 export type IdFilter<valueType> = ValueFilter<valueType> | {
-    $id: ValueFilter<valueType extends { id: number } ? number : string>;
+    $id: ValueFilter<valueType extends { id?: number } ? number : string>;
 }
 
 
