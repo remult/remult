@@ -44,7 +44,7 @@ module.exports = {
         items: [
           {
             text: 'React',
-            link: '/tutorials/tutorial-react'
+            link: '/tutorials/react/'
           },
           {
             text: 'Angular',
@@ -70,12 +70,13 @@ module.exports = {
             'backendMethods',
             'field-types',
             'databases'
-            
+
           ]
         },
         {
           title: 'Advanced Topics',
           collapsable: true,
+
           children: [
             'rest-api',
             'adding-swagger',
@@ -103,11 +104,22 @@ module.exports = {
 
       ],
 
-      '/tutorials/tutorial-react': [
+      '/tutorials/react/': [
         {
           title: 'Tutorial',
-          path: '/tutorials/tutorial-react',
-          collapsable: false
+          path: '/tutorials/react/',
+
+          collapsable: false,
+          children: [
+            '',
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'deployment'
+          ]
         }],
       '/tutorials/tutorial-angular': [
         {

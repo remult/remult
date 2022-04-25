@@ -6,7 +6,7 @@ In this tutorial we are going to create a simple app to manage a task list. We'l
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
 ::: tip Prefer React?
-Check out the [React tutorial](./tutorial-react).
+Check out the [React tutorial](./tutorials/react/).
 :::
 
 ### Prerequisites
