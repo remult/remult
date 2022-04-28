@@ -5,9 +5,9 @@ sidebarDepth: 1
 
 # Todo App with React
 
-### Build a production ready task list app with Remult using a React frontend
+### Build a production-ready task list app with Remult using a React frontend
 
-In this tutorial we are going to create a simple app to manage a task list. We'll use `React` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database. 
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `React` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database. 
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -22,7 +22,7 @@ This tutorial assumes you are familiar with `TypeScript` and `React`.
 Before you begin, make sure you have [Node.js](https://nodejs.org) installed. <!-- consider specifying Node minimum version with npm -->
 
 # Setup for the Tutorial
-This tutorial requires setting up a React project, an API server project and a few lines of code to add Remult.
+This tutorial requires setting up a React project, an API server project, and a few lines of code to add Remult.
 
 :::details TLDR: Follow these steps to skip the manual setup and dive straight into coding the app
 
@@ -49,7 +49,7 @@ This tutorial requires setting up a React project, an API server project and a f
 
 The default React app main screen should be displayed.
 
-At this point our starter project is up and running. We are now ready to [start creating the task list app](#entities-and-crud-operations).
+At this point, our starter project is up and running. We are now ready to [start creating the task list app](#entities-and-crud-operations).
 :::
 
 ### Create a React Project
@@ -59,21 +59,21 @@ npx create-react-app remult-react-todo --template typescript
 ```
 
 ### Adding Remult and Server Stuff
-In this tutorial we'll be using the workspace folder created by `React` as the root folder for our server project as well.
+In this tutorial, we'll be using the root folder created by `React` as the root folder for our server project as well.
 ```sh
 cd remult-react-todo
 ```
 
 #### Installing required packages
-We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API and, of course, `Remult`.
+We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API, and, of course, `Remult`.
 ```sh
 npm i axios express remult
 npm i --save-dev @types/express
 ```
 #### The API server project
-The starter API server TypeScript project contains a single module which initializes `Express`, loads the Remult middleware `remultExpress`, and begins listening for API requests.
+The starter API server TypeScript project contains a single module that initializes `Express`, loads the Remult middleware `remultExpress`, and begins listening for API requests.
 
-In our development environment we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server.
+In our development environment, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server.
 
 1. Install `ts-node-dev`
    ```sh
@@ -180,7 +180,7 @@ If you are using Visual Studio Code and would like to run both `dev-node` and `d
 :::
 
 #### Setting up a global Remult object for the React app
-Our React starter project is almost ready. All that's left is to add a global `Remult` object which will be used to communicate with the API server via a `Promise` based HTTP client (in this case - `Axios`).
+Our React starter project is almost ready. All that's left is to add a global `Remult` object which will be used to communicate with the API server via a `Promise`-based HTTP client (in this case - `Axios`).
 
 Create an `common.ts` file in the `src/` folder with the following code:
 
@@ -193,7 +193,7 @@ export const remult = new Remult(axios);
 ```
 
 ### Setup completed
-At this point our starter project is up and running. We are now ready to start creating the task list app.
+At this point, our starter project is up and running. We are now ready to start creating the task list app.
 
 ::: tip Bonus 
 Setup [Swagger UI](../docs/adding-swagger) and/or a [GraphQL backend](../docs/adding-graphql) in seconds.
