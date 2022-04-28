@@ -32,7 +32,7 @@ module.exports = {
     repo: 'remult/remult',
     editLinks: true,
     docsDir: 'docs',
-    lastUpdated: false,
+    lastUpdated: true,
     smoothScroll: true,
     nav: [
       {
