@@ -64,6 +64,22 @@ In this section, we'll be using the following packages:
    npm i jsonwebtoken jwt-decode express-jwt
    npm i --save-dev @types/jsonwebtoken 
    ```
+
+5. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
+
+   *package.json*
+   ```json
+   "browser": {
+      "jsonwebtoken": false
+   }
+   ```
+
+   ::: danger This step is not optional
+   React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
+
+   **For this change to take effect, our React app's dev server must be restarted by terminating the `dev-react` script and running it again.**
+   :::
+
 2. Create a file called `src/shared/AuthController.ts ` and place the following code in it:
    *src/shared/AuthController.ts*
    ```ts
@@ -170,22 +186,6 @@ In this section, we'll be using the following packages:
       return config;
    });
    ```
-
-
-5. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
-
-   *package.json*
-   ```json
-   "browser": {
-      "jsonwebtoken": false
-   }
-   ```
-
-   ::: danger This step is not optional
-   React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
-
-   **For this change to take effect, our React app's dev server must be restarted by terminating the `dev-react` script and running it again.**
-   :::
 
 6. Add the following code to the `App` function component, and replace the beginning of the `return` statement to include the user greeting and sign out button.
 
