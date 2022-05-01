@@ -66,11 +66,10 @@ module.exports = {
           title: 'Concepts',
           collapsable: true,
           children: [
-            'entity-relations',
-            'backendMethods',
+            'databases',
             'field-types',
-            'databases'
-
+            'backendMethods',
+            'entity-relations',
           ]
         },
         {

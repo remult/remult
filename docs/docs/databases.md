@@ -1,233 +1,253 @@
-# Optional Databases
+# Connecting to a Database
+
+To set a database connection for Remult, set the `dataProvider` property of the `options` argument of the remult Express middleware.
+
+Here are examples of connecting to some commonly used back-end databases:
+* Postgres
+    * [Using `node-postgres` only](#using-node-postgres-pghttpsnode-postgrescom-only)
+    * [Using Knex.js](#using-knexjshttpknexjsorg)
+* [MySQL](#mysql)
+* [MongoDB](#mongodb)
+* [SQLite](#sqlite)
+* [Microsoft SQL Server](#microsoft-sql-server)
+* [Oracle](#oracle)
+
+Remult can also be used to connect entities to local [frontend databases](#frontend-databases).
 
 ## Postgres
-### Options 1, remult
-To use postgres as the backend database, first install the following packages:
+### Using [node-postgres (pg)](https://node-postgres.com/) only
+
+Install node-postgres:
 ```sh
 npm i pg 
 npm i --save-dev @types/pg
 ```
 
-And adjust the server's `index.ts`
-```ts{3,7-9}
+Modify the API server's main module:
+```ts{5,9-16}
+// index.ts
+
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createPostgresConnection } from 'remult/postgres';
 
 const app = express();
+
+const connectionString = 'postgres://user:password@host:5432/database';
+
 app.use(remultExpress({
     dataProvider: () => createPostgresConnection({
-         connectionString:"postgres://postgres:MASTERKEY@localhost/postgres" 
+        connectionString, // Default: process.env.DATABASE_URL
+        autoCreateTables: true // Entities will be synced with the database. Default: true
     })
 }));
-app.listen(3002, () => console.log("Server started"));
 ```
-Options:
-* **connectionString** - the connection string to use. If none is specified the `process.env.DATABASE_URL` will be used.
-* **autoCreateTables** - default `true`, verifies that all tables and columns exist in the database and creates the missing ones. 
+
+::: details Additional options
 * **configuration** - can be set to `heroku` or to the `pg.PoolConfig` options object.
     When set to `heroku`, it'll:
     * Use `process.env.DATABASE_URL` if no `connectionString` is provided
     * Use ssl, with the `rejectUnauthorized:false` flag as required by postgres on heroku
     * Disable ssl for non production environments (`process.env.NODE_ENV !== "production"`). To use ssl also for dev, set the `sslInDev` option to true.
 * **sslInDev** - see `configuration:"heroku"`
+:::
 
+### Using [Knex.js](http://knexjs.org/)
 
-### Option 2, Knex
-
+Install knex and node-postgres:
 ```sh
 npm i knex pg
 ```
 
-Adjust the server's `index.ts`
-```ts{3,8-11}
+Modify the API server's main module:
+```ts{5,9-15}
+// index.ts
+
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createKnexDataProvider } from 'remult/remult-knex';
-import '../Task';
 
-let app = express();
+const app = express();
+
 app.use(remultExpress({
     dataProvider: createKnexDataProvider({
+        // Knex client configuration for Postgres
         client: 'pg',
-        connection: "postgres://postgres:MASTERKEY@localhost/postgres",
-    })
+        connection: 'postgres://user:password@host:5432/database',
+    }, true /* autoCreateTables - entities will be synced with the database. Default: false */)
 }));
-
-app.listen(3002, () => console.log("Server started"));
 ```
-#### createKnexDataProvider Function
-We use Knex to support many different database (see [knex.org](https://knexjs.org/)):
-
-**Parameters:**
-* **config** - the  Knex.Config object
-* **autoCreateTables** - default `true`, verifies that all tables and columns exist in the database and creates the missing ones. 
-
 
 ## MySQL
+
+Install knex and mysql2:
 ```sh
 npm i knex mysql2
 ```
 
-Adjust the server's `index.ts`
-```ts{3,8-16}
+Modify the API server's main module:
+```ts{5,9-20}
+// index.ts
+
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createKnexDataProvider } from 'remult/remult-knex';
-import '../Task';
 
-let app = express();
+const app = express();
+
 app.use(remultExpress({
     dataProvider: createKnexDataProvider({
+        // Knex client configuration for MySQL
         client: 'mysql2',
         connection: {
-            user: 'sa',
-            password: 'MASTERKEY',
+            user: 'your_database_user',
+            password: 'your_database_password',
             host: '127.0.0.1',
-            database:'test'
-        },
-    })
+            database: 'test'
+        }
+    }, true /* autoCreateTables - entities will be synced with the database. Default: false */)
 }));
-
-app.listen(3002, () => console.log("Server started"));
 ```
-* see [createKnexDataProvider Function](#createknexdataprovider-function)
 
 ## MongoDB
+Install mongodb:
 ```sh
 npm i mongodb
 ```
 
-Adjust the server's `index.ts`
-```ts{3-4,9-13}
+Modify the API server's main module:
+```ts{5-6,10-16}
+// index.ts
+
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { MongoClient } from 'mongodb';
 import { MongoDataProvider } from 'remult/remult-mongo';
-import '../Task';
 
-let app = express();
+const app = express();
+
 app.use(remultExpress({
     dataProvider: async () => {
-        let client = new MongoClient("mongodb://localhost:27017/local");
+        const client = new MongoClient("mongodb://localhost:27017/local");
         await client.connect();
         return new MongoDataProvider(client.db('test'), client);
     }
 }));
-
-app.listen(3002, () => console.log("Server started"));
 ```
 
 
-## sqlite3
+## SQLite
+
+Install knex and sqlite3:
 ```sh
 npm i knex sqlite3
 ```
 
-Adjust the server's `index.ts`
-```ts{3,8-13}
+Modify the API server's main module:
+```ts{5,9-17}
+// index.ts
+
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createKnexDataProvider } from 'remult/remult-knex';
-import '../Task';
 
-let app = express();
+const app = express();
+
 app.use(remultExpress({
     dataProvider: createKnexDataProvider({
+        // Knex client configuration for SQLite
         client: 'sqlite3',
         connection: {
             filename:'./mydb.sqlite'
-        },
-    })
+        }
+    }, true /* autoCreateTables - entities will be synced with the database. Default: false */)
 }));
-
-app.listen(3002, () => console.log("Server started"));
 ```
-* see [createKnexDataProvider Function](#createknexdataprovider-function)
-
 
 ## Microsoft SQL Server
+Install knex and tedious:
 ```sh
 npm i knex tedious
 ```
 
-Adjust the server's `index.ts`
-```ts{3,8-20}
+Modify the API server's main module:
+```ts{5,9-25}
+// index.ts
+
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createKnexDataProvider } from 'remult/remult-knex';
-import '../Task';
 
-let app = express();
+const app = express();
+
 app.use(remultExpress({
     dataProvider: createKnexDataProvider({
+        // Knex client configuration for MSSQL
         client: 'mssql',
         connection: {
             server: '127.0.0.1',
             database: 'test',
-            user: 'sa',
-            password: 'MASTERKEY',
+            user: 'your_database_user',
+            password: 'your_database_password',
             options: {
                 enableArithAbort: true,
                 encrypt: false,
                 instanceName: `sqlexpress`
             }
-        },
-    })
+        }
+    }, true /* autoCreateTables - entities will be synced with the database. Default: false */)
 }))
-
-app.listen(3002, () => console.log("Server started"));
 ```
-* see [createKnexDataProvider Function](#createknexdataprovider-function)
-
 
 ## Oracle
+Install knex and oracledb:
 ```sh
 npm i knex oracledb
 ```
 
-Adjust the server's `index.ts`
-```ts{3,8-15}
+Modify the API server's main module:
+```ts{5,9-19}
+// index.ts
+
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createKnexDataProvider } from 'remult/remult-knex';
-import '../Task';
 
-let app = express();
+const app = express();
+
 app.use(remultExpress({
     dataProvider: createKnexDataProvider({
+        // Knex client configuration for Oracle
         client: 'oracledb',
         connection: {
-            user: 'sa',
-            password: 'MASTERKEY',
+            user: 'your_database_user',
+            password: 'your_database_password',
             connectString: 'SERVER',
-        },
-    })
+        }
+    }, true /* autoCreateTables - entities will be synced with the database. Default: false */)
 }));
-
-app.listen(3002, () => console.log("Server started"));
 ```
-* see [createKnexDataProvider Function](#createknexdataprovider-function)
 
-## Json File
-A basic json file based database.
-Adjust the server's `index.ts`
-```ts{2-3,8}
+## JSON Files
+Modify the API server's main module:
+```ts{5-6,10-12}
+// index.ts
+
 import express from 'express';
+import { remultExpress } from 'remult/remult-express';
 import { JsonDataProvider } from 'remult';
 import { JsonEntityFileStorage } from 'remult/server';
-import { remultExpress } from 'remult/remult-express';
-import '../Task';
 
-let app = express();
+const app = express();
+
 app.use(remultExpress({
     dataProvider: async () => new JsonDataProvider(new JsonEntityFileStorage('./db'))
 }));
-
-app.listen(3002, () => console.log("Server started"));
 ```
 
-* Note that if no `dataProvider`  is provided to `remultExpress` this db will be used as the default
+::: tip Note
+This is the default database used by Remult if no other `dataProvider` is set.
+:::
 
 ## Frontend Databases
 Although the common use case of `Remult` on the front end, is to call the backend using rest api, in some use cases using a local in browser database can be useful.
