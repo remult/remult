@@ -27,7 +27,7 @@
 
 ## What is Remult?
 
-**Remult** is a fullstack CRUD framework that uses your TypeScript model types to provide:
+**Remult** is a full-stack CRUD framework that uses your TypeScript model types to provide:
 
 * Secure REST API (highly configurable)
 * Type-safe frontend API client
@@ -48,6 +48,8 @@ The best way to learn Remult is by following a tutorial of a simple Todo web app
 npm i remult
 ```
 
+## Usage
+
 ### Setup API backend using a Node.js Express middleware
 ```ts
 import express from 'express';
@@ -63,7 +65,7 @@ app.listen(port, () => {
 });
 ```
 
-## Define model classes
+### Define model classes
 ```ts
 import { Entity, Fields } from 'remult';
 
@@ -86,7 +88,7 @@ export class Product {
 [{"name":"Tofu","unitPrice":5}]
 ```
 
-## Find and manipulate data in type-safe frontend code
+### Find and manipulate data in type-safe frontend code
 ```ts
 async function increasePriceOfTofu(priceIncrease: number) {
   const productsRepo = remult.repo(Product);
@@ -109,7 +111,7 @@ static async increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
 }
 ```
 
-## :ballot_box_with_check: Data validation and constraints - defined once
+### :ballot_box_with_check: Data validation and constraints - defined once
 
 ```ts
 import { Entity, Fields } from 'remult';
@@ -155,7 +157,7 @@ catch (e: ErrorInfo<Product>) {
 {"modelState":{"unitPrice":"must not be less than 0","name":"required"},"message":"Name: required"}
 ```
 
-## :lock: Secure the API with fine-grained authorization
+### :lock: Secure the API with fine-grained authorization
 ```ts
 @Entity<Article>('Articles', {
     allowApiRead: true,
