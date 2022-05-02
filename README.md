@@ -180,4 +180,4 @@ export class Article {
 Contributions are welcome. See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## License
-Remult is [MIT Licensed](LICENSE.md).
+Remult is [MIT Licensed](LICENSE).
