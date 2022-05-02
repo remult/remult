@@ -481,7 +481,7 @@ export interface IDataSettings<rowType> {
   /** filters the data
 * @example
 * await taskRepo.find({where: { completed:false }})
-* @see For more usage examples see [EntityFilter](https://remult.github.io/guide/entityFilter.html)
+* @see For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
 */
   where?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>);
   /** Determines the order in which the result will be sorted in

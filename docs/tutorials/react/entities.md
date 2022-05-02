@@ -29,11 +29,11 @@ The `Task` entity class we're creating will have an auto-generated UUID `id` fie
    }
    ```
 
-The [@Entity](../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../docs/ref_entity.md#allowapicrud) property to `true`.
+The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../../docs/ref_entity.md#allowapicrud) property to `true`.
 
 The `@Fields.uuid` decorator tells remult to automatically generate an id using `uuid`. We mark that property as optional since the id will be auto-generated. 
 
-The [@Fields.string](../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
+The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
 ### Seeding test data
 
@@ -69,7 +69,7 @@ app.listen(3002, () => console.log("Server started"));
 
 The `initApi` callback is called only once, after a database connection is established and the server is ready to perform initialization operations.
 
-`tasksRepo` is a Remult [Repository](../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
+`tasksRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
 
 The code in `initApi` simply adds five new Tasks to the database if the current `count` is zero.
 
@@ -113,6 +113,6 @@ export default App;
 
 Here's a quick overview of the different parts of the code snippet:
 
-`tasksRepo` is a Remult [Repository](../docs/ref_repository.md) object used to fetch and create Task entity objects.
+`tasksRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
 
 After the browser refreshes, the list of tasks appears.

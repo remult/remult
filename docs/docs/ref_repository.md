@@ -31,7 +31,7 @@ await taskRepo.find({where: { completed:false }})
 ```
 
 #### see
-For more usage examples see [EntityFilter](https://remult.github.io/guide/entityFilter.html)
+For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
 
 ### orderBy
 Determines the order of items returned .
@@ -56,7 +56,7 @@ await taskRepo.find({where: { completed:false }})
 ```
 
 #### see
-For more usage examples see [EntityFilter](https://remult.github.io/guide/entityFilter.html)
+For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
 
 ### orderBy
 Determines the order of items returned .
@@ -94,7 +94,7 @@ await taskRepo.find({where: { completed:false }})
 ```
 
 #### see
-For more usage examples see [EntityFilter](https://remult.github.io/guide/entityFilter.html)
+For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
 
 ### orderBy
 Determines the order of items returned .

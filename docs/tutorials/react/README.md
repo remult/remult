@@ -196,5 +196,5 @@ export const remult = new Remult(axios);
 At this point, our starter project is up and running. We are now ready to start creating the task list app.
 
 ::: tip Bonus 
-Setup [Swagger UI](../docs/adding-swagger) and/or a [GraphQL backend](../docs/adding-graphql) in seconds.
+Setup [Swagger UI](../../docs/adding-swagger) and/or a [GraphQL backend](../../docs/adding-graphql) in seconds.
 :::
