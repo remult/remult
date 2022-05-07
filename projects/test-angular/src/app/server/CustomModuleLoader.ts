@@ -42,6 +42,9 @@ export class CustomModuleLoader {
                 case "remult/inputTypes":
                     request = request = process.cwd() + root + '/core/inputTypes';
                     break;
+                    case "remult/remult-knex":
+                    request = request = process.cwd() + root + '/core/remult-knex';
+                    break;
                 case "remult/src/filter/filter-interfaces":
                     request = request = process.cwd() + root + '/core/src/filter/filter-interfaces';
                     break;

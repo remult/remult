@@ -9,6 +9,7 @@ import * as fs from 'fs';
 //import '../app.module';
 import { serverInit } from './server-init';
 import { remultGraphql } from 'remult/graphql';
+import {createKnexDataProvider} from 'remult/remult-knex';
 
 
 import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
@@ -25,21 +26,29 @@ import { MongoClient } from 'mongodb';
 import { stam } from '../products-test/products.component';
 import { ClassType } from '../../../../core/classType';
 import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
+import { JsonDataProvider } from '../../../../core/src/data-providers/json-data-provider';
+import { JsonEntityFileStorage } from '../../../../core/server/JsonEntityFileStorage';
 
 
 
 
-const getDatabase = () => {
-    if (1 + 1 == 3)
-        return undefined;
-    return createPostgresConnection({
-        configuration: {
-            user: "postgres",
-            password: "MASTERKEY",
-            host: "localhost",
-            database: "postgres"
+const getDatabase = async () => {
+  
+    const result = await createKnexDataProvider({
+        client: 'mssql',
+        connection: {
+            server: '127.0.0.1',
+            database: 'test2',
+            user: 'sa',
+            password: 'MASTERKEY',
+            options: {
+                enableArithAbort: true,
+                encrypt: false,
+                instanceName: 'sqlexpress'
+            }
         }
-    })
+    });
+    return result;
 }
 
 
@@ -56,7 +65,7 @@ serverInit().then(async (dataSource) => {
 
 
     let remultApi = remultExpress({
-        dataProvider: getDatabase(),
+        dataProvider:async ()=>await  getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initApi: async remult => {
@@ -98,19 +107,4 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
-export enum PriorityWithString {
-    Low = "Low",
-    High = "High",
-    Critical = "Critical",
-    "is wierd" = 3
-}
 
-export enum Priority {
-    Low,
-    High,
-    Critical,
-    "is wierd"
-}
-
-let x = PriorityWithString.Low;
-console.log(x);

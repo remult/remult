@@ -5,6 +5,7 @@ import { CustomDataComponent, DataAreaSettings, DataControlSettings, getEntityVa
 
 import { DialogConfig } from '../../../../angular';
 import { RemultAngularPluginsService } from '../../../../angular/src/angular/RemultAngularPluginsService';
+import axios, { Axios } from 'axios';
 
 
 @Controller("blabla")
@@ -56,16 +57,21 @@ export class ProductsComponent implements OnInit {
   });
   area: DataAreaSettings;
   field: FieldRef<any, any>;
-  ngOnInit(): void {
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(AComponent);
+  async ngOnInit() {
+    const r = new Remult().repo(stam);
+    for (const z of await r.find()) {
+      await z.delete();
+    }
+    let x = await r.create({ name: "noam" });
+    x.name = 'noam1';
+    await x.save();
+    x = await r.findFirst({ name: 'noam1' });
+    console.log({ shouldBeNoam1: x.name });
+    console.log({ should1: await r.count({ name: 'noam1' }) });
 
-    const viewContainerRef = this.theId;
-    viewContainerRef.clear();
+    await x.delete();
+    console.log({ should0: await r.count({ name: 'noam1' }) });
 
-    const componentRef = viewContainerRef.createComponent<AComponent>(componentFactory);
-    setTimeout(() => {
-
-    }, 1000);
   }
   async click() {
 

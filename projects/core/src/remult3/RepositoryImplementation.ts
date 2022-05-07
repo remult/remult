@@ -156,19 +156,24 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }
         return x;
     }
-    async delete(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void>;
+    async delete(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number))): Promise<void>;
     async delete(item: entityType): Promise<void>;
-    async delete(item: entityType | (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number))): Promise<void> {
+    async delete(item: entityType | (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number))): Promise<void> {
         if (typeof item === "string" || typeof item === "number")
             return this.edp.delete(item);
-        else
-            await this.getEntityRef(item as entityType).delete();
+        else {
+            return this.getRefForExistingRow(item as entityType, undefined).delete();
+        }
     }
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     async insert(entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[]): Promise<entityType | entityType[]> {
         if (Array.isArray(entity)) {
-            return Promise.all(entity.map(x => this.insert(x)));
+            let r = [];
+            for (const item of entity) {
+                r.push(await this.insert(item));
+            }
+            return r;
         } else {
             let ref = getEntityRef(entity, false) as EntityRef<entityType>;
             if (ref) {
@@ -180,23 +185,40 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
     }
-    async update(id: (entityType extends { id: number } ? number : entityType extends { id: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
-        let row = new rowHelperImplementation(this._info, Object.assign({}, entity), this, this.edp, this.remult, false);
-        let obj = row.copyDataToObject();
-        for (const key in entity) {
-            if (Object.prototype.hasOwnProperty.call(entity, key)) {
-                entity[key] = obj[key];
+    async update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
+
+        let ref = this.getRefForExistingRow(entity, id);
+
+        return (await ref.save()) as unknown as entityType;
+
+
+    }
+
+    private getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number) {
+        let ref = getEntityRef(entity, false);
+        if (!ref) {
+            const instance = new this.entity(this.remult);
+
+            for (const field of this.fieldsOf(entity)) {
+                instance[field.key] = entity[field.key];
             }
+            let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
+            if (id)
+                row.id = id;
+            else row.id = row.getId();
+            ref = row;
+            Object.defineProperty(instance, entityMember, {
+                get: () => row
+            });
         }
-        const updatedRow = await this.edp.update(id, entity);
-        return this.mapRawDataToResult(updatedRow, undefined);
+        return ref;
     }
 
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     async save(entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[]): Promise<entityType | entityType[]> {
         if (Array.isArray(entity)) {
-            return Promise.all(entity.map(x => this.insert(x)));
+            return Promise.all(entity.map(x => this.save(x)));
         } else {
             let ref = getEntityRef(entity, false) as EntityRef<entityType>;
             if (ref)
@@ -214,7 +236,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
-        Remult.onFind(this._info, options);;
+        Remult.onFind(this._info, options);
         let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
@@ -351,18 +373,25 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return r;
     }
 
+    private fieldsOf(item: any) {
+        let keys = Object.keys(item);
+        return this.metadata.fields.toArray().filter(x => keys.includes(x.key));
+    }
 
     create(item?: Partial<OmitEB<entityType>>): entityType {
         let r = new this.entity(this.remult);
-        let z = this.getEntityRef(r);
         if (item)
-            Object.assign(r, item);
+            for (const field of this.fieldsOf(item)) {
+                r[field.key] = item[field.key];
+            }
+        let z = this.getEntityRef(r);
+
 
         return r;
     }
     async fromJson(json: any, newRow?: boolean): Promise<entityType> {
         let obj = {};
-        for (const col of this.metadata.fields) {
+        for (const col of this.fieldsOf(json)) {
             if (json[col.key] !== undefined) {
                 obj[col.key] = col.valueConverter.fromJson(json[col.key]);
             }
@@ -413,25 +442,25 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 export function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T) {
     let w = Filter.fromEntityFilter(entityDefs, where);
-
+    const emptyFunction = () => { };
     if (w) {
         w.__applyToConsumer({
-            custom: () => { },
-            databaseCustom: () => { },
-            containsCaseInsensitive: () => { },
-            isDifferentFrom: () => { },
+            custom: emptyFunction,
+            databaseCustom: emptyFunction,
+            containsCaseInsensitive: emptyFunction,
+            isDifferentFrom: emptyFunction,
             isEqualTo: (col, val) => {
                 r[col.key] = val;
             },
-            isGreaterOrEqualTo: () => { },
-            isGreaterThan: () => { },
-            isIn: () => { },
-            isLessOrEqualTo: () => { },
-            isLessThan: () => { },
-            isNotNull: () => { },
-            isNull: () => { },
+            isGreaterOrEqualTo: emptyFunction,
+            isGreaterThan: emptyFunction,
+            isIn: emptyFunction,
+            isLessOrEqualTo: emptyFunction,
+            isLessThan: emptyFunction,
+            isNotNull: emptyFunction,
+            isNull: emptyFunction,
 
-            or: () => { }
+            or: emptyFunction
         });
     }
 }
@@ -981,7 +1010,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         } else
             this.id = data[this.repository.metadata.idMetadata.field.key];
     }
-    private id;
+    id;
     public getOriginalId() {
         return this.id;
     }
@@ -1174,6 +1203,12 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
     setId(id: (string | number)) {
         this.value = id;
     }
+    getId() {
+        let lu = this.rowBase.lookups.get(this.metadata.key);
+        if (lu)
+            return lu.id != undefined ? lu.id : null;
+        return this.value;
+    }
 
     get inputValue(): string {
         this.reportObserved();
@@ -1203,13 +1238,20 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
 
 
     async __performValidation() {
-        let x = typeof (this.settings.validate);
-        if (Array.isArray(this.settings.validate)) {
-            for (const v of this.settings.validate) {
-                await v(this.container, this);
-            }
-        } else if (typeof this.settings.validate === 'function')
-            await this.settings.validate(this.container, this);
+        try {
+            let x = typeof (this.settings.validate);
+            if (Array.isArray(this.settings.validate)) {
+                for (const v of this.settings.validate) {
+                    await v(this.container, this);
+                }
+            } else if (typeof this.settings.validate === 'function')
+                await this.settings.validate(this.container, this);
+        } catch (error) {
+            if (typeof error === "string")
+                this.error = error;
+            else
+                this.error = error.message;
+        }
     }
     async validate() {
         await this.__performValidation();
@@ -1455,13 +1497,7 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
     }
 
 }
-export const Fields1 = {
-    String: () => {
-        return (a) => {
 
-        }
-    }
-}
 export class Fields {
 
     static object<entityType = any, valueType = any>(
@@ -1635,6 +1671,19 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
     return ValueListInfo.get<T>(type as ClassType<T>).getValues();
 }
 
+/**Decorates fields that should be used as fields.
+ * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
+ * 
+ * FieldOptions can be set in two ways:
+ * @example
+ * // as an object
+ * .@Fields.string({ includeInApi:false })
+ * title='';
+ * @example
+ * // as an arrow function that receives `remult` as a parameter
+ * .@Fields.string((options,remult) => options.includeInApi = true)
+ * title='';
+ */
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
 
 
@@ -1794,6 +1843,29 @@ export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, f
     }
 }
 
+/**Decorates classes that should be used as entities.
+ * Receives a key and an array of EntityOptions.
+ * @example
+ * import { Entity, Fields } from "remult";
+ * @Entity("tasks", {
+ *    allowApiCrud: true
+ * })
+ * export class Task {
+ *    @Fields.uuid()
+ *    id!: string;
+ *    @Fields.string()
+ *    title = '';
+ *    @Fields.boolean()
+ *    completed = false;
+ * }
+ * *EntityOptions can be set in two ways:*
+ * @example
+ * // as an object
+ * .@Entity("tasks",{ allowApiCrud:true })
+ * @example
+ * // as an arrow function that receives `remult` as a parameter
+ * .@Entity("tasks", (options,remult) => options.allowApiCrud = true)
+ */
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 
     return target => {

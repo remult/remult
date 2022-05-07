@@ -5,22 +5,22 @@ export class TestDataApiResponse implements DataApiResponse {
   progress(progress: number): void {
   }
   success(data: any): void {
-    fail('didnt expect success: ' + JSON.stringify(data));
+    throw new Error(('didnt expect success: ' + JSON.stringify(data)));
   }
   forbidden() {
-    fail('didnt expect forbidden:');
+    throw new Error('didnt expect forbidden:');
   }
   created(data: any): void {
-    fail('didnt expect created: ' + JSON.stringify(data));
+    throw new Error('didnt expect created: ' + JSON.stringify(data));
   }
   deleted(): void {
-    fail('didnt expect deleted:');
+    throw new Error('didnt expect deleted:');
   }
   notFound(): void {
-    fail('not found');
+    throw new Error('not found');
   }
   error(data) {
-    fail('error: ' + data + " " + JSON.stringify(data));
+    throw new Error('error: ' + data + " " + JSON.stringify(data));
   }
 
 }

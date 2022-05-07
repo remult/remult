@@ -122,7 +122,8 @@ describe("test filter for date", () => {
         var db = await getDbNameProvider(e.metadata);
         let f = new FilterConsumerBridgeToSqlRequest(d, db);
         f.isGreaterOrEqualTo(e.metadata.fields.theDate, new Date("2021-08-06T05:05:25.440Z"));
-        expect(await f.resolveWhere()).toBe(" where theDate >= '2021-08-05T21:00:00.000Z'");
+
+        expect(await f.resolveWhere()).toBe(" where theDate >= '" + new Date(2021, 7, 6).toISOString() + "'");
     });
 });
 

@@ -126,9 +126,12 @@ export class myServerAction extends Action<inArgs, result>
 
 }
 export interface BackendMethodOptions<type> {
+    /**Determines when this `BackendMethod` can execute, see: [Allowed](https://remult.dev/docs/allowed.html)  */
     allowed: AllowedForInstance<type>;
-    blockUser?: boolean;
+    /** EXPERIMENTAL: Determines if this method should be queued for later execution */
     queue?: boolean;
+    /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
+    blockUser?: boolean;
 }
 
 export const actionInfo = {
@@ -180,7 +183,7 @@ export function Controller(key: string) {
     };
 }
 
-
+/** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     return (target: any, key: string, descriptor: any) => {
         if (target.prototype !== undefined) {

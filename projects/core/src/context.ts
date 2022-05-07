@@ -13,7 +13,7 @@ export interface HttpProvider {
     put(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
     get(url: string): Promise<any> | { toPromise(): Promise<any> };
 }
-class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
+export class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
     constructor(private http: HttpProvider) {
 
     }
@@ -30,13 +30,14 @@ class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProvid
         return await retry(() => toPromise(this.http.get(url)));
     }
 }
-async function retry<T>(what: () => Promise<T>): Promise<T> {
+export async function retry<T>(what: () => Promise<T>): Promise<T> {
     while (true) {
         try {
             return await what();
         } catch (err) {
             if (err.message?.startsWith("Error occurred while trying to proxy") ||
-                err.message?.startsWith("Error occured while trying to proxy")) {
+                err.message?.startsWith("Error occured while trying to proxy") ||
+                err.message?.startsWith("Gateway Timeout")) {
                 await new Promise((res, req) => {
                     setTimeout(() => {
                         res({})
@@ -84,8 +85,14 @@ export async function processHttpException(ex: any) {
         error = "Network Error";
     if (typeof error === 'string') {
         error = {
-            message: error
+            message: error,
         };
+    }
+    let httpStatusCode = z.status;
+    if (httpStatusCode === undefined)
+        httpStatusCode = z.response?.status;
+    if (httpStatusCode !== undefined && httpStatusCode !== null) {
+        error.httpStatusCode = httpStatusCode;
     }
     var result = Object.assign(error, {
         //     exception: ex disabled for now because JSON.stringify crashed with this
@@ -98,15 +105,126 @@ export function isBackend() {
 }
 
 export class Remult {
-    static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
-    clearAllCache(): any {
-        this.repCache.clear();
-    }
-    static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+    /**Return's a `Repository` of the specific entity type
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * @see [Repository](https://remult.dev/docs/ref_repository.html)
+     * 
+     */
+    public repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
+        if (dataProvider === undefined)
+            dataProvider = this._dataSource;
+        let dpCache = this.repCache.get(dataProvider);
+        if (!dpCache)
+            this.repCache.set(dataProvider, dpCache = new Map<ClassType<any>, Repository<any>>());
 
+        let r = dpCache.get(entity);
+        if (!r) {
+
+            dpCache.set(entity, r = new RepositoryImplementation(entity, this, dataProvider));
+        }
+        return r;
+    }
+    /** Returns the current user's info */
+    get user(): UserInfo {
+        if (this._user === undefined) {
+            return {
+                id: undefined,
+                name: '',
+                roles: []
+            }
+        }
+        return this._user;
+    }
+    /** Set's the current user info */
+    async setUser(info: UserInfo | { sub?: string, name?: string, permissions?: string[] }) {
+        this._user = info as UserInfo;
+        let auth = info as { sub?: string, name?: string, permissions?: string[] };
+        if (auth) {
+            if (!this._user.id && auth.sub)
+                this._user.id = auth.sub;
+            if (!this._user.roles && auth.permissions) {
+                this._user.roles = auth.permissions;
+            }
+        }
+        if (this._user && !this._user.roles)
+            this._user.roles = [];
+        await this._userChangeEvent.fire();
+    }
+
+
+
+
+
+
+    private _user: UserInfo;
+
+    private _userChangeEvent = new EventSource();
+    /** Checks if a user was authenticated */
     authenticated() {
         return this.user.id !== undefined;
     }
+    /** checks if the user has any of the roles specified in the parameters
+     * @example
+     * remult.isAllowed("admin")
+     * @see
+     * [Allowed](https://remult.dev/docs/allowed.html)
+     */
+    isAllowed(roles: Allowed): boolean {
+        if (roles == undefined)
+            return undefined;
+        if (roles instanceof Array) {
+            for (const role of roles) {
+                if (this.isAllowed(role) === true) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (typeof roles === 'function') {
+            return (<any>roles)(this);
+        }
+        if (typeof roles === 'boolean')
+            return roles;
+        if (typeof roles === 'string')
+            if (this.user.roles.indexOf(roles.toString()) >= 0)
+                return true;
+
+
+        return false;
+    }
+
+    /** checks if the user matches the allowedForInstance callback
+     * @see
+     * [Allowed](https://remult.dev/docs/allowed.html)
+     */
+    isAllowedForInstance(instance: any, x: AllowedForInstance<any>): boolean {
+        if (Array.isArray(x)) {
+            {
+                for (const item of x) {
+                    if (this.isAllowedForInstance(instance, item))
+                        return true;
+                }
+            }
+        }
+        else if (typeof (x) === "function") {
+            return x(this, instance)
+        } else return this.isAllowed(x as Allowed);
+    }
+
+    /** returns a dispatcher object that fires once a user has changed*/
+    get userChange() {
+        return this._userChangeEvent.dispatcher;
+    }
+
+    private repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    /** Creates a new instance of the `remult` object.
+     * 
+     * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
+     * 
+     * If no provider is specified, `fetch` will be used as an http provider
+     */
     constructor(provider?: HttpProvider | DataProvider) {
 
         if (provider && (provider as DataProvider).getEntityDataProvider) {
@@ -127,104 +245,24 @@ export class Remult {
         if (!Action.provider)
             Action.provider = dataProvider;
     }
-
-
+    /** The api Base Url to be used in all remult calls. by default it's set to `/api`.
+     * 
+     * Set this property in case you want to determine a non relative api url
+     */
+    static apiBaseUrl = '/api';
+    /** The current data provider */
     _dataSource: DataProvider;
+    /** sets the current data provider */
     setDataProvider(dataProvider: DataProvider) {
         this._dataSource = dataProvider;
     }
-
-    protected _user: UserInfo;
-    get user(): UserInfo {
-        if (this._user === undefined) {
-            return {
-                id: undefined,
-                name: '',
-                roles: []
-            }
-        }
-        return this._user;
+    /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
+    static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
+    clearAllCache(): any {
+        this.repCache.clear();
     }
-    private _userChangeEvent = new EventSource();
-
-    get userChange() {
-        return this._userChangeEvent.dispatcher;
-    }
-    async setUser(info: UserInfo | { sub?: string, name?: string, permissions?: string[] }) {
-        this._user = info as UserInfo;
-        let auth = info as { sub?: string, name?: string, permissions?: string[] };
-        if (auth) {
-            if (!this._user.id && auth.sub)
-                this._user.id = auth.sub;
-            if (!this._user.name && auth.name)
-                this._user.name = auth.name;
-            if (!this._user.roles && auth.permissions) {
-                this._user.roles = auth.permissions;
-            }
-        }
-        if (this._user && !this._user?.roles)
-            this._user.roles = [];
-        await this._userChangeEvent.fire();
-    }
-    static apiBaseUrl = '/api';
-    isAllowedForInstance(instance: any, x: AllowedForInstance<any>): boolean {
-        if (Array.isArray(x)) {
-            {
-                for (const item of x) {
-                    if (this.isAllowedForInstance(instance, item))
-                        return true;
-                }
-            }
-        }
-        else if (typeof (x) === "function") {
-            return x(this, instance)
-        } else return this.isAllowed(x as Allowed);
-    }
-
-    isAllowed(roles: Allowed): boolean {
-        if (roles == undefined)
-            return undefined;
-        if (roles instanceof Array) {
-            for (const role of roles) {
-                if (this.isAllowed(role) === true) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        if (typeof roles === 'function') {
-            return (<any>roles)(this);
-        }
-        if (typeof roles === 'boolean')
-            return roles;
-        if (!this.user)
-            return false;
-        if (typeof roles === 'string')
-            if (this.user?.roles?.indexOf(roles.toString()) >= 0)
-                return true;
-
-
-        return false;
-    }
-    private repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
-    public repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
-        if (dataProvider === undefined)
-            dataProvider = this._dataSource;
-        let dpCache = this.repCache.get(dataProvider);
-        if (!dpCache)
-            this.repCache.set(dataProvider, dpCache = new Map<ClassType<any>, Repository<any>>());
-
-        let r = dpCache.get(entity);
-        if (!r) {
-
-            dpCache.set(entity, r = new RepositoryImplementation(entity, this, dataProvider));
-        }
-        return r;
-
-    }
-
-
+    /** A helper callback that is called whenever an entity is created. */
+    static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
 }
 
 

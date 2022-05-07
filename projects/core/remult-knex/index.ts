@@ -20,8 +20,9 @@ export class KnexDataProvider implements DataProvider {
             await action(new KnexDataProvider(t));
             await t.commit();
         }
-        catch {
+        catch (err){
             await t.rollback();
+            throw err;
         }
 
 

@@ -479,11 +479,11 @@ export interface IDataSettings<rowType> {
   gridButtons?: GridButton[];
 
   /** filters the data
-   * @example
-   * where p => p.price.isGreaterOrEqualTo(5)
-   * @see For more usage examples see [EntityWhere](https://remult-ts.github.io/guide/ref_entitywhere)
-   */
-   where?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>);
+* @example
+* await taskRepo.find({where: { completed:false }})
+* @see For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+*/
+  where?: EntityFilter<rowType> | (() => EntityFilter<rowType> | Promise<EntityFilter<rowType>>);
   /** Determines the order in which the result will be sorted in
    * @see See [EntityOrderBy](https://remult-ts.github.io/guide/ref__entityorderby) for more examples on how to sort
    */

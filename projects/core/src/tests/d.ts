@@ -15,9 +15,4 @@ export class d extends EntityBase {
     b: number;
 
     static count = 0;
-    @BackendMethod({ allowed: true })
-    async doIt() {
-        dWithPrefilter.count++;
-        return true;
-    }
 }

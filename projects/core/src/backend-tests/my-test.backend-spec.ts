@@ -53,4 +53,3 @@ testKnexPGSqlImpl("knex filter2", async ({ createEntity }) => {
         }
     })).length).toBe(3);
 }, false);
-

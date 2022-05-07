@@ -17,8 +17,9 @@ export class MongoDataProvider implements DataProvider {
             await action(new MongoDataProvider(this.db, undefined));
             await session.commitTransaction();
         }
-        catch {
+        catch (err) {
             await session.abortTransaction();
+            throw err;
         }
     }
 }

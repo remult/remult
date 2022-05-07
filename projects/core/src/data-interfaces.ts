@@ -51,4 +51,5 @@ export interface ErrorInfo<entityType = any> {
   modelState?: { [Properties in keyof Partial<OmitEB<entityType>>]?: string };
   stack?: string;
   exception?: any;
+  httpStatusCode?: number;
 }

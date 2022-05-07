@@ -5,6 +5,7 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 import { UrlBuilder } from '../../urlBuilder';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { EntityMetadata } from '../remult3';
+import { retry } from '../context';
 
 
 export class RestDataProvider implements DataProvider {
@@ -84,7 +85,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
         url.add('_limit', options.limit);
       if (options.page)
         url.add('_page', options.page);
-      
+
     }
     if (filterObject) {
       url.add("__action", "get");
@@ -96,7 +97,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
 
   public update(id: any, data: any): Promise<any> {
     let result = {};
-    let keys  =Object.keys(data);
+    let keys = Object.keys(data);
     for (const col of this.entity.fields) {
       if (keys.includes(col.key))
         result[col.key] = col.valueConverter.toJson(data[col.key]);
@@ -114,58 +115,54 @@ export class RestEntityDataProvider implements EntityDataProvider {
     return this.http.post(this.url, this.translateToJson(data)).then(y => this.translateFromJson(y));
   }
 }
-function JsonContent(add: (name: string, value: string) => void) {
-  add('Content-type', "application/json");
-}
-
 
 export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderHttpProvider {
-  constructor(private addRequestHeader?: (add: ((name: string, value: string) => void)) => void) {
-    if (!addRequestHeader)
-      this.addRequestHeader = () => { };
+  constructor(private fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>) {
   }
-  get(url: string) {
-    return myFetch(url, undefined, this.addRequestHeader).then(r => {
+  async get(url: string) {
+    return await retry(async () => this.myFetch(url).then(r => {
       return r;
-    });
+    }));
   }
   put(url: string, data: any) {
-    return myFetch(url, {
+    return this.myFetch(url, {
       method: 'put',
       body: JSON.stringify(data)
-    }, this.addRequestHeader, JsonContent)
+    })
   }
   delete(url: string) {
-    let h = new Headers();
-    this.addRequestHeader((name, value) => h.append(name, value));
-    return fetch(url, { method: 'delete', credentials: 'include' }).then(onSuccess, onError);
+
+    return this.myFetch(url, { method: 'delete', credentials: 'include' });
   }
-  post(url: string, data: any) {
-    return myFetch(url, {
+  async post(url: string, data: any) {
+
+    return await retry(() => this.myFetch(url, {
       method: 'post',
       body: JSON.stringify(data)
-    }, this.addRequestHeader, JsonContent)
+    }));
+  }
+
+  myFetch(url: string, init?: RequestInit): Promise<any> {
+    if (!init)
+      init = {};
+    if (!init.headers)
+      init.headers = new Headers();
+    var h = init.headers as Headers;
+    h.append('Content-type', "application/json");
+    init.credentials = 'include';
+
+    return (this.fetch || fetch)(url, init).then(response => {
+
+      return onSuccess(response);
+
+    }).catch(async error => {
+      let r = await error;
+      throw r;
+    });
   }
 
 }
-function myFetch(url: string, init: RequestInit, ...addRequestHeader: ((add: ((name: string, value: string) => void)) => void)[]): Promise<any> {
-  if (!init)
-    init = {};
-  if (!init.headers)
-    init.headers = new Headers();
-  var h = init.headers as Headers;
-  addRequestHeader.forEach(x => x((n, v) => h.append(n, v)));
-  init.credentials = 'include';
 
-  return fetch(url, init).then(response => {
-
-    return onSuccess(response);
-
-  }).catch(async error => {
-    let r = await error;
-    throw r;
-  });
-}
 function onSuccess(response: Response) {
   if (response.status == 204)
     return;
@@ -174,10 +171,7 @@ function onSuccess(response: Response) {
     return response.json();
   else {
     throw response.json().then(x => {
-
-      if (!x.message)
-        x.message = response.statusText;
-      return x;
+      return { ...x, message: x.message || response.statusText, url: response.url, status: response.status };
     }).catch(() => {
       throw {
         message: response.statusText,
@@ -187,16 +181,9 @@ function onSuccess(response: Response) {
       };
     })
   }
-
-
 }
 
 
-
-
-function onError(error: any) {
-  throw Promise.resolve(error);
-}
 
 export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBuilder) {
   for (const key in filter) {
@@ -222,7 +209,7 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
           element.forEach(e => url.add(key, e));
       }
       else
-        if (key .startsWith(customUrlToken))
+        if (key.startsWith(customUrlToken))
           url.add(key, JSON.stringify(element));
         else
           url.add(key, element);

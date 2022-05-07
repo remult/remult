@@ -75,7 +75,10 @@ describe("angular http client exception ", () => {
             "error": "Error occured while trying to proxy to: localhost:4201/api/stam"
         });
         expect(err).toEqual({
-            "message": "Error occured while trying to proxy to: localhost:4201/api/stam"
+            "message": "Error occured while trying to proxy to: localhost:4201/api/stam",
+
+            "httpStatusCode": 504            
+
         });;
     });
     it("network disconnect", async () => {
@@ -96,7 +99,8 @@ describe("angular http client exception ", () => {
             }
         });
         expect(err).toEqual({
-            message: "Network Error"
+            message: "Network Error",
+            "httpStatusCode": 0
         });
     });
     it("Forbidden", async () => {
@@ -114,7 +118,8 @@ describe("angular http client exception ", () => {
             "error": "Forbidden"
         });
         expect(err).toEqual({
-            "message": "Forbidden"
+            "message": "Forbidden",
+            "httpStatusCode": 403
         });
     });
     it("syntax error", async () => {
@@ -161,7 +166,8 @@ describe("angular http client exception ", () => {
             "modelState": {
                 "name": "name error"
             },
-            "message": "Name: name error"
+            "message": "Name: name error",
+            "httpStatusCode": 400
         });
     });
 
@@ -209,7 +215,8 @@ describe("fetch client exception ", () => {
             "status": 504
         });
         expect(err).toEqual({
-            "message": "Error occured while trying to proxy to: localhost:4201/api/stam"
+            "message": "Error occured while trying to proxy to: localhost:4201/api/stam",
+            "httpStatusCode": 504
         });;
     });
     it("network disconnect", async () => {
@@ -287,7 +294,8 @@ describe("fetch client exception ", () => {
             "status": 403
         });
         expect(err).toEqual({
-            "message": "Forbidden"
+            "message": "Forbidden",
+            "httpStatusCode": 403
         });
     });
     it("syntax error", async () => {
@@ -381,7 +389,8 @@ describe("fetch client exception ", () => {
             "modelState": {
                 "name": "name error"
             },
-            "message": "Name: name error"
+            "message": "Name: name error",
+            "httpStatusCode": 400
         });
     });
 

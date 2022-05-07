@@ -31,12 +31,26 @@ i ｢wdm｣: Failed to compile.
  ```
 :::
 
-The reason we get this error is that the `fs` module on which we rely here is only relevant in the remult of a `Node JS` server and not in the remult of the browser.
+The reason we get this error is that the `fs` module on which we rely here is only relevant in the remult of a `Node JS` server and not in the context of the browser.
 
-To solve this problem, we'll `abstract` the call to `fs` and `inject` it only when we are running on the server.
+There are two ways to handle this:
+## Solution 1 - exclude from webpack
+1. Instruct `webpack` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the main section of the project's `package.json` file.
+   *package.json*
+   ```json
+   "browser": {
+      "jsonwebtoken": false
+   }
+   ```
+   * note that you'll need to restart the react/angular dev server.
 
-## Step 1, abstract the call
-We'll remove the import to `fs` and instead of calling specific `fs` methods we'll define and call a method `writeToLog` that describes what we are trying to do:
+
+## Solution 2 - abstract the call
+Abstract the call and separate it to backend only files and `inject` it only when we are running on the server.
+
+
+
+**Step 1**, abstract the call - We'll remove the import to `fs` and instead of calling specific `fs` methods we'll define and call a method `writeToLog` that describes what we are trying to do:
 
 ```ts{1,11,13}
 //import * as fs from 'fs';
@@ -57,7 +71,7 @@ static writeToLog:(textToWrite:string)=>void;
 The method `writeToLog` that we've defined serves as a place holder which we'll assign to in the remult of the server.
 It receives one parameter of type `string` and returns `void`
 
-## Step 2, implement the method
+**Step 2**, implement the method:
 In the `/src/app/server` folder, we'll add a file called `log-writer.ts` with the following code:
 ```ts{3}
 import * as fs from 'fs';
@@ -68,7 +82,7 @@ ProductsComponent.writeToLog = what => fs.appendFileSync('./logs/log.txt', what)
 Here we set the implementation of the `writeToLog` method with the actual call to the `fs` module.
 This file is intended to only run in the server, so it'll not present us with any problem.
 
-## Step 3, load the `log-writer.ts` file
+**Step 3**, load the `log-writer.ts` file:
 In the `/src/app/server/server-init.ts` file, load the `log-writer.ts` file using an `import` statement
 ```ts{2}
 import '../app.module';

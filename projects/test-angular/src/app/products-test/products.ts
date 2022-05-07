@@ -30,17 +30,17 @@ export class GroupsValue {
 
 })
 export class Products extends IdEntity {
-  @Fields.String()
+  @Fields.string()
   name: string;
-  @Fields.Number()
+  @Fields.number()
   price: number = 0;//= extend(new NumberColumn({ decimalDigits: 2, key: 'price_1' })).dataControl(x => x.getValue = () => this.price.value);
-  @Fields.Number()
+  @Fields.number()
   categoryCode: number;
-  @Fields.Date() // should be Date
+  @Fields.date() // should be Date
   availableFrom1: Date;
-  @Fields.Date()
+  @Fields.date()
   availableTo: Date;
-  @Fields.Boolean()
+  @Fields.boolean()
   archive: boolean;
   static filter = Filter.createCustom<Products>(() => ({ name: "a" }));
 

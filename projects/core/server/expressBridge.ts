@@ -15,15 +15,16 @@ import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '.
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance } from '../src/context';
+import { ClassType } from '../classType';
 
 
 export function remultExpress(
   options?:
     {
-      /** Determines the Data Provider 
-    
-    * @see  [Optional Databases](https://remult.dev/docs/databases.html)
-    */
+      /** Sets a database connection for Remult.
+       * 
+       * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
+      */
       dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
@@ -31,7 +32,9 @@ export function remultExpress(
       initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>,
       initApi?: (remult: Remult) => void | Promise<void>,
       logApiEndPoints?: boolean,
-      defaultGetLimit?: number
+      defaultGetLimit?: number,
+      entities?: ClassType<any>[],
+      controllers?: ClassType<any>[]
     }): RemultExpressBridge {
   let app = express.Router();
   if (!options) {
@@ -494,6 +497,8 @@ export class SiteArea {
       remult.setDataProvider(await this.bridge.dataProvider);
       if (req) {
         let user = req['user'];
+        if (!user)
+          user = req['auth'];
         if (user)
           remult.setUser(user);
       }

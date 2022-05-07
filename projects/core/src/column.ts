@@ -5,7 +5,7 @@ import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import {  EntityFilter, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
+import { EntityFilter, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -150,8 +150,6 @@ export class OneToMany<T>{
     private settings?: {
       create?: (newItem: T) => void,
     } & FindOptions<T>) {
-    if (!this.settings)
-      this.settings = {};
   }
   private _items: T[];
   private _currentPromise: Promise<T[]>;
@@ -170,10 +168,7 @@ export class OneToMany<T>{
       return this._items;
     });
   }
-  async reload() {
-    this._currentPromise = undefined;
-    return this.load();
-  }
+
   private async find(): Promise<T[]> {
     return this.provider.find(this.settings)
   }
@@ -181,8 +176,7 @@ export class OneToMany<T>{
     let r = this.provider.create();
     __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r);
     assign(r, item);
-    if (this.settings.create)
-      this.settings.create(r);
+
     return r;
   }
 }

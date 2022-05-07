@@ -18,6 +18,7 @@ import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnC
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 import { IdEntity } from "../id-entity";
+import { testRest } from "../tests/frontend-database-tests-setup.spec";
 
 
 
@@ -30,6 +31,10 @@ testAll("filter works on all db",
         let s = await entityWithValidations.create4RowsInDp(createEntity);
         expect((await s.find({ where: { myId: [1, 3] } })).length).toBe(2);
     }, false);
+testAll("test in statement and ", async ({ createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    expect(await repo.count({ myId: [1, 3], $and: [{ myId: [3] }] })).toBe(1);
+}, false);
 testAll("filter with and",
     async ({ createEntity }) => {
         let s = await entityWithValidations.create4RowsInDp(createEntity);
@@ -82,7 +87,28 @@ testAll("empty find works", async ({ remult, createEntity }) => {
     expect(l[0].categoryName).toBe('test');
 
 
-});
+}, false);
+testAll("test descending", async ({ createEntity }) => {
+    const repo = await createEntity(newCategories);
+    await repo.create({ id: 1, categoryName: 'a' }).save();
+    await repo.create({ id: 2, categoryName: 'b' }).save();
+
+    const rows = await repo.find({
+        orderBy: { categoryName: 'desc' },
+        page: -1
+    })
+    expect(rows[0].id).toBe(2);
+}, false);
+testAll("test descending 2", async ({ createEntity }) => {
+    const repo = await createEntity(newCategories);
+    await repo.insert([{ id: 1, categoryName: 'a' }, { id: 2, categoryName: 'b' }]);
+
+    const rows = await repo.find({
+        orderBy: { categoryName: 'desc' },
+        page: -1
+    })
+    expect(rows[0].id).toBe(2);
+}, false);
 testAll("partial updates", async ({ remult, createEntity }) => {
 
     let c = (await createEntity(newCategories)).create({
@@ -690,3 +716,16 @@ testAll("task with enum string", async ({ createEntity }) => {
     expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
     expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
 });
+testAll("test transaction rollback", async ({ db }) => {
+    let fail = true;
+    try {
+        await db.transaction(async () => {
+            throw "error"
+        });
+        fail = false;
+    }
+    catch {
+
+    }
+    expect(fail).toBe(true);
+})

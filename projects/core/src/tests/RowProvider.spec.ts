@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
-import { Remult } from '../context';
+import { Allow, Remult, toPromise } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
@@ -1306,6 +1306,49 @@ describe("context", () => {
     expect(c.user.roles.length).toBe(0);
 
   });
+  it("oauth user style", () => {
+    var remult = new Remult();
+    remult.setUser({
+      sub: '12',
+      name: "the name",
+      permissions: ["a", "b"]
+    });
+    expect(remult.user.id).toBe('12');
+    expect(remult.user.name).toBe("the name");
+    expect(remult.isAllowed("a")).toBe(true);
+    expect(remult.isAllowed("b")).toBe(true);
+    expect(remult.isAllowed("c")).toBe(false);
+  });
+  it("is allowed for instance works with array", () => {
+    var remult = new Remult();
+    remult.setUser({ roles: ["a"], id: '', name: '' });
+    expect(remult.isAllowedForInstance({}, ["b", "a"])).toBe(true);
+  });
+  it("user without roles work", () => {
+    var remult = new Remult();
+    remult.setUser({ sub: "12" });
+    expect(remult.user.roles.length).toBe(0);
+  });
+  it("test no user is not allowed", () => {
+    var remult = new Remult();
+    remult.setUser(undefined);
+    expect(remult.user.id).toBeUndefined();
+    expect(remult.user.name).toBe('');
+  });
+});
+it("test http provider for remult", async () => {
+
+  var remult = new Remult({
+    get: async (url) => {
+      return { count: 7 }
+    },
+    delete: undefined,
+    put: undefined,
+    post: undefined
+  });
+  // expect(await toPromise(Promise.resolve(7))).toBe(7);
+  expect(await remult.repo(TestCategories1).count()).toBe(7);
+
 });
 describe("test grid basics", () => {
   it("basically works", async () => {
@@ -1314,8 +1357,15 @@ describe("test grid basics", () => {
     await gs.reloadData();
     expect(gs.columns.items.length).toBe(6);
     expect(gs.columns._getColDisplayValue(gs.columns.items[0], gs.items[0])).toBe("1");
-
-
+  });
+});
+describe("allow", () => {
+  it("should work", () => {
+    expect(Allow.everyone()).toBe(true);
+    var remult = new Remult();
+    expect(Allow.authenticated(remult)).toBe(false);
+    remult.setUser({ id: '', name: '', roles: [] });
+    expect(Allow.authenticated(remult)).toBe(true);
   });
 });
 

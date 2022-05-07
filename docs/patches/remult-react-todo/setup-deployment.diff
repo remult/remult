@@ -49,7 +49,7 @@ index 765cde9..591899e 100644
      if (!user)
 -      throw new Error("Invalid User");
 +      throw "Invalid User";
-     return jwt.sign(user, getJwtTokenSignKey());
+     return jwt.sign(user, getJwtSigningKey());
    }
  
    setAuthToken(token: string) {
@@ -65,7 +65,7 @@ index 6fd48fc..08a462c 100644
 @@ -1,13 +1,21 @@
  import express from 'express';
  import expressJwt from 'express-jwt';
- import { getJwtTokenSignKey } from '../AuthService';
+ import { getJwtSigningKey } from '../AuthService';
 +import compression from 'compression';
 +import helmet from 'helmet';
  import { initExpress } from 'remult/server';
@@ -74,7 +74,7 @@ index 6fd48fc..08a462c 100644
 +app.use(helmet({ contentSecurityPolicy: false }));
 +app.use(compression());
  app.use(expressJwt({
-     secret: getJwtTokenSignKey(),
+     secret: getJwtSigningKey(),
      credentialsRequired: false,
      algorithms: ['HS256']
  }));

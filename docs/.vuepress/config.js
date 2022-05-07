@@ -32,7 +32,7 @@ module.exports = {
     repo: 'remult/remult',
     editLinks: true,
     docsDir: 'docs',
-    lastUpdated: false,
+    lastUpdated: true,
     smoothScroll: true,
     nav: [
       {
@@ -44,7 +44,7 @@ module.exports = {
         items: [
           {
             text: 'React',
-            link: '/tutorials/tutorial-react'
+            link: '/tutorials/react/'
           },
           {
             text: 'Angular',
@@ -66,15 +66,16 @@ module.exports = {
           title: 'Concepts',
           collapsable: true,
           children: [
-            'entity-relations',
-            'backendMethods',
+            'databases',
             'field-types',
-            'databases'
+            'backendMethods',
+            'entity-relations',
           ]
         },
         {
           title: 'Advanced Topics',
           collapsable: true,
+
           children: [
             'rest-api',
             'adding-swagger',
@@ -90,22 +91,34 @@ module.exports = {
           children: [
             'ref_entity',
             'ref_field',
-            'ref_backendmethod',
+            'ref_remult',
             'ref_repository',
-            'ref_entitywhere',
-            'ref_entityorderby'
-
-
+            'entityFilter',
+            'allowed',
+            'ref_backendmethod',
+            'ref_queryresult',
+            `ref_paginator`
           ]
         }
 
       ],
 
-      '/tutorials/tutorial-react': [
+      '/tutorials/react/': [
         {
           title: 'Tutorial',
-          path: '/tutorials/tutorial-react',
-          collapsable: false
+          path: '/tutorials/react/',
+
+          collapsable: false,
+          children: [
+            '',
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'deployment'
+          ]
         }],
       '/tutorials/tutorial-angular': [
         {
