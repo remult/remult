@@ -993,7 +993,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
    *src/app/task.ts*
    ```ts{2,5-8,13}
-import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
+   import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
    import { Roles } from "./roles";
    
    @Entity("tasks", {
