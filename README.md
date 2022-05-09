@@ -27,7 +27,7 @@
 
 ## What is Remult?
 
-**Remult** is a fullstack CRUD framework that uses your TypeScript model types to provide:
+**Remult** is a full-stack CRUD framework that uses your TypeScript model types to provide:
 
 * Secure REST API (highly configurable)
 * Type-safe frontend API client
@@ -38,12 +38,17 @@
 Using a `monorepo` approach, with model types shared between frontend and backend code, Remult can enforce data validation and constraints, defined once, on both frontend and REST API levels.
 
 ## Getting started
-The best way to learn Remult is by following a tutorial of a simple Todo app with a Node.js Express backend. There's one [using a React frontend](https://remult.dev/tutorials/react/) and one [using Angular](https://remult.dev/tutorials/tutorial-angular.html).
+The best way to learn Remult is by following a tutorial of a simple Todo web app with a Node.js Express backend. 
+
+* [Tutorial with React](https://remult.dev/tutorials/react/) 
+* [Tutorial with Angular](https://remult.dev/tutorials/tutorial-angular.html)
 
 ## Installation
 ```sh
 npm i remult
 ```
+
+## Usage
 
 ### Setup API backend using a Node.js Express middleware
 ```ts
@@ -60,14 +65,14 @@ app.listen(port, () => {
 });
 ```
 
-## Define model classes
+### Define model classes
 ```ts
-import { Entity, EntityBase, Fields } from 'remult';
+import { Entity, Fields } from 'remult';
 
 @Entity('products', {
     allowApiCrud: true
 })
-export class Product extends EntityBase {
+export class Product {
   @Fields.string()
   name = '';
 
@@ -83,13 +88,14 @@ export class Product extends EntityBase {
 [{"name":"Tofu","unitPrice":5}]
 ```
 
-## Find and manipulate data in type-safe frontend code
+### Find and manipulate data in type-safe frontend code
 ```ts
 async function increasePriceOfTofu(priceIncrease: number) {
-  const product = await remult.repo(Product).findFirst({ name: 'Tofu' });
+  const productsRepo = remult.repo(Product);
 
+  const product = await productsRepo.findFirst({ name: 'Tofu' });
   product.unitPrice += priceIncrease;
-  product.save();
+  productsRepo.save(product);
 }
 ```
 
@@ -97,22 +103,23 @@ async function increasePriceOfTofu(priceIncrease: number) {
 ```ts
 @BackendMethod({ allowed: Allow.authenticated })
 static async increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
-  const product = await remult!.repo(Product).findFirst({ name: 'Tofu' });
+  const productsRepo = remult!.repo(Product);
 
+  const product = await productsRepo.findFirst({ name: 'Tofu' });
   product.unitPrice += priceIncrease;
-  product.save();
+  productsRepo.save(product);
 }
 ```
 
-## :ballot_box_with_check: Data validation and constraints - defined once
+### :ballot_box_with_check: Data validation and constraints - defined once
 
 ```ts
-import { Entity, EntityBase, Fields } from 'remult';
+import { Entity, Fields } from 'remult';
 
 @Entity('products', {
     allowApiCrud: true
 })
-export class Product extends EntityBase {
+export class Product {
     @Fields.string<Product>({
         validate: product => {
             if (product.name.trim().length == 0)
@@ -133,13 +140,13 @@ export class Product extends EntityBase {
 
 ### Enforced in frontend:
 ```ts
-const product = remult.repo(Product).create();
+const product = productsRepo.create();
 
 try {
-  await product.save();
+  await productsRepo.save(product);
 }
-catch {
-  console.error(product._.error); // Browser console will display - "Name: required"
+catch (e: ErrorInfo<Product>) {
+  console.error(e.message); // Browser console will display - "Name: required"
 }
 ```
 
@@ -150,14 +157,14 @@ catch {
 {"modelState":{"unitPrice":"must not be less than 0","name":"required"},"message":"Name: required"}
 ```
 
-## :lock: Secure the API with fine-grained authorization
+### :lock: Secure the API with fine-grained authorization
 ```ts
 @Entity<Article>('Articles', {
     allowApiRead: true,
     allowApiInsert: remult => remult.authenticated(),
     allowApiUpdate: (remult, article) => article.author.id == remult.user.id
 })
-export class Article extends EntityBase {
+export class Article {
     @Fields.string({ allowApiUpdate: false })
     slug = '';
     
@@ -168,3 +175,9 @@ export class Article extends EntityBase {
     content = '';
 }
 ```
+
+## Contributing
+Contributions are welcome. See [CONTRIBUTING](CONTRIBUTING.md).
+
+## License
+Remult is [MIT Licensed](LICENSE).

@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "vuepress dev .",
     "build": "vuepress build .",
-    "publish": "tools\\deploy.sh"
+    "publish": "tools\\deploy.sh",
+    "brokenLinks": "blc http://remult.dev/ -ro"
   },
   "devDependencies": {
     "@vuepress/plugin-google-analytics": "^1.8.2",

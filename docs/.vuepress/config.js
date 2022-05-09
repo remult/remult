@@ -32,7 +32,7 @@ module.exports = {
     repo: 'remult/remult',
     editLinks: true,
     docsDir: 'docs',
-    lastUpdated: false,
+    lastUpdated: true,
     smoothScroll: true,
     nav: [
       {
@@ -66,11 +66,10 @@ module.exports = {
           title: 'Concepts',
           collapsable: true,
           children: [
-            'entity-relations',
-            'backendMethods',
+            'databases',
             'field-types',
-            'databases'
-
+            'backendMethods',
+            'entity-relations',
           ]
         },
         {

@@ -21,10 +21,10 @@ import { ClassType } from '../classType';
 export function remultExpress(
   options?:
     {
-      /** Determines the Data Provider 
-    
-    * @see  [Optional Databases](https://remult.dev/docs/databases.html)
-    */
+      /** Sets a database connection for Remult.
+       * 
+       * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
+      */
       dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
       bodySizeLimit?: string,
       disableAutoApi?: boolean,
