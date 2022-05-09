@@ -303,7 +303,6 @@ Let's implement this feature within the main `AppComponent` class.
 
    *src/app/app.component.html*
    ```html
-   <title>{{title}}</title>
    <div>
       <input [(ngModel)]="newTask.title" placeholder="Title">
       <button (click)="createTask()">Create new task</button>
@@ -494,7 +493,6 @@ export class AppComponent {
 
 *src/app/app.component.html*
 ```html
-<title>{{title}}</title>
 <div>
   <input [(ngModel)]="newTask.title" placeholder="Title">
   <button (click)="createTask()">Create new task</button>
@@ -756,7 +754,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ### Hide UI for non-authenticated users
 *src/app/app.component.html*
 ```html{2,27}
-<title>{{title}}</title>
+
 <ng-container *ngIf="remult.authenticated()">
   <div>
     <input [(ngModel)]="newTask.title" placeholder="Title">
