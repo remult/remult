@@ -4,44 +4,48 @@ The RESTful API created by Remult supports server-side sorting and filtering. Le
 ### Show uncompleted tasks first
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `useEffect` hook `App` function component, add an object literal argument to the `find` method call and set its `orderBy` with an object that contains the fields you want to order by.
+In the `fetchTasks` function, add an object literal argument to the `find` method call and set its `orderBy` with an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
 *src/App.tsx*
 ```ts{3}
-useEffect(() => {
-   taskRepo.find({
-   orderBy: { completed: "asc" }
-   }).then(setTasks);
-}, []);
+async function fetchTasks() {
+  return taskRepo.find({
+    orderBy: { completed: "asc" }
+  });
+}
 ```
 
 ::: warning Note
 By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
 :::
 ### Hide completed tasks
-Let's hide all completed tasks, using server side filtering.
+Let's hide all completed tasks, using server-side filtering.
 
-1. In the `useEffect` hook of the `App` function component, set the `where` property of the `options` argument of `find` to `{ completed: false }`}.
+In the `fetchTasks` function, set the `where` property of the `options` argument of `find` to `{ completed: false }`.
 
-   *src/App.tsx*
-   ```ts{4}
-   useEffect(() => {
-     taskRepo.find({
-       orderBy: { completed: "asc" },
-       where: { completed: false }
-     }).then(setTasks);
-   }, []);
-   ```
-   ::: warning Note
-   Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type.**
-   :::
+*src/App.tsx*
+```ts{4}
+async function fetchTasks() {
+  return taskRepo.find({
+    orderBy: { completed: "asc" },
+    where: { completed: false }
+  });
+}
+```
+::: warning Note
+Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type.**
+:::
 
-   * To see many more filtering options, see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-### Optionally hide completed tasks
-Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
+::: tip Learn more
+Explore the reference for a [comprehensive list of filtering options](../../docs/entityFilter.md).
+:::
+### Toggle display of completed tasks
+Let's allow the user to toggle the display of completed tasks, using server-side filtering.
 
-1. Add a `hideCompleted` boolean field to the `App` function component.
+1. Modify the `fetchTasks` function to accept a `show
+
+1. Add a `hideCompleted` boolean React state to the `App` function component.
 
    *src/App.tsx*
    ```ts
