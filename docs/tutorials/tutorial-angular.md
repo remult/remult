@@ -601,6 +601,9 @@ Task titles are required. Let's add a validity check for this rule, and display 
     })
     title = '';
    ```
+   ::: warning Imports
+   This code requires imports for `Validators` from the existing import of `remult`.
+   :::
 
 2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
 
