@@ -76,7 +76,7 @@ The code in `initApi` simply adds five new Tasks to the database if the current 
 Saving the changes will cause the server to restart and seed the database with the test data. Navigate to the `tasks` API route at <http://localhost:3002/api/tasks> to see the data.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a simple backend **JSON database**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 
@@ -92,11 +92,18 @@ import { remult } from "./common";
 import { Task } from "./shared/Task";
 
 const taskRepo = remult.repo(Task);
+
+async function fetchTasks() {
+  return taskRepo.find();
+}
+
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
+
   useEffect(() => {
-    taskRepo.find().then(setTasks);
+    fetchTasks().then(setTasks);
   }, []);
+
   return (
     <div >
       {tasks.map(task => (
@@ -108,11 +115,15 @@ function App() {
     </div>
   );
 }
+
 export default App;
 ```
 
 Here's a quick overview of the different parts of the code snippet:
 
-`tasksRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
+* `tasksRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
+* The `fetchTasks` function uses the Remult repository's [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
+* `tasks` is a Task array React state to hold the list of tasks.
+* React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
 
 After the browser refreshes, the list of tasks appears.

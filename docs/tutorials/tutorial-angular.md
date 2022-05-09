@@ -316,7 +316,7 @@ Let's implement this feature within the main `AppComponent` class.
 Using the browser, create a few new tasks. Then, navigate to the `tasks` API route at <http://localhost:4200/api/tasks> to see the tasks have been successfully stored on the server.
 
 ::: warning Wait, where is the backend database?
-By default, `remult` stores entity data in a backend JSON database. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+By default, `remult` stores entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 
