@@ -152,7 +152,7 @@ catch (e: ErrorInfo<Product>) {
 
 ### Enforced in backend:
 ```sh
-> curl http://localhost:3001/api/products -d "{""unitPrice"":-1}"
+> curl http://localhost:3001/api/products -H "Content-Type: application/json" -d "{""unitPrice"":-1}"
 
 {"modelState":{"unitPrice":"must not be less than 0","name":"required"},"message":"Name: required"}
 ```
