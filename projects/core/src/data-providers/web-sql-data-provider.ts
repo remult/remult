@@ -15,10 +15,10 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     //@ts-ignore
     db: Database;
 
-    constructor(private databaseName: string) {
+    constructor(private databaseName: string, databaseSize = 2 * 1024 * 1024) {
 
         //@ts-ignore
-        this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
+        this.db = window.openDatabase(databaseName, '1.0', databaseName, databaseSize);
     }
 
     getLimitSqlSyntax(limit: number, offset: number) {
