@@ -1550,7 +1550,7 @@ export function isAutoIncrement(f: FieldMetadata) {
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
     maxLength?: number;
 }
-export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+export function ValueListFieldType<valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]) {
     return (type: ClassType<valueType>) => {
         FieldType<valueType>(o => {
             o.valueConverter = ValueListInfo.get(type),
