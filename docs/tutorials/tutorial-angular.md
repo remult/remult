@@ -303,7 +303,6 @@ Let's implement this feature within the main `AppComponent` class.
 
    *src/app/app.component.html*
    ```html
-   <title>{{title}}</title>
    <div>
       <input [(ngModel)]="newTask.title" placeholder="Title">
       <button (click)="createTask()">Create new task</button>
@@ -494,7 +493,6 @@ export class AppComponent {
 
 *src/app/app.component.html*
 ```html
-<title>{{title}}</title>
 <div>
   <input [(ngModel)]="newTask.title" placeholder="Title">
   <button (click)="createTask()">Create new task</button>
@@ -601,6 +599,9 @@ Task titles are required. Let's add a validity check for this rule, and display 
     })
     title = '';
    ```
+   ::: warning Imports
+   This code requires imports for `Validators` from the existing import of `remult`.
+   :::
 
 2. In the `app.component.html` template, add a `div` element immediately after the `div` element containing the new task title `input`. Set an `ngIf` directive to display the new `div` only if `newTask.$.title.error` is not `undefined` and place the `error` text as its contents.
 
@@ -753,7 +754,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ### Hide UI for non-authenticated users
 *src/app/app.component.html*
 ```html{2,27}
-<title>{{title}}</title>
+
 <ng-container *ngIf="remult.authenticated()">
   <div>
     <input [(ngModel)]="newTask.title" placeholder="Title">
@@ -993,7 +994,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
    *src/app/task.ts*
    ```ts{2,5-8,13}
-import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
+   import { Fields, Entity, IdEntity, Validators, Allow } from "remult";
    import { Roles } from "./roles";
    
    @Entity("tasks", {

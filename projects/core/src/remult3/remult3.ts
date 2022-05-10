@@ -87,7 +87,7 @@ export interface FieldRef<entityType = any, valueType = any> extends Subscribabl
     valueChanged(): boolean;
     entityRef: EntityRef<entityType>;
     container: entityType;
-    metadata: FieldMetadata<entityType>;
+    metadata: FieldMetadata<valueType>;
     load(): Promise<valueType>;
     valueIsNull(): boolean;
     originalValueIsNull(): boolean;

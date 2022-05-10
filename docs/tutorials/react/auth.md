@@ -79,66 +79,19 @@ In this section, we'll be using the following packages:
 
    **For this change to take effect, our React app's dev server must be restarted by terminating the `dev-react` script and running it again.**
    :::
-
-2. Create a file called `src/shared/AuthController.ts ` and place the following code in it:
-   *src/shared/AuthController.ts*
-   ```ts
-   import * as jwt from 'jsonwebtoken';
-   import { BackendMethod } from 'remult';
-
-   export class AuthController {
-      @BackendMethod({ allowed: true })
-      static async signIn(username: string) {
-         const validUsers = [
-               { id: "1", name: "Jane", roles: [] },
-               { id: "2", name: "Steve", roles: [] }
-         ];
-         const user = validUsers.find(user => user.name === username);
-         if (!user)
-               throw new Error("Invalid User");
-         return jwt.sign(user, getJwtSigningKey());
-      }
-   }
-
-   export function getJwtSigningKey() {
-      if (process.env.NODE_ENV === "production")
-         return process.env.TOKEN_SIGN_KEY!;
-      return "my secret key";
-   }
-   ```
-   And add it to the `controllers` array on the `server`
-   ```ts{5,10}
-   import express from 'express';
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { TasksController } from '../shared/TasksController';
-   import { AuthController } from '../shared/AuthController';
-   
-   let app = express();
-   app.use(remultExpress({
-       entities: [Task],
-       controllers: [TasksController, AuthController],
-       initApi: async remult => {
-       ...
-   ```
-   * Note that The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
-   
-   The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
-
 3. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{2,6,63,9-13}
+   ```ts{2,8-12}
    import express from 'express';
    import { expressjwt } from 'express-jwt';
    import { remultExpress } from 'remult/remult-express';
    import { Task } from '../shared/Task';
    import { TasksController } from '../shared/TasksController';
-   import { AuthController, getJwtSigningKey } from '../shared/AuthController';
-   
+      
    let app = express();
    app.use(expressjwt({
-       secret: getJwtSigningKey(),
+       secret: process.env.NODE_ENV === "production" ? process.env.TOKEN_SIGN_KEY! : "my secret key",
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
@@ -186,6 +139,53 @@ In this section, we'll be using the following packages:
       return config;
    });
    ```
+2. Create a file called `src/shared/AuthController.ts ` and place the following code in it:
+   *src/shared/AuthController.ts*
+   ```ts
+   import * as jwt from 'jsonwebtoken';
+   import { BackendMethod } from 'remult';
+
+   export class AuthController {
+      @BackendMethod({ allowed: true })
+      static async signIn(username: string) {
+         const validUsers = [
+               { id: "1", name: "Jane", roles: [] },
+               { id: "2", name: "Steve", roles: [] }
+         ];
+         const user = validUsers.find(user => user.name === username);
+         if (!user)
+               throw new Error("Invalid User");
+         return jwt.sign(user, secret: process.env.NODE_ENV === "production" ? process.env.TOKEN_SIGN_KEY! : "my secret key");
+      }
+   }
+   ```
+   And add it to the `controllers` array on the `server`
+   ```ts{6,16}
+   import express from 'express';
+   import { expressjwt } from 'express-jwt';
+   import { remultExpress } from 'remult/remult-express';
+   import { Task } from '../shared/Task';
+   import { TasksController } from '../shared/TasksController';
+   import { AuthController } from '../shared/AuthController';
+   
+   let app = express();
+   app.use(expressjwt({
+       secret: process.env.NODE_ENV === "production" ? process.env.TOKEN_SIGN_KEY! : "my secret key",
+       credentialsRequired: false,
+       algorithms: ['HS256']
+   }));
+   app.use(remultExpress({
+       entities: [Task],
+       controllers: [TasksController, AuthController],
+       initApi: async remult => {
+       ...
+   ```
+   * Note that The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
+   
+   The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
+
+
+
 
 6. Add the following code to the `App` function component, and replace the beginning of the `return` statement to include the user greeting and sign out button.
 
