@@ -5,7 +5,7 @@ Validating user entered data is usually required both on the client-side and on 
 
 Task titles are required. Let's add a validity check for this rule, and display an appropriate error message in the UI.
 
-1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an argument which implements the `FieldOptions` interface. Implement the interface using an object literal and set the object's `validate` property to `Validators.required`.
+1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an object literal argument and set the object's `validate` property to `Validators.required`.
 
    *src/shared/Task.ts*
    ```ts{1-3}
@@ -14,15 +14,15 @@ Task titles are required. Let's add a validity check for this rule, and display 
     })
     title = '';
    ```
-   ::: warning Imports
-   This code requires imports for `Validators` from the existing import of `remult`.
+   ::: warning Import Validators
+   This code requires adding an import of `Validators` from `remult`.
    :::
 
-2. In the `App.tsx` template, adjust the `saveTask` function to catch errors .
+2. In the `App.tsx` template, modify the `saveTask` function to catch exceptions.
 
    *src/App.tsx*
    ```tsx{2,5-7}
-   const saveTask = async (task: Task) => {
+   const saveTask = async () => {
      try {
        const savedTask = await taskRepo.save(task);
        setTasks(tasks.map(t => t === task ? savedTask : t));
@@ -32,8 +32,7 @@ Task titles are required. Let's add a validity check for this rule, and display 
    }
    ```
 
-
-After the browser refreshes, try creating a new `task` or saving an existing one without title - the "Should not be empty" error message is displayed.
+After the browser refreshes, try creating a new `task` or saving an existing one with an empty title - the *"Should not be empty"* error message is displayed.
 
 ### Implicit server-side validation
 The validation code we've added is called by Remult on the server-side to validate any API calls attempting to modify the `title` field.
@@ -41,28 +40,48 @@ The validation code we've added is called by Remult on the server-side to valida
 Try making the following `POST` http request to the `http://localhost:3002/api/tasks` API route, providing an invalid title.
 
 ```sh
-curl -i -X POST http://localhost:3002/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"\"}"
+curl -i http://localhost:3002/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"\"}"
 ```
 
 An http error is returned and the validation error text is included in the response body,
 
-### Displaying the error next to the relevant Input
-To create a better UX, let's display the validation error next to the relevant input.
-1. Adjust the `tasks` array to also include an optional error
-   ```tsx{2,8}
-   import { useEffect, useState } from "react";
-   import { ErrorInfo } from "remult";
-   import { remult } from "./common";
-   import { Task } from "./shared/Task";
-   
-   const taskRepo = remult.repo(Task);
-   function App() {
-     const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
-     const [hideCompleted, setHideCompleted] = useState(false);
+::: tip Custom validation
+The `validate` property of the first argument of `Remult` field decorators can be set to an arrow function which will be called to validate input on both front-end and back-end.
+
+Try something like this and see what happens:
+
+*src/shared/Task.ts*
+```ts
+@Fields.string<Task>({
+    validate: (task) => {
+        if (task.title.length < 3)
+            throw "Too Short";
+    }
+})
+title = '';
+```
+:::
+
+### Display the error text using React
+
+Let's use the `tasks` React state to store errors and display them next to the relevant `input` element.
+
+1. Modify the type of the `tasks` array item to a union of `Task` and an `ErrorInfo` type (from Remult).
+
+   *src/App.tsx*
+   ```tsx
+   const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
    ```
-2. Adjust the `saveTask` function to store that error
+
+   ::: warning Import ErrorInfo
+   This code requires adding an import of `ErrorInfo` from `remult`.
+   :::
+
+2. Modify the `saveTask` function to store the errors instead of showing the alert message.
+
+   *src/App.tsx*
    ```tsx{6}
-   const saveTask = async (task: Task) => {
+   const saveTask = async () => {
      try {
        const savedTask = await taskRepo.save(task);
        setTasks(tasks.map(t => t === task ? savedTask : t));
@@ -71,29 +90,16 @@ To create a better UX, let's display the validation error next to the relevant i
      }
    }   
    ```
-3. Display the error next to the relevant `input` 
-   ```tsx{16}
-   return (
-     <div >
-       <input
-         type="checkbox"
-         checked={hideCompleted}
-         onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-       <hr />
-       {tasks.map(task => (
-         <div key={task.id}>
-           <input type="checkbox"
-             checked={task.completed}
-             onChange={e => handleChange(task, { completed: e.target.checked })} />
-           <input
-             value={task.title}
-             onChange={e => handleChange(task, { title: e.target.value })} />
-           {task.error?.modelState?.title}
-           <button onClick={() => saveTask(task)}>Save</button>
-           <button onClick={() => deleteTask(task)}>Delete</button>
-         </div>
-       ))}
-       <button onClick={addTask}>Add Task</button>
-     </div>
-   );   
+
+3. Add the highlighted code line to display the error next to the task title `input`:
+   
+   *src/App.tsx*
+   ```tsx{4}
+   <input
+      value={task.title}
+      onChange={e => handleChange(task, { title: e.target.value })} />
+   {task.error?.modelState?.title}
+   <button onClick={() => saveTask(task)}>Save</button>
    ```
+
+The `modelState` property of the `ErrorInfo` object contains error messages for any currently invalid fields in the entity object.

@@ -24,7 +24,7 @@ Before you begin, make sure you have [Node.js](https://nodejs.org) installed. <!
 # Setup for the Tutorial
 This tutorial requires setting up a React project, an API server project, and a few lines of code to add Remult.
 
-You can either use a starter project to speed things up, or go through the step-by-step setup.
+You can either **use a starter project** to speed things up, or go through the **step-by-step setup**.
 
 ## Option 1: Clone the Starter Project
 

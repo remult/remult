@@ -13,21 +13,24 @@ The `Task` entity class we're creating will have an auto-generated UUID `id` fie
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-   *src/shared/Task.ts*
-   ```ts
-   import { Entity, Fields } from "remult";
-   @Entity("tasks", {
+  *src/shared/Task.ts*
+  ```ts
+  import { Entity, Fields } from "remult";
+
+  @Entity("tasks", {
       allowApiCrud: true
-   })
-   export class Task {
+  })
+  export class Task {
       @Fields.uuid()
       id!: string;
+
       @Fields.string()
       title = '';
+
       @Fields.boolean()
       completed = false;
-   }
-   ```
+  }
+  ```
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../../docs/ref_entity.md#allowapicrud) property to `true`.
 
