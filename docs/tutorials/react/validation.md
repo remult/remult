@@ -1,36 +1,36 @@
 # Validation
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
 
-### Validate the title field
+## Validate the Title Field
 
 Task titles are required. Let's add a validity check for this rule, and display an appropriate error message in the UI.
 
 1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an object literal argument and set the object's `validate` property to `Validators.required`.
 
-   *src/shared/Task.ts*
-   ```ts{1-3}
-    @Fields.string({
-        validate: Validators.required
-    })
-    title = '';
-   ```
-   ::: warning Import Validators
-   This code requires adding an import of `Validators` from `remult`.
-   :::
+*src/shared/Task.ts*
+```ts{1-3}
+@Fields.string({
+    validate: Validators.required
+})
+title = '';
+```
+::: warning Import Validators
+This code requires adding an import of `Validators` from `remult`.
+:::
 
 2. In the `App.tsx` template, modify the `saveTask` function to catch exceptions.
 
-   *src/App.tsx*
-   ```tsx{2,5-7}
-   const saveTask = async () => {
-     try {
-       const savedTask = await taskRepo.save(task);
-       setTasks(tasks.map(t => t === task ? savedTask : t));
-     } catch (error: any) {
-       alert(error.message);
-     }
-   }
-   ```
+*src/App.tsx*
+```tsx{2,5-7}
+const saveTask = async () => {
+  try {
+    const savedTask = await taskRepo.save(task);
+    setTasks(tasks.map(t => t === task ? savedTask : t));
+  } catch (error: any) {
+    alert(error.message);
+  }
+}
+```
 
 After the browser refreshes, try creating a new `task` or saving an existing one with an empty title - the *"Should not be empty"* error message is displayed.
 
@@ -62,44 +62,52 @@ title = '';
 ```
 :::
 
-### Display the error text using React
+## Render Error Text Using React
 
 Let's use the `tasks` React state to store errors and display them next to the relevant `input` element.
 
 1. Modify the type of the `tasks` array item to a union of `Task` and an `ErrorInfo` type (from Remult).
 
-   *src/App.tsx*
-   ```tsx
-   const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
-   ```
+*src/App.tsx*
+```tsx
+const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
+```
 
-   ::: warning Import ErrorInfo
-   This code requires adding an import of `ErrorInfo` from `remult`.
-   :::
+::: warning Import ErrorInfo
+This code requires adding an import of `ErrorInfo` from `remult`.
+:::
 
 2. Modify the `saveTask` function to store the errors instead of showing the alert message.
 
-   *src/App.tsx*
-   ```tsx{6}
-   const saveTask = async () => {
-     try {
-       const savedTask = await taskRepo.save(task);
-       setTasks(tasks.map(t => t === task ? savedTask : t));
-     } catch (error: any) {
-       setTasks(tasks.map(t => t === task ? { ...task, error } : t));
-     }
-   }   
-   ```
+*src/App.tsx*
+```tsx{6}
+const saveTask = async () => {
+  try {
+    const savedTask = await taskRepo.save(task);
+    setTasks(tasks.map(t => t === task ? savedTask : t));
+  } catch (error: any) {
+    setTasks(tasks.map(t => t === task ? { ...task, error } : t));
+  }
+};
+```
 
 3. Add the highlighted code line to display the error next to the task title `input`:
    
-   *src/App.tsx*
-   ```tsx{4}
-   <input
-      value={task.title}
-      onChange={e => handleChange(task, { title: e.target.value })} />
-   {task.error?.modelState?.title}
-   <button onClick={() => saveTask(task)}>Save</button>
-   ```
+*src/App.tsx*
+```tsx{9}
+return (
+  <div key={task.id}>
+      <input type="checkbox"
+        checked={task.completed}
+        onChange={e => handleChange({ completed: e.target.checked })} />
+      <input
+        value={task.title}
+        onChange={e => handleChange({ title: e.target.value })} />
+      {task.error?.modelState?.title}
+      <button onClick={() => saveTask()}>Save</button>
+      <button onClick={() => deleteTask()}>Delete</button>
+  </div>
+);
+```
 
 The `modelState` property of the `ErrorInfo` object contains error messages for any currently invalid fields in the entity object.

@@ -2,12 +2,12 @@
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
 
-Remult provides a flexible mechanism which enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field level authorization code should be placed in entity classes**.
+Remult provides a flexible mechanism that enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field level authorization code should be placed in entity classes**.
 
-User authentication remains outside the scope of Remult. In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
+User authentication remains outside the scope of Remult. In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign-in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
 
-### Tasks CRUD operations require sign in
-This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function which accepts a Remult `Remult` object and returns the result of the Remult's `authenticated` method.
+## Tasks CRUD Requires Sign-in
+This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function that accepts a Remult `Remult` object and returns the result of the Remult's `authenticated` method.
 
 *src/shared/Task.ts*
 ```ts{2}
@@ -15,6 +15,10 @@ This rule is implemented within the `Task` entity class constructor, by modifyin
     allowApiCrud: Allow.authenticated
 })
 ```
+
+::: warning Import Allow
+This code requires adding an import of `Allow` from `remult`.
+:::
 
 After the browser refreshes, the list of tasks disappeared and the user can no longer create new tasks.
 
@@ -25,7 +29,7 @@ curl -i http://localhost:3002/api/tasks
 :::
 
 ::: danger Authorized server-side code can still modify tasks
-Although client CRUD requests to `tasks` API endpoints now require a signed in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
+Although client CRUD requests to `tasks` API endpoints now require a signed-in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAll` method of `TasksController`.
 
@@ -35,84 +39,68 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ```
 :::
 
-### Load the tasks only if the user is authenticated
-Add the following code to the the `useEffect` hook with the following code:
-
-*src/App.tsx*
-```tsx{2-3}
-useEffect(() => {
-  if (taskRepo.metadata.apiReadAllowed)
-    taskRepo.find({
-      orderBy: { completed: "asc" },
-      where: { completed: hideCompleted ? false : undefined }
-    }).then(setTasks);
-}, [hideCompleted, reload]);
-```
-
-### User authentication
-Let's add a sign in area to the todo app, with an `input` for typing in a `username` and a sign in `button`. The app will have two valid `username` values - *"Jane"* and *"Steve"*. After a successful sign in, the sign in area will be replaced by a "Hi [username]" message.
+### User Authentication
+Let's add a sign-in area to the todo app, with an `input` for typing in a `username` and a sign-in `button`. The app will have two valid `username` values - *"Jane"* and *"Steve"*. After a successful sign-in, the sign-in area will be replaced by a "Hi [username]" message.
 
 In this section, we'll be using the following packages:
 * [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) to create JSON web tokens
 * [jwt-decode](https://github.com/auth0/jwt-decode) for client-side JWT decoding.
 * [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
 
-
-
 1. Open a terminal and run the following command to install the required packages:
-   ```sh
-   npm i jsonwebtoken jwt-decode express-jwt
-   npm i --save-dev @types/jsonwebtoken 
-   ```
+   
+```sh
+npm i jsonwebtoken jwt-decode express-jwt
+npm i --save-dev @types/jsonwebtoken 
+```
 
-5. Exclude `jsonwebtoken` from browser builds by adding the following JSON to the main section of the project's `package.json` file.
+2. Since we're going to be using `jsonwebtoken` in a `BackendMethod` that is defined in shared code, it's important to  exclude `jsonwebtoken` from browser builds by adding the following entry to the main section of the project's `package.json` file.
 
-   *package.json*
-   ```json
-   "browser": {
-      "jsonwebtoken": false
-   }
-   ```
+*package.json*
+```json
+"browser": {
+   "jsonwebtoken": false
+}
+```
 
-   ::: danger This step is not optional
-   React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
+::: danger This step is not optional
+React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
 
-   **For this change to take effect, our React app's dev server must be restarted by terminating the `dev-react` script and running it again.**
-   :::
+**For this change to take effect, our React app's dev server must be restarted by terminating the `dev` script and running it again.**
+:::
+
 3. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
-   ```ts{2,8-12}
+   ```ts{3,6-10}
    import express from 'express';
+   import { api } from './api';
    import { expressjwt } from 'express-jwt';
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { TasksController } from '../shared/TasksController';
-      
-   let app = express();
+   
+   const app = express();
    app.use(expressjwt({
-       secret: process.env.NODE_ENV === "production" ? process.env.TOKEN_SIGN_KEY! : "my secret key",
+       secret: process.env.JWT_SECRET || "my secret",
        credentialsRequired: false,
        algorithms: ['HS256']
    }));
-   app.use(remultExpress({
-   ...
+   app.use(api);
+
+   app.listen(3002, () => console.log("Server started"));
    ```
 
-   The `expressjwt` module verifies for each request that the auth token is valid, and extracts the user info from it to be used on the server.
+   The `expressjwt` middleware verifies that the authentication token is valid, and extracts the user info from it to be used on the server.
 
-
-   `credentialsRequired` is set to `false` to allow unauthenticated API requests (e.g. the request to `signIn`).
+   `credentialsRequired` is set to `false` to allow unauthenticated API requests to reach Remult. We'll use Remult's decorators to define which resources are available for unauthenticated users and which resources require authentication.
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-4. Add the following code that manages the auth token and includes it in the header of `axios` based requests in the `common.ts` file. The auth token is also stored in the `sessionStorage` to be retrieved when the user reloads the page.
+4. Add the highlighted code to `common.ts`:
 
    *src/common.ts*
-   ```ts{2,7-27}
+   ```ts{3,7-28}
    import axios from 'axios';
-   import jwtDecode from 'jwt-decode';
    import { Remult } from "remult";
+   import jwtDecode from 'jwt-decode';
 
    export const remult = new Remult(axios);
 
@@ -139,7 +127,13 @@ In this section, we'll be using the following packages:
       return config;
    });
    ```
-2. Create a file called `src/shared/AuthController.ts ` and place the following code in it:
+
+   `setAuthToken` sends the decoded user information to Remult and store the token in local `sessionStorage`.
+
+   An `axios` interceptor is used to add the authorization token header to all API requests.
+
+5. Create a file `src/shared/AuthController.ts` and place the following code in it:
+
    *src/shared/AuthController.ts*
    ```ts
    import * as jwt from 'jsonwebtoken';
@@ -149,160 +143,236 @@ In this section, we'll be using the following packages:
       @BackendMethod({ allowed: true })
       static async signIn(username: string) {
          const validUsers = [
-               { id: "1", name: "Jane", roles: [] },
-               { id: "2", name: "Steve", roles: [] }
+            { id: "1", name: "Jane", roles: [] },
+            { id: "2", name: "Steve", roles: [] }
          ];
          const user = validUsers.find(user => user.name === username);
+
          if (!user)
-               throw new Error("Invalid User");
-         return jwt.sign(user, secret: process.env.NODE_ENV === "production" ? process.env.TOKEN_SIGN_KEY! : "my secret key");
+            throw new Error("Invalid User");
+         return jwt.sign(user, process.env.JWT_SECRET || "my secret");
       }
    }
    ```
-   And add it to the `controllers` array on the `server`
-   ```ts{6,16}
-   import express from 'express';
-   import { expressjwt } from 'express-jwt';
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { TasksController } from '../shared/TasksController';
-   import { AuthController } from '../shared/AuthController';
-   
-   let app = express();
-   app.use(expressjwt({
-       secret: process.env.NODE_ENV === "production" ? process.env.TOKEN_SIGN_KEY! : "my secret key",
-       credentialsRequired: false,
-       algorithms: ['HS256']
-   }));
-   app.use(remultExpress({
-       entities: [Task],
-       controllers: [TasksController, AuthController],
-       initApi: async remult => {
-       ...
-   ```
-   * Note that The (very) simplistic `signIn` function will accept a `username` argument, define a dictionary of valid users, check whether the argument value exists in the dictionary and return a JWT string signed with a secret key. 
-   
-   The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 
+   This (very) simplistic `signIn` function accepts a `username` argument, looks it up in a predefined dictionary of valid users, and returns a JWT string signed with a secret key. 
 
+::: warning JWT payload
+The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
+:::
 
+6. Register the `AuthController` in the `controllers` array of the `options` argument of `remultExpress`.
 
-6. Add the following code to the `App` function component, and replace the beginning of the `return` statement to include the user greeting and sign out button.
+*src/server/api.ts*
+```ts{4,8}
+import { remultExpress } from "remult/remult-express";
+import { Task } from "../shared/Task";
+import { TasksController } from "../shared/TasksController";
+import { AuthController } from "../shared/AuthController";
 
-   *src/App.tsx*
-   ```tsx
+export const api = remultExpress({
+   entities: [Task],
+   controllers: [TasksController, AuthController],
+   initApi: async remult => {
+      const taskRepo = remult.repo(Task);
+      if (await taskRepo.count() === 0) {
+            await taskRepo.insert([
+               { title: "Task a" },
+               { title: "Task b", completed: true },
+               { title: "Task c" },
+               { title: "Task d" },
+               { title: "Task e", completed: true }
+            ]);
+      }
+   }
+});   
+```
+
+7. Add a the highlighted code to the `App` function component:
+
+*src/App.tsx*
+```tsx{4,19-35,39-41}
+function App() {
+   const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
+   const [hideCompleted, setHideCompleted] = useState(false);
    const [username, setUsername] = useState("");
+
+   useEffect(() => {
+      fetchTasks(hideCompleted).then(setTasks);
+   }, [hideCompleted]);
+
+   const addTask = () => {
+      setTasks([...tasks, new Task()])
+   }
+
+   const setAll = async (completed: boolean) => {
+      await TasksController.setAll(completed);
+      setTasks(await fetchTasks(hideCompleted));
+   }
+
    const signIn = async () => {
-     setAuthToken(await AuthController.signIn(username));
-     setReload({});
+      setAuthToken(await AuthController.signIn(username));
+      window.location.reload();
    }
+
    const signOut = () => {
-     setAuthToken(null);
-     setTasks([]);
+      setAuthToken(null);
+      window.location.reload();
    }
+
    if (!remult.authenticated())
       return (<div>
-        <p>
-          <input value={username} onChange={e => setUsername(e.target.value)}  />
-          <button onClick={signIn}>Sign in</button> <span style={{ color:  'green' }}></span>
-        </p>
+         <p>
+            <input value={username} onChange={e => setUsername(e.target.value)} />
+            <button onClick={signIn}>Sign in</button></span>
+         </p>
       </div>);
- 
+
    return (
-     <div>
-       <p>
-         Hi {remult.user.name} <button onClick={signOut}>Sign out </button>
-       </p>
-       //... the rest of the tsx html part
-   ```
+      <div>
+         <p>
+            Hi {remult.user.name} <button onClick={signOut}>Sign out</button>
+         </p>
+         <div>
+            <button onClick={() => setAll(true)}>Set all as completed</button>
+            <button onClick={() => setAll(false)}>Set all as uncompleted</button>
+         </div>
+         <input
+            type="checkbox"
+            checked={hideCompleted}
+            onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+         <hr />
+         {tasks.map(task => {
+            const handleChange = (values: Partial<Task>) => {
+               setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+            };
 
-   ::: warning Imports
-   This code requires imports for `AuthController` from `./shared/AuthController` and `setAuthToken` from the existing import of `./common`.
-   :::
+            const saveTask = async () => {
+               try {
+                  const savedTask = await taskRepo.save(task);
+                  setTasks(tasks.map(t => t === task ? savedTask : t));
+               } catch (error: any) {
+                  setTasks(tasks.map(t => t === task ? { ...task, error } : t));
+               }
+            }
 
+            const deleteTask = async () => {
+               await taskRepo.delete(task);
+               setTasks(tasks.filter(t => t !== task));
+            };
 
+            return (
+               <div key={task.id}>
+                  <input type="checkbox"
+                     checked={task.completed}
+                     onChange={e => handleChange({ completed: e.target.checked })} />
+                  <input
+                     value={task.title}
+                     onChange={e => handleChange({ title: e.target.value })} />
+                  {task.error?.modelState?.title}
+                  <button onClick={() => saveTask()}>Save</button>
+                  <button onClick={() => deleteTask()}>Delete</button>
+               </div>
+            );
+         })}
+         <button onClick={addTask}>Add Task</button>
+      </div>
+   );
+}
+```
 
-The todo app now supports signing in and out, with all access restricted to signed in users only.
+::: warning Imports
+This code requires imports for `AuthController` from `./shared/AuthController` and `setAuthToken` from `./common`.
+:::
 
-### Role-based authorization
-Usually, not all application users have the same privileges. Let's define an `admin` role for our todo list, and enforce the following authorization rules:
+The todo app now supports signing in and out, with **all access restricted to signed in users only**.
+
+## Role-based authorization
+Usually, not all application users have the same privileges. Let's define an `admin` role for our todo app, and enforce the following authorization rules:
 
 * All signed in users can see the list of tasks.
 * All signed in users can set specific tasks as `completed`.
 * Only users belonging to the `admin` role can create, delete or edit the titles of tasks.
 * Only users belonging to the `admin` role can mark all tasks as completed or uncompleted.
 
-1. Create a `roles.ts` file in the `src/shared/` folder, with the following `Roles` class definition:
+1. Create a `roles.ts` file in the `src/shared/` folder, with the following `Roles`:
 
-   *src/shared/Roles.ts*
-   ```ts
-   export const Roles = {
-      admin: 'admin'
-   }
-   ```
+*src/shared/Roles.ts*
+```ts
+export const Roles = {
+   admin: 'admin'
+}
+```
 
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
-   *src/shared/Task.ts*
-   ```ts{2,5-8,15}
-   import { Allow, Entity, Fields, Validators } from "remult";
-   import { Roles } from "./Roles";
-   
-   @Entity<Task>("tasks", {
-       allowApiRead: Allow.authenticated,
-       allowApiUpdate: Allow.authenticated,
-       allowApiInsert: Roles.admin,
-       allowApiDelete: Roles.admin
-   })
-   export class Task {
-       @Fields.uuid()
-       id!: string;
-       @Fields.string({
-           validate: Validators.required,
-           allowApiUpdate: Roles.admin
-       })
-       title = '';
-       @Fields.boolean()
-       completed = false;
-       @Fields.date()
-       lastUpdated = new Date()
-   }
-   ```
-3. Modify the highlighted line in the `TasksController` class to reflect the authorization rule
-   *src/shared/TasksController.ts*
-   ```ts{3,7}
-   import { BackendMethod, Remult } from "remult";
-   import { Task } from "./Task";
-   import { Roles } from "./Roles";
-   
-   export class TasksController {
-   
-       @BackendMethod({ allowed: Roles.admin })
-       static async setAll(completed: boolean, remult?: Remult) {
-           const taskRepo = remult!.repo(Task);
-           for await (const task of taskRepo.query()) {
-               await taskRepo.save({ ...task, completed });
-           }
-       }
-   }
-   ```
+*src/shared/Task.ts*
+```ts{2,5-8,16}
+import { Allow, Entity, Fields, Validators } from "remult";
+import { Roles } from "./Roles";
 
-4. Let's have the *"Jane"* belong to the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` server function.
+@Entity<Task>("tasks", {
+      allowApiRead: Allow.authenticated,
+      allowApiUpdate: Allow.authenticated,
+      allowApiInsert: Roles.admin,
+      allowApiDelete: Roles.admin
+})
+export class Task {
+      @Fields.uuid()
+      id!: string;
 
-   *src/shared/AuthController.ts*
-   ```ts{4}
+      @Fields.string({
+         validate: Validators.required,
+         allowApiUpdate: Roles.admin
+      })
+      title = '';
+
+      @Fields.boolean()
+      completed = false;
+}
+```
+
+3. Modify the highlighted line in the `TasksController` class to reflect the fourth authorization rule.
+
+*src/shared/TasksController.ts*
+```ts{3,6}
+import { Allow, BackendMethod, Remult } from "remult";
+import { Task } from "./Task";
+import { Roles } from "./Roles";
+
+export class TasksController {
+   @BackendMethod({ allowed: Roles.admin })
+   static async setAll(completed: boolean, remult?: Remult) {
+      const taskRepo = remult!.repo(Task);
+      for (const task of await taskRepo.find()) {
+            await taskRepo.save({ ...task, completed });
+      }
+   }
+}
+```
+
+4. Let's give the user *"Jane"* the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` function.
+
+*src/shared/AuthController.ts*
+```ts{3,9}
+import * as jwt from 'jsonwebtoken';
+import { BackendMethod } from 'remult';
+import { Roles } from './Roles';
+
+export class AuthController {
    @BackendMethod({ allowed: true })
    static async signIn(username: string) {
       const validUsers = [
-      { id: "1", name: "Jane", roles: [ Roles.admin] },
-      { id: "2", name: "Steve", roles: [] }
+            { id: "1", name: "Jane", roles: [Roles.admin] },
+            { id: "2", name: "Steve", roles: [] }
       ];
       const user = validUsers.find(user => user.name === username);
-      if (!user)
-         throw new Error("Invalid User");
-      return jwt.sign(user, getJwtSigningKey());
-   }
-   ```
 
+      if (!user)
+            throw new Error("Invalid User");
+      return jwt.sign(user, process.env.JWT_SECRET || "my secret");
+   }
+}
+```
 
 **Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**

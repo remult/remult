@@ -1,175 +1,178 @@
 # Deployment
-In this tutorial, we'll deploy both the React app files and the API server project to the same host, and redirect all non-API requests to return the React app's `index.html` page.
 
-In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware to improve security.
+Let's deploy the todo app to [Heroku](https://www.heroku.com/).
 
-* note that if your project name is different than `remult-react-todo`, you'll need to replace these values in the index.ts file
+## Connect to Postgres
+Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
+
+1. Install `postgres-node` ("pg").
+
+```sh
+npm i pg
+npm i --save-dev @types/pg
+```
+
+2. Adding the highlighted code to the `api` server module.
+
+*src/server/api.ts*
+```ts{5,8-12}
+import { remultExpress } from "remult/remult-express";
+import { Task } from "../shared/Task";
+import { TasksController } from "../shared/TasksController";
+import { AuthController } from "../shared/AuthController";
+import { createPostgresConnection } from "remult/postgres";
+
+export const api = remultExpress({
+   dataProvider: async () => {
+      if (process.env.NODE_ENV === "production")
+            return createPostgresConnection({ configuration: "heroku" });
+      return undefined;
+   },
+   entities: [Task],
+   controllers: [TasksController, AuthController],
+   initApi: async remult => {
+      const taskRepo = remult.repo(Task);
+      if (await taskRepo.count() === 0) {
+            await taskRepo.insert([
+               { title: "Task a" },
+               { title: "Task b", completed: true },
+               { title: "Task c" },
+               { title: "Task d" },
+               { title: "Task e", completed: true }
+            ]);
+      }
+   }
+});
+```
+
+::: tip Learn more
+See [documentation](../../docs/databases.md) for the (long) list of relational and non-relational databases Remult supports.
 :::
 
-1. Install `compression` and `helmet`.
+## Prepare for Production
 
-   ```sh
-   npm i compression helmet
-   npm i @types/compression --save-dev
-   ```
+In this tutorial, we'll deploy both the React app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the React app.
+
+In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance, [helmet](https://www.npmjs.com/package/helmet) middleware for security, and redirect all non-HTTPS requests to HTTPS using [heroku-ssl-redirect](https://www.npmjs.com/package/heroku-ssl-redirect).
+
+1. Install `compression`, `helmet` and `heroku-ssl-redirect`.
+
+```sh
+npm i compression helmet heroku-ssl-redirect
+npm i @types/compression --save-dev
+```
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
-   *src/server/index.ts*
-   ```ts{2-3,11-12,35-39}
-   import express from 'express';
-   import compression from 'compression';
-   import helmet from 'helmet';
-   import { expressjwt } from 'express-jwt';
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { TasksController } from '../shared/TasksController';
-   import { AuthController, getJwtTokenSignKey } from '../shared/AuthController';
-   
-   let app = express();
-   app.use(helmet({ contentSecurityPolicy: false }));
-   app.use(compression());
-   app.use(expressjwt({
-       secret: getJwtSigningKey(),
-       credentialsRequired: false,
-       algorithms: ['HS256']
-   }));
-   app.use(remultExpress({
-       entities: [Task],
-       controllers: [TasksController, AuthController],
-       initApi: async remult => {
-           const taskRepo = remult.repo(Task);
-           if (await taskRepo.count() == 0) {
-               await taskRepo.insert([
-                   { title: "Task a" },
-                   { title: "Task b", completed: true },
-                   { title: "Task c" },
-                   { title: "task d" },
-                   { title: "task e", completed: true }
-               ]);
-           }
-       }
-   }));
-   
-   app.use(express.static('build'));
-   app.use('/*', async (req, res) => {
-       res.sendFile(process.cwd() + '/build/index.html');
-   });
-   app.listen(process.env.PORT || 3002, () => console.log("Server started"));
-   ```
+*src/server/index.ts*
+```ts{4-7,10-12,20-23,25}
+import express from 'express';
+import { api } from './api';
+import { expressjwt } from 'express-jwt';
+import helmet from 'helmet';
+import compression from 'compression';
+import sslRedirect from 'heroku-ssl-redirect';
+import path from 'path';
 
-3. Modify the project's `build` npm script to also transpile the API server's TypeScript code to JavaScript (using `tsc`).
+const app = express();
+app.use(sslRedirect());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(compression());
+app.use(expressjwt({
+      secret: process.env.JWT_SECRET || "my secret",
+      credentialsRequired: false,
+      algorithms: ['HS256']
+}));
+app.use(api);
 
-   *package.json*
-   ```json
-   "build": "react-scripts build && tsc -p tsconfig.server.json"
-   ```
+app.use(express.static(path.join(__dirname, '../../build')));
+app.get('/*', function (req, res) {
+   res.sendFile(path.join(__dirname, '../../build', 'index.html'));
+});
 
-4. Modify the project's `start` npm script to start the production Node.js server.
+app.listen(process.env.PORT || 3002, () => console.log("Server started"));
+```
 
-   *package.json*
-   ```json
-   "start": "node dist/server/server/"
-   ```
+3. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
+
+*tsconfig.server.json*
+```json{6-11}
+{
+   "extends": "./tsconfig.json",
+   "compilerOptions": {
+      "module": "commonjs",
+      "emitDecoratorMetadata": true,
+      "noEmit": false,
+      "outDir": "dist"
+   },
+   "include": [
+      "src/server/index.ts"
+   ]
+}
+```
+
+4. Add the `dist` folder to the `.gitignore` file.
+
+*.gitignore*
+```
+/dist
+```
+
+5. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
+
+*package.json*
+```json
+"build": "react-scripts build && tsc -p tsconfig.server.json"
+```
+
+6. Modify the project's `start` npm script to start the production Node.js server.
+
+*package.json*
+```json
+"start": "node dist/server/"
+```
 
 The todo app is now ready for deployment to production.
 
-#### Deploy to heroku
+## Deploy to Heroku
 
 In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need a `heroku` account. You'll also need [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install) installed.
 
-For this tutorial, we will use `postgres` as a production database.
+1. Create a Heroku `app`.
 
-1. Install postgres `pg` and `heroku-ssl-redirect` (to enforce https)
-   ```sh
-   npm i pg heroku-ssl-redirect
-   npm i --save-dev @types/pg
-   ```
+```sh
+heroku create
+```
 
-2. Add the highlighted code lines to `src/server/index.ts`.
+2. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
 
-   *src/server/index.ts*
-   ```ts{5-6,13,22-26}
-   import express from 'express';
-   import compression from 'compression';
-   import helmet from 'helmet';
-   import { expressjwt } from 'express-jwt';
-   import sslRedirect from 'heroku-ssl-redirect'
-   import { createPostgresConnection } from 'remult/postgres';
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { TasksController } from '../shared/TasksController';
-   import { AuthController, getJwtTokenSignKey } from '../shared/AuthController';
-   
-   let app = express();
-   app.use(sslRedirect());
-   app.use(helmet({ contentSecurityPolicy: false }));
-   app.use(compression());
-   app.use(expressjwt({
-       secret: getJwtSigningKey(),
-       credentialsRequired: false,
-       algorithms: ['HS256']
-   }));
-   app.use(remultExpress({
-       dataProvider: async () => {
-           if (process.env.NODE_ENV === "production")
-               return createPostgresConnection({ configuration: "heroku" })
-           return undefined;
-       },
-       entities: [Task],
-       controllers: [TasksController, AuthController],
-       initApi: async remult => {
-           const taskRepo = remult.repo(Task);
-           if (await taskRepo.count() == 0) {
-               await taskRepo.insert([
-                   { title: "Task a" },
-                   { title: "Task b", completed: true },
-                   { title: "Task c" },
-                   { title: "task d" },
-                   { title: "task e", completed: true }
-               ]);
-           }
-       }
-   }));
-   
-   app.use(express.static('build'));
-   app.use('/*', async (req, res) => {
-       res.sendFile(process.cwd() + '/build/index.html');
-   });
-   app.listen(process.env.PORT || 3002, () => console.log("Server started"));
-   ```
-2. Create a Heroku `app`:
+```sh
+heroku config:set JWT_SECRET=random-secret
+```
 
-   ```sh
-   heroku create
-   ```
+3. Provision a dev postgres database on Heroku.
 
-3. Set the jwt authentication to something random - you can use an [Online UUID Generator](https://www.uuidgenerator.net/)
-   ```sh
-   heroku config:set TOKEN_SIGN_KEY=some-very-secret-key
-   ```
-3. Provision a dev postgres database on Heroku
-   ```sh
-   heroku addons:create heroku-postgresql:hobby-dev
-   ```
+```sh
+heroku addons:create heroku-postgresql:hobby-dev
+```
 
-4. Commit the changes to git and deploy to Heroku using `git push`:
+4. Commit the changes to git and deploy to Heroku using `git push`.
 
-   ```sh
-   git add .
-   git commit -m "todo app tutorial"
-   git push heroku master
-   ```
+```sh
+git add .
+git commit -m "todo app tutorial"
+git push heroku master
+```
 
-5. Run the production app using `heroku apps:open` command: 
+5. Run the production app using `heroku apps:open` command.
 
-   ```sh
-   heroku apps:open
-   ```
+```sh
+heroku apps:open
+```
+
 ::: warning Note
 If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
 :::
-
 
 That's it - our application is deployed to production, play with it and enjoy.
 

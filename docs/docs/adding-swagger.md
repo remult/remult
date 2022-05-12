@@ -14,7 +14,7 @@ To add swagger to a `remult` application follow these steps:
    import swaggerUi from 'swagger-ui-express';
    import { remultExpress } from 'remult/remult-express';
    
-   let app = express();
+   const app = express();
    let api = remultExpress();
    app.use(api);
    app.use('/api/docs', swaggerUi.serve,

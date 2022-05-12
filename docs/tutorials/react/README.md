@@ -1,6 +1,5 @@
 ---
 title: Setup
-sidebarDepth: 0
 ---
 
 # Todo App with React
@@ -30,18 +29,18 @@ You can either **use a starter project** to speed things up, or go through the *
 
 1. Clone the *remult-react-todo* repository from GitHub and install its dependencies.
 
-   ```sh
-   git clone https://github.com/remult/remult-react-todo.git
-   cd remult-react-todo
-   npm install
-   ```
+```sh
+git clone https://github.com/remult/remult-react-todo.git
+cd remult-react-todo
+npm install
+```
 
 2. Open your IDE.
 3. Open a terminal and run the `dev` npm script.
 
-   ```sh
-   npm run dev
-   ```
+```sh
+npm run dev
+```
 
 The default React app main screen should be displayed.
 
@@ -49,7 +48,7 @@ At this point, our starter project is up and running. We are now ready to [start
 
 ## Option 2: Step-by-step Setup
 
-### Create a React Project
+### Create a React project
 Create the new React project.
 ```sh
 npx create-react-app remult-react-todo --template typescript
@@ -57,13 +56,13 @@ cd remult-react-todo
 ```
 
 In this tutorial, we'll be using the root folder created by `React` as the root folder for our server project as well.
-### Installing required packages
+### Install required packages
 We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and React app from a single command.
 ```sh
 npm i axios express remult
 npm i --save-dev @types/express ts-node-dev concurrently
 ```
-### The API server project
+### Create the API server project
 The starter API server TypeScript project contains a single module that initializes `Express`, loads the Remult middleware, `remultExpress`, and begins listening for API requests.
 
 1. Open your IDE.
@@ -72,31 +71,71 @@ The starter API server TypeScript project contains a single module that initiali
 
 3. Create an `index.ts` file in the `src/server/` folder with the following code:
 
-   *src/server/index.ts*
-   ```ts
-   import express from 'express';
-   import { remultExpress } from 'remult/remult-express';
-   
-   const app = express();
-   app.use(remultExpress());
-   app.listen(3002, () => console.log("Server started"));
-   ```
+*src/server/index.ts*
+```ts
+import express from 'express';
+
+const app = express();
+
+app.listen(3002, () => console.log("Server started"));
+```
 
 4. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
 
-   *tsconfig.server.json*
-   ```json
-   {
-      "extends": "./tsconfig.json",
-      "compilerOptions": {
-         "module": "commonjs",
-         "emitDecoratorMetadata": true
-      }
+*tsconfig.server.json*
+```json
+{
+   "extends": "./tsconfig.json",
+   "compilerOptions": {
+      "module": "commonjs",
+      "emitDecoratorMetadata": true
    }
-   ```
+}
+```
+
+### Bootstrap Remult in the back-end
+Remult is loaded in the back-end as an `Express middleware`.
+
+1. Create an `api.ts` file in the `src/server/` folder with the following code:
+
+*src/server/api.ts*
+```ts
+import { remultExpress } from 'remult/remult-express';
+
+export const api = remultExpress();
+```
+
+2. Add the highlighted code lines to register the middleware in the main server module `index.ts`.
+
+*src/server/index.ts*
+```ts{2,5}
+import express from 'express';
+import { api } from './api';
+
+const app = express();
+app.use(api);
+
+app.listen(3002, () => console.log("Server started"));
+```
+
+### Bootstrap Remult in the front-end
+
+In the React app we'll be using a global `Remult` object to communicate with the API server via a `Promise`-based HTTP client (in this case - `Axios`).
+
+Create an `common.ts` file in the `src/` folder with the following code:
+
+*src/common.ts*
+```ts
+import axios from "axios";
+import { Remult } from "remult";
+
+export const remult = new Remult(axios); 
+```
+
 
 ### Final tweaks
 
+Our full stack starter project is almost ready. Let's complete these final configurations.
 #### Enable TypeScript decorators in the React app
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
@@ -119,36 +158,24 @@ Configure the proxy by adding the following entry to the main section of the `pa
 "proxy": "http://localhost:3002"
 ```
 
-#### Run the app
+### Run the app
 
 1. Create an `npm` script named `dev` to start the dev API server and the React app, by adding the following entry to the `scripts` section of `package.json`.
 
-   *package.json*
-   ```json
-   "dev": "concurrently -p \"[{name}]\" -n \"API,REACT\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"react-scripts start\""
-   ```
+*package.json*
+```json
+"dev": "concurrently -k -n \"API,WEB\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"react-scripts start\""
+```
    
 2. Open a terminal and start the app.
-   ```sh
-   npm run dev
-   ```
+```sh
+npm run dev
+```
 
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
 The default React app main screen should be displayed.
 
-#### Setting up a global Remult object for the React app
-Our React starter project is almost ready. All that's left is to add a global `Remult` object which will be used to communicate with the API server via a `Promise`-based HTTP client (in this case - `Axios`).
-
-Create an `common.ts` file in the `src/` folder with the following code:
-
-*src/common.ts*
-```ts
-import axios from "axios";
-import { Remult } from "remult";
-
-export const remult = new Remult(axios); 
-```
 
 ### Setup completed
 At this point, our starter project is up and running. We are now ready to start creating the task list app.

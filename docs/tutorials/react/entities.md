@@ -9,6 +9,8 @@ The `Task` entity class will be used:
 
 The `Task` entity class we're creating will have an auto-generated UUID `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
+## Define the Model
+
 1. Create a `shared` folder under the `src` folder. This folder will contain code shared between frontend and backend.
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
@@ -38,20 +40,18 @@ The `@Fields.uuid` decorator tells remult to automatically generate an id using 
 
 The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
-### Seeding test data
+## Seed Test Data
 
 Now that the `Task` entity is defined, we can use it to seed the database with some test data.
 
-Add the highlighted code lines to `src/server/index.ts`.
+Add the highlighted code lines to `src/server/api.ts`.
 
-*src/server/index.ts*
-```ts{3,7-19}
-import express from 'express';
+*src/server/api.ts*
+```ts{2,5-17}
 import { remultExpress } from 'remult/remult-express';
 import { Task } from '../shared/Task';
 
-let app = express();
-app.use(remultExpress({
+export const api = remultExpress({
     entities: [Task],
     initApi: async remult => {
         const taskRepo = remult.repo(Task);
@@ -65,9 +65,7 @@ app.use(remultExpress({
             ]);
         }
     }
-}));
-
-app.listen(3002, () => console.log("Server started"));
+});
 ```
 
 The `initApi` callback is called only once, after a database connection is established and the server is ready to perform initialization operations.
@@ -83,7 +81,7 @@ While remult supports [many relational and non-relational databases](https://rem
 :::
 
 
-### Display the list of tasks
+## Display the Task List
 Let's start developing the web app by displaying the list of existing tasks in a React component.
 
 Replace the contents of `src/App.tsx` with the following code:
@@ -108,7 +106,7 @@ function App() {
   }, []);
 
   return (
-    <div >
+    <div>
       {tasks.map(task => (
         <div key={task.id}>
           <input type="checkbox" checked={task.completed} />
