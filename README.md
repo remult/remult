@@ -21,8 +21,6 @@
 	<a href="https://snyk.io/test/npm/remult">
 		<img alt="snyk" src="https://snyk.io/test/npm/remult/badge.svg"/>
 		</a>
-	<a href="https://github.com/remult/remult/pulse" alt="Activity">
-        <img src="https://img.shields.io/github/commit-activity/m/remult/remult" /></a>
 </div>
 
 ## What is Remult?
