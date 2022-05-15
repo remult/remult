@@ -20,11 +20,29 @@ This rule is implemented within the `Task` entity class constructor, by modifyin
 This code requires adding an import of `Allow` from `remult`.
 :::
 
-After the browser refreshes, the list of tasks disappeared and the user can no longer create new tasks.
+After the browser refreshes, **the list of tasks disappeared** and the user can no longer create new tasks.
 
 ::: details Inspect the HTTP error returned by the API using cURL
 ```sh
 curl -i http://localhost:3002/api/tasks
+```
+:::
+
+::: tip Use authorization metadata to avoid redundant api requests
+Although not necessary, it's a good idea to avoid sending `GET` api requests for tasks from our React app, if the current user is not authorized to access the endpoint.
+
+A simple way to achieve this is by adding the highlighted code lines to the `fetchTasks` function in `App.tsx`:
+
+*src/App.tsx*
+```ts{2-3}
+async function fetchTasks(hideCompleted: boolean) {
+   if (!taskRepo.metadata.apiReadAllowed)
+      return;
+   return taskRepo.find({
+      orderBy: { completed: "asc" },
+      where: { completed: hideCompleted ? false : undefined }
+   });
+}
 ```
 :::
 
