@@ -121,7 +121,7 @@ export class Product {
     @Fields.string<Product>({
         validate: product => {
             if (product.name.trim().length == 0)
-                product.$.name.error = 'required';
+                throw 'required';
         }
     })
     name = '';
@@ -129,7 +129,7 @@ export class Product {
     @Fields.number({
         validate: (_, field) => {
             if (field.value < 0)
-                field.error = "must not be less than 0";
+                throw "must not be less than 0";
         }
     })
     unitPrice = 0;
@@ -143,7 +143,7 @@ const product = productsRepo.create();
 try {
   await productsRepo.save(product);
 }
-catch (e: ErrorInfo<Product>) {
+catch (e: any) {
   console.error(e.message); // Browser console will display - "Name: required"
 }
 ```
