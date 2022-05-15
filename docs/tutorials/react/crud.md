@@ -157,7 +157,7 @@ Let's add a *Delete* button next to the *Save* button of each task in the list.
 Add the highlighted `deleteTask` function and *Delete* `button` Within the `tasks.map` iteration in the `return` section of the `App` component.
 
 *src/App.tsx*
-```tsx{10-13,24}
+```tsx{11-14,25}
 {tasks.map(task => {
    const handleChange = (values: Partial<Task>) => {
       setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
