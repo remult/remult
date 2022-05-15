@@ -67,20 +67,7 @@ The starter API server TypeScript project contains a single module that initiali
 
 1. Open your IDE.
 
-2. Create a `server` folder under the `src/` folder created by Create React App.
-
-3. Create an `index.ts` file in the `src/server/` folder with the following code:
-
-*src/server/index.ts*
-```ts
-import express from 'express';
-
-const app = express();
-
-app.listen(3002, () => console.log("Server started"));
-```
-
-4. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
+2. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
 
 *tsconfig.server.json*
 ```json
@@ -91,6 +78,19 @@ app.listen(3002, () => console.log("Server started"));
       "emitDecoratorMetadata": true
    }
 }
+```
+
+3. Create a `server` folder under the `src/` folder created by Create React App.
+
+4. Create an `index.ts` file in the `src/server/` folder with the following code:
+
+*src/server/index.ts*
+```ts
+import express from 'express';
+
+const app = express();
+
+app.listen(3002, () => console.log("Server started"));
 ```
 
 ### Bootstrap Remult in the back-end
