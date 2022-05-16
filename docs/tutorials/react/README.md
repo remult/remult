@@ -18,7 +18,7 @@ Check out the [Angular tutorial](../tutorial-angular).
 
 This tutorial assumes you are familiar with `TypeScript` and `React`.
 
-Before you begin, make sure you have [Node.js](https://nodejs.org) installed. <!-- consider specifying Node minimum version with npm -->
+Before you begin, make sure you have [Node.js](https://nodejs.org) and [git](https://git-scm.com/) installed. <!-- consider specifying Node minimum version with npm -->
 
 # Setup for the Tutorial
 This tutorial requires setting up a React project, an API server project, and a few lines of code to add Remult.
@@ -44,7 +44,7 @@ npm run dev
 
 The default React app main screen should be displayed.
 
-At this point, our starter project is up and running. We are now ready to [start creating the task list app](./entities.md).
+At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 ## Option 2: Step-by-step Setup
 
@@ -63,7 +63,7 @@ npm i axios express remult
 npm i --save-dev @types/express ts-node-dev concurrently
 ```
 ### Create the API server project
-The starter API server TypeScript project contains a single module that initializes `Express`, loads the Remult middleware, `remultExpress`, and begins listening for API requests.
+The starter API server TypeScript project contains a single module that initializes `Express`, and begins listening for API requests.
 
 1. Open your IDE.
 
@@ -178,8 +178,4 @@ The default React app main screen should be displayed.
 
 
 ### Setup completed
-At this point, our starter project is up and running. We are now ready to start creating the task list app.
-
-::: tip Bonus 
-Setup [Swagger UI](../../docs/adding-swagger) and/or a [GraphQL backend](../../docs/adding-graphql) in seconds.
-:::
+At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.

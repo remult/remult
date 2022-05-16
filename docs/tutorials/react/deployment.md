@@ -45,6 +45,10 @@ export const api = remultExpress({
 });
 ```
 
+The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)
+
+In development, the `dataProvider` function returns `undefined`, causing Remult to continue to use the default JSON-file database.
+
 ::: tip Learn more
 See [documentation](../../docs/databases.md) for the (long) list of relational and non-relational databases Remult supports.
 :::

@@ -2,12 +2,14 @@
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
 
-Remult provides a flexible mechanism that enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field level authorization code should be placed in entity classes**.
+Remult provides a flexible mechanism that enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field-level authorization code should be placed in entity classes**.
 
-User authentication remains outside the scope of Remult. In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign-in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
+**Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism, and only required to provide Remult with an object which implements the Remult `UserInfo` interface.
+
+In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign-in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
 
 ## Tasks CRUD Requires Sign-in
-This rule is implemented within the `Task` entity class constructor, by modifying the `allowApiCrud` property of the anonymous implementation of the argument sent to the `@Entity` decorator, from a `true` value to an arrow function that accepts a Remult `Remult` object and returns the result of the Remult's `authenticated` method.
+This rule is implemented within the `Task` `@Entity` decorator, by modifying the `allowApiCrud` property from a `true` value to an arrow function that accepts a `Remult` object and returns the result of the Remult's `authenticated` method.
 
 *src/shared/Task.ts*
 ```ts{2}
@@ -83,11 +85,15 @@ npm i --save-dev @types/jsonwebtoken
 
 ::: danger This step is not optional
 React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
-
-**For this change to take effect, our React app's dev server must be restarted by terminating the `dev` script and running it again.**
 :::
 
-3. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+3. Terminate the running `dev` npm script and run it again for the change to `package.json` to take effect.
+
+```sh
+npm run dev
+```
+
+4. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
    ```ts{3,6-10}
@@ -112,7 +118,7 @@ React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-4. Add the highlighted code to `common.ts`:
+5. Add the highlighted code to `common.ts`:
 
    *src/common.ts*
    ```ts{3,7-28}
@@ -150,7 +156,7 @@ React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
 
    An `axios` interceptor is used to add the authorization token header to all API requests.
 
-5. Create a file `src/shared/AuthController.ts` and place the following code in it:
+6. Create a file `src/shared/AuthController.ts` and place the following code in it:
 
    *src/shared/AuthController.ts*
    ```ts
@@ -167,7 +173,7 @@ React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
          const user = validUsers.find(user => user.name === username);
 
          if (!user)
-            throw new Error("Invalid User");
+            throw new Error("Invalid user, try 'Steve' or 'Jane'");
          return jwt.sign(user, process.env.JWT_SECRET || "my secret");
       }
    }
@@ -179,7 +185,7 @@ React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
 The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 :::
 
-6. Register the `AuthController` in the `controllers` array of the `options` argument of `remultExpress`.
+7. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
 
 *src/server/api.ts*
 ```ts{4,8}
@@ -206,10 +212,10 @@ export const api = remultExpress({
 });   
 ```
 
-7. Add a the highlighted code to the `App` function component:
+8. Add a the highlighted code to the `App` function component:
 
 *src/App.tsx*
-```tsx{4,19-35,39-41}
+```tsx{4,19-40,44-46}
 function App() {
    const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
    const [hideCompleted, setHideCompleted] = useState(false);
@@ -229,8 +235,13 @@ function App() {
    }
 
    const signIn = async () => {
-      setAuthToken(await AuthController.signIn(username));
-      window.location.reload();
+      try {
+         setAuthToken(await AuthController.signIn(username));
+         window.location.reload();
+      }
+      catch (error: any) {
+         alert(error.message);
+      }
    }
 
    const signOut = () => {
@@ -242,7 +253,7 @@ function App() {
       return (<div>
          <p>
             <input value={username} onChange={e => setUsername(e.target.value)} />
-            <button onClick={signIn}>Sign in</button></span>
+            <button onClick={signIn}>Sign in</button>
          </p>
       </div>);
 
@@ -270,6 +281,7 @@ function App() {
                   const savedTask = await taskRepo.save(task);
                   setTasks(tasks.map(t => t === task ? savedTask : t));
                } catch (error: any) {
+                  alert(error.message);
                   setTasks(tasks.map(t => t === task ? { ...task, error } : t));
                }
             }
@@ -288,8 +300,8 @@ function App() {
                      value={task.title}
                      onChange={e => handleChange({ title: e.target.value })} />
                   {task.error?.modelState?.title}
-                  <button onClick={() => saveTask()}>Save</button>
-                  <button onClick={() => deleteTask()}>Delete</button>
+                  <button onClick={saveTask}>Save</button>
+                  <button onClick={deleteTask}>Delete</button>
                </div>
             );
          })}
@@ -387,7 +399,7 @@ export class AuthController {
       const user = validUsers.find(user => user.name === username);
 
       if (!user)
-            throw new Error("Invalid User");
+            throw new Error("Invalid user, try 'Steve' or 'Jane'");
       return jwt.sign(user, process.env.JWT_SECRET || "my secret");
    }
 }

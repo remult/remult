@@ -44,7 +44,7 @@ function App() {
 }
 ```
 
-   The `handleChange` function simply replaces the `tasks` state with a new array containing all unchanged tasks and a new version of the current that includes the modified `values`.
+   The `handleChange` function simply replaces the `tasks` state with a new array containing all unchanged tasks and a new version of the current task that includes the modified `values`.
 
    After the browser refreshes, the tasks can be renamed and marked as completed.
 
@@ -69,7 +69,7 @@ function App() {
          <input
             value={task.title}
             onChange={e => handleChange({ title: e.target.value })} />
-         <button onClick={() => saveTask()}>Save</button>
+         <button onClick={saveTask}>Save</button>
       </div>
    );
 })}
@@ -118,7 +118,7 @@ function App() {
                   <input
                      value={task.title}
                      onChange={e => handleChange({ title: e.target.value })} />
-                  <button onClick={() => saveTask()}>Save</button>
+                  <button onClick={saveTask}>Save</button>
                </div>
             );
          })}
@@ -181,8 +181,8 @@ Add the highlighted `deleteTask` function and *Delete* `button` Within the `task
          <input
             value={task.title}
             onChange={e => handleChange({ title: e.target.value })} />
-         <button onClick={() => saveTask()}>Save</button>
-         <button onClick={() => deleteTask()}>Delete</button>
+         <button onClick={saveTask}>Save</button>
+         <button onClick={deleteTask}>Delete</button>
       </div>
    );
 })}

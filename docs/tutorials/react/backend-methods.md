@@ -56,7 +56,7 @@ export class TasksController {
 }
 ```
 
-2. Register `TasksController` by adding it to the `controllers` array of the `remultExpress` argument in the server's `api` module:
+2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
 
 *src/server/api.ts*
 ```ts{3,7}
@@ -92,13 +92,13 @@ const setAll = async (completed: boolean) => {
 }
 ```
 
-::: danger Import TasksController
+::: warning Import TasksController
 Remember to add an import of `TasksController` in `App.tsx`.
 :::
 
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
-The optional `remult` argument of the static `setAll` function is omitted in the client-side calling code, and injected by Remult on the server-side with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
+The optional `remult` argument of the static `setAll` function is omitted in the client-side calling code. In the server-side, Remult injects `@BackendMethod`-decorated functions with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
 
 ::: warning Note
 With Remult backend methods, argument types are compile-time checked. :thumbsup:

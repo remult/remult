@@ -72,7 +72,7 @@ npm i express remult
 npm i --save-dev @types/express
 ```
 #### The API server project
-The starter API server TypeScript project contains a single module which initializes `Express`, loads the Remult middleware `remultExpress`, and begins listening for API requests.
+The starter API server TypeScript project contains a single module which initializes `Express`, loads the Remult middleware `remultExpress()`, and begins listening for API requests.
 
 In our development environment we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server.
 

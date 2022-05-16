@@ -15,28 +15,42 @@ The `Task` entity class we're creating will have an auto-generated UUID `id` fie
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-  *src/shared/Task.ts*
-  ```ts
-  import { Entity, Fields } from "remult";
+*src/shared/Task.ts*
+```ts
+import { Entity, Fields } from "remult";
 
-  @Entity("tasks", {
-      allowApiCrud: true
-  })
-  export class Task {
-      @Fields.uuid()
-      id!: string;
+@Entity("tasks", {
+    allowApiCrud: true
+})
+export class Task {
+    @Fields.uuid()
+    id!: string;
 
-      @Fields.string()
-      title = '';
+    @Fields.string()
+    title = '';
 
-      @Fields.boolean()
-      completed = false;
-  }
-  ```
+    @Fields.boolean()
+    completed = false;
+}
+```
 
-The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an argument which implements the `EntityOptions` interface. We use an object literal to instantiate it, setting the [allowApiCrud](../../docs/ref_entity.md#allowapicrud) property to `true`.
+3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
 
-The `@Fields.uuid` decorator tells remult to automatically generate an id using `uuid`. We mark that property as optional since the id will be auto-generated. 
+*src/server/api.ts*
+```ts{2,5}
+import { remultExpress } from 'remult/remult-express';
+import { Task } from '../shared/Task';
+
+export const api = remultExpress({
+    entities: [Task]
+});
+```
+
+The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
+
+To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
+
+The `@Fields.uuid` decorator tells Remult to automatically generate an id using `uuid`. We mark this property as optional so we can create new `Task` objects without assigning and `id` at first, and have Remult generate one before the object's data is stored to the backend database.
 
 The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
@@ -47,7 +61,7 @@ Now that the `Task` entity is defined, we can use it to seed the database with s
 Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
-```ts{2,5-17}
+```ts{6-17}
 import { remultExpress } from 'remult/remult-express';
 import { Task } from '../shared/Task';
 

@@ -49,7 +49,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 const [hideCompleted, setHideCompleted] = useState(false);
 ```
 
-3. In the `useEffect` hook of the `App` function component, modify the call to `fetchTasks` and register the `hideCompleted` state in second argument of `useEffect` (this will cause the effect to re-run when `hideCompleted` changes).
+3. In the `useEffect` hook of the `App` function component, modify the call to `fetchTasks` and register the `hideCompleted` state in the second argument of `useEffect` (this will cause the effect to re-run when `hideCompleted` changes).
 
 *src/App.tsx*
 ```ts{2-3}
