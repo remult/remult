@@ -4,7 +4,7 @@
   </a>
   <h1>Remult</h1>
 	<a href="https://circleci.com/gh/remult/remult/tree/master">
-		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=svg">
+		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield">
 	</a>
 	<a href="https://codecov.io/gh/remult/remult">
         	<img src="https://codecov.io/gh/remult/remult/branch/master/graph/badge.svg?token=LYWQRUN3D1"/>
