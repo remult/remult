@@ -4,7 +4,7 @@ The RESTful API created by Remult supports server-side sorting and filtering. Le
 ## Show Active Tasks on Top
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
 
-In the `fetchTasks` function, add an object literal argument to the `find` method call and set its `orderBy` with an object that contains the fields you want to sort by.
+In the `fetchTasks` function, pass an `options` argument the `find` method call and set its `orderBy` property to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
 *src/App.tsx*

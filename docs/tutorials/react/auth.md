@@ -9,7 +9,8 @@ Remult provides a flexible mechanism that enables placing **code-based authoriza
 In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign-in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
 
 ## Tasks CRUD Requires Sign-in
-This rule is implemented within the `Task` `@Entity` decorator, by modifying the `allowApiCrud` property from a `true` value to an arrow function that accepts a `Remult` object and returns the result of the Remult's `authenticated` method.
+This rule is implemented within the `Task` `@Entity` decorator, by modifying the value of the `allowApiCrud` property.
+This property can be set to a function that accepts a `Remult` argument and returns a `boolean` value. Let's use the `Allow.authenticated` function from Remult.
 
 *src/shared/Task.ts*
 ```ts{2}
@@ -59,7 +60,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ```
 :::
 
-### User Authentication
+## User Authentication
 Let's add a sign-in area to the todo app, with an `input` for typing in a `username` and a sign-in `button`. The app will have two valid `username` values - *"Jane"* and *"Steve"*. After a successful sign-in, the sign-in area will be replaced by a "Hi [username]" message.
 
 In this section, we'll be using the following packages:
@@ -317,7 +318,7 @@ This code requires imports for `AuthController` from `./shared/AuthController` a
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
 
-## Role-based authorization
+## Role-based Authorization
 Usually, not all application users have the same privileges. Let's define an `admin` role for our todo app, and enforce the following authorization rules:
 
 * All signed in users can see the list of tasks.
