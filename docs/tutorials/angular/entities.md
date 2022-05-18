@@ -13,9 +13,9 @@ The `Task` entity class we're creating will have an auto-generated UUID `id` fie
 
 1. Create a `shared` folder under the `src` folder. This folder will contain code shared between frontend and backend.
 
-2. Create a file `task.ts` in the `src/shared/` folder, with the following code:
+2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-*src/shared/task.ts*
+*src/shared/Task.ts*
 ```ts
 import { Entity, Fields } from "remult";
 
@@ -126,7 +126,7 @@ Let's start developing the web app by displaying the list of existing tasks in a
    ```
    
    Here's a quick overview of the different parts of the code snippet:
-   * The `remult` object will be injected to the `constructor` by Angular. We've declared    it as a public field so we can use it in the HTML template later on.
+   * The `remult` object will be injected to the `constructor` by Angular. We've declared it as a public field so we can use it in the HTML template later on.
    * `tasksRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to    fetch and create Task entity objects.
    * `tasks` is a Task array.
    * The `fetchTasks` method uses the Remult repository's [find](../../docs/ref_repository.   md#find) method to fetch tasks from the server.

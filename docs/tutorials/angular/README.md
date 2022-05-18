@@ -138,7 +138,7 @@ app.listen(3002, () => console.log("Server started"));
 
 ### Bootstrap Remult in the front-end
 
-In the Angular app we'll be using  `Remult` as a service, to communicate with the API server via Angular's `HttpClientModule`.
+In the Angular app we'll be using `Remult` as an Angular service, to communicate with the API server via Angular's `HttpClientModule`.
 
 We'll adjust the `app.module.ts` file to load the `HttpClientModule` and setup a provider for `Remult` whick will use `HttpClient` as a dependency.
 
@@ -178,7 +178,7 @@ Our full stack starter project is almost ready. Let's complete these final confi
 The Angular app created in this tutorial is intended to be served from the same domain as its API. 
 However, for development, the API server will be listening on `http://localhost:3002`, while the Angular dev server is served from the default `http://localhost:4200`. 
 
-We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-server) feature of angular dev server to divert all calls for `http://localhost:4200/api` to our dev API server.
+We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-server) feature of Angular dev server to divert all calls for `http://localhost:4200/api` to our dev API server.
 
 Create a file `proxy.conf.json` in the root folder, with the following contents:
 
