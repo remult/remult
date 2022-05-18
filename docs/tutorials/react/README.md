@@ -57,7 +57,7 @@ cd remult-react-todo
 
 In this tutorial, we'll be using the root folder created by `React` as the root folder for our server project as well.
 ### Install required packages
-We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and React app from a single command.
+We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the React dev server from a single command.
 ```sh
 npm i axios express remult
 npm i --save-dev @types/express ts-node-dev concurrently
@@ -160,7 +160,7 @@ Configure the proxy by adding the following entry to the main section of the `pa
 
 ### Run the app
 
-1. Create an `npm` script named `dev` to start the dev API server and the React app, by adding the following entry to the `scripts` section of `package.json`.
+1. Create an `npm` script named `dev` to start the dev API server and the React dev server, by adding the following entry to the `scripts` section of `package.json`.
 
 *package.json*
 ```json

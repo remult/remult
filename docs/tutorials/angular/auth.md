@@ -32,19 +32,19 @@ curl -i http://localhost:3002/api/tasks
 :::
 
 ::: tip Use authorization metadata to avoid redundant api requests
-Although not necessary, it's a good idea to avoid sending `GET` api requests for tasks from our React app, if the current user is not authorized to access the endpoint.
+Although not necessary, it's a good idea to avoid sending `GET` api requests for tasks from our Angular app, if the current user is not authorized to access the endpoint.
 
-A simple way to achieve this is by adding the highlighted code lines to the `fetchTasks` function in `App.tsx`:
+A simple way to achieve this is by adding the highlighted code lines to the `fetchTasks` method in `AppComponent`:
 
-*src/App.tsx*
+*src/app/app.component.ts*
 ```ts{2-3}
-async function fetchTasks(hideCompleted: boolean) {
-   if (!taskRepo.metadata.apiReadAllowed)
-      return;
-   return taskRepo.find({
-      orderBy: { completed: "asc" },
-      where: { completed: hideCompleted ? false : undefined }
-   });
+async fetchTasks() {
+  if (!this.taskRepo.metadata.apiReadAllowed)
+    return;
+  this.tasks = await this.taskRepo.find({
+    orderBy: { completed: "asc" },
+    where: { completed: this.hideCompleted ? false : undefined }
+  });
 }
 ```
 :::
@@ -65,17 +65,17 @@ Let's add a sign-in area to the todo app, with an `input` for typing in a `usern
 
 In this section, we'll be using the following packages:
 * [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) to create JSON web tokens
-* [jwt-decode](https://github.com/auth0/jwt-decode) for client-side JWT decoding.
+* [@auth0/angular-jwt](https://github.com/auth0/angular2-jwt) for client-side JWT decoding and passing HTTP `Authorization` headers to the API server
 * [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
 
 1. Open a terminal and run the following command to install the required packages:
    
 ```sh
-npm i jsonwebtoken jwt-decode express-jwt
-npm i --save-dev @types/jsonwebtoken 
+npm i jsonwebtoken @auth0/angular-jwt express-jwt
+npm i --save-dev  @types/jsonwebtoken 
 ```
 
-2. Since we're going to be using `jsonwebtoken` in a `BackendMethod` that is defined in shared code, it's important to  exclude `jsonwebtoken` from browser builds by adding the following entry to the main section of the project's `package.json` file.
+2. Since we're going to be using `jsonwebtoken` in a `BackendMethod` that is defined in shared code, it's important to exclude `jsonwebtoken` from browser builds by adding the following entry to the main section of the project's `package.json` file.
 
 *package.json*
 ```json
@@ -85,7 +85,7 @@ npm i --save-dev @types/jsonwebtoken
 ```
 
 ::: danger This step is not optional
-React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
+Angular CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
 :::
 
 3. Terminate the running `dev` npm script and run it again for the change to `package.json` to take effect.
@@ -119,43 +119,58 @@ npm run dev
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-5. Add the highlighted code to `common.ts`:
-
-   *src/common.ts*
-   ```ts{3,7-28}
-   import axios from 'axios';
-   import { Remult } from "remult";
-   import jwtDecode from 'jwt-decode';
-
-   export const remult = new Remult(axios);
-
-   const AUTH_TOKEN_KEY = "authToken";
-
-   export function setAuthToken(token: string | null) {
-      if (token) {
-         remult.setUser(jwtDecode(token));
-         sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-      }
-      else {
-         remult.setUser(undefined!);
-         sessionStorage.removeItem(AUTH_TOKEN_KEY);
-      }
+4. Create a file `src/app/auth.service.ts` and place the following code in it:
+   *src/app/auth.service.ts*
+   ```ts
+   import { Injectable } from '@angular/core';
+   import { JwtHelperService } from '@auth0/angular-jwt';
+   import { Remult } from 'remult';
+   
+   @Injectable({
+       providedIn: 'root'
+   })
+   export class AuthService {
+       constructor(private remult: Remult) {
+           const token = AuthService.fromStorage();
+           if (token) {
+               this.setAuthToken(token);
+           }
+       }
+   
+       setAuthToken(token: string | null) {
+           if (token) {
+               this.remult.setUser(new JwtHelperService().decodeToken(token));
+               sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+           }
+           else {
+               this.remult.setUser(undefined!);
+               sessionStorage.removeItem(AUTH_TOKEN_KEY);
+           }
+       }
+   
+       static fromStorage(): string {
+           return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
+       }
    }
-
-   // Initialize the auth token from session storage when the application loads
-   setAuthToken(sessionStorage.getItem(AUTH_TOKEN_KEY));
-
-   axios.interceptors.request.use(config => {
-      const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
-      if (token)
-         config.headers!["Authorization"] = "Bearer " + token;
-      return config;
-   });
+   
+   const AUTH_TOKEN_KEY = "authToken";
    ```
-
    `setAuthToken` sends the decoded user information to Remult and store the token in local `sessionStorage`.
 
-   An `axios` interceptor is used to add the authorization token header to all API requests.
+5. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
+
+   *src/app/app.module.ts*
+   ```ts
+   JwtModule.forRoot({
+      config:{
+         tokenGetter: () => AuthService.fromStorage()
+      }
+   })
+   ```
+   ::: warning Imports
+   This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/angular-jwt`.
+   :::   
+   The `JwtModule` will add the authorization token header to all API requests.
 
 6. Create a file `src/shared/AuthController.ts` and place the following code in it:
 
@@ -213,108 +228,62 @@ export const api = remultExpress({
 });   
 ```
 
-8. Add a the highlighted code to the `App` function component:
+7. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
 
-*src/App.tsx*
-```tsx{4,19-40,44-46}
-function App() {
-   const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
-   const [hideCompleted, setHideCompleted] = useState(false);
-   const [username, setUsername] = useState("");
-
-   useEffect(() => {
-      fetchTasks(hideCompleted).then(setTasks);
-   }, [hideCompleted]);
-
-   const addTask = () => {
-      setTasks([...tasks, new Task()])
+   *src/app/app.component.ts*
+   ```ts
+   constructor(public remult: Remult, private auth: AuthService) {
    }
-
-   const setAll = async (completed: boolean) => {
-      await TasksController.setAll(completed);
-      setTasks(await fetchTasks(hideCompleted));
+   username = '';
+   async signIn() {
+     try {
+       this.auth.setAuthToken(await AuthController.signIn(this.username));
+       this.fetchTasks();
+     } catch (error: any) {
+       alert(error.message);
+     }
    }
-
-   const signIn = async () => {
-      try {
-         setAuthToken(await AuthController.signIn(username));
-         window.location.reload();
-      }
-      catch (error: any) {
-         alert(error.message);
-      }
+ 
+   signOut() {
+     this.auth.setAuthToken(null);
+     this.tasks = [];
    }
+   ```
 
-   const signOut = () => {
-      setAuthToken(null);
-      window.location.reload();
-   }
+   ::: warning Imports
+   This code requires imports for `AuthService` from `./auth.service` and `AuthController` from `./shared/AuthController`.
+   :::
 
-   if (!remult.authenticated())
-      return (<div>
-         <p>
-            <input value={username} onChange={e => setUsername(e.target.value)} />
-            <button onClick={signIn}>Sign in</button>
-         </p>
-      </div>);
+8. Add the following `HTML` to the `app.component.html` template.
 
-   return (
-      <div>
-         <p>
-            Hi {remult.user.name} <button onClick={signOut}>Sign out</button>
-         </p>
-         <div>
-            <button onClick={() => setAll(true)}>Set all as completed</button>
-            <button onClick={() => setAll(false)}>Set all as uncompleted</button>
-         </div>
-         <input
-            type="checkbox"
-            checked={hideCompleted}
-            onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-         <hr />
-         {tasks.map(task => {
-            const handleChange = (values: Partial<Task>) => {
-               setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
-            };
-
-            const saveTask = async () => {
-               try {
-                  const savedTask = await taskRepo.save(task);
-                  setTasks(tasks.map(t => t === task ? savedTask : t));
-               } catch (error: any) {
-                  alert(error.message);
-                  setTasks(tasks.map(t => t === task ? { ...task, error } : t));
-               }
-            }
-
-            const deleteTask = async () => {
-               await taskRepo.delete(task);
-               setTasks(tasks.filter(t => t !== task));
-            };
-
-            return (
-               <div key={task.id}>
-                  <input type="checkbox"
-                     checked={task.completed}
-                     onChange={e => handleChange({ completed: e.target.checked })} />
-                  <input
-                     value={task.title}
-                     onChange={e => handleChange({ title: e.target.value })} />
-                  {task.error?.modelState?.title}
-                  <button onClick={saveTask}>Save</button>
-                  <button onClick={deleteTask}>Delete</button>
-               </div>
-            );
-         })}
-         <button onClick={addTask}>Add Task</button>
-      </div>
-   );
-}
-```
-
-::: warning Imports
-This code requires imports for `AuthController` from `./shared/AuthController` and `setAuthToken` from `./common`.
-:::
+   *src/app/app.component.html*
+   ```html{1-9,25}
+   <ng-container *ngIf="!remult.authenticated()">
+     <input [(ngModel)]="username">
+     <button (click)="signIn()">Sign in</button>
+   </ng-container>
+   <ng-container *ngIf="remult.authenticated()">
+     <div>
+       Hi {{remult.user.name}}
+       <button (click)="signOut()">Sign out</button>
+     </div>
+     <input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
+     Hide Completed
+     <hr />
+     <div *ngFor="let task of tasks">
+       <input type="checkbox" [(ngModel)]="task.completed">
+       <input [(ngModel)]="task.title">
+       {{task.error?.modelState?.title}}
+       <button (click)="saveTask(task)">Save</button>
+       <button (click)="deleteTask(task)">Delete</button>
+     </div>
+     <button (click)="addTask()">Add Task</button>
+     <div>
+       <button (click)="setAll(true)">Set all as completed</button>
+       <button (click)="setAll(false)">Set all as uncompleted</button>
+     </div>
+   </ng-container>
+   ```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
 

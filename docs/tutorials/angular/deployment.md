@@ -55,7 +55,7 @@ See [documentation](../../docs/databases.md) for the (long) list of relational a
 
 ## Prepare for Production
 
-In this tutorial, we'll deploy both the React app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the React app.
+In this tutorial, we'll deploy both the Angular app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the Angular app.
 
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance, [helmet](https://www.npmjs.com/package/helmet) middleware for security, and redirect all non-HTTPS requests to HTTPS using [heroku-ssl-redirect](https://www.npmjs.com/package/heroku-ssl-redirect).
 
@@ -89,9 +89,9 @@ app.use(expressjwt({
 }));
 app.use(api);
 
-app.use(express.static(path.join(__dirname, '../../build')));
+app.use(express.static(path.join(__dirname, '../remult-angular-todo')));
 app.get('/*', function (req, res) {
-   res.sendFile(path.join(__dirname, '../../build', 'index.html'));
+   res.sendFile(path.join(__dirname, '../remult-angular-todo', 'index.html'));
 });
 
 app.listen(process.env["NODE_ENV"] || 3002, () => console.log("Server started"));
@@ -115,18 +115,11 @@ app.listen(process.env["NODE_ENV"] || 3002, () => console.log("Server started"))
 }
 ```
 
-4. Add the `dist` folder to the `.gitignore` file.
-
-*.gitignore*
-```
-/dist
-```
-
 5. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
 *package.json*
 ```json
-"build": "react-scripts build && tsc -p tsconfig.server.json"
+"build": "ng build && tsc -p tsconfig.server.json"
 ```
 
 6. Modify the project's `start` npm script to start the production Node.js server.
@@ -179,7 +172,5 @@ If you run into trouble deploying the app to Heroku, try using Heroku's [documen
 :::
 
 That's it - our application is deployed to production, play with it and enjoy.
-
-To see a larger more complex code base, visit our [CRM example project](https://www.github.com/remult/crm-demo)
 
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>

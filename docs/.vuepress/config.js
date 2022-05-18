@@ -48,7 +48,7 @@ module.exports = {
           },
           {
             text: 'Angular',
-            link: '/tutorials/tutorial-angular'
+            link: '/tutorials/angular/'
           }
         ]
       }
@@ -120,13 +120,23 @@ module.exports = {
             'deployment'
           ]
         }],
-      '/tutorials/tutorial-angular': [
+      '/tutorials/angular/': [
         {
           title: 'Tutorial',
-          path: '/tutorials/tutorial-angular',
-          collapsable: false
-        }]
+          path: '/tutorials/angular/',
 
+          collapsable: false,
+          children: [
+            '',
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'deployment'
+          ]
+        }]
     }
   },
 

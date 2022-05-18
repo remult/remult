@@ -4,29 +4,29 @@ When performing operations on multiple entity objects, performance consideration
 ## Set All Tasks as Un/completed
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAll` async function to the `App` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add a `setAll` async method to the `AppComponent` class, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
-   *src/App.tsx*
+   *src/app/app.component.ts*
    ```ts
-   const setAll = async (completed: boolean) => {
-      for (const task of await taskRepo.find()) {
-         await taskRepo.save({ ...task, completed });
-      }
-      setTasks(await fetchTasks(hideCompleted));
+   async setAll(completed: boolean) {
+     for (const task of await this.taskRepo.find()) {
+       await this.taskRepo.save({ ...task, completed });
+     }
+     this.fetchTasks()
    };
    ```
 
    The `for` loop iterates the array of `Task` objects returned from the backend, and saves each task back to the backend with a modified value in the `completed` field.
 
-   After all the tasks are saved, we refetch the task list using the `fetchTasks` function and update the React state.
+   After all the tasks are saved, we refetch the task list using the `fetchTasks` function.
 
-2. Add the two buttons to the return section of the `App` component. Both of the buttons' `onClick` events will call the `setAll` function with the appropriate value of the `completed` argument.
+2. Add the two buttons to the return section of the `App` component. Both of the buttons' `click` events will call the `setAll` method with the appropriate value of the `completed` argument.
 
-   *src/App.tsx*
-   ```tsx
+   *src/app/app.component.html*
+   ```html
    <div>
-      <button onClick={() => setAll(true)}>Set all as completed</button>
-      <button onClick={() => setAll(false)}>Set all as uncompleted</button>
+     <button (click)="setAll(true)">Set all as completed</button>
+     <button (click)="setAll(false)">Set all as uncompleted</button>
    </div>
    ```
 
@@ -37,7 +37,7 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAll` function of the `App` function component into a new, `static`, `setAll` method in the `TasksController` class, which will run on the server.
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAll` method of the `AppComponent`into a new, `static`, `setAll` method in the `TasksController` class, which will run on the server.
 
 *src/shared/TasksController.ts*
 ```ts
@@ -85,18 +85,18 @@ export const api = remultExpress({
 });
 ```
 
-3. Replace the `for` iteration in the `setAll` function of the `App` component with a call to the `setAll` method in the `TasksController`.
+3. Replace the `for` iteration in the `setAll` method of the `AppComponent`  with a call to the `setAll` method in the `TasksController`.
 
-*src/App.tsx*
-```tsx{2}
-const setAll = async (completed: boolean) => {
-   await TasksController.setAll(completed);
-   setTasks(await fetchTasks(hideCompleted));
-}
+*src/app/app.component.ts*
+```ts{2}
+async setAll(completed: boolean) {
+  await TasksController.setAll(completed);
+  this.fetchTasks()
+};
 ```
 
 ::: warning Import TasksController
-Remember to add an import of `TasksController` in `App.tsx`.
+Remember to add an import of `TasksController` in `app.component.ts`.
 :::
 
 ::: tip Note
