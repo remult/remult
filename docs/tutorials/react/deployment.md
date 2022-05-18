@@ -94,7 +94,7 @@ app.get('/*', function (req, res) {
    res.sendFile(path.join(__dirname, '../../build', 'index.html'));
 });
 
-app.listen(process.env["NODE_ENV"] || 3002, () => console.log("Server started"));
+app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 ```
 
 3. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:

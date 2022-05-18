@@ -33,7 +33,7 @@ Make some changes and refresh the browser to verify the backend database is upda
    *src/app/app.component.ts*
    ```ts
    addTask() {
-   this.tasks.push(new Task());
+     this.tasks.push(new Task());
    }
    ```
 1. Add an *Add Task* button in the html:
@@ -89,7 +89,7 @@ Let's add a *Delete* button next to the *Save* button of each task in the list.
 1. Add a *Delete* button in the html:
 
    *src/app/app.component.html*
-   ```html{10}
+   ```html{8}
    <input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
    Hide Completed
    <hr />

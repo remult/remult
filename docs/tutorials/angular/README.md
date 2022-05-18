@@ -198,7 +198,7 @@ Create a file `proxy.conf.json` in the root folder, with the following contents:
 
 *package.json*
 ```json
-"dev": "concurrently -k -n \"API,WEB\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"ng serve --proxy-config proxy.conf.json --open\"",
+"dev": "concurrently -k -n \"API,WEB\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"ng serve --proxy-config proxy.conf.json --open\""
 ```
    
 2. Open a terminal and start the app.
