@@ -168,7 +168,7 @@ git commit -m "todo app tutorial"
 git push heroku master
 ```
 
-5. Run the production app using `heroku apps:open` command.
+5. Open the deployed app using `heroku apps:open` command.
 
 ```sh
 heroku apps:open
