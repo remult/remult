@@ -89,9 +89,9 @@ app.use(expressjwt({
 }));
 app.use(api);
 
-app.use(express.static(path.join(__dirname, '../../build')));
+app.use(express.static(path.join(__dirname, '../')));
 app.get('/*', function (req, res) {
-   res.sendFile(path.join(__dirname, '../../build', 'index.html'));
+   res.sendFile(path.join(__dirname, '../', 'index.html'));
 });
 
 app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
@@ -100,14 +100,13 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 3. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
 
 *tsconfig.server.json*
-```json{6-12}
+```json{6-11}
 {
    "extends": "./tsconfig.json",
    "compilerOptions": {
       "module": "commonjs",
       "emitDecoratorMetadata": true,
       "preserveValueImports": false,
-      "noEmit": false,
       "outDir": "dist"
    },
    "include": [

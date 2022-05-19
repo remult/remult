@@ -42,7 +42,7 @@ npm install
 npm run dev
 ```
 
-The default Vue app main screen should be displayed.
+Open the app by navigating to [http://localhost:3000](http://localhost:3000), The default Vue app main screen should be displayed.
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
