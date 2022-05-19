@@ -11,7 +11,7 @@ Use "asc" and "desc" to determine the sort order.
 ```ts{3}
 async fetchTasks() {
    this.tasks = await this.taskRepo.find({
-   orderBy: { completed: "asc" }
+      orderBy: { completed: "asc" }
    });
 }
 ```
@@ -29,8 +29,8 @@ Let's allow the user to toggle the display of completed tasks, using server-side
 hideCompleted = false;
 async fetchTasks() {
    this.tasks = await this.taskRepo.find({
-   orderBy: { completed: "asc" },
-   where: { completed: this.hideCompleted ? false : undefined }
+      orderBy: { completed: "asc" },
+      where: { completed: this.hideCompleted ? false : undefined }
    });
 }
 ```

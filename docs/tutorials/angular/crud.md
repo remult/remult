@@ -28,28 +28,29 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
 Make some changes and refresh the browser to verify the backend database is updated.
 ## Add New Tasks
 
-1. Add the `addTask` method to the `AppComponent` class:
+1. Add the following `addTask` method to the `AppComponent` class:
 
-   *src/app/app.component.ts*
-   ```ts
-   addTask() {
-     this.tasks.push(new Task());
-   }
-   ```
-1. Add an *Add Task* button in the html:
+*src/app/app.component.ts*
+```ts
+addTask() {
+   this.tasks.push(new Task());
+}
+```
 
-   *src/app/app.component.html*
-   ```html{9}
-   <input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
-   Hide Completed
-   <hr />
-   <div *ngFor="let task of tasks">
-     <input type="checkbox" [(ngModel)]="task.completed">
-     <input [(ngModel)]="task.title">
-     <button (click)="saveTask(task)">Save</button>
-   </div>
-   <button (click)="addTask()">Add Task</button>
-   ```
+2. Add an *Add Task* button in the html template:
+
+*src/app/app.component.html*
+```html{9}
+<input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
+Hide Completed
+<hr />
+<div *ngFor="let task of tasks">
+   <input type="checkbox" [(ngModel)]="task.completed">
+   <input [(ngModel)]="task.title">
+   <button (click)="saveTask(task)">Save</button>
+</div>
+<button (click)="addTask()">Add Task</button>
+```
 
 Add a few tasks and refresh the browser to verify the backend database is updated.
 
@@ -77,27 +78,28 @@ async saveTask(task: Task) {
 
 Let's add a *Delete* button next to the *Save* button of each task in the list.
 
-1. Add the `deleteTask` method to the `AppComponent` class:
+1. Add the following `deleteTask` method to the `AppComponent` class:
 
-   *src/app/app.component.ts*
-   ```ts
-   async deleteTask(task: Task) {
-     await this.taskRepo.delete(task);
-     this.tasks = this.tasks.filter(t => t !== task);
-   }
-   ```
-1. Add a *Delete* button in the html:
+*src/app/app.component.ts*
+```ts
+async deleteTask(task: Task) {
+   await this.taskRepo.delete(task);
+   this.tasks = this.tasks.filter(t => t !== task);
+}
+```
 
-   *src/app/app.component.html*
-   ```html{8}
-   <input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
-   Hide Completed
-   <hr />
-   <div *ngFor="let task of tasks">
-     <input type="checkbox" [(ngModel)]="task.completed">
-     <input [(ngModel)]="task.title">
-     <button (click)="saveTask(task)">Save</button>
-     <button (click)="deleteTask(task)">Delete</button>
-   </div>
-   <button (click)="addTask()">Add Task</button>
-   ```
+2. Add a *Delete* button in the html:
+
+*src/app/app.component.html*
+```html{8}
+<input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
+Hide Completed
+<hr />
+<div *ngFor="let task of tasks">
+   <input type="checkbox" [(ngModel)]="task.completed">
+   <input [(ngModel)]="task.title">
+   <button (click)="saveTask(task)">Save</button>
+   <button (click)="deleteTask(task)">Delete</button>
+</div>
+<button (click)="addTask()">Add Task</button>
+```
