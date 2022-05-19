@@ -357,7 +357,7 @@ export class AuthController {
 
       if (!user)
             throw new Error("Invalid user, try 'Steve' or 'Jane'");
-      return jwt.sign(user, process.env['JWT_SECRET'] || "my secret");
+      return (await import('jsonwebtoken')).sign(user, process.env['JWT_SECRET'] || "my secret");
    }
 }
 ```
