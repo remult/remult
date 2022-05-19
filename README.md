@@ -18,9 +18,6 @@
 	<a href="https://www.npmjs.com/package/remult">
 		<img alt="npm downloads" src="https://img.shields.io/npm/dm/remult">
 	</a>
-	<a href="https://snyk.io/test/npm/remult">
-		<img alt="snyk" src="https://snyk.io/test/npm/remult/badge.svg"/>
-		</a>
 	<a href="https://discord.gg/GXHk7ZfuG5">
 		<img alt="chat on discord" src="https://img.shields.io/badge/chat-on%20discord-blueviolet"/>
 	</a>
