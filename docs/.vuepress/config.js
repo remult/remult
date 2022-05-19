@@ -1,4 +1,4 @@
-const { description } = require('../../package')
+const { description } = require('../../projects/core/package')
 //const apiSideBar = require('./api-sidebar.json');
 module.exports = {
   /**
