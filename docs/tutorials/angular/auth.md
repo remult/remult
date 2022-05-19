@@ -78,26 +78,7 @@ npm i jsonwebtoken @auth0/angular-jwt express-jwt
 npm i --save-dev  @types/jsonwebtoken 
 ```
 
-2. Since we're going to be using `jsonwebtoken` in a `BackendMethod` that is defined in shared code, it's important to exclude `jsonwebtoken` from browser builds by adding the following entry to the main section of the project's `package.json` file.
-
-*package.json*
-```json
-"browser": {
-   "jsonwebtoken": false
-}
-```
-
-::: danger This step is not optional
-Angular CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
-:::
-
-3. Terminate the running `dev` npm script and run it again for the change to `package.json` to take effect.
-
-```sh
-npm run dev
-```
-
-4. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+2. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
    ```ts{3,6-10}
@@ -122,7 +103,7 @@ npm run dev
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-5. Create a file `src/app/auth.service.ts` and place the following code in it:
+3. Create a file `src/app/auth.service.ts` and place the following code in it:
 
 *src/app/auth.service.ts*
 ```ts
@@ -161,7 +142,7 @@ export class AuthService {
 const AUTH_TOKEN_KEY = "authToken";
 ```
 
-6. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
+4. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
 
 *src/app/app.module.ts*
 ```ts
@@ -176,11 +157,10 @@ JwtModule.forRoot({
 This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/angular-jwt`.
 :::   
 
-7. Create a file `src/shared/AuthController.ts` and place the following code in it:
+5. Create a file `src/shared/AuthController.ts` and place the following code in it:
 
    *src/shared/AuthController.ts*
    ```ts
-   import * as jwt from 'jsonwebtoken';
    import { BackendMethod } from 'remult';
 
    export class AuthController {
@@ -194,18 +174,20 @@ This code requires imports for `AuthService` from `./auth.service` and `JwtModul
 
          if (!user)
             throw new Error("Invalid user, try 'Steve' or 'Jane'");
-         return jwt.sign(user, process.env['JWT_SECRET'] || "my secret");
+         return (await import('jsonwebtoken')).sign(user, process.env['JWT_SECRET'] || "my secret");
       }
    }
    ```
 
    This (very) simplistic `signIn` function accepts a `username` argument, looks it up in a predefined dictionary of valid users, and returns a JWT string signed with a secret key. 
 
+   Since `jsonwebtoken` is used in a `BackendMethod` that is defined in shared code, it's important to exclude it from browser builds by using a dynamic import.
+
 ::: warning JWT payload
 The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 :::
 
-8. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
+6. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
 
 *src/server/api.ts*
 ```ts{4,8}
@@ -232,7 +214,7 @@ export const api = remultExpress({
 });   
 ```
 
-9. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
+7. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
 
 *src/app/app.component.ts*
 ```ts
@@ -258,7 +240,7 @@ signOut() {
 This code requires imports for `AuthService` from `./auth.service` and `AuthController` from `./shared/AuthController`.
 :::
 
-10. Add the following `HTML` to the `app.component.html` template.
+8. Add the following `HTML` to the `app.component.html` template.
 
 *src/app/app.component.html*
 ```html{1-9,25}
@@ -348,7 +330,7 @@ export class TasksController {
    @BackendMethod({ allowed: Roles.admin })
    static async setAll(completed: boolean, remult?: Remult) {
       const taskRepo = remult!.repo(Task);
-      
+
       for (const task of await taskRepo.find()) {
             await taskRepo.save({ ...task, completed });
       }
