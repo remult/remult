@@ -84,7 +84,7 @@ export const api = remultExpress({
 
 The `initApi` callback is called only once, after a database connection is established and the server is ready to perform initialization operations.
 
-`tasksRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
+`taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
 
 The code in `initApi` simply adds five new Tasks to the database if the current `count` is zero.
 
@@ -127,7 +127,7 @@ Let's start developing the web app by displaying the list of existing tasks in a
    
    Here's a quick overview of the different parts of the code snippet:
    * The `remult` object will be injected to the `constructor` by Angular. We've declared it as a public field so we can use it in the HTML template later on.
-   * `tasksRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to    fetch and create Task entity objects.
+   * `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to    fetch and create Task entity objects.
    * `tasks` is a Task array.
    * The `fetchTasks` method uses the Remult repository's [find](../../docs/ref_repository.   md#find) method to fetch tasks from the server.
    * The `ngOnInit` method calls the `fetchTasks` method when the `component` is loaded.

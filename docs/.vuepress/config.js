@@ -50,6 +50,11 @@ module.exports = {
             text: 'Angular',
             link: '/tutorials/angular/'
           }
+          ,
+          {
+            text: 'Vue',
+            link: '/tutorials/vue/'
+          }
         ]
       }
     ],
@@ -136,7 +141,25 @@ module.exports = {
             'auth',
             'deployment'
           ]
-        }]
+        }],
+        '/tutorials/vue/': [
+          {
+            title: 'Tutorial',
+            path: '/tutorials/vue/',
+  
+            collapsable: false,
+            children: [
+              '',
+              'entities',
+              'sorting-filtering',
+              'crud',
+              'validation',
+              'backend-methods',
+              'auth',
+              'deployment'
+            ]
+          }]
+
     }
   },
 
