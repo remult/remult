@@ -2,11 +2,11 @@
 title: Setup
 ---
 
-# Todo App with React
+# Build a Full-Stack React Application
 
-### Build a production-ready task list app with Remult using a React frontend
+### Create a simple todo app with Remult using a React frontend
 
-In this tutorial, we are going to create a simple app to manage a task list. We'll use `React` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database. 
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `React` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack CRUD framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database. 
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
