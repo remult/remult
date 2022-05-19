@@ -122,60 +122,61 @@ npm run dev
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-4. Create a file `src/app/auth.service.ts` and place the following code in it:
-   *src/app/auth.service.ts*
-   ```ts
-   import { Injectable } from '@angular/core';
-   import { JwtHelperService } from '@auth0/angular-jwt';
-   import { Remult } from 'remult';
-   
-   @Injectable({
-       providedIn: 'root'
-   })
-   export class AuthService {
-       constructor(private remult: Remult) {
-           const token = AuthService.fromStorage();
-           if (token) {
-               this.setAuthToken(token);
-           }
-       }
-   
-       setAuthToken(token: string | null) {
-           if (token) {
-               this.remult.setUser(new JwtHelperService().decodeToken(token));
-               sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-           }
-           else {
-               this.remult.setUser(undefined!);
-               sessionStorage.removeItem(AUTH_TOKEN_KEY);
-           }
-       }
-   
-       static fromStorage(): string {
-           return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
-       }
-   }
-   
-   const AUTH_TOKEN_KEY = "authToken";
-   ```
-   `setAuthToken` sends the decoded user information to Remult and store the token in local `sessionStorage`.
+5. Create a file `src/app/auth.service.ts` and place the following code in it:
 
-5. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
+*src/app/auth.service.ts*
+```ts
+import { Injectable } from '@angular/core';
+import { JwtHelperService } from '@auth0/angular-jwt';
+import { Remult } from 'remult';
 
-   *src/app/app.module.ts*
-   ```ts
-   JwtModule.forRoot({
-      config:{
-         tokenGetter: () => AuthService.fromStorage()
+@Injectable({
+      providedIn: 'root'
+})
+export class AuthService {
+      constructor(private remult: Remult) {
+         const token = AuthService.fromStorage();
+         if (token) {
+            this.setAuthToken(token);
+         }
       }
-   })
-   ```
-   ::: warning Imports
-   This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/angular-jwt`.
-   :::   
-   The `JwtModule` will add the authorization token header to all API requests.
 
-6. Create a file `src/shared/AuthController.ts` and place the following code in it:
+      // Passes the decoded user information to Remult and stores the token in the local sessionStorage.
+      setAuthToken(token: string | null) {
+         if (token) {
+            this.remult.setUser(new JwtHelperService().decodeToken(token));
+            sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+         }
+         else {
+            this.remult.setUser(undefined!);
+            sessionStorage.removeItem(AUTH_TOKEN_KEY);
+         }
+      }
+
+      static fromStorage(): string {
+         return sessionStorage.getItem(AUTH_TOKEN_KEY)!;
+      }
+}
+
+const AUTH_TOKEN_KEY = "authToken";
+```
+
+6. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
+
+*src/app/app.module.ts*
+```ts
+// Add the authorization token header to all API requests.
+JwtModule.forRoot({
+   config:{
+      tokenGetter: () => AuthService.fromStorage()
+   }
+})
+```
+::: warning Imports
+This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/angular-jwt`.
+:::   
+
+7. Create a file `src/shared/AuthController.ts` and place the following code in it:
 
    *src/shared/AuthController.ts*
    ```ts
@@ -204,7 +205,7 @@ npm run dev
 The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 :::
 
-7. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
+8. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
 
 *src/server/api.ts*
 ```ts{4,8}
@@ -231,62 +232,62 @@ export const api = remultExpress({
 });   
 ```
 
-7. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
+9. Add the following code to the `AppComponent` class, replacing the existing `constructor`.
 
-   *src/app/app.component.ts*
-   ```ts
-   constructor(public remult: Remult, private auth: AuthService) {
+*src/app/app.component.ts*
+```ts
+constructor(public remult: Remult, private auth: AuthService) {
+}
+username = '';
+async signIn() {
+   try {
+      this.auth.setAuthToken(await AuthController.signIn(this.username));
+      this.fetchTasks();
+   } catch (error: any) {
+      alert(error.message);
    }
-   username = '';
-   async signIn() {
-     try {
-       this.auth.setAuthToken(await AuthController.signIn(this.username));
-       this.fetchTasks();
-     } catch (error: any) {
-       alert(error.message);
-     }
-   }
- 
-   signOut() {
-     this.auth.setAuthToken(null);
-     this.tasks = [];
-   }
-   ```
+}
 
-   ::: warning Imports
-   This code requires imports for `AuthService` from `./auth.service` and `AuthController` from `./shared/AuthController`.
-   :::
+signOut() {
+   this.auth.setAuthToken(null);
+   this.tasks = [];
+}
+```
 
-8. Add the following `HTML` to the `app.component.html` template.
+::: warning Imports
+This code requires imports for `AuthService` from `./auth.service` and `AuthController` from `./shared/AuthController`.
+:::
 
-   *src/app/app.component.html*
-   ```html{1-9,25}
-   <ng-container *ngIf="!remult.authenticated()">
-     <input [(ngModel)]="username">
-     <button (click)="signIn()">Sign in</button>
-   </ng-container>
-   <ng-container *ngIf="remult.authenticated()">
-     <div>
-       Hi {{remult.user.name}}
-       <button (click)="signOut()">Sign out</button>
-     </div>
-     <input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
-     Hide Completed
-     <hr />
-     <div *ngFor="let task of tasks">
-       <input type="checkbox" [(ngModel)]="task.completed">
-       <input [(ngModel)]="task.title">
-       {{task.error?.modelState?.title}}
-       <button (click)="saveTask(task)">Save</button>
-       <button (click)="deleteTask(task)">Delete</button>
-     </div>
-     <button (click)="addTask()">Add Task</button>
-     <div>
-       <button (click)="setAll(true)">Set all as completed</button>
-       <button (click)="setAll(false)">Set all as uncompleted</button>
-     </div>
-   </ng-container>
-   ```
+10. Add the following `HTML` to the `app.component.html` template.
+
+*src/app/app.component.html*
+```html{1-9,25}
+<ng-container *ngIf="!remult.authenticated()">
+   <input [(ngModel)]="username">
+   <button (click)="signIn()">Sign in</button>
+</ng-container>
+<ng-container *ngIf="remult.authenticated()">
+   <div>
+      Hi {{remult.user.name}}
+      <button (click)="signOut()">Sign out</button>
+   </div>
+   <input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
+   Hide Completed
+   <hr />
+   <div *ngFor="let task of tasks">
+      <input type="checkbox" [(ngModel)]="task.completed">
+      <input [(ngModel)]="task.title">
+      {{task.error?.modelState?.title}}
+      <button (click)="saveTask(task)">Save</button>
+      <button (click)="deleteTask(task)">Delete</button>
+   </div>
+   <button (click)="addTask()">Add Task</button>
+   <div>
+      <button (click)="setAll(true)">Set all as completed</button>
+      <button (click)="setAll(false)">Set all as uncompleted</button>
+   </div>
+</ng-container>
+```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
 
@@ -347,6 +348,7 @@ export class TasksController {
    @BackendMethod({ allowed: Roles.admin })
    static async setAll(completed: boolean, remult?: Remult) {
       const taskRepo = remult!.repo(Task);
+      
       for (const task of await taskRepo.find()) {
             await taskRepo.save({ ...task, completed });
       }

@@ -18,9 +18,6 @@
 	<a href="https://www.npmjs.com/package/remult">
 		<img alt="npm downloads" src="https://img.shields.io/npm/dm/remult">
 	</a>
-	<a href="https://snyk.io/test/npm/remult">
-		<img alt="snyk" src="https://snyk.io/test/npm/remult/badge.svg"/>
-		</a>
 	<a href="https://discord.gg/GXHk7ZfuG5">
 		<img alt="chat on discord" src="https://img.shields.io/badge/chat-on%20discord-blueviolet"/>
 	</a>
@@ -42,7 +39,7 @@ With model types shared between frontend and backend code, Remult can **enforce 
 The best way to learn Remult is by following a tutorial of a simple Todo web app with a Node.js Express backend. 
 
 * [Tutorial with React](https://remult.dev/tutorials/react/) 
-* [Tutorial with Angular](https://remult.dev/tutorials/tutorial-angular.html)
+* [Tutorial with Angular](https://remult.dev/tutorials/angular/)
 
 ## Installation
 ```sh
