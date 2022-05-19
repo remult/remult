@@ -42,7 +42,7 @@ With model types shared between frontend and backend code, Remult can **enforce 
 The best way to learn Remult is by following a tutorial of a simple Todo web app with a Node.js Express backend. 
 
 * [Tutorial with React](https://remult.dev/tutorials/react/) 
-* [Tutorial with Angular](https://remult.dev/tutorials/tutorial-angular.html)
+* [Tutorial with Angular](https://remult.dev/tutorials/tutorial/)
 
 ## Installation
 ```sh
