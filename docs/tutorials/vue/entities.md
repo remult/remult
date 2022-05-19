@@ -96,49 +96,37 @@ While remult supports [many relational and non-relational databases](https://rem
 
 
 ## Display the Task List
-Let's start developing the web app by displaying the list of existing tasks in a React component.
+Let's start developing the web app by displaying the list of existing tasks in a Vue component.
 
-Replace the contents of `src/App.tsx` with the following code:
+Replace the contents of `src/App.vue` with the following code:
 
-*src/App.tsx*
-```tsx
-import { useEffect, useState } from "react";
-import { remult } from "./common";
-import { Task } from "./shared/Task";
+*src/App.vue*
+```vue
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { remult } from './common';
+import { Task } from './shared/Task';
 
 const taskRepo = remult.repo(Task);
-
+const tasks = ref<Task[]>([]);
 async function fetchTasks() {
-  return taskRepo.find();
+  tasks.value = await taskRepo.find();
 }
-
-function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  useEffect(() => {
-    fetchTasks().then(setTasks);
-  }, []);
-
-  return (
-    <div>
-      {tasks.map(task => (
-        <div key={task.id}>
-          <input type="checkbox" checked={task.completed} />
-          {task.title}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default App;
+onMounted(() => fetchTasks())
+</script>
+<template>
+  <div v-for="task in tasks">
+    <input type="checkbox" v-model="task.completed" />
+    {{ task.title }}
+  </div>
+</template>
 ```
 
 Here's a quick overview of the different parts of the code snippet:
 
 * `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
 * The `fetchTasks` function uses the Remult repository's [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
-* `tasks` is a Task array React state to hold the list of tasks.
-* React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
+* `tasks` is a Task array Vue `ref` that holds the list of tasks.
+* Vue's `onMounted` hook is used to call `fetchTasks` once when the Vue component is loaded.
 
 After the browser refreshes, the list of tasks appears.
