@@ -23,11 +23,13 @@ import { remultExpress } from '../../../../core/server/expressBridge';
 import * as knex from 'knex';
 
 import { MongoClient } from 'mongodb';
-import { stam } from '../products-test/products.component';
+import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
 import { ClassType } from '../../../../core/classType';
 import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
 import { JsonDataProvider } from '../../../../core/src/data-providers/json-data-provider';
 import { JsonEntityFileStorage } from '../../../../core/server/JsonEntityFileStorage';
+import { classBackendMethodsArray } from '../../../../core/src/server-action';
+import { AppComponent } from '../app.component';
 
 
 
@@ -62,9 +64,11 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-
+    
 
     let remultApi = remultExpress({
+        entities:[stam],
+        controllers:[controllerWithInstance,controllerWithStaic,AppComponent],
         dataProvider:async ()=>await  getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,

@@ -210,7 +210,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 else
                     return (await originalMethod.apply(undefined, args));
             }
-            actionInfo.allActions.push(descriptor.value);
+            registerAction(target, descriptor);
             descriptor.value[serverActionField] = serverAction;
 
 
@@ -387,7 +387,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             else
                 return (await originalMethod.apply(this, args));
         }
-        actionInfo.allActions.push(descriptor.value);
+        registerAction(target.constructor, descriptor);
         descriptor.value[serverActionField] = serverAction;
 
 
@@ -404,6 +404,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 const customUndefined = {
     _isUndefined: true
 }
+function registerAction(target: any, descriptor: any) {
+    (target[classBackendMethodsArray] || (target[classBackendMethodsArray] = [])).push(descriptor.value);
+    actionInfo.allActions.push(descriptor.value);
+}
+
 function isCustomUndefined(x: any) {
     return x && x._isUndefined;
 }
@@ -488,3 +493,5 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult: Rem
         }
     return args;
 }
+
+export const classBackendMethodsArray = Symbol('classBackendMethodsArray');

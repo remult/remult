@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
     // });
   }
   @BackendMethod({ allowed: true })
-  static async signIn(user: string, password: string, remult?: Remult) {
+  static async staticSignIn(user: string, password: string, remult?: Remult) {
     let result: UserInfo;
     // let u = await remult.repo_old(Users).findFirst(h => h.name.isEqualTo(user));
     // if (u)

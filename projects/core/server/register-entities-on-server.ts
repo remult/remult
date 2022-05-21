@@ -3,11 +3,14 @@ import { SiteArea } from "./expressBridge";
 import { getEntityKey } from "../src/remult3";
 import { allEntities } from "../src/context";
 import { DataApi } from "../src/data-api";
+import { ClassType } from "../classType";
 
 
-export function registerEntitiesOnServer(area: SiteArea) {
+export function registerEntitiesOnServer(area: SiteArea, entities?: ClassType<any>[]) {
+    if (!entities)
+        entities = allEntities;
     //add Api Entries
-    allEntities.forEach(e => {
+    entities.forEach(e => {
         let key = getEntityKey(e);
         if (key != undefined)
             area.add(key, c => {

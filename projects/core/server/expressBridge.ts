@@ -2,11 +2,8 @@
 
 import { DataProvider, Remult, IdEntity } from '../';
 import * as express from 'express';
-import * as bodyParser from 'body-parser';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
-
-
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 import { Field, Entity, Repository, getEntityKey, Fields } from '../src/remult3';
@@ -34,7 +31,8 @@ export function remultExpress(
       logApiEndPoints?: boolean,
       defaultGetLimit?: number,
       entities?: ClassType<any>[],
-      controllers?: ClassType<any>[]
+      controllers?: ClassType<any>[],
+      bodyParser?: boolean
     }): RemultExpressBridge {
   let app = express.Router();
   if (!options) {
@@ -52,9 +50,10 @@ export function remultExpress(
     options.queueStorage = new InMemoryQueueStorage();
   }
 
-
-  app.use(bodyParser.json({ limit: options.bodySizeLimit }));
-  app.use(bodyParser.urlencoded({ extended: true, limit: options.bodySizeLimit }));
+  if (options?.bodyParser !== false) {
+    app.use(express.json({ limit: options.bodySizeLimit }));
+    app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
+  }
   let dataProvider: Promise<DataProvider>;
   if (typeof options.dataProvider === "function") {
     dataProvider = options.dataProvider();
@@ -85,7 +84,12 @@ export function remultExpress(
 
 
   if (!options.disableAutoApi) {
-    registerActionsOnServer(apiArea);
+    let actions: ClassType<any>[] = [];
+    if (options.entities)
+      actions.push(...options.entities);
+    if (options.controllers)
+      actions.push(...options.controllers);
+    registerActionsOnServer(apiArea, actions);
     registerEntitiesOnServer(apiArea);
   }
 

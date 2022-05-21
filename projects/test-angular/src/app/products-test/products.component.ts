@@ -95,11 +95,28 @@ export class stam extends IdEntity {
 
 
   @BackendMethod({ allowed: false })
-  static async myMethod(remult?: Remult) {
+  static async staticBackendMethod(remult?: Remult) {
+
+  }
+  @BackendMethod({ allowed: true })
+  async entityBackendMethod() {
 
   }
 }
 
+export class controllerWithStaic {
+  @BackendMethod({ allowed: true })
+  static staticControllerMethod() {
+
+  }
+}
+@Controller("controllerWithInstance")
+export class controllerWithInstance {
+  @BackendMethod({ allowed: true })
+   InstanceControllerMethod() {
+
+  }
+}
 
 declare module 'remult' {
   export interface FieldOptions {
