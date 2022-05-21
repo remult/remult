@@ -90,7 +90,7 @@ export function remultExpress(
     if (options.controllers)
       actions.push(...options.controllers);
     registerActionsOnServer(apiArea, actions);
-    registerEntitiesOnServer(apiArea);
+    registerEntitiesOnServer(apiArea, options.entities);
   }
 
   return Object.assign(app, {
