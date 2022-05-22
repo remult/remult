@@ -56,7 +56,7 @@ module.exports = {
             link: '/tutorials/vue/'
           },
           {
-            text: 'React using next.js',
+            text: 'Next.js',
             link: '/tutorials/react-next/'
           },
         ]

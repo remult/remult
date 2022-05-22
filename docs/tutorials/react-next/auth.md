@@ -27,7 +27,7 @@ After the browser refreshes, **the list of tasks disappeared** and the user can 
 
 ::: details Inspect the HTTP error returned by the API using cURL
 ```sh
-curl -i http://localhost:3002/api/tasks
+curl -i http://localhost:3000/api/tasks
 ```
 :::
 
@@ -78,7 +78,7 @@ yarn add jsonwebtoken jwt-decode express-jwt
 yarn add --dev @types/jsonwebtoken 
 ```
 
-2. Modify the `nextjs` catch all router  `[[...slug]].ts` to use the `express-jwt` authentication Express middleware. 
+2. Modify the `Next.js` catch all API router  `[[...slug]].ts` to use the `express-jwt` authentication Express middleware. 
 
    *pages/api/[[...slug]].ts*
    ```ts{4,7-11}
@@ -205,7 +205,7 @@ export const api = remultExpress({
 });  
 ```
 
-1. Add a the highlighted code to the `Home` function component:
+6. Add a the highlighted code to the `Home` function component:
 
 *pages/index.tsx*
 ```tsx{4,7,20-41,45-47}

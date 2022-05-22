@@ -90,7 +90,7 @@ The `initApi` callback is called only once, after a database connection is estab
 
 The code in `initApi` simply adds five new Tasks to the database if the current `count` is zero.
 
-Saving the changes will cause the server to restart and seed the database with the test data. Navigate to the `tasks` API route at <http://localhost:3002/api/tasks> to see the data.
+Saving the changes will cause the server to restart and seed the database with the test data. Navigate to the `tasks` API route at <http://localhost:3000/api/tasks> to see the data.
 
 ::: warning Wait, where is the backend database?
 While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.

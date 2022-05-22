@@ -66,25 +66,25 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
 "start": "next start -p $PORT"
 ```
 
-1. Create a Heroku `app`.
+2. Create a Heroku `app`.
 
 ```sh
 heroku create
 ```
 
-2. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
+3. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
 
 ```sh
 heroku config:set JWT_SECRET=random-secret
 ```
 
-3. Provision a dev postgres database on Heroku.
+4. Provision a dev postgres database on Heroku.
 
 ```sh
 heroku addons:create heroku-postgresql:hobby-dev
 ```
 
-4. Commit the changes to git and deploy to Heroku using `git push`.
+5. Commit the changes to git and deploy to Heroku using `git push`.
 
 ```sh
 git add .
@@ -92,7 +92,7 @@ git commit -m "todo app tutorial"
 git push heroku main
 ```
 
-5. Open the deployed app using `heroku apps:open` command.
+6. Open the deployed app using `heroku apps:open` command.
 
 ```sh
 heroku apps:open

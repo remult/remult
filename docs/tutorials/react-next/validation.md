@@ -41,10 +41,10 @@ After the browser is refreshed, try creating a new `task` or saving an existing 
 ### Implicit server-side validation
 The validation code we've added is called by Remult on the server-side to validate any API calls attempting to modify the `title` field.
 
-Try making the following `POST` http request to the `http://localhost:3002/api/tasks` API route, providing an invalid title.
+Try making the following `POST` http request to the `http://localhost:3000/api/tasks` API route, providing an invalid title.
 
 ```sh
-curl -i http://localhost:3002/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"\"}"
+curl -i http://localhost:3000/api/tasks -H "Content-Type: application/json" -d "{\"title\": \"\"}"
 ```
 
 An http error is returned and the validation error text is included in the response body,
