@@ -58,9 +58,9 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ```ts
 @BackendMethod({ allowed: Allow.authenticated })
 ```
-::: warning Import Allow
-This code requires adding an import of `Allow` from `remult`.
-:::
+
+**This code requires adding an import of `Allow` from `remult`.**
+
 :::
 
 ## User Authentication
