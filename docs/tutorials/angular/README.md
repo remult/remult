@@ -140,7 +140,7 @@ app.listen(3002, () => console.log("Server started"));
 
 In the Angular app we'll be using `Remult` as an Angular service, to communicate with the API server via Angular's `HttpClientModule`.
 
-We'll adjust the `app.module.ts` file to load the `HttpClientModule` and setup a provider for `Remult` whick will use `HttpClient` as a dependency.
+We'll modify the `app.module.ts` file to load the `HttpClientModule` and setup a provider for `Remult` that accepts an `HttpClient` object as a dependency.
 
 *src/app/app.module.ts*
 ```ts{5-7,15-16,19}
