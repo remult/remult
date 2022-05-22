@@ -40,6 +40,8 @@ The best way to learn Remult is by following a tutorial of a simple Todo web app
 
 * [Tutorial with React](https://remult.dev/tutorials/react/) 
 * [Tutorial with Angular](https://remult.dev/tutorials/angular/)
+* [Tutorial with Vue](https://remult.dev/tutorials/vue/)
+* [Tutorial with Next.js](https://remult.dev/tutorials/react-next/)
 
 ## Installation
 ```sh
