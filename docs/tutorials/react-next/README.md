@@ -31,8 +31,8 @@ You can either **use a starter project** to speed things up, or go through the *
 
 ```sh
 git clone https://github.com/remult/remult-nextjs-todo.git
-cd remult-react-todo
-npm install
+cd remult-nextjs-todo
+yarn
 ```
 
 2. Open your IDE.
@@ -86,7 +86,7 @@ export const api = remultExpress({
 2. Add a file called `[[...slug]].ts` in the folder `pages/api` this file is a "catch all" `next.js` route which will be used to server all api calls.
 
 *pages/api/[[...slug]].ts*
-```ts{2,5}
+```ts
 import { NextApiRequest, NextApiResponse } from 'next'
 import * as util from 'util';
 import { api } from '../../src/server/api';
@@ -118,13 +118,14 @@ export const remult = new Remult(axios);
 Our full stack starter project is almost ready. Let's complete these final configurations.
 #### Enable TypeScript decorators 
 
-Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
+1. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
    
 *tsconfig.json*
 ```json
-"experimentalDecorators": true
+"experimentalDecorators": true,
+"emitDecoratorMetadata": true
 ```
-
+   
 ### Run the app
    
 2. Open a terminal and start the app.

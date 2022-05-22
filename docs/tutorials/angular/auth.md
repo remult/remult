@@ -341,8 +341,7 @@ export class TasksController {
 4. Let's give the user *"Jane"* the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` function.
 
 *src/shared/AuthController.ts*
-```ts{3,9}
-import * as jwt from 'jsonwebtoken';
+```ts{2,8}
 import { BackendMethod } from 'remult';
 import { Roles } from './Roles';
 

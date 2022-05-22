@@ -40,7 +40,7 @@ A simple way to achieve this is by adding the highlighted code lines to the `fet
 ```ts{2-3}
 async function fetchTasks(hideCompleted: boolean) {
    if (!taskRepo.metadata.apiReadAllowed)
-      return;
+      return [];
    return taskRepo.find({
       orderBy: { completed: "asc" },
       where: { completed: hideCompleted ? false : undefined }
@@ -371,8 +371,7 @@ export class TasksController {
 4. Let's give the user *"Jane"* the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` function.
 
 *src/shared/AuthController.ts*
-```ts{3,9}
-import * as jwt from 'jsonwebtoken';
+```ts{2,8}
 import { BackendMethod } from 'remult';
 import { Roles } from './Roles';
 

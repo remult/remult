@@ -25,7 +25,7 @@ Let's allow the user to toggle the display of completed tasks, using server-side
 1. Add a `hideCompleted` argument to the `fetchTasks` function and Modify the `fetchTasks` function, and set the `where` property of the options argument of `find`:
 
 *src/App.tsx*
-```ts{4}
+```ts{1,4}
 async function fetchTasks(hideCompleted: boolean) {
    return taskRepo.find({
       orderBy: { completed: "asc" },

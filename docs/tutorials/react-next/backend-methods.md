@@ -63,25 +63,26 @@ The optional `remult` argument of the static `setAll` function is intentionally 
 
 *src/server/api.ts*
 ```ts{3,7}
-import { remultExpress } from "remult/remult-express";
-import { Task } from "../shared/Task";
-import { TasksController } from "../shared/TasksController";
+import { remultExpress } from 'remult/remult-express';
+import { Task } from '../shared/Task';
+import { TasksController } from '../shared/TasksController';
 
 export const api = remultExpress({
-   entities: [Task],
-   controllers: [TasksController],
-   initApi: async remult => {
-      const taskRepo = remult.repo(Task);
-      if (await taskRepo.count() === 0) {
+    entities: [Task],
+    controllers: [TasksController],
+    initApi: async remult => {
+        const taskRepo = remult.repo(Task);
+        if (await taskRepo.count() === 0) {
             await taskRepo.insert([
-               { title: "Task a" },
-               { title: "Task b", completed: true },
-               { title: "Task c" },
-               { title: "Task d" },
-               { title: "Task e", completed: true }
+                { title: "Task a" },
+                { title: "Task b", completed: true },
+                { title: "Task c" },
+                { title: "Task d" },
+                { title: "Task e", completed: true }
             ]);
-      }
-   }
+        }
+    },
+    bodyParser: false
 });
 ```
 

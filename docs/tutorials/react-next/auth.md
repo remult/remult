@@ -40,7 +40,7 @@ A simple way to achieve this is by adding the highlighted code lines to the `fet
 ```ts{2-3}
 async function fetchTasks(hideCompleted: boolean) {
    if (!taskRepo.metadata.apiReadAllowed)
-      return;
+      return [];
    return taskRepo.find({
       orderBy: { completed: "asc" },
       where: { completed: hideCompleted ? false : undefined }
@@ -74,27 +74,29 @@ In this section, we'll be using the following packages:
 1. Open a terminal and run the following command to install the required packages:
    
 ```sh
-npm i jsonwebtoken jwt-decode express-jwt
-npm i --save-dev @types/jsonwebtoken 
+yarn add jsonwebtoken jwt-decode express-jwt
+yarn add --dev @types/jsonwebtoken 
 ```
 
-2. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+2. Modify the `nextjs` catch all router  `[[...slug]].ts` to use the `express-jwt` authentication Express middleware. 
 
-   *src/server/index.ts*
-   ```ts{3,6-10}
-   import express from 'express';
-   import { api } from './api';
+   *pages/api/[[...slug]].ts*
+   ```ts{4,7-11}
+   import { NextApiRequest, NextApiResponse } from 'next'
+   import * as util from 'util';
+   import { api } from '../../src/server/api';
    import { expressjwt } from 'express-jwt';
    
-   const app = express();
-   app.use(expressjwt({
-       secret: process.env['JWT_SECRET'] || "my secret",
-       credentialsRequired: false,
-       algorithms: ['HS256']
-   }));
-   app.use(api);
-
-   app.listen(3002, () => console.log("Server started"));
+   const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
+       await util.promisify(expressjwt({
+           secret: process.env['JWT_SECRET'] || "my secret",
+           credentialsRequired: false,
+           algorithms: ['HS256']
+       }) as any)(_req, res);
+       await util.promisify((api as any))(_req, res);
+   }
+   
+   export default handler
    ```
 
    The `expressjwt` middleware verifies that the authentication token is valid, and extracts the user info from it to be used on the server.
@@ -110,36 +112,40 @@ npm i --save-dev @types/jsonwebtoken
    import axios from 'axios';
    import { Remult } from "remult";
    import jwtDecode from 'jwt-decode';
-
+   
    export const remult = new Remult(axios);
-
+   
    const AUTH_TOKEN_KEY = "authToken";
-
+   
    export function setAuthToken(token: string | null) {
-      if (token) {
-         remult.setUser(jwtDecode(token));
-         sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-      }
-      else {
-         remult.setUser(undefined!);
-         sessionStorage.removeItem(AUTH_TOKEN_KEY);
-      }
+       if (token) {
+           remult.setUser(jwtDecode(token));
+           sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+       }
+       else {
+           remult.setUser(undefined!);
+           sessionStorage.removeItem(AUTH_TOKEN_KEY);
+       }
    }
-
    // Initialize the auth token from session storage when the application loads
-   setAuthToken(sessionStorage.getItem(AUTH_TOKEN_KEY));
-
+   export function loadAuth() {
+       setAuthToken(sessionStorage.getItem(AUTH_TOKEN_KEY));
+   }
    axios.interceptors.request.use(config => {
-      const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
-      if (token)
-         config.headers!["Authorization"] = "Bearer " + token;
-      return config;
+       const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+       if (token)
+           config.headers!["Authorization"] = "Bearer " + token;
+       return config;
    });
    ```
 
    `setAuthToken` sends the decoded user information to Remult and store the token in local `sessionStorage`.
 
+   `loadAuth` loads the auth info the storage
+
    An `axios` interceptor is used to add the authorization token header to all API requests.
+
+   
 
 4. Create a file `src/shared/AuthController.ts` and place the following code in it:
 
@@ -175,130 +181,132 @@ The payload of the JWT must contain an object which implements the Remult `UserI
 
 *src/server/api.ts*
 ```ts{4,8}
-import { remultExpress } from "remult/remult-express";
-import { Task } from "../shared/Task";
-import { TasksController } from "../shared/TasksController";
-import { AuthController } from "../shared/AuthController";
+import { remultExpress } from 'remult/remult-express';
+import { Task } from '../shared/Task';
+import { TasksController } from '../shared/TasksController';
+import { AuthController } from '../shared/AuthController';
 
 export const api = remultExpress({
-   entities: [Task],
-   controllers: [TasksController, AuthController],
-   initApi: async remult => {
-      const taskRepo = remult.repo(Task);
-      if (await taskRepo.count() === 0) {
+    entities: [Task],
+    controllers: [TasksController, AuthController],
+    initApi: async remult => {
+        const taskRepo = remult.repo(Task);
+        if (await taskRepo.count() === 0) {
             await taskRepo.insert([
-               { title: "Task a" },
-               { title: "Task b", completed: true },
-               { title: "Task c" },
-               { title: "Task d" },
-               { title: "Task e", completed: true }
+                { title: "Task a" },
+                { title: "Task b", completed: true },
+                { title: "Task c" },
+                { title: "Task d" },
+                { title: "Task e", completed: true }
             ]);
-      }
-   }
-});   
+        }
+    },
+    bodyParser: false
+});  
 ```
 
-6. Add a the highlighted code to the `Home` function component:
+1. Add a the highlighted code to the `Home` function component:
 
 *pages/index.tsx*
-```tsx{4,19-40,44-46}
+```tsx{4,7,20-41,45-47}
 const Home: NextPage = () => {
-   const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
-   const [hideCompleted, setHideCompleted] = useState(false);
-   const [username, setUsername] = useState("");
+  const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
+  const [hideCompleted, setHideCompleted] = useState(false);
+  const [username, setUsername] = useState("");
 
-   useEffect(() => {
-      fetchTasks(hideCompleted).then(setTasks);
-   }, [hideCompleted]);
+  useEffect(() => {
+    loadAuth();
+    fetchTasks(hideCompleted).then(setTasks);
+  }, [hideCompleted]);
 
-   const addTask = () => {
-      setTasks([...tasks, new Task()])
-   }
+  const addTask = () => {
+    setTasks([...tasks, new Task()])
+  }
 
-   const setAll = async (completed: boolean) => {
-      await TasksController.setAll(completed);
-      setTasks(await fetchTasks(hideCompleted));
-   }
+  const setAll = async (completed: boolean) => {
+    await TasksController.setAll(completed);
+    setTasks(await fetchTasks(hideCompleted));
+  }
 
-   const signIn = async () => {
-      try {
-         setAuthToken(await AuthController.signIn(username));
-         window.location.reload();
-      }
-      catch (error: any) {
-         alert(error.message);
-      }
-   }
-
-   const signOut = () => {
-      setAuthToken(null);
+  const signIn = async () => {
+    try {
+      setAuthToken(await AuthController.signIn(username));
       window.location.reload();
-   }
+    }
+    catch (error: any) {
+      alert(error.message);
+    }
+  }
 
-   if (!remult.authenticated())
-      return (<div>
-         <p>
-            <input value={username} onChange={e => setUsername(e.target.value)} />
-            <button onClick={signIn}>Sign in</button>
-         </p>
-      </div>);
+  const signOut = () => {
+    setAuthToken(null);
+    window.location.reload();
+  }
 
-   return (
+  if (!remult.authenticated())
+    return (<div>
+      <p>
+        <input value={username} onChange={e => setUsername(e.target.value)} />
+        <button onClick={signIn}>Sign in</button>
+      </p>
+    </div>);
+
+  return (
+    <div>
+      <p>
+        Hi {remult.user.name} <button onClick={signOut}>Sign out</button>
+      </p>
       <div>
-         <p>
-            Hi {remult.user.name} <button onClick={signOut}>Sign out</button>
-         </p>
-         <div>
-            <button onClick={() => setAll(true)}>Set all as completed</button>
-            <button onClick={() => setAll(false)}>Set all as uncompleted</button>
-         </div>
-         <input
-            type="checkbox"
-            checked={hideCompleted}
-            onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-         <hr />
-         {tasks.map(task => {
-            const handleChange = (values: Partial<Task>) => {
-               setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
-            };
-
-            const saveTask = async () => {
-               try {
-                  const savedTask = await taskRepo.save(task);
-                  setTasks(tasks.map(t => t === task ? savedTask : t));
-               } catch (error: any) {
-                  alert(error.message);
-                  setTasks(tasks.map(t => t === task ? { ...task, error } : t));
-               }
-            }
-
-            const deleteTask = async () => {
-               await taskRepo.delete(task);
-               setTasks(tasks.filter(t => t !== task));
-            };
-
-            return (
-               <div key={task.id}>
-                  <input type="checkbox"
-                     checked={task.completed}
-                     onChange={e => handleChange({ completed: e.target.checked })} />
-                  <input
-                     value={task.title}
-                     onChange={e => handleChange({ title: e.target.value })} />
-                  {task.error?.modelState?.title}
-                  <button onClick={saveTask}>Save</button>
-                  <button onClick={deleteTask}>Delete</button>
-               </div>
-            );
-         })}
-         <button onClick={addTask}>Add Task</button>
+        <button onClick={() => setAll(true)}>Set all as completed</button>
+        <button onClick={() => setAll(false)}>Set all as uncompleted</button>
       </div>
-   );
+      <input
+        type="checkbox"
+        checked={hideCompleted}
+        onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+      <hr />
+      {tasks.map(task => {
+        const handleChange = (values: Partial<Task>) => {
+          setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+        };
+
+        const saveTask = async () => {
+          try {
+            const savedTask = await taskRepo.save(task);
+            setTasks(tasks.map(t => t === task ? savedTask : t));
+          } catch (error: any) {
+            alert(error.message);
+            setTasks(tasks.map(t => t === task ? { ...task, error } : t));
+          }
+        }
+
+        const deleteTask = async () => {
+          await taskRepo.delete(task);
+          setTasks(tasks.filter(t => t !== task));
+        };
+
+        return (
+          <div key={task.id}>
+            <input type="checkbox"
+              checked={task.completed}
+              onChange={e => handleChange({ completed: e.target.checked })} />
+            <input
+              value={task.title}
+              onChange={e => handleChange({ title: e.target.value })} />
+            {task.error?.modelState?.title}
+            <button onClick={saveTask}>Save</button>
+            <button onClick={deleteTask}>Delete</button>
+          </div>
+        );
+      })}
+      <button onClick={addTask}>Add Task</button>
+    </div>
+  );
 }
 ```
 
 ::: warning Imports
-This code requires imports for `AuthController` from `./shared/AuthController` and `setAuthToken` from `./common`.
+This code requires imports for `AuthController` from `./shared/AuthController` and `setAuthToken` and `loadAuth` from `./common`.
 :::
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
@@ -371,8 +379,7 @@ export class TasksController {
 4. Let's give the user *"Jane"* the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` function.
 
 *src/shared/AuthController.ts*
-```ts{3,9}
-import * as jwt from 'jsonwebtoken';
+```ts{2,8}
 import { BackendMethod } from 'remult';
 import { Roles } from './Roles';
 
