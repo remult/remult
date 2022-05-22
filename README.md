@@ -33,7 +33,7 @@
 
 #### Remult :heart: Code Sharing
 
-With model types shared between frontend and backend code, Remult can **enforce data validation and constraints, defined once, both in the front-end and witin back-end API routes**.
+With model types shared between frontend and backend code, Remult can **enforce data validation and constraints, defined once, both in the front-end and within back-end API routes**.
 
 ## Getting started
 The best way to learn Remult is by following a tutorial of a simple Todo web app with a Node.js Express backend. 
