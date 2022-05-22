@@ -585,7 +585,10 @@ export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
-    this.r.sendStatus(403);
+    this.sendStatus(403);
+  }
+  sendStatus(status: number) {
+    this.r.writeHead(status).end();
   }
   constructor(private r: express.Response, private req: express.Request) {
 
@@ -603,12 +606,12 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     this.r.json(data);
   }
   public deleted() {
-    this.r.sendStatus(204);
+    this.sendStatus(204);
   }
 
   public notFound(): void {
 
-    this.r.sendStatus(404);
+    this.sendStatus(404);
   }
 
   public error(data: ErrorInfo): void {

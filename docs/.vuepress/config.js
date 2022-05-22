@@ -54,7 +54,11 @@ module.exports = {
           {
             text: 'Vue',
             link: '/tutorials/vue/'
-          }
+          },
+          {
+            text: 'React using next.js',
+            link: '/tutorials/react-next/'
+          },
         ]
       }
     ],
@@ -142,23 +146,40 @@ module.exports = {
             'deployment'
           ]
         }],
-        '/tutorials/vue/': [
-          {
-            title: 'Tutorial',
-            path: '/tutorials/vue/',
-  
-            collapsable: false,
-            children: [
-              '',
-              'entities',
-              'sorting-filtering',
-              'crud',
-              'validation',
-              'backend-methods',
-              'auth',
-              'deployment'
-            ]
-          }]
+      '/tutorials/vue/': [
+        {
+          title: 'Tutorial',
+          path: '/tutorials/vue/',
+
+          collapsable: false,
+          children: [
+            '',
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'deployment'
+          ]
+        }],
+      '/tutorials/react-next/': [
+        {
+          title: 'Tutorial',
+          path: '/tutorials/react-next/',
+
+          collapsable: false,
+          children: [
+            '',
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'deployment'
+          ]
+        }],
 
     }
   },
