@@ -1,5 +1,27 @@
-# Sorting and Filtering
-The RESTful API created by Remult supports server-side sorting and filtering. Let's use that to sort and filter the list of tasks.
+# Paging, Sorting and Filtering
+The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
+
+## Limit Number of Fetched Tasks
+Since our database may eventually contain a lot of tasks, it make sense to use a **paging strategy** to limit the number of tasks retrieved in a single fetch from the back-end database.
+
+Let's limit the number of fetched tasks to `20`.
+
+In the `fetchTasks` function, pass an `options` argument to the `find` method call and set its `limit` property to 20.
+
+*src/App.tsx*
+```ts{3}
+async function fetchTasks() {
+  return taskRepo.find({
+    limit: 20
+  });
+}
+```
+
+There aren't enough tasks in the database for this change to have an immediate effect, but it will have one later on when we'll add more tasks.
+
+::: tip
+To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
+:::
 
 ## Show Active Tasks on Top
 Uncompleted tasks are important and should appear above completed tasks in the todo app. 
@@ -8,9 +30,10 @@ In the `fetchTasks` function, pass an `options` argument to the `find` method ca
 Use "asc" and "desc" to determine the sort order.
 
 *src/App.tsx*
-```ts{3}
+```ts{4}
 async function fetchTasks() {
   return taskRepo.find({
+    limit: 20,
     orderBy: { completed: "asc" }
   });
 }
@@ -25,9 +48,10 @@ Let's allow the user to toggle the display of completed tasks, using server-side
 1. Add a `hideCompleted` argument to the `fetchTasks` function and Modify the `fetchTasks` function, and set the `where` property of the options argument of `find`:
 
 *src/App.tsx*
-```ts{1,4}
+```ts{1,5}
 async function fetchTasks(hideCompleted: boolean) {
    return taskRepo.find({
+      limit: 20,
       orderBy: { completed: "asc" },
       where: { completed: hideCompleted ? false : undefined }
    });
