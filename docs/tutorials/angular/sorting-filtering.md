@@ -48,7 +48,7 @@ Let's allow the user to toggle the display of completed tasks, using server-side
 1. Add a `hideCompleted` field to the `AppComponent` class and Modify the `fetchTasks` method, and set the `where` property of the options argument of `find`:
 
 *src/app/app.component.ts*
-```ts{1, 6}
+```ts{1,6}
 hideCompleted = false;
 async fetchTasks() {
    this.tasks = await this.taskRepo.find({
