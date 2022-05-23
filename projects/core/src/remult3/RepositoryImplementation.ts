@@ -1938,6 +1938,10 @@ export class ControllerBase {
     constructor(protected remult: Remult) {
 
     }
+    assign(values: Partial<Omit<this, keyof EntityBase>>) {
+        assign(this, values);
+        return this;
+    }
     get $() { return getFields(this) }
     get _() { return getControllerRef(this) }
 
