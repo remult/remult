@@ -42,6 +42,7 @@ async function fetchTasks(hideCompleted: boolean) {
    if (!taskRepo.metadata.apiReadAllowed)
       return [];
    return taskRepo.find({
+      limit: 20,
       orderBy: { completed: "asc" },
       where: { completed: hideCompleted ? false : undefined }
    });

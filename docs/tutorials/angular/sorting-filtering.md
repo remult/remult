@@ -1,16 +1,39 @@
-# Sorting and Filtering
-The RESTful API created by Remult supports server-side sorting and filtering. Let's use that to sort and filter the list of tasks.
+# Paging, Sorting and Filtering
+The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
 
-## Show Active Tasks on Top
-Uncompleted tasks are important and should appear above completed tasks in the todo app. 
+## Limit Number of Fetched Tasks
+Since our database may eventually contain a lot of tasks, it make sense to use a **paging strategy** to limit the number of tasks retrieved in a single fetch from the back-end database.
 
-In the `fetchTasks` method, pass an `options` argument to the `find` method call and set its `orderBy` property to an object that contains the fields you want to sort by.
-Use "asc" and "desc" to determine the sort order.
+Let's limit the number of fetched tasks to `20`.
+
+In the `fetchTasks` function, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
 *src/app/app.component.ts*
 ```ts{3}
 async fetchTasks() {
    this.tasks = await this.taskRepo.find({
+      limit: 20
+   });
+}
+```
+
+There aren't enough tasks in the database for this change to have an immediate effect, but it will have one later on when we'll add more tasks.
+
+::: tip
+To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
+:::
+
+## Show Active Tasks on Top
+Uncompleted tasks are important and should appear above completed tasks in the todo app. 
+
+In the `fetchTasks` function, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
+Use "asc" and "desc" to determine the sort order.
+
+*src/app/app.component.ts*
+```ts{4}
+async fetchTasks() {
+   this.tasks = await this.taskRepo.find({
+      limit: 20,
       orderBy: { completed: "asc" }
    });
 }
@@ -25,10 +48,11 @@ Let's allow the user to toggle the display of completed tasks, using server-side
 1. Add a `hideCompleted` field to the `AppComponent` class and Modify the `fetchTasks` method, and set the `where` property of the options argument of `find`:
 
 *src/app/app.component.ts*
-```ts{5}
+```ts{6}
 hideCompleted = false;
 async fetchTasks() {
    this.tasks = await this.taskRepo.find({
+      limit: 20,
       orderBy: { completed: "asc" },
       where: { completed: this.hideCompleted ? false : undefined }
    });

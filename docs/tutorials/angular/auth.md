@@ -42,6 +42,7 @@ async fetchTasks() {
   if (!this.taskRepo.metadata.apiReadAllowed)
     return;
   this.tasks = await this.taskRepo.find({
+    limit: 20,
     orderBy: { completed: "asc" },
     where: { completed: this.hideCompleted ? false : undefined }
   });
