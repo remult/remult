@@ -1,9 +1,9 @@
 # Backend only code
-One of the main advantages of remult is that you write code once and it runs both on the server and in the browser.
+One of the main advantages of remult is that you write code once, and it runs both on the server and in the browser.
 
-However, if you are using a library that only works on the server, the fact that the same code is bundled to the frontend can cause problems. For example, when you'll build an Angular project, you'll get `Module not found` errors.
+However, if you are using a library that only works on the server, the fact that the same code is bundled to the frontend can cause problems. For example, when you build an Angular project, you'll get `Module not found` errors.
 
-In this article, we'll walk through such a scenario and how it can be solved.
+This article will walk through such a scenario and how it can be solved.
 
 For this example, our customer would like us to document each call to the `updatePriceOnBackend` method in a log file.
 
@@ -23,7 +23,7 @@ static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
 ```
 
 ::: danger Error
- As soon as we do that we'll get the following errors on the `ng-serve` terminal
+ As soon as we do that, we'll get the following errors on the `ng-serve` terminal
  ```sh
  ERROR in ./src/app/products/products.component.ts
 Module not found: Error: Can't resolve 'fs' in 'C:\try\test19\my-project\src\app\products'
@@ -31,10 +31,10 @@ i ｢wdm｣: Failed to compile.
  ```
 :::
 
-The reason we get this error is that the `fs` module on which we rely here is only relevant in the remult of a `Node JS` server and not in the context of the browser.
+We get this error because the `fs` module on which we rely here is only relevant in the remult of a `Node JS` server and not in the context of the browser.
 
 There are two ways to handle this:
-## Solution 1 - exclude from webpack
+## Solution 1 - exclude from Webpack
 1. Instruct `webpack` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the main section of the project's `package.json` file.
    *package.json*
    ```json
@@ -50,7 +50,7 @@ Abstract the call and separate it to backend only files and `inject` it only whe
 
 
 
-**Step 1**, abstract the call - We'll remove the import to `fs` and instead of calling specific `fs` methods we'll define and call a method `writeToLog` that describes what we are trying to do:
+**Step 1**, abstract the call - We'll remove the import to `fs,` and instead of calling specific `fs` methods, we'll define and call a method `writeToLog` that describes what we are trying to do:
 
 ```ts{1,11,13}
 //import * as fs from 'fs';
@@ -69,7 +69,7 @@ static writeToLog:(textToWrite:string)=>void;
 ```
 
 The method `writeToLog` that we've defined serves as a place holder which we'll assign to in the remult of the server.
-It receives one parameter of type `string` and returns `void`
+It receives one parameter of type `string` and returns `void`.
 
 **Step 2**, implement the method:
 In the `/src/app/server` folder, we'll add a file called `log-writer.ts` with the following code:
@@ -80,7 +80,7 @@ ProductsComponent.writeToLog = what => fs.appendFileSync('./logs/log.txt', what)
 ```
 
 Here we set the implementation of the `writeToLog` method with the actual call to the `fs` module.
-This file is intended to only run in the server, so it'll not present us with any problem.
+This file is intended to only run on the server, so it'll not present us with any problem.
 
 **Step 3**, load the `log-writer.ts` file:
 In the `/src/app/server/server-init.ts` file, load the `log-writer.ts` file using an `import` statement
@@ -97,5 +97,5 @@ import * as passwordHash from 'password-hash';
 
 That's it - it'll work now.
 ::: tip
-If you're still getting some kind of error - check that you have a `logs` folder on your project :)
+If you're still getting an error - check that you have a `logs` folder on your project :)
 :::
