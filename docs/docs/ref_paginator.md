@@ -7,4 +7,4 @@ the items in the current page
 ## count
 the count of the total items in the `query`'s result
 ## nextPage
-Get's the next page in the query's result set
+Gets the next page in the `query`'s result set

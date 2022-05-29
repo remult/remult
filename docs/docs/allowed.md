@@ -30,7 +30,7 @@ or:
 ```
 
 # AllowedForInstance
-In some cases, the allowed ca be evaluated with regards to a specific instance, for example `allowApiUpdate` can consider specific row values.
+In some cases, the allowed can be evaluated with regards to a specific instance, for example `allowApiUpdate` can consider specific row values.
 The Allowed for Instance method accepts two parameters:
 1. The relevant `remult` object
 2. The relevant entity instance
