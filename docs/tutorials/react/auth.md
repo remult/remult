@@ -77,7 +77,26 @@ npm i jsonwebtoken jwt-decode express-jwt
 npm i --save-dev @types/jsonwebtoken 
 ```
 
-2. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+2. Since we're going to be using `jsonwebtoken` in a `BackendMethod` that is defined in shared code, it's important to  exclude `jsonwebtoken` from browser builds by adding the following entry to the main section of the project's `package.json` file.
+
+*package.json*
+```json
+"browser": {
+   "jsonwebtoken": false
+}
+```
+
+::: danger This step is not optional
+React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
+:::
+
+3. Terminate the running `dev` npm script and run it again for the change to `package.json` to take effect.
+
+```sh
+npm run dev
+```
+
+4. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
 
    *src/server/index.ts*
    ```ts{3,6-10}
@@ -102,7 +121,7 @@ npm i --save-dev @types/jsonwebtoken
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-3. Add the highlighted code to `common.ts`:
+5. Add the highlighted code to `common.ts`:
 
    *src/common.ts*
    ```ts{3,7-28}
@@ -140,7 +159,7 @@ npm i --save-dev @types/jsonwebtoken
 
    An `axios` interceptor is used to add the authorization token header to all API requests.
 
-4. Create a file `src/shared/AuthController.ts` and place the following code in it:
+6. Create a file `src/shared/AuthController.ts` and place the following code in it:
 
    *src/shared/AuthController.ts*
    ```ts
@@ -170,7 +189,7 @@ npm i --save-dev @types/jsonwebtoken
 The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 :::
 
-5. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
+7. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
 
 *src/server/api.ts*
 ```ts{4,8}
@@ -197,7 +216,7 @@ export const api = remultExpress({
 });   
 ```
 
-6. Add a the highlighted code to the `App` function component:
+8. Add a the highlighted code to the `App` function component:
 
 *src/App.tsx*
 ```tsx{4,19-40,44-46}
