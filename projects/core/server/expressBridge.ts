@@ -32,7 +32,8 @@ export function remultExpress(
       defaultGetLimit?: number,
       entities?: ClassType<any>[],
       controllers?: ClassType<any>[],
-      bodyParser?: boolean
+      bodyParser?: boolean,
+      rootPath?: string
     }): RemultExpressBridge {
   let app = express.Router();
   if (!options) {
@@ -79,7 +80,7 @@ export function remultExpress(
   let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
   if (options.logApiEndPoints !== undefined)
     bridge.logApiEndPoints = options.logApiEndPoints;
-  let apiArea = bridge.addArea(Remult.apiBaseUrl);
+  let apiArea = bridge.addArea(options?.rootPath || Remult.apiBaseUrl);
 
 
 

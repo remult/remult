@@ -137,15 +137,17 @@ export class Remult {
         return this._user;
     }
     /** Set's the current user info */
-    async setUser(info: UserInfo | { sub?: string, name?: string, permissions?: string[] }) {
+    async setUser(info: UserInfo | { sub?: string, name?: string, permissions?: string[], username?: string }) {
         this._user = info as UserInfo;
-        let auth = info as { sub?: string, name?: string, permissions?: string[] };
+        let auth = info as { sub?: string, name?: string, permissions?: string[], username?: string };
         if (auth) {
             if (!this._user.id && auth.sub)
                 this._user.id = auth.sub;
             if (!this._user.roles && auth.permissions) {
                 this._user.roles = auth.permissions;
             }
+            if (!this._user.name)
+                this._user.name = auth.username;
         }
         if (this._user && !this._user.roles)
             this._user.roles = [];
@@ -170,7 +172,7 @@ export class Remult {
      * @see
      * [Allowed](https://remult.dev/docs/allowed.html)
      */
-    isAllowed(roles: Allowed): boolean {
+    isAllowed(roles?: Allowed): boolean {
         if (roles == undefined)
             return undefined;
         if (roles instanceof Array) {
@@ -199,18 +201,18 @@ export class Remult {
      * @see
      * [Allowed](https://remult.dev/docs/allowed.html)
      */
-    isAllowedForInstance(instance: any, x: AllowedForInstance<any>): boolean {
-        if (Array.isArray(x)) {
+    isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean {
+        if (Array.isArray(allowed)) {
             {
-                for (const item of x) {
+                for (const item of allowed) {
                     if (this.isAllowedForInstance(instance, item))
                         return true;
                 }
             }
         }
-        else if (typeof (x) === "function") {
-            return x(this, instance)
-        } else return this.isAllowed(x as Allowed);
+        else if (typeof (allowed) === "function") {
+            return allowed(this, instance)
+        } else return this.isAllowed(allowed as Allowed);
     }
 
     /** returns a dispatcher object that fires once a user has changed*/
