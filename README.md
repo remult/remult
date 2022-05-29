@@ -21,6 +21,9 @@
 	<a href="https://discord.gg/GXHk7ZfuG5">
 		<img alt="chat on discord" src="https://img.shields.io/badge/chat-on%20discord-blueviolet"/>
 	</a>
+	<a href="https://twitter.com/remultjs">
+	<img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/remultjs?style=social">
+	</a>
 </div>
 
 ## What is Remult?
