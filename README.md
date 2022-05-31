@@ -117,24 +117,29 @@ static async increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
 ### :ballot_box_with_check: Data validation and constraints - defined once
 
 ```ts
-import { Entity, Fields } from 'remult';
+import { Entity, Fields, Validators } from 'remult';
 
 @Entity('products', {
     allowApiCrud: true
 })
 export class Product {
-    @Fields.string<Product>({
-        validate: product => {
-            if (product.name.trim().length == 0)
-                throw 'required';
-        }
+    @Fields.string({
+        validate: Validators.required
     })
     name = '';
+
+    @Fields.string<Product>({
+        validate: product => {
+            if (product.description.trim().length < 50)
+                throw "too short";
+        }
+    })
+    description = '';
 
     @Fields.number({
         validate: (_, field) => {
             if (field.value < 0)
-                throw "must not be less than 0";
+                field.error = "must not be less than 0"; // or: throw "must not be less than 0";
         }
     })
     unitPrice = 0;
