@@ -189,7 +189,11 @@ export class Article {
 [CRM demo](https://github.com/remult/crm-demo) with a React + [MUI](https://mui.com) front-end and Postgres database.
 
 ## Contributing
-Contributions are welcome. See [CONTRIBUTING](CONTRIBUTING.md).
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+* :speech_balloon: Any feedback or suggestions? Start a [discussion](https://github.com/remult/remult/discussions).
+* :muscle: Want to help out? Look for "help wanted" labeled [issues](https://github.com/remult/remult/issues).
+* :star: Give this repo a star.
 
 ## License
 Remult is [MIT Licensed](LICENSE).
