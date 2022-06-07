@@ -80,7 +80,7 @@ export class Task extends IdEntity {
     completed = false;
     @Field(() => Category)
     category?: Category;
-    @Fields.object((options, remult) => {
+    @Fields.object<Task>((options, remult) => {
         options.serverExpression = async (task) =>
             remult.repo(HistoryRecord).find({ where: { taskId: task.id } })
     })
