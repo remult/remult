@@ -19,15 +19,15 @@ Here's an example of a backend method.
 import { BackendMethod, Remult } from "remult";
 import { Task } from "./Task";
 
-export class TasksService {
+export class TasksController {
+   @BackendMethod({ allowed: true })
+   static async setAll(completed: boolean, remult?: Remult) {
+      const taskRepo = remult!.repo(Task);
 
-    @BackendMethod({ allowed: true })
-    static async setAll(completed: boolean, remult?: Remult) {
-        for await (const task of remult!.repo(Task).query()) {
-            task.completed = completed;
-            await task.save();
-        }
-    }
+      for (const task of await taskRepo.find()) {
+         await taskRepo.save({ ...task, completed });
+      }
+   }
 }
 ```
 
@@ -39,9 +39,18 @@ remult!.repo
 ```
 :::
 
+Remember to register the `TasksController` class in the `controllers` array of the `remultExpress` options.
+```ts{3}
+export const api = remultExpress({
+   entities: [Task],
+   controllers: [TasksController]
+})
+```
+
+
 usage example:
 ```ts
-await TaskService.setAll(true);
+await TasksController.setAll(true);
 ```
 
 ## Entity backend method
