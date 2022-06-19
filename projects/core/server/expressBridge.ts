@@ -801,3 +801,4 @@ export class JobsInQueueEntity extends IdEntity {
   progress: number;
 }
 
+allEntities.splice(allEntities.indexOf(JobsInQueueEntity), 1);
