@@ -19,7 +19,7 @@ export function remultExpress(
   options?:
     {
       /** Sets a database connection for Remult.
-       * 
+       *
        * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
       */
       dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
@@ -115,13 +115,16 @@ export interface RemultExpressBridge extends express.RequestHandler {
 class ExpressBridge {
 
 
-  openApiDoc(options: { title: string }) {
+  openApiDoc(options: { title: string, version?: string }) {
     let r = new Remult();
+    if (!options.version)
+      options.version = "1.0.0";
     let spec: any = {
-      info: { title: options.title },
+      info: { title: options.title, version: options.version },
       openapi: "3.0.0",
       //swagger: "2.0",
       "components": {
+        "schemas": {},
         "securitySchemes": {
           "bearerAuth": {
             "scheme": "bearer",
@@ -131,8 +134,6 @@ class ExpressBridge {
         }
       },
       paths: {
-      },
-      definitions: {
       }
     };
     let validationError = {
@@ -141,7 +142,7 @@ class ExpressBridge {
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/definitions/InvalidResponse"
+              "$ref": "#/components/schemas/InvalidResponse"
             }
           }
         }
@@ -200,12 +201,12 @@ class ExpressBridge {
 
 
         }
-        spec.definitions[key] = {
+        spec.components.schemas[key] = {
           type: "object",
           properties
         }
         let definition = {
-          "$ref": "#/definitions/" + key
+          "$ref": "#/components/schemas/" + key
         };
         let secure = (condition: any, def: boolean, item: any) => {
           item.tags = [meta.key];
@@ -226,28 +227,28 @@ class ExpressBridge {
             "description": "limit the number of returned rows, default 100",
             "required": false,
             "style": "simple",
-            "type": "int"
+            "schema": { "type": "integer" }
           },
           {
             "name": "_page",
             "in": "query",
             "description": "to be used for paging",
             "required": false,
-            "type": "int"
+            "schema": { "type": "integer" }
           },
           {
             "name": "_sort",
             "in": "query",
             "description": "the columns to sort on",
             "required": false,
-            "type": "string"
+            "schema": { "type": "string" }
           },
           {
             "name": "_order",
             "in": "query",
             "description": "the sort order to user for the columns in `_sort`",
             "required": false,
-            "type": "string"
+            "schema": { "type": "string" }
           }, ...parameters],
           responses: {
             "200": {
@@ -269,14 +270,14 @@ class ExpressBridge {
           "in": "path",
           "description": "id of " + key,
           "required": true,
-          "type": "string"
+          "schema": { "type": "string" },
         };
         let itemInBody = {
           "requestBody": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/definitions/" + key
+                  "$ref": "#/components/schemas/" + key
                 }
               }
             }
@@ -299,7 +300,7 @@ class ExpressBridge {
                 "application/json": {
 
                   "schema": {
-                    "$ref": "#/definitions/" + key
+                    "$ref": "#/components/schemas/" + key
 
                   }
                 }
@@ -317,7 +318,7 @@ class ExpressBridge {
                 "application/json": {
 
                   "schema": {
-                    "$ref": "#/definitions/" + key
+                    "$ref": "#/components/schemas/" + key
 
                   }
                 }
@@ -343,7 +344,7 @@ class ExpressBridge {
                 "application/json": {
 
                   "schema": {
-                    "$ref": "#/definitions/" + key
+                    "$ref": "#/components/schemas/" + key
 
                   }
                 }
@@ -416,7 +417,7 @@ class ExpressBridge {
         })
       }
     }
-    spec.definitions["InvalidResponse"] = {
+    spec.components.schemas["InvalidResponse"] = {
       "type": "object",
       properties: {
         "message": {

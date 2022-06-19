@@ -16,9 +16,12 @@ To add swagger to a `remult` application follow these steps:
    
    const app = express();
    let api = remultExpress();
+
    app.use(api);
-   app.use('/api/docs', swaggerUi.serve,
-       swaggerUi.setup(api.openApiDoc({ title: 'remult-react-todo' })));
+   const openApiDocument = api.openApiDoc({ title: "remult-react-todo" });
+   app.get("/api/openApi.json", (req, res) => res.json(openApiDocument));
+   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
+   
    app.listen(3002, () => console.log("Server started"));
    ```
 
