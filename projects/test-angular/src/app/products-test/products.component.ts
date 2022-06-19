@@ -93,6 +93,8 @@ export class stam extends IdEntity {
   @Fields.string({ serverExpression: () => 'noam' })
   test: string = '';
 
+  @Fields.integer()
+  int=0;
 
   @BackendMethod({ allowed: false })
   static async staticBackendMethod(remult?: Remult) {

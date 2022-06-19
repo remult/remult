@@ -9,7 +9,7 @@ import * as fs from 'fs';
 //import '../app.module';
 import { serverInit } from './server-init';
 import { remultGraphql } from 'remult/graphql';
-import {createKnexDataProvider} from 'remult/remult-knex';
+import { createKnexDataProvider } from 'remult/remult-knex';
 
 
 import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
@@ -35,7 +35,7 @@ import { AppComponent } from '../app.component';
 
 
 const getDatabase = async () => {
-  
+
     const result = await createKnexDataProvider({
         client: 'mssql',
         connection: {
@@ -64,12 +64,12 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-    
 
-    let remultApi = remultExpress({
-        entities:[stam],
-        controllers:[controllerWithInstance,controllerWithStaic,AppComponent],
-        dataProvider:async ()=>await  getDatabase(),
+
+    let api = remultExpress({
+        entities: [stam],
+        controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
+        dataProvider: async () => await getDatabase(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initApi: async remult => {
@@ -78,17 +78,20 @@ serverInit().then(async (dataSource) => {
         }
     });
 
-    app.use(remultApi);
-    app.use('/api/docs', swaggerUi.serve,
-        swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
+    app.use(api);
+
+    const openApiDocument = api.openApiDoc({ title: "remult-react-todo" });
+    app.get("/api/openApi.json", (req, res) => res.json(openApiDocument));
+    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
+    
 
     app.use(express.static('dist/my-project'));
     app.get('/api/noam', async (req, res) => {
-        let c = await remultApi.getRemult(req);
+        let c = await api.getRemult(req);
         res.send('hello ' + JSON.stringify(c.user));
     });
 
-    let g = remultGraphql(remultApi);
+    let g = remultGraphql(api);
     app.use('/api/graphql', graphqlHTTP({
         schema: buildSchema(g.schema),
         rootValue: g.rootValue,
