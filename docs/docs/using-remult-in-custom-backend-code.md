@@ -5,10 +5,14 @@ Here's an example of how to do that:
 ```ts
 app.post('/api/customSetAll', async (req, res) => {
     const remult = await api.getRemult(req);
-    if (!remult.authenticated())
+    if (!remult.authenticated()){
         res.sendStatus(403);
-    if (!remult.isAllowed("admin"))
+        return;
+    }
+    if (!remult.isAllowed("admin")){
         res.sendStatus(403);
+        return;
+    }
     const taskRepo = remult!.repo(Task);
     for (const task of await taskRepo.find()) {
         task.completed = req.body.completed;
