@@ -1,7 +1,3 @@
----
-title: Setup
----
-
 # Build a Full-Stack Angular Application
 
 ### Create a simple todo app with Remult using an Angular frontend

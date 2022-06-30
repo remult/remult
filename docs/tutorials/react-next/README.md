@@ -1,7 +1,3 @@
----
-title: Setup
----
-
 # Build a Full-Stack Next.js Application
 
 ### Create a simple todo app with Remult using Next.js

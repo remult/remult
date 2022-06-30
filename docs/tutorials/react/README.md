@@ -1,7 +1,3 @@
----
-title: Setup
----
-
 # Build a Full-Stack React Application
 
 ### Create a simple todo app with Remult using a React frontend

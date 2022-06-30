@@ -30,6 +30,7 @@ module.exports = {
   themeConfig: {
     logo: '/logo.png',
     repo: 'remult/remult',
+
     editLinks: true,
     docsDir: 'docs',
     lastUpdated: true,
@@ -60,6 +61,10 @@ module.exports = {
             link: '/tutorials/react-next/'
           },
         ]
+      },
+      {
+        text: 'Discord',
+        link: 'https://discord.gg/GXHk7ZfuG5'
       }
     ],
     sidebar: {
@@ -119,7 +124,7 @@ module.exports = {
 
           collapsable: false,
           children: [
-            '',
+            ['', 'Setup'],
             'entities',
             'sorting-filtering',
             'crud',
@@ -136,7 +141,7 @@ module.exports = {
 
           collapsable: false,
           children: [
-            '',
+            ['', 'Setup'],
             'entities',
             'sorting-filtering',
             'crud',
@@ -153,7 +158,7 @@ module.exports = {
 
           collapsable: false,
           children: [
-            '',
+            ['', 'Setup'],
             'entities',
             'sorting-filtering',
             'crud',
@@ -170,7 +175,7 @@ module.exports = {
 
           collapsable: false,
           children: [
-            '',
+            ['', 'Setup'],
             'entities',
             'sorting-filtering',
             'crud',
