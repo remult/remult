@@ -53,7 +53,7 @@ const getDatabase = async () => {
     return result;
 }
 
-
+ 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
 
@@ -69,7 +69,7 @@ serverInit().then(async (dataSource) => {
     let remultApi = remultExpress({
         entities:[stam],
         controllers:[controllerWithInstance,controllerWithStaic,AppComponent],
-        dataProvider:async ()=>await  getDatabase(),
+        dataProvider:async ()=>await  createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initApi: async remult => {

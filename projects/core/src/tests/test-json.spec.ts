@@ -41,6 +41,21 @@ describe("test json database", () => {
         expect(p.id).toBe(2);
 
     });
+    it("test insert is in the correct order in the result array", async () => {
+        const mem = new InMemoryDataProvider();
+        const remult = new Remult(mem);
+        await remult.repo(entityWithAutoId).insert([
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' }
+        ]);
+        expect(mem.rows[await remult.repo(entityWithAutoId).metadata.getDbName()]).toEqual([
+            { id: 1, name: 'a' },
+            { id: 2, name: 'b' },
+            { id: 3, name: 'c' }
+        ])
+
+    });
 
     it("test basics", async () => {
         await deleteAll1();
