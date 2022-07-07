@@ -10,16 +10,14 @@ import { EntityBase, Entity, Fields } from '../remult3';
 describe("test default value", () => {
 
     it("test basics", async () => {
-        let c = new Remult();
-        c.setDataProvider(new InMemoryDataProvider());
+        let c = new Remult(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
         let r = c.repo(testDefaultValue).create();
         expect(r.test).toBe(1);
         expect(testDefaultValue.testVal).toBe(2);
     });
     it("test create without querying the value", async () => {
-        let c = new Remult();
-        c.setDataProvider(new InMemoryDataProvider());
+        let c = new Remult(new InMemoryDataProvider());
         testDefaultValue.testVal = 1;
         let r = c.repo(testDefaultValue).create();
         await r._.save();

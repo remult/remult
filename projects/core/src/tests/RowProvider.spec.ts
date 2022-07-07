@@ -401,8 +401,7 @@ describe("test row provider", () => {
   });
 
   it("Test Validation 2", async () => {
-    var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -428,8 +427,7 @@ describe("test row provider", () => {
 
   });
   it("Test Validation 2_1", async () => {
-    var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -455,8 +453,7 @@ describe("test row provider", () => {
 
   });
   it("Test Validation 3", async () => {
-    var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -480,8 +477,7 @@ describe("test row provider", () => {
   });
 
   it("Test unique Validation and is not empty", async () => {
-    var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult(new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -519,8 +515,7 @@ describe("test row provider", () => {
   });
 
   it("test grid update and validation cycle", async () => {
-    var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult(new InMemoryDataProvider());
     let type = class extends newCategories {
       categoryName: string
 
@@ -573,8 +568,7 @@ describe("test row provider", () => {
     expect(c.categoryName).toBe('bla bla');
   });
   it("update should fail nicely", async () => {
-    let cont = new Remult();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    let cont = new Remult({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories).create();
     c.id = 1;
     c.categoryName = 'noam';
@@ -605,8 +599,7 @@ describe("test row provider", () => {
   });
   it("lookup with undefined doesn't fetch", async () => {
 
-    let cont = new Remult();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    let cont = new Remult({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories);
 
     let calledFind = false;
@@ -630,8 +623,7 @@ describe("test row provider", () => {
 
   });
   it("lookup return the same new row", async () => {
-    let cont = new Remult();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    let cont = new Remult({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories);
     var nc = { value: undefined };
     nc.value = 1;
@@ -869,8 +861,7 @@ describe("field display stuff", () => {
 });
 describe("api test", () => {
   it("can build", () => {
-    let ctx = new Remult();
-    ctx.setDataProvider(new InMemoryDataProvider());
+    let ctx = new Remult(new InMemoryDataProvider());
 
     let gs = new GridSettings(ctx.repo(newCategories));
     gs.addArea({
@@ -886,8 +877,7 @@ describe("api test", () => {
 
 });
 describe("column collection", () => {
-  let ctx = new Remult();
-  ctx.setDataProvider(new InMemoryDataProvider());
+  let ctx = new Remult(new InMemoryDataProvider());
 
   it("uses a saparate column", async () => {
     let type = class extends newCategories {
@@ -941,8 +931,7 @@ describe("column collection", () => {
 });
 describe("grid settings ",
   () => {
-    let ctx = new Remult();
-    ctx.setDataProvider(new InMemoryDataProvider());
+    let ctx = new Remult(new InMemoryDataProvider());
 
     it("sort is displayed right", () => {
       let s = ctx.repo(newCategories);
@@ -1378,8 +1367,7 @@ class TestCategories1 extends newCategories {
 }
 describe("test ", () => {
   it("Test Validation,", async () => {
-    var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    var remult = new Remult(new InMemoryDataProvider());
 
     var c = remult.repo(TestCategories1);
     var cat = c.create();

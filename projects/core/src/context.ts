@@ -254,8 +254,10 @@ export class Remult {
      */
     static apiBaseUrl = '/api';
     /** The current data provider */
+    /** @internal */
     _dataSource: DataProvider;
     /** sets the current data provider */
+    /** @internal */
     setDataProvider(dataProvider: DataProvider) {
         this._dataSource = dataProvider;
     }

@@ -21,8 +21,7 @@ export function testWebSqlImpl(key: string, what: dbTestWhatSignature, focus = f
           await sql.execute("drop table if exists " + r.name);
       }
     }
-    let remult = new Remult();
-    remult.setDataProvider(sql);
+    let remult = new Remult(sql);
     await what({ db: sql, remult, createEntity: async (x) => remult.repo(x) });
   }, focus);
 }
@@ -31,12 +30,10 @@ addDatabaseToTest(testWebSqlImpl);
 
 export function testRest(key: string, what: dbTestWhatSignature, focus = false) {
   itWithFocus(key + " - Rest Provider", async () => {
-    let r = new Remult();
-    r.setDataProvider(new InMemoryDataProvider());
+    let r = new Remult(new InMemoryDataProvider());
 
-    let remult = new Remult();
     let db = new MockRestDataProvider(r);
-    remult.setDataProvider(db);
+    let remult = new Remult(db);
     await what({ db, remult, createEntity: async (x) => remult.repo(x) });
   }, focus);
 }

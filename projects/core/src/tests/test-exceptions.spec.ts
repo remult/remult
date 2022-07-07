@@ -9,8 +9,7 @@ import { Field, Entity, EntityBase, Fields } from '../remult3';
 describe("test exception", () => {
     it("test save exception", async () => {
         var mem = new InMemoryDataProvider();
-        var c = new Remult();
-        c.setDataProvider({
+        var c = new Remult({
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
                 return {
@@ -32,6 +31,7 @@ describe("test exception", () => {
             },
             transaction: undefined
         });
+       
         var ok = new Done();
         let type = class extends EntityBase {
             id: string;

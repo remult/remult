@@ -36,9 +36,8 @@ export function addDatabaseToTest(tester: dbTestMethodSignature) {
 
 export function testInMemory(key: string, what: dbTestWhatSignature, focus = false) {
     itWithFocus(key + " - in memory", async () => {
-        let remult = new Remult();
         let db = new InMemoryDataProvider();
-        remult.setDataProvider(db);
+        let remult = new Remult(db);
         await what({ db, remult, createEntity: async (x) => remult.repo(x) });
     }, focus);
 }

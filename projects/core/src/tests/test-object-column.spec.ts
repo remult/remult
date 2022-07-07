@@ -11,8 +11,7 @@ import { IdEntity } from '../id-entity';
 describe("test object column", () => {
     var wsql = new WebSqlDataProvider("test");
     let db = new SqlDatabase(wsql);
-    let remult = new Remult();
-    remult.setDataProvider(db);
+    let remult = new Remult(db);
     async function deleteAll() {
         let e = remult.repo(ObjectColumnTest).metadata;
         await wsql.dropTable(e);
@@ -106,8 +105,7 @@ describe("test object column", () => {
     it("test basics with json", async () => {
 
         var mem = new InMemoryDataProvider();
-        var c = new Remult();
-        c.setDataProvider(mem);
+        var c = new Remult(mem);
 
         var x = c.repo(ObjectColumnTest).create();
         x.id = 1;

@@ -85,8 +85,7 @@ Action.provider = {
                   r(JSON.parse(JSON.stringify(serializeError(data))));
                   actionInfo.runningOnServer = false
                 }
-                let remult = new Remult();
-                remult.setDataProvider(ActionTestConfig.db);
+                let remult = new Remult(ActionTestConfig.db);
 
 
                 what(JSON.parse(JSON.stringify(data)), remult, t);
@@ -118,17 +117,15 @@ export async function testSql(runAsync: (db: {
         await sql.execute("drop table if exists " + r.name);
     }
   }
-  let remult = new Remult();
-  remult.setDataProvider(sql);
+  let remult = new Remult(sql);
   await runAsync({ db: sql, remult });
 }
 export async function testInMemoryDb(runAsync: (db: {
   db: DataProvider,
   remult: Remult
 }) => Promise<void>) {
-  let remult = new Remult();
   let db = new InMemoryDataProvider();
-  remult.setDataProvider(db);
+  let remult = new Remult(db);
   await runAsync({ db, remult });
 }
 
@@ -139,12 +136,9 @@ export async function testRestDb(runAsync: (db: {
   db: DataProvider,
   remult: Remult
 }) => Promise<void>) {
-  let r = new Remult();
-  r.setDataProvider(new InMemoryDataProvider());
-
-  let remult = new Remult();
+  let r = new Remult(new InMemoryDataProvider());
   let db = new MockRestDataProvider(r);
-  remult.setDataProvider(db);
+  let remult = new Remult(db);
   await runAsync({ db, remult });
 }
 export async function testAllDataProviders(runAsync: (db: {
@@ -196,7 +190,7 @@ export class MockRestDataProvider implements DataProvider {
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
 
     let dataApi = new DataApi(this.remult.repo(metadata.entityType), this.remult);
-    return new RestEntityDataProvider("", new HttpProviderBridgeToRestDataProviderHttpProvider ({
+    return new RestEntityDataProvider("", new HttpProviderBridgeToRestDataProviderHttpProvider({
       delete: async url => {
 
 

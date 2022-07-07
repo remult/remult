@@ -15,8 +15,7 @@ import { FilterConsumerBridgeToSqlRequest, getDbNameProvider } from '../filter/f
 describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
     let db = new SqlDatabase(web);
-    let remult = new Remult();
-    remult.setDataProvider(db);
+    let remult = new Remult(db);
     async function deleteAll() {
         await web.dropTable(remult.repo(testSqlExpression).metadata);
         await web.dropTable(remult.repo(expressionEntity).metadata);
@@ -41,8 +40,7 @@ describe("test sql database expressions", () => {
         expect((n.nameOf(x.metadata.fields.col))).toBe('col');
         expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
         expect(n.isDbReadonly(x.metadata.fields.col)).toBe(false);
-        let c = new Remult();
-        c.setDataProvider(db);
+        let c = new Remult(db);
         expressionEntity.yes = true;
         x = c.repo(expressionEntity);
         n = await getDbNameProvider(x.metadata);

@@ -7,9 +7,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 
 import { assign } from '../../assign';
-import { Filter } from '../filter/filter-interfaces';
 import { dWithPrefilter } from './dWithPrefilter';
-import { d } from './d';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -125,8 +123,7 @@ describe("test Server method in entity", () => {
     it("saves correctly to db", async () => {
 
         actionInfo.runningOnServer = true;
-        let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        let remult = new Remult(new InMemoryDataProvider());
         let r = remult.repo(testBoolCreate123);
         let dataApi = new DataApi(r, remult);
         let t = new TestDataApiResponse();
@@ -156,14 +153,14 @@ class a extends EntityBase {
 class b extends EntityBase {
     @Fields.integer()
     id: number;
-    @Field(()=>a)
+    @Field(() => a)
     a: a;
 }
 @Entity('c')
 class c extends EntityBase {
     @Fields.integer()
     id: number;
-    @Field(()=>b)
+    @Field(() => b)
     b: b;
     @BackendMethod({ allowed: true })
     async doIt() {
@@ -193,15 +190,13 @@ describe("complex entity relations on server entity and backend method", () => {
         ActionTestConfig.db.rows = [];
     });
     it("fix it", async () => {
-        let remult = new Remult();
-        remult.setDataProvider(ActionTestConfig.db);
+        let remult = new Remult(ActionTestConfig.db);
         let a1 = await remult.repo(a).create({ id: 1 }).save();
         let a2 = await remult.repo(a).create({ id: 2 }).save();
         let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
         let c1 = await remult.repo(c).create({ id: 21, b: b1 }).save();
-        remult = new Remult();//clear the cache;
-        remult.setDataProvider(ActionTestConfig.db);
+        remult = new Remult(ActionTestConfig.db);//clear the cache;
 
         let r = await c1.doIt();
         expect(r).toBe(2);
@@ -209,15 +204,13 @@ describe("complex entity relations on server entity and backend method", () => {
         expect(c1.b.a.id).toBe(2);
     });
     it("fix it new row", async () => {
-        let remult = new Remult();
-        remult.setDataProvider(ActionTestConfig.db);
+        let remult = new Remult(ActionTestConfig.db);
         let a1 = await remult.repo(a).create({ id: 1 }).save();
         let a2 = await remult.repo(a).create({ id: 2 }).save();
         let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
 
-        remult = new Remult();//clear the cache;
-        remult.setDataProvider(ActionTestConfig.db);
+        remult = new Remult(ActionTestConfig.db);//clear the cache;
         let c1 = await remult.repo(c).create({ id: 21, b: b1 })
         let r = await c1.doIt();
         expect(r).toBe(2);
@@ -225,15 +218,13 @@ describe("complex entity relations on server entity and backend method", () => {
         expect(c1.b.a.id).toBe(2);
     });
     it("fix it change value", async () => {
-        let remult = new Remult();
-        remult.setDataProvider(ActionTestConfig.db);
+        let remult = new Remult(ActionTestConfig.db);
         let a1 = await remult.repo(a).create({ id: 1 }).save();
         let a2 = await remult.repo(a).create({ id: 2 }).save();
         let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
         let c1 = await remult.repo(c).create({ id: 21, b: b1 }).save();
-        remult = new Remult();//clear the cache;
-        remult.setDataProvider(ActionTestConfig.db);
+        remult = new Remult(ActionTestConfig.db);//clear the cache;
         c1 = await remult.repo(c).findId(21);
         c1.b = b2;
         let r = await c1.doIt2();

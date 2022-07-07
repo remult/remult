@@ -501,8 +501,7 @@ export class SiteArea {
     return async (req: express.Request, res: express.Response) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
-      let remult = new Remult();
-      remult.setDataProvider(await this.bridge.dataProvider);
+      let remult = new Remult(await this.bridge.dataProvider);
       if (req) {
         let user = req['user'];
         if (!user)

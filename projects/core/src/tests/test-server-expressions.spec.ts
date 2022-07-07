@@ -10,8 +10,7 @@ describe("test server expression value", () => {
     afterEach(() => actionInfo.runningOnServer = false);
     it("test basics create", async () => {
 
-        let c = new Remult();
-        c.setDataProvider(new InMemoryDataProvider());
+        let c = new Remult(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.repo(testServerExpression).create();
@@ -23,8 +22,7 @@ describe("test server expression value", () => {
         expect(testServerExpression.testVal2).toBe(12);
     });
     it("test basics find", async () => {
-        let c = new Remult();
-        c.setDataProvider(new InMemoryDataProvider());
+        let c = new Remult(new InMemoryDataProvider());
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
         let r = c.repo(testServerExpression).create();
@@ -40,8 +38,7 @@ describe("test server expression value", () => {
     });
     it("test doesnt calc on client", async () => {
         actionInfo.runningOnServer = false;
-        let c = new Remult();
-        c.setDataProvider(new InMemoryDataProvider());
+        let c = new Remult(new InMemoryDataProvider());
 
         testServerExpression.testVal = 1;
         testServerExpression.testVal2 = 11;
@@ -55,8 +52,7 @@ describe("test server expression value", () => {
     });
     it("test basics find doesnt calc on client", async () => {
         actionInfo.runningOnServer = false;
-        let c = new Remult();
-        c.setDataProvider(new InMemoryDataProvider());
+        let c = new Remult(new InMemoryDataProvider());
 
         let r = c.repo(testServerExpression).create();
         r.code = 5;

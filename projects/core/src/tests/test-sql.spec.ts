@@ -7,8 +7,7 @@ import { Entity, Fields, Repository } from '../remult3';
 
 describe("test sql database", () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
-    let remult = new Remult();
-    remult.setDataProvider(db);
+    let remult = new Remult(db);
     async function deleteAll() {
         for (const c of await remult.repo(Categories).find()) {
             await c._.delete();

@@ -256,8 +256,8 @@ describe("data api", () => {
 
 
 
-  let remult = new Remult();
-  remult.setDataProvider(new InMemoryDataProvider());
+  let remult = new Remult(new InMemoryDataProvider());
+
 
 
   it("validate with validations on column fails", async () => {
@@ -340,14 +340,14 @@ describe("data api", () => {
     expect(r.length).toBe(0);
   });
   it("delete falis nicely ", async () => {
-    let ctx = new Remult();
-    ctx.setDataProvider({
+    let ctx = new Remult({
       getEntityDataProvider: (x) => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }]);
         r.delete = () => { throw "ERROR"; };
         return r;
       }, transaction: undefined
     });
+
 
     var api = new DataApi(ctx.repo(newCategories), ctx);
     let t = new TestDataApiResponse();
@@ -789,9 +789,8 @@ describe("data api", () => {
 
 
     let startTest = false;
-    let remult = new Remult();
     let mem = new InMemoryDataProvider();
-    remult.setDataProvider(mem);
+    let remult = new Remult(mem);
     let type = class extends newCategories {
 
     }
@@ -1405,9 +1404,8 @@ describe("column validation", () => {
   });
   it("test date filter and values", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Remult();
+    let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
-    c.setDataProvider(sql);
     let type = class extends EntityBase {
       id: number;
       name: string;
@@ -1440,9 +1438,9 @@ describe("column validation", () => {
 describe("test web sql identity", () => {
   it("play", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Remult();
+    let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
-    c.setDataProvider(sql);
+
 
     let type = class extends EntityBase {
       id: number;
@@ -1507,8 +1505,8 @@ describe("compound id", () => {
   it("compound sql",
     async () => {
       let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
-      let ctx = new Remult();
-      ctx.setDataProvider(sql);
+      let ctx = new Remult(sql);
+
 
       let cod = ctx.repo(CompoundIdEntity);
       for (const od of await cod.find({ where: { a: 99 } })) {
@@ -1527,8 +1525,8 @@ describe("compound id", () => {
   const ctx = new Remult();
   it("start", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    let ctx = new Remult(mem);
+
 
     let s = ctx.repo(CompoundIdEntity);
 
@@ -1548,8 +1546,7 @@ describe("compound id", () => {
 
   it("update", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    let ctx = new Remult(mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1569,8 +1566,7 @@ describe("compound id", () => {
   });
   it("update2", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    let ctx = new Remult(mem);
     let c = ctx.repo(CompoundIdEntity);
 
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -1588,8 +1584,7 @@ describe("compound id", () => {
   });
   it("insert", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    let ctx = new Remult(mem);
     let c = ctx.repo(CompoundIdEntity).create();
     mem.rows[ctx.repo(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
@@ -1604,8 +1599,7 @@ describe("compound id", () => {
   });
   it("delete", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    let ctx = new Remult(mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1648,14 +1642,14 @@ describe("test data list", () => {
 
   it("delete fails nicely", async () => {
 
-    let cont = new Remult();
-    cont.setDataProvider({
+    let cont = new Remult({
       getEntityDataProvider: x => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
         r.delete = id => { return Promise.resolve().then(() => { throw Promise.resolve("error"); }) };
         return r;
       }, transaction: undefined
     });
+
     let rl = new DataList<newCategories>(cont.repo(newCategories));
     await rl.get();
     expect(rl.items.length).toBe(3);
@@ -1757,8 +1751,7 @@ describe("test rest data provider translates data correctly", () => {
     let [, serverRemult] = await createData(async insert => await insert(1, "test"));
 
     let restDb = new MockRestDataProvider(serverRemult);
-    let remult = new Remult();
-    remult.setDataProvider(restDb);
+    let remult = new Remult(restDb);
     let c = await remult.repo(Categories).findId(1, { useCache: false });
     expect(c.categoryName).toBe("test");
     c.categoryName = "test1";
@@ -1849,8 +1842,7 @@ describe("test rest data provider translates data correctly", () => {
   })
 });
 describe("check allowedDataType", () => {
-  let c = new Remult();
-  c.setDataProvider(new InMemoryDataProvider());
+  let c = new Remult(new InMemoryDataProvider());
   let strA = 'roleA',
     strB = 'roleB',
     strC = 'roleC';
@@ -1891,8 +1883,7 @@ describe("check allowedDataType", () => {
   myIt(false, false);
   myIt(undefined, undefined);
   it("no context", () => {
-    let c = new Remult();
-    c.setDataProvider(new InMemoryDataProvider());
+    let c = new Remult(new InMemoryDataProvider());
     c.setUser(undefined);
     expect(c.isAllowed(true)).toBe(true);
     expect(c.isAllowed(c => true)).toBe(true);
