@@ -136,6 +136,6 @@ testWebSqlImpl("work with native sql", async ({ remult, createEntity }) => {
     expect(
         `select ${e.myId}, ${e.name} from ${e}`)
         .toBe("select myId, name from entityWithValidations")
-}, true);
+}, false);
 
 
