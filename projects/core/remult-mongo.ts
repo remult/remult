@@ -10,7 +10,7 @@ export class MongoDataProvider implements DataProvider {
     static getRawDb(remult: Remult) {
         const r = remult._dataSource as MongoDataProvider;
         if (!r.db)
-            throw "the data provider is not an KnexDataProvider";
+            throw "the data provider is not a MongoDataProvider";
         return r.db;
     }
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
