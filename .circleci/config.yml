@@ -17,7 +17,7 @@ workflows:
       jobs:
         - node/run:
             name: build
-            npm-run: core-build 
+            npm-run: build-core 
         - node/test:
             name: test
             run-command: test:ci
