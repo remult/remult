@@ -1,5 +1,5 @@
 {
-  "name": "remult mono repo",
+  "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
   "version": "0.13.29",
   "scripts": {
