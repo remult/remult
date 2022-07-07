@@ -98,7 +98,7 @@ export {
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
 export { Filter } from './src/filter/filter-interfaces';
-export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-bridge-to-sql-request';
+export { FilterConsumerBridgeToSqlRequest, getEntityDbNames,EntityDbNames } from './src/filter/filter-consumer-bridge-to-sql-request';
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 

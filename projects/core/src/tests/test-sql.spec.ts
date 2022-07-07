@@ -2,9 +2,10 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories } from './remult-3-entities';
-import { Entity, Fields, Repository } from '../remult3';
+import { Entity, Fields, OmitEB, Repository } from '../remult3';
 import { testWebSqlImpl } from './frontend-database-tests-setup.spec';
 import { entityWithValidations } from '../shared-tests/entityWithValidations';
+import { getDbNameProvider, getEntityDbNames } from '../filter/filter-consumer-bridge-to-sql-request';
 
 
 describe("test sql database", () => {
@@ -122,10 +123,19 @@ testWebSqlImpl("work with native sql2", async ({ remult, createEntity }) => {
     await new Promise((res) => {
         sql.transaction(y => {
             y.executeSql("select count(*) as c from " + repo.metadata.options.dbName!, undefined,
-                (_,r) => {
+                (_, r) => {
                     expect(r.rows[0].c).toBe(4);
                     res({});
                 });
         });
     });
 }, false);
+testWebSqlImpl("work with native sql", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const e = await getEntityDbNames(repo);
+    expect(
+        `select ${e.myId}, ${e.name} from ${e}`)
+        .toBe("select myId, name from entityWithValidations")
+}, true);
+
+

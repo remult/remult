@@ -12,14 +12,16 @@ This can help if you want to switch sql database sometimes in the future.
 
 ### Simple sql
 ```ts
+const repo = remult.repo(Task);
 const sql = SqlDatabase.getRawDb(remult);
 const r = await sql.execute("select count(*) as c from " + repo.metadata.options.dbName!);
 console.log(r.rows[0].c);
 ```
 
 ### Using bound parameters
-```ts{5-9}
+```ts
 const priceToUpdate = 7;
+const repo = remult.repo(Task);
 const sql = SqlDatabase.getRawDb(remult!);
 let command = sql.createCommand();
 await command.execute("update products set price = price + " 
@@ -40,6 +42,7 @@ Always use the `addParameterAndReturnSqlToken` method to generate database param
 
 ## Native postgres
 ```ts
+const repo = remult.repo(Task);
 const sql = PostgresDataProvider.getRawDb(remult);
 const r = await sql.query("select count(*) as c from " + repo.metadata.options.dbName!);
 console.log(r.rows[0].c);
@@ -47,6 +50,7 @@ console.log(r.rows[0].c);
 
 ## Knex
 ```ts
+const repo = remult.repo(Task);
 const knex = KnexDataProvider.getRawDb(remult);
 const r = await knex(repo.metadata.options.dbName!).count()
 console.log(r[0].count);
@@ -54,6 +58,7 @@ console.log(r[0].count);
 
 ## MongoDB
 ```ts
+const repo = remult.repo(Task);
 const mongo = MongoDataProvider.getRawDb(remult);
 const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments();
 console.log(r);
@@ -61,6 +66,7 @@ console.log(r);
 
 ## websql
 ```ts
+const repo = remult.repo(Task);
 const sql = WebSqlDataProvider.getRawDb(remult);
 sql.transaction(y => {
     y.executeSql("select count(*) as c from " + repo.metadata.options.dbName!, undefined,
@@ -69,4 +75,13 @@ sql.transaction(y => {
         });
 });
 
+```
+
+## Leveraging the Entity metadata
+To improve maintainability it makes sense to use in the query the column names as are defined in the entity itself. We can use the `getEntityDbNames` function
+```ts
+const repo = remult.repo(Task);
+const t = await getEntityDbNames(repo);
+const sql = SqlDatabase.getRawDb(remult!);
+console.table(await `select ${t.title}, ${t.completed} from ${t.$entityName}`)
 ```

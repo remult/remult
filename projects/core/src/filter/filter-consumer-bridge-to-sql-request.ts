@@ -1,7 +1,7 @@
 import { SqlCommand } from "../sql-command";
 import { Filter, FilterConsumer } from './filter-interfaces';
 import { FieldMetadata } from "../column-interfaces";
-import { EntityMetadata } from "../..";
+import { EntityMetadata, OmitEB, Repository } from "../..";
 
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
@@ -161,4 +161,23 @@ export interface dbNameProvider {
   entityName: string;
   isDbReadonly(x: FieldMetadata): boolean;
 
+}
+
+export declare type EntityDbNames<entityType> = {
+  [Properties in keyof Required<OmitEB<entityType>>]: string
+} & {
+  $entityName: string,
+  toString(): string
+}
+export async function getEntityDbNames<entityType>(repo: Repository<entityType>): Promise<EntityDbNames<entityType>> {
+  const p = await getDbNameProvider(repo.metadata);
+  const $entityName = p.entityName
+  const result: any = {
+    $entityName,
+    toString: () => $entityName
+  };
+  for (const field of repo.metadata.fields) {
+    result[field.key] = p.nameOf(field)
+  }
+  return result;
 }
