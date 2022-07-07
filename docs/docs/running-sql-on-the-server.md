@@ -1,23 +1,30 @@
-# Running SQL on the server
-Sometimes we need to run SQL on the server to do some advanced SQL stuff.
+# Using the underlying database
+We understand that remult doesn't cover every use case of querying data from the database, and in some cases you may want to access the underlying database itself on the backend.
 
-We can do that using the `@BackendMethod`
+Here's the way to do that, based on the `remult` object.
 
-To do that we need to add an optional parameter for the `@BackendMethod` of type `SqlDatabase`
-```ts{5-9}
-@BackendMethod({ allowed: authenticated })
-static async updatePriceOnBackend(
-  priceToUpdate: number,
-  remult?: Remult,
-  sql?: SqlDatabase
-) {
-  let command = sql.createCommand();
-  await command.execute("update products set price = price + " 
-    + command.addParameterAndReturnSqlToken(+priceToUpdate));
-}
+Note that this code can only run on the backend
+
+## SqlDatabase
+`SqlDatabase` provides a level of abstraction around all sql based implementations (postgres, websql and more to come);
+
+This can help if you want to switch sql database sometimes in the future.
+
+### Simple sql
+```ts
+const sql = SqlDatabase.getRawDb(remult);
+const r = await sql.execute("select count(*) as c from " + repo.metadata.options.dbName!);
+console.log(r.rows[0].c);
 ```
 
-The `SqlDatabase` parameter will be injected with an object that can run SQL.
+### Using bound parameters
+```ts{5-9}
+const priceToUpdate = 7;
+const sql = SqlDatabase.getRawDb(remult!);
+let command = sql.createCommand();
+await command.execute("update products set price = price + " 
+   + command.addParameterAndReturnSqlToken(+priceToUpdate));
+```
 
 When executed with  `priceToUpdate = 5`, this code will run the following SQL:
 ```sql
@@ -31,3 +38,35 @@ Running custom SQL is dangerous and prone to SQL injection hacking. Avoid buildi
 Always use the `addParameterAndReturnSqlToken` method to generate database parameters (like the `$1` that you can see in the query) - this can help you reduce the risk of SQL injection
 :::
 
+## Native postgres
+```ts
+const sql = PostgresDataProvider.getRawDb(remult);
+const r = await sql.query("select count(*) as c from " + repo.metadata.options.dbName!);
+console.log(r.rows[0].c);
+```
+
+## Knex
+```ts
+const knex = KnexDataProvider.getRawDb(remult);
+const r = await knex(repo.metadata.options.dbName!).count()
+console.log(r[0].count);
+```
+
+## MongoDB
+```ts
+const mongo = MongoDataProvider.getRawDb(remult);
+const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments();
+console.log(r);
+```
+
+## websql
+```ts
+const sql = WebSqlDataProvider.getRawDb(remult);
+sql.transaction(y => {
+    y.executeSql("select count(*) as c from " + repo.metadata.options.dbName!, undefined,
+        (_,r) => {
+            console.log(r.rows[0].c);
+        });
+});
+
+```

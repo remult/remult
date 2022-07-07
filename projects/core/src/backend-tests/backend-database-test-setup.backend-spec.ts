@@ -169,8 +169,8 @@ testPostgresImplementation("work with native sql3", async ({ remult, createEntit
 
 testKnexPGSqlImpl("work with native knex", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const sql = KnexDataProvider.getRawDb(remult);
-    const r = await sql(repo.metadata.options.dbName!).count()
+    const knex = KnexDataProvider.getRawDb(remult);
+    const r = await knex(repo.metadata.options.dbName!).count()
     expect(r[0].count).toBe('4');
 }, false);
 testKnexPGSqlImpl("work with native knex2", async ({ remult, createEntity }) => {
