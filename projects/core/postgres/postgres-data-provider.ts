@@ -1,6 +1,6 @@
 import { SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
 
-import { Pool, PoolConfig, QueryResult } from 'pg';
+import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
 
 import { allEntities, Remult } from '../src/context';
 
@@ -18,6 +18,14 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
+    static getRawDb(remult: Remult): ClientBase {
+        const sql = SqlDatabase.getRawDb(remult);
+        const me = sql._getSourceSql() as PostgresDataProvider;
+        if (!me.pool) {
+            throw "the data provider is not a PostgresDataProvider";
+        }
+        return me.pool as any as ClientBase;
+    }
     async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> {
 
     }
@@ -40,7 +48,9 @@ export class PostgresDataProvider implements SqlImplementation {
                 createCommand: () => new PostgresBridgeToSQLCommand(client),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
-                getLimitSqlSyntax: this.getLimitSqlSyntax
+                getLimitSqlSyntax: this.getLimitSqlSyntax,
+                //@ts-ignore
+                pool:client
             });
             await client.query('COMMIT');
         }
@@ -121,7 +131,7 @@ export class PostgresSchemaBuilder {
                             result += ',';
                         result += '\r\n  ';
 
-                        if (isAutoIncrement( x))
+                        if (isAutoIncrement(x))
                             result += e.nameOf(x) + ' serial';
                         else {
                             result += postgresColumnSyntax(x, e.nameOf(x));

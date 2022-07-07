@@ -1,11 +1,17 @@
 import { MongoClient, Db, FindOptions } from 'mongodb';
-import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter } from '.';
+import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter, Remult } from '.';
 import { dbNameProvider, getDbNameProvider } from './src/filter/filter-consumer-bridge-to-sql-request';
 import { FilterConsumer } from './src/filter/filter-interfaces';
 
 export class MongoDataProvider implements DataProvider {
     constructor(private db: Db, private client: MongoClient) {
 
+    }
+    static getRawDb(remult: Remult) {
+        const r = remult._dataSource as MongoDataProvider;
+        if (!r.db)
+            throw "the data provider is not an KnexDataProvider";
+        return r.db;
     }
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
         return new MongoEntityDataProvider(this.db, entity);

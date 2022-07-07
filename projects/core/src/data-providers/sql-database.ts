@@ -8,15 +8,27 @@ import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
 import { EntityMetadata, EntityFilter } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
+import { Remult } from "../context";
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
+  static getRawDb(remult: Remult) {
+    const r = remult._dataSource as SqlDatabase;
+    if (!r.createCommand)
+      throw "the data provider is not an SqlDatabase";
+    return r;
+  }
   createCommand(): SqlCommand {
     return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole);
   }
   async execute(sql: string) {
     return await this.createCommand().execute(sql);
   }
+  /* @internal*/
+  _getSourceSql() {
+    return this.sql;
+  }
+
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async (dbName) => {

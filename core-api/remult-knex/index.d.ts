@@ -5,6 +5,7 @@ import { dbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-requ
 export declare class KnexDataProvider implements DataProvider {
     knex: Knex;
     constructor(knex: Knex);
+    static getRawDb(remult: Remult): Knex<any, Record<string, any>[]>;
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     static customFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;

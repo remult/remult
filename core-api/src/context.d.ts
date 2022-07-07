@@ -77,10 +77,6 @@ export declare class Remult {
      * Set this property in case you want to determine a non relative api url
      */
     static apiBaseUrl: string;
-    /** The current data provider */
-    _dataSource: DataProvider;
-    /** sets the current data provider */
-    setDataProvider(dataProvider: DataProvider): void;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind: (metadata: EntityMetadata, options: FindOptions<any>) => void;
     clearAllCache(): any;

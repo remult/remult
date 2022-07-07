@@ -6,6 +6,7 @@ import { EntityMetadata, isAutoIncrement } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
 import { getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import { Remult } from "../context";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
@@ -19,6 +20,14 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
 
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, databaseSize);
+    }
+    static getRawDb(remult: Remult) {
+        const sql = SqlDatabase.getRawDb(remult);
+        const me = sql._getSourceSql() as WebSqlDataProvider;
+        if (!me.db) {
+            throw "the data provider is not a WebSqlDataProvider";
+        }
+        return me.db;
     }
 
     getLimitSqlSyntax(limit: number, offset: number) {

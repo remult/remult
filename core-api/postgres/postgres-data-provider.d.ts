@@ -1,5 +1,5 @@
 import { SqlDatabase, SqlCommand, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
-import { PoolConfig, QueryResult } from 'pg';
+import { ClientBase, PoolConfig, QueryResult } from 'pg';
 import { Remult } from '../src/context';
 export interface PostgresPool extends PostgresCommandSource {
     connect(): Promise<PostgresClient>;
@@ -9,6 +9,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 export declare class PostgresDataProvider implements SqlImplementation {
     private pool;
+    static getRawDb(remult: Remult): ClientBase;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
     getLimitSqlSyntax(limit: number, offset: number): string;
     createCommand(): SqlCommand;

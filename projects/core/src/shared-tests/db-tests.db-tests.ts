@@ -18,7 +18,7 @@ import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnC
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 import { IdEntity } from "../id-entity";
-import { testRest } from "../tests/frontend-database-tests-setup.spec";
+
 
 
 

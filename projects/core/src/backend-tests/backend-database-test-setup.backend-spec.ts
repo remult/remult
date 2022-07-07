@@ -1,9 +1,9 @@
 import { Remult } from "../context";
 import { KnexDataProvider, KnexSchemaBuilder } from '../../remult-knex';
 import * as Knex from 'knex';
-import { MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 import { config } from 'dotenv';
-import { createPostgresConnection, PostgresSchemaBuilder } from "../../postgres";
+import { createPostgresConnection, PostgresDataProvider, PostgresSchemaBuilder } from "../../postgres";
 import { ClassType } from "../../classType";
 import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll } from "../shared-tests/db-tests-setup";
 config();
@@ -139,3 +139,53 @@ addDatabaseToTest(testMongo);
 
 
 import '../shared-tests'
+import { entityWithValidations } from "../shared-tests/entityWithValidations";
+import { SqlDatabase } from "../data-providers/sql-database";
+
+testPostgresImplementation("work with native sql", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const sql = SqlDatabase.getRawDb(remult);
+    const r =
+        await sql.execute("select count(*) as c from " + repo.metadata.options.dbName!);
+    expect(r.rows[0].c).toBe('4');
+}, false);
+testPostgresImplementation("work with native sql2", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const sql = PostgresDataProvider.getRawDb(remult);
+    const r =
+        await sql.query("select count(*) as c from " + repo.metadata.options.dbName!);
+    expect(r.rows[0].c).toBe('4');
+}, false);
+testPostgresImplementation("work with native sql3", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    await SqlDatabase.getRawDb(remult)._getSourceSql().transaction(async x => {
+        const sql = PostgresDataProvider.getRawDb(new Remult(new SqlDatabase(x)));
+        const r =
+            await sql.query("select count(*) as c from " + repo.metadata.options.dbName!);
+        expect(r.rows[0].c).toBe('4');
+    });
+
+}, false);
+
+testKnexPGSqlImpl("work with native knex", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const sql = KnexDataProvider.getRawDb(remult);
+    const r = await sql(repo.metadata.options.dbName!).count()
+    expect(r[0].count).toBe('4');
+}, false);
+testKnexPGSqlImpl("work with native knex2", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    await (remult._dataSource).transaction(async db => {
+        const sql = KnexDataProvider.getRawDb(new Remult(db));
+        const r = await sql(repo.metadata.options.dbName!).count()
+        expect(r[0].count).toBe('4');
+    });
+
+}, false);
+
+testMongo("work with native mongo", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const mongo = MongoDataProvider.getRawDb(remult);
+    const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments();
+    expect(r).toBe(4);
+}, false);
