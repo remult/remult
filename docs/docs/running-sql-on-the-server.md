@@ -85,3 +85,34 @@ const t = await getEntityDbNames(repo);
 const sql = SqlDatabase.getRawDb(remult!);
 console.table(await `select ${t.title}, ${t.completed} from ${t.$entityName}`)
 ```
+
+## Leveraging EntityFilter
+Sometimes in our sql, we may want to use EntityFilters as sql filters, we can use a utility function for that:
+### Sql
+```ts
+const repo = remult.repo(Task);
+const t = await getEntityDbNames(repo);
+const sql = SqlDatabase.getRawDb(remult!);
+console.table(await 
+`select ${t.title}, ${t.completed} from ${t.$entityName}
+    where ${await sqlCondition(repo, { id: [1, 3] })}}`)
+```
+
+### Knex
+```ts
+const repo = remult.repo(Task);
+const knex = KnexDataProvider.getRawDb(remult);
+const r = await knex(repo.metadata.options.dbName!)
+    .count()
+    .where(await knexCondition(repo, { id: [1, 3] }));
+console.log(r[0].count);
+```
+
+### MongoDB
+```ts
+const repo = remult.repo(Task);
+const mongo = MongoDataProvider.getRawDb(remult);
+const r = await (await mongo.collection(repo.metadata.options.dbName!))
+    .countDocuments(await mongoCondition(repo, { myId: [1, 2] }) );
+console.log(r);
+```

@@ -4,7 +4,7 @@ import { customDatabaseFilterToken, FilterConsumer } from "../src/filter/filter-
 import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities } from "../src/context";
 
-import { isAutoIncrement, StringFieldOptions, Fields } from "../src/remult3";
+import { isAutoIncrement, StringFieldOptions, Fields, Repository, RepositoryImplementation } from "../src/remult3";
 import { ValueConverters } from "../valueConverters";
 
 export class KnexDataProvider implements DataProvider {
@@ -14,9 +14,9 @@ export class KnexDataProvider implements DataProvider {
     static getRawDb(remult: Remult) {
         const r = remult._dataSource as KnexDataProvider;
         if (!r.knex)
-          throw "the data provider is not an KnexDataProvider";
+            throw "the data provider is not an KnexDataProvider";
         return r.knex;
-      }
+    }
 
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
         return new KnexEntityDataProvider(entity, this.knex);
@@ -27,7 +27,7 @@ export class KnexDataProvider implements DataProvider {
             await action(new KnexDataProvider(t));
             await t.commit();
         }
-        catch (err){
+        catch (err) {
             await t.rollback();
             throw err;
         }
@@ -302,6 +302,17 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
             }
         })());
     }
+}
+
+export async function knexCondition<entityType>(
+    repo: Repository<entityType>,
+    condition: EntityFilter<entityType>) {
+
+    var b = new FilterConsumerBridgeToKnexRequest(await getDbNameProvider(repo.metadata))
+    b._addWhere = false;
+    await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+    let r = await b.resolveWhere();
+    return knex => r.forEach(y => y(knex))
 }
 
 

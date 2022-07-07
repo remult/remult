@@ -50,7 +50,6 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     create(item?: Partial<OmitEB<entityType>>): entityType;
     fromJson(json: any, newRow?: boolean): Promise<entityType>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
-    private translateWhereToFilter;
 }
 export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;
 export declare type EntityOptionsFactory = (remult: Remult) => EntityOptions;

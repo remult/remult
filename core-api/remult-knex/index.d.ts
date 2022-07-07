@@ -2,6 +2,7 @@ import { DataProvider, EntityDataProvider, EntityFilter, EntityMetadata, FieldMe
 import { Knex } from 'knex';
 import { FilterConsumer } from "../src/filter/filter-interfaces";
 import { dbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
+import { Repository } from "../src/remult3";
 export declare class KnexDataProvider implements DataProvider {
     knex: Knex;
     constructor(knex: Knex);
@@ -36,6 +37,7 @@ export declare class FilterConsumerBridgeToKnexRequest implements FilterConsumer
         buildKnex: CustomKnexFilterBuilderFunction;
     }): void;
 }
+export declare function knexCondition<entityType>(repo: Repository<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
 export declare class KnexSchemaBuilder {
     private knex;
     verifyStructureOfAllEntities(remult: Remult): Promise<void>;

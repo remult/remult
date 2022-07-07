@@ -1,7 +1,8 @@
 import { MongoClient, Db, FindOptions } from 'mongodb';
-import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter, Remult } from '.';
+import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityFilter, EntityMetadata, FieldMetadata, Filter, Remult, Repository } from '.';
 import { dbNameProvider, getDbNameProvider } from './src/filter/filter-consumer-bridge-to-sql-request';
 import { FilterConsumer } from './src/filter/filter-interfaces';
+import { RepositoryImplementation } from './src/remult3';
 
 export class MongoDataProvider implements DataProvider {
     constructor(private db: Db, private client: MongoClient) {
@@ -254,4 +255,14 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
         //     }
         //   })());
     }
+}
+export async function mongoCondition<entityType>(
+    repo: Repository<entityType>,
+    condition: EntityFilter<entityType>) {
+
+    var b = new FilterConsumerBridgeToMongo(await getDbNameProvider(repo.metadata))
+    b._addWhere = false;
+    await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+    let r = await b.resolveWhere();
+    return r;
 }

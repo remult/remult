@@ -1,13 +1,13 @@
-import { IdEntity, SqlDatabase } from "../..";
+import { getEntityDbNames, IdEntity, SqlDatabase } from "../..";
 import { Remult } from "../context";
-import { Entity, Field } from "../remult3";
-import { KnexDataProvider } from '../../remult-knex';
+import { Entity, EntityFilter, Field, Repository } from "../remult3";
+import { knexCondition, KnexDataProvider } from '../../remult-knex';
 import * as Knex from 'knex';
 import { config } from 'dotenv';
 import { testKnexPGSqlImpl, testMongo, testPostgresImplementation } from "./backend-database-test-setup.backend-spec";
 import { entityWithValidations } from "../shared-tests/entityWithValidations";
 import { PostgresDataProvider } from "../../postgres";
-import { MongoDataProvider } from "../../remult-mongo";
+import { MongoDataProvider, mongoCondition } from "../../remult-mongo";
 config();
 
 
@@ -105,3 +105,19 @@ testMongo("work with native mongo", async ({ remult, createEntity }) => {
     const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments();
     expect(r).toBe(4);
 }, false);
+
+
+testKnexPGSqlImpl("knex with filter", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const knex = KnexDataProvider.getRawDb(remult);
+    const e = await getEntityDbNames(repo);
+    const r = await knex(e.$entityName).count().where(await knexCondition(repo, { myId: [1, 3] }));
+    expect(r[0].count).toBe('2');
+}, false);
+
+testMongo("work with native mongo and condition", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const mongo = MongoDataProvider.getRawDb(remult);
+    const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments(await mongoCondition(repo, { myId: [1, 2] }))
+    expect(r).toBe(2);
+}, true);
