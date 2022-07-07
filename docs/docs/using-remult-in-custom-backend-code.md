@@ -1,8 +1,13 @@
-# Using remult in custom backend code
+# Using remult in express routes
 When using [BackendMethods](./backendMethods.md), remult automatically injects the `Remult` object to the method. Still, there are many use cases where you may want to create your own express endpoints without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
 
 Here's an example of how to do that:
-```ts
+```ts{7}
+const app = express();
+...
+const api = remultExpress({
+    entities:[Task]
+})
 app.post('/api/customSetAll', async (req, res) => {
     const remult = await api.getRemult(req);
     if (!remult.authenticated()){
