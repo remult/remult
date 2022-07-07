@@ -16,8 +16,6 @@ Returns the current user's info
 Set's the current user info
 ## authenticated
 Checks if a user was authenticated
-## userChange
-returns a dispatcher object that fires once a user has changed
 ## isAllowed
 checks if the user has any of the roles specified in the parameters
 ### example
@@ -35,6 +33,8 @@ checks if the user matches the allowedForInstance callback
 
 [Allowed](https://remult.dev/docs/allowed.html)
 
+## userChange
+returns a dispatcher object that fires once a user has changed
 ## constructor
 Creates a new instance of the `remult` object.
 Creates a new instance of the `remult` object.

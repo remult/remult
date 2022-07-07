@@ -1,7 +1,27 @@
 # Entity
 Decorates classes that should be used as entities.
 Receives a key and an array of EntityOptions.
-EntityOptions can be set in two ways:
+### example
+```ts
+import { Entity, Fields } from "remult";
+```
+
+### entity("tasks",
+{
+   allowApiCrud: true
+})
+export class Task {
+### fields.uuid()
+
+   id!: string;
+### fields.string()
+
+   title = '';
+### fields.boolean()
+
+   completed = false;
+}
+*EntityOptions can be set in two ways:*
 ### example
 ```ts
 // as an object

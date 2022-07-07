@@ -60,7 +60,7 @@ class DocFile {
                     for (const s of m.signatures) {
                         this.writeMemberComments(s, indent);
 
-                        if (s.parameters?.length <= 2 && !m.flags.isStatic) {
+                        if (s.parameters?.length <= 3 && !m.flags.isStatic) {
                             for (const p of s.parameters) {
                                 if (p.type.type == 'union') {
                                     for (const pp of p.type.types) {

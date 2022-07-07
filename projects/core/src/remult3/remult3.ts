@@ -306,7 +306,7 @@ export interface QueryResult<entityType> {
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
-    /** returns the number of rows that match the query critiria */
+    /** returns the number of rows that match the query criteria */
     count(): Promise<number>;
     /** Returns a `Paginator` object that is used for efficient paging */
     paginator(): Promise<Paginator<entityType>>
@@ -321,7 +321,7 @@ export interface Paginator<entityType> {
     items: entityType[];
     /** True if next page exists */
     hasNextPage: boolean;
-    /** Get's the next page in the query's result set */
+    /** Gets the next page in the `query`'s result set */
     nextPage(): Promise<Paginator<entityType>>;
     /** the count of the total items in the `query`'s result */
     count(): Promise<number>;
