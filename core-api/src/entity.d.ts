@@ -45,7 +45,7 @@ export interface EntityOptions<entityType = any> {
     * If the `error` property of the entity's ref or any of it's fields will be set, the save will be aborted and an exception will be thrown.
     * this is the place to run logic that we want to run in any case before an entity is saved.
     * @example
-    * .@Entity<Task>("tasks", {
+    * @Entity<Task>("tasks", {
     * saving: async task => {
     *      task.lastUpdated = new Date()
     *  }
