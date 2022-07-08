@@ -19,15 +19,12 @@ class DocFile {
             return;
 
         if (m.comment.shortText) {
-            this.s += m.comment.shortText + "\n";
+            this.writeLine(m.comment.shortText, indent);
         }
 
         if (m.comment.tags)
             for (const t of m.comment.tags) {
-                for (let index = 0; index < 3 + indent; index++) {
-                    this.s += '#';
-                }
-                this.s += " " + t.tag + "\n";
+                this.writeLine(header(3 + indent, t.tag), indent);
                 if (t.tag == "example") {
                     if (!t.text.endsWith('\n'))
                         t.text += '\n';
@@ -35,10 +32,14 @@ class DocFile {
                     t.text = "```ts" + t.text + "```\n";
                 }
 
-                this.s += t.text + "\n";
+                this.writeLine(t.text, indent);
             }
     }
+    writeLine(what: string, indent: number) {
+        this.s += what + '\n';
+    }
     writeMembers(type: member, indent = 0) {
+
 
         if (type.children) {
             try {
@@ -51,10 +52,8 @@ class DocFile {
             for (const m of type.children) {
                 if (m.flags.isPrivate)
                     continue;
-                for (let index = 0; index < 2 + indent; index++) {
-                    this.s += '#';
-                }
-                this.s += ' ' + m.name + "\n";
+                this.writeLine(header(indent + 2, m.name), indent)
+
                 this.writeMemberComments(m, indent);
                 if (m.signatures) {
                     for (const s of m.signatures) {
@@ -145,6 +144,7 @@ interface member {
     kindString: string;
     name: string,
     parameters: {
+        name: string,
         type: {
             name: string,
             type: string,
@@ -169,3 +169,10 @@ interface member {
 }
 
 
+function header(depth: number, text: string) {
+    let s = '';
+    for (let index = 0; index < depth; index++) {
+        s += '#';
+    }
+    return s + ' ' + text;
+}

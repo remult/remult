@@ -47,6 +47,16 @@ await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }}
 
 ## findFirst
 returns the first item that matchers the `where` condition
+### example
+```ts
+await taskRepo.findFirst({ completed:false })
+```
+
+### example
+```ts
+await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
+```
+
 ### load
 ### where
 filters the data

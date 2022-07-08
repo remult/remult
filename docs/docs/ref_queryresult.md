@@ -10,7 +10,7 @@ for await (const task of taskRepo.query()) {
 ```
 
 ## count
-returns the number of rows that match the query critiria
+returns the number of rows that match the query criteria
 ## forEach
 Performs an operation on all the items matching the query criteria
 ## getPage

@@ -122,7 +122,12 @@ export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation
 export interface Repository<entityType> {
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
-    /** returns the first item that matchers the `where` condition */
+    /** returns the first item that matchers the `where` condition
+     * @example
+     * await taskRepo.findFirst({ completed:false })
+     * @example
+     * await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
+     *      */
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
     findId(id: entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
