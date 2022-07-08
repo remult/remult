@@ -139,32 +139,39 @@ this is the place to run logic that we want to run in any case before an entity 
    })
    ```
    
+
 Arguments:
 * **row**
 * **proceedWithoutSavingToDb**
 ## saved
 will be called after the Entity was saved to the data source.
+
 Arguments:
 * **row**
 ## deleting
 Will be called before an Entity is deleted.
+
 Arguments:
 * **row**
 ## deleted
 Will be called after an Entity is deleted
+
 Arguments:
 * **row**
 ## validation
 Will be called when the entity is being validated, usually prior to the `saving` event
+
 Arguments:
 * **row**
 * **ref**
 ## id
 An arrow function that identifies the `id` column to use for this entity
+
 Arguments:
 * **entity**
 ## entityRefInit
 * **entityRefInit**
+
 Arguments:
 * **ref**
 * **row**

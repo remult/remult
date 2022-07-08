@@ -6,6 +6,7 @@ Returns the current user's info
 returns a dispatcher object that fires once a user has changed
 ## constructor
 Creates a new instance of the `remult` object.
+
 Arguments:
 * **provider**
 ## apiBaseUrl
@@ -29,11 +30,13 @@ Return's a `Repository` of the specific entity type
    [Repository](https://remult.dev/docs/ref_repository.html)
    
    
+
 Arguments:
 * **entity**
 * **dataProvider**
 ## setUser
 Set's the current user info
+
 Arguments:
 * **info**
 ## authenticated
@@ -53,6 +56,7 @@ checks if the user has any of the roles specified in the parameters
    
    [Allowed](https://remult.dev/docs/allowed.html)
    
+
 Arguments:
 * **roles**
 ## isAllowedForInstance
@@ -63,15 +67,18 @@ checks if the user matches the allowedForInstance callback
    
    [Allowed](https://remult.dev/docs/allowed.html)
    
+
 Arguments:
 * **instance**
 * **allowed**
 ## setDataProvider
 sets the current data provider
+
 Arguments:
 * **dataProvider**
 ## onFind
 A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios
+
 Arguments:
 * **metadata**
 * **options**

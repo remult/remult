@@ -15,10 +15,12 @@ returns an iterator that iterates the rows in the result using a paging mechanis
 returns the number of rows that match the query criteria
 ## forEach
 Performs an operation on all the items matching the query criteria
+
 Arguments:
 * **what**
 ## getPage
 gets the items in a specific page
+
 Arguments:
 * **pageNumber**
 ## paginator

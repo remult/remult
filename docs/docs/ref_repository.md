@@ -4,6 +4,7 @@ used to perform CRUD operations on an `entityType`
 The metadata for the `entity`
 ## find
 returns a result array based on the provided options
+
 Arguments:
 * **options**
    * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
@@ -73,6 +74,7 @@ returns the first item that matchers the `where` condition
    await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
    ```
    
+
 Arguments:
 * **where** - filters the data
    
@@ -113,6 +115,7 @@ Arguments:
    * **load**
 ## findId
 returns the items that matches the idm the result is cached unless specified differently in the `options` parameter
+
 Arguments:
 * **id**
 * **options**
@@ -129,6 +132,7 @@ An alternative form of fetching data from the API server, which is intended for 
    }
    ```
    
+
 Arguments:
 * **options**
    * **where** - filters the data
@@ -175,6 +179,7 @@ Returns a count of the items matching the criteria.
    await taskRepo.count({ completed:false })
    ```
    
+
 Arguments:
 * **where** - filters the data
    
@@ -190,6 +195,7 @@ saves an item or item[] to the data source. It assumes that if an `id` value exi
    await taskRepo.save({...task, completed:true })
    ```
    
+
 Arguments:
 * **item**
 ## insert
@@ -208,6 +214,7 @@ Insert an item or item[] to the data source
    await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    ```
    
+
 Arguments:
 * **item**
 ## update
@@ -219,27 +226,33 @@ Updates an item, based on it's `id`
    taskRepo.update(task.id,{...task,completed:true})
    ```
    
+
 Arguments:
 * **id**
 * **item**
 ## delete
 Deletes an Item
+
 Arguments:
 * **id**
 ## create
 Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item
+
 Arguments:
 * **item**
 ## fromJson
 Translates a json object to an item instance
+
 Arguments:
 * **x**
 * **isNew**
 ## getEntityRef
 returns an `entityRef` for an item returned by `create`, `find` etc...
+
 Arguments:
 * **item**
 ## addEventListener
 * **addEventListener**
+
 Arguments:
 * **listener**

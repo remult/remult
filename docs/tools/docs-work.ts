@@ -111,6 +111,7 @@ class DocFile {
                         this.writeMemberComments(s, indent);
                         {
                             if (s.parameters && indent == 0/* to prevent the parameters of load, in find options etc... */) {
+                                this.writeLine("",indent);
                                 this.writeLine("Arguments:", indent);
                                 for (const p of s.parameters) {
                                     this.writeMemberComments(p, indent);

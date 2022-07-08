@@ -97,14 +97,17 @@ The key to be used for this field
 * **saving**
 ## serverExpression
 An expression that will determine this fields value on the backend and be provided to the front end
+
 Arguments:
 * **entity**
 ## displayValue
 an arrow function that translates the value to a display value
+
 Arguments:
 * **entity**
 * **value**
 ## defaultValue
 an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method
+
 Arguments:
 * **entity**
