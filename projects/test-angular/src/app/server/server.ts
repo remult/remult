@@ -1,4 +1,5 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
+
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import * as express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
@@ -9,33 +10,26 @@ import * as fs from 'fs';
 //import '../app.module';
 import { serverInit } from './server-init';
 import { remultGraphql } from 'remult/graphql';
-import {createKnexDataProvider} from 'remult/remult-knex';
+import { createKnexDataProvider } from 'remult/remult-knex';
 
-
-import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
+import { preparePostgresQueueStorage } from 'remult/postgres';
 
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
-import { remultExpress } from '../../../../core/server/expressBridge';
-import * as knex from 'knex';
+import { remultExpress } from '../../../../core/remult-express';
+import { remultMiddleware } from '../../../../core/remult-middleware';
 
-import { MongoClient } from 'mongodb';
 import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
-import { ClassType } from '../../../../core/classType';
-import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
-import { JsonDataProvider } from '../../../../core/src/data-providers/json-data-provider';
-import { JsonEntityFileStorage } from '../../../../core/server/JsonEntityFileStorage';
-import { classBackendMethodsArray } from '../../../../core/src/server-action';
+
 import { AppComponent } from '../app.component';
 
 
 
-
 const getDatabase = async () => {
-  
+
     const result = await createKnexDataProvider({
         client: 'mssql',
         connection: {
@@ -53,7 +47,7 @@ const getDatabase = async () => {
     return result;
 }
 
- 
+
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
 
@@ -64,21 +58,28 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-    
+    const mw = remultMiddleware({
+        entities: [stam],
+        controllers: [controllerWithInstance, controllerWithStaic, AppComponent]
+    })
 
     let remultApi = remultExpress({
-        entities:[stam],
-        controllers:[controllerWithInstance,controllerWithStaic,AppComponent],
-        dataProvider:async ()=>await  createPostgresConnection(),
+        entities: [stam],
+        controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
+        // dataProvider:async ()=>await  createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initApi: async remult => {
-            SqlDatabase.LogToConsole = true;
+            //SqlDatabase.LogToConsole = true;
             await remult.repo(stam).findFirst();
         }
     });
-
-    app.use(remultApi);
+    console.log(mw);
+    app.use(express.json());
+    app.use((req, res, next) => {
+        //@ts-ignore
+        mw.handleRequest(req,res,next);
+    });
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
 
@@ -106,6 +107,8 @@ serverInit().then(async (dataSource) => {
             res.send('No Result' + index);
         }
     });
+
+
 
 
     let port = process.env.PORT || 3001;

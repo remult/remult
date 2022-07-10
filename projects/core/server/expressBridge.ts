@@ -1,13 +1,9 @@
-
-
 import { DataProvider, Remult, IdEntity } from '../';
-import * as express from 'express';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Field, Entity, Repository, getEntityKey, Fields } from '../src/remult3';
-
+import { Entity, Repository, getEntityKey, Fields } from '../src/remult3';
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
@@ -15,27 +11,32 @@ import { allEntities, AllowedForInstance } from '../src/context';
 import { ClassType } from '../classType';
 
 
-export function remultExpress(
-  options?:
-    {
-      /** Sets a database connection for Remult.
-       *
-       * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
-      */
-      dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
-      bodySizeLimit?: string,
-      disableAutoApi?: boolean,
-      queueStorage?: QueueStorage
-      initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>,
-      initApi?: (remult: Remult) => void | Promise<void>,
-      logApiEndPoints?: boolean,
-      defaultGetLimit?: number,
-      entities?: ClassType<any>[],
-      controllers?: ClassType<any>[],
-      bodyParser?: boolean,
-      rootPath?: string
-    }): RemultExpressBridge {
-  let app = express.Router();
+
+
+export type RemultMiddlewareOptions = {
+  /** Sets a database connection for Remult.
+   *
+   * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
+  */
+  dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
+  disableAutoApi?: boolean;
+  queueStorage?: QueueStorage;
+  initRequest?: (remult: Remult, origReq: GenericRequest) => Promise<void>;
+  initApi?: (remult: Remult) => void | Promise<void>;
+  logApiEndPoints?: boolean;
+  defaultGetLimit?: number;
+  entities?: ClassType<any>[];
+  controllers?: ClassType<any>[];
+  bodyParser?: boolean;
+  rootPath?: string;
+};
+
+export function remultMiddlewareBase(
+  app: GenericRouter,
+  options:
+    RemultMiddlewareOptions,
+): RemultExpressBridge {
+
   if (!options) {
     options = {};
   }
@@ -44,17 +45,12 @@ export function remultExpress(
     DataApi.defaultGetLimit = options.defaultGetLimit;
   }
 
-  if (options.bodySizeLimit === undefined) {
-    options.bodySizeLimit = '10mb';
-  }
+
   if (!options.queueStorage) {
     options.queueStorage = new InMemoryQueueStorage();
   }
 
-  if (options?.bodyParser !== false) {
-    app.use(express.json({ limit: options.bodySizeLimit }));
-    app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
-  }
+
   let dataProvider: Promise<DataProvider>;
   if (typeof options.dataProvider === "function") {
     dataProvider = options.dataProvider();
@@ -102,14 +98,39 @@ export function remultExpress(
     addArea: x => bridge.addArea(x)
   });
 }
-export interface RemultExpressBridge extends express.RequestHandler {
-  getRemult(req: express.Request): Promise<Remult>;
+export interface RemultExpressBridge extends GenericRequestHandler {
+  getRemult(req: GenericRequest): Promise<Remult>;
   openApiDoc(options: { title: string }): any;
   addArea(
     rootUrl: string
   );
 }
+export interface GenericRequest {
+  method: any;
+  path: any;
+  originalUrl: any;
+  query: any;
+  body: any;
+  params: any;
 
+}
+export interface GenericResponse {
+  status(arg0: number);
+  statusCode: number;
+  json(data: any);
+  writeHead(status: number): { end: VoidFunction };
+
+}
+export type GenericRouter = GenericRequestHandler & {
+  route(path: string): SpecificRoute
+}
+export type SpecificRoute = {
+  get(handler: GenericRequestHandler): SpecificRoute,
+  put(handler: GenericRequestHandler): SpecificRoute,
+  post(handler: GenericRequestHandler): SpecificRoute,
+  delete(handler: GenericRequestHandler): SpecificRoute
+}
+export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 
 
 class ExpressBridge {
@@ -434,7 +455,7 @@ class ExpressBridge {
   backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any>, tag: string }[] = [];
 
 
-  constructor(private app: express.Router, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
+  constructor(private app: GenericRouter, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: GenericRequest) => Promise<void>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
@@ -451,7 +472,7 @@ class ExpressBridge {
     }
     return r;
   }
-  async getRemult(req?: express.Request) {
+  async getRemult(req?: GenericRequest) {
     return this.firstArea.getRemult(req);
   }
 
@@ -461,7 +482,7 @@ class ExpressBridge {
 export class SiteArea {
   constructor(
     private bridge: ExpressBridge,
-    private app: express.Router,
+    private app: GenericRouter,
     private rootUrl: string,
     private logApiEndpoints: boolean) {
 
@@ -497,8 +518,8 @@ export class SiteArea {
 
 
   }
-  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
-    return async (req: express.Request, res: express.Response) => {
+  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>) {
+    return async (req: GenericRequest, res: GenericResponse) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
@@ -517,7 +538,7 @@ export class SiteArea {
       what(remult, myReq, myRes, req);
     }
   };
-  async getRemult(req: express.Request) {
+  async getRemult(req: GenericRequest) {
     let remult: Remult;
     await this.process(async (c) => {
       remult = c;
@@ -583,7 +604,7 @@ export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
     return this.r.query[key];
   }
 
-  constructor(private r: express.Request) {
+  constructor(private r: GenericRequest) {
 
   }
 }
@@ -594,7 +615,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   sendStatus(status: number) {
     this.r.writeHead(status).end();
   }
-  constructor(private r: express.Response, private req: express.Request) {
+  constructor(private r: GenericResponse, private req: GenericRequest) {
 
   }
   progress(progress: number): void {
