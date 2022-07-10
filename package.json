@@ -5,6 +5,7 @@
   "scripts": {
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir core-api\" \"cd projects/test-angular && ng test core\"",
     "release-core": "npm run build-core && npm run patch-versions && cd dist/remult && npm publish  --access public",
+    "release-core-next": "npm run build-core && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next",
     "build-core": "tsc -p projects/core/tsconfig.build.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles readme.md dist/remult",
     "build": "npm run build-core && npm run remult-angular-build ",
     "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public  && cd.. && cd angular && npm publish  --access public",
