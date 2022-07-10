@@ -62,7 +62,6 @@ class middleware {
                 }
             }
         }
-        console.log(req.path);
         next();
     }
 }
