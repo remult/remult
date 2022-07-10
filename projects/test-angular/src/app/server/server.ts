@@ -76,10 +76,7 @@ serverInit().then(async (dataSource) => {
     });
     console.log(mw);
     app.use(express.json());
-    app.use((req, res, next) => {
-        //@ts-ignore
-        mw.handleRequest(req,res,next);
-    });
+    app.use(mw);
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
 

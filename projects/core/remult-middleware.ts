@@ -3,7 +3,7 @@ import { GenericRequest, GenericRequestHandler, GenericResponse, GenericRouter, 
 export function remultMiddleware(options?:
     RemultMiddlewareOptions) {
     const m = new middleware();
-    let app: GenericRouter = Object.assign(m, m.handleRequest);
+    let app: GenericRouter = Object.assign(m, (req, res, next) => m.handleRequest(req, res, next));
 
     return remultMiddlewareBase(app, options);
 
