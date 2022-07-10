@@ -1,14 +1,13 @@
-import { DataProvider, Remult, IdEntity } from '../';
+import { DataProvider, Remult, IdEntity ,Entity, Repository,  Fields,JsonDataProvider} from '../';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
-import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Entity, Repository, getEntityKey, Fields } from '../src/remult3';
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance } from '../src/context';
 import { ClassType } from '../classType';
+import { getEntityKey } from '../src/remult3';
 
 
 
