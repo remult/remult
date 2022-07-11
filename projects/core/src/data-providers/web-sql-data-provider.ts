@@ -72,15 +72,17 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
 
     private addColumnSqlSyntax(x: FieldMetadata, dbName: string) {
         let result = dbName;
+        const nullNumber = x.allowNull ? "" : " default 0 not null";
         if (x.valueType == Date)
             result += " integer";
+
         else if (x.valueType == Boolean)
-            result += " integer default 0 not null";
+            result += " integer " + nullNumber;
         else if (x.valueType == Number) {
             if (!x.valueConverter.fieldTypeInDb)
-                result += ' real default 0 not null';
+                result += ' real ' + nullNumber;
             else
-                result += ' ' + x.valueConverter.fieldTypeInDb + ' default 0 not null';
+                result += ' ' + x.valueConverter.fieldTypeInDb + ' ' + nullNumber;
         }
         else
             result += " text" + (x.allowNull ? " " : " default '' not null ");
