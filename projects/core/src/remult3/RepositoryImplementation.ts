@@ -1395,7 +1395,15 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         this.caption = buildCaption(entityInfo.caption, this.key, remult);
 
         if (entityInfo.id) {
-            this.idMetadata.field = entityInfo.id(this.fields)
+            let r = entityInfo.id(this.fields)
+            if (Array.isArray(r)) {
+                if (r.length > 1)
+                    this.idMetadata.field = new CompoundIdField(...r);
+                else if (r.length == 1)
+                    this.idMetadata.field = r[0];
+            }
+            else
+                this.idMetadata.field = r;
         } else {
             if (this.fields["id"])
                 this.idMetadata.field = this.fields["id"];

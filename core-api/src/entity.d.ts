@@ -68,8 +68,15 @@ export interface EntityOptions<entityType = any> {
     dbName?: string;
     /** For entities that are based on SQL expressions instead of a physical table or view*/
     sqlExpression?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
-    /** An arrow function that identifies the `id` column to use for this entity */
-    id?: (entity: FieldsMetadata<entityType>) => FieldMetadata;
+    /** An arrow function that identifies the `id` column to use for this entity
+     * @example
+     * //Single column id
+     * @Entity<Products>("products", { id:p=>p.productCode })
+     * @example
+     * //Multiple columns id
+     * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
+    */
+    id?: (entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[];
     entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void;
     apiRequireId?: Allowed;
 }

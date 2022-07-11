@@ -1970,7 +1970,7 @@ describe("test toPromise", () => {
 
 @Entity<CompoundIdEntity>(
   'compountIdEntity', {
-  id: x => new CompoundIdField(x.a, x.b),
+  id: x => [x.a, x.b],
 })
 class CompoundIdEntity extends EntityBase {
   @Fields.integer()
