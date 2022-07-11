@@ -29,7 +29,7 @@ export interface EntityOptions<entityType = any> {
     apiPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
     /** A filter that will be used for all queries from this entity both from the API and from within the backend.
      * @example
-     * fixedWhereFilter: { archive:false }
+     * backendPrefilter: { archive:false }
      * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
      */
     backendPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
