@@ -3,13 +3,11 @@ let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import * as express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
 import * as cors from 'cors';
-import * as Knex from 'knex';
 
 import * as fs from 'fs';
 //import '../app.module';
 import { serverInit } from './server-init';
 import { remultGraphql } from 'remult/graphql';
-import {createKnexDataProvider} from 'remult/remult-knex';
 
 
 import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
@@ -20,38 +18,12 @@ import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 import { remultExpress } from '../../../../core/server/expressBridge';
-import * as knex from 'knex';
 
-import { MongoClient } from 'mongodb';
-import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
-import { ClassType } from '../../../../core/classType';
+
+
 import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
-import { JsonDataProvider } from '../../../../core/src/data-providers/json-data-provider';
-import { JsonEntityFileStorage } from '../../../../core/server/JsonEntityFileStorage';
-import { classBackendMethodsArray } from '../../../../core/src/server-action';
+
 import { AppComponent } from '../app.component';
-
-
-
-
-const getDatabase = async () => {
-  
-    const result = await createKnexDataProvider({
-        client: 'mssql',
-        connection: {
-            server: '127.0.0.1',
-            database: 'test2',
-            user: 'sa',
-            password: 'MASTERKEY',
-            options: {
-                enableArithAbort: true,
-                encrypt: false,
-                instanceName: 'sqlexpress'
-            }
-        }
-    });
-    return result;
-}
 
  
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
@@ -67,14 +39,13 @@ serverInit().then(async (dataSource) => {
     
 
     let remultApi = remultExpress({
-        entities:[stam],
-        controllers:[controllerWithInstance,controllerWithStaic,AppComponent],
+        entities:[],
+        controllers:[AppComponent],
         dataProvider:async ()=>await  createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initApi: async remult => {
-            SqlDatabase.LogToConsole = true;
-            await remult.repo(stam).findFirst();
+            
         }
     });
 
