@@ -1545,7 +1545,7 @@ export class Fields {
 }
 
 export function isAutoIncrement(f: FieldMetadata) {
-    return f.options.valueConverter?.fieldTypeInDb === 'autoincrement';
+    return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement';
 }
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
     maxLength?: number;

@@ -20,7 +20,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestDataProv
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, Fields, getEntityKey } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, Fields, getEntityKey, isAutoIncrement } from '../remult3';
 
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
@@ -1481,6 +1481,12 @@ describe("compound id", () => {
     }, n);
     id.resultIdFilter(undefined, repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
+
+  });
+  it("check is auto increment", async () => {
+    let ctx = new Remult();
+    let repo = ctx.repo(CompoundIdEntity);
+    expect(isAutoIncrement(repo.metadata.idMetadata.field)).toBe(false);
 
   });
   it("result id filter works with id", async () => {
