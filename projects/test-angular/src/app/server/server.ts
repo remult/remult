@@ -20,32 +20,65 @@ import { buildSchema } from 'graphql';
 import { remultExpress } from '../../../../core/server/expressBridge';
 
 
-
-import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
-
 import { AppComponent } from '../app.component';
+import { ServerEventsController } from './server-events';
+import { helper, Task } from '../products-test/products.component';
+import { Writable } from 'stream';
 
- 
+
+
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
 
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
+    const serverEvents = new ServerEventsController();
+    app.post('/api/stream', (req, res) => {
+        const types = JSON.parse(req.headers["event-types"] as string);
+
+
+        serverEvents.subscribe(req, res,
+            (message, type) => {
+
+                return types.includes(type);
+            }  //return true to send the message - use this arrow function to filter the messages based on the user or other rules
+        );
+
+    });
+    helper.onSaving = () => {
+        serverEvents.SendMessage("x");
+        console.log("message sent");
+    }
+    {
+        let i = 0;
+        setInterval(() => {
+            serverEvents.SendMessage("a:" + i++, "a");
+        }, 1000);
+    }
+    setTimeout(() => {
+        {
+            let i = 0;
+            setInterval(() => {
+                serverEvents.SendMessage("b:" + i++, "b");
+            }, 1000);
+        }
+    }, 500);
+
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-    
+
 
     let remultApi = remultExpress({
-        entities:[],
-        controllers:[AppComponent],
-        dataProvider:async ()=>await  createPostgresConnection(),
+        entities: [Task],
+        controllers: [AppComponent],
+        //     dataProvider: async () => await createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initApi: async remult => {
-            
+
         }
     });
 
