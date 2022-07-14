@@ -47,6 +47,7 @@ export class ServerEventsController {
             cc.close();
             this.connections = this.connections.filter(s => s !== cc);
         });
+        return cc;
     }
 
     messages: { id: number, message: any, eventType: string }[] = [];

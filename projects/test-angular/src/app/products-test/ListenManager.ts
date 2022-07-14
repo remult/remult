@@ -64,4 +64,4 @@ export class ListenManager {
     }
   }
 }
-export type listener = (message: string) => void;
+export type listener = (message: any) => void;
