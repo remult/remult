@@ -26,6 +26,7 @@
 	</a>
 </div>
 <hr/>
+
 [Getting Started](#getting-started) | [Documentation](#documentation) | [Example App](#example-app)
 
 ## What is Remult?
