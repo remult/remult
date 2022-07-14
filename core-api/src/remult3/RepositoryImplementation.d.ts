@@ -289,7 +289,8 @@ export declare function BuildEntity<entityType>(c: ClassType<entityType>, key: s
  *    @Fields.boolean()
  *    completed = false;
  * }
- * *EntityOptions can be set in two ways:*
+ * @note
+ * EntityOptions can be set in two ways:
  * @example
  * // as an object
  * @Entity("tasks",{ allowApiCrud:true })

@@ -1,4 +1,4 @@
-import { SqlDatabase, SqlCommand, SqlResult, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
+
 
 import { Pool, PoolConfig, QueryResult } from 'pg';
 
@@ -7,7 +7,10 @@ import { allEntities, Remult } from '../src/context';
 
 import { postgresColumnSyntax } from './postgresColumnSyntax';
 import { getDbNameProvider } from '../src/filter/filter-consumer-bridge-to-sql-request';
-import { isAutoIncrement } from '../src/remult3';
+import { EntityMetadata, isAutoIncrement } from '../src/remult3';
+import { SqlCommand, SqlImplementation, SqlResult } from '../src/sql-command';
+import { SqlDatabase } from '../src/data-providers/sql-database';
+import { FieldMetadata } from '../src/column-interfaces';
 
 
 export interface PostgresPool extends PostgresCommandSource {

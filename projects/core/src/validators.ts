@@ -1,4 +1,4 @@
-import { isBackend } from "..";
+import { isBackend } from "./context";
 import { FieldRef } from "./remult3";
 
 export class Validators {

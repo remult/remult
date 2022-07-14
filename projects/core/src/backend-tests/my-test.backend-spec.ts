@@ -1,4 +1,4 @@
-import { IdEntity, SqlDatabase } from "../..";
+
 import { Remult } from "../context";
 import { Entity, Field } from "../remult3";
 import { KnexDataProvider } from '../../remult-knex';
@@ -6,6 +6,7 @@ import * as Knex from 'knex';
 import { config } from 'dotenv';
 import { testKnexPGSqlImpl, testPostgresImplementation } from "./backend-database-test-setup.backend-spec";
 import { entityWithValidations } from "../shared-tests/entityWithValidations";
+import { SqlDatabase } from "../data-providers/sql-database";
 config();
 
 
