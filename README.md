@@ -120,11 +120,6 @@ async function increasePriceOfTofu(priceIncrease: number) {
 
 ### ...*exactly* the same way as in backend code
 ```ts
-// shared/controller.ts
-
-import { Remult } from 'remult';
-import { Product } from 'product';
-
 @BackendMethod({ allowed: Allow.authenticated })
 static async increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
   const productsRepo = remult!.repo(Product);
