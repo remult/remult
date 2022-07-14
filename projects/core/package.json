@@ -11,6 +11,7 @@
   "author": {
     "name": "Noam Honig"
   },
+  "type":"module",
   "exports":{
     ".":"./index.js",
     "./remult-middleware":"./remult-middleware.js"

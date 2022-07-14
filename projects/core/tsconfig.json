@@ -7,9 +7,10 @@
         "stripInternal": true,
         "experimentalDecorators": true,
         "sourceMap": false,
-        "module": "commonjs",
+        "module": "ES2020",
         "moduleResolution": "node",
-        "target": "es5",
+        "allowSyntheticDefaultImports": true, // (C)
+        "target": "ES2020",
         "skipLibCheck": true,
         "lib": [
             "es2018",
