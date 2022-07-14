@@ -2,7 +2,7 @@
 import knex, { Knex } from 'knex';
 import { customDatabaseFilterToken, Filter, FilterConsumer } from "../src/filter/filter-interfaces";
 import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
-import { allEntities } from "../src/context";
+import { allEntities, Remult } from "../src/context";
 
 import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata } from "../src/remult3";
 import { ValueConverters } from "../valueConverters";
