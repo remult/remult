@@ -12,10 +12,6 @@
     "name": "Noam Honig"
   },
   "type":"module",
-  "exports":{
-    ".":"./index.js",
-    "./remult-middleware":"./remult-middleware.js"
-  },
   "dependencies": {
     "uuid": "^8.3.2",
     "reflect-metadata": "^0.1.13",
