@@ -25,8 +25,8 @@
 	<img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/remultjs?style=social">
 	</a>
 </div>
-
-[Getting Started](#getting-started) | [Documentation](#documentation)
+<hr/>
+[Getting Started](#getting-started) | [Documentation](#documentation) | [Example App](#example-app)
 
 ## What is Remult?
 
@@ -203,6 +203,17 @@ export class Article {
     content = '';
 }
 ```
+
+## What about complex CRUD?
+
+While simple CRUD shouldn’t require any backend coding, using Remult means having the ability to handle any complex scenario by controlling the backend in numerous ways:
+
+* Backend computed (read-only) fields - from simple [expressions](https://remult.dev/docs/ref_field.html#serverexpression) to complex data lookups or even direct db access (SQL)
+* Custom side-effects with [entity lifecycle hooks](https://remult.dev/docs/ref_entity.html#saving) (before/after saving/deleting)
+* Backend only updatable fields (e.g. “last updated at”)
+* Many-to-one [relations](https://remult.dev/docs/entity-relations.html) with [lazy/eager loading](https://remult.dev/docs/lazy-loading-of-related-entities.html)
+* Roll-your-own type-safe endpoints with [Backend Methods](https://remult.dev/docs/backendMethods.html)
+* Roll-your-own low-level endpoints (Express, Fastify, koa, others…)
 
 ## Getting started
 The best way to learn Remult is by following a tutorial of a simple Todo web app with a Node.js Express backend. 
