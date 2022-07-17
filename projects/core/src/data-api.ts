@@ -6,9 +6,13 @@ import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilt
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
+export interface LiveQueryProvider {
+  subscribe(repo: Repository<any>, id: string, options: FindOptions<any>,userInfo:UserInfo);
+  unSubscribe(repo: Repository<any>, id: string, options: FindOptions<any>);
+}
 export class DataApi<T = any> {
 
-  constructor(private repository: Repository<T>, private remult: Remult) {
+  constructor(private repository: Repository<T>, private remult: Remult, private liveQueryProvider?: LiveQueryProvider) {
   }
   httpGet(res: DataApiResponse, req: DataApiRequest) {
     if (req.get("__action") == "count") {
@@ -17,7 +21,10 @@ export class DataApi<T = any> {
       return this.getArray(res, req);
   }
   httpPost(res: DataApiResponse, req: DataApiRequest, body: any) {
-    switch (req.get("__action")) {
+    const action = req.get("__action");
+    if (action?.startsWith("subscribe") || action?.startsWith("unsubscribe"))
+      return this.getArray(res, req, body);
+    switch (action) {
       case "get":
         return this.getArray(res, req, body);
       case "count":
@@ -100,10 +107,19 @@ export class DataApi<T = any> {
         findOptions.page = +request.get("_page");
 
       }
-      await this.repository.find(findOptions)
+      const action: string = request.get("__action");
+      if (this.liveQueryProvider && action?.startsWith("unsubscribe")) {
+        this.liveQueryProvider.unSubscribe(this.repository, action.split('|')[1], findOptions);
+        response.success([]);
+        return;
+      }
+      const r = await this.repository.find(findOptions)
         .then(async r => {
-          response.success(await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson())));
+          return await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson()));
         });
+      if (this.liveQueryProvider && action?.startsWith("subscribe"))
+        this.liveQueryProvider.subscribe(this.repository, action.split('|')[1], findOptions);
+      response.success(r);
     }
     catch (err) {
       response.error(err);

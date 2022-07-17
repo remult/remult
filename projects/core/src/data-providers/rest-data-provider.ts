@@ -56,7 +56,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
     else
       return this.http.get(url.url).then(r => +(r.count));
   }
-  public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
+  public find(options: EntityDataProviderFindOptions, __action: string = undefined): Promise<Array<any>> {
     let url = new UrlBuilder(this.url);
     let filterObject: any;
     if (options) {
@@ -87,8 +87,12 @@ export class RestEntityDataProvider implements EntityDataProvider {
         url.add('_page', options.page);
 
     }
+    if (__action) {
+      url.add("__action", __action);
+    }
     if (filterObject) {
-      url.add("__action", "get");
+      if (!__action)
+        url.add("__action", "get");
       return this.http.post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
     }
     else

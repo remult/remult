@@ -4,6 +4,7 @@ import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sor
 import { GridSettings } from '@remult/angular/interfaces';
 
 import { DialogConfig } from '../../../../angular';
+import { LiveQuery } from '../../../../core/src/LiveQuery';
 
 @Controller("blabla")
 
@@ -54,16 +55,9 @@ export class ProductsComponent implements OnInit {
     }]
   });
   messages: string[] = [];
-  listener = new ListenManager('api/stream');
+  listener = new LiveQuery('api/stream');
   async ngOnInit() {
     await this.remult.repo(Task).count();
-
-    const query: SubscribeToQueryArgs<Task> = {
-      entityKey: "tasks",
-      orderBy: {
-        completed: "asc"
-      }
-    }
 
     this.tasks = new Observable((subscribe) =>
       this.listener.subscribe(
@@ -99,7 +93,7 @@ export class Task extends IdEntity {
 }
 
 
-import { ListenManager, liveQueryMessage, SubscribeToQueryArgs } from './ListenManager';
+
 import { Observable } from 'rxjs';
 
 
