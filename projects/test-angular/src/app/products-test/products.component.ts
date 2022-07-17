@@ -1,5 +1,5 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort } from 'remult';
 
 import { GridSettings } from '@remult/angular/interfaces';
 
@@ -27,10 +27,10 @@ export class ProductsComponent implements OnInit {
       this.stopA();
       this.stopA = undefined;
     }
-    else
-      this.stopA = this.listener.listen("tasks",
-        (x) => this.zone.run(() => this.messages = [x, ...this.messages.splice(0, 19)])
-      );
+    //  else
+    // this.stopA = this.listener.listen("tasks",
+    //   (x) => this.zone.run(() => this.messages = [x, ...this.messages.splice(0, 19)])
+    // );
 
   }
   toggleB() {
@@ -38,12 +38,13 @@ export class ProductsComponent implements OnInit {
       this.stopB();
       this.stopB = undefined;
     }
-    else
-      this.stopB = this.listener.listen("b",
-        (x) => this.zone.run(() => this.messages = [x, ...this.messages.splice(0, 19)])
-      );
+    //  else
+    // this.stopB = this.listener.listen("b",
+    //   (x) => this.zone.run(() => this.messages = [x, ...this.messages.splice(0, 19)])
+    // );
 
   }
+
   grid = new GridSettings(this.remult.repo(Task), {
     allowCrud: true, gridButtons: [{
       name: 'reload',
@@ -56,12 +57,23 @@ export class ProductsComponent implements OnInit {
   listener = new ListenManager('api/stream');
   async ngOnInit() {
     await this.remult.repo(Task).count();
-    this.tasks = new Observable((subscribe) => {
-      this.listener.listen("tasks", async (message: liveQueryMessage) => {
 
-        let tasks: Task[] = [];
+    const query: EventType<Task> = {
+      type: "query",
+      entityKey: "tasks",
+      orderBy: {
+        completed: "asc"
+      }
+    }
+
+    this.tasks = new Observable((subscribe) => {
+      let tasks: Task[] = [];
+
+      this.listener.listen(query, async (message: liveQueryMessage) => {
+
         switch (message.type) {
           case "all":
+            tasks = [];
             for (const t of message.data) {
               tasks.push(await this.remult.repo(Task).fromJson(t))
             }
@@ -70,6 +82,11 @@ export class ProductsComponent implements OnInit {
           case "replace": {
             const item = await this.remult.repo(Task).fromJson(message.data.item);
             tasks = tasks.map(x => x.id === message.data.oldId ? item : x);
+
+            if (query.orderBy) {
+              const o = Sort.translateOrderByToSort(this.remult.repo(Task).metadata, query.orderBy);
+              tasks.sort((a: any, b: any) => o.compare(a, b));
+            }
             this.zone.run(() => subscribe.next(tasks));
             break;
           }
@@ -87,7 +104,7 @@ export class ProductsComponent implements OnInit {
         };
       })
     });
-    this.tasks.subscribe(x => console.table(x.map(({ id, title, completed }) => ({ title, completed }))));
+    //this.tasks.subscribe(x => console.table(x.map(({ id, title, completed }) => ({ title, completed }))));
   }
   tasks: Observable<Task[]>;
 }
@@ -116,8 +133,9 @@ export class Task extends IdEntity {
 }
 
 
-import { ListenManager } from './ListenManager';
+import { EventType, ListenManager } from './ListenManager';
 import { Observable } from 'rxjs';
+import { TmplAstRecursiveVisitor } from '@angular/compiler';
 
 
 export declare type liveQueryMessage = {
@@ -132,8 +150,8 @@ export declare type liveQueryMessage = {
     oldId: any,
     item: any
   }
-} |
-{
+} | {
   type: "remove",
   data: { id: any }
 }
+

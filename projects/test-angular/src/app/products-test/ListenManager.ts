@@ -1,21 +1,23 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { EntityOrderBy } from '../../../../core';
 
 
 export class ListenManager {
   constructor(private url: string, private jwtToken?: string) { }
   private eventTypes = new Map<string, listener[]>();
   private ctrl = new AbortController();
-  listen(eventType: string, onMessage: listener) {
-    let listeners = this.eventTypes.get(eventType);
+  listen(eventType: EventType, onMessage: listener) {
+    const eventTypeKey = JSON.stringify(eventType);
+    let listeners = this.eventTypes.get(eventTypeKey);
     if (!listeners) {
-      this.eventTypes.set(eventType, listeners = []);
+      this.eventTypes.set(eventTypeKey, listeners = []);
     }
     listeners.push(onMessage);
     this.refreshListener();
     return () => {
       listeners.splice(listeners.indexOf(onMessage), 1);
       if (listeners.length == 0) {
-        this.eventTypes.delete(eventType);
+        this.eventTypes.delete(eventTypeKey);
       }
       this.refreshListener();
     };
@@ -65,3 +67,11 @@ export class ListenManager {
   }
 }
 export type listener = (message: any) => void;
+
+export declare type EventType<entityType = any> = {
+  type: "normal"
+} | {
+  type: "query",
+  entityKey: string,
+  orderBy?: EntityOrderBy<entityType>
+}

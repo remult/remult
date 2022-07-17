@@ -25,6 +25,24 @@ export class Sort {
     }
     return r;
   }
+  compare(a:any,b:any){
+    let r = 0;
+    for (let i = 0; i < this.Segments.length; i++) {
+        let seg = this.Segments[i];
+        let left = a[seg.field.key];
+        let right = b[seg.field.key];
+        if (left > right)
+            r = 1;
+        else if (left < right)
+            r = -1;
+        if (r != 0) {
+            if (seg.isDescending)
+                r *= -1;
+            return r;
+        }
+    }
+    return r;
+  }
   static translateOrderByToSort<T>(entityDefs: EntityMetadata<T>, orderBy: EntityOrderBy<T>): Sort {
     if (!orderBy)
       return undefined;

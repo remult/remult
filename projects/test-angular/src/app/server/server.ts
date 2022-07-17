@@ -21,6 +21,7 @@ import { remultExpress } from '../../../../core/server/expressBridge';
 import { AppComponent } from '../app.component';
 import { ServerEventsController } from './server-events';
 import { helper, liveQueryMessage, Task } from '../products-test/products.component';
+import { EventType } from '../products-test/ListenManager';
 
 
 
@@ -63,22 +64,33 @@ serverInit().then(async (dataSource) => {
 
 
         const r = serverEvents.subscribe(req, res,
-            (message, type) => {
-
-                return types.includes(type);
+            (message, messageType) => {
+                for (const t of types) {
+                    const type: EventType = JSON.parse(t);
+                    if (type.type == "query")
+                        if (type.entityKey == messageType) {
+                            r.write(undefined, message, t);
+                            return false;
+                        }
+                }
+                return types.includes(messageType);
             }  //return true to send the message - use this arrow function to filter the messages based on the user or other rules
         );
         for (const t of types) {
-            if (t === "tasks")
-                remultApi.getRemult(req).then(async (remult) => {
-                    remult.repo(Task).find().then(tasks => {
-                        let m: liveQueryMessage = {
-                            type: 'all',
-                            data: tasks.map(t => t._.toApiJson())
-                        }
-                        r.write(undefined, m, t)
+            const type: EventType = JSON.parse(t);
+            if (type.type == "query")
+                if (type.entityKey === "tasks")
+                    remultApi.getRemult(req).then(async (remult) => {
+                        remult.repo(Task).find({
+                            orderBy:type.orderBy
+                        }).then(tasks => {
+                            let m: liveQueryMessage = {
+                                type: 'all',
+                                data: tasks.map(t => t._.toApiJson())
+                            }
+                            r.write(undefined, m, t)
+                        });
                     });
-                });
         }
 
 

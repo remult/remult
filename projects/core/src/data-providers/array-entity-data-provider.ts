@@ -73,22 +73,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
             }
             if (options.orderBy) {
                 rows = rows.sort((a: any, b: any) => {
-                    let r = 0;
-                    for (let i = 0; i < options.orderBy.Segments.length; i++) {
-                        let seg = options.orderBy.Segments[i];
-                        let left = a[seg.field.key];
-                        let right = b[seg.field.key];
-                        if (left > right)
-                            r = 1;
-                        else if (left < right)
-                            r = -1;
-                        if (r != 0) {
-                            if (seg.isDescending)
-                                r *= -1;
-                            return r;
-                        }
-                    }
-                    return r;
+                    return options.orderBy.compare(a,b);
                 });
             }
             rows = pageArray(rows, options);

@@ -2,6 +2,7 @@
 
 
 <ul>
-    <li *ngFor="let m of tasks|async"><input type="checkbox" [checked]="m.completed">{{m.title}}</li>
+    <li *ngFor="let m of tasks|async"><input type="checkbox" [(ngModel)]="m.completed" (change)="m.save()">{{m.title}}
+    </li>
 </ul>
 <data-grid [settings]="grid"></data-grid>
