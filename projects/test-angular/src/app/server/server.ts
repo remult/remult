@@ -26,7 +26,6 @@ import { getEntityRef } from '../../../../core';
 
 
 
-
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
 
@@ -46,10 +45,10 @@ serverInit().then(async (dataSource) => {
 
 
     
+    app.use(compression({}));
     app.post('/api/stream', (req, res) => {
-         serverEvents.subscribe(req, res)
+        serverEvents.subscribe(req, res)
     });
-    app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 

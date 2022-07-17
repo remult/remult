@@ -11,6 +11,9 @@ class clientConnection {
     closed = false;
     write(id: number, message: any, eventType: string): void {
         this.response.write("event:" + eventType + "\nid:" + id + "\ndata:" + JSON.stringify(message) + "\n\n");
+        let r = this.response as any as { flush(): void };
+        if (r.flush)
+            r.flush();
     }
 
     constructor(
@@ -146,7 +149,13 @@ class LiveQueryManager {
             type: "remove",
             data: { id: ref.getId() }
         })
-
     }
 }
 export const queryManager = new LiveQueryManager();
+
+
+/*
+[] use entity normal http route for this - with __action.
+[] move id from header to url in stream registration.
+[] transaction accumulates messages.
+*/
