@@ -58,53 +58,19 @@ export class ProductsComponent implements OnInit {
   async ngOnInit() {
     await this.remult.repo(Task).count();
 
-    const query: EventType<Task> = {
-      type: "query",
+    const query: SubscribeToQueryArgs<Task> = {
       entityKey: "tasks",
       orderBy: {
         completed: "asc"
       }
     }
 
-    this.tasks = new Observable((subscribe) => {
-      let tasks: Task[] = [];
+    this.tasks = new Observable((subscribe) =>
+      this.listener.subscribe(
+        this.remult.repo(Task),
+        { orderBy: { completed: "asc" } },
+        x => this.zone.run(() => subscribe.next(x))))
 
-      this.listener.listen(query, async (message: liveQueryMessage) => {
-
-        switch (message.type) {
-          case "all":
-            tasks = [];
-            for (const t of message.data) {
-              tasks.push(await this.remult.repo(Task).fromJson(t))
-            }
-            this.zone.run(() => subscribe.next(tasks));
-            break;
-          case "replace": {
-            const item = await this.remult.repo(Task).fromJson(message.data.item);
-            tasks = tasks.map(x => x.id === message.data.oldId ? item : x);
-
-            if (query.orderBy) {
-              const o = Sort.translateOrderByToSort(this.remult.repo(Task).metadata, query.orderBy);
-              tasks.sort((a: any, b: any) => o.compare(a, b));
-            }
-            this.zone.run(() => subscribe.next(tasks));
-            break;
-          }
-          case "add":
-            {
-              const item = await this.remult.repo(Task).fromJson(message.data);
-              tasks.push(item);
-              this.zone.run(() => subscribe.next(tasks));
-              break;
-            }
-          case "remove":
-            tasks = tasks.filter(x => x.id !== message.data.id);
-            this.zone.run(() => subscribe.next(tasks));
-            break;
-        };
-      })
-    });
-    //this.tasks.subscribe(x => console.table(x.map(({ id, title, completed }) => ({ title, completed }))));
   }
   tasks: Observable<Task[]>;
 }
@@ -133,25 +99,8 @@ export class Task extends IdEntity {
 }
 
 
-import { EventType, ListenManager } from './ListenManager';
+import { ListenManager, liveQueryMessage, SubscribeToQueryArgs } from './ListenManager';
 import { Observable } from 'rxjs';
-import { TmplAstRecursiveVisitor } from '@angular/compiler';
 
 
-export declare type liveQueryMessage = {
-  type: "all",
-  data: any[]
-} | {
-  type: "add"
-  data: any
-} | {
-  type: 'replace',
-  data: {
-    oldId: any,
-    item: any
-  }
-} | {
-  type: "remove",
-  data: { id: any }
-}
 

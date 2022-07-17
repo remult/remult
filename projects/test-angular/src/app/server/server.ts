@@ -19,9 +19,11 @@ import { remultExpress } from '../../../../core/server/expressBridge';
 
 
 import { AppComponent } from '../app.component';
-import { ServerEventsController } from './server-events';
-import { helper, liveQueryMessage, Task } from '../products-test/products.component';
-import { EventType } from '../products-test/ListenManager';
+import { queryManager, ServerEventsController } from './server-events';
+import { helper, Task } from '../products-test/products.component';
+
+import { getEntityRef } from '../../../../core';
+
 
 
 
@@ -32,71 +34,21 @@ serverInit().then(async (dataSource) => {
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
     const serverEvents = new ServerEventsController();
+    queryManager.server = serverEvents;
 
-    const sendTaskMessage = (m: liveQueryMessage) => serverEvents.SendMessage(m, "tasks");
 
     helper.onSaved = item => {
-        if (item.isNew())
-            sendTaskMessage({
-                type: "add",
-                data: item._.toApiJson()
-            })
-        else
-            sendTaskMessage({
-                type: "replace",
-                data: {
-                    oldId: item.$.id.originalValue,
-                    item: item._.toApiJson()
-                }
-            })
+        queryManager.saved(getEntityRef(item))
     }
     helper.onDeleted = item => {
-        sendTaskMessage({
-            type: "remove",
-            data: { id: item.id }
-        })
+        queryManager.deleted(getEntityRef(item))
     }
 
 
-
+    
     app.post('/api/stream', (req, res) => {
-        const types = JSON.parse(req.headers["event-types"] as string);
-
-
-        const r = serverEvents.subscribe(req, res,
-            (message, messageType) => {
-                for (const t of types) {
-                    const type: EventType = JSON.parse(t);
-                    if (type.type == "query")
-                        if (type.entityKey == messageType) {
-                            r.write(undefined, message, t);
-                            return false;
-                        }
-                }
-                return types.includes(messageType);
-            }  //return true to send the message - use this arrow function to filter the messages based on the user or other rules
-        );
-        for (const t of types) {
-            const type: EventType = JSON.parse(t);
-            if (type.type == "query")
-                if (type.entityKey === "tasks")
-                    remultApi.getRemult(req).then(async (remult) => {
-                        remult.repo(Task).find({
-                            orderBy:type.orderBy
-                        }).then(tasks => {
-                            let m: liveQueryMessage = {
-                                type: 'all',
-                                data: tasks.map(t => t._.toApiJson())
-                            }
-                            r.write(undefined, m, t)
-                        });
-                    });
-        }
-
-
-
+         serverEvents.subscribe(req, res)
     });
-
     app.use(compression());
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
@@ -105,7 +57,7 @@ serverInit().then(async (dataSource) => {
 
     let remultApi = remultExpress({
         entities: [Task],
-        controllers: [AppComponent],
+        controllers: [AppComponent, ServerEventsController],
         //     dataProvider: async () => await createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,

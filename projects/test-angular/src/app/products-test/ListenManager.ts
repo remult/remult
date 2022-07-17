@@ -1,40 +1,102 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { EntityOrderBy } from '../../../../core';
+import { EntityOrderBy, FindOptions, getEntityRef, Repository, Sort } from '../../../../core';
+import { v4 as uuid } from 'uuid';
+import { ServerEventsController } from '../server/server-events';
 
+
+class LiveQueryOnFrontEnd<entityType> {
+  async setAllItems(result: any[]) {
+    this.items = await Promise.all(result.map(item => this.repo.fromJson(item)));
+    this.send();
+  }
+  send() {
+    for (const l of this.listeners) {
+      l(this.items);
+    }
+  }
+
+  async handle(message: liveQueryMessage) {
+
+
+    const sortAndSend = () => {
+
+      if (this.query.orderBy) {
+        const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
+        this.items.sort((a: any, b: any) => o.compare(a, b));
+      }
+      this.send();
+    }
+
+    switch (message.type) {
+      case "all":
+        this.setAllItems(message.data);
+        break;
+      case "replace": {
+        const item = await this.repo.fromJson(message.data.item);
+        this.items = this.items.map(x => this.repo.getEntityRef(x).getId() === message.data.oldId ? item : x);
+        sortAndSend();
+        break;
+      }
+      case "add":
+        {
+          const item = await this.repo.fromJson(message.data);
+          this.items.push(item);
+          sortAndSend();
+          break;
+        }
+      case "remove":
+        this.items = this.items.filter(x => getEntityRef(x).getId() !== message.data.id);
+        this.send();
+        break;
+    };
+  }
+
+  items: entityType[]=[];
+  listeners: ((items: entityType[]) => void)[]=[];
+  constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
+
+}
 
 export class ListenManager {
   constructor(private url: string, private jwtToken?: string) { }
-  private eventTypes = new Map<string, listener[]>();
+  clientId = uuid();
+  private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
   private ctrl = new AbortController();
-  listen(eventType: EventType, onMessage: listener) {
-    const eventTypeKey = JSON.stringify(eventType);
-    let listeners = this.eventTypes.get(eventTypeKey);
-    if (!listeners) {
-      this.eventTypes.set(eventTypeKey, listeners = []);
-    }
-    listeners.push(onMessage);
-    this.refreshListener();
-    return () => {
-      listeners.splice(listeners.indexOf(onMessage), 1);
-      if (listeners.length == 0) {
-        this.eventTypes.delete(eventTypeKey);
-      }
+
+  subscribe<entityType>(
+    repo: Repository<entityType>,
+    options: FindOptions<entityType>,
+    next: (items: entityType[]) => void) {
+    const m: SubscribeToQueryArgs = { entityKey: repo.metadata.key, orderBy: options.orderBy };
+    const eventTypeKey = JSON.stringify(m);
+    let q = this.queries.get(eventTypeKey);
+    if (!q) {
+      this.queries.set(eventTypeKey, q = new LiveQueryOnFrontEnd(repo, m))
       this.refreshListener();
-    };
+      ServerEventsController.subscribeToQuery(this.clientId, m).then((result) => {
+        q.setAllItems(result);
+      })
+    }
+    else {
+      next(q.items);
+    }
+    q.listeners.push(next);
+    return () => {
+      q.listeners.splice(q.listeners.indexOf(next), 1);
+      if (q.listeners.length == 0) {
+        this.queries.delete(eventTypeKey);
+      }
+    }
 
   }
+
   lastId = 0;
   refreshListener() {
     const prevCtrl = this.ctrl;
     this.ctrl = new AbortController();
-    const types = [...this.eventTypes.keys()];
-    if (types.length == 0) {
-      prevCtrl.abort();
-    }
-    else {
-      const typesString = JSON.stringify(types);
+    {
       const headers = {
-        "event-types": typesString
+        "client-id": this.clientId
       };
       if (this.jwtToken) {
         headers["Authorization"] = "Bearer " + this.jwtToken;
@@ -49,11 +111,10 @@ export class ListenManager {
           this.lastId = mid;
           console.log(message.data);
           if (message.event !== 'keep-alive') {
-            const z = this.eventTypes.get(message.event);
+            const z = this.queries.get(message.event);
             if (z) {
-              for (const handler of z) {
-                handler(JSON.parse(message.data));
-              }
+              z.handle(JSON.parse(message.data));
+
             }
           }
         },
@@ -68,10 +129,25 @@ export class ListenManager {
 }
 export type listener = (message: any) => void;
 
-export declare type EventType<entityType = any> = {
-  type: "normal"
-} | {
-  type: "query",
+
+
+export interface SubscribeToQueryArgs<entityType = any> {
   entityKey: string,
   orderBy?: EntityOrderBy<entityType>
+}
+export declare type liveQueryMessage = {
+  type: "all",
+  data: any[]
+} | {
+  type: "add"
+  data: any
+} | {
+  type: 'replace',
+  data: {
+    oldId: any,
+    item: any
+  }
+} | {
+  type: "remove",
+  data: { id: any }
 }
