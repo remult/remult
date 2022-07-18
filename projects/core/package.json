@@ -27,6 +27,10 @@
     "./remult-express": {
       "require": "./remult-express.js",
       "import": "./esm/remult-express.js"
+    },
+    "./remult-middleware": {
+      "require": "./remult-middleware.js",
+      "import": "./esm/remult-middleware.js"
     }
   }
 }
