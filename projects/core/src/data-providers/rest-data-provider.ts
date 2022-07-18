@@ -56,13 +56,24 @@ export class RestEntityDataProvider implements EntityDataProvider {
     else
       return this.http.get(url.url).then(r => +(r.count));
   }
-  public find(options: EntityDataProviderFindOptions, __action: string = undefined): Promise<Array<any>> {
+  public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
+    let { filterObject, url } = this.buildFindRequest(options);
+
+    if (filterObject) {
+      url.add("__action", "get");
+      return this.http.post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
+    }
+    else
+      return this.http.get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
+  }
+
+   buildFindRequest(options: EntityDataProviderFindOptions): { filterObject: any; url: UrlBuilder; } {
     let url = new UrlBuilder(this.url);
     let filterObject: any;
     if (options) {
       if (options.where) {
 
-        filterObject = options.where.toJson();//        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
+        filterObject = options.where.toJson(); //        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
         if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
           filterObject = undefined;
       }
@@ -87,16 +98,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
         url.add('_page', options.page);
 
     }
-    if (__action) {
-      url.add("__action", __action);
-    }
-    if (filterObject) {
-      if (!__action)
-        url.add("__action", "get");
-      return this.http.post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
-    }
-    else
-      return this.http.get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
+    return { filterObject, url };
   }
 
   public update(id: any, data: any): Promise<any> {

@@ -6,6 +6,7 @@ import { Action } from './server-action';
 
 
 class LiveQueryOnFrontEnd<entityType> {
+    id: string;
     async setAllItems(result: any[]) {
         this.items = await Promise.all(result.map(item => this.repo.fromJson(item)));
         this.send();
@@ -74,8 +75,18 @@ export class LiveQuery {
         if (!q) {
             this.queries.set(eventTypeKey, q = new LiveQueryOnFrontEnd(repo, m))
             this.refreshListener();
-            new RestEntityDataProvider(Remult.apiBaseUrl + '/' + repo.metadata.key, Action.provider, repo.metadata)
-                .find({}, 'subscribe|' + this.clientId).then(result => q.setAllItems(result));
+            const { url, filterObject } = new RestEntityDataProvider(Remult.apiBaseUrl + '/' + repo.metadata.key, Action.provider, repo.metadata)
+                .buildFindRequest({});
+            url.add("__action", 'subscribe|' + this.clientId);
+            const thenResult = (r: SubscribeResult) => {
+                q.setAllItems(r.result);
+                q.id = r.id;
+            }
+            if (filterObject) {
+                Action.provider.post(url.url, filterObject).then(thenResult);
+            }
+            else
+                Action.provider.get(url.url).then(thenResult);
 
         }
         else {
@@ -86,8 +97,6 @@ export class LiveQuery {
             q.listeners.splice(q.listeners.indexOf(onResult), 1);
             if (q.listeners.length == 0) {
                 this.queries.delete(eventTypeKey);
-                new RestEntityDataProvider(Remult.apiBaseUrl + '/' + repo.metadata.key, Action.provider, repo.metadata)
-                    .find({}, 'unsubscribe|' + this.clientId).then(result => q.setAllItems(result));
             }
         }
 
@@ -114,10 +123,10 @@ export class LiveQuery {
                     this.lastId = mid;
                     console.log(message.data);
                     if (message.event !== 'keep-alive') {
-                        const z = this.queries.get(message.event);
-                        if (z) {
-                            z.handle(JSON.parse(message.data));
-
+                        for (const q of this.queries.values()) {
+                            if (q.id === message.event) {
+                                q.handle(JSON.parse(message.data));
+                            }
                         }
                     }
                 },
@@ -153,4 +162,9 @@ export declare type liveQueryMessage = {
 } | {
     type: "remove",
     data: { id: any }
+}
+
+export interface SubscribeResult {
+    result: [],
+    id: string
 }

@@ -1,4 +1,4 @@
-
+import { v4 as uuid } from 'uuid';
 
 import { DataProvider, Remult, IdEntity } from '../';
 import * as express from 'express';
@@ -83,9 +83,12 @@ export function remultExpress(
     bridge.logApiEndPoints = options.logApiEndPoints;
   if (options.rootPath === undefined)
     options.rootPath = Remult.apiBaseUrl;
+  app.post('/api/stream', (req, res) => {
+    bridge.liveQueryManager.server.subscribe(req, res)
+  });
   let apiArea = bridge.addArea(options.rootPath);
 
-  const lqp = new LiveQueryManager();
+
 
   if (!options.disableAutoApi) {
     let actions: ClassType<any>[] = [];
@@ -94,7 +97,7 @@ export function remultExpress(
     if (options.controllers)
       actions.push(...options.controllers);
     registerActionsOnServer(apiArea, actions);
-    registerEntitiesOnServer(apiArea, options.entities, lqp);
+    registerEntitiesOnServer(apiArea, options.entities, bridge.liveQueryManager);
   }
 
   return Object.assign(app, {
@@ -439,6 +442,7 @@ class ExpressBridge {
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
+  liveQueryManager = new LiveQueryManager()
   logApiEndPoints = true;
   private firstArea: SiteArea;
 
@@ -503,6 +507,7 @@ export class SiteArea {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
+      remult._changeListener = this.bridge.liveQueryManager;
       remult.setDataProvider(await this.bridge.dataProvider);
       if (req) {
         let user = req['user'];
@@ -883,33 +888,39 @@ let i = 0;
 interface clientInfo {
   clientId: string,
   user: UserInfo,
-  queries: SubscribeToQueryArgs[]
+  queries: (SubscribeToQueryArgs & { id: string })[]
 }
 
 class LiveQueryManager implements LiveQueryProvider {
-  subscribe(repo: Repository<any>, clientId: string, options: FindOptions<any>,userInfo:UserInfo) {
+  subscribe(repo: Repository<any>, clientId: string, options: FindOptions<any>, remult: Remult): string {
     let client = this.clients.find(c => c.clientId === clientId);
     if (!client) {
-      this.clients.push(client = { clientId: clientId, queries: [], user: userInfo })
+      this.clients.push(client = { clientId: clientId, queries: [], user: remult.user })
     }
+    const id = uuid();
     client.queries.push({
-      
+      id,
+      entityKey: repo.metadata.key,
+      orderBy: {}
     });
+    return id;
   }
-  unSubscribe(repo: Repository<any>, id: string, options: FindOptions<any>) {
-    throw new Error('Method not implemented.');
-  }
+
+
+
+
+
 
   clients: clientInfo[] = [];
 
-  server: ServerEventsController;
+  server = new ServerEventsController();
   sendMessage(key: string, m: liveQueryMessage) {
     for (const c of this.clients) {
       for (const q of c.queries) {
         if (q.entityKey === key) {
           for (const sc of this.server.connections) {
             if (sc.clientId === c.clientId) {
-              sc.write(undefined, m, JSON.stringify(q));
+              sc.write(undefined, m, q.id);
             }
           }
         }
@@ -953,7 +964,6 @@ class LiveQueryManager implements LiveQueryProvider {
   }
 }
 export const queryManager = new LiveQueryManager();
-
 
 /*
 [] use entity normal http route for this - with __action.

@@ -19,7 +19,7 @@ import { remultExpress } from '../../../../core/server/expressBridge';
 
 
 import { AppComponent } from '../app.component';
-import { queryManager, ServerEventsController } from './server-events';
+
 import { helper, Task } from '../products-test/products.component';
 
 import { getEntityRef } from '../../../../core';
@@ -32,23 +32,11 @@ serverInit().then(async (dataSource) => {
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
-    const serverEvents = new ServerEventsController();
-    queryManager.server = serverEvents;
-
-
-    helper.onSaved = item => {
-        queryManager.saved(getEntityRef(item))
-    }
-    helper.onDeleted = item => {
-        queryManager.deleted(getEntityRef(item))
-    }
-
+    
 
     
     app.use(compression({}));
-    app.post('/api/stream', (req, res) => {
-        serverEvents.subscribe(req, res)
-    });
+  
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
@@ -56,7 +44,7 @@ serverInit().then(async (dataSource) => {
 
     let remultApi = remultExpress({
         entities: [Task],
-        controllers: [AppComponent, ServerEventsController],
+        controllers: [AppComponent],
         //     dataProvider: async () => await createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,

@@ -81,7 +81,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
     }
-    constructor(private entity: ClassType<entityType>, private remult: Remult, private dataProvider: DataProvider) {
+    constructor(private entity: ClassType<entityType>, public remult: Remult, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity, remult);
     }
     idCache = new Map<any, any>();
@@ -937,6 +937,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                     }
                 }
                 await this.loadDataFrom(updatedRow);
+                this.repository.remult._changeListener.saved(this);
                 if (this.info.entityInfo.saved)
                     await this.info.entityInfo.saved(this.instance);
 
@@ -972,6 +973,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         try {
             await this.edp.delete(this.id);
+            this.repository.remult._changeListener.deleted(this);
             if (this.info.entityInfo.deleted)
                 await this.info.entityInfo.deleted(this.instance);
 

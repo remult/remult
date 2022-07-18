@@ -7,8 +7,7 @@ import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
 export interface LiveQueryProvider {
-  subscribe(repo: Repository<any>, id: string, options: FindOptions<any>,userInfo:UserInfo);
-  unSubscribe(repo: Repository<any>, id: string, options: FindOptions<any>);
+  subscribe(repo: Repository<any>, id: string, options: FindOptions<any>, remult: Remult): string;
 }
 export class DataApi<T = any> {
 
@@ -22,7 +21,7 @@ export class DataApi<T = any> {
   }
   httpPost(res: DataApiResponse, req: DataApiRequest, body: any) {
     const action = req.get("__action");
-    if (action?.startsWith("subscribe") || action?.startsWith("unsubscribe"))
+    if (action?.startsWith("subscribe"))
       return this.getArray(res, req, body);
     switch (action) {
       case "get":
@@ -108,17 +107,18 @@ export class DataApi<T = any> {
 
       }
       const action: string = request.get("__action");
-      if (this.liveQueryProvider && action?.startsWith("unsubscribe")) {
-        this.liveQueryProvider.unSubscribe(this.repository, action.split('|')[1], findOptions);
-        response.success([]);
-        return;
-      }
+
       const r = await this.repository.find(findOptions)
         .then(async r => {
           return await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson()));
         });
-      if (this.liveQueryProvider && action?.startsWith("subscribe"))
-        this.liveQueryProvider.subscribe(this.repository, action.split('|')[1], findOptions);
+      if (this.liveQueryProvider && action?.startsWith("subscribe")) {
+        response.success({
+          id: this.liveQueryProvider.subscribe(this.repository, action.split('|')[1], findOptions, this.remult),
+          result: r
+        });
+        return;
+      }
       response.success(r);
     }
     catch (err) {

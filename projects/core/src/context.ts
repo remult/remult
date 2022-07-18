@@ -37,7 +37,7 @@ export async function retry<T>(what: () => Promise<T>): Promise<T> {
         } catch (err) {
             if (err.message?.startsWith("Error occurred while trying to proxy") ||
                 err.message?.startsWith("Error occured while trying to proxy") ||
-                err.message?.includes("http proxy error")||
+                err.message?.includes("http proxy error") ||
                 err.message?.startsWith("Gateway Timeout")) {
                 await new Promise((res, req) => {
                     setTimeout(() => {
@@ -253,6 +253,11 @@ export class Remult {
      * Set this property in case you want to determine a non relative api url
      */
     static apiBaseUrl = '/api';
+    /*@internal*/
+    _changeListener = {
+        saved: (ref: EntityRef<any>) => { },
+        deleted: (ref: EntityRef<any>) => { }
+    };
     /** The current data provider */
     _dataSource: DataProvider;
     /** sets the current data provider */
