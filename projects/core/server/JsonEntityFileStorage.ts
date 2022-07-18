@@ -17,10 +17,5 @@ export class JsonEntityFileStorage implements JsonEntityStorage {
     }
     return fs.writeFileSync(path.join(this.folderPath, entityDbName) + '.json', json);
   }
-
-  constructor(private folderPath: string) {
-
-
-
-  }
+  constructor(private folderPath: string) { }
 }

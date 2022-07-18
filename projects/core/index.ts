@@ -103,3 +103,16 @@ export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
 export { ValueConverters } from './valueConverters';
+export { ClassType } from "./classType";
+export { allEntities } from "./src/context";
+export { serializeError } from "./src/data-api";
+export { DataApiRequest } from "./src/data-api";
+export { DataApiResponse } from "./src/data-api";
+export { DataApi } from "./src/data-api";
+export { getEntityKey } from "./src/remult3/index";
+export { jobWasQueuedResult } from "./src/server-action";
+export { queuedJobInfoResponse } from "./src/server-action";
+export { Action, classBackendMethodsArray, serverActionField } from "./src/server-action";
+export { actionInfo } from "./src/server-action";
+export { registerActionsOnServer } from './server/register-actions-on-server';
+export { registerEntitiesOnServer } from './server/register-entities-on-server';

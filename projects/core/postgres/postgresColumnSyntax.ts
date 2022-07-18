@@ -1,4 +1,5 @@
-import { FieldMetadata } from '../';
+
+import { FieldMetadata } from '../src/column-interfaces';
 import { ValueConverters } from '../valueConverters';
 
 

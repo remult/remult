@@ -1,6 +1,9 @@
-import { SqlDatabase, SqlCommand, SqlImplementation, EntityMetadata, FieldMetadata } from '../';
 import { PoolConfig, QueryResult } from 'pg';
 import { Remult } from '../src/context';
+import { EntityMetadata } from '../src/remult3';
+import { SqlCommand, SqlImplementation } from '../src/sql-command';
+import { SqlDatabase } from '../src/data-providers/sql-database';
+import { FieldMetadata } from '../src/column-interfaces';
 export interface PostgresPool extends PostgresCommandSource {
     connect(): Promise<PostgresClient>;
 }
