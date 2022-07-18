@@ -2,6 +2,9 @@
   "name": "remult",
   "version": "0.3.3",
   "description": "A CRUD framework for full-stack TypeScript",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "module": "esm/index.js",
   "homepage": "https://remult.dev/",
   "repository": {
     "type": "git",
@@ -14,6 +17,16 @@
   "dependencies": {
     "uuid": "^8.3.2",
     "reflect-metadata": "^0.1.13",
-    "tslib":"^2.3.1"
+    "tslib": "^2.3.1"
+  },
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./esm/index.js"
+    },
+    "./remult-express": {
+      "require": "./remult-express.js",
+      "import": "./esm/remult-express.js"
+    }
   }
 }
