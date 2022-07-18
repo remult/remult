@@ -22,7 +22,6 @@ import { AppComponent } from '../app.component';
 
 import { helper, Task } from '../products-test/products.component';
 
-import { getEntityRef } from '../../../../core';
 
 
 
