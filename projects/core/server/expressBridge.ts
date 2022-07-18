@@ -83,7 +83,7 @@ export function remultExpress(
     bridge.logApiEndPoints = options.logApiEndPoints;
   if (options.rootPath === undefined)
     options.rootPath = Remult.apiBaseUrl;
-  app.post('/api/stream', (req, res) => {
+  app.get('/api/stream', (req, res) => {
     bridge.liveQueryManager.server.subscribe(req, res)
   });
   let apiArea = bridge.addArea(options.rootPath);

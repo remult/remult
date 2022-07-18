@@ -115,7 +115,6 @@ export class LiveQuery {
             }
             fetchEventSource(this.url, {
                 headers,
-                method: "post",
                 onmessage: message => {
                     const mid = +message.id;
                     if (mid <= this.lastId && this.lastId - mid < 10)
