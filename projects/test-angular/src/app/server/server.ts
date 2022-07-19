@@ -75,6 +75,7 @@ serverInit().then(async (dataSource) => {
         }
     });
     console.log(mw);
+    
     app.use(express.json());
     app.use(mw);
     app.use('/api/docs', swaggerUi.serve,
