@@ -1,7 +1,7 @@
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+
 import { EntityOrderBy, FindOptions, getEntityRef, Remult, Repository, Sort } from '../index';
 import { v4 as uuid } from 'uuid';
-import { RestDataProvider, RestEntityDataProvider } from './data-providers/rest-data-provider';
+import {  RestEntityDataProvider } from './data-providers/rest-data-provider';
 import { Action } from './server-action';
 
 
@@ -59,11 +59,22 @@ class LiveQueryOnFrontEnd<entityType> {
 
 }
 
+
+export interface LiveQueryProvider {
+    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): VoidFunction;
+
+}
+
+
+
+
+export type MessageHandler = (message: { data: string, event: string }) => void;
+
 export class LiveQuery {
-    constructor(private url: string, private jwtToken?: string) { }
+
     clientId = uuid();
     private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
-    private ctrl = new AbortController();
+    constructor(public lqp: LiveQueryProvider) {}
 
     subscribe<entityType>(
         repo: Repository<entityType>,
@@ -73,8 +84,11 @@ export class LiveQuery {
         const eventTypeKey = JSON.stringify(m);
         let q = this.queries.get(eventTypeKey);
         if (!q) {
+            if ([...this.queries.keys()].length == 0)
+                this.openListener();
             this.queries.set(eventTypeKey, q = new LiveQueryOnFrontEnd(repo, m))
-            this.refreshListener();
+
+
             const { url, filterObject } = new RestEntityDataProvider(Remult.apiBaseUrl + '/' + repo.metadata.key, Action.provider, repo.metadata)
                 .buildFindRequest({});
             url.add("__action", 'subscribe|' + this.clientId);
@@ -101,41 +115,16 @@ export class LiveQuery {
         }
 
     }
+    closeListener: VoidFunction = () => { };
 
-    lastId = 0;
-    private refreshListener() {
-        const prevCtrl = this.ctrl;
-        this.ctrl = new AbortController();
-        {
-            const headers = {
-                "client-id": this.clientId
-            };
-            if (this.jwtToken) {
-                headers["Authorization"] = "Bearer " + this.jwtToken;
+    private openListener() {
+        this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
+            for (const q of this.queries.values()) {
+                if (q.id === message.event) {
+                    q.handle(JSON.parse(message.data));
+                }
             }
-            fetchEventSource(this.url, {
-                headers,
-                onmessage: message => {
-                    const mid = +message.id;
-                    if (mid <= this.lastId && this.lastId - mid < 10)
-                        return;
-                    this.lastId = mid;
-                    console.log(message.data);
-                    if (message.event !== 'keep-alive') {
-                        for (const q of this.queries.values()) {
-                            if (q.id === message.event) {
-                                q.handle(JSON.parse(message.data));
-                            }
-                        }
-                    }
-                },
-                onopen: async () => {
-                    prevCtrl.abort();
-                },
-                signal: this.ctrl.signal,
-            });
-            return () => this.ctrl.abort();
-        }
+        });
     }
 }
 export type listener = (message: any) => void;
@@ -167,3 +156,4 @@ export interface SubscribeResult {
     result: [],
     id: string
 }
+
