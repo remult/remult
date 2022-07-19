@@ -31,6 +31,10 @@
     "./remult-middleware": {
       "require": "./remult-middleware.js",
       "import": "./esm/remult-middleware.js"
+    },
+    "./postgres/schema-builder": {
+      "require": "./postgres/schema-builder",
+      "import": "./esm/postgres/schema-builder"
     }
   }
 }

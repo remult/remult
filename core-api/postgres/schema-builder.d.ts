@@ -13,4 +13,3 @@ export declare class PostgresSchemaBuilder {
     additionalWhere: string;
     constructor(pool: SqlDatabase, schema?: string);
 }
-export declare function preparePostgresQueueStorage(sql: SqlDatabase): Promise<import("../server/expressBridge").EntityQueueStorage>;
