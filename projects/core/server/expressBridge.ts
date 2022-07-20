@@ -108,13 +108,13 @@ export interface RemultExpressBridge extends GenericRequestHandler {
 }
 export interface GenericRequest {
   method: any;
-  path: any;
-  originalUrl: any;
-  query: any;
+  url:any;
+  query?: any;
   body: any;
-  params: any;
+  params?: any;
 
 }
+
 export interface GenericResponse {
   json(data: any);
   statusCode: number;
@@ -644,7 +644,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     console.error({
       message: data.message,
       stack: data.stack?.split('\n'),
-      url: this.req.originalUrl ?? this.req.path,
+      url: this.req.url,
       method: this.req.method
     });
     this.r.statusCode = 400;

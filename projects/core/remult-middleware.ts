@@ -44,7 +44,25 @@ class middleware {
 
     }
     handleRequest(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
-        let lowerPath = req.path.toLowerCase();
+        const url = new URL(req.url);
+        const path = url.pathname;
+        if (!req.query) {
+            let query: { [key: string]: undefined | string | string[]  } = {};
+            url.searchParams.forEach((val, key) => {
+                let current = query[key];
+                if (!current) {
+                    query[key] = val;
+                    return;
+                }
+                if (Array.isArray(current)) {
+                    current.push(val);
+                    return;
+                }
+                query[key] = [current, val];
+            });
+            req.query = query;
+        }
+        let lowerPath = path.toLowerCase();
         let m = this.map.get(lowerPath);
         if (m) {
             let h = m.get(req.method.toLowerCase());
@@ -53,14 +71,14 @@ class middleware {
                 return;
             }
         }
-        let idPosition = req.path.lastIndexOf('/');
+        let idPosition = path.lastIndexOf('/');
         if (idPosition >= 0) {
-            lowerPath = req.path.substring(0, idPosition) + '/:id';
+            lowerPath = path.substring(0, idPosition) + '/:id';
             m = this.map.get(lowerPath);
             if (m) {
                 let h = m.get(req.method.toLowerCase());
                 if (h) {
-                    req.params.id = req.path.substring(idPosition + 1);
+                    req.params.id = path.substring(idPosition + 1);
                     h(req, res, next);
                     return;
                 }

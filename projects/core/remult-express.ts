@@ -17,6 +17,7 @@ export function remultExpress(options?:
         app.use(express.json({ limit: options.bodySizeLimit }));
         app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
     }
+    
     return remultMiddlewareBase(app, options);
 
 }

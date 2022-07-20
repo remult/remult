@@ -7,7 +7,7 @@ import { Validators } from '../validators';
 
 Remult.apiBaseUrl = 'http://localhost:3001/api';
 const path = Remult.apiBaseUrl + '/tasks';
-
+ 
 fit("works", async () => {
     const repo = await create3Tasks();
     const tasks = await repo.find({ where: { completed: true } });
@@ -22,7 +22,6 @@ fit("test multiple items", async () => {
     })).toBe(1);
 
 });
-
 
 fit("validation", async () => {
     const r = await create3Tasks();
@@ -70,14 +69,13 @@ fit("test http 404", async () => {
 });
 fit("test http 201", async () => {
     let result = await axios.post<{ title: string, id: string }>(
-        'http://localhost:3001/api/tasks'
+        path
         , { title: "z", id: "" });
     expect(result.data.title).toBe("z");
     expect(result.status).toBe(201);
     result = await axios.delete(path + "/" + result.data.id);
     expect(result.status).toBe(204);
 });
-
 
 
 @Entity("tasks", {
