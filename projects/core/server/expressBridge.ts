@@ -118,8 +118,8 @@ export interface GenericRequest {
 
 export interface GenericResponse {
   json(data: any);
-  status?(statusCode: number): GenericResponse;
-  setStatus?(statusCode: number): GenericResponse;
+  status?(statusCode: number): GenericResponse;//exists for express and next and not in opine
+  setStatus?(statusCode: number): GenericResponse; // exists in opine and not in express and next
   end();
 };
 export type GenericRouter = GenericRequestHandler & {

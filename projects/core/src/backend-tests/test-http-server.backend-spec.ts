@@ -5,9 +5,10 @@ import { Entity, Fields } from '../remult3';
 import { Action, BackendMethod } from '../server-action';
 import { Validators } from '../validators';
 
-Remult.apiBaseUrl = 'http://localhost:3001/api';
+Remult.apiBaseUrl = 'http://localhost:3000/api';
 const path = Remult.apiBaseUrl + '/tasks';
  
+
 fit("works", async () => {
     const repo = await create3Tasks();
     const tasks = await repo.find({ where: { completed: true } });
@@ -107,5 +108,4 @@ async function create3Tasks() {
     expect(await taskRepo.count()).toBe(3);
     return taskRepo;
 }
-
 

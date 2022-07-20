@@ -80,7 +80,7 @@ export abstract class Action<inParam, outParam>{
                 res.success(r);
             }
             catch (err) {
-                if (err instanceof ForbiddenError)
+                if (err.isForbiddenError)
                     res.forbidden();
                 else
                     res.error(err);
@@ -93,6 +93,7 @@ class ForbiddenError extends Error {
     constructor() {
         super("Forbidden");
     }
+    isForbiddenError = true;
 }
 
 export class myServerAction extends Action<inArgs, result>
