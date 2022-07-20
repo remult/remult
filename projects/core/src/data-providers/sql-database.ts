@@ -129,7 +129,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     }
 
     return r.execute(select).then(r => {
-      return +r.rows[0].count;
+      return Number(r.rows[0].count);
     });
 
   }
