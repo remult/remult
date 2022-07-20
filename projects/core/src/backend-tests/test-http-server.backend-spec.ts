@@ -50,7 +50,6 @@ fit("forbidden", async () => {
         err = error;
     }
     expect(err).toEqual({
-        message: "Request failed with status code 403",
         httpStatusCode: 403
     })
 });
@@ -80,7 +79,6 @@ fit("test http 201", async () => {
     result = await axios.delete(path + "/" + result.data.id);
     expect(result.status).toBe(204);
 });
-
 
 
 
@@ -116,4 +114,3 @@ async function create3Tasks() {
     expect(await taskRepo.count()).toBe(3);
     return taskRepo;
 }
-

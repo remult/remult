@@ -32,6 +32,8 @@ import { BackendMethod } from '../../../../core/src/server-action';
 
 
 
+
+
 const getDatabase = async () => {
 
     const result = await createKnexDataProvider({
@@ -80,7 +82,7 @@ serverInit().then(async (dataSource) => {
     });
 
     app.use(express.json());
-    app.use(mw);
+    app.use(remultApi);
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
 

@@ -116,11 +116,8 @@ export interface GenericRequest {
 
 }
 export interface GenericResponse {
-  status(arg0: number);
   statusCode: number;
   json(data: any);
-  writeHead(status: number): { end: VoidFunction };
-
 }
 export type GenericRouter = GenericRequestHandler & {
   route(path: string): SpecificRoute
@@ -614,7 +611,8 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     this.sendStatus(403);
   }
   sendStatus(status: number) {
-    this.r.writeHead(status).end();
+    this.r.statusCode = status;
+    this.r.json({});
   }
   constructor(private r: GenericResponse, private req: GenericRequest) {
 
@@ -648,7 +646,8 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
       url: this.req.originalUrl ?? this.req.path,
       method: this.req.method
     });
-    this.r.status(400).json(data);
+    this.r.statusCode = 400;
+    this.r.json(data);
   }
 }
 
