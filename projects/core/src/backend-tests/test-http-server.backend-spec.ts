@@ -5,7 +5,7 @@ import { Entity, Fields } from '../remult3';
 import { Action, BackendMethod } from '../server-action';
 import { Validators } from '../validators';
 
-Remult.apiBaseUrl = 'http://localhost:8000/api';
+Remult.apiBaseUrl = 'http://localhost:3001/api';
 const path = Remult.apiBaseUrl + '/tasks';
  
 fit("works", async () => {
@@ -22,7 +22,6 @@ fit("test multiple items", async () => {
     })).toBe(1);
 
 });
-
 fit("validation", async () => {
     const r = await create3Tasks();
     let err = undefined;
@@ -77,7 +76,6 @@ fit("test http 201", async () => {
     expect(result.status).toBe(204);
 });
 
-
 @Entity("tasks", {
     allowApiCrud: true
 })
@@ -109,4 +107,5 @@ async function create3Tasks() {
     expect(await taskRepo.count()).toBe(3);
     return taskRepo;
 }
+
 

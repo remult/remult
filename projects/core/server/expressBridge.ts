@@ -107,19 +107,21 @@ export interface RemultExpressBridge extends GenericRequestHandler {
   );
 }
 export interface GenericRequest {
-  method: any;
-  url:any;
+  url: string;
+  method?: any;
+  body?: any;
   query?: any;
-  body: any;
   params?: any;
 
 }
 
+
 export interface GenericResponse {
   json(data: any);
-  statusCode: number;
+  status?(statusCode: number): GenericResponse;
+  setStatus?(statusCode: number): GenericResponse;
   end();
-}
+};
 export type GenericRouter = GenericRequestHandler & {
   route(path: string): SpecificRoute
 }
@@ -609,11 +611,13 @@ export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
-    this.sendStatus(403);
+    this.setStatus(403).end();
   }
-  sendStatus(status: number) {
-    this.r.statusCode = status;
-    this.r.end();
+  setStatus(status: number) {
+    if (this.r.setStatus)
+      return this.r.setStatus(status);
+    return this.r.status(status);
+
   }
   constructor(private r: GenericResponse, private req: GenericRequest) {
 
@@ -627,16 +631,15 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public created(data: any): void {
-    this.r.statusCode = 201;
-    this.r.json(data);
+    this.setStatus(201).json(data);
   }
   public deleted() {
-    this.sendStatus(204);
+    this.setStatus(204).end();
   }
 
   public notFound(): void {
 
-    this.sendStatus(404);
+    this.setStatus(404).end();
   }
 
   public error(data: ErrorInfo): void {
@@ -647,8 +650,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
       url: this.req.url,
       method: this.req.method
     });
-    this.r.statusCode = 400;
-    this.r.json(data);
+    this.setStatus(400).json(data);;
   }
 }
 

@@ -101,7 +101,6 @@ serverInit().then(async (dataSource) => {
 
 
     app.use('/*', async (req, res) => {
-
         const index = 'dist/my-project/index.html';
         if (fs.existsSync(index)) {
             res.send(fs.readFileSync(index).toString());
