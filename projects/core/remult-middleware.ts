@@ -47,7 +47,7 @@ class middleware {
         const url = new URL(req.url);
         const path = url.pathname;
         if (!req.query) {
-            let query: { [key: string]: undefined | string | string[]  } = {};
+            let query: { [key: string]: undefined | string | string[] } = {};
             url.searchParams.forEach((val, key) => {
                 let current = query[key];
                 if (!current) {
@@ -78,6 +78,8 @@ class middleware {
             if (m) {
                 let h = m.get(req.method.toLowerCase());
                 if (h) {
+                    if (!req.params)
+                        req.params = {};
                     req.params.id = path.substring(idPosition + 1);
                     h(req, res, next);
                     return;

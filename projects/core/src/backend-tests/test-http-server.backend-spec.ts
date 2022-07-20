@@ -5,7 +5,7 @@ import { Entity, Fields } from '../remult3';
 import { Action, BackendMethod } from '../server-action';
 import { Validators } from '../validators';
 
-Remult.apiBaseUrl = 'http://localhost:3001/api';
+Remult.apiBaseUrl = 'http://localhost:8000/api';
 const path = Remult.apiBaseUrl + '/tasks';
  
 fit("works", async () => {
