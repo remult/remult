@@ -25,6 +25,10 @@ import { remultMiddleware } from '../../../../core/remult-middleware';
 import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
 
 import { AppComponent } from '../app.component';
+import { Entity, Fields } from '../../../../core/src/remult3';
+import { Validators } from '../../../../core/src/validators';
+import { BackendMethod } from '../../../../core/src/server-action';
+
 
 
 
@@ -59,12 +63,12 @@ serverInit().then(async (dataSource) => {
         app.use(forceHttps);
 
     const mw = remultMiddleware({
-        entities: [stam],
+        entities: [stam, Task],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent]
     })
 
     let remultApi = remultExpress({
-        entities: [stam],
+        entities: [stam,Task],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
         // dataProvider:async ()=>await  createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
@@ -74,8 +78,7 @@ serverInit().then(async (dataSource) => {
             await remult.repo(stam).findFirst();
         }
     });
-    console.log(mw);
-    
+
     app.use(express.json());
     app.use(mw);
     app.use('/api/docs', swaggerUi.serve,
@@ -102,7 +105,13 @@ serverInit().then(async (dataSource) => {
             res.send(fs.readFileSync(index).toString());
         }
         else {
-            res.send('No Result' + index);
+            console.log({
+                body: req.body,
+                path: req.path,
+                x: req.originalUrl,
+                method:req.method
+            });
+            res.send('No Result ' + req.path);
         }
     });
 
@@ -113,3 +122,24 @@ serverInit().then(async (dataSource) => {
     app.listen(port);
 });
 
+
+
+@Entity("tasks", {
+    allowApiCrud: true
+})
+export class Task {
+    @Fields.uuid()
+    id!: string;
+
+    @Fields.string({
+        validate: Validators.required
+    })
+    title = '';
+
+    @Fields.boolean()
+    completed = false;
+    @BackendMethod({ allowed: false })
+    static testForbidden() {
+
+    }
+}
