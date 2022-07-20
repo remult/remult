@@ -44,7 +44,10 @@ class middleware {
 
     }
     handleRequest(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
-        const url = new URL(req.url);
+        let theUrl: string = req.url;
+        if (theUrl.startsWith('/'))//next sends a partial url '/api/tasks' and not the full url
+            theUrl = 'http:' + theUrl;
+        const url = new URL(theUrl);
         const path = url.pathname;
         if (!req.query) {
             let query: { [key: string]: undefined | string | string[] } = {};
