@@ -49,9 +49,7 @@ fit("forbidden", async () => {
     catch (error: any) {
         err = error;
     }
-    expect(err).toEqual({
-        httpStatusCode: 403
-    })
+    expect(err.httpStatusCode).toEqual(403)
 });
 fit("test http 404", async () => {
     const repo = create3Tasks();
@@ -98,7 +96,6 @@ export class Task {
     completed = false;
     @BackendMethod({ allowed: false })
     static testForbidden() {
-
     }
 }
 
