@@ -25,10 +25,8 @@ import { remultMiddleware } from '../../../../core/remult-middleware';
 import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
 
 import { AppComponent } from '../app.component';
-import { Entity, Fields } from '../../../../core/src/remult3';
-import { Validators } from '../../../../core/src/validators';
-import { BackendMethod } from '../../../../core/src/server-action';
-
+import { Task } from './Task';
+import { koaServer } from './koaServer';
 
 
 
@@ -57,6 +55,9 @@ const getDatabase = async () => {
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
 
+    
+
+
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
@@ -70,7 +71,7 @@ serverInit().then(async (dataSource) => {
     })
 
     let remultApi = remultExpress({
-        entities: [stam,Task],
+        entities: [stam, Task],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
         // dataProvider:async ()=>await  createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
@@ -82,7 +83,12 @@ serverInit().then(async (dataSource) => {
     });
 
     app.use(express.json());
-    app.use(remultApi);
+    app.use(mw);
+
+
+    console.log("after");
+
+
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
 
@@ -110,7 +116,7 @@ serverInit().then(async (dataSource) => {
                 body: req.body,
                 path: req.path,
                 x: req.originalUrl,
-                method:req.method
+                method: req.method
             });
             res.send('No Result ' + req.path);
         }
@@ -125,22 +131,4 @@ serverInit().then(async (dataSource) => {
 
 
 
-@Entity("tasks", {
-    allowApiCrud: true
-})
-export class Task {
-    @Fields.uuid()
-    id!: string;
 
-    @Fields.string({
-        validate: Validators.required
-    })
-    title = '';
-
-    @Fields.boolean()
-    completed = false;
-    @BackendMethod({ allowed: false })
-    static testForbidden() {
-
-    }
-}

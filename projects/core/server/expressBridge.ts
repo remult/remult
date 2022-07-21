@@ -5,7 +5,7 @@ import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance, Remult } from '../src/context';
+import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
@@ -112,7 +112,8 @@ export interface GenericRequest {
   body?: any;
   query?: any;
   params?: any;
-
+  user?: UserInfo;
+  auth?: UserInfo;
 }
 
 

@@ -3,27 +3,49 @@ import axios from 'axios';
 import { HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from '../context';
 import { Entity, Fields } from '../remult3';
 import { Action, BackendMethod } from '../server-action';
-import { Validators } from '../validators';
 
-Remult.apiBaseUrl = 'http://localhost:3000/api';
-const path = Remult.apiBaseUrl + '/tasks';
- 
+Remult.apiBaseUrl = 'http://localhost:3003/api';
+let path = Remult.apiBaseUrl + '/tasks';
+const environments = [
+    ["next", 3000],
+    ["koa", 3002],
+    ["express", 3003],
+    ["fastify", 3004],
+    ["middleware", 3005],
+    ["optine", 3006],
+    ["fresh", 8000]
+]
 
-fit("works", async () => {
+
+function test(name: string, test: () => Promise<void>) {
+
+    for (const [env, port] of environments) {
+
+        const theTest = async () => {
+            Remult.apiBaseUrl = `http://localhost:${port}/api`;
+            path = Remult.apiBaseUrl + '/tasks';
+            await test();
+        };
+        const testName = env + ` ${port}: ${name}`;
+        fit(testName, theTest);
+    }
+}
+
+test("works", async () => {
     const repo = await create3Tasks();
     const tasks = await repo.find({ where: { completed: true } });
     expect(tasks.length).toBe(1);
     await repo.save({ ...tasks[0], completed: false });
     expect(await repo.count({ completed: true })).toBe(0);
 });
-fit("test multiple items", async () => {
+test("test multiple items", async () => {
     const repo = await create3Tasks();
     expect(await repo.count({
         title: { "!=": ["a", "c"] }
     })).toBe(1);
 
 });
-fit("validation", async () => {
+test("validation", async () => {
     const r = await create3Tasks();
     let err = undefined;
     try {
@@ -40,7 +62,8 @@ fit("validation", async () => {
         }
     })
 });
-fit("forbidden", async () => {
+
+test("forbidden", async () => {
     let err = undefined;
     try {
         await Task.testForbidden();
@@ -50,7 +73,7 @@ fit("forbidden", async () => {
     }
     expect(err.httpStatusCode).toEqual(403)
 });
-fit("test http 404", async () => {
+test("test http 404", async () => {
     const repo = create3Tasks();
     const task = await (await repo).findFirst();
     let result = await axios.get<{ id: string }>(path + "/" + task.id);
@@ -61,13 +84,12 @@ fit("test http 404", async () => {
     try {
         result = await axios.get(path + "/123");
     }
-
     catch (err: any) {
         error = err;
     }
     expect(error.response.status).toBe(404);
 });
-fit("test http 201", async () => {
+test("test http 201", async () => {
     let result = await axios.post<{ title: string, id: string }>(
         path
         , { title: "z", id: "" });
@@ -108,4 +130,6 @@ async function create3Tasks() {
     expect(await taskRepo.count()).toBe(3);
     return taskRepo;
 }
+
+
 
