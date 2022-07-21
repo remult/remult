@@ -41,7 +41,7 @@ Remult is **production-ready** and, in fact, used in production apps since 2017.
 
 Full-stack web development is (still) too complicated. **Simple CRUD, a common requirement of any business application, should be simple to build, maintain, and extend** when the need arises.
 
-Remult abstracts away repetitive, boilerplate, error-prone, and poorly designed code on the one hand, and enables total flexibility and control on the other. **Remult let you write TypeScript code you can follow and safely refactor**, and fits nicely into any existing or new project by being minimalistic and completely unopinionated regarding the developer’s choice of other frameworks and tools.
+Remult abstracts away repetitive, boilerplate, error-prone, and poorly designed code on the one hand, and enables total flexibility and control on the other. **Remult helps building fullstack apps using only TypeScript code you can easily follow and safely refactor**, and fits nicely into any existing or new project by being minimalistic and completely unopinionated regarding the developer’s choice of other frameworks and tools.
 
 Other frameworks tend to fall into either too much abstraction (no-code, low-code, BaaS) or partial abstraction (MVC frameworks, GraphQL, ORMs, API generators, code generators), and tend to be opinionated regarding the development tool-chain, deployment environment, configuration/conventions or DSL. Remult attempts to strike a better balance.
 
