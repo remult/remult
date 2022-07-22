@@ -99,12 +99,25 @@ export function remultMiddlewareBase(
     addArea: x => bridge.addArea(x)
   });
 }
-export interface RemultExpressBridge extends GenericRequestHandler {
+export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
+
+}
+
+export interface RemultServer {
   getRemult(req: GenericRequest): Promise<Remult>;
   openApiDoc(options: { title: string }): any;
-  addArea(
-    rootUrl: string
-  );
+  // @deprecated
+  addArea(rootUrl: string);
+}
+export type GenericRouter = GenericRequestHandler & {
+  route(path: string): SpecificRoute
+}
+export type SpecificRoute = {
+  get(handler: GenericRequestHandler): SpecificRoute,
+  put(handler: GenericRequestHandler): SpecificRoute,
+  post(handler: GenericRequestHandler): SpecificRoute,
+  delete(handler: GenericRequestHandler): SpecificRoute
 }
 export interface GenericRequest {
   url: string;
@@ -123,16 +136,9 @@ export interface GenericResponse {
   setStatus?(statusCode: number): GenericResponse; // exists in opine and not in express and next
   end();
 };
-export type GenericRouter = GenericRequestHandler & {
-  route(path: string): SpecificRoute
-}
-export type SpecificRoute = {
-  get(handler: GenericRequestHandler): SpecificRoute,
-  put(handler: GenericRequestHandler): SpecificRoute,
-  post(handler: GenericRequestHandler): SpecificRoute,
-  delete(handler: GenericRequestHandler): SpecificRoute
-}
-export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+
+
+
 
 
 class ExpressBridge {

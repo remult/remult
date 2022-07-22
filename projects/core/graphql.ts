@@ -5,7 +5,7 @@ import { getEntityKey } from "./src/remult3";
 
 import { DataApi } from "./src/data-api";
 import { RemultExpressBridge } from "./server/expressBridge";
-import { ValueConverters } from "./valueConverters";
+import { ValueConverters } from "./src/valueConverters";
 
 export function remultGraphql(api: RemultExpressBridge) {
     let r = new Remult();

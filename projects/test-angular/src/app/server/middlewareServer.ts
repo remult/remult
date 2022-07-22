@@ -1,5 +1,4 @@
 import * as express from "express";
-import { remultExpress } from "../../../../core/remult-express";
 import { remultMiddleware } from "../../../../core/remult-middleware";
 import { Task } from "./Task";
 

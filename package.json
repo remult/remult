@@ -9,7 +9,7 @@
     "build-core": "tsc -p projects/core/tsconfig.build.json && tsc -p projects/core/tsconfig.build.esm.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles README.md dist/remult && copyfiles LICENSE dist/remult",
     "build": "npm run build-core && npm run remult-angular-build ",
     "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public  && cd.. && cd angular && npm publish  --access public",
-    "all-servers":"concurrently -k -n \"koa,fastify,express,mw\" -c \"bgBlue.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/koaServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/fastifyServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/expressServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/middlewareServer.ts\"",
+    "all-servers": "concurrently -k -n \"koa,fastify,express,mw\" -c \"bgBlue.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/koaServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/fastifyServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/expressServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/middlewareServer.ts\"",
     "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next",
     "test:ci": "cd projects/test-angular && ng test core --code-coverage",
     "remove-next": "npm remult dist-tag rm next",
@@ -117,9 +117,11 @@
   },
   "dependencies": {
     "@fastify/express": "^2.0.1",
+    "@fastify/middie": "^8.0.0",
     "@types/koa": "^2.13.5",
     "@types/koa-bodyparser": "^4.3.7",
     "fastify": "^4.2.1",
+    "fastify-plugin": "^4.0.0",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0"
   }

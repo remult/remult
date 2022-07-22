@@ -16,7 +16,7 @@ import { Categories, Categories as newCategories, CategoriesForTesting } from '.
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, Fields, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
-import { ValueConverters } from '../../valueConverters';
+import { ValueConverters } from '../valueConverters';
 import { EntityOptions } from '../entity';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
