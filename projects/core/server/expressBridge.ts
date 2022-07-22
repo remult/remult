@@ -32,11 +32,11 @@ export type RemultMiddlewareOptions = {
   rootPath?: string;
 };
 
-export function remultMiddlewareBase(
+export function buildRemultServer(
   app: GenericRouter,
   options:
     RemultMiddlewareOptions,
-): RemultExpressBridge {
+): RemultServer {
 
   if (!options) {
     options = {};
@@ -92,12 +92,8 @@ export function remultMiddlewareBase(
     registerActionsOnServer(apiArea, actions);
     registerEntitiesOnServer(apiArea, options.entities);
   }
-
-  return Object.assign(app, {
-    getRemult: (req) => bridge.getRemult(req),
-    openApiDoc: (options: { title: string }) => bridge.openApiDoc(options),
-    addArea: x => bridge.addArea(x)
-  });
+  return bridge;
+  
 }
 export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
@@ -110,7 +106,7 @@ export interface RemultServer {
   // @deprecated
   addArea(rootUrl: string);
 }
-export type GenericRouter = GenericRequestHandler & {
+export type GenericRouter =  {
   route(path: string): SpecificRoute
 }
 export type SpecificRoute = {
@@ -806,7 +802,6 @@ export class EntityQueueStorage implements QueueStorage {
     await q._.save();
     return q.id;
   }
-
 
 }
 

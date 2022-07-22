@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod } from 'fastify';
-import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, remultMiddlewareBase, RemultMiddlewareOptions, SpecificRoute } from './server/expressBridge';
+import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, buildRemultServer, RemultMiddlewareOptions, SpecificRoute } from './server/expressBridge';
 
 
 export function remultFastify(options: RemultMiddlewareOptions): FastifyPluginCallback & RemultServer {
@@ -49,7 +49,7 @@ export function remultFastify(options: RemultMiddlewareOptions): FastifyPluginCa
                 return r;
             },
         };
-        api = remultMiddlewareBase(fastifyRouter, options);
+        api = buildRemultServer(fastifyRouter, options);
     };
     const getApi = () => {
         if (!api)

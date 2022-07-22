@@ -118,11 +118,14 @@
   "dependencies": {
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
+    "@koa/router": "^12.0.0",
     "@types/koa": "^2.13.5",
+    "@types/koa__router": "^8.0.11",
     "@types/koa-bodyparser": "^4.3.7",
     "fastify": "^4.2.1",
     "fastify-plugin": "^4.0.0",
     "koa": "^2.13.4",
-    "koa-bodyparser": "^4.3.0"
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^12.0.0"
   }
 }
