@@ -45,8 +45,8 @@
       "import": "./esm/postgres/schema-builder.js"
     },
     "./remult-knex": {
-      "require": "./remult-knex.js",
-      "import": "./esm/remult-knex.js"
+      "require": "./remult-knex/index.js",
+      "import": "./esm/remult-knex/index.js"
     },
     "./remult-mongo": {
       "require": "./remult-mongo.js",

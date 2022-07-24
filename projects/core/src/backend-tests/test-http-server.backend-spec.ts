@@ -7,7 +7,7 @@ import { Action, BackendMethod } from '../server-action';
 Remult.apiBaseUrl = 'http://localhost:3003/api';
 let path = Remult.apiBaseUrl + '/tasks';
 const environments = [
-    //   ["next", 3000],
+    ["next", 3000],
     ["nest", 3001],
     ["koa", 3002],
     ["fastify", 3003],
@@ -42,6 +42,7 @@ test("test multiple items", async () => {
     })).toBe(1);
 
 });
+
 test("validation", async () => {
     const r = await create3Tasks();
     let err = undefined;
