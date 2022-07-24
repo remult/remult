@@ -13,8 +13,8 @@ const environments = [
     ["fastify", 3003],
     ["express", 3004],
     ["middleware", 3005],
-    //   ["optine", 3006],
-    //   ["fresh", 8000],
+    ["optine", 3006],
+    ["fresh", 8000],
 ]
 function test(name: string, test: () => Promise<void>) {
     for (const [env, port] of environments) {
@@ -28,6 +28,7 @@ function test(name: string, test: () => Promise<void>) {
         fit(testName, theTest);
     }
 }
+
 test("works", async () => {
     const repo = await create3Tasks();
     const tasks = await repo.find({ where: { completed: true } });
@@ -40,9 +41,7 @@ test("test multiple items", async () => {
     expect(await repo.count({
         title: { "!=": ["a", "c"] }
     })).toBe(1);
-
 });
-
 test("validation", async () => {
     const r = await create3Tasks();
     let err = undefined;

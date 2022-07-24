@@ -1,9 +1,10 @@
-import { GenericRequest, GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute } from './server/expressBridge';
+import { GenericRequest, GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer } from './server/expressBridge';
 
 export function remultMiddleware(options?:
-    RemultMiddlewareOptions) {
+    RemultMiddlewareOptions): GenericRequest & RemultServer {
     const m = new middleware();
     const server = buildRemultServer(m, options);
+    //@ts-ignore
     return Object.assign((req, res, next) => m.handleRequest(req, res, next), {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),

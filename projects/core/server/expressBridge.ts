@@ -104,7 +104,7 @@ export interface RemultServer {
   getRemult(req: GenericRequest): Promise<Remult>;
   openApiDoc(options: { title: string }): any;
   // @deprecated
-  addArea(rootUrl: string);
+  addArea(rootUrl: string):void;
 }
 export type GenericRouter =  {
   route(path: string): SpecificRoute
