@@ -116,7 +116,7 @@ export type SpecificRoute = {
   delete(handler: GenericRequestHandler): SpecificRoute
 }
 export interface GenericRequest {
-  url: string;
+  url?: string; //optional for next
   method?: any;
   body?: any;
   query?: any;

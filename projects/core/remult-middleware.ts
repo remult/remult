@@ -46,19 +46,25 @@ class middleware {
         return route;
 
     }
-    async handle(req: GenericRequest): Promise<MiddlewareResponse | undefined> {
+    async handle(req: GenericRequest, gRes?: GenericResponse): Promise<MiddlewareResponse | undefined> {
 
         return new Promise<MiddlewareResponse | undefined>(res => {
             const response = new class implements GenericResponse {
                 statusCode: number;
                 json(data: any) {
+                    if (gRes)
+                        gRes.json(data);
                     res({ statusCode: this.statusCode, data });
                 }
                 status?(statusCode: number): GenericResponse {
+                    if (gRes)
+                        gRes.status(statusCode);
                     this.statusCode = statusCode;
                     return this;
                 }
                 end() {
+                    if (gRes)
+                        gRes.end();
                     res({
                         statusCode: this.statusCode
                     })
