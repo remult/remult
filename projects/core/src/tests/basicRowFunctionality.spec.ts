@@ -27,7 +27,7 @@ import { actionInfo } from '../server-action';
 import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
-import { ValueConverters } from "../../valueConverters";
+import { ValueConverters } from "../valueConverters";
 import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 
 //SqlDatabase.LogToConsole = true;

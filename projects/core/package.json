@@ -32,9 +32,33 @@
       "require": "./remult-middleware.js",
       "import": "./esm/remult-middleware.js"
     },
+    "./remult-fastify": {
+      "require": "./remult-fastify.js",
+      "import": "./esm/remult-fastify.js"
+    },
+    "./remult-fresh": {
+      "require": "./remult-fresh.js",
+      "import": "./esm/remult-fresh.js"
+    },
+    "./postgres": {
+      "require": "./postgres/index.js",
+      "import": "./esm/postgres/index.js"
+    },
     "./postgres/schema-builder": {
       "require": "./postgres/schema-builder.js",
       "import": "./esm/postgres/schema-builder.js"
+    },
+    "./remult-knex": {
+      "require": "./remult-knex/index.js",
+      "import": "./esm/remult-knex/index.js"
+    },
+    "./remult-mongo": {
+      "require": "./remult-mongo.js",
+      "import": "./esm/remult-mongo.js"
+    },
+    "./graphql": {
+      "require": "./graphql.js",
+      "import": "./esm/graphql.js"
     }
   }
 }

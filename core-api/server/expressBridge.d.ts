@@ -1,7 +1,7 @@
 import { queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse } from '../src/data-api';
-import { AllowedForInstance, Remult } from '../src/context';
+import { AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
@@ -23,28 +23,13 @@ export declare type RemultMiddlewareOptions = {
     rootPath?: string;
 };
 export declare function remultMiddlewareBase(app: GenericRouter, options: RemultMiddlewareOptions): RemultExpressBridge;
+export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 export interface RemultExpressBridge extends GenericRequestHandler {
     getRemult(req: GenericRequest): Promise<Remult>;
     openApiDoc(options: {
         title: string;
     }): any;
     addArea(rootUrl: string): any;
-}
-export interface GenericRequest {
-    method: any;
-    path: any;
-    originalUrl: any;
-    query: any;
-    body: any;
-    params: any;
-}
-export interface GenericResponse {
-    status(arg0: number): any;
-    statusCode: number;
-    json(data: any): any;
-    writeHead(status: number): {
-        end: VoidFunction;
-    };
 }
 export declare type GenericRouter = GenericRequestHandler & {
     route(path: string): SpecificRoute;
@@ -55,7 +40,21 @@ export declare type SpecificRoute = {
     post(handler: GenericRequestHandler): SpecificRoute;
     delete(handler: GenericRequestHandler): SpecificRoute;
 };
-export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface GenericRequest {
+    url: string;
+    method?: any;
+    body?: any;
+    query?: any;
+    params?: any;
+    user?: UserInfo;
+    auth?: UserInfo;
+}
+export interface GenericResponse {
+    json(data: any): any;
+    status?(statusCode: number): GenericResponse;
+    setStatus?(statusCode: number): GenericResponse;
+    end(): any;
+}
 declare class ExpressBridge {
     private app;
     queue: inProcessQueueHandler;

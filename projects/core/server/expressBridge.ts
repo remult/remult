@@ -5,7 +5,7 @@ import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance, Remult } from '../src/context';
+import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
@@ -32,11 +32,11 @@ export type RemultMiddlewareOptions = {
   rootPath?: string;
 };
 
-export function remultMiddlewareBase(
+export function buildRemultServer(
   app: GenericRouter,
   options:
     RemultMiddlewareOptions,
-): RemultExpressBridge {
+): RemultServer {
 
   if (!options) {
     options = {};
@@ -92,34 +92,21 @@ export function remultMiddlewareBase(
     registerActionsOnServer(apiArea, actions);
     registerEntitiesOnServer(apiArea, options.entities);
   }
-
-  return Object.assign(app, {
-    getRemult: (req) => bridge.getRemult(req),
-    openApiDoc: (options: { title: string }) => bridge.openApiDoc(options),
-    addArea: x => bridge.addArea(x)
-  });
+  return bridge;
+  
 }
-export interface RemultExpressBridge extends GenericRequestHandler {
+export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
+
+}
+
+export interface RemultServer {
   getRemult(req: GenericRequest): Promise<Remult>;
   openApiDoc(options: { title: string }): any;
-  addArea(
-    rootUrl: string
-  );
+  // @deprecated
+  addArea(rootUrl: string):void;
 }
-export interface GenericRequest {
-  method: any;
-  path: any;
-  originalUrl: any;
-  query: any;
-  body: any;
-  params: any;
-
-}
-export interface GenericResponse {
-  statusCode: number;
-  json(data: any);
-}
-export type GenericRouter = GenericRequestHandler & {
+export type GenericRouter =  {
   route(path: string): SpecificRoute
 }
 export type SpecificRoute = {
@@ -128,7 +115,26 @@ export type SpecificRoute = {
   post(handler: GenericRequestHandler): SpecificRoute,
   delete(handler: GenericRequestHandler): SpecificRoute
 }
-export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface GenericRequest {
+  url?: string; //optional for next
+  method?: any;
+  body?: any;
+  query?: any;
+  params?: any;
+  user?: UserInfo;
+  auth?: UserInfo;
+}
+
+
+export interface GenericResponse {
+  json(data: any);
+  status?(statusCode: number): GenericResponse;//exists for express and next and not in opine
+  setStatus?(statusCode: number): GenericResponse; // exists in opine and not in express and next
+  end();
+};
+
+
+
 
 
 class ExpressBridge {
@@ -608,11 +614,13 @@ export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
-    this.sendStatus(403);
+    this.setStatus(403).end();
   }
-  sendStatus(status: number) {
-    this.r.statusCode = status;
-    this.r.json({});
+  setStatus(status: number) {
+    if (this.r.setStatus)
+      return this.r.setStatus(status);
+    return this.r.status(status);
+
   }
   constructor(private r: GenericResponse, private req: GenericRequest) {
 
@@ -626,16 +634,15 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public created(data: any): void {
-    this.r.statusCode = 201;
-    this.r.json(data);
+    this.setStatus(201).json(data);
   }
   public deleted() {
-    this.sendStatus(204);
+    this.setStatus(204).end();
   }
 
   public notFound(): void {
 
-    this.sendStatus(404);
+    this.setStatus(404).end();
   }
 
   public error(data: ErrorInfo): void {
@@ -643,11 +650,10 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     console.error({
       message: data.message,
       stack: data.stack?.split('\n'),
-      url: this.req.originalUrl ?? this.req.path,
+      url: this.req.url,
       method: this.req.method
     });
-    this.r.statusCode = 400;
-    this.r.json(data);
+    this.setStatus(400).json(data);;
   }
 }
 
@@ -796,7 +802,6 @@ export class EntityQueueStorage implements QueueStorage {
     await q._.save();
     return q.id;
   }
-
 
 }
 

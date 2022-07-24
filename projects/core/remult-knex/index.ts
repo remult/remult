@@ -5,7 +5,7 @@ import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer
 import { allEntities, Remult } from "../src/context";
 
 import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata } from "../src/remult3";
-import { ValueConverters } from "../valueConverters";
+import { ValueConverters } from "../src/valueConverters";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from '../src/data-interfaces';
 import { FieldMetadata } from '../src/column-interfaces';
 import { CompoundIdField } from '../src/column';

@@ -4,7 +4,7 @@ import { Remult, allEntities } from '../src/context';
 import { SqlDatabase } from '../src/data-providers/sql-database';
 import { getDbNameProvider } from '../src/filter/filter-consumer-bridge-to-sql-request';
 import { EntityMetadata, isAutoIncrement } from '../src/remult3';
-import { ValueConverters } from '../valueConverters';
+import { ValueConverters } from '../src/valueConverters';
 
 
 export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
