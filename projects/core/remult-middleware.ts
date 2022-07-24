@@ -52,18 +52,18 @@ class middleware {
             const response = new class implements GenericResponse {
                 statusCode: number;
                 json(data: any) {
-                    if (gRes)
+                    if (gRes!==undefined)
                         gRes.json(data);
                     res({ statusCode: this.statusCode, data });
                 }
                 status?(statusCode: number): GenericResponse {
-                    if (gRes)
+                    if (gRes!==undefined)
                         gRes.status(statusCode);
                     this.statusCode = statusCode;
                     return this;
                 }
                 end() {
-                    if (gRes)
+                    if (gRes!==undefined)
                         gRes.end();
                     res({
                         statusCode: this.statusCode

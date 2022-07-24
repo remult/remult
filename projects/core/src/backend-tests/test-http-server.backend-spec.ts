@@ -98,7 +98,6 @@ test("test regular api call", async () => {
     let result = await axios.get<{ result: number }>(Remult.apiBaseUrl + "/test");
     expect(result.data.result).toBe(3);
 });
-
 @Entity("tasks", {
     allowApiCrud: true
 })
@@ -117,6 +116,7 @@ export class Task {
     static testForbidden() {
     }
 }
+
 
 async function create3Tasks() {
     const remult = new Remult(axios);
