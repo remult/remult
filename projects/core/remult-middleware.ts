@@ -8,7 +8,7 @@ export function remultMiddleware(options?:
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
         addArea: x => server.addArea(x),
-        handle: req => m.handle(req)
+        handle: (req, res) => m.handle(req, res)
     });
 
 }
@@ -52,18 +52,18 @@ class middleware {
             const response = new class implements GenericResponse {
                 statusCode: number;
                 json(data: any) {
-                    if (gRes!==undefined)
+                    if (gRes !== undefined)
                         gRes.json(data);
                     res({ statusCode: this.statusCode, data });
                 }
                 status?(statusCode: number): GenericResponse {
-                    if (gRes!==undefined)
+                    if (gRes !== undefined)
                         gRes.status(statusCode);
                     this.statusCode = statusCode;
                     return this;
                 }
                 end() {
-                    if (gRes!==undefined)
+                    if (gRes !== undefined)
                         gRes.end();
                     res({
                         statusCode: this.statusCode
