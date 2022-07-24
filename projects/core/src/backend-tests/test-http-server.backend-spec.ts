@@ -8,6 +8,7 @@ Remult.apiBaseUrl = 'http://localhost:3003/api';
 let path = Remult.apiBaseUrl + '/tasks';
 const environments = [
     //   ["next", 3000],
+    ["nest", 3001],
     ["koa", 3002],
     ["fastify", 3003],
     ["express", 3004],
@@ -27,7 +28,6 @@ function test(name: string, test: () => Promise<void>) {
         fit(testName, theTest);
     }
 }
-
 test("works", async () => {
     const repo = await create3Tasks();
     const tasks = await repo.find({ where: { completed: true } });

@@ -3,42 +3,47 @@ import * as bodyParser from 'koa-bodyparser';
 import { remultMiddleware } from '../../../../core/remult-middleware';
 import { GenericResponse } from '../../../../core/server/expressBridge';
 import { Task } from './Task';
-import * as Router from '@koa/router';
+
 
 const app = new koa();
-const router = new Router();
+
 const api = remultMiddleware({ entities: [Task] });
 app.use(bodyParser());
-// app.use(async ctx => {
+app.use(async (ctx, next) => {
 
-//     await new Promise(res => {
-//         const myRes: GenericResponse = {
-//             status(statusCode) {
-//                 ctx.response.status = statusCode;
-//                 return myRes;
-//             },
-//             json(data) {
-//                 ctx.response.body = data;
-//                 res({});
-//             },
-//             end() {
-//                 res({});
-//             },
-//         };
-//         api(ctx.request, myRes, () => {
-//             res({});
-//          });
-//     })
+    if (await new Promise<boolean>(res => {
+        const myRes: GenericResponse = {
+            status(statusCode) {
+                ctx.response.status = statusCode;
+                return myRes;
+            },
+            json(data) {
+                ctx.response.body = data;
+                res(false);
+            },
+            end() {
+                res(false);
+            },
+        };
+        api(ctx.request, myRes, () => {
+            res(true);
+        });
+    }))
+        await next();
 
-// });
-
-router.get('/api/test', async (ctx, res) => {
-    return "noam";
-    //ctx.respond.body = 
-    //const remult = await api.getRemult(req);
-    //return { result: await remult.repo(Task).count() }
+});
+app.use(async (ctx, next) => {
+    if (ctx.path == '/api/test') {
+        const remult = await api.getRemult(ctx.response);
+        ctx.response.body = { result: await remult.repo(Task).count() };
+        await new Promise((res) => {
+            setTimeout(() => {
+                res({})
+            }, 100);
+        });
+    }
+    else next();
 })
-app.use(router.routes());
-app.use(router.allowedMethods());
+
 const port = 3002;
 app.listen(port, () => console.log("koa started on " + port));
