@@ -28,7 +28,6 @@ function test(name: string, test: () => Promise<void>) {
         fit(testName, theTest);
     }
 }
-
 test("works", async () => {
     const repo = await create3Tasks();
     const tasks = await repo.find({ where: { completed: true } });
@@ -99,7 +98,6 @@ test("test regular api call", async () => {
     let result = await axios.get<{ result: number }>(Remult.apiBaseUrl + "/test");
     expect(result.data.result).toBe(3);
 });
-
 
 @Entity("tasks", {
     allowApiCrud: true

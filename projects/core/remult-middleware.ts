@@ -1,16 +1,19 @@
 import { GenericRequest, GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer } from './server/expressBridge';
 
 export function remultMiddleware(options?:
-    RemultMiddlewareOptions): GenericRequest & RemultServer {
+    RemultMiddlewareOptions): RemultMiddleware {
     const m = new middleware();
     const server = buildRemultServer(m, options);
-    //@ts-ignore
     return Object.assign((req, res, next) => m.handleRequest(req, res, next), {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-        addArea: x => server.addArea(x)
+        addArea: x => server.addArea(x),
+        handle: req => m.handle(req)
     });
 
+}
+export interface RemultMiddleware extends GenericRequestHandler, RemultServer {
+    handle(req: GenericRequest): Promise<MiddlewareResponse>
 }
 
 class middleware {
@@ -41,6 +44,28 @@ class middleware {
             }
         }
         return route;
+
+    }
+    async handle(req: GenericRequest): Promise<MiddlewareResponse | undefined> {
+
+        return new Promise<MiddlewareResponse | undefined>(res => {
+            const response = new class implements GenericResponse {
+                statusCode: number;
+                json(data: any) {
+                    res({ statusCode: this.statusCode, data });
+                }
+                status?(statusCode: number): GenericResponse {
+                    this.statusCode = statusCode;
+                    return this;
+                }
+                end() {
+                    res({
+                        statusCode: this.statusCode
+                    })
+                }
+            };
+            this.handleRequest(req, response, () => res(undefined));
+        })
 
     }
     handleRequest(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
@@ -91,4 +116,8 @@ class middleware {
         }
         next();
     }
+}
+export interface MiddlewareResponse {
+    data?: any;
+    statusCode?: number;
 }
