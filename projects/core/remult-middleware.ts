@@ -13,7 +13,7 @@ export function remultMiddleware(options?:
 
 }
 export interface RemultMiddleware extends GenericRequestHandler, RemultServer {
-    handle(req: GenericRequest): Promise<MiddlewareResponse>
+    handle(req: GenericRequest, gRes?: GenericResponse): Promise<MiddlewareResponse>
 }
 
 class middleware {
