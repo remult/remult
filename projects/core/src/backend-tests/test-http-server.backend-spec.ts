@@ -93,11 +93,13 @@ test("test http 201", async () => {
     result = await axios.delete(path + "/" + result.data.id);
     expect(result.status).toBe(204);
 });
+
 test("test regular api call", async () => {
     await create3Tasks();
     let result = await axios.get<{ result: number }>(Remult.apiBaseUrl + "/test");
     expect(result.data.result).toBe(3);
 });
+
 @Entity("tasks", {
     allowApiCrud: true
 })
@@ -116,7 +118,6 @@ export class Task {
     static testForbidden() {
     }
 }
-
 
 async function create3Tasks() {
     const remult = new Remult(axios);

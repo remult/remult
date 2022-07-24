@@ -36,6 +36,10 @@
       "require": "./remult-fastify.js",
       "import": "./esm/remult-fastify.js"
     },
+    "./remult-fresh": {
+      "require": "./remult-fresh.js",
+      "import": "./esm/remult-fresh.js"
+    },
     "./postgres": {
       "require": "./postgres/index.js",
       "import": "./esm/postgres/index.js"

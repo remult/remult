@@ -127,3 +127,4 @@ export interface MiddlewareResponse {
     data?: any;
     statusCode?: number;
 }
+export { GenericRequest, GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer };

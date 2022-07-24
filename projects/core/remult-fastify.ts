@@ -23,7 +23,7 @@ export function remultFastify(options: RemultMiddlewareOptions): FastifyPluginCa
     }
 
     let api: RemultServer;
-    const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, options) => {
+    const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, op) => {
         //@ts-ignore
         let fastifyRouter: GenericRouter = {
             route(path) {
