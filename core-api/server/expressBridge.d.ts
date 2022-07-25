@@ -19,19 +19,20 @@ export declare type RemultMiddlewareOptions = {
     defaultGetLimit?: number;
     entities?: ClassType<any>[];
     controllers?: ClassType<any>[];
-    bodyParser?: boolean;
     rootPath?: string;
 };
-export declare function remultMiddlewareBase(app: GenericRouter, options: RemultMiddlewareOptions): RemultExpressBridge;
+export declare function buildRemultServer(app: GenericRouter, options: RemultMiddlewareOptions): RemultServer;
 export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
-export interface RemultExpressBridge extends GenericRequestHandler {
+export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
+}
+export interface RemultServer {
     getRemult(req: GenericRequest): Promise<Remult>;
     openApiDoc(options: {
         title: string;
     }): any;
-    addArea(rootUrl: string): any;
+    addArea(rootUrl: string): void;
 }
-export declare type GenericRouter = GenericRequestHandler & {
+export declare type GenericRouter = {
     route(path: string): SpecificRoute;
 };
 export declare type SpecificRoute = {
@@ -41,7 +42,7 @@ export declare type SpecificRoute = {
     delete(handler: GenericRequestHandler): SpecificRoute;
 };
 export interface GenericRequest {
-    url: string;
+    url?: string;
     method?: any;
     body?: any;
     query?: any;

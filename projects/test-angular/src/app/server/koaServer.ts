@@ -23,11 +23,6 @@ app.use(async (ctx, next) => {
     if (ctx.path == '/api/test') {
         const remult = await api.getRemult(ctx.request);
         ctx.response.body = { result: await remult.repo(Task).count() };
-        await new Promise((res) => {
-            setTimeout(() => {
-                res({})
-            }, 100);
-        });
     }
     else next();
 })

@@ -28,7 +28,6 @@ export type RemultMiddlewareOptions = {
   defaultGetLimit?: number;
   entities?: ClassType<any>[];
   controllers?: ClassType<any>[];
-  bodyParser?: boolean;
   rootPath?: string;
 };
 
