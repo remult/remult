@@ -70,6 +70,9 @@ export {
 export {
     SqlDatabase
 } from './src/data-providers/sql-database';//V
+
+
+
 export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-data-provider';//V
 
 //export * from './src/data-api'; //reconsider if to make internal
@@ -102,4 +105,4 @@ export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-b
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
-export { ValueConverters } from './valueConverters';
+export { ValueConverters } from './src/valueConverters';

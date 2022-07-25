@@ -16,7 +16,7 @@ import { Categories, Categories as newCategories, CategoriesForTesting } from '.
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, Fields, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
-import { ValueConverters } from '../../valueConverters';
+import { ValueConverters } from '../valueConverters';
 import { EntityOptions } from '../entity';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
@@ -1312,7 +1312,7 @@ describe("context", () => {
       sub: '12',
       name: "the name",
       permissions: ["a", "b"]
-    });
+    } as any);
     expect(remult.user.id).toBe('12');
     expect(remult.user.name).toBe("the name");
     expect(remult.isAllowed("a")).toBe(true);
@@ -1326,7 +1326,7 @@ describe("context", () => {
   });
   it("user without roles work", () => {
     var remult = new Remult();
-    remult.setUser({ sub: "12" });
+    remult.setUser({ sub: "12" } as any);
     expect(remult.user.roles.length).toBe(0);
   });
   it("test no user is not allowed", () => {

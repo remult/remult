@@ -7,7 +7,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList, ValueListInfo } from '../remult3';
 
 import { IdEntity } from '../id-entity';
-import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
+import { postgresColumnSyntax } from '../../postgres/schema-builder';
 
 import { SqlCommand, SqlResult } from '../sql-command';
 import { FilterConsumerBridgeToSqlRequest, getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';

@@ -1,41 +1,42 @@
 
-
-import { DataProvider, Remult, IdEntity } from '../';
-import * as express from 'express';
 import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
-import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Field, Entity, Repository, getEntityKey, Fields } from '../src/remult3';
-
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
-import { ErrorInfo } from '../src/data-interfaces';
+import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance } from '../src/context';
+import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
+import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
+import { JsonDataProvider } from '../src/data-providers/json-data-provider';
+import { IdEntity } from '../src/id-entity';
 
 
-export function remultExpress(
-  options?:
-    {
-      /** Sets a database connection for Remult.
-       *
-       * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
-      */
-      dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>),
-      bodySizeLimit?: string,
-      disableAutoApi?: boolean,
-      queueStorage?: QueueStorage
-      initRequest?: (remult: Remult, origReq: express.Request) => Promise<void>,
-      initApi?: (remult: Remult) => void | Promise<void>,
-      logApiEndPoints?: boolean,
-      defaultGetLimit?: number,
-      entities?: ClassType<any>[],
-      controllers?: ClassType<any>[],
-      bodyParser?: boolean,
-      rootPath?: string
-    }): RemultExpressBridge {
-  let app = express.Router();
+
+
+export type RemultMiddlewareOptions = {
+  /** Sets a database connection for Remult.
+   *
+   * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
+  */
+  dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
+  disableAutoApi?: boolean;
+  queueStorage?: QueueStorage;
+  initRequest?: (remult: Remult, origReq: GenericRequest) => Promise<void>;
+  initApi?: (remult: Remult) => void | Promise<void>;
+  logApiEndPoints?: boolean;
+  defaultGetLimit?: number;
+  entities?: ClassType<any>[];
+  controllers?: ClassType<any>[];
+  rootPath?: string;
+};
+
+export function buildRemultServer(
+  app: GenericRouter,
+  options:
+    RemultMiddlewareOptions,
+): RemultServer {
+
   if (!options) {
     options = {};
   }
@@ -44,17 +45,12 @@ export function remultExpress(
     DataApi.defaultGetLimit = options.defaultGetLimit;
   }
 
-  if (options.bodySizeLimit === undefined) {
-    options.bodySizeLimit = '10mb';
-  }
+
   if (!options.queueStorage) {
     options.queueStorage = new InMemoryQueueStorage();
   }
 
-  if (options?.bodyParser !== false) {
-    app.use(express.json({ limit: options.bodySizeLimit }));
-    app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
-  }
+
   let dataProvider: Promise<DataProvider>;
   if (typeof options.dataProvider === "function") {
     dataProvider = options.dataProvider();
@@ -95,20 +91,46 @@ export function remultExpress(
     registerActionsOnServer(apiArea, actions);
     registerEntitiesOnServer(apiArea, options.entities);
   }
+  return bridge;
+  
+}
+export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
 
-  return Object.assign(app, {
-    getRemult: (req) => bridge.getRemult(req),
-    openApiDoc: (options: { title: string }) => bridge.openApiDoc(options),
-    addArea: x => bridge.addArea(x)
-  });
 }
-export interface RemultExpressBridge extends express.RequestHandler {
-  getRemult(req: express.Request): Promise<Remult>;
+
+export interface RemultServer {
+  getRemult(req: GenericRequest): Promise<Remult>;
   openApiDoc(options: { title: string }): any;
-  addArea(
-    rootUrl: string
-  );
+  // @deprecated
+  addArea(rootUrl: string):void;
 }
+export type GenericRouter =  {
+  route(path: string): SpecificRoute
+}
+export type SpecificRoute = {
+  get(handler: GenericRequestHandler): SpecificRoute,
+  put(handler: GenericRequestHandler): SpecificRoute,
+  post(handler: GenericRequestHandler): SpecificRoute,
+  delete(handler: GenericRequestHandler): SpecificRoute
+}
+export interface GenericRequest {
+  url?: string; //optional for next
+  method?: any;
+  body?: any;
+  query?: any;
+  params?: any;
+}
+
+
+export interface GenericResponse {
+  json(data: any);
+  status?(statusCode: number): GenericResponse;//exists for express and next and not in opine
+  setStatus?(statusCode: number): GenericResponse; // exists in opine and not in express and next
+  end();
+};
+
+
 
 
 
@@ -434,7 +456,7 @@ class ExpressBridge {
   backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any>, tag: string }[] = [];
 
 
-  constructor(private app: express.Router, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: express.Request) => Promise<void>,
+  constructor(private app: GenericRouter, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: GenericRequest) => Promise<void>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
@@ -451,7 +473,7 @@ class ExpressBridge {
     }
     return r;
   }
-  async getRemult(req?: express.Request) {
+  async getRemult(req?: GenericRequest) {
     return this.firstArea.getRemult(req);
   }
 
@@ -461,7 +483,7 @@ class ExpressBridge {
 export class SiteArea {
   constructor(
     private bridge: ExpressBridge,
-    private app: express.Router,
+    private app: GenericRouter,
     private rootUrl: string,
     private logApiEndpoints: boolean) {
 
@@ -497,8 +519,8 @@ export class SiteArea {
 
 
   }
-  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: express.Request) => Promise<void>) {
-    return async (req: express.Request, res: express.Response) => {
+  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>) {
+    return async (req: GenericRequest, res: GenericResponse) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
@@ -517,7 +539,7 @@ export class SiteArea {
       what(remult, myReq, myRes, req);
     }
   };
-  async getRemult(req: express.Request) {
+  async getRemult(req: GenericRequest) {
     let remult: Remult;
     await this.process(async (c) => {
       remult = c;
@@ -583,18 +605,21 @@ export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
     return this.r.query[key];
   }
 
-  constructor(private r: express.Request) {
+  constructor(private r: GenericRequest) {
 
   }
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
-    this.sendStatus(403);
+    this.setStatus(403).end();
   }
-  sendStatus(status: number) {
-    this.r.writeHead(status).end();
+  setStatus(status: number) {
+    if (this.r.setStatus)
+      return this.r.setStatus(status);
+    return this.r.status(status);
+
   }
-  constructor(private r: express.Response, private req: express.Request) {
+  constructor(private r: GenericResponse, private req: GenericRequest) {
 
   }
   progress(progress: number): void {
@@ -606,16 +631,15 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public created(data: any): void {
-    this.r.statusCode = 201;
-    this.r.json(data);
+    this.setStatus(201).json(data);
   }
   public deleted() {
-    this.sendStatus(204);
+    this.setStatus(204).end();
   }
 
   public notFound(): void {
 
-    this.sendStatus(404);
+    this.setStatus(404).end();
   }
 
   public error(data: ErrorInfo): void {
@@ -623,10 +647,10 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     console.error({
       message: data.message,
       stack: data.stack?.split('\n'),
-      url: this.req.originalUrl ?? this.req.path,
+      url: this.req.url,
       method: this.req.method
     });
-    this.r.status(400).json(data);
+    this.setStatus(400).json(data);;
   }
 }
 
@@ -775,7 +799,6 @@ export class EntityQueueStorage implements QueueStorage {
     await q._.save();
     return q.id;
   }
-
 
 }
 

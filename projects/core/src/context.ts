@@ -138,7 +138,7 @@ export class Remult {
         return this._user;
     }
     /** Set's the current user info */
-    async setUser(info: UserInfo | { sub?: string, name?: string, permissions?: string[], username?: string }) {
+    async setUser(info: UserInfo) {
         this._user = info as UserInfo;
         let auth = info as { sub?: string, name?: string, permissions?: string[], username?: string };
         if (auth) {

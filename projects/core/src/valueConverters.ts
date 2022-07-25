@@ -1,8 +1,8 @@
-import { ClassType } from "./classType";
-import { InputTypes } from "./inputTypes";
-import { makeTitle } from "./src/column";
-import { ValueConverter, ValueListItem } from "./src/column-interfaces";
-import { storableMember, ValueListFieldOptions } from "./src/remult3";
+import { ClassType } from "../classType";
+import { InputTypes } from "../inputTypes";
+import { makeTitle } from "./column";
+import { ValueConverter, ValueListItem } from "./column-interfaces";
+import { storableMember, ValueListFieldOptions } from "./remult3";
 
 
 
