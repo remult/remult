@@ -1312,7 +1312,7 @@ describe("context", () => {
       sub: '12',
       name: "the name",
       permissions: ["a", "b"]
-    });
+    } as any);
     expect(remult.user.id).toBe('12');
     expect(remult.user.name).toBe("the name");
     expect(remult.isAllowed("a")).toBe(true);
@@ -1326,7 +1326,7 @@ describe("context", () => {
   });
   it("user without roles work", () => {
     var remult = new Remult();
-    remult.setUser({ sub: "12" });
+    remult.setUser({ sub: "12" } as any);
     expect(remult.user.roles.length).toBe(0);
   });
   it("test no user is not allowed", () => {

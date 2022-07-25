@@ -40,12 +40,7 @@ export declare class Remult {
     /** Returns the current user's info */
     get user(): UserInfo;
     /** Set's the current user info */
-    setUser(info: UserInfo | {
-        sub?: string;
-        name?: string;
-        permissions?: string[];
-        username?: string;
-    }): Promise<void>;
+    setUser(info: UserInfo): Promise<void>;
     private _user;
     private _userChangeEvent;
     /** Checks if a user was authenticated */

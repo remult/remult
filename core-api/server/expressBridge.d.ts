@@ -1,7 +1,7 @@
 import { queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse } from '../src/data-api';
-import { AllowedForInstance, Remult, UserInfo } from '../src/context';
+import { AllowedForInstance, Remult } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
@@ -47,8 +47,6 @@ export interface GenericRequest {
     body?: any;
     query?: any;
     params?: any;
-    user?: UserInfo;
-    auth?: UserInfo;
 }
 export interface GenericResponse {
     json(data: any): any;

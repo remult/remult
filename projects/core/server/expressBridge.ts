@@ -120,8 +120,6 @@ export interface GenericRequest {
   body?: any;
   query?: any;
   params?: any;
-  user?: UserInfo;
-  auth?: UserInfo;
 }
 
 
