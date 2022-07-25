@@ -35,7 +35,7 @@
 
 ### Status
 
-Remult is **production-ready** and, in fact, used in production apps since 2017. However, we’re keeping the major version at zero so we can use community feedback to finalize the v1 API.
+Remult is **production-ready** and, in fact, used in production apps since 2018. However, we’re keeping the major version at zero so we can use community feedback to finalize the v1 API.
 
 ## Motivation
 
