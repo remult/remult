@@ -1,4 +1,4 @@
-import { GenericRequest, GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer } from './server/expressBridge';
+import { GenericRequest, GenericMiddleware, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer } from './server/expressBridge';
 
 export function remultMiddleware(options?:
     RemultMiddlewareOptions): RemultMiddleware {
@@ -12,33 +12,33 @@ export function remultMiddleware(options?:
     });
 
 }
-export interface RemultMiddleware extends GenericRequestHandler, RemultServer {
+export interface RemultMiddleware extends GenericMiddleware, RemultServer {
     handle(req: GenericRequest, gRes?: GenericResponse): Promise<MiddlewareResponse>
 }
 
 class middleware {
-    map = new Map<string, Map<string, GenericRequestHandler>>();
+    map = new Map<string, Map<string, GenericMiddleware>>();
     route(path: string): SpecificRoute {
         //consider using:
         //* https://raw.githubusercontent.com/cmorten/opine/main/src/utils/pathToRegex.ts
         //* https://github.com/pillarjs/path-to-regexp
         let r = path.toLowerCase();
-        let m = new Map<string, GenericRequestHandler>();
+        let m = new Map<string, GenericMiddleware>();
         this.map.set(r, m);
         const route = {
-            get: (h: GenericRequestHandler) => {
+            get: (h: GenericMiddleware) => {
                 m.set("get", h);
                 return route;
             },
-            put: (h: GenericRequestHandler) => {
+            put: (h: GenericMiddleware) => {
                 m.set("put", h);
                 return route;
             },
-            post: (h: GenericRequestHandler) => {
+            post: (h: GenericMiddleware) => {
                 m.set("post", h);
                 return route;
             },
-            delete: (h: GenericRequestHandler) => {
+            delete: (h: GenericMiddleware) => {
                 m.set("delete", h);
                 return route;
             }
@@ -127,4 +127,4 @@ export interface MiddlewareResponse {
     data?: any;
     statusCode?: number;
 }
-export { GenericRequest, GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer };
+export { GenericRequest, GenericMiddleware as GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer };

@@ -94,8 +94,8 @@ export function buildRemultServer(
   return bridge;
   
 }
-export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
-export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
+export type GenericMiddleware = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface RemultExpressBridge extends GenericMiddleware, RemultServer {
 
 }
 
@@ -109,10 +109,10 @@ export type GenericRouter =  {
   route(path: string): SpecificRoute
 }
 export type SpecificRoute = {
-  get(handler: GenericRequestHandler): SpecificRoute,
-  put(handler: GenericRequestHandler): SpecificRoute,
-  post(handler: GenericRequestHandler): SpecificRoute,
-  delete(handler: GenericRequestHandler): SpecificRoute
+  get(handler: GenericMiddleware): SpecificRoute,
+  put(handler: GenericMiddleware): SpecificRoute,
+  post(handler: GenericMiddleware): SpecificRoute,
+  delete(handler: GenericMiddleware): SpecificRoute
 }
 export interface GenericRequest {
   url?: string; //optional for next
