@@ -1,8 +1,8 @@
 import * as express from 'express';
-import { buildRemultServer, RemultMiddlewareOptions } from './server/expressBridge';
+import { buildRemultServer, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
-    RemultMiddlewareOptions & {
+    RemultServerOptions & {
         bodyParser?: boolean;
         bodySizeLimit?: string;
     }) {

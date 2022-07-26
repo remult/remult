@@ -1,7 +1,7 @@
 import { remultMiddleware } from "./remult-middleware";
-import { RemultMiddlewareOptions, RemultServer } from "./server/expressBridge";
+import { RemultServerOptions, RemultServer } from "./server/expressBridge";
 
-export function remultFresh(options: RemultMiddlewareOptions, response: FreshResponse): RemultFresh {
+export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
     const mw = remultMiddleware(options);
     const orig = mw.handle;
     return {

@@ -14,7 +14,7 @@ import { IdEntity } from '../src/id-entity';
 
 
 
-export type RemultMiddlewareOptions = {
+export type RemultServerOptions = {
   /** Sets a database connection for Remult.
    *
    * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
@@ -23,6 +23,7 @@ export type RemultMiddlewareOptions = {
   disableAutoApi?: boolean;
   queueStorage?: QueueStorage;
   initRequest?: (remult: Remult, origReq: GenericRequest) => Promise<void>;
+  getUser?: (request: GenericRequest) => Promise<UserInfo>;
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
   defaultGetLimit?: number;
@@ -34,7 +35,7 @@ export type RemultMiddlewareOptions = {
 export function buildRemultServer(
   app: GenericRouter,
   options:
-    RemultMiddlewareOptions,
+    RemultServerOptions,
 ): RemultServer {
 
   if (!options) {
@@ -73,7 +74,7 @@ export function buildRemultServer(
 
 
 
-  let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options.initRequest, dataProvider);
+  let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options, dataProvider);
   if (options.logApiEndPoints !== undefined)
     bridge.logApiEndPoints = options.logApiEndPoints;
   if (options.rootPath === undefined)
@@ -92,7 +93,7 @@ export function buildRemultServer(
     registerEntitiesOnServer(apiArea, options.entities);
   }
   return bridge;
-  
+
 }
 export type GenericMiddleware = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 export interface RemultExpressBridge extends GenericMiddleware, RemultServer {
@@ -103,9 +104,9 @@ export interface RemultServer {
   getRemult(req: GenericRequest): Promise<Remult>;
   openApiDoc(options: { title: string }): any;
   // @deprecated
-  addArea(rootUrl: string):void;
+  addArea(rootUrl: string): void;
 }
-export type GenericRouter =  {
+export type GenericRouter = {
   route(path: string): SpecificRoute
 }
 export type SpecificRoute = {
@@ -456,7 +457,7 @@ class ExpressBridge {
   backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any>, tag: string }[] = [];
 
 
-  constructor(private app: GenericRouter, public queue: inProcessQueueHandler, public initRequest: (remult: Remult, origReq: GenericRequest) => Promise<void>,
+  constructor(private app: GenericRouter, public queue: inProcessQueueHandler, public options: RemultServerOptions,
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
@@ -526,14 +527,19 @@ export class SiteArea {
       let remult = new Remult();
       remult.setDataProvider(await this.bridge.dataProvider);
       if (req) {
-        let user = req['user'];
-        if (!user)
-          user = req['auth'];
+        let user;
+        if (this.bridge.options.getUser)
+          user = await this.bridge.options.getUser(req);
+        else {
+          user = req['user'];
+          if (!user)
+            user = req['auth'];
+        }
         if (user)
           remult.setUser(user);
       }
-      if (this.bridge.initRequest) {
-        await this.bridge.initRequest(remult, req);
+      if (this.bridge.options.initRequest) {
+        await this.bridge.options.initRequest(remult, req);
       }
 
       what(remult, myReq, myRes, req);
