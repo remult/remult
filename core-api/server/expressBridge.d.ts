@@ -22,8 +22,8 @@ export declare type RemultMiddlewareOptions = {
     rootPath?: string;
 };
 export declare function buildRemultServer(app: GenericRouter, options: RemultMiddlewareOptions): RemultServer;
-export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
-export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
+export declare type GenericMiddleware = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface RemultExpressBridge extends GenericMiddleware, RemultServer {
 }
 export interface RemultServer {
     getRemult(req: GenericRequest): Promise<Remult>;
@@ -36,10 +36,10 @@ export declare type GenericRouter = {
     route(path: string): SpecificRoute;
 };
 export declare type SpecificRoute = {
-    get(handler: GenericRequestHandler): SpecificRoute;
-    put(handler: GenericRequestHandler): SpecificRoute;
-    post(handler: GenericRequestHandler): SpecificRoute;
-    delete(handler: GenericRequestHandler): SpecificRoute;
+    get(handler: GenericMiddleware): SpecificRoute;
+    put(handler: GenericMiddleware): SpecificRoute;
+    post(handler: GenericMiddleware): SpecificRoute;
+    delete(handler: GenericMiddleware): SpecificRoute;
 };
 export interface GenericRequest {
     url?: string;
