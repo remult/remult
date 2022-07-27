@@ -20,7 +20,7 @@ import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 import { remultExpress } from '../../../../core/remult-express';
-import { remultServer } from '../../../../core/remult-middleware';
+import { remultServer } from '../.../../../../core/server
 
 import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
 

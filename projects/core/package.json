@@ -28,9 +28,9 @@
       "require": "./remult-express.js",
       "import": "./esm/remult-express.js"
     },
-    "./remult-middleware": {
-      "require": "./remult-middleware.js",
-      "import": "./esm/remult-middleware.js"
+    "./server": {
+      "require": "./server/index.js",
+      "import": "./esm/server/index.js"
     },
     "./remult-fastify": {
       "require": "./remult-fastify.js",

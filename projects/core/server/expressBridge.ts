@@ -1,8 +1,6 @@
 
-import { registerActionsOnServer } from './register-actions-on-server';
-import { registerEntitiesOnServer } from './register-entities-on-server';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
-import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
+import { Action, actionInfo, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
@@ -20,7 +18,6 @@ export type RemultServerOptions = {
    * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
-  disableAutoApi?: boolean;
   queueStorage?: QueueStorage;
   initRequest?: (remult: Remult, origReq: GenericRequest) => Promise<void>;
   getUser?: (request: GenericRequest) => Promise<UserInfo>;
@@ -33,7 +30,6 @@ export type RemultServerOptions = {
 };
 
 export function buildRemultServer(
-  app: GenericRouter,
   options:
     RemultServerOptions,
 ): RemultServer {
@@ -71,49 +67,47 @@ export function buildRemultServer(
       return dp;
     });
   }
+  {
+    let allControllers: ClassType<any>[] = [];
+    if (!options.entities)
+      options.entities = [...allEntities];
 
+    if (options.entities)
+      allControllers.push(...options.entities);
+    if (options.controllers)
+      allControllers.push(...options.controllers);
+    options.controllers = allControllers;
+  }
 
-
-  let bridge = new ExpressBridge(app, new inProcessQueueHandler(options.queueStorage), options, dataProvider);
-  if (options.logApiEndPoints !== undefined)
-    bridge.logApiEndPoints = options.logApiEndPoints;
   if (options.rootPath === undefined)
     options.rootPath = Remult.apiBaseUrl;
-  let apiArea = bridge.addArea(options.rootPath);
-
-
-
-  if (!options.disableAutoApi) {
-    let actions: ClassType<any>[] = [];
-    if (options.entities)
-      actions.push(...options.entities);
-    if (options.controllers)
-      actions.push(...options.controllers);
-    registerActionsOnServer(apiArea, actions);
-    registerEntitiesOnServer(apiArea, options.entities);
-  }
+  actionInfo.runningOnServer = true;
+  let bridge = new RemultServerImplementation(new inProcessQueueHandler(options.queueStorage), options, dataProvider);
   return bridge;
 
 }
-export type GenericMiddleware = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
-export interface RemultExpressBridge extends GenericMiddleware, RemultServer {
+export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 
+
+export interface ServerHandleResponse {
+  data?: any;
+  statusCode: number;
 }
-
 export interface RemultServer {
   getRemult(req: GenericRequest): Promise<Remult>;
   openApiDoc(options: { title: string }): any;
-  // @deprecated
-  addArea(rootUrl: string): void;
+  registerRouter(r: GenericRouter): void;
+  handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+
 }
 export type GenericRouter = {
   route(path: string): SpecificRoute
 }
 export type SpecificRoute = {
-  get(handler: GenericMiddleware): SpecificRoute,
-  put(handler: GenericMiddleware): SpecificRoute,
-  post(handler: GenericMiddleware): SpecificRoute,
-  delete(handler: GenericMiddleware): SpecificRoute
+  get(handler: GenericRequestHandler): SpecificRoute,
+  put(handler: GenericRequestHandler): SpecificRoute,
+  post(handler: GenericRequestHandler): SpecificRoute,
+  delete(handler: GenericRequestHandler): SpecificRoute
 }
 export interface GenericRequest {
   url?: string; //optional for next
@@ -135,9 +129,159 @@ export interface GenericResponse {
 
 
 
-class ExpressBridge {
+class RemultServerImplementation implements RemultServer {
+  constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions,
+    public dataProvider: DataProvider | Promise<DataProvider>) {
+
+  }
+  routeImpl: RouteImplementation;
+
+  handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse> {
+    if (!this.routeImpl) {
+      this.routeImpl = new RouteImplementation();
+      this.registerRouter(this.routeImpl);
+    }
+    return this.routeImpl.handle(req, gRes);
+  }
+  registeredRouter = false;
+  registerRouter(r: GenericRouter) {
+    if (this.registeredRouter)
+      throw "Router already registered";
+    this.registeredRouter = true;
+    {
+      for (const c of this.options.controllers) {
+        let z = c[classBackendMethodsArray];
+        if (z)
+          for (const a of z) {
+            let x = <myServerAction>a[serverActionField];
+            if (!x) {
+              throw 'failed to set server action, did you forget the BackendMethod Decorator?';
+            }
+
+            this.addAction(x, r);
+          }
+      }
+      if (this.hasQueue)
+        this.addAction({
+          __register: x => {
+            x(Action.apiUrlForJobStatus, false, () => true, async (data: jobWasQueuedResult, req, res) => {
+              let job = await this.queue.getJobInfo(data.queuedJobId);
+              let userId = undefined;
+              if (req?.user)
+                userId = req.user.id;
+              if (job.userId == '')
+                job.userId = undefined;
+              if (userId != job.userId)
+                res.forbidden();
+              else
+                res.success(job.info);
+            });
+          }
+        }, r);
+
+    }
+    this.options.entities.forEach(e => {
+      let key = getEntityKey(e);
+      if (key != undefined)
+        this.add(key, c => {
+          return new DataApi(c.repo(e), c);
+        }, r);
+    });
+  }
+
+  add(key: string, dataApiFactory: ((req: Remult) => DataApi), r: GenericRouter) {
+
+    let myRoute = this.options.rootPath + '/' + key;
+    if (this.options.logApiEndPoints)
+      console.log(myRoute);
 
 
+    r.route(myRoute)
+      .get(this.process((c, req, res) =>
+        dataApiFactory(c).httpGet(res, req)
+      )).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
+      .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, '')))
+      .post(this.process(async (c, req, res, orig) =>
+        dataApiFactory(c).httpPost(res, req, orig.body)
+      ));
+    r.route(myRoute + '/:id')
+      //@ts-ignore
+      .get(this.process(async (c, req, res, orig) => dataApiFactory(c).get(res, orig.params.id)))
+      //@ts-ignore
+      .put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, orig.params.id, orig.body)))
+      //@ts-ignore
+      .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
+
+
+  }
+  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>) {
+    return async (req: GenericRequest, res: GenericResponse) => {
+      let myReq = new ExpressRequestBridgeToDataApiRequest(req);
+      let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
+      let remult = new Remult();
+      remult.setDataProvider(await this.dataProvider);
+      if (req) {
+        let user;
+        if (this.options.getUser)
+          user = await this.options.getUser(req);
+        else {
+          user = req['user'];
+          if (!user)
+            user = req['auth'];
+        }
+        if (user)
+          remult.setUser(user);
+      }
+      if (this.options.initRequest) {
+        await this.options.initRequest(remult, req);
+      }
+
+      what(remult, myReq, myRes, req);
+    }
+  };
+  async getRemult(req: GenericRequest) {
+    let remult: Remult;
+    await this.process(async (c) => {
+      remult = c;
+    })(req, undefined);
+    return remult;
+  }
+  hasQueue = false;
+
+  addAction(action: {
+    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) => void
+  }, r: GenericRouter) {
+    action.__register((url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
+      let myUrl = this.options.rootPath + '/' + url;
+      let tag = (() => {
+        let split = url.split('/');
+        if (split.length == 1)
+          return 'Static Backend Methods';
+        else
+          return split[0];
+      })();
+      this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
+      if (this.options.logApiEndPoints)
+        console.log(myUrl);
+      if (queue) {
+        this.hasQueue = true;
+        this.queue.mapQueuedAction(myUrl, what);
+      }
+      r.route(myUrl).post(this.process(
+        async (remult, req, res, orig) => {
+
+          if (queue) {
+            let r: jobWasQueuedResult = {
+              queuedJobId: await this.queue.submitJob(myUrl, remult, orig.body)
+            };
+
+            res.success(r);
+          } else
+            return what(orig.body, remult, res)
+        }
+      ));
+    });
+  }
   openApiDoc(options: { title: string, version?: string }) {
     let r = new Remult();
     if (!options.version)
@@ -190,7 +334,7 @@ class ExpressBridge {
         return item;
       }
     }
-    for (const e of allEntities) {
+    for (const e of this.options.entities) {
       let meta = r.repo(e).metadata;
       let key = getEntityKey(e);
       let parameters = [];
@@ -457,155 +601,11 @@ class ExpressBridge {
   backendMethodsOpenApi: { path: string, allowed: AllowedForInstance<any>, tag: string }[] = [];
 
 
-  constructor(private app: GenericRouter, public queue: inProcessQueueHandler, public options: RemultServerOptions,
-    public dataProvider: DataProvider | Promise<DataProvider>) {
-
-  }
-  logApiEndPoints = true;
-  private firstArea: SiteArea;
-
-  addArea(
-    rootUrl: string
-  ) {
-    var r = new SiteArea(this, this.app, rootUrl, this.logApiEndPoints);
-    if (!this.firstArea) {
-      this.firstArea = r;
-
-    }
-    return r;
-  }
-  async getRemult(req?: GenericRequest) {
-    return this.firstArea.getRemult(req);
-  }
 
 
 }
 
-export class SiteArea {
-  constructor(
-    private bridge: ExpressBridge,
-    private app: GenericRouter,
-    private rootUrl: string,
-    private logApiEndpoints: boolean) {
 
-
-  }
-
-
-
-
-
-  add(key: string, dataApiFactory: ((req: Remult) => DataApi)) {
-
-    let myRoute = this.rootUrl + '/' + key;
-    if (this.logApiEndpoints)
-      console.log(myRoute);
-
-
-    this.app.route(myRoute)
-      .get(this.process((c, req, res) =>
-        dataApiFactory(c).httpGet(res, req)
-      )).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
-      .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, '')))
-      .post(this.process(async (c, req, res, orig) =>
-        dataApiFactory(c).httpPost(res, req, orig.body)
-      ));
-    this.app.route(myRoute + '/:id')
-      //@ts-ignore
-      .get(this.process(async (c, req, res, orig) => dataApiFactory(c).get(res, orig.params.id)))
-      //@ts-ignore
-      .put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, orig.params.id, orig.body)))
-      //@ts-ignore
-      .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
-
-
-  }
-  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>) {
-    return async (req: GenericRequest, res: GenericResponse) => {
-      let myReq = new ExpressRequestBridgeToDataApiRequest(req);
-      let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
-      let remult = new Remult();
-      remult.setDataProvider(await this.bridge.dataProvider);
-      if (req) {
-        let user;
-        if (this.bridge.options.getUser)
-          user = await this.bridge.options.getUser(req);
-        else {
-          user = req['user'];
-          if (!user)
-            user = req['auth'];
-        }
-        if (user)
-          remult.setUser(user);
-      }
-      if (this.bridge.options.initRequest) {
-        await this.bridge.options.initRequest(remult, req);
-      }
-
-      what(remult, myReq, myRes, req);
-    }
-  };
-  async getRemult(req: GenericRequest) {
-    let remult: Remult;
-    await this.process(async (c) => {
-      remult = c;
-    })(req, undefined);
-    return remult;
-  }
-  initQueue() {
-    this.addAction({
-      __register: x => {
-        x(Action.apiUrlForJobStatus, false, () => true, async (data: jobWasQueuedResult, req, res) => {
-          let job = await this.bridge.queue.getJobInfo(data.queuedJobId);
-          let userId = undefined;
-          if (req?.user)
-            userId = req.user.id;
-          if (job.userId == '')
-            job.userId = undefined;
-          if (userId != job.userId)
-            res.forbidden();
-          else
-            res.success(job.info);
-        });
-      }
-    });
-    this.initQueue = () => { };
-  }
-  addAction(action: {
-    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) => void
-  }) {
-    action.__register((url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
-      let myUrl = this.rootUrl + '/' + url;
-      let tag = (() => {
-        let split = url.split('/');
-        if (split.length == 1)
-          return 'Static Backend Methods';
-        else
-          return split[0];
-      })();
-      this.bridge.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
-      if (this.logApiEndpoints)
-        console.log(myUrl);
-      if (queue) {
-        this.initQueue();
-        this.bridge.queue.mapQueuedAction(myUrl, what);
-      }
-      this.app.route(myUrl).post(this.process(
-        async (remult, req, res, orig) => {
-
-          if (queue) {
-            let r: jobWasQueuedResult = {
-              queuedJobId: await this.bridge.queue.submitJob(myUrl, remult, orig.body)
-            };
-
-            res.success(r);
-          } else
-            return what(orig.body, remult, res)
-        }
-      ));
-    });
-  }
-}
 export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): any {
     return this.r.query[key];
@@ -806,6 +806,114 @@ export class EntityQueueStorage implements QueueStorage {
     return q.id;
   }
 
+}
+class RouteImplementation {
+  map = new Map<string, Map<string, GenericRequestHandler>>();
+  route(path: string): SpecificRoute {
+    //consider using:
+    //* https://raw.githubusercontent.com/cmorten/opine/main/src/utils/pathToRegex.ts
+    //* https://github.com/pillarjs/path-to-regexp
+    let r = path.toLowerCase();
+    let m = new Map<string, GenericRequestHandler>();
+    this.map.set(r, m);
+    const route = {
+      get: (h: GenericRequestHandler) => {
+        m.set("get", h);
+        return route;
+      },
+      put: (h: GenericRequestHandler) => {
+        m.set("put", h);
+        return route;
+      },
+      post: (h: GenericRequestHandler) => {
+        m.set("post", h);
+        return route;
+      },
+      delete: (h: GenericRequestHandler) => {
+        m.set("delete", h);
+        return route;
+      }
+    }
+    return route;
+
+  }
+  async handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined> {
+
+
+    return new Promise<ServerHandleResponse | undefined>(res => {
+      const response = new class implements GenericResponse {
+        statusCode=200;
+        json(data: any) {
+          if (gRes !== undefined)
+            gRes.json(data);
+          res({ statusCode: this.statusCode, data });
+        }
+        status?(statusCode: number): GenericResponse {
+          if (gRes !== undefined)
+            gRes.status(statusCode);
+          this.statusCode = statusCode;
+          return this;
+        }
+        end() {
+          if (gRes !== undefined)
+            gRes.end();
+          res({
+            statusCode: this.statusCode
+          })
+        }
+      };
+      this.middleware(req, response, () => res(undefined));
+    })
+
+  }
+  middleware(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
+    let theUrl: string = req.url;
+    if (theUrl.startsWith('/'))//next sends a partial url '/api/tasks' and not the full url
+      theUrl = 'http://stam' + theUrl;
+    const url = new URL(theUrl);
+    const path = url.pathname;
+    if (!req.query) {
+      let query: { [key: string]: undefined | string | string[] } = {};
+      url.searchParams.forEach((val, key) => {
+        let current = query[key];
+        if (!current) {
+          query[key] = val;
+          return;
+        }
+        if (Array.isArray(current)) {
+          current.push(val);
+          return;
+        }
+        query[key] = [current, val];
+      });
+      req.query = query;
+    }
+    let lowerPath = path.toLowerCase();
+    let m = this.map.get(lowerPath);
+    if (m) {
+      let h = m.get(req.method.toLowerCase());
+      if (h) {
+        h(req, res, next);
+        return;
+      }
+    }
+    let idPosition = path.lastIndexOf('/');
+    if (idPosition >= 0) {
+      lowerPath = path.substring(0, idPosition) + '/:id';
+      m = this.map.get(lowerPath);
+      if (m) {
+        let h = m.get(req.method.toLowerCase());
+        if (h) {
+          if (!req.params)
+            req.params = {};
+          req.params.id = path.substring(idPosition + 1);
+          h(req, res, next);
+          return;
+        }
+      }
+    }
+    next();
+  }
 }
 
 

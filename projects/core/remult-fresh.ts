@@ -1,51 +1,48 @@
-import { remultServer } from "./remult-middleware";
-import { RemultServerOptions, RemultServer } from "./server/expressBridge";
+import { } from "./server";
+import { RemultServerOptions, RemultServer, buildRemultServer } from "./server/expressBridge";
 
 export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
-    const server = remultServer(options);
+    const server = buildRemultServer(options);
     const orig = server.handle;
-    return {
-        ...server, ...{
-            handle: async (req: FreshRequest, ctx: FreshContext) => {
-                const theReq = {
-                    method: req.method,
-                    url: req.url,
-                    body: undefined
+    return Object.assign(
+        server, {
+        freshHandler: async (req: FreshRequest, ctx: FreshContext) => {
+            const theReq = {
+                method: req.method,
+                url: req.url,
+                body: undefined
 
-                };
+            };
 
-                switch (req.method.toLocaleLowerCase()) {
-                    case "put":
-                    case "post":
-                        console.log(req);
-                        theReq.body = await req.json();
-                        break;
-                }
-                let init: ResponseInit = {};
-                const res = await orig(theReq);
-                if (res) {
-                    if (res.statusCode)
-                        init.status = res.statusCode;
-                    if (res.data) {
-                        console.log({ init, res });
-                        return response.json(res.data, init);
-                    }
-                    else
-                        return new response(undefined, init);
-                }
-                else {
-                    return ctx.next();
-                };
+            switch (req.method.toLocaleLowerCase()) {
+                case "put":
+                case "post":
+                    theReq.body = await req.json();
+                    break;
             }
+            let init: ResponseInit = {};
+            const res = await orig(theReq);
+            if (res) {
+                init.status = res.statusCode;
+                if (res.data) {
+                    return response.json(res.data, init);
+                }
+                else
+                    return new response(undefined, init);
+            }
+            else {
+                return ctx.next();
+            };
         }
-    };
-}
+    })
+};
+
 
 
 
 
 export interface RemultFresh extends RemultServer {
-    handle(req: FreshRequest, ctx: FreshContext): Promise<FreshResponse>
+    freshHandler(req: FreshRequest, ctx: FreshContext): Promise<FreshResponse>
 }
 export interface FreshRequest {
     url: string,
