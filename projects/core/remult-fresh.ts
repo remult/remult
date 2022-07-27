@@ -1,5 +1,6 @@
 import { remultMiddleware } from "./remult-middleware";
 import { RemultServerOptions, RemultServer } from "./server/expressBridge";
+import { Remult } from "./src/context";
 
 export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
     const mw = remultMiddleware(options);
@@ -33,7 +34,11 @@ export function remultFresh(options: RemultServerOptions, response: FreshRespons
                     else
                         return new response(undefined, init);
                 }
-                else return ctx.next();
+                else {
+                    const remult = await mw.getRemult(req);
+                    ctx.state.remult = remult;
+                    return ctx.next();
+                };
             }
         }
     };
@@ -45,16 +50,20 @@ export function remultFresh(options: RemultServerOptions, response: FreshRespons
 export interface RemultFresh extends RemultServer {
     handle(req: FreshRequest, ctx: FreshContext): Promise<FreshResponse>
 }
-interface FreshRequest {
+export interface FreshRequest {
     url: string,
     method: string,
     json: () => Promise<any>
 }
-interface FreshContext {
-    next: () => Promise<any>
+export interface FreshContext {
+    next: () => Promise<any>,
+    state: FreshRemultState;
 }
-interface FreshResponse {
+export interface FreshResponse {
     new(body?: any | undefined, init?: ResponseInit): any;
     json(data: unknown, init?: ResponseInit): any;
 };
 
+export interface FreshRemultState {
+    remult: Remult
+}
