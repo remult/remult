@@ -14,7 +14,7 @@ import { IdEntity } from '../src/id-entity';
 
 
 
-export type RemultMiddlewareOptions = {
+export type RemultServerOptions = {
   /** Sets a database connection for Remult.
    *
    * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
@@ -34,7 +34,7 @@ export type RemultMiddlewareOptions = {
 export function buildRemultServer(
   app: GenericRouter,
   options:
-    RemultMiddlewareOptions,
+    RemultServerOptions,
 ): RemultServer {
 
   if (!options) {

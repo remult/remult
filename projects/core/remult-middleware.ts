@@ -1,14 +1,14 @@
-import { GenericRequest, GenericMiddleware, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer } from './server/expressBridge';
+import { GenericRequest, GenericMiddleware, GenericResponse, GenericRouter, buildRemultServer, RemultServerOptions, SpecificRoute, RemultServer } from './server/expressBridge';
 
-export function remultMiddleware(options?:
-    RemultMiddlewareOptions): RemultMiddleware {
-    const m = new middleware();
-    const server = buildRemultServer(m, options);
-    return Object.assign((req, res, next) => m.handleRequest(req, res, next), {
+export function remultServer(options?:
+    RemultServerOptions): RemultMiddleware {
+    const r = new router();
+    const server = buildRemultServer(r, options);
+    return Object.assign((req, res, next) => r.handleRequest(req, res, next), {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
         addArea: x => server.addArea(x),
-        handle: (req, res) => m.handle(req, res)
+        handle: (req, res) => r.handle(req, res)
     });
 
 }
@@ -16,7 +16,7 @@ export interface RemultMiddleware extends GenericMiddleware, RemultServer {
     handle(req: GenericRequest, gRes?: GenericResponse): Promise<MiddlewareResponse>
 }
 
-class middleware {
+class router {
     map = new Map<string, Map<string, GenericMiddleware>>();
     route(path: string): SpecificRoute {
         //consider using:
@@ -127,4 +127,3 @@ export interface MiddlewareResponse {
     data?: any;
     statusCode?: number;
 }
-export { GenericRequest, GenericMiddleware as GenericRequestHandler, GenericResponse, GenericRouter, buildRemultServer, RemultMiddlewareOptions, SpecificRoute, RemultServer };

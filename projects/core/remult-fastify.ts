@@ -1,8 +1,8 @@
 import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod } from 'fastify';
-import { GenericMiddleware, GenericResponse, GenericRouter, RemultServer, buildRemultServer, RemultMiddlewareOptions, SpecificRoute } from './server/expressBridge';
+import { GenericMiddleware, GenericResponse, GenericRouter, RemultServer, buildRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge';
 
 
-export function remultFastify(options: RemultMiddlewareOptions): FastifyPluginCallback & RemultServer {
+export function remultFastify(options: RemultServerOptions): FastifyPluginCallback & RemultServer {
     function fastifyHandler(handler: GenericMiddleware) {
         const response: RouteHandlerMethod = (req, res) => {
             const myRes: GenericResponse = {

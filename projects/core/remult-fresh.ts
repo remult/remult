@@ -1,11 +1,11 @@
-import { remultMiddleware } from "./remult-middleware";
-import { RemultMiddlewareOptions, RemultServer } from "./server/expressBridge";
+import { remultServer } from "./remult-middleware";
+import { RemultServerOptions, RemultServer } from "./server/expressBridge";
 
-export function remultFresh(options: RemultMiddlewareOptions, response: FreshResponse): RemultFresh {
-    const mw = remultMiddleware(options);
-    const orig = mw.handle;
+export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
+    const server = remultServer(options);
+    const orig = server.handle;
     return {
-        ...mw, ...{
+        ...server, ...{
             handle: async (req: FreshRequest, ctx: FreshContext) => {
                 const theReq = {
                     method: req.method,
