@@ -1,11 +1,11 @@
 import { queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse } from '../src/data-api';
-import { AllowedForInstance, Remult } from '../src/context';
+import { AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
-export declare type RemultMiddlewareOptions = {
+export declare type RemultServerOptions = {
     /** Sets a database connection for Remult.
      *
      * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
@@ -14,6 +14,7 @@ export declare type RemultMiddlewareOptions = {
     disableAutoApi?: boolean;
     queueStorage?: QueueStorage;
     initRequest?: (remult: Remult, origReq: GenericRequest) => Promise<void>;
+    getUser?: (request: GenericRequest) => Promise<UserInfo>;
     initApi?: (remult: Remult) => void | Promise<void>;
     logApiEndPoints?: boolean;
     defaultGetLimit?: number;
@@ -21,9 +22,9 @@ export declare type RemultMiddlewareOptions = {
     controllers?: ClassType<any>[];
     rootPath?: string;
 };
-export declare function buildRemultServer(app: GenericRouter, options: RemultMiddlewareOptions): RemultServer;
-export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
-export interface RemultExpressBridge extends GenericRequestHandler, RemultServer {
+export declare function buildRemultServer(app: GenericRouter, options: RemultServerOptions): RemultServer;
+export declare type GenericMiddleware = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export interface RemultExpressBridge extends GenericMiddleware, RemultServer {
 }
 export interface RemultServer {
     getRemult(req: GenericRequest): Promise<Remult>;
@@ -36,10 +37,10 @@ export declare type GenericRouter = {
     route(path: string): SpecificRoute;
 };
 export declare type SpecificRoute = {
-    get(handler: GenericRequestHandler): SpecificRoute;
-    put(handler: GenericRequestHandler): SpecificRoute;
-    post(handler: GenericRequestHandler): SpecificRoute;
-    delete(handler: GenericRequestHandler): SpecificRoute;
+    get(handler: GenericMiddleware): SpecificRoute;
+    put(handler: GenericMiddleware): SpecificRoute;
+    post(handler: GenericMiddleware): SpecificRoute;
+    delete(handler: GenericMiddleware): SpecificRoute;
 };
 export interface GenericRequest {
     url?: string;
@@ -57,7 +58,7 @@ export interface GenericResponse {
 declare class ExpressBridge {
     private app;
     queue: inProcessQueueHandler;
-    initRequest: (remult: Remult, origReq: GenericRequest) => Promise<void>;
+    options: RemultServerOptions;
     dataProvider: DataProvider | Promise<DataProvider>;
     openApiDoc(options: {
         title: string;
@@ -68,7 +69,7 @@ declare class ExpressBridge {
         allowed: AllowedForInstance<any>;
         tag: string;
     }[];
-    constructor(app: GenericRouter, queue: inProcessQueueHandler, initRequest: (remult: Remult, origReq: GenericRequest) => Promise<void>, dataProvider: DataProvider | Promise<DataProvider>);
+    constructor(app: GenericRouter, queue: inProcessQueueHandler, options: RemultServerOptions, dataProvider: DataProvider | Promise<DataProvider>);
     logApiEndPoints: boolean;
     private firstArea;
     addArea(rootUrl: string): SiteArea;

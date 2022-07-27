@@ -1,5 +1,5 @@
-import { RemultMiddlewareOptions, RemultServer } from "./server/expressBridge";
-export declare function remultFresh(options: RemultMiddlewareOptions, response: FreshResponse): RemultFresh;
+import { RemultServerOptions, RemultServer } from "./server/expressBridge";
+export declare function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh;
 export interface RemultFresh extends RemultServer {
     handle(req: FreshRequest, ctx: FreshContext): Promise<FreshResponse>;
 }
