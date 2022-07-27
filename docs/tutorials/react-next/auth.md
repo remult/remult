@@ -96,9 +96,9 @@ React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
 npm run dev
 ```
 
-4. Modify the `Next.js` catch all API router  `[[...slug]].ts` to use the `express-jwt` authentication Express middleware. 
+4. Modify the `Next.js` catch all API route `[...remult].ts` to use the `express-jwt` authentication Express middleware. 
 
-   *pages/api/[[...slug]].ts*
+   *pages/api/[...remult].ts*
    ```ts{4,7-11}
    import { NextApiRequest, NextApiResponse } from 'next'
    import * as util from 'util';

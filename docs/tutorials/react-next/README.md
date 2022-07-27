@@ -76,9 +76,9 @@ export const api = remultExpress({
 
 `bodyParser` is set to `false` because `Next.js` does that for us.
 
-5. Add a file named `[[...slug]].ts` in the folder `pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
+5. Add a file named `[...remult].ts` in the folder `pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
 
-*pages/api/[[...slug]].ts*
+*pages/api/[...remult].ts*
 ```ts
 import { NextApiRequest, NextApiResponse } from 'next'
 import * as util from 'util';
