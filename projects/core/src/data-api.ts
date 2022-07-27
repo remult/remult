@@ -1,14 +1,13 @@
-import { EntityOptions } from './entity';
-import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
-import { Remult, UserInfo } from './context';
+import { customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
+import { Remult } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
-import { SortSegment } from './sort';
+import { FindOptions, Repository, rowHelperImplementation, EntityFilter, ForbiddenError } from './remult3';
 import { ErrorInfo } from './data-interfaces';
 
 export class DataApi<T = any> {
 
   constructor(private repository: Repository<T>, private remult: Remult) {
+    remult.__enforceApiRules = true;
   }
   httpGet(res: DataApiResponse, req: DataApiRequest) {
     if (req.get("__action") == "count") {
@@ -28,63 +27,31 @@ export class DataApi<T = any> {
   }
   static defaultGetLimit = 0;
   async get(response: DataApiResponse, id: any) {
-    if (!this.repository.metadata.apiReadAllowed) {
-      response.forbidden();
-      return;
-    }
+
     await this.doOnId(response, id, async row => response.success(this.repository.getEntityRef(row).toApiJson()));
+
+  }
+  catch(err: any, response: DataApiResponse) {
+    if (ForbiddenError.isForbiddenError(err))
+      response.forbidden();
+    else
+      response.error(err);
   }
   async count(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
-    if (!this.repository.metadata.apiReadAllowed) {
-      response.forbidden();
-      return;
-    }
-    try {
 
+    try {
       response.success({ count: +await this.repository.count(await this.buildWhere(request, filterBody)) });
     } catch (err) {
-      response.error(err);
+      this.catch(err, response);
     }
   }
 
 
   async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
-    if (!this.repository.metadata.apiReadAllowed) {
-      response.forbidden();
-      return;
-    }
     try {
       let findOptions: FindOptions<T> = { load: () => [] };
       findOptions.where = await this.buildWhere(request, filterBody);
-      if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
-        let hasId = false;
-        let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
-        if (w) {
-          w.__applyToConsumer({
-            containsCaseInsensitive: () => { },
-            isDifferentFrom: () => { },
-            isEqualTo: (col, val) => {
-              if (this.repository.metadata.idMetadata.isIdField(col))
-                hasId = true;
-            },
-            custom: () => { },
-            databaseCustom: () => { },
-            isGreaterOrEqualTo: () => { },
-            isGreaterThan: () => { },
-            isIn: () => { },
-            isLessOrEqualTo: () => { },
-            isLessThan: () => { },
-            isNotNull: () => { },
-            isNull: () => { },
 
-            or: () => { }
-          });
-        }
-        if (!hasId) {
-          response.forbidden();
-          return
-        }
-      }
       if (request) {
 
         let sort = <string>request.get("_sort");
@@ -106,17 +73,12 @@ export class DataApi<T = any> {
         });
     }
     catch (err) {
-      response.error(err);
+      this.catch(err, response);
     }
   }
   private async buildWhere(request: DataApiRequest, filterBody: any): Promise<EntityFilter<any>> {
     var where: EntityFilter<any>[] = [];
-    if (this.repository.metadata.options.apiPrefilter) {
-      if (typeof this.repository.metadata.options.apiPrefilter === "function")
-        where.push(await this.repository.metadata.options.apiPrefilter());
-      else
-        where.push(this.repository.metadata.options.apiPrefilter);
-    }
+
     if (request) {
       where.push(buildFilterFromRequestParameters(this.repository.metadata, {
         get: key => {
@@ -151,7 +113,7 @@ export class DataApi<T = any> {
             await what(r[0]);
         });
     } catch (err) {
-      response.error(err);
+      this.catch(err, response);
     }
   }
   async put(response: DataApiResponse, id: any, body: any) {

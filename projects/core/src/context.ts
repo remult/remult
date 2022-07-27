@@ -157,6 +157,8 @@ export class Remult {
 
 
 
+    /* @internal*/
+    __enforceApiRules = false;
 
 
 

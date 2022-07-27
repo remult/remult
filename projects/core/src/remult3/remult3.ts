@@ -2,6 +2,7 @@
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
+import { ErrorInfo } from "../data-interfaces";
 import { EntityOptions as EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
@@ -333,3 +334,16 @@ export interface Paginator<entityType> {
 }
 
 
+
+export class ForbiddenError extends Error implements ErrorInfo {
+    constructor() {
+        super("Forbidden");
+
+    }
+    message = "Forbidden";
+    isForbiddenError = true;
+    httpStatusCode = 403;
+    static isForbiddenError(error: any) {
+        return (error as ForbiddenError).isForbiddenError;
+    }
+}
