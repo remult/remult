@@ -111,7 +111,7 @@ class FreshResponseTest {
     }
 }
 
-fit("test fresh", async () => {
+it("test fresh", async () => {
 
     const api = remultFresh({ entities: [Categories],
          dataProvider: new InMemoryDataProvider(),
