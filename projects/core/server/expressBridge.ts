@@ -28,7 +28,7 @@ export type RemultServerOptions = {
 };
 
 export function createRemultServer(
-  options:
+  options?:
     RemultServerOptions,
 ): RemultServer {
 
