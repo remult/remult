@@ -1,12 +1,13 @@
 import { } from "./server";
-import { RemultServerOptions, RemultServer, buildRemultServer } from "./server/expressBridge";
+import { RemultServerOptions, RemultServer, buildRemultServer, GenericRequest } from "./server/expressBridge";
+import { Remult } from "./src/context";
 
 export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
     const server = buildRemultServer(options);
-    
-    return Object.assign(
-        server, {
-        freshHandler: async (req: FreshRequest, ctx: FreshContext) => {
+    return {
+        getRemult: r => server.getRemult(r),
+        openApiDoc: x => server.openApiDoc(x),
+        handle: async (req: FreshRequest, ctx: FreshContext) => {
             const theReq = {
                 method: req.method,
                 url: req.url,
@@ -33,15 +34,13 @@ export function remultFresh(options: RemultServerOptions, response: FreshRespons
                 return ctx.next();
             };
         }
-    })
+    }
 };
 
-
-
-
-
-export interface RemultFresh extends RemultServer {
-    freshHandler(req: FreshRequest, ctx: FreshContext): Promise<any>
+export interface RemultFresh {
+    getRemult(req: GenericRequest): Promise<Remult>;
+    openApiDoc(options: { title: string }): any;
+    handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
 export interface FreshRequest {
     url: string,

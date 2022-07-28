@@ -1,7 +1,6 @@
 import * as koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import { buildRemultServer } from '../../../../core/server';
-import { GenericResponse } from '../../../../core/server/expressBridge';
 import { Task } from './Task';
 
 
@@ -11,12 +10,11 @@ const api = buildRemultServer({ entities: [Task] });
 app.use(bodyParser());
 app.use(async (ctx, next) => {
     const r = await api.handle(ctx.request);
-    if (!r)
-        return await next();
-    else {
+    if (r) {
         ctx.response.body = r.data;
         ctx.response.status = r.statusCode;
-    };
+    } else
+        return await next();
 });
 app.use(async (ctx, next) => {
     if (ctx.path == '/api/test') {

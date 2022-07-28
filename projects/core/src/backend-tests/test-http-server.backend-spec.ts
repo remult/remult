@@ -117,7 +117,7 @@ it("test fresh", async () => {
          dataProvider: new InMemoryDataProvider(),
         rootPath:'/api' }, FreshResponseTest);
 
-    const r: FreshResponseTest = await api.freshHandler({
+    const r: FreshResponseTest = await api.handle({
         url: '/api/Categories',
         json() {
             return undefined
