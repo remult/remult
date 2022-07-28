@@ -27,7 +27,7 @@ export type RemultServerOptions = {
   rootPath?: string;
 };
 
-export function buildRemultServer(
+export function createRemultServer(
   options:
     RemultServerOptions,
 ): RemultServer {

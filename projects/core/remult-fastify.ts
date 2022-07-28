@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod } from 'fastify';
-import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, buildRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge';
+import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge';
 
 
 export function remultFastify(options: RemultServerOptions): FastifyPluginCallback & RemultServer {
@@ -22,7 +22,7 @@ export function remultFastify(options: RemultServerOptions): FastifyPluginCallba
         return response;
     }
 
-    const api = buildRemultServer(options);
+    const api = createRemultServer(options);
     const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, op) => {
         //@ts-ignore
         let fastifyRouter: GenericRouter = {

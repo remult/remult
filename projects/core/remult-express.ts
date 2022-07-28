@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { buildRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge';
+import { createRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
     RemultServerOptions & {
@@ -19,7 +19,7 @@ export function remultExpress(options?:
         app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
     }
 
-    const server = buildRemultServer(options);
+    const server = createRemultServer(options);
     server.registerRouter(app);
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),

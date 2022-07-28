@@ -1,9 +1,9 @@
 import { } from "./server";
-import { RemultServerOptions, RemultServer, buildRemultServer, GenericRequest } from "./server/expressBridge";
+import { RemultServerOptions, RemultServer, createRemultServer, GenericRequest } from "./server/expressBridge";
 import { Remult } from "./src/context";
 
 export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
-    const server = buildRemultServer(options);
+    const server = createRemultServer(options);
     return {
         getRemult: r => server.getRemult(r),
         openApiDoc: x => server.openApiDoc(x),

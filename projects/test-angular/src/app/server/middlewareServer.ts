@@ -1,12 +1,12 @@
 import * as express from "express";
 
-import { buildRemultServer } from "../../../../core/server/expressBridge";
+import { createRemultServer } from "../../../../core/server/expressBridge";
 import { Task } from "./Task";
 
 const app = express();
 app.use(express.json());
 
-const api = buildRemultServer({ entities: [Task] });
+const api = createRemultServer({ entities: [Task] });
 app.use(async (req, res, next) => {
     await api.handle(req, res) || next()
 });

@@ -1,12 +1,12 @@
 import * as koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
-import { buildRemultServer } from '../../../../core/server';
+import { createRemultServer } from '../../../../core/server';
 import { Task } from './Task';
 
 
 const app = new koa();
 
-const api = buildRemultServer({ entities: [Task] });
+const api = createRemultServer({ entities: [Task] });
 app.use(bodyParser());
 app.use(async (ctx, next) => {
     const r = await api.handle(ctx.request);

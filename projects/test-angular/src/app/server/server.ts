@@ -26,7 +26,7 @@ import { controllerWithInstance, controllerWithStaic, stam } from '../products-t
 
 import { AppComponent } from '../app.component';
 import { Task } from './Task';
-import { buildRemultServer } from '../../../../core/server';
+import { createRemultServer } from '../../../../core/server';
 
 
 
@@ -56,7 +56,7 @@ const getDatabase = async () => {
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
 
-    
+
 
 
     let app = express();
@@ -66,7 +66,7 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-    const mw = buildRemultServer({
+    const mw = createRemultServer({
         entities: [stam, Task],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent]
     })
@@ -84,7 +84,7 @@ serverInit().then(async (dataSource) => {
     });
 
     app.use(express.json());
-   // app.use(mw);
+    // app.use(mw);
 
 
     console.log("after");
