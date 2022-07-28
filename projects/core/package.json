@@ -1,6 +1,6 @@
 {
   "name": "remult",
-  "version": "0.3.3",
+  "version": "0.15.0",
   "description": "A CRUD framework for full-stack TypeScript",
   "main": "index.js",
   "types": "index.d.ts",
@@ -8,7 +8,8 @@
   "homepage": "https://remult.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/remult/remult"
+    "url": "https://github.com/remult/remult.git",
+    "directory": "projects/core"
   },
   "license": "MIT",
   "author": {
