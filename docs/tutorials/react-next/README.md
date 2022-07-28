@@ -51,7 +51,7 @@ cd remult-nextjs-todo
 We need [axios](https://axios-http.com/) to serve as an HTTP client, and, of course, `Remult`. We'll also need `Express` as it is currently a required by `Remult` as a peer dependency (this peer dependency will be removed in future versions).
 
 ```sh
-yarn add axios express remult
+yarn add axios remult
 ```
 
 ### Bootstrap Remult in the back-end
@@ -65,7 +65,7 @@ Remult is bootstrapped in a `Next.js` app by adding it the `remultExpress` [API 
 
 4. Create an `api.ts` file in the `src/server` folder with the following code:
 
-*lib/api.ts*
+*src/server/api.ts*
 ```ts
 import { remultExpress } from 'remult/remult-express';
 
