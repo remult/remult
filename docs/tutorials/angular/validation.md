@@ -107,7 +107,6 @@ Hide Completed
   <button (click)="deleteTask(task)">Delete</button>
 </div>
 <button (click)="addTask()">Add Task</button>
-);
 ```
 
 The `modelState` property of the `ErrorInfo` object contains error messages for any currently invalid fields in the entity object.
