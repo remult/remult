@@ -27,7 +27,7 @@
 </div>
 <hr/>
 
-[Getting Started](#getting-started) | [Documentation](#documentation) | [Example App](#example-app)
+[Getting Started](#getting-started) | [Documentation](#documentation) | [Example Apps](#example-apps)
 
 ## What is Remult?
 
@@ -222,9 +222,11 @@ The best way to learn Remult is by following a tutorial of a simple Todo web app
 ## Documentation
 The [documentation](https://remult.dev/docs) covers the main features of Remult. However, it is still a work-in-progress.
 
-## Example App
+## Example Apps
 
-[CRM demo](https://github.com/remult/crm-demo) with a React + [MUI](https://mui.com) front-end and Postgres database.
+* Fullstack TodoMVC example with React and Express. ([Source code](https://github.com/remult/TodoMVC-eample) | [CodeSandbox](https://codesandbox.io/s/github/remult/TodoMVC-example?file=/src/frontend/App.tsx))
+
+* [CRM demo](https://github.com/remult/crm-demo) with a React + [MUI](https://mui.com) front-end and Postgres database.
 
 ## Contributing
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
