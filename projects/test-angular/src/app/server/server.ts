@@ -20,13 +20,14 @@ import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 import { remultExpress } from '../../../../core/remult-express';
-import { remultServer } from '../.../../../../core/server
+
 
 import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
 
 import { AppComponent } from '../app.component';
 import { Task } from './Task';
-import { koaServer } from './koaServer';
+import { buildRemultServer } from '../../../../core/server';
+
 
 
 
@@ -65,7 +66,7 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-    const mw = remultServer({
+    const mw = buildRemultServer({
         entities: [stam, Task],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent]
     })
@@ -83,7 +84,7 @@ serverInit().then(async (dataSource) => {
     });
 
     app.use(express.json());
-    app.use(mw);
+   // app.use(mw);
 
 
     console.log("after");

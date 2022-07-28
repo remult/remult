@@ -1,7 +1,7 @@
 import { RemultServerOptions, RemultServer } from "./server/expressBridge";
 export declare function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh;
 export interface RemultFresh extends RemultServer {
-    freshHandler(req: FreshRequest, ctx: FreshContext): Promise<FreshResponse>;
+    freshHandler(req: FreshRequest, ctx: FreshContext): Promise<any>;
 }
 export interface FreshRequest {
     url: string;

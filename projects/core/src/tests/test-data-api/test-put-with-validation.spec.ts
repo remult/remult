@@ -9,6 +9,8 @@ import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
 import { ErrorInfo } from "../../data-interfaces";
+import { remultFresh } from "../../../remult-fresh";
+
 
 
 describe("data api", () => {

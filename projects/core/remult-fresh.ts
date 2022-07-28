@@ -3,7 +3,7 @@ import { RemultServerOptions, RemultServer, buildRemultServer } from "./server/e
 
 export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
     const server = buildRemultServer(options);
-    const orig = server.handle;
+    
     return Object.assign(
         server, {
         freshHandler: async (req: FreshRequest, ctx: FreshContext) => {
@@ -11,7 +11,6 @@ export function remultFresh(options: RemultServerOptions, response: FreshRespons
                 method: req.method,
                 url: req.url,
                 body: undefined
-
             };
 
             switch (req.method.toLocaleLowerCase()) {
@@ -21,7 +20,7 @@ export function remultFresh(options: RemultServerOptions, response: FreshRespons
                     break;
             }
             let init: ResponseInit = {};
-            const res = await orig(theReq);
+            const res = await server.handle(theReq);
             if (res) {
                 init.status = res.statusCode;
                 if (res.data) {
@@ -42,7 +41,7 @@ export function remultFresh(options: RemultServerOptions, response: FreshRespons
 
 
 export interface RemultFresh extends RemultServer {
-    freshHandler(req: FreshRequest, ctx: FreshContext): Promise<FreshResponse>
+    freshHandler(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
 export interface FreshRequest {
     url: string,

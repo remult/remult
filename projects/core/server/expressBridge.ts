@@ -1,12 +1,10 @@
 
-import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { Action, actionInfo, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
-import { JsonDataProvider } from '../src/data-providers/json-data-provider';
 import { IdEntity } from '../src/id-entity';
 
 
@@ -54,11 +52,10 @@ export function buildRemultServer(
   } else dataProvider = Promise.resolve(options.dataProvider)
 
 
-  dataProvider = dataProvider.then(dp => {
+  dataProvider = dataProvider.then(async dp => {
     if (dp)
       return dp;
-    return new JsonDataProvider(new JsonEntityFileStorage('./db'))
-
+      return new (await import ('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
   });
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
@@ -886,6 +883,7 @@ class RouteImplementation {
     }
     let lowerPath = path.toLowerCase();
     let m = this.map.get(lowerPath);
+    
     if (m) {
       let h = m.get(req.method.toLowerCase());
       if (h) {

@@ -1,21 +1,24 @@
 
 import axios from 'axios';
+import { remultFresh } from '../../remult-fresh';
 import { HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from '../context';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { Entity, Fields } from '../remult3';
 import { Action, BackendMethod } from '../server-action';
+import { Categories } from '../tests/remult-3-entities';
 
 
 Remult.apiBaseUrl = 'http://localhost:3003/api';
 let path = Remult.apiBaseUrl + '/tasks';
 const environments = [
-    ["next", 3000],
-    ["nest", 3001],
-    ["koa", 3002],
-    ["fastify", 3003],
-    ["express", 3004],
-    ["generic server", 3005],
-     ["optine", 3006],
-    // ["fresh", 8000],
+    // ["next", 3000],
+    // ["nest", 3001],
+    // ["koa", 3002],
+    // ["fastify", 3003],
+    // ["express", 3004],
+    // ["generic server", 3005],
+    // ["optine", 3006],
+    // ["fresh", 8000]
 ]
 
 function test(name: string, test: () => Promise<void>) {
@@ -100,6 +103,32 @@ test("test regular api call", async () => {
     await create3Tasks();
     let result = await axios.get<{ result: number }>(Remult.apiBaseUrl + "/test");
     expect(result.data.result).toBe(3);
+});
+class FreshResponseTest {
+    constructor(public body?: any | undefined, public init?: ResponseInit) { }
+    static json(data: unknown, init?: ResponseInit) {
+        return new this(data, init);
+    }
+}
+
+fit("test fresh", async () => {
+
+    const api = remultFresh({ entities: [Categories],
+         dataProvider: new InMemoryDataProvider(),
+        rootPath:'/api' }, FreshResponseTest);
+
+    const r: FreshResponseTest = await api.freshHandler({
+        url: '/api/Categories',
+        json() {
+            return undefined
+        },
+        method: "get"
+    }, {
+        next() {
+            return undefined!;
+        },
+    });
+    expect(r.body).toEqual([])
 });
 
 @Entity("tasks", {
