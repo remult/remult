@@ -4,18 +4,20 @@ import { HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from '../con
 import { Entity, Fields } from '../remult3';
 import { Action, BackendMethod } from '../server-action';
 
+
 Remult.apiBaseUrl = 'http://localhost:3003/api';
 let path = Remult.apiBaseUrl + '/tasks';
 const environments = [
-    // ["next", 3000],
-    // ["nest", 3001],
+    ["next", 3000],
+    ["nest", 3001],
     ["koa", 3002],
     ["fastify", 3003],
     ["express", 3004],
     ["generic server", 3005],
-    // ["optine", 3006],
+     ["optine", 3006],
     // ["fresh", 8000],
 ]
+
 function test(name: string, test: () => Promise<void>) {
     for (const [env, port] of environments) {
 

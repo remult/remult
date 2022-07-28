@@ -120,8 +120,7 @@ export interface GenericRequest {
 
 export interface GenericResponse {
   json(data: any);
-  status?(statusCode: number): GenericResponse;//exists for express and next and not in opine
-  setStatus?(statusCode: number): GenericResponse; // exists in opine and not in express and next
+  status(statusCode: number): GenericResponse;//exists for express and next and not in opine(In opine it's setStatus)
   end();
 };
 
@@ -606,7 +605,7 @@ class RemultServerImplementation implements RemultServer {
 }
 
 
-export class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
+class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): any {
     return this.r.query[key];
   }
@@ -620,10 +619,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     this.setStatus(403).end();
   }
   setStatus(status: number) {
-    if (this.r.setStatus)
-      return this.r.setStatus(status);
     return this.r.status(status);
-
   }
   constructor(private r: GenericResponse, private req: GenericRequest) {
 
@@ -842,13 +838,13 @@ class RouteImplementation {
 
     return new Promise<ServerHandleResponse | undefined>(res => {
       const response = new class implements GenericResponse {
-        statusCode=200;
+        statusCode = 200;
         json(data: any) {
           if (gRes !== undefined)
             gRes.json(data);
           res({ statusCode: this.statusCode, data });
         }
-        status?(statusCode: number): GenericResponse {
+        status(statusCode: number): GenericResponse {
           if (gRes !== undefined)
             gRes.status(statusCode);
           this.statusCode = statusCode;

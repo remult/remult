@@ -1,6 +1,5 @@
 import { queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider } from '../src/data-interfaces';
-import { DataApiRequest } from '../src/data-api';
 import { Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
@@ -53,14 +52,8 @@ export interface GenericRequest {
 }
 export interface GenericResponse {
     json(data: any): any;
-    status?(statusCode: number): GenericResponse;
-    setStatus?(statusCode: number): GenericResponse;
+    status(statusCode: number): GenericResponse;
     end(): any;
-}
-export declare class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
-    private r;
-    get(key: string): any;
-    constructor(r: GenericRequest);
 }
 export interface queuedJobInfo {
     info: queuedJobInfoResponse;
