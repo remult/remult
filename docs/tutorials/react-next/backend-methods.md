@@ -63,13 +63,14 @@ The optional `remult` argument of the static `setAll` function is intentionally 
 
 *src/server/api.ts*
 ```ts{3,7}
-import { remultExpress } from 'remult/remult-express';
-import { Task } from '../shared/Task';
+import { createRemultServer } from "remult/server";
+import { Task } from "../shared/Task";
 import { TasksController } from '../shared/TasksController';
 
-export const api = remultExpress({
-    entities: [Task],
+
+export const api = createRemultServer({
     controllers: [TasksController],
+    entities: [Task],
     initApi: async remult => {
         const taskRepo = remult.repo(Task);
         if (await taskRepo.count() === 0) {
@@ -81,9 +82,8 @@ export const api = remultExpress({
                 { title: "Task e", completed: true }
             ]);
         }
-    },
-    bodyParser: false
-});
+    }
+})
 ```
 
 3. Replace the `for` iteration in the `setAll` function of the `Home` component with a call to the `setAll` method in the `TasksController`.

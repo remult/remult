@@ -77,32 +77,13 @@ yarn add jsonwebtoken jwt-decode express-jwt
 yarn add --dev @types/jsonwebtoken 
 ```
 
-2. Since we're going to be using `jsonwebtoken` in a `BackendMethod` that is defined in shared code, it's important to  exclude `jsonwebtoken` from browser builds by adding the following entry to the main section of the project's `package.json` file.
-
-*package.json*
-```json
-"browser": {
-   "jsonwebtoken": false
-}
-```
-
-::: danger This step is not optional
-React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
-:::
-
-3. Terminate the running `dev` npm script and run it again for the change to `package.json` to take effect.
-
-```sh
-npm run dev
-```
-
-4. Modify the `Next.js` catch all API route `[...remult].ts` to use the `express-jwt` authentication Express middleware. 
+2. Modify the `Next.js` catch all API route `[...remult].ts` to use the `express-jwt` authentication Express middleware. 
 
    *pages/api/[...remult].ts*
-   ```ts{4,7-11}
+   ```ts{3-4,7-11}
    import { NextApiRequest, NextApiResponse } from 'next'
-   import * as util from 'util';
    import { api } from '../../src/server/api';
+   import * as util from 'util';
    import { expressjwt } from 'express-jwt';
    
    const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
@@ -111,7 +92,7 @@ npm run dev
            credentialsRequired: false,
            algorithms: ['HS256']
        }) as any)(_req, res);
-       await util.promisify((api as any))(_req, res);
+       await api.handle(_req, res);;
    }
    
    export default handler
@@ -123,7 +104,7 @@ npm run dev
 
    The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
 
-5. Add the highlighted code to `common.ts`:
+3. Add the highlighted code to `common.ts`:
 
    *src/common.ts*
    ```ts{3,7-28}
@@ -164,7 +145,7 @@ npm run dev
    An `axios` interceptor is used to add the authorization token header to all API requests.
 
    
-6. Create a file `src/shared/AuthController.ts` and place the following code in it:
+4. Create a file `src/shared/AuthController.ts` and place the following code in it:
 
    *src/shared/AuthController.ts*
    ```ts
@@ -194,7 +175,7 @@ npm run dev
 The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
 :::
 
-7. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
+5. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
 
 *src/server/api.ts*
 ```ts{4,8}
@@ -222,7 +203,7 @@ export const api = remultExpress({
 });  
 ```
 
-8. Add a the highlighted code to the `Home` function component:
+6. Add a the highlighted code to the `Home` function component:
 
 *pages/index.tsx*
 ```tsx{4,7,20-41,45-47}
