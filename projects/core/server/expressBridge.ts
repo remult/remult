@@ -35,6 +35,8 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
   if (!options) {
     options = {};
   }
+  if (options.logApiEndPoints === undefined)
+    options.logApiEndPoints = true;
   actionInfo.runningOnServer = true;
   if (options.defaultGetLimit) {
     DataApi.defaultGetLimit = options.defaultGetLimit;
@@ -189,7 +191,7 @@ class RemultServerImplementation implements RemultServer {
 
     let myRoute = this.options.rootPath + '/' + key;
     if (this.options.logApiEndPoints)
-      console.log(myRoute);
+      console.log("[remult] "+myRoute);
 
 
     r.route(myRoute)
@@ -258,7 +260,7 @@ class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        console.log(myUrl);
+        console.log("[remult] "+myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);
