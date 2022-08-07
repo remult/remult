@@ -2,7 +2,7 @@ import { } from "./server";
 import { RemultServerOptions, RemultServer, createRemultServer, GenericRequest } from "./server/expressBridge";
 import { Remult } from "./src/context";
 
-export function remultFresh(options: RemultServerOptions, response: FreshResponse): RemultFresh {
+export function remultFresh<RequestType extends GenericRequest >(options: RemultServerOptions<RequestType>, response: FreshResponse): RemultFresh {
     const server = createRemultServer(options);
     return {
         getRemult: r => server.getRemult(r),

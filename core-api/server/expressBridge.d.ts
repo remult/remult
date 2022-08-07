@@ -4,23 +4,23 @@ import { Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
-export declare type RemultServerOptions = {
+export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *
      * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
     */
     dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
     queueStorage?: QueueStorage;
-    initRequest?: (remult: Remult, origReq: GenericRequest) => Promise<void>;
-    getUser?: (request: GenericRequest) => Promise<UserInfo>;
+    initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
+    getUser?: (request: RequestType) => Promise<UserInfo>;
     initApi?: (remult: Remult) => void | Promise<void>;
     logApiEndPoints?: boolean;
     defaultGetLimit?: number;
     entities?: ClassType<any>[];
     controllers?: ClassType<any>[];
     rootPath?: string;
-};
-export declare function buildRemultServer(options: RemultServerOptions): RemultServer;
+}
+export declare function createRemultServer<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
 export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 export interface ServerHandleResponse {
     data?: any;

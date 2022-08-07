@@ -10,15 +10,15 @@ import { IdEntity } from '../src/id-entity';
 
 
 
-export type RemultServerOptions = {
+export interface RemultServerOptions<RequestType extends GenericRequest> {
   /** Sets a database connection for Remult.
    *
    * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
   queueStorage?: QueueStorage;
-  initRequest?: (remult: Remult, origReq: GenericRequest) => Promise<void>;
-  getUser?: (request: GenericRequest) => Promise<UserInfo>;
+  initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
+  getUser?: (request: RequestType) => Promise<UserInfo>;
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
   defaultGetLimit?: number;
@@ -27,9 +27,9 @@ export type RemultServerOptions = {
   rootPath?: string;
 };
 
-export function createRemultServer(
+export function createRemultServer<RequestType extends GenericRequest = GenericRequest>(
   options?:
-    RemultServerOptions,
+    RemultServerOptions<RequestType>,
 ): RemultServer {
 
   if (!options) {
@@ -55,7 +55,7 @@ export function createRemultServer(
   dataProvider = dataProvider.then(async dp => {
     if (dp)
       return dp;
-      return new (await import ('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
+    return new (await import('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
   });
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
@@ -126,7 +126,7 @@ export interface GenericResponse {
 
 
 class RemultServerImplementation implements RemultServer {
-  constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions,
+  constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
@@ -883,7 +883,7 @@ class RouteImplementation {
     }
     let lowerPath = path.toLowerCase();
     let m = this.map.get(lowerPath);
-    
+
     if (m) {
       let h = m.get(req.method.toLowerCase());
       if (h) {

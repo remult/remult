@@ -2,7 +2,7 @@ import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
-    RemultServerOptions & {
+    RemultServerOptions<express.Request> & {
         bodyParser?: boolean;
         bodySizeLimit?: string;
     }): express.RequestHandler & RemultServer {
