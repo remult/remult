@@ -37,7 +37,7 @@ export async function retry<T>(what: () => Promise<T>): Promise<T> {
         } catch (err) {
             if (err.message?.startsWith("Error occurred while trying to proxy") ||
                 err.message?.startsWith("Error occured while trying to proxy") ||
-                err.message?.includes("http proxy error")||
+                err.message?.includes("http proxy error") ||
                 err.message?.startsWith("Gateway Timeout")) {
                 await new Promise((res, req) => {
                     setTimeout(() => {
@@ -138,8 +138,10 @@ export class Remult {
         return this._user;
     }
     /** Set's the current user info */
-    async setUser(info: UserInfo) {
+    async setUser(info: UserInfo | undefined) {
         this._user = info as UserInfo;
+        if (this._user===null)
+        this._user = undefined;
         let auth = info as { sub?: string, name?: string, permissions?: string[], username?: string };
         if (auth) {
             if (!this._user.id && auth.sub)
