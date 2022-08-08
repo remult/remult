@@ -150,6 +150,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       if (options.limit) {
         options.orderBy = Sort.createUniqueSort(this.entity, options.orderBy);
       }
+      if (!options.orderBy){
+        options.orderBy = Sort.createUniqueSort(this.entity,new Sort());
+      }
       if (options.orderBy) {
         let first = true;
         let segs: SortSegment[] = [];
