@@ -1342,9 +1342,9 @@ it("test http provider for remult", async () => {
     get: async (url) => {
       return { count: 7 }
     },
-    delete: undefined,
-    put: undefined,
-    post: undefined
+    delete: async () => { },
+    put: async () => { },
+    post: async () => { }
   });
   // expect(await toPromise(Promise.resolve(7))).toBe(7);
   expect(await remult.repo(TestCategories1).count()).toBe(7);

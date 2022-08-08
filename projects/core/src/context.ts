@@ -140,8 +140,8 @@ export class Remult {
     /** Set's the current user info */
     async setUser(info: UserInfo | undefined) {
         this._user = info as UserInfo;
-        if (this._user===null)
-        this._user = undefined;
+        if (this._user === null)
+            this._user = undefined;
         let auth = info as { sub?: string, name?: string, permissions?: string[], username?: string };
         if (auth) {
             if (!this._user.id && auth.sub)
@@ -230,17 +230,24 @@ export class Remult {
      * 
      * If no provider is specified, `fetch` will be used as an http provider
      */
-    constructor(provider?: HttpProvider | DataProvider) {
+    constructor(provider?: HttpProvider | DataProvider | typeof fetch) {
 
         if (provider && (provider as DataProvider).getEntityDataProvider) {
             this._dataSource = provider as DataProvider;
             return;
         }
-
-        let http: HttpProvider = provider as HttpProvider;
         let dataProvider: RestDataProviderHttpProvider;
-        if (http) {
-            dataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
+
+        if (!dataProvider) {
+            let http: HttpProvider = provider as HttpProvider;
+            if (http && http.get && http.put && http.post && http.delete) {
+                dataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
+            }
+        }
+        if (!dataProvider) {
+            if (typeof provider === "function") {
+                dataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
+            }
         }
 
         if (!dataProvider) {

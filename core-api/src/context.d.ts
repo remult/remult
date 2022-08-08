@@ -66,7 +66,7 @@ export declare class Remult {
      *
      * If no provider is specified, `fetch` will be used as an http provider
      */
-    constructor(provider?: HttpProvider | DataProvider);
+    constructor(provider?: HttpProvider | DataProvider | typeof fetch);
     /** The api Base Url to be used in all remult calls. by default it's set to `/api`.
      *
      * Set this property in case you want to determine a non relative api url

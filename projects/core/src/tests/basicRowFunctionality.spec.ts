@@ -8,7 +8,7 @@ import { Done } from "./Done";
 
 import { Status } from './testModel/models';
 
-import { Remult, Allowed, retry, toPromise } from '../context';
+import { Remult, Allowed, retry, toPromise, HttpProviderBridgeToRestDataProviderHttpProvider } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/interfaces/src/dataList';
@@ -29,6 +29,7 @@ import { entityWithValidations, testConfiguration } from '../shared-tests/entity
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
 import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import axios from "axios";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -2002,7 +2003,22 @@ export class EntityWithLateBoundDbName extends EntityBase {
 }
 
 describe("test fetch", () => {
-
+  it("test remult with non default fetch function", async () => {
+    var r = new Remult(new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      return new mockResponse({ status: 200, json: async () => ({ count: 7 }) })
+    }));
+    expect(await r.repo(Categories).count()).toBe(7);
+  });
+  it("test remult with non default fetch function", async () => {
+    var r = new Remult(async (url, info) => {
+      return new mockResponse({ status: 200, json: async () => ({ count: 7 }) })
+    });
+    expect(await r.repo(Categories).count()).toBe(7);
+  });
+  it("axios uses the correct api", () => {
+    const r = new Remult(axios);
+    expect((r._dataSource as any).http instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
+  });
   it("get", async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
       return new mockResponse({ status: 200, json: async () => 7 })
