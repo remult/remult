@@ -60,7 +60,7 @@ export async function testAsIfOnBackend(what: () => Promise<any>) {
 export const ActionTestConfig = {
   db: new InMemoryDataProvider()
 }
-Action.provider = {
+Remult.defaultHttpProvider = {
   delete: undefined,
   get: undefined,
   post: async (urlreq, data) => {
@@ -196,7 +196,7 @@ export class MockRestDataProvider implements DataProvider {
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
 
     let dataApi = new DataApi(this.remult.repo(metadata.entityType), this.remult);
-    return new RestEntityDataProvider("", new HttpProviderBridgeToRestDataProviderHttpProvider ({
+    return new RestEntityDataProvider("", new HttpProviderBridgeToRestDataProviderHttpProvider({
       delete: async url => {
 
 

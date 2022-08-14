@@ -5,7 +5,7 @@ import { EntityMetadata } from '../remult3';
 export declare class RestDataProvider implements DataProvider {
     private url;
     private http;
-    constructor(url: string, http: RestDataProviderHttpProvider);
+    constructor(url: string | null, http: RestDataProviderHttpProvider);
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     supportsCustomFilter: boolean;

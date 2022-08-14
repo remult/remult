@@ -1,6 +1,7 @@
 import { Sort } from './sort';
 import { Filter } from './filter/filter-interfaces';
 import { EntityMetadata, OmitEB } from './remult3';
+import { HttpProvider } from './context';
 export interface DataProvider {
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
@@ -19,7 +20,7 @@ export interface EntityDataProviderFindOptions {
     page?: number;
     orderBy?: Sort;
 }
-export interface RestDataProviderHttpProvider {
+export interface RestDataProviderHttpProvider extends HttpProvider {
     post(url: string, data: any): Promise<any>;
     delete(url: string): Promise<void>;
     put(url: string, data: any): Promise<any>;

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Remult, AllowedForInstance } from './context';
 import { DataApiRequest, DataApiResponse } from './data-api';
-import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
+import { DataProvider } from './data-interfaces';
 interface inArgs {
     args: any[];
 }
@@ -14,7 +14,6 @@ export declare abstract class Action<inParam, outParam> {
     private allowed;
     constructor(actionUrl: string, queue: boolean, allowed: AllowedForInstance<any>);
     static apiUrlForJobStatus: string;
-    static provider: RestDataProviderHttpProvider;
     run(pIn: inParam): Promise<outParam>;
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): void;

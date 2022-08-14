@@ -161,10 +161,10 @@ export class Remult {
 
 
 
-
-    private _user: UserInfo;
-
-    private _userChangeEvent = new EventSource();
+    /* @internal */
+    _user: UserInfo;
+    /* @internal */
+    _userChangeEvent = new EventSource();
     /** Checks if a user was authenticated */
     authenticated() {
         return this.user.id !== undefined;
@@ -222,8 +222,9 @@ export class Remult {
     get userChange() {
         return this._userChangeEvent.dispatcher;
     }
-
-    private repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    static defaultHttpProvider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
+/* @internal */
+     repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
     /** Creates a new instance of the `remult` object.
      * 
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -236,26 +237,24 @@ export class Remult {
             this._dataSource = provider as DataProvider;
             return;
         }
-        let dataProvider: RestDataProviderHttpProvider;
+        let httpDataProvider: RestDataProviderHttpProvider;
 
-        if (!dataProvider) {
+        if (!httpDataProvider) {
             let http: HttpProvider = provider as HttpProvider;
             if (http && http.get && http.put && http.post && http.delete) {
-                dataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
+                httpDataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
             }
         }
-        if (!dataProvider) {
+        if (!httpDataProvider) {
             if (typeof provider === "function") {
-                dataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
+                httpDataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
             }
         }
 
-        if (!dataProvider) {
-            dataProvider = new RestDataProviderHttpProviderUsingFetch();
+        if (!httpDataProvider) {
+            httpDataProvider = new UseDefaultRestDataProviderHttpProvider();
         }
-        this._dataSource = new RestDataProvider(Remult.apiBaseUrl, dataProvider);
-        if (!Action.provider)
-            Action.provider = dataProvider;
+        this._dataSource = new RestDataProvider(null, httpDataProvider);
     }
     /** The api Base Url to be used in all remult calls. by default it's set to `/api`.
      * 
@@ -275,6 +274,21 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+}
+class UseDefaultRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
+    post(url: string, data: any): Promise<any> {
+        return Remult.defaultHttpProvider.post(url, data);
+    }
+    delete(url: string): Promise<void> {
+        return Remult.defaultHttpProvider.delete(url);
+    }
+    put(url: string, data: any): Promise<any> {
+        return Remult.defaultHttpProvider.put(url, data);
+    }
+    get(url: string): Promise<any> {
+        return Remult.defaultHttpProvider.get(url);
+    }
+
 }
 
 

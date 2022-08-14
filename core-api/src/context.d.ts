@@ -41,8 +41,6 @@ export declare class Remult {
     get user(): UserInfo;
     /** Set's the current user info */
     setUser(info: UserInfo | undefined): Promise<void>;
-    private _user;
-    private _userChangeEvent;
     /** Checks if a user was authenticated */
     authenticated(): boolean;
     /** checks if the user has any of the roles specified in the parameters
@@ -59,7 +57,7 @@ export declare class Remult {
     isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean;
     /** returns a dispatcher object that fires once a user has changed*/
     get userChange(): EventDispatcher;
-    private repCache;
+    static defaultHttpProvider: RestDataProviderHttpProvider;
     /** Creates a new instance of the `remult` object.
      *
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.

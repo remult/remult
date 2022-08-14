@@ -32,10 +32,9 @@ export abstract class Action<inParam, outParam>{
 
     }
     static apiUrlForJobStatus = 'jobStatusInQueue';
-    static provider: RestDataProviderHttpProvider;
     async run(pIn: inParam): Promise<outParam> {
 
-        let r = await Action.provider.post(Remult.apiBaseUrl + '/' + this.actionUrl, pIn);
+        let r = await Remult.defaultHttpProvider.post(Remult.apiBaseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
         if (p && p.queuedJobId) {
 
@@ -48,7 +47,7 @@ export abstract class Action<inParam, outParam>{
                             await new Promise(res => setTimeout(() => {
                                 res(undefined);
                             }, 200));
-                        runningJob = await Action.provider.post(Remult.apiBaseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
+                        runningJob = await Remult.defaultHttpProvider.post(Remult.apiBaseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
                         if (runningJob.progress) {
                             progress.progress(runningJob.progress);
                         }

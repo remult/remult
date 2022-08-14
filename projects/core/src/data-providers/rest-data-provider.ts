@@ -5,15 +5,18 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 import { UrlBuilder } from '../../urlBuilder';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { EntityMetadata } from '../remult3';
-import { retry } from '../context';
+import { Remult, retry } from '../context';
 
 
 export class RestDataProvider implements DataProvider {
-  constructor(private url: string, private http: RestDataProviderHttpProvider) {
+  constructor(private url: string | null, private http: RestDataProviderHttpProvider) {
 
   }
   public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
-    return new RestEntityDataProvider(this.url + '/' + entity.key, this.http, entity);
+    let url = this.url;
+    if (url === undefined || url === null)
+      url = Remult.apiBaseUrl;
+    return new RestEntityDataProvider(url + '/' + entity.key, this.http, entity);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");

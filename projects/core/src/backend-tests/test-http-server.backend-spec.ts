@@ -152,7 +152,7 @@ export class Task {
 
 async function create3Tasks() {
     const remult = new Remult(axios);
-    Action.provider = new HttpProviderBridgeToRestDataProviderHttpProvider(axios);
+    Remult.defaultHttpProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(axios);
     const taskRepo = remult.repo(Task);
     for (const task of await taskRepo.find()) {
         await taskRepo.delete(task);
