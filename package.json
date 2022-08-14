@@ -5,7 +5,7 @@
   "scripts": {
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir core-api\" \"cd projects/test-angular && ng test core\"",
     "release-core": "npm run build-core && npm run patch-versions && cd dist/remult && npm publish  --access public",
-    "release-core-experimental": "npm run build-core && npm run patch-versions && cd dist/remult && npm publish  --access public --tag experimental",
+    "release-core-experimental": "npm run build-core && npm run patch-versions-experimental && cd dist/remult && npm publish  --access public --tag experimental",
     "build-core": "tsc -p projects/core/tsconfig.build.json && tsc -p projects/core/tsconfig.build.esm.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles README.md dist/remult && copyfiles LICENSE dist/remult",
     "build": "npm run build-core && npm run remult-angular-build ",
     "release": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public  && cd.. && cd angular && npm publish  --access public",
@@ -13,6 +13,7 @@
     "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next",
     "test:ci": "cd projects/test-angular && ng test core --code-coverage",
     "remove-next": "npm remult dist-tag rm next",
+    "patch-versions-experimental": " FOR /F %i in ('npm version prerelease -preid \"exp\" -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "update-versions": "ts-node --project projects/test-angular/tsconfig.server.json ./tools/update-versions.ts",
     "node-serve": "tsc-watch -p projects/test-angular/tsconfig.server.json --onSuccess \"npm run server:dev-run\"",
