@@ -1,3 +1,5 @@
+
+
 /*
  * Public API Surface of remult
  */
@@ -68,8 +70,9 @@ export {
     WebSqlDataProvider
 } from './src/data-providers/web-sql-data-provider';//V
 export {
-    SqlDatabase
+    SqlDatabase,
 } from './src/data-providers/sql-database';//V
+export { CustomSqlFilterObject,CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
 
