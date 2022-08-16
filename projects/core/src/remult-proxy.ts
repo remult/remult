@@ -53,4 +53,4 @@ export class RemultProxy implements Remult {
 }
 
 
-export const remult = new RemultProxy();
+export const remult:Remult = new RemultProxy();
