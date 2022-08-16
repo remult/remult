@@ -72,7 +72,7 @@ export {
 export {
     SqlDatabase,
 } from './src/data-providers/sql-database';//V
-export { CustomSqlFilterObject,CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
+export { CustomSqlFilterObject, CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
 
@@ -89,7 +89,7 @@ export {
 export {
     Allowed,
     Allow,
-    Remult,
+    RemultState,
     isBackend,
     AllowedForInstance,
     EventDispatcher,
