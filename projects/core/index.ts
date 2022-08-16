@@ -90,7 +90,7 @@ export {
     Allowed,
     Allow,
     Remult,
-    RemultState,
+    RemultContext,
     isBackend,
     AllowedForInstance,
     EventDispatcher,

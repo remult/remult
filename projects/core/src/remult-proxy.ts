@@ -1,5 +1,5 @@
 import { ClassType } from "../classType";
-import { Allowed, AllowedForInstance, EventDispatcher, EventSource, Remult, RemultState, UserInfo } from "./context";
+import { Allowed, AllowedForInstance, EventDispatcher, EventSource, Remult, RemultContext, UserInfo } from "./context";
 import { DataProvider } from "./data-interfaces";
 import { Repository } from "./remult3";
 
@@ -7,8 +7,8 @@ import { Repository } from "./remult3";
 let defaultRemult = new Remult();
 /*@internal*/
 export class RemultProxy implements Remult {
-    get state(): RemultState {
-        return this.instance.state;
+    get context(): RemultContext {
+        return this.instance.context;
     }
     get _user(): UserInfo {
         return this.instance._user;
@@ -53,4 +53,4 @@ export class RemultProxy implements Remult {
 }
 
 
-export const remult:Remult = new RemultProxy();
+export const remult: Remult = new RemultProxy();

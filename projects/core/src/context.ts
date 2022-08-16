@@ -268,9 +268,9 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
-    readonly state: RemultState = {};
+    readonly context: RemultContext = {};
 }
-export interface RemultState {
+export interface RemultContext {
 
 }
 class UseDefaultRestDataProviderHttpProvider implements RestDataProviderHttpProvider {

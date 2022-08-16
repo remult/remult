@@ -58,6 +58,7 @@ export declare class Remult {
     /** returns a dispatcher object that fires once a user has changed*/
     get userChange(): EventDispatcher;
     static defaultHttpProvider: RestDataProviderHttpProvider;
+    static setDefaultHttpProvider(provider: HttpProvider | typeof fetch): void;
     /** Creates a new instance of the `remult` object.
      *
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -79,6 +80,9 @@ export declare class Remult {
     clearAllCache(): any;
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+    readonly context: RemultContext;
+}
+export interface RemultContext {
 }
 export declare const allEntities: ClassType<any>[];
 export interface ControllerOptions {
