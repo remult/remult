@@ -1,38 +1,44 @@
 import { ClassType } from "../classType";
-import { Allowed, AllowedForInstance, EventDispatcher, EventSource, Remult, UserInfo } from "./context";
+import { Allowed, AllowedForInstance, EventDispatcher, EventSource, Remult, RemultState, UserInfo } from "./context";
 import { DataProvider } from "./data-interfaces";
 import { Repository } from "./remult3";
 
 
 let defaultRemult = new Remult();
-
-class RemultProxy implements Remult {
-    _user: UserInfo;
-    _userChangeEvent: EventSource;
-    repCache: Map<DataProvider, Map<ClassType<any>, Repository<any>>>;
+/*@internal*/
+export class RemultProxy implements Remult {
+    get state(): RemultState {
+        return this.instance.state;
+    }
+    get _user(): UserInfo {
+        return this.instance._user;
+    };
+    get _userChangeEvent(): EventSource { return this.instance._userChangeEvent };
+    get _dataSource(): DataProvider { return this.instance._dataSource };
+    get repCache(): Map<DataProvider, Map<ClassType<any>, Repository<any>>> { return this.instance.repCache };
 
     setUser(info: UserInfo): Promise<void> {
-        throw new Error("Method not implemented.");
+        return this.instance.setUser(info);
     }
 
     authenticated(): boolean {
-        throw new Error("Method not implemented.");
+        return this.instance.authenticated()
     }
     isAllowed(roles?: Allowed): boolean {
-        throw new Error("Method not implemented.");
+        return this.instance.isAllowed(roles);
     }
     isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean {
-        throw new Error("Method not implemented.");
+        return this.instance.isAllowedForInstance(instance, allowed);
     }
     get userChange(): EventDispatcher {
-        throw new Error("Method not implemented.");
+        return this.instance.userChange;
     }
-    _dataSource: DataProvider;
+
     setDataProvider(dataProvider: DataProvider): void {
-        throw new Error("Method not implemented.");
+        return this.instance.setDataProvider(dataProvider);
     }
     clearAllCache() {
-        throw new Error("Method not implemented.");
+        return this.instance.clearAllCache();
     }
     /*@internal*/
     remultFactory = () => defaultRemult;

@@ -6,6 +6,8 @@ import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/contex
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
+import { AsyncLocalStorage } from 'async_hooks';
+import { remult, RemultProxy } from '../src/remult-proxy';
 
 
 
@@ -62,7 +64,12 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
       var remult = new Remult(dp);
-      await options.initApi(remult);
+      await new Promise((res) => {
+        remultObjectStorage.run(remult, async () => {
+          await options.initApi(remult);
+          res({})
+        })
+      });
       return dp;
     });
   }
@@ -124,12 +131,23 @@ export interface GenericResponse {
 };
 
 
+const remultObjectStorage = new AsyncLocalStorage<Remult>();
+let remultObjectStorageWasSetup = false;
 
 
 
 class RemultServerImplementation implements RemultServer {
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
+    if (!remultObjectStorageWasSetup) {
+      remultObjectStorageWasSetup = true;
+      (remult as RemultProxy).remultFactory = () => {
+        const r = remultObjectStorage.getStore()
+        if (r)
+          return r;
+        else throw "remult object was requested outside of a valid context, try running it within initApi or a remult request cycle";
+      };
+    }
 
   }
   routeImpl: RouteImplementation;
@@ -191,7 +209,7 @@ class RemultServerImplementation implements RemultServer {
 
     let myRoute = this.options.rootPath + '/' + key;
     if (this.options.logApiEndPoints)
-      console.log("[remult] "+myRoute);
+      console.log("[remult] " + myRoute);
 
 
     r.route(myRoute)
@@ -218,23 +236,25 @@ class RemultServerImplementation implements RemultServer {
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
       remult.setDataProvider(await this.dataProvider);
-      if (req) {
-        let user;
-        if (this.options.getUser)
-          user = await this.options.getUser(req);
-        else {
-          user = req['user'];
-          if (!user)
-            user = req['auth'];
+      remultObjectStorage.run(remult, async () => {
+        if (req) {
+          let user;
+          if (this.options.getUser)
+            user = await this.options.getUser(req);
+          else {
+            user = req['user'];
+            if (!user)
+              user = req['auth'];
+          }
+          if (user)
+            remult.setUser(user);
         }
-        if (user)
-          remult.setUser(user);
-      }
-      if (this.options.initRequest) {
-        await this.options.initRequest(remult, req);
-      }
+        if (this.options.initRequest) {
+          await this.options.initRequest(remult, req);
+        }
 
-      what(remult, myReq, myRes, req);
+        what(remult, myReq, myRes, req);
+      })
     }
   };
   async getRemult(req: GenericRequest) {
@@ -260,7 +280,7 @@ class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        console.log("[remult] "+myUrl);
+        console.log("[remult] " + myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);

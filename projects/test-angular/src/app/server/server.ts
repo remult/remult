@@ -12,7 +12,7 @@ import { serverInit } from './server-init';
 import { remultGraphql } from 'remult/graphql';
 import { createKnexDataProvider } from 'remult/remult-knex';
 
-import { preparePostgresQueueStorage } from 'remult/postgres';
+import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
 
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
@@ -27,6 +27,7 @@ import { controllerWithInstance, controllerWithStaic, stam } from '../products-t
 import { AppComponent } from '../app.component';
 import { Task } from './Task';
 import { createRemultServer } from '../../../../core/server';
+import { remult } from '../../../../core/src/remult-proxy';
 
 
 
@@ -66,25 +67,25 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-    const mw = createRemultServer({
-        entities: [stam, Task],
-        controllers: [controllerWithInstance, controllerWithStaic, AppComponent]
-    })
+
 
     let remultApi = remultExpress({
         entities: [stam, Task],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
-        // dataProvider:async ()=>await  createPostgresConnection(),
+         dataProvider:  createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
-        initApi: async remult => {
+        initApi: async remultParam => {
             //SqlDatabase.LogToConsole = true;
-            await remult.repo(stam).findFirst();
+            console.log({
+                static: await remult.repo(stam).count(),
+                remultParam: await remult.repo(stam).count()
+            })
         }
     });
 
     app.use(express.json());
-    // app.use(mw);
+    app.use(remultApi);
 
 
     console.log("after");

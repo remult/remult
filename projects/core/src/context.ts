@@ -223,8 +223,14 @@ export class Remult {
         return this._userChangeEvent.dispatcher;
     }
     static defaultHttpProvider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
-/* @internal */
-     repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    static setDefaultHttpProvider(provider: HttpProvider | typeof fetch) {
+        const r = buildRestDataProvider(provider);
+        if (!r)
+            throw provider + " doesn't patch http provider or fetch interface";
+        Remult.defaultHttpProvider = r;
+    }
+    /* @internal */
+    repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
     /** Creates a new instance of the `remult` object.
      * 
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -237,19 +243,7 @@ export class Remult {
             this._dataSource = provider as DataProvider;
             return;
         }
-        let httpDataProvider: RestDataProviderHttpProvider;
-
-        if (!httpDataProvider) {
-            let http: HttpProvider = provider as HttpProvider;
-            if (http && http.get && http.put && http.post && http.delete) {
-                httpDataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
-            }
-        }
-        if (!httpDataProvider) {
-            if (typeof provider === "function") {
-                httpDataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
-            }
-        }
+        let httpDataProvider: RestDataProviderHttpProvider = buildRestDataProvider(provider as (HttpProvider | typeof fetch));
 
         if (!httpDataProvider) {
             httpDataProvider = new UseDefaultRestDataProviderHttpProvider();
@@ -274,6 +268,10 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+    readonly state: RemultState = {};
+}
+export interface RemultState {
+
 }
 class UseDefaultRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
     post(url: string, data: any): Promise<any> {
@@ -305,6 +303,23 @@ export class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
 
+
+function buildRestDataProvider(provider: HttpProvider | typeof fetch) {
+    let httpDataProvider: RestDataProviderHttpProvider;
+
+    if (!httpDataProvider) {
+        let http: HttpProvider = provider as HttpProvider;
+        if (http && http.get && http.put && http.post && http.delete) {
+            httpDataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
+        }
+    }
+    if (!httpDataProvider) {
+        if (typeof provider === "function") {
+            httpDataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
+        }
+    }
+    return httpDataProvider;
+}
 
 export function setControllerSettings(target: any, options: ControllerOptions) {
     let r = target;
