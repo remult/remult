@@ -253,13 +253,14 @@ class RemultServerImplementation implements RemultServer {
           await this.options.initRequest(remult, req);
         }
 
-        what(remult, myReq, myRes, req);
+        await what(remult, myReq, myRes, req);
       })
     }
   };
   async getRemult(req: GenericRequest) {
     let remult: Remult;
     await this.process(async (c) => {
+      console.log("DEBUG ",c);
       remult = c;
     })(req, undefined);
     return remult;
