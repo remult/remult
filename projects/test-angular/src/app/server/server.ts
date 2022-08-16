@@ -75,8 +75,14 @@ serverInit().then(async (dataSource) => {
         dataProvider: createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
+        initRequest: async () => {
+            await new Promise(res => {
+                setTimeout(() => {
+                    res({});
+                }, 300);
+            })
+        },
         initApi: async remultParam => {
-            console.log("init api");
             //SqlDatabase.LogToConsole = true;
             console.log({
                 static: await remult.repo(stam).count(),
@@ -88,11 +94,11 @@ serverInit().then(async (dataSource) => {
     app.use(express.json());
     app.use(remultApi);
     remultApi.getRemult(undefined).then(x => {
-        console.log(x);
+        console.log("got remult",x);
     });
 
 
-    console.log("after");
+    
 
 
     app.use('/api/docs', swaggerUi.serve,

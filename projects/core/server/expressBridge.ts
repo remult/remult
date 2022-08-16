@@ -236,31 +236,33 @@ class RemultServerImplementation implements RemultServer {
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
       remult.setDataProvider(await this.dataProvider);
-      remultObjectStorage.run(remult, async () => {
-        if (req) {
-          let user;
-          if (this.options.getUser)
-            user = await this.options.getUser(req);
-          else {
-            user = req['user'];
-            if (!user)
-              user = req['auth'];
+      await new Promise(res => {
+        remultObjectStorage.run(remult, async () => {
+          if (req) {
+            let user;
+            if (this.options.getUser)
+              user = await this.options.getUser(req);
+            else {
+              user = req['user'];
+              if (!user)
+                user = req['auth'];
+            }
+            if (user)
+              remult.setUser(user);
           }
-          if (user)
-            remult.setUser(user);
-        }
-        if (this.options.initRequest) {
-          await this.options.initRequest(remult, req);
-        }
+          if (this.options.initRequest) {
+            await this.options.initRequest(remult, req);
+          }
 
-        await what(remult, myReq, myRes, req);
+          await what(remult, myReq, myRes, req);
+          res({});
+        })
       })
     }
   };
   async getRemult(req: GenericRequest) {
     let remult: Remult;
     await this.process(async (c) => {
-      console.log("DEBUG ",c);
       remult = c;
     })(req, undefined);
     return remult;
