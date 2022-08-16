@@ -89,6 +89,7 @@ export {
 export {
     Allowed,
     Allow,
+    Remult,
     RemultState,
     isBackend,
     AllowedForInstance,
