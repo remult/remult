@@ -60,6 +60,14 @@
     "./graphql": {
       "require": "./graphql.js",
       "import": "./esm/graphql.js"
+    },
+    "./src/remult3": {
+      "require": "./src/remult3/index.js",
+      "import": "./esm/src/remult3/index.js"
+    },
+    "./src/server-action": {
+      "require": "./src/server-action.js",
+      "import": "./esm/src/server-action.js"
     }
   }
 }
