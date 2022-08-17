@@ -226,7 +226,7 @@ export class Remult {
     static setDefaultHttpProvider(provider: HttpProvider | typeof fetch) {
         const r = buildRestDataProvider(provider);
         if (!r)
-            throw provider + " doesn't patch http provider or fetch interface";
+            throw provider + " doesn't match http provider or fetch interface";
         Remult.defaultHttpProvider = r;
     }
     /* @internal */

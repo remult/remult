@@ -124,7 +124,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     __performColumnAndEntityValidations(): Promise<void>;
 }
 export declare function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): FieldsRef<fieldsContainerType>;
-export declare function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): ControllerRef<fieldsContainerType>;
+export declare function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remultArg?: Remult): ControllerRef<fieldsContainerType>;
 export declare class controllerRefImpl<T = any> extends rowHelperBase<T> implements ControllerRef<T> {
     constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult);
     __performColumnAndEntityValidations(): Promise<void>;

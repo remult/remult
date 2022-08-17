@@ -145,7 +145,7 @@ class RemultServerImplementation implements RemultServer {
         const r = remultObjectStorage.getStore()
         if (r)
           return r;
-        else throw "remult object was requested outside of a valid context, try running it within initApi or a remult request cycle";
+        else throw new Error( "remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
       };
     }
 

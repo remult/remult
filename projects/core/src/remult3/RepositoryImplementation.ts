@@ -17,6 +17,7 @@ import { ValueConverters } from "../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
+import { remult } from "../remult-proxy";
 
 
 let classValidatorValidate: ((item: any, ref: {
@@ -1061,8 +1062,8 @@ function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
 export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): FieldsRef<fieldsContainerType> {
     return getControllerRef(container, remult).fields;
 }
-export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): ControllerRef<fieldsContainerType> {
-
+export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remultArg?: Remult): ControllerRef<fieldsContainerType> {
+    const remultVar = remultArg || remult;
     let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
         result = container[entityMember];
@@ -1080,7 +1081,7 @@ export function getControllerRef<fieldsContainerType>(container: fieldsContainer
             base = Object.getPrototypeOf(base);
         }
 
-        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings, remult), container, remult);
+        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings, remultVar), container, remultVar);
     }
     return result;
 }
