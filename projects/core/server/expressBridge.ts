@@ -104,6 +104,7 @@ export interface RemultServer {
   openApiDoc(options: { title: string }): any;
   registerRouter(r: GenericRouter): void;
   handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+  withRemultMiddleware(req: GenericRequest, res: GenericResponse, next: VoidFunction);
 
 }
 export type GenericRouter = {
@@ -145,10 +146,13 @@ class RemultServerImplementation implements RemultServer {
         const r = remultObjectStorage.getStore()
         if (r)
           return r;
-        else throw new Error( "remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
+        else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
       };
     }
 
+  }
+  withRemultMiddleware(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
+    this.process(async () => { next() })(req, res);
   }
   routeImpl: RouteImplementation;
 

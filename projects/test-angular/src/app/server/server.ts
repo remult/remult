@@ -28,6 +28,8 @@ import { AppComponent } from '../app.component';
 import { Task } from './Task';
 import { createRemultServer } from '../../../../core/server';
 import { remult } from '../../../../core/src/remult-proxy';
+import { APP_ID } from '@angular/core';
+import { AsyncLocalStorage } from 'async_hooks';
 
 
 
@@ -53,6 +55,7 @@ const getDatabase = async () => {
     return result;
 }
 
+const st = new AsyncLocalStorage();
 
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
@@ -76,11 +79,7 @@ serverInit().then(async (dataSource) => {
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initRequest: async () => {
-            await new Promise(res => {
-                setTimeout(() => {
-                    res({});
-                }, 300);
-            })
+            
         },
         initApi: async remultParam => {
             //SqlDatabase.LogToConsole = true;
@@ -93,23 +92,28 @@ serverInit().then(async (dataSource) => {
 
     app.use(express.json());
     app.use(remultApi);
-    remultApi.getRemult(undefined).then(x => {
-        console.log("got remult",x);
-    });
 
 
-    
+
 
 
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
+    app.get('/api/noam1',remultApi.withRemultMiddleware, async (req, res) => {
+        if (false)
 
-    app.use(express.static('dist/my-project'));
-    app.get('/api/noam', async (req, res) => {
-        let c = await remultApi.getRemult(req);
-        res.send('hello ' + JSON.stringify(c.user));
+            remultApi.withRemultMiddleware(req, res, async () => {
+                res.send('hello ' + JSON.stringify(remult.user));
+            });
+        else if (false)
+            res.send("hello");
+        else
+            st.run(7, () => {
+                res.send(remult.user)
+            })
     });
 
+    app.use(express.static('dist/my-project'));
     let g = remultGraphql(remultApi);
     app.use('/api/graphql', graphqlHTTP({
         schema: buildSchema(g.schema),
@@ -133,7 +137,6 @@ serverInit().then(async (dataSource) => {
             res.send('No Result ' + req.path);
         }
     });
-
 
 
 
