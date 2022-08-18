@@ -26,7 +26,7 @@ interface inArgs {
 interface result {
     data: any;
 }
-export abstract class Action<inParam, outParam> implements ActionInterface{
+export abstract class Action<inParam, outParam> implements ActionInterface {
     constructor(private actionUrl: string, private queue: boolean, private allowed: AllowedForInstance<any>) {
 
     }
@@ -72,7 +72,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface{
 
 
     }
-    doWork: (args: any[], baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any> ;
+    doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
 
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
@@ -197,7 +197,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
             let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
-            serverAction.doWork = async (args, url, http) => {
+            serverAction.doWork = async (args, self, url, http) => {
                 args = prepareArgsToSend(types, args);
                 if (options.blockUser === false) {
                     return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args }, url, http)).data);
@@ -210,7 +210,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
             descriptor.value = async function (...args: any[]) {
                 if (!actionInfo.runningOnServer) {
-                    return await serverAction.doWork(args);
+                    return await serverAction.doWork(args, undefined);
                 }
                 else
                     return (await originalMethod.apply(undefined, args));
@@ -515,12 +515,12 @@ export class BackendMethodCaller {
             throw Error("The method received is not a valid backend method");
         //@ts-ignore
         return (...args: any[]) => {
-            return z.doWork(args, this.url, this.provider);
+            return z.doWork(args, undefined, this.url, this.provider);
         }
     }
 
 }
 export interface ActionInterface {
-    doWork: (args: any[], baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
+    doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void);
 }
