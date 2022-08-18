@@ -233,8 +233,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         methodHelpers.set(descriptor, mh);
         x.methods.push(mh);
         var originalMethod = descriptor.value;
-        let serverAction = {
-
+        let serverAction: ActionInterface = {
             __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
 
                 let c = new Remult();
@@ -259,7 +258,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             let ds = remult._dataSource;
 
                             let r: serverMethodOutArgs;
-                            await ds.transaction(async ds => {
+                            await ds.transaction(async (ds) => {
                                 remult.setDataProvider(ds);
                                 d.args = await prepareReceivedArgs(types, d.args, remult, ds, res);
                                 if (allEntities.includes(constructor)) {
@@ -325,19 +324,16 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             res.success(r);
                         }
                         catch (err) {
-                            if (err.isForbiddenError)// got a problem in next with instance of ForbiddenError  - so replaced it with this bool
+                            if (err.isForbiddenError) // got a problem in next with instance of ForbiddenError  - so replaced it with this bool
                                 res.forbidden();
+
                             else
                                 res.error(err);
                         }
                     });
                 }
-            }
-        };
-
-        descriptor.value = async function (...args: any[]) {
-            if (!actionInfo.runningOnServer) {
-                let self = this;
+            },
+            doWork: async function (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<any> {
                 args = prepareArgsToSend(types, args);
 
                 if (allEntities.includes(target.constructor)) {
@@ -350,9 +346,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     try {
 
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
-                            async execute(a, b): Promise<serverMethodOutArgs> {
-                                throw ('should get here');
-                            }
+                            protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
                         }(classOptions.key + "/" + key, options ? options.queue : false, options.allowed).run({
                             args,
                             rowInfo: {
@@ -362,7 +356,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                 id: defs.getOriginalId()
                             }
 
-                        }));
+                        }, baseUrl, http));
                         await defs._updateEntityBasedOnApi(r.rowInfo.data);
                         return r.result;
                     }
@@ -376,13 +370,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     try {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
-                            async execute(a, b): Promise<serverMethodOutArgs> {
-                                throw ('should get here');
-                            }
-                        }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false, options.allowed).run({
+                            protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
+                        }(mh.classes.get(self.constructor).key + "/" + key, options ? options.queue : false, options.allowed).run({
                             args,
                             fields: await defs.toApiJson()
-                        }));
+                        }, baseUrl, http));
                         await defs._updateEntityBasedOnApi(r.fields);
                         return r.result;
                     }
@@ -390,6 +382,13 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         throw defs.catchSaveErrors(e);
                     }
                 }
+            }
+        };
+
+        descriptor.value = async function (...args: any[]) {
+            if (!actionInfo.runningOnServer) {
+                let self = this;
+                return serverAction.doWork(args, self);
             }
             else
                 return (await originalMethod.apply(this, args));
@@ -509,13 +508,13 @@ export class BackendMethodCaller {
             this.provider = buildRestDataProvider(provider);
         }
     }
-    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T): T {
+    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T {
         const z = (backendMethod[serverActionField]) as Action<any, any>;
         if (!z.doWork)
             throw Error("The method received is not a valid backend method");
         //@ts-ignore
         return (...args: any[]) => {
-            return z.doWork(args, undefined, this.url, this.provider);
+            return z.doWork(args, self, this.url, this.provider);
         }
     }
 

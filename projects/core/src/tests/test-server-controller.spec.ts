@@ -245,13 +245,13 @@ describe("test Server Controller basics", () => {
             delete: () => undefined,
             get: () => undefined,
             post: async (url, data) => {
-                expect(url).toBe("xx/sf");
-                expect(data.args[0]).toEqual("noam");
-                return { data: { result: "hello noam" } };
+                expect(url).toBe("xx/1/doIt");
+                return {  result: { result: "hello noam" } , fields: {} };
             },
             put: () => undefined
         });
-        const r = (await c.call(new testBasics(remult).doIt)());
+        const b = new testBasics(remult);
+        const r = (await c.call(b.doIt, b)());
         console.log(r);
         expect(r.result).toBe("hello noam");
     });
