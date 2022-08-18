@@ -25,9 +25,8 @@ interface inArgs {
 }
 interface result {
     data: any;
-
 }
-export abstract class Action<inParam, outParam>{
+export abstract class Action<inParam, outParam> implements ActionInterface{
     constructor(private actionUrl: string, private queue: boolean, private allowed: AllowedForInstance<any>) {
 
     }
@@ -73,7 +72,7 @@ export abstract class Action<inParam, outParam>{
 
 
     }
-    doWork: (args: any[], baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any> = () => { throw "error" };
+    doWork: (args: any[], baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any> ;
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
 
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
@@ -420,9 +419,7 @@ function registerAction(target: any, descriptor: any) {
 function isCustomUndefined(x: any) {
     return x && x._isUndefined;
 }
-export interface registrableAction {
-    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) => void
-}
+
 export interface jobWasQueuedResult {
     queuedJobId?: string
 }
@@ -522,4 +519,8 @@ export class BackendMethodCaller {
         }
     }
 
+}
+export interface ActionInterface {
+    doWork: (args: any[], baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
+    __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void);
 }

@@ -240,7 +240,7 @@ describe("test Server Controller basics", () => {
         console.log(r);
         expect(r.result).toBe("hello noam");
     });
-    fit("test backend method instance method", async () => {
+    it("test backend method instance method", async () => {
         const c = new BackendMethodCaller("xx", {
             delete: () => undefined,
             get: () => undefined,

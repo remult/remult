@@ -1,5 +1,5 @@
 
-import { Action, actionInfo, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
+import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
@@ -196,7 +196,7 @@ class RemultServerImplementation implements RemultServer {
               else
                 res.success(job.info);
             });
-          }
+          }, doWork: undefined
         }, r);
 
     }
@@ -273,9 +273,7 @@ class RemultServerImplementation implements RemultServer {
   }
   hasQueue = false;
 
-  addAction(action: {
-    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) => void
-  }, r: GenericRouter) {
+  addAction(action: ActionInterface, r: GenericRouter) {
     action.__register((url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
       let myUrl = this.options.rootPath + '/' + url;
       let tag = (() => {
