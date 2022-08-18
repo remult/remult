@@ -33,6 +33,7 @@ export interface RemultServer {
     }): any;
     registerRouter(r: GenericRouter): void;
     handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+    withRemultMiddleware(req: GenericRequest, res: GenericResponse, next: VoidFunction): any;
 }
 export declare type GenericRouter = {
     route(path: string): SpecificRoute;

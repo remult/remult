@@ -304,7 +304,7 @@ export class MethodHelper {
 }
 
 
-function buildRestDataProvider(provider: HttpProvider | typeof fetch) {
+export function buildRestDataProvider(provider: HttpProvider | typeof fetch) {
     let httpDataProvider: RestDataProviderHttpProvider;
 
     if (!httpDataProvider) {

@@ -30,6 +30,9 @@ import { createRemultServer } from '../../../../core/server';
 import { remult } from '../../../../core/src/remult-proxy';
 import { APP_ID } from '@angular/core';
 import { AsyncLocalStorage } from 'async_hooks';
+import axios from 'axios';
+import { buildRestDataProvider } from '../../../../core/src/context';
+import { Action, BackendMethodCaller, serverActionField } from '../../../../core/src/server-action';
 
 
 
@@ -75,18 +78,23 @@ serverInit().then(async (dataSource) => {
     let remultApi = remultExpress({
         entities: [stam, Task],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
-        dataProvider: createPostgresConnection(),
+        // dataProvider: createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initRequest: async () => {
-            
+
         },
         initApi: async remultParam => {
             //SqlDatabase.LogToConsole = true;
-            console.log({
-                static: await remult.repo(stam).count(),
-                remultParam: await remult.repo(stam).count()
-            })
+
+            const caller = new BackendMethodCaller('http://localhost:3001/api',axios);
+            caller.call(stam.staticBackendMethod)().then(x => console.log("ok", x)).catch(err => console.error(err))
+            
+            
+
+            //p.post('http://localhost:3001/api/staticBackendMethod', { args: [] }).then(x => console.log("ok", x)).catch(err => console.error(err));
+
+
         }
     });
 
@@ -99,19 +107,7 @@ serverInit().then(async (dataSource) => {
 
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
-    app.get('/api/noam1',remultApi.withRemultMiddleware, async (req, res) => {
-        if (false)
 
-            remultApi.withRemultMiddleware(req, res, async () => {
-                res.send('hello ' + JSON.stringify(remult.user));
-            });
-        else if (false)
-            res.send("hello");
-        else
-            st.run(7, () => {
-                res.send(remult.user)
-            })
-    });
 
     app.use(express.static('dist/my-project'));
     let g = remultGraphql(remultApi);

@@ -95,6 +95,7 @@ export declare class ClassHelper {
 export declare class MethodHelper {
     classes: Map<any, ControllerOptions>;
 }
+export declare function buildRestDataProvider(provider: HttpProvider | typeof fetch): RestDataProviderHttpProvider;
 export declare function setControllerSettings(target: any, options: ControllerOptions): void;
 export interface UserInfo {
     id: string;

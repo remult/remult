@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings, HttpProvider, buildRestDataProvider } from './context';
 
 
 
@@ -32,9 +32,13 @@ export abstract class Action<inParam, outParam>{
 
     }
     static apiUrlForJobStatus = 'jobStatusInQueue';
-    async run(pIn: inParam): Promise<outParam> {
+    async run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam> {
+        if (baseUrl === undefined)
+            baseUrl = Remult.apiBaseUrl;
+        if (!http)
+            http = Remult.defaultHttpProvider;
 
-        let r = await Remult.defaultHttpProvider.post(Remult.apiBaseUrl + '/' + this.actionUrl, pIn);
+        let r = await http.post(baseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
         if (p && p.queuedJobId) {
 
@@ -47,7 +51,7 @@ export abstract class Action<inParam, outParam>{
                             await new Promise(res => setTimeout(() => {
                                 res(undefined);
                             }, 200));
-                        runningJob = await Remult.defaultHttpProvider.post(Remult.apiBaseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
+                        runningJob = await http.post(baseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
                         if (runningJob.progress) {
                             progress.progress(runningJob.progress);
                         }
@@ -69,6 +73,7 @@ export abstract class Action<inParam, outParam>{
 
 
     }
+    doWork: (args: any[], baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any> = () => { throw "error" };
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
 
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
@@ -193,19 +198,20 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
             let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
+            serverAction.doWork = async (args, url, http) => {
+                args = prepareArgsToSend(types, args);
+                if (options.blockUser === false) {
+                    return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args }, url, http)).data);
+                }
+                else
+                    return (await serverAction.run({ args }, url, http)).data;
+            }
 
 
 
             descriptor.value = async function (...args: any[]) {
                 if (!actionInfo.runningOnServer) {
-
-
-                    args = prepareArgsToSend(types, args);
-                    if (options.blockUser === false) {
-                        return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
-                    }
-                    else
-                        return (await serverAction.run({ args })).data;
+                    return await serverAction.doWork(args);
                 }
                 else
                     return (await originalMethod.apply(undefined, args));
@@ -359,8 +365,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         return r.result;
                     }
                     catch (err) {
-                        defs.catchSaveErrors(err);
-                        throw err;
+                        throw defs.catchSaveErrors(err);
                     }
                 }
 
@@ -495,3 +500,22 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult: Rem
 }
 
 export const classBackendMethodsArray = Symbol('classBackendMethodsArray');
+
+
+export class BackendMethodCaller {
+    private provider: RestDataProviderHttpProvider;
+    constructor(private url?: string, provider?: HttpProvider | typeof fetch) {
+        if (provider)
+            this.provider = buildRestDataProvider(provider);
+    }
+    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T): T {
+        const z = (backendMethod[serverActionField]) as Action<any, any>;
+        if (!z.doWork)
+            throw Error("The method received is not a valid backend method");
+        //@ts-ignore
+        return  (...args: any[]) => {
+            return  z.doWork(args, this.url, this.provider);
+        } 
+    }
+
+}
