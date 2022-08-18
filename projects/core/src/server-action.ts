@@ -326,7 +326,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             res.success(r);
                         }
                         catch (err) {
-                            res.error(err);
+                            if (err.isForbiddenError)// got a problem in next with instance of ForbiddenError  - so replaced it with this bool
+                                res.forbidden();
+                            else
+                                res.error(err);
                         }
                     });
                 }
@@ -505,17 +508,18 @@ export const classBackendMethodsArray = Symbol('classBackendMethodsArray');
 export class BackendMethodCaller {
     private provider: RestDataProviderHttpProvider;
     constructor(private url?: string, provider?: HttpProvider | typeof fetch) {
-        if (provider)
+        if (provider) {
             this.provider = buildRestDataProvider(provider);
+        }
     }
     call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T): T {
         const z = (backendMethod[serverActionField]) as Action<any, any>;
         if (!z.doWork)
             throw Error("The method received is not a valid backend method");
         //@ts-ignore
-        return  (...args: any[]) => {
-            return  z.doWork(args, this.url, this.provider);
-        } 
+        return (...args: any[]) => {
+            return z.doWork(args, this.url, this.provider);
+        }
     }
 
 }

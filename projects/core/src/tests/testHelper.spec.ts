@@ -85,9 +85,12 @@ Remult.defaultHttpProvider = {
                   r(JSON.parse(JSON.stringify(serializeError(data))));
                   actionInfo.runningOnServer = false
                 }
+                t.forbidden = () => {
+                  r({ status: 403, message: "forbidden" });
+                  actionInfo.runningOnServer = false
+                }
                 let remult = new Remult();
                 remult.setDataProvider(ActionTestConfig.db);
-
 
                 what(JSON.parse(JSON.stringify(data)), remult, t);
               }
