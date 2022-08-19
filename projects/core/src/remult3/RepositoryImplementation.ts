@@ -927,6 +927,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     private _saving = false;
     async save(): Promise<T> {
         try {
+            
             if (this._saving)
                 throw new Error("cannot save while entity is already saving");
             this._saving = true;
@@ -964,9 +965,19 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
                 this._subscribers?.reportChanged();
                 if (this.isNew()) {
+                    if (this.remult.__enforceApiRules) {
+                        if (!this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiInsert)) {
+                            throw new ForbiddenError();
+                        }
+                    }
                     updatedRow = await this.edp.insert(d);
                 }
                 else {
+                    if (this.remult.__enforceApiRules) {
+                        if (!this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiUpdate)) {
+                            throw new ForbiddenError();
+                        }
+                    }
                     let changesOnly = {};
                     let wasChanged = false;
                     for (const key in d) {
@@ -1017,6 +1028,11 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 
     async delete() {
+        if (this.remult.__enforceApiRules) {
+            if (!this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiDelete)) {
+                throw new ForbiddenError();
+            }
+        }
         this.__clearErrorsAndReportChanged();
         if (this.info.entityInfo.deleting)
             await this.info.entityInfo.deleting(this.instance);

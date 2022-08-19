@@ -102,7 +102,7 @@ export class DataApi<T = any> {
 
 
       await this.repository.find({
-        where: { $and: [this.repository.metadata.options.apiPrefilter, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
+        where: { $and: [this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
       })
         .then(async r => {
           if (r.length == 0)
@@ -121,10 +121,6 @@ export class DataApi<T = any> {
     await this.doOnId(response, id, async row => {
       let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>;
       await ref._updateEntityBasedOnApi(body);
-      if (!ref.apiUpdateAllowed) {
-        response.forbidden();
-        return;
-      }
       await this.repository.getEntityRef(row).save();
       response.success(this.repository.getEntityRef(row).toApiJson());
     });
@@ -132,11 +128,6 @@ export class DataApi<T = any> {
 
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async row => {
-
-      if (!this.repository.getEntityRef(row).apiDeleteAllowed) {
-        response.forbidden();
-        return;
-      }
       await this.repository.getEntityRef(row).delete();
       response.deleted();
     });
@@ -148,15 +139,12 @@ export class DataApi<T = any> {
     try {
       let newr = this.repository.create();
       await (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
-      if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
-        response.forbidden();
-        return;
-      }
+
 
       await this.repository.getEntityRef(newr).save();
       response.created(this.repository.getEntityRef(newr).toApiJson());
     } catch (err) {
-      response.error(err);
+      this.catch(err, response);
     }
   }
 

@@ -1240,7 +1240,7 @@ describe("data api", () => {
     await api.delete(t, 1);
     d.test();
   });
-  it("update id  not Allowed for specific row", async () => {
+  it("update id not Allowed for specific row", async () => {
     let type = class extends newCategories {
 
     };
@@ -1275,12 +1275,11 @@ describe("data api", () => {
       });
     d.test();
   });
-  it("insert id  not Allowed for specific row", async () => {
+  it("insert id not Allowed for specific row", async () => {
     let type = class extends newCategories {
 
     };
     Entity<typeof type.prototype>('', {
-
       allowApiInsert: (c, t) => {
         return t.categoryName == 'ok';
       }
