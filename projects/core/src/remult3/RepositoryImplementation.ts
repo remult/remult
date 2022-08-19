@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, ForbiddenError } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource, AllowedForInstance } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -800,7 +800,7 @@ abstract class rowHelperBase<T>
     toApiJson() {
         let result: any = {};
         for (const col of this.columnsInfo) {
-            if (!this.remult || col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
+            if (!this.remult || this.allowedWithUndefinedTrue(col.includeInApi)) {
                 let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
@@ -821,13 +821,16 @@ abstract class rowHelperBase<T>
         }
         return result;
     }
+    allowedWithUndefinedTrue(allow: AllowedForInstance<T>) {
+        return allow === undefined || this.remult.isAllowedForInstance(this.instance, allow);
+    }
 
     async _updateEntityBasedOnApi(body: any) {
         let keys = Object.keys(body);
         for (const col of this.columnsInfo) {
             if (keys.includes(col.key))
-                if (col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
-                    if (!this.remult || col.allowApiUpdate === undefined || this.remult.isAllowedForInstance(this.instance, col.allowApiUpdate)) {
+                if (this.allowedWithUndefinedTrue(col.includeInApi)) {
+                    if (!this.remult || this.allowedWithUndefinedTrue(col.allowApiUpdate )) {
                         let lu = this.lookups.get(col.key);
                         if (lu)
                             lu.id = body[col.key];
@@ -927,7 +930,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     private _saving = false;
     async save(): Promise<T> {
         try {
-            
+
             if (this._saving)
                 throw new Error("cannot save while entity is already saving");
             this._saving = true;
@@ -949,12 +952,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let d = this.copyDataToObject();
             let ignoreKeys = [];
             for (const field of this.metadata.fields) {
-                if (field.dbReadOnly) {
+                if (field.dbReadOnly ||
+                    this.remult.__enforceApiRules && (
+                        !this.allowedWithUndefinedTrue(field.options.allowApiUpdate) ||
+                        !this.allowedWithUndefinedTrue(field.options.includeInApi))) {
                     d[field.key] = undefined;
                     ignoreKeys.push(field.key);
                     let f = this.fields.find(field);
                     f.value = f.originalValue;
-
                 }
             }
 
@@ -1077,6 +1082,20 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             this.id = this.repository.metadata.idMetadata.field.getId(this.instance);
         } else
             this.id = data[this.repository.metadata.idMetadata.field.key];
+        if (this.remult.__enforceApiRules) {
+            for (const col of this.info.fields) {
+                if (!this.allowedWithUndefinedTrue(col.options.includeInApi)) {
+                    console.log("removed from object " + col.key);
+                    let lu = this.lookups.get(col.key);
+                    if (lu) {
+                        lu.id = undefined;
+                    }
+                    else
+                        this.instance[col.key] = undefined;
+                }
+            }
+
+        }
     }
     id;
     public getOriginalId() {

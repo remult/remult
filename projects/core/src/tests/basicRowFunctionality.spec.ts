@@ -959,8 +959,45 @@ describe("data api", () => {
       categoryName: 'noam 1'
     });
     d.test();
+    remult.__enforceApiRules = false;
     var x = await c.find({ where: { id: 1 } });
     expect(x[0].categoryName).toBe('noam');
+
+  });
+  it("check include in api on remult with api rules", async () => {
+    let type = class extends newCategories {
+
+      categoryName: string;
+    };
+    Fields.string({ includeInApi: false })(type.prototype, "categoryName");
+    Entity('', { allowApiUpdate: true })(type);
+    let [repo, remult] = await createData(async insert => await insert(1, 'noam'), type);
+    remult.__enforceApiRules = true;
+    const item = await repo.findId(1);
+    expect(item.categoryName).toBe(undefined);
+    item.categoryName = "noam 123";
+    await item.save();
+    expect(item.categoryName).toBe(undefined);
+    expect((await repo.findFirst()).categoryName).toBe(undefined);
+    remult.__enforceApiRules = false;
+    expect((await repo.findFirst()).categoryName).toBe("noam");
+
+  });
+  it("check allow api update of field on remult with api rules", async () => {
+    let type = class extends newCategories {
+
+      categoryName: string;
+    };
+    Fields.string({ allowApiUpdate: false })(type.prototype, "categoryName");
+    Entity('', { allowApiUpdate: true })(type);
+    let [repo, remult] = await createData(async insert => await insert(1, 'noam'), type);
+    remult.__enforceApiRules = true;
+    const item = await repo.findFirst();
+    expect(item.categoryName).toBe("noam");
+    item.categoryName = "noam 123";
+    await item.save();
+    expect(item.categoryName).toBe("noam");
+    expect((await repo.findFirst()).categoryName).toBe("noam");
 
   });
   it("post with syntax error fails well", async () => {
