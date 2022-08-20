@@ -164,15 +164,40 @@ const AUTH_TOKEN_KEY = "authToken";
 
 6. Add `JwtModule` to the `imports` section of the `@NgModule` decorator of the `AppModule` class.
 
-*src/app/app.module.ts*
-```ts
-// Add the authorization token header to all API requests.
-JwtModule.forRoot({
-   config:{
-      tokenGetter: () => AuthService.fromStorage()
-   }
-})
-```
+    *src/app/app.module.ts*
+    ```ts{19-24}
+    import { NgModule } from '@angular/core';
+    import { BrowserModule } from '@angular/platform-browser';
+    import { AppComponent } from './app.component';
+    import { HttpClientModule, HttpClient } from '@angular/common/http';
+    import { FormsModule } from '@angular/forms';
+    import { Remult } from 'remult';
+    import '../shared/extensions/array-extensions'
+    import { JwtModule } from '@auth0/angular-jwt';
+    import { AuthService } from './auth.service';
+
+    @NgModule({
+      declarations: [
+        AppComponent
+      ],
+      imports: [
+        BrowserModule,
+        HttpClientModule,
+        FormsModule,
+        // Add the authorization token header to all API requests.
+        JwtModule.forRoot({
+          config: {
+            tokenGetter: () => AuthService.fromStorage()
+          }
+        })
+      ],
+      providers: [
+        { provide: Remult, useClass: Remult, deps: [HttpClient] }
+      ],
+      bootstrap: [AppComponent]
+    })
+    export class AppModule { }
+    ```
 ::: warning Imports
 This code requires imports for `AuthService` from `./auth.service` and `JwtModule` from `@auth0/angular-jwt`.
 :::   
