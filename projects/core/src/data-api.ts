@@ -20,7 +20,7 @@ export class DataApi<T = any> {
       return this.getArray(res, req);
   }
   httpPost(res: DataApiResponse, req: DataApiRequest, body: any) {
-    const action = req.get("__action");
+    const action = req?.get("__action");
     if (action?.startsWith("subscribe"))
       return this.getArray(res, req, body);
     switch (action) {
@@ -106,7 +106,7 @@ export class DataApi<T = any> {
         findOptions.page = +request.get("_page");
 
       }
-      const action: string = request.get("__action");
+      const action: string = request?.get("__action");
 
       const r = await this.repository.find(findOptions)
         .then(async r => {
