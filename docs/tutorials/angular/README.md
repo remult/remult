@@ -55,7 +55,7 @@ Create the new Angular project.
 ng new remult-angular-todo
 ```
 ::: warning Note
-The ng new command prompts you for information about features to include in the initial app project. Accept the defaults by pressing the Enter or Return key.
+The `ng new` command prompts you for information about features to include in the initial app project. Accept the defaults by pressing the Enter or Return key.
 :::
 
 In this tutorial, we'll be using the root folder created by `Angular` as the root folder for our server project as well.
@@ -73,7 +73,7 @@ The starter API server TypeScript project contains a single module that initiali
 
 1. Open your IDE.
 
-2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and es Module Interop in the app.
+2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and ES Module Interop in the app.
    
 *tsconfig.json*
 ```json
@@ -204,7 +204,7 @@ npm run dev
 
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
-The default Angular app main screen should be displayed.
+The default Angular app main screen should be displayed on the regular port - 4200. Open it in the browser at [http://localhost:4200/](http://localhost:4200/).
 
 
 ### Setup completed
