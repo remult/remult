@@ -135,8 +135,8 @@ export class ValueConverters {
   static readonly Number: ValueConverter<number> =
     {
       fromDb: value => {
-        if (value===null)
-        return null;
+        if (value === null)
+          return null;
         if (value !== undefined)
           return +value;
         return undefined;
@@ -190,7 +190,7 @@ export class ValueConverters {
     fromJson: x => x,
     toJson: x => x,
     fromDb: x => x,
-    toDb: x => x,
+    toDb: x => ValueConverters.JsonString.toDb,
     fromInput: x => ValueConverters.JsonString.fromJson(x),
     toInput: x => ValueConverters.JsonString.toJson(x),
     fieldTypeInDb: 'json'
