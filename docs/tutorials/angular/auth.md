@@ -89,7 +89,7 @@ npm i --save-dev  @types/jsonwebtoken
 ```
 
 ::: danger This step is not optional
-React CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
+Angular CLI will fail to serve/build the app unless `jsonwebtoken` is excluded.
 :::
 
 3. Terminate the running `dev` npm script and run it again for the change to `package.json` to take effect.
