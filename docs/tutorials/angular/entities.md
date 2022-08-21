@@ -7,7 +7,7 @@ The `Task` entity class will be used:
 * As a model class for server-side code
 * By `remult` to generate API endpoints, API queries, and database commands
 
-The `Task` entity class we're creating will have an auto-generated UUID `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+The `Task` entity class we're creating will have an auto-generated UUID `id` field, a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
 ## Define the Model
 
@@ -33,6 +33,13 @@ export class Task {
     completed = false;
 }
 ```
+The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
+
+To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
+
+The `@Fields.uuid` decorator tells Remult to automatically generate an id using `uuid`. We mark this property as optional so we can create new `Task` objects without assigning an `id` at first, and have Remult generate one before the object's data is stored to the backend database.
+
+The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
 3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
 
@@ -45,14 +52,6 @@ export const api = remultExpress({
     entities: [Task]
 });
 ```
-
-The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
-
-To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
-
-The `@Fields.uuid` decorator tells Remult to automatically generate an id using `uuid`. We mark this property as optional so we can create new `Task` objects without assigning an `id` at first, and have Remult generate one before the object's data is stored to the backend database.
-
-The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
 ## Seed Test Data
 
@@ -113,23 +112,27 @@ Let's start developing the web app by displaying the list of existing tasks in a
    })
    export class AppComponent {
      title = 'remult-angular-todo';
-     constructor(public remult: Remult) { }
      taskRepo = this.remult.repo(Task);
      tasks: Task[] = [];
-     async fetchTasks() {
-       this.tasks = await this.taskRepo.find();
-     }
+     
+     constructor(public remult: Remult) { }
+
      ngOnInit() {
        this.fetchTasks();
      }
+     
+     async fetchTasks() {
+       this.tasks = await this.taskRepo.find();
+     }
+
    }
    ```
    
    Here's a quick overview of the different parts of the code snippet:
    * The `remult` object will be injected to the `constructor` by Angular. We've declared it as a public field so we can use it in the HTML template later on.
-   * `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to    fetch and create Task entity objects.
+   * `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
    * `tasks` is a Task array.
-   * The `fetchTasks` method uses the Remult repository's [find](../../docs/ref_repository.   md#find) method to fetch tasks from the server.
+   * The `fetchTasks` method uses the Remult repository's [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
    * The `ngOnInit` method calls the `fetchTasks` method when the `component` is loaded.
 
 2. Replace the contents of `app.component.html` with the following HTML:
