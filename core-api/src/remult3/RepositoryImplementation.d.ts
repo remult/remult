@@ -9,7 +9,7 @@ import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { RefSubscriber } from ".";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
-    private remult;
+    remult: Remult;
     private dataProvider;
     createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>>;
     private _info;

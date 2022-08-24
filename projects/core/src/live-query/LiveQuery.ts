@@ -1,8 +1,8 @@
 
-import { EntityOrderBy, FindOptions, getEntityRef, Remult, Repository, Sort } from '../index';
+import { EntityOrderBy, FindOptions, getEntityRef, Remult, Repository, Sort } from '../../index';
 import { v4 as uuid } from 'uuid';
-import {  RestEntityDataProvider } from './data-providers/rest-data-provider';
-import { Action } from './server-action';
+import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
+import { Action } from '../server-action';
 
 
 class LiveQueryOnFrontEnd<entityType> {
@@ -70,11 +70,11 @@ export interface LiveQueryProvider {
 
 export type MessageHandler = (message: { data: string, event: string }) => void;
 
-export class LiveQuery {
+export class LiveQueryClient {
 
     clientId = uuid();
     private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
-    constructor(public lqp: LiveQueryProvider) {}
+    constructor(public lqp: LiveQueryProvider) { }
 
     subscribe<entityType>(
         repo: Repository<entityType>,

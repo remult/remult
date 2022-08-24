@@ -1,4 +1,3 @@
-import { v4 as uuid } from 'uuid';
 
 import { DataProvider, Remult, IdEntity } from '../';
 import * as express from 'express';
@@ -6,14 +5,15 @@ import { registerActionsOnServer } from './register-actions-on-server';
 import { registerEntitiesOnServer } from './register-entities-on-server';
 import { JsonEntityFileStorage } from './JsonEntityFileStorage';
 import { JsonDataProvider } from '../src/data-providers/json-data-provider';
-import { Field, Entity, Repository, getEntityKey, Fields, EntityRef, FindOptions } from '../src/remult3';
+import { Field, Entity, Repository, getEntityKey, Fields } from '../src/remult3';
 
 import { Action, actionInfo, jobWasQueuedResult, queuedJobInfoResponse } from '../src/server-action';
 import { ErrorInfo } from '../src/data-interfaces';
-import { DataApi, DataApiRequest, DataApiResponse, LiveQueryProvider, serializeError } from '../src/data-api';
+import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
-import { liveQueryMessage, SubscribeToQueryArgs } from '../src/LiveQuery';
+import { SubscribeToQueryArgs } from '../src/live-query/LiveQuery';
+import { LiveQueryManager } from '../src/live-query/LiveQueryManager';
 
 
 export function remultExpress(
@@ -885,84 +885,12 @@ export class ServerEventsController {
 }
 let i = 0;
 
-interface clientInfo {
+export interface clientInfo {
   clientId: string,
   user: UserInfo,
   queries: (SubscribeToQueryArgs & { id: string })[]
 }
 
-class LiveQueryManager implements LiveQueryProvider {
-  subscribe(repo: Repository<any>, clientId: string, options: FindOptions<any>, remult: Remult): string {
-    let client = this.clients.find(c => c.clientId === clientId);
-    if (!client) {
-      this.clients.push(client = { clientId: clientId, queries: [], user: remult.user })
-    }
-    const id = uuid();
-    client.queries.push({
-      id,
-      entityKey: repo.metadata.key,
-      orderBy: {}
-    });
-    return id;
-  }
-
-
-
-
-
-
-  clients: clientInfo[] = [];
-
-  server = new ServerEventsController();
-  sendMessage(key: string, m: liveQueryMessage) {
-    for (const c of this.clients) {
-      for (const q of c.queries) {
-        if (q.entityKey === key) {
-          for (const sc of this.server.connections) {
-            if (sc.clientId === c.clientId) {
-              sc.write(undefined, m, q.id);
-            }
-          }
-        }
-      }
-    }
-  }
-  hasListeners(ref: EntityRef<any>) {
-    for (const c of this.clients) {
-      for (const q of c.queries) {
-        if (q.entityKey === ref.metadata.key)
-          return true;
-      }
-    }
-    return false;
-  }
-  saved(ref: EntityRef<any>) {
-    if (!this.hasListeners(ref))
-      return;
-    if (ref.isNew())
-      this.sendMessage(ref.metadata.key, {
-        type: "add",
-        data: { item: ref.toApiJson() }
-      })
-    else
-      this.sendMessage(ref.metadata.key, {
-        type: "replace",
-        data: {
-          oldId: ref.getId(),// to be fixed to support change of id
-          item: ref.toApiJson()
-        }
-      })
-
-  }
-  deleted(ref: EntityRef<any>) {
-    if (!this.hasListeners(ref))
-      return;
-    this.sendMessage(ref.metadata.key, {
-      type: "remove",
-      data: { id: ref.getId() }
-    })
-  }
-}
 export const queryManager = new LiveQueryManager();
 
 /*

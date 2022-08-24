@@ -19,6 +19,10 @@ export declare class RestEntityDataProvider implements EntityDataProvider {
     translateToJson(row: any): {};
     count(where: Filter): Promise<number>;
     find(options: EntityDataProviderFindOptions): Promise<Array<any>>;
+    buildFindRequest(options: EntityDataProviderFindOptions): {
+        filterObject: any;
+        url: UrlBuilder;
+    };
     update(id: any, data: any): Promise<any>;
     delete(id: any): Promise<void>;
     insert(data: any): Promise<any>;

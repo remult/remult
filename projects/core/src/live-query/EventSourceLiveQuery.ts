@@ -1,9 +1,9 @@
-import { Remult } from './context';
-import { LiveQuery } from './LiveQuery';
+import { Remult } from '../context';
+import { LiveQueryClient } from './LiveQuery';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 
-export class EventSourceLiveQuery extends LiveQuery {
+export class EventSourceLiveQuery extends LiveQueryClient {
     constructor() {
         super(new EventSourceLiveQueryProvider());
     }
