@@ -3,10 +3,9 @@ import * as express from 'express';
 import { Repository } from '../src/remult3';
 import { queuedJobInfoResponse } from '../src/server-action';
 import { DataApi, DataApiRequest, DataApiResponse } from '../src/data-api';
-import { AllowedForInstance, UserInfo } from '../src/context';
+import { AllowedForInstance } from '../src/context';
 import { ClassType } from '../classType';
-import { SubscribeToQueryArgs } from '../src/live-query/LiveQuery';
-import { LiveQueryManager } from '../src/live-query/LiveQueryManager';
+import { LiveQueryManager, ServerEventDispatcher, ServerEventMessage } from '../src/live-query/LiveQueryManager';
 export declare function remultExpress(options?: {
     /** Sets a database connection for Remult.
      *
@@ -47,6 +46,7 @@ declare class ExpressBridge {
         tag: string;
     }[];
     constructor(app: express.Router, queue: inProcessQueueHandler, initRequest: (remult: Remult, origReq: express.Request) => Promise<void>, dataProvider: DataProvider | Promise<DataProvider>);
+    server: ServerEventsController;
     liveQueryManager: LiveQueryManager;
     logApiEndPoints: boolean;
     private firstArea;
@@ -123,10 +123,11 @@ declare class clientConnection {
     constructor(response: import('express').Response, clientId: string);
     sendLiveMessage(): void;
 }
-export declare class ServerEventsController {
+export declare class ServerEventsController implements ServerEventDispatcher {
     private messageHistoryLength;
     connections: clientConnection[];
     constructor(messageHistoryLength?: number);
+    send({ message, clientId, queryId }: ServerEventMessage): void;
     subscribe(req: import('express').Request, res: import('express').Response): clientConnection;
     messages: {
         id: number;
@@ -135,12 +136,4 @@ export declare class ServerEventsController {
     }[];
     SendMessage(message: any, eventType?: string): void;
 }
-export interface clientInfo {
-    clientId: string;
-    user: UserInfo;
-    queries: (SubscribeToQueryArgs & {
-        id: string;
-    })[];
-}
-export declare const queryManager: LiveQueryManager;
 export {};

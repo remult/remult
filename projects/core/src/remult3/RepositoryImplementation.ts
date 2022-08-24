@@ -726,6 +726,10 @@ abstract class rowHelperBase<T>
     originalValues: any = {};
     saveOriginalData() {
         this.originalValues = this.copyDataToObject();
+        this.saveMoreOriginalData();
+    }
+    saveMoreOriginalData() {
+
     }
     async validate() {
         this.__clearErrorsAndReportChanged();
@@ -824,6 +828,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             return this.info.idMetadata.field.getId(this.instance);
         else
             return this.instance[this.info.idMetadata.field.key];
+    }
+    saveMoreOriginalData() {
+        this.originalId = this.getId();
     }
 
 
@@ -1013,8 +1020,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             this.id = data[this.repository.metadata.idMetadata.field.key];
     }
     id;
+    originalId;
     public getOriginalId() {
-        return this.id;
+        return this.originalId;
     }
 
     private async calcServerExpression() {

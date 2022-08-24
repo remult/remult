@@ -5,7 +5,7 @@ import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces
 import { AndFilter, Filter } from './filter/filter-interfaces';
 
 
-import { EntityFilter, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
+import { EntityFilter, FindOptions, getEntityRef, idType, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
 
 
 
@@ -132,7 +132,7 @@ export class LookupColumn<T> {
     }
   }
 
-  constructor(private repository: RepositoryImplementation<T>, public id: string
+  constructor(private repository: RepositoryImplementation<T>, public id: idType<T>
   ) { }
 
   get item(): T {

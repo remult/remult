@@ -88,6 +88,7 @@ declare abstract class rowHelperBase<T> {
     copyDataToObject(): any;
     originalValues: any;
     saveOriginalData(): void;
+    saveMoreOriginalData(): void;
     validate(): Promise<boolean>;
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
@@ -105,6 +106,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     get apiInsertAllowed(): boolean;
     metadata: EntityMetadata<T>;
     getId(): any;
+    saveMoreOriginalData(): void;
     private _wasDeleted;
     wasDeleted(): boolean;
     undoChanges(): void;
@@ -117,6 +119,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     delete(): Promise<void>;
     loadDataFrom(data: any, loadItems?: FieldMetadata[]): Promise<void>;
     id: any;
+    originalId: any;
     getOriginalId(): any;
     private calcServerExpression;
     isNew(): boolean;

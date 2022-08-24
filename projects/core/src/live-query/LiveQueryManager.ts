@@ -1,42 +1,39 @@
 import { v4 as uuid } from 'uuid';
-import { Remult } from '../..';
+import { Remult, UserInfo } from '../..';
 import { Repository, EntityRef, FindOptions } from '../remult3';
 import { LiveQueryProvider } from '../data-api';
-import { liveQueryMessage } from './LiveQuery';
-import { clientInfo, ServerEventsController } from '../../server/expressBridge';
+import { liveQueryMessage, SubscribeToQueryArgs } from './LiveQuery';
+
 
 export class LiveQueryManager implements LiveQueryProvider {
-  subscribe(repo: Repository<any>, clientId: string, options: FindOptions<any>, remult: Remult): string {
+
+
+
+  constructor(private dispatcher: ServerEventDispatcher) {
+
+  }
+
+  subscribe(repo: Repository<any>, clientId: string, findOptions: FindOptions<any>): string {
     let client = this.clients.find(c => c.clientId === clientId);
     if (!client) {
-      this.clients.push(client = { clientId: clientId, queries: [], user: remult.user });
+      this.clients.push(client = { clientId: clientId, queries: [] });
     }
     const id = uuid();
     client.queries.push({
       id,
-      entityKey: repo.metadata.key,
-      orderBy: {}
+      findOptions: findOptions,
+      repo
     });
     return id;
   }
 
-
-
-
-
-
   clients: clientInfo[] = [];
 
-  server = new ServerEventsController();
-  sendMessage(key: string, m: liveQueryMessage) {
+  sendMessage(key: string, message: liveQueryMessage) {
     for (const c of this.clients) {
       for (const q of c.queries) {
-        if (q.entityKey === key) {
-          for (const sc of this.server.connections) {
-            if (sc.clientId === c.clientId) {
-              sc.write(undefined, m, q.id);
-            }
-          }
+        if (q.repo.metadata.key === key) {
+          this.dispatcher.send({ clientId: c.clientId, queryId: q.id, message });
         }
       }
     }
@@ -44,30 +41,47 @@ export class LiveQueryManager implements LiveQueryProvider {
   hasListeners(ref: EntityRef<any>) {
     for (const c of this.clients) {
       for (const q of c.queries) {
-        if (q.entityKey === ref.metadata.key)
+        if (q.repo.metadata.key === ref.metadata.key)
           return true;
       }
     }
     return false;
   }
+
+  runPromise(p: Promise<any>) {
+
+  }
+
   saved(ref: EntityRef<any>) {
-    if (!this.hasListeners(ref))
-      return;
-    if (ref.isNew())
-      this.sendMessage(ref.metadata.key, {
-        type: "add",
-        data: { item: ref.toApiJson() }
-      });
+    const origId = ref.getOriginalId();
+    for (const c of this.clients) {
+      for (const q of c.queries) {
+        if (q.repo.metadata.key === ref.metadata.key) {
+          this.runPromise(q.repo.findFirst(ref.metadata.idMetadata.getIdFilter(ref.getId())).then(
+            currentRow => {
+              if (currentRow) {
+                const sendMessage = (message: liveQueryMessage) => {
+                  this.dispatcher.send({ clientId: c.clientId, queryId: q.id, message });
+                }
+                if (ref.isNew())
+                  sendMessage({
+                    type: "add",
+                    data: { item: currentRow.toApiJson() }
+                  });
 
-    else
-      this.sendMessage(ref.metadata.key, {
-        type: "replace",
-        data: {
-          oldId: ref.getId(),
-          item: ref.toApiJson()
+                else
+                  sendMessage({
+                    type: "replace",
+                    data: {
+                      oldId: origId,
+                      item: q.repo.getEntityRef(currentRow).toApiJson()
+                    }
+                  });
+              }
+            }));
         }
-      });
-
+      }
+    }
   }
   deleted(ref: EntityRef<any>) {
     if (!this.hasListeners(ref))
@@ -77,4 +91,21 @@ export class LiveQueryManager implements LiveQueryProvider {
       data: { id: ref.getId() }
     });
   }
+}
+
+export interface clientInfo {
+  clientId: string,
+  queries: ({
+    id: string,
+    repo: Repository<any>,
+    findOptions: FindOptions<any>
+  })[]
+}
+export interface ServerEventDispatcher {
+  send(message: ServerEventMessage): void;
+}
+export interface ServerEventMessage {
+  clientId: string,
+  queryId: string,
+  message: liveQueryMessage
 }

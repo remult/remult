@@ -12,8 +12,9 @@ import { ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
-import { SubscribeToQueryArgs } from '../src/live-query/LiveQuery';
-import { LiveQueryManager } from '../src/live-query/LiveQueryManager';
+
+import { LiveQueryManager, ServerEventDispatcher, ServerEventMessage } from '../src/live-query/LiveQueryManager';
+import { liveQueryMessage } from '../src/live-query/LiveQuery';
 
 
 export function remultExpress(
@@ -84,7 +85,7 @@ export function remultExpress(
   if (options.rootPath === undefined)
     options.rootPath = Remult.apiBaseUrl;
   app.get('/api/stream', (req, res) => {
-    bridge.liveQueryManager.server.subscribe(req, res)
+    bridge.server.subscribe(req, res)
   });
   let apiArea = bridge.addArea(options.rootPath);
 
@@ -442,7 +443,8 @@ class ExpressBridge {
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
   }
-  liveQueryManager = new LiveQueryManager()
+  server = new ServerEventsController();
+  liveQueryManager = new LiveQueryManager(this.server)
   logApiEndPoints = true;
   private firstArea: SiteArea;
 
@@ -845,9 +847,17 @@ class clientConnection {
   }
 }
 
-export class ServerEventsController {
+export class ServerEventsController implements ServerEventDispatcher {
   connections: clientConnection[] = [];
   constructor(private messageHistoryLength = 1000) { }
+  send({ message, clientId, queryId }: ServerEventMessage): void {
+    for (const sc of this.connections) {
+      if (sc.clientId === clientId) {
+        sc.write(undefined, message, queryId);
+      }
+    }
+  }
+
 
   subscribe(req: import('express').Request, res: import('express').Response) {
     res.writeHead(200, {
@@ -885,13 +895,7 @@ export class ServerEventsController {
 }
 let i = 0;
 
-export interface clientInfo {
-  clientId: string,
-  user: UserInfo,
-  queries: (SubscribeToQueryArgs & { id: string })[]
-}
 
-export const queryManager = new LiveQueryManager();
 
 /*
 [] use entity normal http route for this - with __action.

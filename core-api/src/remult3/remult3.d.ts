@@ -15,7 +15,8 @@ export interface EntityRef<entityType> extends Subscribable {
     wasDeleted(): boolean;
     fields: FieldsRef<entityType>;
     error: string;
-    getId(): any;
+    getId(): idType<entityType>;
+    getOriginalId(): idType<entityType>;
     repository: Repository<entityType>;
     metadata: EntityMetadata<entityType>;
     toApiJson(): any;
@@ -108,6 +109,11 @@ export interface EntityMetadata<entityType = any> {
     getDbName(): Promise<string>;
 }
 export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>;
+export declare type idType<entityType> = entityType extends {
+    id?: number;
+} ? number : entityType extends {
+    id?: string;
+} ? string : (string | number);
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
     /** returns a result array based on the provided options */
@@ -120,11 +126,7 @@ export interface Repository<entityType> {
      *      */
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
-    findId(id: entityType extends {
-        id?: number;
-    } ? number : entityType extends {
-        id?: string;
-    } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
+    findId(id: idType<entityType>, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
      *
      * It also has it's own paging mechanism that can be used n paging scenarios.
