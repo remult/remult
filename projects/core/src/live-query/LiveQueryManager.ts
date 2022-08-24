@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Remult, UserInfo } from '../..';
-import { Repository, EntityRef, FindOptions } from '../remult3';
+import { Repository, EntityRef, FindOptions, getEntityRef } from '../remult3';
 import { LiveQueryProvider } from '../data-api';
 import { liveQueryMessage, SubscribeToQueryArgs } from './LiveQuery';
 
@@ -53,7 +53,8 @@ export class LiveQueryManager implements LiveQueryProvider {
   }
 
   saved(ref: EntityRef<any>) {
-    const origId = ref.getOriginalId();
+    const isNew = ref.isNew();
+    const origId = isNew ? ref.getId() : ref.getOriginalId();
     for (const c of this.clients) {
       for (const q of c.queries) {
         if (q.repo.metadata.key === ref.metadata.key) {
@@ -63,10 +64,10 @@ export class LiveQueryManager implements LiveQueryProvider {
                 const sendMessage = (message: liveQueryMessage) => {
                   this.dispatcher.send({ clientId: c.clientId, queryId: q.id, message });
                 }
-                if (ref.isNew())
+                if (isNew)
                   sendMessage({
                     type: "add",
-                    data: { item: currentRow.toApiJson() }
+                    data: { item: q.repo.getEntityRef(currentRow).toApiJson() }
                   });
 
                 else
