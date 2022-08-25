@@ -73,6 +73,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
       return dp;
     });
   }
+  
   {
     let allControllers: ClassType<any>[] = [];
     if (!options.entities)
@@ -86,7 +87,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
   }
 
   if (options.rootPath === undefined)
-    options.rootPath = Remult.apiBaseUrl;
+    options.rootPath = '/api';
   actionInfo.runningOnServer = true;
   let bridge = new RemultServerImplementation(new inProcessQueueHandler(options.queueStorage), options, dataProvider);
   return bridge;

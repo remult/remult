@@ -169,17 +169,18 @@ describe("custom filter", () => {
     });
     it("test sent in api", async () => {
         let ok = new Done();
-        let z = new RestDataProvider("", {
-            delete: undefined,
+        let z = new RestDataProvider(() => ({
+            httpClient: {
+            delete: ()=>undefined,
             get: async (url) => {
                 ok.ok();
                 expect(url).toBe('/entityForCustomFilter?__action=count&%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D');
                 return { count: 0 }
 
             },
-            post: undefined,
-            put: undefined
-        });
+            post: ()=>undefined,
+            put: ()=>undefined,
+        },url:''}));
         let c = new Remult();
         c.dataProvider = (z);
         await c.repo(entityForCustomFilter).count(entityForCustomFilter.filter({ oneAndThree: true }));

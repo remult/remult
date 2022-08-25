@@ -30,6 +30,7 @@ import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
 import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
+import { async } from "@angular/core/testing";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -1789,19 +1790,21 @@ describe("test rest data provider translates data correctly", () => {
     Fields.date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
-    let z = new RestDataProvider("", {
-      delete: undefined,
-      get: async () => {
-        return [
-          {
-            a: 1,
-            b: "2021-05-16T08:32:19.905Z"
-          }
-        ]
-      },
-      post: undefined,
-      put: undefined
-    });
+    let z = new RestDataProvider(() => ({
+      httpClient: {
+        delete: ()=>undefined,
+        get: async () => {
+          return [
+            {
+              a: 1,
+              b: "2021-05-16T08:32:19.905Z"
+            }
+          ]
+        },
+        post: ()=>undefined,
+        put: ()=>undefined
+      }
+    }));
     let x = z.getEntityDataProvider(c.metadata);
     let r = await x.find();
     expect(r.length).toBe(1);
@@ -1809,6 +1812,36 @@ describe("test rest data provider translates data correctly", () => {
     expect(r[0].b.valueOf()).toBe(new Date("2021-05-16T08:32:19.905Z").valueOf());
     expect(r[0].b instanceof Date).toBe(true);
   })
+  it("test api client", async () => {
+    let type = class extends EntityBase {
+      a: number;
+      b: Date;
+    };
+    Entity('x')(type);
+    Fields.integer()(type.prototype, 'a');
+    Fields.date()(type.prototype, 'b');
+    let results: string[] = [];
+    const remult = new Remult();
+    let c = remult.repo(type);
+    remult.apiClient.httpClient = async (url, args) => {
+      results.push("a:" + url);
+      return ({ status: 200, json: async () => [] }) as Response;
+    };
+    await c.find();
+    expect(results).toEqual(["a:/api/x"]);
+    results = [];
+    remult.apiClient.url = '/yy';
+    await c.find();
+    expect(results).toEqual(["a:/yy/x"]);
+    results = [];
+    remult.apiClient.httpClient = async (url, args) => {
+      results.push("b:" + url);
+      return ({ status: 200, json: async () => [] }) as Response;
+    };
+    await c.find();
+    expect(results).toEqual(["b:/yy/x"]);
+
+  });
   it("put works", async () => {
     let type = class extends EntityBase {
       a: number;
@@ -1833,17 +1866,19 @@ describe("test rest data provider translates data correctly", () => {
 
     let c = new Remult().repo(type);
     let done = new Done();
-    let z = new RestDataProvider("", {
-      delete: undefined,
-      get: undefined,
-      post: async (x, data) => {
-        done.ok();
-        expect(data.a).toBe(1);
-        expect(data.b).toBe("2021-05-16T08:32:19.905Z");
-        return data;
-      },
-      put: undefined
-    });
+    let z = new RestDataProvider(() => ({
+      httpClient: {
+        delete: ()=>undefined,
+        get: ()=>undefined,
+        post: async (x, data) => {
+          done.ok();
+          expect(data.a).toBe(1);
+          expect(data.b).toBe("2021-05-16T08:32:19.905Z");
+          return data;
+        },
+        put: ()=>undefined
+      }
+    }));
     let x = z.getEntityDataProvider(c.metadata);
     let r = await x.insert({
       a: 1,
@@ -2007,7 +2042,7 @@ describe("test fetch", () => {
     }));
     expect(await r.repo(Categories).count()).toBe(7);
   });
-  it("test remult with non default fetch function", async () => {
+  it("test remult with non default fetch function1", async () => {
     var r = new Remult(async (url, info) => {
       return new mockResponse({ status: 200, json: async () => ({ count: 7 }) })
     });
@@ -2015,7 +2050,11 @@ describe("test fetch", () => {
   });
   it("axios uses the correct api", () => {
     const r = new Remult(axios);
-    expect((r.dataProvider as any).http instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
+    expect(r.apiClient.httpClient).toBe(axios);
+    expect((r.dataProvider as any).apiProvider().httpClient).toBe(axios);//
+
+    expect((r.dataProvider.getEntityDataProvider(r.repo(Categories).metadata) as any).http()
+      instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
   });
   it("get", async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
@@ -2089,7 +2128,7 @@ describe("test fetch", () => {
     expect(z).toBeUndefined();
   });
   it("rest doesn't suppor transactions", async () => {
-    const r = new RestDataProvider('', undefined);
+    const r = new RestDataProvider(() => undefined);
     let ok = false;
     try {
       await r.transaction(async () => { });

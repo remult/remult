@@ -1,5 +1,5 @@
 import { ClassType } from "../classType";
-import { Allowed, AllowedForInstance, EventDispatcher, EventSource, Remult, RemultContext, UserInfo } from "./context";
+import { Allowed, AllowedForInstance, ApiClient, EventDispatcher, EventSource, Remult, RemultContext, UserInfo } from "./context";
 import { DataProvider } from "./data-interfaces";
 import { Repository, RepositoryImplementation } from "./remult3";
 
@@ -41,6 +41,12 @@ export class RemultProxy implements Remult {
     }
     set user(info: UserInfo | undefined) {
         this.remultFactory().user = info;
+    }
+    get apiClient(): ApiClient {
+        return this.remultFactory().apiClient;
+    }
+    set apiClient(client: ApiClient) {
+        this.remultFactory().apiClient = client;
     }
 }
 

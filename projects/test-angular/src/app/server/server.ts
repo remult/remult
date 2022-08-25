@@ -27,7 +27,7 @@ import { AppComponent } from '../app.component';
 import { Task } from './Task';
 import { AsyncLocalStorage } from 'async_hooks';
 import axios from 'axios';
-import { HttpProvider } from '../../../../core/src/context';
+import { ExternalHttpProvider } from '../../../../core/src/context';
 import { BackendMethodCaller } from '../../../../core/src/server-action';
 import { DataProvider } from '../../../../core/src/data-interfaces';
 import { Repository } from '../../../../core/src/remult3';
@@ -142,7 +142,7 @@ interface UserInfo {
 }
 
 type ApiClient = {
-    httpClient?: HttpProvider | typeof fetch;
+    httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
 };
 
@@ -155,7 +155,7 @@ class Remult {
     }
     call(backendMethod: any) { }
 
-    constructor(http: HttpProvider | typeof fetch | ApiClient)
+    constructor(http: ExternalHttpProvider | typeof fetch | ApiClient)
     constructor(p: DataProvider)
     constructor()
     constructor(x?: any) {

@@ -1,7 +1,8 @@
 import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
+import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
-export interface HttpProvider {
+export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | {
         toPromise(): Promise<any>;
     };
@@ -17,7 +18,7 @@ export interface HttpProvider {
 }
 export declare class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
     private http;
-    constructor(http: HttpProvider);
+    constructor(http: ExternalHttpProvider);
     post(url: string, data: any): Promise<any>;
     delete(url: string): Promise<void>;
     put(url: string, data: any): Promise<any>;
@@ -54,20 +55,15 @@ export declare class Remult {
      * [Allowed](https://remult.dev/docs/allowed.html)
      */
     isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean;
-    static defaultHttpProvider: RestDataProviderHttpProvider;
-    static setDefaultHttpProvider(provider: HttpProvider | typeof fetch): void;
     /** Creates a new instance of the `remult` object.
      *
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
      *
      * If no provider is specified, `fetch` will be used as an http provider
      */
-    constructor(provider?: HttpProvider | DataProvider | typeof fetch);
-    /** The api Base Url to be used in all remult calls. by default it's set to `/api`.
-     *
-     * Set this property in case you want to determine a non relative api url
-     */
-    static apiBaseUrl: string;
+    constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
+    constructor(p: DataProvider);
+    constructor();
     /** The current data provider */
     dataProvider: DataProvider;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
@@ -76,11 +72,12 @@ export declare class Remult {
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
     readonly context: RemultContext;
+    apiClient: ApiClient;
 }
 export interface RemultContext {
 }
 export interface ApiClient {
-    httpClient?: HttpProvider | typeof fetch;
+    httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
 }
 export declare const allEntities: ClassType<any>[];
@@ -94,7 +91,7 @@ export declare class ClassHelper {
 export declare class MethodHelper {
     classes: Map<any, ControllerOptions>;
 }
-export declare function buildRestDataProvider(provider: HttpProvider | typeof fetch): RestDataProviderHttpProvider;
+export declare function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch): RestDataProviderHttpProvider | RestDataProviderHttpProviderUsingFetch;
 export declare function setControllerSettings(target: any, options: ControllerOptions): void;
 export interface UserInfo {
     id: string;

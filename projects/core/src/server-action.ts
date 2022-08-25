@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings, HttpProvider, buildRestDataProvider } from './context';
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
 
 
 
@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -33,9 +33,9 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     static apiUrlForJobStatus = 'jobStatusInQueue';
     async run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam> {
         if (baseUrl === undefined)
-            baseUrl = Remult.apiBaseUrl;
+            baseUrl = RepositoryImplementation.defaultRemult.apiClient.url;
         if (!http)
-            http = Remult.defaultHttpProvider;
+            http = buildRestDataProvider(RepositoryImplementation.defaultRemult.apiClient.httpClient);
 
         let r = await http.post(baseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
@@ -503,7 +503,7 @@ export const classBackendMethodsArray = Symbol('classBackendMethodsArray');
 
 export class BackendMethodCaller {
     private provider: RestDataProviderHttpProvider;
-    constructor(private url?: string, provider?: HttpProvider | typeof fetch) {
+    constructor(private url?: string, provider?: ExternalHttpProvider | typeof fetch) {
         if (provider) {
             this.provider = buildRestDataProvider(provider);
         }

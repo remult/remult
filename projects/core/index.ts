@@ -91,11 +91,12 @@ export {
     Allow,
     Remult,
     RemultContext,
+    ApiClient,
     isBackend,
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-    HttpProvider,
+    ExternalHttpProvider ,
     Unobserve,
     UserInfo
 } from './src/context';

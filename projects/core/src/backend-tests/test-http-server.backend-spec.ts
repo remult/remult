@@ -3,13 +3,14 @@ import axios from 'axios';
 import { remultFresh } from '../../remult-fresh';
 import { HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+import { remult } from '../remult-proxy';
 import { Entity, Fields } from '../remult3';
 import { Action, BackendMethod } from '../server-action';
 import { Categories } from '../tests/remult-3-entities';
 
 
-Remult.apiBaseUrl = 'http://localhost:3003/api';
-let path = Remult.apiBaseUrl + '/tasks';
+remult.apiClient.url = 'http://localhost:3003/api';
+let path = remult.apiClient.url + '/tasks';
 const environments = [
     // ["next", 3000],
     // ["nest", 3001],
@@ -25,8 +26,8 @@ function test(name: string, test: () => Promise<void>) {
     for (const [env, port] of environments) {
 
         const theTest = async () => {
-            Remult.apiBaseUrl = `http://localhost:${port}/api`;
-            path = Remult.apiBaseUrl + '/tasks';
+            remult.apiClient.url = `http://localhost:${port}/api`;
+            path = remult.apiClient.url + '/tasks';
             await test();
         };
         const testName = env + ` ${port}: ${name}`;
@@ -101,7 +102,7 @@ test("test http 201", async () => {
 
 test("test regular api call", async () => {
     await create3Tasks();
-    let result = await axios.get<{ result: number }>(Remult.apiBaseUrl + "/test");
+    let result = await axios.get<{ result: number }>(remult.apiClient.url + "/test");
     expect(result.data.result).toBe(3);
 });
 class FreshResponseTest {
@@ -113,9 +114,11 @@ class FreshResponseTest {
 
 it("test fresh", async () => {
 
-    const api = remultFresh({ entities: [Categories],
-         dataProvider: new InMemoryDataProvider(),
-        rootPath:'/api' }, FreshResponseTest);
+    const api = remultFresh({
+        entities: [Categories],
+        dataProvider: new InMemoryDataProvider(),
+        rootPath: '/api'
+    }, FreshResponseTest);
 
     const r: FreshResponseTest = await api.handle({
         url: '/api/Categories',
@@ -152,7 +155,7 @@ export class Task {
 
 async function create3Tasks() {
     const remult = new Remult(axios);
-    Remult.defaultHttpProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(axios);
+    remult.apiClient.httpClient = axios;
     const taskRepo = remult.repo(Task);
     for (const task of await taskRepo.find()) {
         await taskRepo.delete(task);

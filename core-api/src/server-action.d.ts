@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Remult, AllowedForInstance, HttpProvider } from './context';
+import { Remult, AllowedForInstance, ExternalHttpProvider } from './context';
 import { DataApiResponse } from './data-api';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 interface inArgs {
@@ -67,7 +67,7 @@ export declare const classBackendMethodsArray: unique symbol;
 export declare class BackendMethodCaller {
     private url?;
     private provider;
-    constructor(url?: string, provider?: HttpProvider | typeof fetch);
+    constructor(url?: string, provider?: ExternalHttpProvider | typeof fetch);
     call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T;
 }
 export interface ActionInterface {

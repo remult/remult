@@ -11,6 +11,7 @@ import { EntityMetadata } from "../remult3";
 import { Action, actionInfo, serverActionField } from "../server-action";
 import { testConfiguration } from '../shared-tests/entityWithValidations';
 import { TestDataApiResponse } from './TestDataApiResponse';
+import { remult } from '../remult-proxy';
 
 
 
@@ -60,9 +61,9 @@ export async function testAsIfOnBackend(what: () => Promise<any>) {
 export const ActionTestConfig = {
   db: new InMemoryDataProvider()
 }
-Remult.defaultHttpProvider = {
-  delete: undefined,
-  get: undefined,
+remult.apiClient.httpClient = {
+  delete: ()=>undefined,
+  get: ()=>undefined,
   post: async (urlreq, data) => {
     return await new Promise((res, r) => {
       let found = false;
@@ -73,7 +74,7 @@ Remult.defaultHttpProvider = {
           __register(
             (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => {
 
-              if (Remult.apiBaseUrl + '/' + url == urlreq) {
+              if ('/api/' + url == urlreq) {
                 found = true;
                 let t = new TestDataApiResponse();
                 actionInfo.runningOnServer = true;
@@ -103,7 +104,7 @@ Remult.defaultHttpProvider = {
     });
 
   },
-  put: undefined
+  put: ()=>undefined
 }
 
 
@@ -199,7 +200,7 @@ export class MockRestDataProvider implements DataProvider {
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
 
     let dataApi = new DataApi(this.remult.repo(metadata.entityType), this.remult);
-    return new RestEntityDataProvider("", new HttpProviderBridgeToRestDataProviderHttpProvider({
+    return new RestEntityDataProvider(() => "", () => new HttpProviderBridgeToRestDataProviderHttpProvider({
       delete: async url => {
 
 

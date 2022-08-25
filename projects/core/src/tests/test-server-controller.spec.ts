@@ -142,7 +142,7 @@ describe("test Server Controller basics", () => {
             ok = false;
         }
         catch (err: any) {
-            expect(err.status).toBe(403);
+            expect(err.httpStatusCode).toBe(403);
         }
         expect(ok).toBe(true)
     });
@@ -154,7 +154,7 @@ describe("test Server Controller basics", () => {
             ok = false;
         }
         catch (err: any) {
-            expect(err.status).toBe(403);
+            expect(err.httpStatusCode).toBe(403);
         }
         expect(ok).toBe(true)
     });
@@ -165,7 +165,7 @@ describe("test Server Controller basics", () => {
             ok = false;
         }
         catch (err: any) {
-            expect(err.status).toBe(403);
+            expect(err.httpStatusCode).toBe(403);
         }
         expect(ok).toBe(true)
     });
@@ -176,7 +176,7 @@ describe("test Server Controller basics", () => {
             ok = false;
         }
         catch (err: any) {
-            expect(err.status).toBe(403);
+            expect(err.httpStatusCode).toBe(403);
         }
         expect(ok).toBe(true)
     });
@@ -187,7 +187,7 @@ describe("test Server Controller basics", () => {
             ok = false;
         }
         catch (err: any) {
-            expect(err.status).toBe(403);
+            expect(err.httpStatusCode).toBe(403);
         }
         expect(ok).toBe(true)
     });

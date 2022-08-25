@@ -7,14 +7,14 @@ import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 
-export interface HttpProvider {
+export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
     delete(url: string): Promise<void> | { toPromise(): Promise<void> };
     put(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
     get(url: string): Promise<any> | { toPromise(): Promise<any> };
 }
 export class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
-    constructor(private http: HttpProvider) {
+    constructor(private http: ExternalHttpProvider) {
 
     }
     async post(url: string, data: any): Promise<any> {
@@ -89,6 +89,8 @@ export async function processHttpException(ex: any) {
             message: error,
         };
     }
+    if (z.modelState)
+        error.modelState = z.modelState;
     let httpStatusCode = z.status;
     if (httpStatusCode === undefined)
         httpStatusCode = z.response?.status;
@@ -211,15 +213,6 @@ export class Remult {
             return allowed(this, instance)
         } else return this.isAllowed(allowed as Allowed);
     }
-
-
-    static defaultHttpProvider: RestDataProviderHttpProvider = new RestDataProviderHttpProviderUsingFetch();
-    static setDefaultHttpProvider(provider: HttpProvider | typeof fetch) {
-        const r = buildRestDataProvider(provider);
-        if (!r)
-            throw provider + " doesn't match http provider or fetch interface";
-        Remult.defaultHttpProvider = r;
-    }
     /* @internal */
     repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
     /** Creates a new instance of the `remult` object.
@@ -228,26 +221,31 @@ export class Remult {
      * 
      * If no provider is specified, `fetch` will be used as an http provider
      */
-    constructor(provider?: HttpProvider | DataProvider | typeof fetch) {
+    constructor(http: ExternalHttpProvider | typeof fetch | ApiClient)
+    constructor(p: DataProvider)
+    constructor()
+    constructor(provider?: ExternalHttpProvider | DataProvider | typeof fetch | ApiClient) {
 
         if (provider && (provider as DataProvider).getEntityDataProvider) {
             this.dataProvider = provider as DataProvider;
             return;
         }
-        let httpDataProvider: RestDataProviderHttpProvider = buildRestDataProvider(provider as (HttpProvider | typeof fetch));
-
-        if (!httpDataProvider) {
-            httpDataProvider = new UseDefaultRestDataProviderHttpProvider();
+        if (isExternalHttpProvider(provider)) {
+            this.apiClient.httpClient = provider as ExternalHttpProvider;
+        } else if (typeof (provider) === "function")
+            this.apiClient.httpClient = provider;
+        else if (provider) {
+            const apiClient = provider as ApiClient;
+            if (apiClient.httpClient)
+                this.apiClient.httpClient = apiClient.httpClient;
+            if (apiClient.url)
+                this.apiClient.url = apiClient.url;
         }
-        this.dataProvider = new RestDataProvider(null, httpDataProvider);
+
     }
-    /** The api Base Url to be used in all remult calls. by default it's set to `/api`.
-     * 
-     * Set this property in case you want to determine a non relative api url
-     */
-    static apiBaseUrl = '/api';
+
     /** The current data provider */
-    dataProvider: DataProvider;
+    dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
@@ -257,29 +255,17 @@ export class Remult {
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
     readonly context: RemultContext = {};
+    apiClient: ApiClient = {
+        url: '/api'
+    };
 }
 export interface RemultContext {
 
 }
 export interface ApiClient {
-    httpClient?: HttpProvider | typeof fetch;
+    httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
 };
-class UseDefaultRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
-    post(url: string, data: any): Promise<any> {
-        return Remult.defaultHttpProvider.post(url, data);
-    }
-    delete(url: string): Promise<void> {
-        return Remult.defaultHttpProvider.delete(url);
-    }
-    put(url: string, data: any): Promise<any> {
-        return Remult.defaultHttpProvider.put(url, data);
-    }
-    get(url: string): Promise<any> {
-        return Remult.defaultHttpProvider.get(url);
-    }
-
-}
 
 
 export const allEntities: ClassType<any>[] = [];
@@ -295,14 +281,22 @@ export class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
 
+function isExternalHttpProvider(item: any) {
+    let http: ExternalHttpProvider = item as ExternalHttpProvider;
+    if (http && http.get && http.put && http.post && http.delete)
+        return true;
+    return false;
+}
 
-export function buildRestDataProvider(provider: HttpProvider | typeof fetch) {
+export function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch) {
+    if (!provider)
+        return new RestDataProviderHttpProviderUsingFetch();
     let httpDataProvider: RestDataProviderHttpProvider;
 
     if (!httpDataProvider) {
-        let http: HttpProvider = provider as HttpProvider;
-        if (http && http.get && http.put && http.post && http.delete) {
-            httpDataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
+
+        if (isExternalHttpProvider(provider)) {
+            httpDataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(provider as ExternalHttpProvider);
         }
     }
     if (!httpDataProvider) {

@@ -5,18 +5,26 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 import { UrlBuilder } from '../../urlBuilder';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { EntityMetadata } from '../remult3';
-import { Remult, retry } from '../context';
+import { ApiClient, buildRestDataProvider, Remult, retry } from '../context';
 
 
 export class RestDataProvider implements DataProvider {
-  constructor(private url: string | null, private http: RestDataProviderHttpProvider) {
+  constructor(
+    private apiProvider: () => ApiClient
+  ) {
 
   }
   public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
-    let url = this.url;
-    if (url === undefined || url === null)
-      url = Remult.apiBaseUrl;
-    return new RestEntityDataProvider(url + '/' + entity.key, this.http, entity);
+
+    return new RestEntityDataProvider(() => {
+      let url = this.apiProvider()?.url;
+      if (url === undefined || url === null)
+        url = '/api';
+      return url + '/' + entity.key
+    },
+      () => {
+        return buildRestDataProvider(this.apiProvider().httpClient);
+      }, entity);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
@@ -26,7 +34,7 @@ export class RestDataProvider implements DataProvider {
 }
 export class RestEntityDataProvider implements EntityDataProvider {
 
-  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityMetadata) {
+  constructor(private url: () => string, private http: () => RestDataProviderHttpProvider, private entity: EntityMetadata) {
 
   }
   translateFromJson(row: any) {
@@ -45,7 +53,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public async count(where: Filter): Promise<number> {
-    let url = new UrlBuilder(this.url);
+    let url = new UrlBuilder(this.url());
     url.add("__action", "count");
     let filterObject: any;
 
@@ -55,12 +63,12 @@ export class RestEntityDataProvider implements EntityDataProvider {
         filterObject = undefined;
     }
     if (filterObject)
-      return this.http.post(url.url, filterObject).then(r => +(r.count));
+      return this.http().post(url.url, filterObject).then(r => +(r.count));
     else
-      return this.http.get(url.url).then(r => +(r.count));
+      return this.http().get(url.url).then(r => +(r.count));
   }
   public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
-    let url = new UrlBuilder(this.url);
+    let url = new UrlBuilder(this.url());
     let filterObject: any;
     if (options) {
       if (options.where) {
@@ -92,10 +100,10 @@ export class RestEntityDataProvider implements EntityDataProvider {
     }
     if (filterObject) {
       url.add("__action", "get");
-      return this.http.post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
+      return this.http().post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
     }
     else
-      return this.http.get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
+      return this.http().get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
   }
 
   public update(id: any, data: any): Promise<any> {
@@ -106,16 +114,16 @@ export class RestEntityDataProvider implements EntityDataProvider {
         result[col.key] = col.valueConverter.toJson(data[col.key]);
     }
 
-    return this.http.put(this.url + '/' + encodeURIComponent(id), result).then(y => this.translateFromJson(y));
+    return this.http().put(this.url() + '/' + encodeURIComponent(id), result).then(y => this.translateFromJson(y));
 
   }
 
   public delete(id: any): Promise<void> {
-    return this.http.delete(this.url + '/' + encodeURIComponent(id));
+    return this.http().delete(this.url() + '/' + encodeURIComponent(id));
   }
 
   public insert(data: any): Promise<any> {
-    return this.http.post(this.url, this.translateToJson(data)).then(y => this.translateFromJson(y));
+    return this.http().post(this.url(), this.translateToJson(data)).then(y => this.translateFromJson(y));
   }
 }
 
