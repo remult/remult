@@ -27,8 +27,8 @@ import { AppComponent } from '../app.component';
 import { Task } from './Task';
 import { AsyncLocalStorage } from 'async_hooks';
 import axios from 'axios';
-import { ExternalHttpProvider } from '../../../../core/src/context';
-import { BackendMethodCaller } from '../../../../core/src/server-action';
+import { ExternalHttpProvider, Remult } from '../../../../core/src/context';
+
 import { DataProvider } from '../../../../core/src/data-interfaces';
 import { Repository } from '../../../../core/src/remult3';
 
@@ -81,7 +81,7 @@ serverInit().then(async (dataSource) => {
         initApi: async remultParam => {
             //SqlDatabase.LogToConsole = true;
 
-            const caller = new BackendMethodCaller('http://localhost:3001/api', axios);
+            const caller = new Remult({ url: 'http://localhost:3001/api', httpClient: axios });
             caller.call(stam.staticBackendMethod)().then(x => console.log("ok", x)).catch(err => console.error(err))
 
 
@@ -146,27 +146,3 @@ type ApiClient = {
     url?: string;
 };
 
-class Remult {
-    user: UserInfo;
-    dataProvider: DataProvider;
-    apiClient: ApiClient
-    repo(): Repository<any> {
-        return undefined;
-    }
-    call(backendMethod: any) { }
-
-    constructor(http: ExternalHttpProvider | typeof fetch | ApiClient)
-    constructor(p: DataProvider)
-    constructor()
-    constructor(x?: any) {
-
-    }
-    static runWith(remult: Remult, what: () => {}) {
-
-    }
-}
-
-
-
-const remult = new Remult()
-{ }

@@ -71,7 +71,7 @@ export function DialogConfig(config: MatDialogConfig) {
 const dialogConfigMember = Symbol("dialogConfigMember");
 var _matDialog: MatDialog;
 export function buildContext(http: HttpClient, _dialog: MatDialog) {
-  Remult.setDefaultHttpProvider(http);
+  remult.apiClient.httpClient = http;
   _matDialog = _dialog;
 
 
