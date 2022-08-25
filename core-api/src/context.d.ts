@@ -64,6 +64,7 @@ export declare class Remult {
     constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
     constructor(p: DataProvider);
     constructor();
+    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T;
     /** The current data provider */
     dataProvider: DataProvider;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */

@@ -501,24 +501,6 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult: Rem
 export const classBackendMethodsArray = Symbol('classBackendMethodsArray');
 
 
-export class BackendMethodCaller {
-    private provider: RestDataProviderHttpProvider;
-    constructor(private url?: string, provider?: ExternalHttpProvider | typeof fetch) {
-        if (provider) {
-            this.provider = buildRestDataProvider(provider);
-        }
-    }
-    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T {
-        const z = (backendMethod[serverActionField]) as Action<any, any>;
-        if (!z.doWork)
-            throw Error("The method received is not a valid backend method");
-        //@ts-ignore
-        return (...args: any[]) => {
-            return z.doWork(args, self, this.url, this.provider);
-        }
-    }
-
-}
 export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void);

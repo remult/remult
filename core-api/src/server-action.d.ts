@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Remult, AllowedForInstance, ExternalHttpProvider } from './context';
+import { Remult, AllowedForInstance } from './context';
 import { DataApiResponse } from './data-api';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 interface inArgs {
@@ -64,12 +64,6 @@ export declare class ProgressListener {
 export declare function prepareArgsToSend(types: any[], args: any[]): any[];
 export declare function prepareReceivedArgs(types: any[], args: any[], remult: Remult, ds: DataProvider, res: DataApiResponse): Promise<any[]>;
 export declare const classBackendMethodsArray: unique symbol;
-export declare class BackendMethodCaller {
-    private url?;
-    private provider;
-    constructor(url?: string, provider?: ExternalHttpProvider | typeof fetch);
-    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T;
-}
 export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): any;

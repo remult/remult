@@ -7,6 +7,9 @@ import { Repository, RepositoryImplementation } from "./remult3";
 let defaultRemult = new Remult();
 /*@internal*/
 export class RemultProxy implements Remult {
+    call<T extends (...args: any[]) => Promise<Y>, Y>(backendMethod: T, self?: any): T {
+        return this.remultFactory().call(backendMethod, self);
+    }
     get context(): RemultContext {
         return this.remultFactory().context;
     }

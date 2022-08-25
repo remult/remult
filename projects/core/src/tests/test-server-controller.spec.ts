@@ -1,7 +1,7 @@
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
-import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions, actionInfo, BackendMethodCaller } from '../server-action';
-import { Field, Entity, getFields, FieldType, ValueListFieldType, Fields } from '../remult3';
+import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
+import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { remult } from '../remult-proxy';
@@ -226,29 +226,33 @@ describe("test Server Controller basics", () => {
         expect(await testBasics.getValFromServer()).toBe('test');
     });
     it("test backend method caller", async () => {
-        const c = new BackendMethodCaller("xx", {
-            delete: () => undefined,
-            get: () => undefined,
-            post: async (url, data) => {
-                expect(url).toBe("xx/sf");
-                expect(data.args[0]).toEqual("noam");
-                return { data: { result: "hello noam" } };
-            },
-            put: () => undefined
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/sf");
+                    expect(data.args[0]).toEqual("noam");
+                    return { data: { result: "hello noam" } };
+                },
+                put: () => undefined
+            }
         });
         const r = (await c.call(testBasics.sf)("noam"));
         console.log(r);
         expect(r.result).toBe("hello noam");
     });
     it("test backend method instance method", async () => {
-        const c = new BackendMethodCaller("xx", {
-            delete: () => undefined,
-            get: () => undefined,
-            post: async (url, data) => {
-                expect(url).toBe("xx/1/doIt");
-                return {  result: { result: "hello noam" } , fields: {} };
-            },
-            put: () => undefined
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/1/doIt");
+                    return { result: { result: "hello noam" }, fields: {} };
+                },
+                put: () => undefined
+            }
         });
         const b = new testBasics(remult);
         const r = (await c.call(b.doIt, b)());

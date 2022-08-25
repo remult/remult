@@ -1,7 +1,7 @@
 
 import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
-import { Action, actionInfo } from './server-action';
+import { Action, actionInfo, serverActionField } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
@@ -244,6 +244,15 @@ export class Remult {
 
     }
 
+    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T {
+        const z = (backendMethod[serverActionField]) as Action<any, any>;
+        if (!z.doWork)
+            throw Error("The method received is not a valid backend method");
+        //@ts-ignore
+        return (...args: any[]) => {
+            return z.doWork(args, self, this.apiClient.url, buildRestDataProvider(this.apiClient.httpClient));
+        }
+    }
     /** The current data provider */
     dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
