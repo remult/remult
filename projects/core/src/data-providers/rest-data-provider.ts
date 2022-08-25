@@ -150,7 +150,12 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
     var h = init.headers as Headers;
     h.append('Content-type', "application/json");
     init.credentials = 'include';
-
+    if (typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof (window.document.cookie !== 'undefined'))
+      for (const cookie of window.document.cookie.split(';')) {
+        if (cookie.trim().startsWith('XSRF-TOKEN=')) {
+          h.append('X-XSRF-TOKEN', cookie.split('=')[1]);
+        }
+      }
     return (this.fetch || fetch)(url, init).then(response => {
 
       return onSuccess(response);
