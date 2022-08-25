@@ -90,7 +90,7 @@ Remult.defaultHttpProvider = {
                   actionInfo.runningOnServer = false
                 }
                 let remult = new Remult();
-                remult.setDataProvider(ActionTestConfig.db);
+                remult.dataProvider = (ActionTestConfig.db);
 
                 what(JSON.parse(JSON.stringify(data)), remult, t);
               }
@@ -122,7 +122,7 @@ export async function testSql(runAsync: (db: {
     }
   }
   let remult = new Remult();
-  remult.setDataProvider(sql);
+  remult.dataProvider = (sql);
   await runAsync({ db: sql, remult });
 }
 export async function testInMemoryDb(runAsync: (db: {
@@ -131,7 +131,7 @@ export async function testInMemoryDb(runAsync: (db: {
 }) => Promise<void>) {
   let remult = new Remult();
   let db = new InMemoryDataProvider();
-  remult.setDataProvider(db);
+  remult.dataProvider = (db);
   await runAsync({ db, remult });
 }
 
@@ -143,11 +143,11 @@ export async function testRestDb(runAsync: (db: {
   remult: Remult
 }) => Promise<void>) {
   let r = new Remult();
-  r.setDataProvider(new InMemoryDataProvider());
+  r.dataProvider = (new InMemoryDataProvider());
 
   let remult = new Remult();
   let db = new MockRestDataProvider(r);
-  remult.setDataProvider(db);
+  remult.dataProvider = (db);
   await runAsync({ db, remult });
 }
 export async function testAllDataProviders(runAsync: (db: {

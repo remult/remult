@@ -107,9 +107,9 @@ export class myServerAction extends Action<inArgs, result>
 
     protected async execute(info: inArgs, remult: Remult, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
-        let ds = remult._dataSource;
+        let ds = remult.dataProvider;
         await ds.transaction(async ds => {
-            remult.setDataProvider(ds);
+            remult.dataProvider = (ds);
             if (!remult.isAllowedForInstance(undefined, this.options.allowed))
                 throw new ForbiddenError();
 
@@ -255,11 +255,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         try {
                             let remult = req;
 
-                            let ds = remult._dataSource;
+                            let ds = remult.dataProvider;
 
                             let r: serverMethodOutArgs;
                             await ds.transaction(async (ds) => {
-                                remult.setDataProvider(ds);
+                                remult.dataProvider = (ds);
                                 d.args = await prepareReceivedArgs(types, d.args, remult, ds, res);
                                 if (allEntities.includes(constructor)) {
                                     let repo = remult.repo(constructor);

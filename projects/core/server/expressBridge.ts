@@ -239,7 +239,7 @@ class RemultServerImplementation implements RemultServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
-      remult.setDataProvider(await this.dataProvider);
+      remult.dataProvider = (await this.dataProvider);
       await new Promise(res => {
         remultObjectStorage.run(remult, async () => {
           if (req) {
@@ -252,7 +252,7 @@ class RemultServerImplementation implements RemultServer {
                 user = req['auth'];
             }
             if (user)
-              remult.setUser(user);
+              remult.user = (user);
           }
           if (this.options.initRequest) {
             await this.options.initRequest(remult, req);

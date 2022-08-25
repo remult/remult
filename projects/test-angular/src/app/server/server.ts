@@ -23,20 +23,14 @@ import { remultExpress } from '../../../../core/remult-express';
 
 
 import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
-
 import { AppComponent } from '../app.component';
 import { Task } from './Task';
-import { createRemultServer } from '../../../../core/server';
-import { remult } from '../../../../core/src/remult-proxy';
-import { APP_ID } from '@angular/core';
 import { AsyncLocalStorage } from 'async_hooks';
 import axios from 'axios';
-import { buildRestDataProvider } from '../../../../core/src/context';
-import { Action, BackendMethodCaller, serverActionField } from '../../../../core/src/server-action';
-
-
-
-
+import { HttpProvider } from '../../../../core/src/context';
+import { BackendMethodCaller } from '../../../../core/src/server-action';
+import { DataProvider } from '../../../../core/src/data-interfaces';
+import { Repository } from '../../../../core/src/remult3';
 
 
 const getDatabase = async () => {
@@ -87,10 +81,10 @@ serverInit().then(async (dataSource) => {
         initApi: async remultParam => {
             //SqlDatabase.LogToConsole = true;
 
-            const caller = new BackendMethodCaller('http://localhost:3001/api',axios);
+            const caller = new BackendMethodCaller('http://localhost:3001/api', axios);
             caller.call(stam.staticBackendMethod)().then(x => console.log("ok", x)).catch(err => console.error(err))
-            
-            
+
+
 
             //p.post('http://localhost:3001/api/staticBackendMethod', { args: [] }).then(x => console.log("ok", x)).catch(err => console.error(err));
 
@@ -143,3 +137,36 @@ serverInit().then(async (dataSource) => {
 
 
 
+interface UserInfo {
+
+}
+
+type ApiClient = {
+    httpClient?: HttpProvider | typeof fetch;
+    url?: string;
+};
+
+class Remult {
+    user: UserInfo;
+    dataProvider: DataProvider;
+    apiClient: ApiClient
+    repo(): Repository<any> {
+        return undefined;
+    }
+    call(backendMethod: any) { }
+
+    constructor(http: HttpProvider | typeof fetch | ApiClient)
+    constructor(p: DataProvider)
+    constructor()
+    constructor(x?: any) {
+
+    }
+    static runWith(remult: Remult, what: () => {}) {
+
+    }
+}
+
+
+
+const remult = new Remult()
+{ }

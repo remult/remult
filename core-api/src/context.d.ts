@@ -39,8 +39,7 @@ export declare class Remult {
     repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>;
     /** Returns the current user's info */
     get user(): UserInfo;
-    /** Set's the current user info */
-    setUser(info: UserInfo | undefined): Promise<void>;
+    set user(info: UserInfo | undefined);
     /** Checks if a user was authenticated */
     authenticated(): boolean;
     /** checks if the user has any of the roles specified in the parameters
@@ -55,8 +54,6 @@ export declare class Remult {
      * [Allowed](https://remult.dev/docs/allowed.html)
      */
     isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean;
-    /** returns a dispatcher object that fires once a user has changed*/
-    get userChange(): EventDispatcher;
     static defaultHttpProvider: RestDataProviderHttpProvider;
     static setDefaultHttpProvider(provider: HttpProvider | typeof fetch): void;
     /** Creates a new instance of the `remult` object.
@@ -72,9 +69,7 @@ export declare class Remult {
      */
     static apiBaseUrl: string;
     /** The current data provider */
-    _dataSource: DataProvider;
-    /** sets the current data provider */
-    setDataProvider(dataProvider: DataProvider): void;
+    dataProvider: DataProvider;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind: (metadata: EntityMetadata, options: FindOptions<any>) => void;
     clearAllCache(): any;
@@ -83,6 +78,10 @@ export declare class Remult {
     readonly context: RemultContext;
 }
 export interface RemultContext {
+}
+export interface ApiClient {
+    httpClient?: HttpProvider | typeof fetch;
+    url?: string;
 }
 export declare const allEntities: ClassType<any>[];
 export interface ControllerOptions {

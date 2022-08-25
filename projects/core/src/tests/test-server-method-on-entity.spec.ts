@@ -126,7 +126,7 @@ describe("test Server method in entity", () => {
 
         actionInfo.runningOnServer = true;
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let r = remult.repo(testBoolCreate123);
         let dataApi = new DataApi(r, remult);
         let t = new TestDataApiResponse();
@@ -194,14 +194,14 @@ describe("complex entity relations on server entity and backend method", () => {
     });
     it("fix it", async () => {
         let remult = new Remult();
-        remult.setDataProvider(ActionTestConfig.db);
+        remult.dataProvider = (ActionTestConfig.db);
         let a1 = await remult.repo(a).create({ id: 1 }).save();
         let a2 = await remult.repo(a).create({ id: 2 }).save();
         let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
         let c1 = await remult.repo(c).create({ id: 21, b: b1 }).save();
         remult = new Remult();//clear the cache;
-        remult.setDataProvider(ActionTestConfig.db);
+        remult.dataProvider = (ActionTestConfig.db);
 
         let r = await c1.doIt();
         expect(r).toBe(2);
@@ -210,14 +210,14 @@ describe("complex entity relations on server entity and backend method", () => {
     });
     it("fix it new row", async () => {
         let remult = new Remult();
-        remult.setDataProvider(ActionTestConfig.db);
+        remult.dataProvider = (ActionTestConfig.db);
         let a1 = await remult.repo(a).create({ id: 1 }).save();
         let a2 = await remult.repo(a).create({ id: 2 }).save();
         let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
 
         remult = new Remult();//clear the cache;
-        remult.setDataProvider(ActionTestConfig.db);
+        remult.dataProvider = (ActionTestConfig.db);
         let c1 = await remult.repo(c).create({ id: 21, b: b1 })
         let r = await c1.doIt();
         expect(r).toBe(2);
@@ -226,14 +226,14 @@ describe("complex entity relations on server entity and backend method", () => {
     });
     it("fix it change value", async () => {
         let remult = new Remult();
-        remult.setDataProvider(ActionTestConfig.db);
+        remult.dataProvider = (ActionTestConfig.db);
         let a1 = await remult.repo(a).create({ id: 1 }).save();
         let a2 = await remult.repo(a).create({ id: 2 }).save();
         let b1 = await remult.repo(b).create({ id: 11, a: a1 }).save();
         let b2 = await remult.repo(b).create({ id: 12, a: a2 }).save();
         let c1 = await remult.repo(c).create({ id: 21, b: b1 }).save();
         remult = new Remult();//clear the cache;
-        remult.setDataProvider(ActionTestConfig.db);
+        remult.dataProvider = (ActionTestConfig.db);
         c1 = await remult.repo(c).findId(21);
         c1.b = b2;
         let r = await c1.doIt2();

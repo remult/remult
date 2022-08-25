@@ -181,14 +181,14 @@ describe("custom filter", () => {
             put: undefined
         });
         let c = new Remult();
-        c.setDataProvider(z);
+        c.dataProvider = (z);
         await c.repo(entityForCustomFilter).count(entityForCustomFilter.filter({ oneAndThree: true }));
         ok.test();
     });
 
     it("test that api reads custom correctly", async () => {
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -211,7 +211,7 @@ describe("custom filter", () => {
     });
     it("test that api reads custom correctly 2", async () => {
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -240,7 +240,7 @@ describe("custom filter", () => {
     });
     it("test that api reads custom correctly 3", async () => {
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -270,7 +270,7 @@ describe("custom filter", () => {
     });
     it("test that api reads custom correctly and translates to db", async () => {
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(entityForCustomFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
@@ -349,7 +349,7 @@ describe("missing fields are added in array column", async () => {
         }]
         let r = new Remult();
 
-        r.setDataProvider(db);
+        r.dataProvider = (db);
         let rep = r.repo(task);
         expect((await rep.find({ orderBy: { completed: "asc", title: 'asc' } })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count({ completed: false })).toBe(2);
@@ -380,7 +380,7 @@ describe("missing fields are added in array column", async () => {
         }]
         let r = new Remult();
 
-        r.setDataProvider(db);
+        r.dataProvider = (db);
         let rep = r.repo(taskWithNull);
         expect((await rep.find({ orderBy: { completed: "asc", title: "asc" } })).map(x => x.title)).toEqual(["t1", "t3", "t2"]);
         expect(await rep.count({ completed: false })).toBe(0);

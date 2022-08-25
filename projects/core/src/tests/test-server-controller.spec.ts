@@ -129,7 +129,7 @@ class Stam {
 
 describe("test Server Controller basics", () => {
     let c = new Remult();
-    c.setDataProvider(ActionTestConfig.db);
+    c.dataProvider = (ActionTestConfig.db);
     beforeEach(async done => {
 
         await Promise.all((await c.repo(testEntity).find()).map(x => x.delete()));

@@ -115,7 +115,7 @@ export async function createPostgresConnection(options?: {
 
     const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)));
     let remult = new Remult();
-    remult.setDataProvider(db);
+    remult.dataProvider = (db);
     if (options.autoCreateTables === undefined || options.autoCreateTables)
         await verifyStructureOfAllEntities(db, remult);
     return db;
@@ -125,7 +125,7 @@ export async function createPostgresConnection(options?: {
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 
     let c = new Remult();
-    c.setDataProvider(sql);
+    c.dataProvider = (sql);
     let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
     let e = c.repo(JobsInQueueEntity);
     await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);

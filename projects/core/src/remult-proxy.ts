@@ -8,47 +8,39 @@ let defaultRemult = new Remult();
 /*@internal*/
 export class RemultProxy implements Remult {
     get context(): RemultContext {
-        return this.instance.context;
+        return this.remultFactory().context;
     }
     get _user(): UserInfo {
-        return this.instance._user;
+        return this.remultFactory()._user;
     };
-    get _userChangeEvent(): EventSource { return this.instance._userChangeEvent };
-    get _dataSource(): DataProvider { return this.instance._dataSource };
-    get repCache(): Map<DataProvider, Map<ClassType<any>, Repository<any>>> { return this.instance.repCache };
 
-    setUser(info: UserInfo): Promise<void> {
-        return this.instance.setUser(info);
-    }
+    get dataProvider(): DataProvider { return this.remultFactory().dataProvider };
+    set dataProvider(provider: DataProvider) { this.remultFactory().dataProvider = provider }
+    get repCache(): Map<DataProvider, Map<ClassType<any>, Repository<any>>> { return this.remultFactory().repCache };
 
     authenticated(): boolean {
-        return this.instance.authenticated()
+        return this.remultFactory().authenticated()
     }
     isAllowed(roles?: Allowed): boolean {
-        return this.instance.isAllowed(roles);
+        return this.remultFactory().isAllowed(roles);
     }
     isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean {
-        return this.instance.isAllowedForInstance(instance, allowed);
-    }
-    get userChange(): EventDispatcher {
-        return this.instance.userChange;
+        return this.remultFactory().isAllowedForInstance(instance, allowed);
     }
 
-    setDataProvider(dataProvider: DataProvider): void {
-        return this.instance.setDataProvider(dataProvider);
-    }
     clearAllCache() {
-        return this.instance.clearAllCache();
+        return this.remultFactory().clearAllCache();
     }
     /*@internal*/
     remultFactory = () => defaultRemult;
-    get instance() {
-        return this.remultFactory();
-    }
+
 
     repo: typeof defaultRemult.repo = (...args) => this.remultFactory().repo(...args);
     get user() {
         return this.remultFactory().user;
+    }
+    set user(info: UserInfo | undefined) {
+        this.remultFactory().user = info;
     }
 }
 

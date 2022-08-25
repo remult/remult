@@ -258,7 +258,7 @@ describe("data api", () => {
 
 
   let remult = new Remult();
-  remult.setDataProvider(new InMemoryDataProvider());
+  remult.dataProvider = (new InMemoryDataProvider());
 
 
   it("validate with validations on column fails", async () => {
@@ -342,7 +342,7 @@ describe("data api", () => {
   });
   it("delete falis nicely ", async () => {
     let ctx = new Remult();
-    ctx.setDataProvider({
+    ctx.dataProvider = ({
       getEntityDataProvider: (x) => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }]);
         r.delete = () => { throw "ERROR"; };
@@ -792,7 +792,7 @@ describe("data api", () => {
     let startTest = false;
     let remult = new Remult();
     let mem = new InMemoryDataProvider();
-    remult.setDataProvider(mem);
+    remult.dataProvider = (mem);
     let type = class extends newCategories {
 
     }
@@ -1408,7 +1408,7 @@ describe("column validation", () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Remult();
     await sql.execute("drop table if exists t1");
-    c.setDataProvider(sql);
+    c.dataProvider = (sql);
     let type = class extends EntityBase {
       id: number;
       name: string;
@@ -1443,7 +1443,7 @@ describe("test web sql identity", () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Remult();
     await sql.execute("drop table if exists t1");
-    c.setDataProvider(sql);
+    c.dataProvider = (sql);
 
     let type = class extends EntityBase {
       id: number;
@@ -1515,7 +1515,7 @@ describe("compound id", () => {
     async () => {
       let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
       let ctx = new Remult();
-      ctx.setDataProvider(sql);
+      ctx.dataProvider = (sql);
 
       let cod = ctx.repo(CompoundIdEntity);
       for (const od of await cod.find({ where: { a: 99 } })) {
@@ -1535,7 +1535,7 @@ describe("compound id", () => {
   it("start", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    ctx.dataProvider = (mem);
 
     let s = ctx.repo(CompoundIdEntity);
 
@@ -1556,7 +1556,7 @@ describe("compound id", () => {
   it("update", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1577,7 +1577,7 @@ describe("compound id", () => {
   it("update2", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity);
 
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -1596,7 +1596,7 @@ describe("compound id", () => {
   it("insert", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity).create();
     mem.rows[ctx.repo(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
@@ -1612,7 +1612,7 @@ describe("compound id", () => {
   it("delete", async () => {
     let mem = new InMemoryDataProvider();
     let ctx = new Remult();
-    ctx.setDataProvider(mem);
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1656,7 +1656,7 @@ describe("test data list", () => {
   it("delete fails nicely", async () => {
 
     let cont = new Remult();
-    cont.setDataProvider({
+    cont.dataProvider = ({
       getEntityDataProvider: x => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
         r.delete = id => { return Promise.resolve().then(() => { throw Promise.resolve("error"); }) };
@@ -1765,7 +1765,7 @@ describe("test rest data provider translates data correctly", () => {
 
     let restDb = new MockRestDataProvider(serverRemult);
     let remult = new Remult();
-    remult.setDataProvider(restDb);
+    remult.dataProvider = (restDb);
     let c = await remult.repo(Categories).findId(1, { useCache: false });
     expect(c.categoryName).toBe("test");
     c.categoryName = "test1";
@@ -1857,7 +1857,7 @@ describe("test rest data provider translates data correctly", () => {
 });
 describe("check allowedDataType", () => {
   let c = new Remult();
-  c.setDataProvider(new InMemoryDataProvider());
+  c.dataProvider = (new InMemoryDataProvider());
   let strA = 'roleA',
     strB = 'roleB',
     strC = 'roleC';
@@ -1865,9 +1865,7 @@ describe("check allowedDataType", () => {
   let roleB = (strB);
   let roleC = (strC);
   beforeAll(async (done) => {
-
-    await c.setUser({ id: 'x', name: 'y', roles: [strA, strB] }
-    );
+    c.user = { id: 'x', name: 'y', roles: [strA, strB] };
     done();
   });
   it("1", () => {
@@ -1899,8 +1897,8 @@ describe("check allowedDataType", () => {
   myIt(undefined, undefined);
   it("no context", () => {
     let c = new Remult();
-    c.setDataProvider(new InMemoryDataProvider());
-    c.setUser(undefined);
+    c.dataProvider = (new InMemoryDataProvider());
+    c.user = undefined;
     expect(c.isAllowed(true)).toBe(true);
     expect(c.isAllowed(c => true)).toBe(true);
     expect(c.isAllowed(false)).toBe(false);
@@ -2017,7 +2015,7 @@ describe("test fetch", () => {
   });
   it("axios uses the correct api", () => {
     const r = new Remult(axios);
-    expect((r._dataSource as any).http instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
+    expect((r.dataProvider as any).http instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
   });
   it("get", async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
