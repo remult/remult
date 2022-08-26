@@ -802,7 +802,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         if (_isNew) {
             for (const col of info.columnsInfo) {
 
-                if (col.defaultValue) {
+                if (col.defaultValue && instance[col.key] === undefined) {
                     if (typeof col.defaultValue === "function") {
                         instance[col.key] = col.defaultValue(instance);
                     }

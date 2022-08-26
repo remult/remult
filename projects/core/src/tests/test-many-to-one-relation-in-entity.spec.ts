@@ -851,6 +851,11 @@ it("test that it doesn't save if it doesn't need to", async () => {
     expect(updates).toBe(1);
 
 })
+it("test set uuid", async () => {
+    const remult = new Remult(new InMemoryDataProvider());
+    const x = await remult.repo(Contact).insert({ id: 'a', name: 'a' });
+    expect(x.id).toBe('a');
+});
 
 
 
