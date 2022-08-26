@@ -306,8 +306,8 @@ export function setControllerSettings(target: any, options: ControllerOptions) {
 
 export interface UserInfo {
     id: string;
-    name: string;
-    roles: string[];
+    name?: string;
+    roles?: string[];
 }
 
 

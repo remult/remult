@@ -94,8 +94,8 @@ export declare function buildRestDataProvider(provider: ExternalHttpProvider | t
 export declare function setControllerSettings(target: any, options: ControllerOptions): void;
 export interface UserInfo {
     id: string;
-    name: string;
-    roles: string[];
+    name?: string;
+    roles?: string[];
 }
 export declare type Allowed = boolean | string | string[] | ((c: Remult) => boolean);
 export declare type AllowedForInstance<T> = boolean | string | string[] | ((c: Remult, entity?: T) => boolean);
