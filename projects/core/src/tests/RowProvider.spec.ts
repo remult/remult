@@ -1269,9 +1269,7 @@ describe("context", () => {
   it("what", () => {
     var c = new Remult();
     expect(c.authenticated()).toBe(false);
-    expect(c.user.id).toBe(undefined);
-    expect(c.user.name).toBe("");
-    expect(c.user.roles.length).toBe(0);
+
     c.user = ({
       id: '1',
       name: 'name',
@@ -1280,39 +1278,20 @@ describe("context", () => {
     expect(c.authenticated()).toBe(true);
     c.user = (undefined);
     expect(c.authenticated()).toBe(false);
-    expect(c.user.id).toBe(undefined);
-    expect(c.user.name).toBe("");
-    expect(c.user.roles.length).toBe(0);
+
 
   });
-  it("oauth user style", () => {
-    var remult = new Remult();
-    remult.user = ({
-      sub: '12',
-      name: "the name",
-      permissions: ["a", "b"]
-    } as any);
-    expect(remult.user.id).toBe('12');
-    expect(remult.user.name).toBe("the name");
-    expect(remult.isAllowed("a")).toBe(true);
-    expect(remult.isAllowed("b")).toBe(true);
-    expect(remult.isAllowed("c")).toBe(false);
-  });
+
   it("is allowed for instance works with array", () => {
     var remult = new Remult();
     remult.user = ({ roles: ["a"], id: '', name: '' });
     expect(remult.isAllowedForInstance({}, ["b", "a"])).toBe(true);
   });
-  it("user without roles work", () => {
-    var remult = new Remult();
-    remult.user = ({ sub: "12" } as any);
-    expect(remult.user.roles.length).toBe(0);
-  });
+
   it("test no user is not allowed", () => {
     var remult = new Remult();
     remult.user = (undefined);
-    expect(remult.user.id).toBeUndefined();
-    expect(remult.user.name).toBe('');
+    expect(remult.user).toBeUndefined();
   });
 });
 it("test http provider for remult", async () => {

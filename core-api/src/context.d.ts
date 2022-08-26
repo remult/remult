@@ -38,9 +38,7 @@ export declare class Remult {
      *
      */
     repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>;
-    /** Returns the current user's info */
-    get user(): UserInfo;
-    set user(info: UserInfo | undefined);
+    user?: UserInfo;
     /** Checks if a user was authenticated */
     authenticated(): boolean;
     /** checks if the user has any of the roles specified in the parameters

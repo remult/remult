@@ -13,9 +13,7 @@ export class RemultProxy implements Remult {
     get context(): RemultContext {
         return this.remultFactory().context;
     }
-    get _user(): UserInfo {
-        return this.remultFactory()._user;
-    };
+
 
     get dataProvider(): DataProvider { return this.remultFactory().dataProvider };
     set dataProvider(provider: DataProvider) { this.remultFactory().dataProvider = provider }

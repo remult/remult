@@ -129,41 +129,12 @@ export class Remult {
         return r;
     }
 
-    /* @internal */
-    _user: UserInfo;
-    /** Returns the current user's info */
-    get user(): UserInfo {
-        if (this._user === undefined) {
-            return {
-                id: undefined,
-                name: '',
-                roles: []
-            }
-        }
-        return this._user;
-    }
-    set user(info: UserInfo | undefined) {
-        this._user = info as UserInfo;
-        if (this._user === null)
-            this._user = undefined;
-        let auth = info as { sub?: string, name?: string, permissions?: string[], username?: string };
-        if (auth) {
-            if (!this._user.id && auth.sub)
-                this._user.id = auth.sub;
-            if (!this._user.roles && auth.permissions) {
-                this._user.roles = auth.permissions;
-            }
-            if (!this._user.name)
-                this._user.name = auth.username;
-        }
-        if (this._user && !this._user.roles)
-            this._user.roles = [];
-    }
+    user?: UserInfo;
 
     /*  delete me */
     /** Checks if a user was authenticated */
     authenticated() {
-        return this.user.id !== undefined;
+        return this.user?.id !== undefined;
     }
     /** checks if the user has any of the roles specified in the parameters
      * @example
@@ -189,7 +160,7 @@ export class Remult {
         if (typeof roles === 'boolean')
             return roles;
         if (typeof roles === 'string')
-            if (this.user.roles.indexOf(roles.toString()) >= 0)
+            if (this.user?.roles?.indexOf(roles.toString()) >= 0)
                 return true;
 
 
