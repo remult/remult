@@ -40,7 +40,6 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
         let r = await http.post(baseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
         if (p && p.queuedJobId) {
-
             let progress = actionInfo.startBusyWithProgress();
             try {
                 let runningJob: queuedJobInfoResponse;

@@ -31,6 +31,8 @@ import { ExternalHttpProvider, Remult } from '../../../../core/src/context';
 
 import { DataProvider } from '../../../../core/src/data-interfaces';
 import { Repository } from '../../../../core/src/remult3';
+import { BackendMethod } from '../../../../core/src/server-action';
+import fetch from 'node-fetch';
 
 
 const getDatabase = async () => {
@@ -127,7 +129,41 @@ serverInit().then(async (dataSource) => {
             res.send('No Result ' + req.path);
         }
     });
-
+    const remultHagaiSites = (async () => {
+        const info = process.env.REMOTE_HAGAI;
+        if (info) {
+            const url = info.split('|')[0];
+            const token = info.split('|')[1];
+            const remoteRemult = new Remult({
+                url: url + '/guest/api',
+                // httpClient: async (url: any, info: any) => {
+                //     console.log({ headers: info.headers });
+                //     return await fetch(url, info) as any
+                // }
+                httpClient: {
+                    get: () => undefined,
+                    put: () => undefined,
+                    delete: () => undefined,
+                    post: async (url, data) => {
+                        const fetchResult = await fetch(url, {
+                            method: "POST",
+                            headers: {
+                                "accept": "application/json, text/plain, */*",
+                                "authorization": "Bearer " + token,
+                                "cache-control": "no-cache",
+                                "content-type": "application/json"
+                            },
+                            body: JSON.stringify(data)
+                        }).then(x => x.json());
+                        console.log({ fetchResult })
+                        return fetchResult;
+                    }
+                }
+            })
+            const r = await remoteRemult.call(OverviewController.getOverview)(false);
+            console.log({ r });
+        }
+    })();
 
 
     let port = process.env.PORT || 3001;
@@ -136,6 +172,12 @@ serverInit().then(async (dataSource) => {
 
 
 
+class OverviewController {
+    @BackendMethod({ allowed: true })
+    static async getOverview(x: boolean) {
+        return {};
+    }
+}
 
 interface UserInfo {
 
