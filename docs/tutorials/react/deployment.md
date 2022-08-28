@@ -54,7 +54,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 ```
 
 
-1. Adjust the highlighted code in the api server module to only use `postgres` in production, and keep using the simple json db in our dev environment.
+3. Adjust the highlighted code in the api server module to only use `postgres` in production, and keep using the simple json db in our dev environment.
    ```ts{2-5}
    export const api = remultExpress({
        dataProvider: process.env["NODE_ENV"] === "production" ?
@@ -67,7 +67,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
    
 
 
-3. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
+4. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
 
 *tsconfig.server.json*
 ```json{7-12}
@@ -118,19 +118,19 @@ Click enter multiple times to answer all it's questions with the default answer
 heroku create
 ```
 
-2. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
+3. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
 
 ```sh
 heroku config:set SESSION_SECRET=random-secret
 ```
 
-3. Provision a dev postgres database on Heroku.
+4. Provision a dev postgres database on Heroku.
 
 ```sh
 heroku addons:create heroku-postgresql:hobby-dev
 ```
 
-4. Commit the changes to git and deploy to Heroku using `git push`.
+5. Commit the changes to git and deploy to Heroku using `git push`.
 
 ```sh
 git add .
@@ -138,7 +138,7 @@ git commit -m "todo app tutorial"
 git push heroku master
 ```
 
-5. Open the deployed app using `heroku apps:open` command.
+7. Open the deployed app using `heroku apps:open` command.
 
 ```sh
 heroku apps:open
