@@ -61,13 +61,14 @@ Now that the `Task` entity is defined, we can use it to seed the database with s
 Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
-```ts{6-17}
+```ts{3,7-18}
 import { remultExpress } from 'remult/remult-express';
 import { Task } from '../shared/Task';
+import { remult } from 'remult';
 
 export const api = remultExpress({
     entities: [Task],
-    initApi: async remult => {
+    initApi: async () => {
         const taskRepo = remult.repo(Task);
         if (await taskRepo.count() === 0) {
             await taskRepo.insert([
@@ -103,7 +104,7 @@ Replace the contents of `src/App.tsx` with the following code:
 *src/App.tsx*
 ```tsx
 import { useEffect, useState } from "react";
-import { remult } from "./common";
+import { remult } from "remult";
 import { Task } from "./shared/Task";
 
 const taskRepo = remult.repo(Task);
@@ -121,12 +122,14 @@ function App() {
 
   return (
     <div>
-      {tasks.map(task => (
-        <div key={task.id}>
-          <input type="checkbox" checked={task.completed} />
-          {task.title}
-        </div>
-      ))}
+      <main>
+        {tasks.map(task => (
+          <div key={task.id}>
+            <input type="checkbox" checked={task.completed} />
+            {task.title}
+          </div>
+        ))}
+      </main>
     </div>
   );
 }
@@ -142,3 +145,143 @@ Here's a quick overview of the different parts of the code snippet:
 * React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
 
 After the browser refreshes, the list of tasks appears.
+
+
+::: tip
+Replace the content if `index.css` with the following `css` to make it look a little better
+
+```css
+@charset "utf-8";
+
+body {
+	margin: 0;
+	background: #f5f5f5;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+		'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+		sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-weight: 400;
+	color: #484848;
+	display: flex;
+	justify-content: center;
+}
+
+code {
+	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+		monospace;
+}
+
+main>div {
+	border-bottom: 1px solid #ededed;
+}
+
+main>div>button {
+	background: #f5f5f5;
+	color: red;
+	font-weight: bolder;
+	padding: 4px 8px;
+	visibility: hidden;
+}
+
+main>button {
+	background: #f5f5f5;
+	color: #484848;
+	padding: 4px 8px;
+	font-size: inherit;
+	visibility: hidden;
+}
+
+
+
+main>div>button:first-of-type {
+	color: green;
+}
+
+div>main>div:hover>button,
+div>main>div:focus-within>button {
+	visibility: visible;
+}
+
+
+button {
+	display: block;
+	left: 0;
+	background: #b83f45;
+	cursor: pointer;
+	border: none;
+	color: #fff;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	/* font-size: 16px; */
+	padding: 8px 16px;
+	margin: 4px;
+
+	box-shadow: 0 2px 4px #0003, 0 25px 50px #0000001a;
+}
+
+main input {
+	border: 0;
+	font-size: 18px;
+	width: 240px;
+	color: #484848;
+	margin: 8px 0;
+	margin-right: 4px;
+	padding: 4px;
+}
+
+main>input {
+	width: 273px
+}
+
+main>input:not(:placeholder-shown)+button{
+	visibility: visible;
+}
+
+input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin: 8px;
+	transform: translateY(3px);
+}
+
+input:checked+input {
+	text-decoration: line-through;
+}
+
+main {
+	background: #fff;
+	margin: 8px 0;
+	position: relative;
+	box-shadow: 0 2px 4px #0003, 0 25px 50px #0000001a;
+	/* max-width: 400px; */
+	padding: 8px;
+}
+
+header {
+	display: flex;
+	align-content: space-between;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 18px;
+}
+
+header>input {
+	font-size: 18px;
+	width: 270px;
+	color: #484848;
+	margin: 4px 0;
+	padding: 3px;
+}
+
+span {
+	display: block;
+	color: red;
+	font-style: italic;
+	font-size: medium;
+	display: block;
+	margin: 0 0 0 37px;
+}
+```
+:::

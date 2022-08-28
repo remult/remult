@@ -41,12 +41,12 @@ A simple way to prevent this is to expose an API endpoint for `setAll` requests,
 
 *src/shared/TasksController.ts*
 ```ts
-import { BackendMethod, Remult } from "remult";
+import { BackendMethod, remult } from "remult";
 import { Task } from "./Task";
 
 export class TasksController {
    @BackendMethod({ allowed: true })
-   static async setAll(completed: boolean, remult?: Remult) {
+   static async setAll(completed: boolean) {
       const taskRepo = remult!.repo(Task);
 
       for (const task of await taskRepo.find()) {
@@ -56,8 +56,6 @@ export class TasksController {
 }
 ```
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
-
-The optional `remult` argument of the static `setAll` function is intentionally omitted in the client-side calling code. In the server-side, Remult injects `@BackendMethod`-decorated functions with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
 
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
 

@@ -131,6 +131,7 @@ module.exports = {
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],

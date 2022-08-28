@@ -99,18 +99,18 @@ const saveTask = async () => {
 3. Add the highlighted code line to display the error next to the task title `input`:
    
 *src/App.tsx*
-```tsx{9}
+```tsx{11}
 return (
   <div key={task.id}>
-      <input type="checkbox"
-        checked={task.completed}
-        onChange={e => handleChange({ completed: e.target.checked })} />
-      <input
-        value={task.title}
-        onChange={e => handleChange({ title: e.target.value })} />
-      {task.error?.modelState?.title}
-      <button onClick={saveTask}>Save</button>
-      <button onClick={deleteTask}>Delete</button>
+    <input type="checkbox"
+      checked={task.completed}
+      onChange={e => handleChange({ completed: e.target.checked })} />
+    <input
+      value={task.title}
+      onChange={e => handleChange({ title: e.target.value })} />
+    <button onClick={saveTask}>Save</button>
+    <button onClick={deleteTask}>Delete</button>
+    <span>{task.error?.modelState?.title}</span>
   </div>
 );
 ```
