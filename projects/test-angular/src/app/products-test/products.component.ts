@@ -41,9 +41,9 @@ export class ProductsComponent implements OnInit {
   area: DataAreaSettings;
   field: FieldRef<any, any>;
   async ngOnInit() {
-
+    remult.apiClient.httpClient = undefined;
     console.log(await remult.repo(stam).count());
-    console.log(await this.remult.repo(stam).count());
+    //console.log(await this.remult.repo(stam).count());
   }
   async click() {
 

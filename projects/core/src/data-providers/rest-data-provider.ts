@@ -143,7 +143,7 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   }
   delete(url: string) {
 
-    return this.myFetch(url, { method: 'delete', credentials: 'include' });
+    return this.myFetch(url, { method: 'delete' });
   }
   async post(url: string, data: any) {
 
@@ -153,21 +153,26 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
     }));
   }
 
-  myFetch(url: string, init?: RequestInit): Promise<any> {
-    if (!init)
-      init = {};
-    if (!init.headers)
-      init.headers = new Headers();
-    var h = init.headers as Headers;
-    h.append('Content-type', "application/json");
-    init.credentials = 'include';
+  myFetch(url: string, options?: {
+    method?: string,
+    body?: string,
+  }): Promise<any> {
+
+    const headers = {
+      "Content-type": "application/json"
+    }
     if (typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof (window.document.cookie !== 'undefined'))
       for (const cookie of window.document.cookie.split(';')) {
         if (cookie.trim().startsWith('XSRF-TOKEN=')) {
-          h.append('X-XSRF-TOKEN', cookie.split('=')[1]);
+          headers['X-XSRF-TOKEN'] = cookie.split('=')[1];
         }
       }
-    return (this.fetch || fetch)(url, init).then(response => {
+    return (this.fetch || fetch)(url, {
+      credentials: 'include',
+      method: options?.method,
+      body: options?.body,
+      headers
+    }).then(response => {
 
       return onSuccess(response);
 

@@ -105,7 +105,7 @@ export interface RemultServer {
   openApiDoc(options: { title: string }): any;
   registerRouter(r: GenericRouter): void;
   handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
-  withRemultMiddleware(req: GenericRequest, res: GenericResponse, next: VoidFunction);
+  withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction);
 
 }
 export type GenericRouter = {
@@ -152,7 +152,7 @@ class RemultServerImplementation implements RemultServer {
     }
 
   }
-  withRemultMiddleware(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
+  withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
   routeImpl: RouteImplementation;

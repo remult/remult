@@ -136,32 +136,36 @@ serverInit().then(async (dataSource) => {
             const token = info.split('|')[1];
             const remoteRemult = new Remult({
                 url: url + '/guest/api',
-                // httpClient: async (url: any, info: any) => {
-                //     console.log({ headers: info.headers });
-                //     return await fetch(url, info) as any
-                // }
-                httpClient: {
-                    get: () => undefined,
-                    put: () => undefined,
-                    delete: () => undefined,
-                    post: async (url, data) => {
-                        const fetchResult = await fetch(url, {
-                            method: "POST",
-                            headers: {
-                                "accept": "application/json, text/plain, */*",
-                                "authorization": "Bearer " + token,
-                                "cache-control": "no-cache",
-                                "content-type": "application/json"
-                            },
-                            body: JSON.stringify(data)
-                        }).then(x => x.json());
-                        console.log({ fetchResult })
-                        return fetchResult;
-                    }
+                httpClient: async (url: any, info: any) => {
+                    info.headers["authorization"] = "Bearer " + token;
+                    return await fetch(url, info) as any
                 }
+                // httpClient: {
+                //     get: () => undefined,
+                //     put: () => undefined,
+                //     delete: () => undefined,
+                //     post: async (url, data) => {
+                //         const fetchResult = await fetch(url, {
+                //             method: "POST",
+                //             headers: {
+                //                 "accept": "application/json, text/plain, */*",
+                //                 "authorization": "Bearer " + token,
+                //                 "cache-control": "no-cache",
+                //                 "content-type": "application/json"
+                //             },
+                //             body: JSON.stringify(data)
+                //         }).then(x => x.json());
+                //         console.log({ fetchResult })
+                //         return fetchResult;
+                //     }
+                // }
             })
-            const r = await remoteRemult.call(OverviewController.getOverview)(false);
-            console.log({ r });
+            try {
+                const r = await remoteRemult.call(OverviewController.getOverview)(false);
+                console.log({ r });
+            } catch (err) {
+                console.log(err);
+            }
         }
     })();
 
