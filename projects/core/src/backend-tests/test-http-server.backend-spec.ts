@@ -14,10 +14,10 @@ let path = remult.apiClient.url + '/tasks';
 const environments = [
     // ["next", 3000],
     // ["nest", 3001],
-    // ["koa", 3002],
-    // ["fastify", 3003],
-    // ["express", 3004],
-    // ["generic server", 3005],
+    //  ["koa", 3002],
+    //  ["fastify", 3003],
+    //  ["express", 3004],
+    //  ["generic server", 3005],
     // ["optine", 3006],
     // ["fresh", 8000]
 ]
@@ -154,7 +154,7 @@ export class Task {
 }
 
 async function create3Tasks() {
-    const remult = new Remult(axios);
+
     remult.apiClient.httpClient = axios;
     const taskRepo = remult.repo(Task);
     for (const task of await taskRepo.find()) {

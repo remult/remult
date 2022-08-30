@@ -152,7 +152,7 @@ class RemultServerImplementation implements RemultServer {
     }
 
   }
-  withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
+  withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
   routeImpl: RouteImplementation;
