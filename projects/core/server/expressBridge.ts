@@ -87,8 +87,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
 }
 export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 
-  }
-  routeImpl: RouteImplementation;
+
 
 export interface ServerHandleResponse {
   data?: any;

@@ -4,7 +4,7 @@ import { customDatabaseFilterToken, Filter, FilterConsumer } from "../src/filter
 import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities, Remult } from "../src/context";
 
-import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata } from "../src/remult3";
+import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata, Repository, RepositoryImplementation } from "../src/remult3";
 import { ValueConverters } from "../src/valueConverters";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from '../src/data-interfaces';
 import { FieldMetadata } from '../src/column-interfaces';

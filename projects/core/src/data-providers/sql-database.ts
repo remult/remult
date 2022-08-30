@@ -12,7 +12,7 @@ import { Remult } from "../context";
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
-  static getRawDb(remult: Remult) {
+  static getRawDb(remult?: Remult) {
     const r = remult._dataSource as SqlDatabase;
     if (!r.createCommand)
       throw "the data provider is not an SqlDatabase";

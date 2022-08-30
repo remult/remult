@@ -5,7 +5,7 @@ import { EntityMetadata, EntityFilter } from "../remult3";
 import { Remult } from "../context";
 export declare class SqlDatabase implements DataProvider {
     private sql;
-    static getRawDb(remult: Remult): SqlDatabase;
+    static getRawDb(remult?: Remult): SqlDatabase;
     createCommand(): SqlCommand;
     execute(sql: string): Promise<SqlResult>;
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;

@@ -1,6 +1,6 @@
 
 
-import { Pool, PoolConfig, QueryResult } from 'pg';
+import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
 import { Remult } from '../src/context';
 import { PostgresSchemaBuilder, verifyStructureOfAllEntities } from './schema-builder';
 import { EntityMetadata } from '../src/remult3';

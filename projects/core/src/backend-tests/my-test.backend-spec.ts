@@ -8,6 +8,8 @@ import { testKnexPGSqlImpl, testMongo, testPostgresImplementation } from "./back
 import { entityWithValidations } from "../shared-tests/entityWithValidations";
 import { PostgresDataProvider } from "../../postgres";
 import { MongoDataProvider, mongoCondition } from "../../remult-mongo";
+import { SqlDatabase } from "../data-providers/sql-database";
+import { getEntityDbNames } from "../filter/filter-consumer-bridge-to-sql-request";
 config();
 
 
@@ -131,4 +133,4 @@ testMongo("work with native mongo and condition", async ({ remult, createEntity 
     const mongo = MongoDataProvider.getRawDb(remult);
     const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments(await mongoCondition(repo, { myId: [1, 2] }))
     expect(r).toBe(2);
-}, true);
+}, false);

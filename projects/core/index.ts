@@ -72,7 +72,7 @@ export {
 export {
     SqlDatabase,
 } from './src/data-providers/sql-database';//V
-export { CustomSqlFilterObject,CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
+export { CustomSqlFilterObject, CustomSqlFilterBuilder, FilterConsumerBridgeToSqlRequest, getEntityDbNames, EntityDbNames } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
 
@@ -104,7 +104,6 @@ export {
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
 export { Filter } from './src/filter/filter-interfaces';
-export { FilterConsumerBridgeToSqlRequest, getEntityDbNames,EntityDbNames } from './src/filter/filter-consumer-bridge-to-sql-request';
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
