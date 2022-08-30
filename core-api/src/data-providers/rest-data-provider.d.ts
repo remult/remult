@@ -30,6 +30,9 @@ export declare class RestDataProviderHttpProviderUsingFetch implements RestDataP
     put(url: string, data: any): Promise<any>;
     delete(url: string): Promise<any>;
     post(url: string, data: any): Promise<any>;
-    myFetch(url: string, init?: RequestInit): Promise<any>;
+    myFetch(url: string, options?: {
+        method?: string;
+        body?: string;
+    }): Promise<any>;
 }
 export declare function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBuilder): boolean;
