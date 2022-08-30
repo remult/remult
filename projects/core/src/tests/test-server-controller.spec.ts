@@ -1,9 +1,10 @@
-import { ActionTestConfig } from './testHelper.spec';
+import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
-import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
-import { Field, Entity, getFields, FieldType, ValueListFieldType, Fields } from '../remult3';
+import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
+import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
 
 import { IdEntity } from '../id-entity';
+import { remult } from '../remult-proxy';
 
 
 @ValueListFieldType()
@@ -19,6 +20,10 @@ export class myType {
 class testEntity extends IdEntity {
     @Fields.string()
     name: string;
+    @BackendMethod({ allowed: false })
+    async forbidden() {
+
+    }
 }
 
 @Controller('1')
@@ -41,6 +46,10 @@ class testBasics {
     @BackendMethod({ allowed: true })
     async testDataType(n: number) {
         return this.myType.what(n);
+    }
+    @BackendMethod({ allowed: false })
+    async forbidden() {
+
     }
 
     @BackendMethod({ allowed: true })
@@ -81,6 +90,10 @@ class testBasics {
 
         return d.getFullYear();
     }
+    @BackendMethod({ allowed: false })
+    static async testForbidden2() {
+
+    }
     @BackendMethod({ allowed: true })
     static async testDataType(d: myType, n: number) {
         return d.what(n);
@@ -106,15 +119,79 @@ class testBasics {
         return z.toString();
     }
 }
+class Stam {
+    @BackendMethod({ allowed: false })
+    static async testForbidden1() {
+        console.log("I am in forbidden");
+    }
+}
 
 
 describe("test Server Controller basics", () => {
-    let c = new Remult(ActionTestConfig.db);
+    let c = new Remult();
+    c.dataProvider = (ActionTestConfig.db);
     beforeEach(async done => {
 
         await Promise.all((await c.repo(testEntity).find()).map(x => x.delete()));
         done();
     });
+    it("forbidden static backend", async () => {
+        let ok = true;
+        try {
+            await Stam.testForbidden1();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+
+    it("forbidden static backend", async () => {
+        let ok = true;
+        try {
+            await testBasics.testForbidden2();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+    it("forbidden static backend", async () => {
+        let ok = true;
+        try {
+            await testBasics.testForbidden2();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+    it("forbidden backend", async () => {
+        let ok = true;
+        try {
+            await new testBasics(c).forbidden();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+    it("forbidden entity", async () => {
+        let ok = true;
+        try {
+            await remult.repo(testEntity).create().forbidden();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+
     it("test error", async () => {
         try {
             await testBasics.syntaxError();
@@ -139,6 +216,7 @@ describe("test Server Controller basics", () => {
 
         expect(await testBasics.sendEntityAsParamter(null)).toBe('null');
     });
+
     it("send entity to server prepare args to send ", async () => {
         let e = await c.repo(testEntity).create({ name: 'test' }).save();
         expect(prepareArgsToSend([testEntity], [e])[0]).toBe(e.id);
@@ -147,16 +225,64 @@ describe("test Server Controller basics", () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.getValFromServer()).toBe('test');
     });
+    it("test backend method caller", async () => {
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/sf");
+                    expect(data.args[0]).toEqual("noam");
+                    return { data: { result: "hello noam" } };
+                },
+                put: () => undefined
+            }
+        });
+        const r = (await c.call(testBasics.sf)("noam"));
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
+    it("test backend method instance method", async () => {
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/1/doIt");
+                    return { result: { result: "hello noam" }, fields: {} };
+                },
+                put: () => undefined
+            }
+        });
+        const b = new testBasics(remult);
+        const r = (await c.call(b.doIt, b)());
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
     it("test server function", async () => {
 
         let r = await testBasics.sf("noam");
         expect(r.onServer).toBe(true);
         expect(r.result).toBe('hello noam');
     });
+    it("test server function on server", async () => {
+        await testAsIfOnBackend(async () => {
+            let r = await testBasics.sf("noam");
+            expect(r.onServer).toBe(true);
+            expect(r.result).toBe('hello noam');
+        });
+    });
     it("test server Method Date", async () => {
         let tb = new testBasics(c);
         tb.theDate = new Date(1976, 6, 16);
         expect(await tb.testDate()).toBe(1976);
+    });
+    it("test server Method Date on server", async () => {
+        let tb = new testBasics(c);
+        tb.theDate = new Date(1976, 6, 16);
+        await testAsIfOnBackend(async () => {
+            expect(await tb.testDate()).toBe(1976)
+        });
     });
     it("test server Method myType", async () => {
         let tb = new testBasics(c);

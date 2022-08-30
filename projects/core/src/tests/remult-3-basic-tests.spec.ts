@@ -8,7 +8,8 @@ import { Remult } from "../context";
 describe("remult-3-basics", () => {
     it("test the very basics", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new Remult(mem);
+        let c = new Remult();
+        c.dataProvider = (mem);
         expect(await c.repo(Products).count()).toBe(0);
         let p = c.repo(Products).create();
         p.id = 1;

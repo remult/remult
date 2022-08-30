@@ -1,20 +1,20 @@
 
 import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { DataApiRequest } from "./data-api";
-import { Action, actionInfo } from './server-action';
+import { Action, actionInfo, serverActionField } from './server-action';
 import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 
-export interface HttpProvider {
+export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
     delete(url: string): Promise<void> | { toPromise(): Promise<void> };
     put(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
     get(url: string): Promise<any> | { toPromise(): Promise<any> };
 }
 export class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
-    constructor(private http: HttpProvider) {
+    constructor(private http: ExternalHttpProvider) {
 
     }
     async post(url: string, data: any): Promise<any> {
@@ -89,6 +89,8 @@ export async function processHttpException(ex: any) {
             message: error,
         };
     }
+    if (z.modelState)
+        error.modelState = z.modelState;
     let httpStatusCode = z.status;
     if (httpStatusCode === undefined)
         httpStatusCode = z.response?.status;
@@ -114,7 +116,7 @@ export class Remult {
      */
     public repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
         if (dataProvider === undefined)
-            dataProvider = this._dataSource;
+            dataProvider = this.dataProvider;
         let dpCache = this.repCache.get(dataProvider);
         if (!dpCache)
             this.repCache.set(dataProvider, dpCache = new Map<ClassType<any>, Repository<any>>());
@@ -126,48 +128,13 @@ export class Remult {
         }
         return r;
     }
-    /** Returns the current user's info */
-    get user(): UserInfo {
-        if (this._user === undefined) {
-            return {
-                id: undefined,
-                name: '',
-                roles: []
-            }
-        }
-        return this._user;
-    }
-    /** Set's the current user info */
-    async setUser(info: UserInfo | undefined) {
-        this._user = info as UserInfo;
-        if (this._user === null)
-            this._user = undefined;
-        let auth = info as { sub?: string, name?: string, permissions?: string[], username?: string };
-        if (auth) {
-            if (!this._user.id && auth.sub)
-                this._user.id = auth.sub;
-            if (!this._user.roles && auth.permissions) {
-                this._user.roles = auth.permissions;
-            }
-            if (!this._user.name)
-                this._user.name = auth.username;
-        }
-        if (this._user && !this._user.roles)
-            this._user.roles = [];
-        await this._userChangeEvent.fire();
-    }
 
+    user?: UserInfo;
 
-
-
-
-
-    private _user: UserInfo;
-
-    private _userChangeEvent = new EventSource();
+    /*  delete me */
     /** Checks if a user was authenticated */
     authenticated() {
-        return this.user.id !== undefined;
+        return this.user?.id !== undefined;
     }
     /** checks if the user has any of the roles specified in the parameters
      * @example
@@ -193,7 +160,7 @@ export class Remult {
         if (typeof roles === 'boolean')
             return roles;
         if (typeof roles === 'string')
-            if (this.user.roles.indexOf(roles.toString()) >= 0)
+            if (this.user?.roles?.indexOf(roles.toString()) >= 0)
                 return true;
 
 
@@ -217,59 +184,49 @@ export class Remult {
             return allowed(this, instance)
         } else return this.isAllowed(allowed as Allowed);
     }
-
-    /** returns a dispatcher object that fires once a user has changed*/
-    get userChange() {
-        return this._userChangeEvent.dispatcher;
-    }
-
-    private repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    /* @internal */
+    repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
     /** Creates a new instance of the `remult` object.
      * 
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
      * 
      * If no provider is specified, `fetch` will be used as an http provider
      */
-    constructor(provider?: HttpProvider | DataProvider | typeof fetch) {
+    constructor(http: ExternalHttpProvider | typeof fetch | ApiClient)
+    constructor(p: DataProvider)
+    constructor()
+    constructor(provider?: ExternalHttpProvider | DataProvider | typeof fetch | ApiClient) {
 
         if (provider && (provider as DataProvider).getEntityDataProvider) {
-            this._dataSource = provider as DataProvider;
+            this.dataProvider = provider as DataProvider;
             return;
         }
-        let dataProvider: RestDataProviderHttpProvider;
-
-        if (!dataProvider) {
-            let http: HttpProvider = provider as HttpProvider;
-            if (http && http.get && http.put && http.post && http.delete) {
-                dataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(http);
-            }
-        }
-        if (!dataProvider) {
-            if (typeof provider === "function") {
-                dataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
-            }
+        if (isExternalHttpProvider(provider)) {
+            this.apiClient.httpClient = provider as ExternalHttpProvider;
+        } else if (typeof (provider) === "function")
+            this.apiClient.httpClient = provider;
+        else if (provider) {
+            const apiClient = provider as ApiClient;
+            if (apiClient.httpClient)
+                this.apiClient.httpClient = apiClient.httpClient;
+            if (apiClient.url)
+                this.apiClient.url = apiClient.url;
         }
 
-        if (!dataProvider) {
-            dataProvider = new RestDataProviderHttpProviderUsingFetch();
-        }
-        this._dataSource = new RestDataProvider(Remult.apiBaseUrl, dataProvider);
-        if (!Action.provider)
-            Action.provider = dataProvider;
     }
-    /** The api Base Url to be used in all remult calls. by default it's set to `/api`.
-     * 
-     * Set this property in case you want to determine a non relative api url
-     */
-    static apiBaseUrl = '/api';
+
+    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T {
+        const z = (backendMethod[serverActionField]) as Action<any, any>;
+        if (!z.doWork)
+            throw Error("The method received is not a valid backend method");
+        //@ts-ignore
+        return (...args: any[]) => {
+            return z.doWork(args, self, this.apiClient.url, buildRestDataProvider(this.apiClient.httpClient));
+        }
+    }
     /** The current data provider */
-    /** @internal */
-    _dataSource: DataProvider;
-    /** sets the current data provider */
-    /** @internal */
-    setDataProvider(dataProvider: DataProvider) {
-        this._dataSource = dataProvider;
-    }
+    dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
+
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
     clearAllCache(): any {
@@ -277,7 +234,18 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+    readonly context: RemultContext = {};
+    apiClient: ApiClient = {
+        url: '/api'
+    };
 }
+export interface RemultContext {
+
+}
+export interface ApiClient {
+    httpClient?: ExternalHttpProvider | typeof fetch;
+    url?: string;
+};
 
 
 export const allEntities: ClassType<any>[] = [];
@@ -293,6 +261,31 @@ export class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
 
+function isExternalHttpProvider(item: any) {
+    let http: ExternalHttpProvider = item as ExternalHttpProvider;
+    if (http && http.get && http.put && http.post && http.delete)
+        return true;
+    return false;
+}
+
+export function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch) {
+    if (!provider)
+        return new RestDataProviderHttpProviderUsingFetch();
+    let httpDataProvider: RestDataProviderHttpProvider;
+
+    if (!httpDataProvider) {
+
+        if (isExternalHttpProvider(provider)) {
+            httpDataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(provider as ExternalHttpProvider);
+        }
+    }
+    if (!httpDataProvider) {
+        if (typeof provider === "function") {
+            httpDataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
+        }
+    }
+    return httpDataProvider;
+}
 
 export function setControllerSettings(target: any, options: ControllerOptions) {
     let r = target;
@@ -313,8 +306,8 @@ export function setControllerSettings(target: any, options: ControllerOptions) {
 
 export interface UserInfo {
     id: string;
-    name: string;
-    roles: string[];
+    name?: string;
+    roles?: string[];
 }
 
 

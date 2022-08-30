@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod ,FastifyRequest} from 'fastify';
+import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod, FastifyRequest } from 'fastify';
 import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge';
 
 
@@ -56,6 +56,7 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Fas
     return Object.assign(pluginFunction, {
         getRemult: x => api.getRemult(x),
         openApiDoc: x => api.openApiDoc(x),
-        handle: (req, res) => api.handle(req, res)
+        handle: (req, res) => api.handle(req, res),
+        withRemult: (req, res, next) => api.withRemult(req, res, next)
     } as RemultServer);
 }

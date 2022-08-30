@@ -22,7 +22,7 @@ export interface EntityDataProviderFindOptions {
   page?: number;
   orderBy?: Sort;
 }
-export interface RestDataProviderHttpProvider {
+export interface RestDataProviderHttpProvider  {
   post(url: string, data: any): Promise<any>;
   delete(url: string): Promise<void>;
   put(url: string, data: any): Promise<any>;

@@ -6,11 +6,6 @@ import { EntityOptions as EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 
-
-
-
-
-
 export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges();

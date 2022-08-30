@@ -72,7 +72,7 @@ export {
 export {
     SqlDatabase,
 } from './src/data-providers/sql-database';//V
-export { CustomSqlFilterObject, CustomSqlFilterBuilder, FilterConsumerBridgeToSqlRequest, getEntityDbNames, EntityDbNames } from './src/filter/filter-consumer-bridge-to-sql-request';
+export { CustomSqlFilterObject, CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
 
@@ -90,11 +90,13 @@ export {
     Allowed,
     Allow,
     Remult,
+    RemultContext,
+    ApiClient,
     isBackend,
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-    HttpProvider,
+    ExternalHttpProvider ,
     Unobserve,
     UserInfo
 } from './src/context';
@@ -108,3 +110,4 @@ export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
 export { ValueConverters } from './src/valueConverters';
+export { remult } from './src/remult-proxy';

@@ -1,11 +1,13 @@
 
-import { Action, actionInfo, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
+import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
+import { AsyncLocalStorage } from 'async_hooks';
+import { remult, RemultProxy } from '../src/remult-proxy';
 
 
 
@@ -62,10 +64,16 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
       var remult = new Remult(dp);
-      await options.initApi(remult);
+      await new Promise((res) => {
+        remultObjectStorage.run(remult, async () => {
+          await options.initApi(remult);
+          res({})
+        })
+      });
       return dp;
     });
   }
+  
   {
     let allControllers: ClassType<any>[] = [];
     if (!options.entities)
@@ -79,7 +87,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
   }
 
   if (options.rootPath === undefined)
-    options.rootPath = Remult.apiBaseUrl;
+    options.rootPath = '/api';
   actionInfo.runningOnServer = true;
   let bridge = new RemultServerImplementation(new inProcessQueueHandler(options.queueStorage), options, dataProvider);
   return bridge;
@@ -98,6 +106,7 @@ export interface RemultServer {
   openApiDoc(options: { title: string }): any;
   registerRouter(r: GenericRouter): void;
   handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+  withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction);
 
 }
 export type GenericRouter = {
@@ -125,13 +134,27 @@ export interface GenericResponse {
 };
 
 
+const remultObjectStorage = new AsyncLocalStorage<Remult>();
+let remultObjectStorageWasSetup = false;
 
 
 
 class RemultServerImplementation implements RemultServer {
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
+    if (!remultObjectStorageWasSetup) {
+      remultObjectStorageWasSetup = true;
+      (remult as RemultProxy).remultFactory = () => {
+        const r = remultObjectStorage.getStore()
+        if (r)
+          return r;
+        else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
+      };
+    }
 
+  }
+  withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
+    this.process(async () => { next() })(req, res);
   }
   routeImpl: RouteImplementation;
 
@@ -175,7 +198,7 @@ class RemultServerImplementation implements RemultServer {
               else
                 res.success(job.info);
             });
-          }
+          }, doWork: undefined
         }, r);
 
     }
@@ -192,7 +215,7 @@ class RemultServerImplementation implements RemultServer {
 
     let myRoute = this.options.rootPath + '/' + key;
     if (this.options.logApiEndPoints)
-      console.log("[remult] "+myRoute);
+      console.log("[remult] " + myRoute);
 
 
     r.route(myRoute)
@@ -218,24 +241,29 @@ class RemultServerImplementation implements RemultServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
-      remult.setDataProvider(await this.dataProvider);
-      if (req) {
-        let user;
-        if (this.options.getUser)
-          user = await this.options.getUser(req);
-        else {
-          user = req['user'];
-          if (!user)
-            user = req['auth'];
-        }
-        if (user)
-          remult.setUser(user);
-      }
-      if (this.options.initRequest) {
-        await this.options.initRequest(remult, req);
-      }
+      remult.dataProvider = (await this.dataProvider);
+      await new Promise(res => {
+        remultObjectStorage.run(remult, async () => {
+          if (req) {
+            let user;
+            if (this.options.getUser)
+              user = await this.options.getUser(req);
+            else {
+              user = req['user'];
+              if (!user)
+                user = req['auth'];
+            }
+            if (user)
+              remult.user = (user);
+          }
+          if (this.options.initRequest) {
+            await this.options.initRequest(remult, req);
+          }
 
-      what(remult, myReq, myRes, req);
+          await what(remult, myReq, myRes, req);
+          res({});
+        })
+      })
     }
   };
   async getRemult(req: GenericRequest) {
@@ -247,9 +275,7 @@ class RemultServerImplementation implements RemultServer {
   }
   hasQueue = false;
 
-  addAction(action: {
-    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) => void
-  }, r: GenericRouter) {
+  addAction(action: ActionInterface, r: GenericRouter) {
     action.__register((url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, r: Remult, res: DataApiResponse) => void) => {
       let myUrl = this.options.rootPath + '/' + url;
       let tag = (() => {
@@ -261,7 +287,7 @@ class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        console.log("[remult] "+myUrl);
+        console.log("[remult] " + myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);

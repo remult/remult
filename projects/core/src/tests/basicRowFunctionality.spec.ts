@@ -30,6 +30,7 @@ import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
 import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
+import { async } from "@angular/core/testing";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -257,8 +258,8 @@ describe("data api", () => {
 
 
 
-  let remult = new Remult(new InMemoryDataProvider());
-
+  let remult = new Remult();
+  remult.dataProvider = (new InMemoryDataProvider());
 
 
   it("validate with validations on column fails", async () => {
@@ -341,7 +342,8 @@ describe("data api", () => {
     expect(r.length).toBe(0);
   });
   it("delete falis nicely ", async () => {
-    let ctx = new Remult({
+    let ctx = new Remult();
+    ctx.dataProvider = ({
       getEntityDataProvider: (x) => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }]);
         r.delete = () => { throw "ERROR"; };
@@ -791,7 +793,7 @@ describe("data api", () => {
 
     let startTest = false;
     let mem = new InMemoryDataProvider();
-    let remult = new Remult(mem);
+    remult.dataProvider = (mem);
     let type = class extends newCategories {
 
     }
@@ -1407,6 +1409,7 @@ describe("column validation", () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
+    c.dataProvider = (sql);
     let type = class extends EntityBase {
       id: number;
       name: string;
@@ -1441,7 +1444,7 @@ describe("test web sql identity", () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
     let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
-
+    c.dataProvider = (sql);
 
     let type = class extends EntityBase {
       id: number;
@@ -1512,8 +1515,8 @@ describe("compound id", () => {
   it("compound sql",
     async () => {
       let sql = new SqlDatabase(new WebSqlDataProvider('compound'));
-      let ctx = new Remult(sql);
-
+      let ctx = new Remult();
+      ctx.dataProvider = (sql);
 
       let cod = ctx.repo(CompoundIdEntity);
       for (const od of await cod.find({ where: { a: 99 } })) {
@@ -1532,8 +1535,8 @@ describe("compound id", () => {
   const ctx = new Remult();
   it("start", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult(mem);
-
+    let ctx = new Remult();
+    ctx.dataProvider = (mem);
 
     let s = ctx.repo(CompoundIdEntity);
 
@@ -1553,7 +1556,8 @@ describe("compound id", () => {
 
   it("update", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult(mem);
+    let ctx = new Remult();
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1573,7 +1577,8 @@ describe("compound id", () => {
   });
   it("update2", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult(mem);
+    let ctx = new Remult();
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity);
 
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
@@ -1591,7 +1596,8 @@ describe("compound id", () => {
   });
   it("insert", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult(mem);
+    let ctx = new Remult();
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity).create();
     mem.rows[ctx.repo(CompoundIdEntity).metadata.key].push({ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 });
 
@@ -1606,7 +1612,8 @@ describe("compound id", () => {
   });
   it("delete", async () => {
     let mem = new InMemoryDataProvider();
-    let ctx = new Remult(mem);
+    let ctx = new Remult();
+    ctx.dataProvider = (mem);
     let c = ctx.repo(CompoundIdEntity);
     mem.rows[c.metadata.key] = [{ a: 1, b: 11, c: 111 }, { a: 2, b: 22, c: 222 }];
 
@@ -1649,7 +1656,8 @@ describe("test data list", () => {
 
   it("delete fails nicely", async () => {
 
-    let cont = new Remult({
+    let cont = new Remult();
+    cont.dataProvider = ({
       getEntityDataProvider: x => {
         let r = new ArrayEntityDataProvider(x, [{ id: 1 }, { id: 2 }, { id: 3 }]);
         r.delete = id => { return Promise.resolve().then(() => { throw Promise.resolve("error"); }) };
@@ -1758,7 +1766,8 @@ describe("test rest data provider translates data correctly", () => {
     let [, serverRemult] = await createData(async insert => await insert(1, "test"));
 
     let restDb = new MockRestDataProvider(serverRemult);
-    let remult = new Remult(restDb);
+    let remult = new Remult();
+    remult.dataProvider = (restDb);
     let c = await remult.repo(Categories).findId(1, { useCache: false });
     expect(c.categoryName).toBe("test");
     c.categoryName = "test1";
@@ -1782,19 +1791,21 @@ describe("test rest data provider translates data correctly", () => {
     Fields.date()(type.prototype, 'b');
 
     let c = new Remult().repo(type);
-    let z = new RestDataProvider("", {
-      delete: undefined,
-      get: async () => {
-        return [
-          {
-            a: 1,
-            b: "2021-05-16T08:32:19.905Z"
-          }
-        ]
-      },
-      post: undefined,
-      put: undefined
-    });
+    let z = new RestDataProvider(() => ({
+      httpClient: {
+        delete: ()=>undefined,
+        get: async () => {
+          return [
+            {
+              a: 1,
+              b: "2021-05-16T08:32:19.905Z"
+            }
+          ]
+        },
+        post: ()=>undefined,
+        put: ()=>undefined
+      }
+    }));
     let x = z.getEntityDataProvider(c.metadata);
     let r = await x.find();
     expect(r.length).toBe(1);
@@ -1802,6 +1813,36 @@ describe("test rest data provider translates data correctly", () => {
     expect(r[0].b.valueOf()).toBe(new Date("2021-05-16T08:32:19.905Z").valueOf());
     expect(r[0].b instanceof Date).toBe(true);
   })
+  it("test api client", async () => {
+    let type = class extends EntityBase {
+      a: number;
+      b: Date;
+    };
+    Entity('x')(type);
+    Fields.integer()(type.prototype, 'a');
+    Fields.date()(type.prototype, 'b');
+    let results: string[] = [];
+    const remult = new Remult();
+    let c = remult.repo(type);
+    remult.apiClient.httpClient = async (url, args) => {
+      results.push("a:" + url);
+      return ({ status: 200, json: async () => [] }) as Response;
+    };
+    await c.find();
+    expect(results).toEqual(["a:/api/x"]);
+    results = [];
+    remult.apiClient.url = '/yy';
+    await c.find();
+    expect(results).toEqual(["a:/yy/x"]);
+    results = [];
+    remult.apiClient.httpClient = async (url, args) => {
+      results.push("b:" + url);
+      return ({ status: 200, json: async () => [] }) as Response;
+    };
+    await c.find();
+    expect(results).toEqual(["b:/yy/x"]);
+
+  });
   it("put works", async () => {
     let type = class extends EntityBase {
       a: number;
@@ -1826,17 +1867,19 @@ describe("test rest data provider translates data correctly", () => {
 
     let c = new Remult().repo(type);
     let done = new Done();
-    let z = new RestDataProvider("", {
-      delete: undefined,
-      get: undefined,
-      post: async (x, data) => {
-        done.ok();
-        expect(data.a).toBe(1);
-        expect(data.b).toBe("2021-05-16T08:32:19.905Z");
-        return data;
-      },
-      put: undefined
-    });
+    let z = new RestDataProvider(() => ({
+      httpClient: {
+        delete: ()=>undefined,
+        get: ()=>undefined,
+        post: async (x, data) => {
+          done.ok();
+          expect(data.a).toBe(1);
+          expect(data.b).toBe("2021-05-16T08:32:19.905Z");
+          return data;
+        },
+        put: ()=>undefined
+      }
+    }));
     let x = z.getEntityDataProvider(c.metadata);
     let r = await x.insert({
       a: 1,
@@ -1849,7 +1892,8 @@ describe("test rest data provider translates data correctly", () => {
   })
 });
 describe("check allowedDataType", () => {
-  let c = new Remult(new InMemoryDataProvider());
+  let c = new Remult();
+  c.dataProvider = (new InMemoryDataProvider());
   let strA = 'roleA',
     strB = 'roleB',
     strC = 'roleC';
@@ -1857,9 +1901,7 @@ describe("check allowedDataType", () => {
   let roleB = (strB);
   let roleC = (strC);
   beforeAll(async (done) => {
-
-    await c.setUser({ id: 'x', name: 'y', roles: [strA, strB] }
-    );
+    c.user = { id: 'x', name: 'y', roles: [strA, strB] };
     done();
   });
   it("1", () => {
@@ -1890,8 +1932,9 @@ describe("check allowedDataType", () => {
   myIt(false, false);
   myIt(undefined, undefined);
   it("no context", () => {
-    let c = new Remult(new InMemoryDataProvider());
-    c.setUser(undefined);
+    let c = new Remult();
+    c.dataProvider = (new InMemoryDataProvider());
+    c.user = undefined;
     expect(c.isAllowed(true)).toBe(true);
     expect(c.isAllowed(c => true)).toBe(true);
     expect(c.isAllowed(false)).toBe(false);
@@ -2000,7 +2043,7 @@ describe("test fetch", () => {
     }));
     expect(await r.repo(Categories).count()).toBe(7);
   });
-  it("test remult with non default fetch function", async () => {
+  it("test remult with non default fetch function1", async () => {
     var r = new Remult(async (url, info) => {
       return new mockResponse({ status: 200, json: async () => ({ count: 7 }) })
     });
@@ -2008,7 +2051,11 @@ describe("test fetch", () => {
   });
   it("axios uses the correct api", () => {
     const r = new Remult(axios);
-    expect((r._dataSource as any).http instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
+    expect(r.apiClient.httpClient).toBe(axios);
+    expect((r.dataProvider as any).apiProvider().httpClient).toBe(axios);//
+
+    expect((r.dataProvider.getEntityDataProvider(r.repo(Categories).metadata) as any).http()
+      instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
   });
   it("get", async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
@@ -2082,7 +2129,7 @@ describe("test fetch", () => {
     expect(z).toBeUndefined();
   });
   it("rest doesn't suppor transactions", async () => {
-    const r = new RestDataProvider('', undefined);
+    const r = new RestDataProvider(() => undefined);
     let ok = false;
     try {
       await r.transaction(async () => { });

@@ -6,14 +6,15 @@ import { CompoundIdField } from "../column";
 import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, dbNameProvider, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityMetadata, EntityFilter, OmitEB, Repository } from "../remult3";
+import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementation } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
+
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
   static getRawDb(remult?: Remult) {
-    const r = remult._dataSource as SqlDatabase;
+    const r = (remult || RepositoryImplementation.defaultRemult).dataProvider as SqlDatabase;
     if (!r.createCommand)
       throw "the data provider is not an SqlDatabase";
     return r;
@@ -162,8 +163,8 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       if (options.limit) {
         options.orderBy = Sort.createUniqueSort(this.entity, options.orderBy);
       }
-      if (!options.orderBy){
-        options.orderBy = Sort.createUniqueSort(this.entity,new Sort());
+      if (!options.orderBy) {
+        options.orderBy = Sort.createUniqueSort(this.entity, new Sort());
       }
       if (options.orderBy) {
         let first = true;

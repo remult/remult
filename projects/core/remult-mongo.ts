@@ -3,13 +3,14 @@ import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFi
 import { dbNameProvider, getDbNameProvider } from './src/filter/filter-consumer-bridge-to-sql-request';
 import { FilterConsumer } from './src/filter/filter-interfaces';
 import { RepositoryImplementation } from './src/remult3';
+import { remult as remultContext } from './src/remult-proxy';
 
 export class MongoDataProvider implements DataProvider {
     constructor(private db: Db, private client: MongoClient) {
 
     }
-    static getRawDb(remult: Remult) {
-        const r = remult._dataSource as MongoDataProvider;
+    static getRawDb(remult?: Remult) {
+        const r = (remult || remultContext).dataProvider as MongoDataProvider;
         if (!r.db)
             throw "the data provider is not a MongoDataProvider";
         return r.db;

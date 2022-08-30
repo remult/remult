@@ -104,7 +104,7 @@ testKnexPGSqlImpl("work with native knex", async ({ remult, createEntity }) => {
 }, false);
 testKnexPGSqlImpl("work with native knex2", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    await (remult._dataSource).transaction(async db => {
+    await (remult.dataProvider).transaction(async db => {
         const sql = KnexDataProvider.getRawDb(new Remult(db));
         const r = await sql(repo.metadata.options.dbName!).count()
         expect(r[0].count).toBe('4');

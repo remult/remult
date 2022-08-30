@@ -24,7 +24,9 @@ export function remultExpress(options?:
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-        registerRouter: x => server.registerRouter(x)
+        registerRouter: x => server.registerRouter(x),
+        withRemult: (...args) => server.withRemult(...args)
+
     } as RemultServer);
 
 }

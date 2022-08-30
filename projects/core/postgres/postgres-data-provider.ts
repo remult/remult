@@ -17,7 +17,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
-    static getRawDb(remult: Remult): ClientBase {
+    static getRawDb(remult?: Remult): ClientBase {
         const sql = SqlDatabase.getRawDb(remult);
         const me = sql._getSourceSql() as PostgresDataProvider;
         if (!me.pool) {
@@ -124,7 +124,8 @@ export async function createPostgresConnection(options?: {
 
 
     const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)));
-    let remult = new Remult(db);
+    let remult = new Remult();
+    remult.dataProvider = (db);
     if (options.autoCreateTables === undefined || options.autoCreateTables)
         await verifyStructureOfAllEntities(db, remult);
     return db;
@@ -134,7 +135,7 @@ export async function createPostgresConnection(options?: {
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 
     let c = new Remult();
-    c.setDataProvider(sql);
+    c.dataProvider = (sql);
     let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
     let e = c.repo(JobsInQueueEntity);
     await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);

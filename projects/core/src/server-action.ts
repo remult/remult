@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings } from './context';
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
 
 
 
@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -25,20 +25,21 @@ interface inArgs {
 }
 interface result {
     data: any;
-
 }
-export abstract class Action<inParam, outParam>{
+export abstract class Action<inParam, outParam> implements ActionInterface {
     constructor(private actionUrl: string, private queue: boolean, private allowed: AllowedForInstance<any>) {
 
     }
     static apiUrlForJobStatus = 'jobStatusInQueue';
-    static provider: RestDataProviderHttpProvider;
-    async run(pIn: inParam): Promise<outParam> {
+    async run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam> {
+        if (baseUrl === undefined)
+            baseUrl = RepositoryImplementation.defaultRemult.apiClient.url;
+        if (!http)
+            http = buildRestDataProvider(RepositoryImplementation.defaultRemult.apiClient.httpClient);
 
-        let r = await Action.provider.post(Remult.apiBaseUrl + '/' + this.actionUrl, pIn);
+        let r = await http.post(baseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
         if (p && p.queuedJobId) {
-
             let progress = actionInfo.startBusyWithProgress();
             try {
                 let runningJob: queuedJobInfoResponse;
@@ -48,7 +49,7 @@ export abstract class Action<inParam, outParam>{
                             await new Promise(res => setTimeout(() => {
                                 res(undefined);
                             }, 200));
-                        runningJob = await Action.provider.post(Remult.apiBaseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
+                        runningJob = await http.post(baseUrl + '/' + Action.apiUrlForJobStatus, { queuedJobId: r.queuedJobId });
                         if (runningJob.progress) {
                             progress.progress(runningJob.progress);
                         }
@@ -70,6 +71,7 @@ export abstract class Action<inParam, outParam>{
 
 
     }
+    doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
 
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
@@ -104,9 +106,9 @@ export class myServerAction extends Action<inArgs, result>
 
     protected async execute(info: inArgs, remult: Remult, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
-        let ds = remult._dataSource;
+        let ds = remult.dataProvider;
         await ds.transaction(async ds => {
-            remult.setDataProvider(ds);
+            remult.dataProvider = (ds);
             if (!remult.isAllowedForInstance(undefined, this.options.allowed))
                 throw new ForbiddenError();
 
@@ -194,19 +196,20 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
             let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
+            serverAction.doWork = async (args, self, url, http) => {
+                args = prepareArgsToSend(types, args);
+                if (options.blockUser === false) {
+                    return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args }, url, http)).data);
+                }
+                else
+                    return (await serverAction.run({ args }, url, http)).data;
+            }
 
 
 
             descriptor.value = async function (...args: any[]) {
                 if (!actionInfo.runningOnServer) {
-
-
-                    args = prepareArgsToSend(types, args);
-                    if (options.blockUser === false) {
-                        return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args })).data);
-                    }
-                    else
-                        return (await serverAction.run({ args })).data;
+                    return await serverAction.doWork(args, undefined);
                 }
                 else
                     return (await originalMethod.apply(undefined, args));
@@ -229,8 +232,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         methodHelpers.set(descriptor, mh);
         x.methods.push(mh);
         var originalMethod = descriptor.value;
-        let serverAction = {
-
+        let serverAction: ActionInterface = {
             __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
 
                 let c = new Remult();
@@ -252,11 +254,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         try {
                             let remult = req;
 
-                            let ds = remult._dataSource;
+                            let ds = remult.dataProvider;
 
                             let r: serverMethodOutArgs;
-                            await ds.transaction(async ds => {
-                                remult.setDataProvider(ds);
+                            await ds.transaction(async (ds) => {
+                                remult.dataProvider = (ds);
                                 d.args = await prepareReceivedArgs(types, d.args, remult, ds, res);
                                 if (allEntities.includes(constructor)) {
                                     let repo = remult.repo(constructor);
@@ -321,16 +323,16 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             res.success(r);
                         }
                         catch (err) {
-                            res.error(err);
+                            if (err.isForbiddenError) // got a problem in next with instance of ForbiddenError  - so replaced it with this bool
+                                res.forbidden();
+
+                            else
+                                res.error(err);
                         }
                     });
                 }
-            }
-        };
-
-        descriptor.value = async function (...args: any[]) {
-            if (!actionInfo.runningOnServer) {
-                let self = this;
+            },
+            doWork: async function (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<any> {
                 args = prepareArgsToSend(types, args);
 
                 if (allEntities.includes(target.constructor)) {
@@ -343,9 +345,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     try {
 
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
-                            async execute(a, b): Promise<serverMethodOutArgs> {
-                                throw ('should get here');
-                            }
+                            protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
                         }(classOptions.key + "/" + key, options ? options.queue : false, options.allowed).run({
                             args,
                             rowInfo: {
@@ -355,13 +355,12 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                 id: defs.getOriginalId()
                             }
 
-                        }));
+                        }, baseUrl, http));
                         await defs._updateEntityBasedOnApi(r.rowInfo.data);
                         return r.result;
                     }
                     catch (err) {
-                        defs.catchSaveErrors(err);
-                        throw err;
+                        throw defs.catchSaveErrors(err);
                     }
                 }
 
@@ -370,13 +369,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     try {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
-                            async execute(a, b): Promise<serverMethodOutArgs> {
-                                throw ('should get here');
-                            }
-                        }(mh.classes.get(this.constructor).key + "/" + key, options ? options.queue : false, options.allowed).run({
+                            protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
+                        }(mh.classes.get(self.constructor).key + "/" + key, options ? options.queue : false, options.allowed).run({
                             args,
                             fields: await defs.toApiJson()
-                        }));
+                        }, baseUrl, http));
                         await defs._updateEntityBasedOnApi(r.fields);
                         return r.result;
                     }
@@ -384,6 +381,13 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         throw defs.catchSaveErrors(e);
                     }
                 }
+            }
+        };
+
+        descriptor.value = async function (...args: any[]) {
+            if (!actionInfo.runningOnServer) {
+                let self = this;
+                return serverAction.doWork(args, self);
             }
             else
                 return (await originalMethod.apply(this, args));
@@ -413,9 +417,7 @@ function registerAction(target: any, descriptor: any) {
 function isCustomUndefined(x: any) {
     return x && x._isUndefined;
 }
-export interface registrableAction {
-    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) => void
-}
+
 export interface jobWasQueuedResult {
     queuedJobId?: string
 }
@@ -496,3 +498,9 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult: Rem
 }
 
 export const classBackendMethodsArray = Symbol('classBackendMethodsArray');
+
+
+export interface ActionInterface {
+    doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
+    __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void);
+}

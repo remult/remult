@@ -1,6 +1,6 @@
 
 import { addDatabaseToTest, dbTestWhatSignature, itWithFocus } from "../shared-tests/db-tests-setup";
-import { InMemoryDataProvider } from "../..";
+import { InMemoryDataProvider, remult } from "../..";
 import { Remult } from "../context";
 import { SqlDatabase } from "../data-providers/sql-database";
 import { WebSqlDataProvider } from "../data-providers/web-sql-data-provider";
@@ -21,7 +21,8 @@ export function testWebSqlImpl(key: string, what: dbTestWhatSignature, focus = f
           await sql.execute("drop table if exists " + r.name);
       }
     }
-    let remult = new Remult(sql);
+    let remult = new Remult();
+    remult.dataProvider = (sql);
     await what({ db: sql, remult, createEntity: async (x) => remult.repo(x) });
   }, focus);
 }
@@ -30,10 +31,11 @@ addDatabaseToTest(testWebSqlImpl);
 
 export function testRest(key: string, what: dbTestWhatSignature, focus = false) {
   itWithFocus(key + " - Rest Provider", async () => {
-    let r = new Remult(new InMemoryDataProvider());
+    let r = new Remult();
+    r.dataProvider = (new InMemoryDataProvider());
 
     let db = new MockRestDataProvider(r);
-    let remult = new Remult(db);
+    remult.dataProvider = (db);
     await what({ db, remult, createEntity: async (x) => remult.repo(x) });
   }, focus);
 }

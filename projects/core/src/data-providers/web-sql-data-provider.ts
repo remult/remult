@@ -21,7 +21,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, databaseSize);
     }
-    static getRawDb(remult: Remult) {
+    static getRawDb(remult?: Remult) {
         const sql = SqlDatabase.getRawDb(remult);
         const me = sql._getSourceSql() as WebSqlDataProvider;
         if (!me.db) {

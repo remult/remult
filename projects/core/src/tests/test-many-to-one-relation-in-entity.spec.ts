@@ -98,14 +98,16 @@ describe("many to one relation", () => {
     afterEach(() => actionInfo.runningOnServer = false);
     it("xx", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         await remult.repo(profile).create({ id: '1' }).save();
         let p = await remult.repo(profile).findId('1');
         expect(p.following).toBe(false);
     });
     it("test that it is loaded to begin with", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let category = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         await remult.repo(Products).create({ id: 1, name: 'p1', category }).save();
         remult.clearAllCache();
@@ -133,7 +135,8 @@ describe("many to one relation", () => {
     });
     it("test that it is loaded onDemand", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let category = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         await remult.repo(Products).create({ id: 1, name: 'p1', category }).save();
         remult.clearAllCache();
@@ -144,7 +147,8 @@ describe("many to one relation", () => {
     });
     it("test that it is loaded onDemand", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let category = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         await remult.repo(Products).create({ id: 1, name: 'p1', category }).save();
         remult.clearAllCache();
@@ -159,7 +163,8 @@ describe("many to one relation", () => {
 
     it("what", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = remult.repo(Categories).create();
         cat.id = 1;
         cat.name = "cat 1";
@@ -211,7 +216,8 @@ describe("many to one relation", () => {
 
     it("test wait load", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = remult.repo(Categories).create();
         cat.id = 1;
         cat.name = "cat 1";
@@ -225,7 +231,8 @@ describe("many to one relation", () => {
         p.name = "prod 10";
         p.category = cat;
         await p.save();
-        remult = new Remult(mem);
+        remult = new Remult();
+        remult.dataProvider = (mem);
         p = await remult.repo(Products).findFirst();
         p.category = c2;
         await p.$.category.load();
@@ -238,7 +245,8 @@ describe("many to one relation", () => {
     });
     it("test null", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
 
         let p = remult.repo(Products).create();
         p.id = 10;
@@ -258,7 +266,8 @@ describe("many to one relation", () => {
     });
     it("test stages", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
 
         let p = remult.repo(Products).create();
         p.id = 10;
@@ -270,7 +279,8 @@ describe("many to one relation", () => {
         await c.save();
         p.category = c;
         await p.save();
-        remult = new Remult(mem);
+        remult = new Remult();
+        remult.dataProvider = (mem);
         p = await remult.repo(Products).findFirst();
         expect(p.category).toBeUndefined();
         expect(p.category === undefined).toBe(true);
@@ -281,7 +291,8 @@ describe("many to one relation", () => {
     });
     it("test update from api", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
 
         let p = remult.repo(Products).create();
         p.id = 10;
@@ -300,7 +311,8 @@ describe("many to one relation", () => {
     });
     it("test easy create", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
 
         let c = await remult.repo(Categories).create({
             id: 1,
@@ -320,7 +332,8 @@ describe("many to one relation", () => {
     });
     it("test filter create", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let c = await remult.repo(Categories).create({
             id: 1,
             name: 'cat 1'
@@ -374,7 +387,8 @@ describe("many to one relation", () => {
     });
     it("test that not too many reads are made", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -384,7 +398,8 @@ describe("many to one relation", () => {
             category: cat
         }).save();
         let fetches = 0;
-        remult = new Remult({
+        remult = new Remult();
+        remult.dataProvider = ({
             transaction: undefined,
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
@@ -428,7 +443,8 @@ describe("many to one relation", () => {
             }).save()
         }).save();
         let fetches = 0;
-        remult = new Remult({
+        remult = new Remult();
+        remult.dataProvider = ({
             transaction: undefined,
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
@@ -452,7 +468,8 @@ describe("many to one relation", () => {
     });
     it("test update only updates what's needed", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -463,7 +480,7 @@ describe("many to one relation", () => {
         }).save();
 
         let d = new Done();
-        remult = new Remult({
+        remult.dataProvider = ({
             transaction: undefined,
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
@@ -485,7 +502,8 @@ describe("many to one relation", () => {
     });
     it("test is null doesn't invoke read", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 1'
         }).save();
@@ -497,7 +515,8 @@ describe("many to one relation", () => {
         let fetches = 0;
         await remult.repo(Categories).create({ id: 2, name: 'cat2' }).save();
         await remult.repo(Categories).create({ id: 3, name: 'cat3' }).save();
-        remult = new Remult({
+        remult = new Remult();
+        remult.dataProvider = ({
             transaction: undefined,
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
@@ -531,7 +550,8 @@ describe("many to one relation", () => {
     });
     it("test to and from json ", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2', language: Language.Russian
         }).save();
@@ -549,7 +569,8 @@ describe("many to one relation", () => {
     });
     it("test to and from json 2", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -570,7 +591,8 @@ describe("many to one relation", () => {
     });
     it("test to and from json 2", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await (await remult.repo(Categories).fromJson({
             id: 1, name: 'cat 2'
         }, true)).save();
@@ -579,7 +601,8 @@ describe("many to one relation", () => {
     });
     it("test lookup with create", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -590,7 +613,8 @@ describe("many to one relation", () => {
     });
     it("test set with id", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -604,7 +628,8 @@ describe("many to one relation", () => {
     });
     it("test set with json object", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         let cat = await remult.repo(Categories).create({
             id: 1, name: 'cat 2'
         }).save();
@@ -620,7 +645,8 @@ describe("many to one relation", () => {
     it("test relation in sql", async () => {
         var wsql = new WebSqlDataProvider("test2");
         let db = new SqlDatabase(wsql);
-        let remult = new Remult(db);
+        let remult = new Remult();
+        remult.dataProvider = (db);
         for (const x of [Categories, Products, Suppliers] as any[]) {
             let e = remult.repo(x).metadata;
             await wsql.dropTable(e);
@@ -646,7 +672,8 @@ describe("many to one relation", () => {
     });
     it("test filter with id", async () => {
         let mem = new InMemoryDataProvider();
-        let remult = new Remult(mem);
+        let remult = new Remult();
+        remult.dataProvider = (mem);
         const c1 = await remult.repo(Categories).create({ id: 1, name: 'cat 1' }).save();
         const c2 = await remult.repo(Categories).create({ id: 2, name: 'cat 2' }).save();
         const c3 = await remult.repo(Categories).create({ id: 3, name: 'cat 3' }).save();
@@ -703,11 +730,13 @@ z = {
 describe("Test entity relation and count finds", () => {
     it("test it", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new Remult(mem);
+        let c = new Remult();
+        c.dataProvider = (mem);
         await c.repo(h).create({ id: '1' }).save();
         expect(mem.rows['h'][0]).toEqual({ id: '1', refH: '', refHId: '' });
         let countFind = 0;
-        c = new Remult({
+        c = new Remult();
+        c.dataProvider = ({
             transaction: mem.transaction,
             getEntityDataProvider: x => {
                 let r = mem.getEntityDataProvider(x);
@@ -729,11 +758,13 @@ describe("Test entity relation and count finds", () => {
     });
     it("test api", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new Remult(mem);
+        let c = new Remult();
+        c.dataProvider = (mem);
         let a = await c.repo(h).create({ id: 'a' }).save();
         let b = await c.repo(h).create({ id: 'b' }).save();
         await c.repo(h).create({ id: 'd', refH: a }).save();
-        c = new Remult(mem)//clear the cache;
+        c = new Remult()//clear the cache;
+        c.dataProvider = (mem);
         let api = new DataApi(c.repo(h), c);
         let t = new TestDataApiResponse();
         let done = new Done();
@@ -749,11 +780,14 @@ describe("Test entity relation and count finds", () => {
 
     it("test api get array doesn't load", async () => {
         let mem = new InMemoryDataProvider();
-        let c = new Remult(mem);
+        let c = new Remult();
+        c.dataProvider = (mem);
         let a = await c.repo(h).create({ id: 'a' }).save();
         let b = await c.repo(h).create({ id: 'b' }).save();
         await c.repo(h).create({ id: 'd', refH: a }).save();
-        c = new Remult({
+        c = new Remult()//clear the cache;
+        let fetches = 0;
+        c.dataProvider = ({
             transaction: undefined,
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
@@ -766,7 +800,6 @@ describe("Test entity relation and count finds", () => {
 
             }
         })//clear the cache;
-        let fetches = 0;
         let api = new DataApi(c.repo(h), c);
         let t = new TestDataApiResponse();
         let done = new Done();
@@ -818,6 +851,11 @@ it("test that it doesn't save if it doesn't need to", async () => {
     expect(updates).toBe(1);
 
 })
+it("test set uuid", async () => {
+    const remult = new Remult(new InMemoryDataProvider());
+    const x = await remult.repo(Contact).insert({ id: 'a', name: 'a' });
+    expect(x.id).toBe('a');
+});
 
 
 

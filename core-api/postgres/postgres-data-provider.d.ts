@@ -11,7 +11,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 export declare class PostgresDataProvider implements SqlImplementation {
     private pool;
-    static getRawDb(remult: Remult): ClientBase;
+    static getRawDb(remult?: Remult): ClientBase;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
     getLimitSqlSyntax(limit: number, offset: number): string;
     createCommand(): SqlCommand;

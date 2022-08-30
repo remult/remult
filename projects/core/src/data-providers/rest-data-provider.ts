@@ -5,15 +5,26 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 import { UrlBuilder } from '../../urlBuilder';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { EntityMetadata } from '../remult3';
-import { retry } from '../context';
+import { ApiClient, buildRestDataProvider, Remult, retry } from '../context';
 
 
 export class RestDataProvider implements DataProvider {
-  constructor(private url: string, private http: RestDataProviderHttpProvider) {
+  constructor(
+    private apiProvider: () => ApiClient
+  ) {
 
   }
   public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
-    return new RestEntityDataProvider(this.url + '/' + entity.key, this.http, entity);
+
+    return new RestEntityDataProvider(() => {
+      let url = this.apiProvider()?.url;
+      if (url === undefined || url === null)
+        url = '/api';
+      return url + '/' + entity.key
+    },
+      () => {
+        return buildRestDataProvider(this.apiProvider().httpClient);
+      }, entity);
   }
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
@@ -23,7 +34,7 @@ export class RestDataProvider implements DataProvider {
 }
 export class RestEntityDataProvider implements EntityDataProvider {
 
-  constructor(private url: string, private http: RestDataProviderHttpProvider, private entity: EntityMetadata) {
+  constructor(private url: () => string, private http: () => RestDataProviderHttpProvider, private entity: EntityMetadata) {
 
   }
   translateFromJson(row: any) {
@@ -42,7 +53,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public async count(where: Filter): Promise<number> {
-    let url = new UrlBuilder(this.url);
+    let url = new UrlBuilder(this.url());
     url.add("__action", "count");
     let filterObject: any;
 
@@ -52,12 +63,12 @@ export class RestEntityDataProvider implements EntityDataProvider {
         filterObject = undefined;
     }
     if (filterObject)
-      return this.http.post(url.url, filterObject).then(r => +(r.count));
+      return this.http().post(url.url, filterObject).then(r => +(r.count));
     else
-      return this.http.get(url.url).then(r => +(r.count));
+      return this.http().get(url.url).then(r => +(r.count));
   }
   public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
-    let url = new UrlBuilder(this.url);
+    let url = new UrlBuilder(this.url());
     let filterObject: any;
     if (options) {
       if (options.where) {
@@ -89,10 +100,10 @@ export class RestEntityDataProvider implements EntityDataProvider {
     }
     if (filterObject) {
       url.add("__action", "get");
-      return this.http.post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
+      return this.http().post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
     }
     else
-      return this.http.get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
+      return this.http().get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
   }
 
   public update(id: any, data: any): Promise<any> {
@@ -103,16 +114,16 @@ export class RestEntityDataProvider implements EntityDataProvider {
         result[col.key] = col.valueConverter.toJson(data[col.key]);
     }
 
-    return this.http.put(this.url + '/' + encodeURIComponent(id), result).then(y => this.translateFromJson(y));
+    return this.http().put(this.url() + '/' + encodeURIComponent(id), result).then(y => this.translateFromJson(y));
 
   }
 
   public delete(id: any): Promise<void> {
-    return this.http.delete(this.url + '/' + encodeURIComponent(id));
+    return this.http().delete(this.url() + '/' + encodeURIComponent(id));
   }
 
   public insert(data: any): Promise<any> {
-    return this.http.post(this.url, this.translateToJson(data)).then(y => this.translateFromJson(y));
+    return this.http().post(this.url(), this.translateToJson(data)).then(y => this.translateFromJson(y));
   }
 }
 
@@ -132,7 +143,7 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   }
   delete(url: string) {
 
-    return this.myFetch(url, { method: 'delete', credentials: 'include' });
+    return this.myFetch(url, { method: 'delete' });
   }
   async post(url: string, data: any) {
 
@@ -142,21 +153,26 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
     }));
   }
 
-  myFetch(url: string, init?: RequestInit): Promise<any> {
-    if (!init)
-      init = {};
-    if (!init.headers)
-      init.headers = new Headers();
-    var h = init.headers as Headers;
-    h.append('Content-type', "application/json");
-    init.credentials = 'include';
+  myFetch(url: string, options?: {
+    method?: string,
+    body?: string,
+  }): Promise<any> {
+
+    const headers = {
+      "Content-type": "application/json"
+    }
     if (typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof (window.document.cookie !== 'undefined'))
       for (const cookie of window.document.cookie.split(';')) {
         if (cookie.trim().startsWith('XSRF-TOKEN=')) {
-          h.append('X-XSRF-TOKEN', cookie.split('=')[1]);
+          headers['X-XSRF-TOKEN'] = cookie.split('=')[1];
         }
       }
-    return (this.fetch || fetch)(url, init).then(response => {
+    return (this.fetch || fetch)(url, {
+      credentials: 'include',
+      method: options?.method,
+      body: options?.body,
+      headers
+    }).then(response => {
 
       return onSuccess(response);
 

@@ -2,10 +2,10 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 import { UrlBuilder } from '../../urlBuilder';
 import { Filter } from '../filter/filter-interfaces';
 import { EntityMetadata } from '../remult3';
+import { ApiClient } from '../context';
 export declare class RestDataProvider implements DataProvider {
-    private url;
-    private http;
-    constructor(url: string, http: RestDataProviderHttpProvider);
+    private apiProvider;
+    constructor(apiProvider: () => ApiClient);
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     supportsCustomFilter: boolean;
@@ -14,7 +14,7 @@ export declare class RestEntityDataProvider implements EntityDataProvider {
     private url;
     private http;
     private entity;
-    constructor(url: string, http: RestDataProviderHttpProvider, entity: EntityMetadata);
+    constructor(url: () => string, http: () => RestDataProviderHttpProvider, entity: EntityMetadata);
     translateFromJson(row: any): {};
     translateToJson(row: any): {};
     count(where: Filter): Promise<number>;
@@ -30,6 +30,9 @@ export declare class RestDataProviderHttpProviderUsingFetch implements RestDataP
     put(url: string, data: any): Promise<any>;
     delete(url: string): Promise<any>;
     post(url: string, data: any): Promise<any>;
-    myFetch(url: string, init?: RequestInit): Promise<any>;
+    myFetch(url: string, options?: {
+        method?: string;
+        body?: string;
+    }): Promise<any>;
 }
 export declare function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBuilder): boolean;

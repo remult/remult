@@ -9,7 +9,7 @@ export declare class WebSqlDataProvider implements SqlImplementation, __RowsOfDa
         [tableName: string]: any;
     };
     constructor(databaseName: string, databaseSize?: number);
-    static getRawDb(remult: Remult): Database;
+    static getRawDb(remult?: Remult): Database;
     getLimitSqlSyntax(limit: number, offset: number): string;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
     dropTable(entity: EntityMetadata): Promise<void>;

@@ -12,7 +12,8 @@ import { Filter } from '../filter/filter-interfaces';
 
 describe("test sql database", () => {
     let db = new SqlDatabase(new WebSqlDataProvider("test"));
-    let remult = new Remult(db);
+    let remult = new Remult();
+    remult.dataProvider = (db);
     async function deleteAll() {
         for (const c of await remult.repo(Categories).find()) {
             await c._.delete();

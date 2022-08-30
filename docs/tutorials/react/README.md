@@ -47,15 +47,28 @@ At this point, our starter project is up and running. We are now ready to move t
 ### Create a React project
 Create the new React project.
 ```sh
-npx create-react-app remult-react-todo --template typescript
+npm create vite remult-react-todo -- --template react-ts
+```
+
+::: warning Need to install the following packages:
+If you are running create-vite for the first time, you'll get the following prompt, simply answer **y**es
+```sh
+Need to install the following packages:
+  create-vite@latest
+Ok to proceed? (y) y
+```
+:::
+
+Once completed, run:
+```sh
 cd remult-react-todo
 ```
 
 In this tutorial, we'll be using the root folder created by `React` as the root folder for our server project as well.
 ### Install required packages
-We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the React dev server from a single command.
+We need `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the React dev server from a single command.
 ```sh
-npm i axios express remult
+npm i express remult
 npm i --save-dev @types/express ts-node-dev concurrently
 ```
 ### Create the API server project
@@ -68,11 +81,12 @@ The starter API server TypeScript project contains a single module that initiali
 *tsconfig.server.json*
 ```json
 {
-   "extends": "./tsconfig.json",
-   "compilerOptions": {
-      "module": "commonjs",
-      "emitDecoratorMetadata": true
-   }
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "commonjs",
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true
+    }
 }
 ```
 
@@ -88,6 +102,8 @@ const app = express();
 
 app.listen(3002, () => console.log("Server started"));
 ```
+
+5. Remove `"type": "module"` entry from the `package.json` 
 
 ### Bootstrap Remult in the back-end
 Remult is loaded in the back-end as an `Express middleware`.
@@ -114,20 +130,6 @@ app.use(api);
 app.listen(3002, () => console.log("Server started"));
 ```
 
-### Bootstrap Remult in the front-end
-
-In the React app we'll be using a global `Remult` object to communicate with the API server via a `Promise`-based HTTP client (in this case - `Axios`).
-
-Create an `common.ts` file in the `src/` folder with the following code:
-
-*src/common.ts*
-```ts
-import axios from "axios";
-import { Remult } from "remult";
-
-export const remult = new Remult(axios); 
-```
-
 
 ### Final tweaks
 
@@ -141,29 +143,47 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 "experimentalDecorators": true
 ```
 
-#### Proxy API requests from React DevServer to the API server
-The React app created in this tutorial is intended to be served from the same domain as its API. 
-However, for development, the API server will be listening on `http://localhost:3002`, while the React app is served from the default `http://localhost:3000`. 
+#### Proxy API requests from vite to the API server
+The react app created in this tutorial is intended to be served from the same domain as its API. 
+However, for development, the API server will be listening on `http://localhost:3002`, while the react app is served from the default `http://localhost:5173`. 
 
-We'll use the [proxy](https://create-react-app.dev/docs/proxying-api-requests-in-development/) feature of webpack dev server to divert all calls for `http://localhost:3000/api` to our dev API server.
+We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of vite to divert all calls for `http://localhost:5173/api` to our dev API server.
 
-Configure the proxy by adding the following entry to the main section of the `package.json` file:
+Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
-*package.json*
-```json
-"proxy": "http://localhost:3002"
+*vite.config.ts*
+```ts{7-13}
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3002'
+      }
+    }
+  }
+})
 ```
 
 ### Run the app
 
-1. Create an `npm` script named `dev` to start the dev API server and the React dev server, by adding the following entry to the `scripts` section of `package.json`.
+1. Replace the `npm` script named `dev` to start the dev API server and the react dev server (vite), by replacing the following entry in the `scripts` section of `package.json`.
 
 *package.json*
 ```json
-"dev": "concurrently -k -n \"API,WEB\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"react-scripts start\""
+"dev": "concurrently -k -n \"API,WEB\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"vite\""
+```
+2. Remove the following entry from the `package.json`  file
+*package.json*
+```json
+"type": "module"
 ```
    
-2. Open a terminal and start the app.
+3. Open a terminal and start the app.
 ```sh
 npm run dev
 ```

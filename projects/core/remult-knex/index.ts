@@ -10,13 +10,14 @@ import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from 
 import { FieldMetadata } from '../src/column-interfaces';
 import { CompoundIdField } from '../src/column';
 import { Sort } from '../src/sort';
+import { remult as remultContext } from '../src/remult-proxy';
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
 
     }
-    static getRawDb(remult: Remult) {
-        const r = remult._dataSource as KnexDataProvider;
+    static getRawDb(remult?: Remult) {
+        const r = (remult || remultContext).dataProvider as KnexDataProvider;
         if (!r.knex)
             throw "the data provider is not an KnexDataProvider";
         return r.knex;

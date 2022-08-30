@@ -11,6 +11,7 @@ import { EntityMetadata } from "../remult3";
 import { Action, actionInfo, serverActionField } from "../server-action";
 import { testConfiguration } from '../shared-tests/entityWithValidations';
 import { TestDataApiResponse } from './TestDataApiResponse';
+import { remult } from '../remult-proxy';
 
 
 
@@ -60,9 +61,9 @@ export async function testAsIfOnBackend(what: () => Promise<any>) {
 export const ActionTestConfig = {
   db: new InMemoryDataProvider()
 }
-Action.provider = {
-  delete: undefined,
-  get: undefined,
+remult.apiClient.httpClient = {
+  delete: ()=>undefined,
+  get: ()=>undefined,
   post: async (urlreq, data) => {
     return await new Promise((res, r) => {
       let found = false;
@@ -73,7 +74,7 @@ Action.provider = {
           __register(
             (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => {
 
-              if (Remult.apiBaseUrl + '/' + url == urlreq) {
+              if ('/api/' + url == urlreq) {
                 found = true;
                 let t = new TestDataApiResponse();
                 actionInfo.runningOnServer = true;
@@ -85,8 +86,12 @@ Action.provider = {
                   r(JSON.parse(JSON.stringify(serializeError(data))));
                   actionInfo.runningOnServer = false
                 }
-                let remult = new Remult(ActionTestConfig.db);
-
+                t.forbidden = () => {
+                  r({ status: 403, message: "forbidden" });
+                  actionInfo.runningOnServer = false
+                }
+                let remult = new Remult();
+                remult.dataProvider = (ActionTestConfig.db);
 
                 what(JSON.parse(JSON.stringify(data)), remult, t);
               }
@@ -99,7 +104,7 @@ Action.provider = {
     });
 
   },
-  put: undefined
+  put: ()=>undefined
 }
 
 
@@ -117,7 +122,8 @@ export async function testSql(runAsync: (db: {
         await sql.execute("drop table if exists " + r.name);
     }
   }
-  let remult = new Remult(sql);
+  let remult = new Remult();
+  remult.dataProvider = (sql);
   await runAsync({ db: sql, remult });
 }
 export async function testInMemoryDb(runAsync: (db: {
@@ -125,7 +131,7 @@ export async function testInMemoryDb(runAsync: (db: {
   remult: Remult
 }) => Promise<void>) {
   let db = new InMemoryDataProvider();
-  let remult = new Remult(db);
+  remult.dataProvider = (db);
   await runAsync({ db, remult });
 }
 
@@ -136,9 +142,12 @@ export async function testRestDb(runAsync: (db: {
   db: DataProvider,
   remult: Remult
 }) => Promise<void>) {
-  let r = new Remult(new InMemoryDataProvider());
+  let r = new Remult();
+  r.dataProvider = (new InMemoryDataProvider());
+
+  let remult = new Remult();
   let db = new MockRestDataProvider(r);
-  let remult = new Remult(db);
+  remult.dataProvider = (db);
   await runAsync({ db, remult });
 }
 export async function testAllDataProviders(runAsync: (db: {
@@ -190,7 +199,7 @@ export class MockRestDataProvider implements DataProvider {
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
 
     let dataApi = new DataApi(this.remult.repo(metadata.entityType), this.remult);
-    return new RestEntityDataProvider("", new HttpProviderBridgeToRestDataProviderHttpProvider({
+    return new RestEntityDataProvider(() => "", () => new HttpProviderBridgeToRestDataProviderHttpProvider({
       delete: async url => {
 
 

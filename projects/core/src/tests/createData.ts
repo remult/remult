@@ -8,7 +8,8 @@ import { deleteAll } from '../shared-tests/deleteAll';
 export async function createData(doInsert?: (insert: (id: number, name: string, description?: string, status?: Status) => Promise<void>) => Promise<void>, entity?: {
   new(): CategoriesForTesting;
 }): Promise<[Repository<CategoriesForTesting>, Remult]> {
-  let remult = new Remult(new InMemoryDataProvider());
+  let remult = new Remult();
+  remult.dataProvider = (new InMemoryDataProvider());
   if (!entity)
     entity = newCategories;
   let rep =await  deleteAll( remult.repo(entity));
