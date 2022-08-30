@@ -1,4 +1,4 @@
-import { getEntityDbNames, IdEntity, SqlDatabase } from "../..";
+
 import { Remult } from "../context";
 import { Entity, EntityFilter, Field, Repository } from "../remult3";
 import { knexCondition, KnexDataProvider } from '../../remult-knex';
@@ -10,6 +10,17 @@ import { PostgresDataProvider } from "../../postgres";
 import { MongoDataProvider, mongoCondition } from "../../remult-mongo";
 config();
 
+
+testPostgresImplementation("default order by", async ({ createEntity }) => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity);
+    await s.update(1, { name: "updated name" });
+    expect((await s.find()).map(x => x.myId)).toEqual([1, 2, 3, 4]);
+}, false);
+testKnexPGSqlImpl("default order by", async ({ createEntity }) => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity);
+    await s.update(1, { name: "updated name" });
+    expect((await s.find()).map(x => x.myId)).toEqual([1, 2, 3, 4]);
+}, false);
 
 
 testPostgresImplementation("sql filter", async ({ createEntity }) => {

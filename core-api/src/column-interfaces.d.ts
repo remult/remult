@@ -14,18 +14,18 @@ export interface FieldOptions<entityType = any, valueType = any> {
     allowApiUpdate?: AllowedForInstance<entityType>;
     /** An arrow function that'll be used to perform validations on it
      * @example
-     * .@Fields.string({
+     * @Fields.string({
      *   validate: Validators.required
      * })
      * @example
-     * .@Fields.string<Task>({
+     * @Fields.string<Task>({
      *    validate: task=>{
      *      if (task.title.length<3)
      *          throw "Too Short";
      *   }
      * })
      * @example
-     * .@Fields.string({
+     * @Fields.string({
      *    validate: (_, fieldRef)=>{
      *      if (fieldRef.value.length<3)
      *          fieldRef.error = "Too Short";

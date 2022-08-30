@@ -1,7 +1,7 @@
 import { SqlCommand } from "../sql-command";
 import { Filter, FilterConsumer } from './filter-interfaces';
 import { FieldMetadata } from "../column-interfaces";
-import { EntityMetadata, OmitEB, Repository } from "../..";
+import { EntityMetadata, OmitEB, Repository } from "../remult3/remult3";
 export declare class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     private r;
     private nameProvider;

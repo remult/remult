@@ -16,13 +16,13 @@ yarn add --dev @types/pg
 
 *src/server/api.ts*
 ```ts{5,8-12}
-import { remultExpress } from "remult/remult-express";
-import { Task } from "../shared/Task";
-import { TasksController } from "../shared/TasksController";
+import { createRemultServer } from "remult/server";
 import { AuthController } from "../shared/AuthController";
+import { Task } from "../shared/Task";
+import { TasksController } from '../shared/TasksController';
 import { createPostgresConnection } from "remult/postgres";
 
-export const api = remultExpress({
+export const api = createRemultServer({
     dataProvider: async () => {
         if (process.env["NODE_ENV"] === "production")
             return createPostgresConnection({ configuration: "heroku" });
@@ -41,9 +41,8 @@ export const api = remultExpress({
                 { title: "Task e", completed: true }
             ]);
         }
-    },
-    bodyParser: false
-});
+    }
+})
 ```
 
 The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)

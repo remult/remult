@@ -37,7 +37,7 @@ export interface EntityOptions<entityType = any> {
 
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
    * @example
-   * fixedWhereFilter: { archive:false }
+   * backendPrefilter: { archive:false }
    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
    */
   backendPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
@@ -53,7 +53,7 @@ export interface EntityOptions<entityType = any> {
   * If the `error` property of the entity's ref or any of it's fields will be set, the save will be aborted and an exception will be thrown.
   * this is the place to run logic that we want to run in any case before an entity is saved. 
   * @example
-  * .@Entity<Task>("tasks", {
+  * @Entity<Task>("tasks", {
   * saving: async task => {
   *      task.lastUpdated = new Date()
   *  }
@@ -76,8 +76,15 @@ export interface EntityOptions<entityType = any> {
   dbName?: string;
   /** For entities that are based on SQL expressions instead of a physical table or view*/
   sqlExpression?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
-  /** An arrow function that identifies the `id` column to use for this entity */
-  id?: (entity: FieldsMetadata<entityType>) => FieldMetadata;
+  /** An arrow function that identifies the `id` column to use for this entity 
+   * @example
+   * //Single column id
+   * @Entity<Products>("products", { id:p=>p.productCode })
+   * @example
+   * //Multiple columns id
+   * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
+  */
+  id?: (entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[];
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void;
   apiRequireId?: Allowed;
 

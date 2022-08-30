@@ -13,7 +13,7 @@ import { v4 as uuid } from 'uuid';
 
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { ValueConverters } from "../../valueConverters";
+import { ValueConverters } from "../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
@@ -1395,7 +1395,15 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         this.caption = buildCaption(entityInfo.caption, this.key, remult);
 
         if (entityInfo.id) {
-            this.idMetadata.field = entityInfo.id(this.fields)
+            let r = entityInfo.id(this.fields)
+            if (Array.isArray(r)) {
+                if (r.length > 1)
+                    this.idMetadata.field = new CompoundIdField(...r);
+                else if (r.length == 1)
+                    this.idMetadata.field = r[0];
+            }
+            else
+                this.idMetadata.field = r;
         } else {
             if (this.fields["id"])
                 this.idMetadata.field = this.fields["id"];
@@ -1545,7 +1553,7 @@ export class Fields {
 }
 
 export function isAutoIncrement(f: FieldMetadata) {
-    return f.options.valueConverter?.fieldTypeInDb === 'autoincrement';
+    return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement';
 }
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
     maxLength?: number;
@@ -1677,11 +1685,11 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
  * FieldOptions can be set in two ways:
  * @example
  * // as an object
- * .@Fields.string({ includeInApi:false })
+ * @Fields.string({ includeInApi:false })
  * title='';
  * @example
  * // as an arrow function that receives `remult` as a parameter
- * .@Fields.string((options,remult) => options.includeInApi = true)
+ * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
@@ -1858,13 +1866,14 @@ export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, f
  *    @Fields.boolean()
  *    completed = false;
  * }
- * *EntityOptions can be set in two ways:*
+ * @note
+ * EntityOptions can be set in two ways:
  * @example
  * // as an object
- * .@Entity("tasks",{ allowApiCrud:true })
+ * @Entity("tasks",{ allowApiCrud:true })
  * @example
  * // as an arrow function that receives `remult` as a parameter
- * .@Entity("tasks", (options,remult) => options.allowApiCrud = true)
+ * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
  */
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 

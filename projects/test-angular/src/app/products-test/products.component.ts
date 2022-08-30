@@ -32,45 +32,12 @@ export class ProductsComponent implements OnInit {
 
   grid = new GridSettings(this.remult.repo(stam), {
     allowCrud: true,
-    columnSettings: s => [{
-      field: s.name,
-      customComponent: {
-        component: AComponent
-      },
-
-
-    },
-    { field: s.stamDate, caption: "very very very very very long caption" },
-    s.test,
-    s.id],
-    rowsLoaded: (rows) => {
-      this.area = new DataAreaSettings({
-        fields: () => [
-          {
-            field: this.grid.items[0].$.name,
-            customComponent: {
-              component: AComponent
-            }
-          }]
-      })
-    }
-  });
+   
+     });
   area: DataAreaSettings;
   field: FieldRef<any, any>;
   async ngOnInit() {
-    const r = new Remult().repo(stam);
-    for (const z of await r.find()) {
-      await z.delete();
-    }
-    let x = await r.create({ name: "noam" });
-    x.name = 'noam1';
-    await x.save();
-    x = await r.findFirst({ name: 'noam1' });
-    console.log({ shouldBeNoam1: x.name });
-    console.log({ should1: await r.count({ name: 'noam1' }) });
-
-    await x.delete();
-    console.log({ should0: await r.count({ name: 'noam1' }) });
+   
 
   }
   async click() {

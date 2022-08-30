@@ -51,11 +51,11 @@ cd remult-nextjs-todo
 We need [axios](https://axios-http.com/) to serve as an HTTP client, and, of course, `Remult`. We'll also need `Express` as it is currently a required by `Remult` as a peer dependency (this peer dependency will be removed in future versions).
 
 ```sh
-yarn add axios express remult
+yarn add axios remult
 ```
 
 ### Bootstrap Remult in the back-end
-Remult is bootstrapped in a `Next.js` app by adding it the `remultExpress` [API middleware](https://nextjs.org/docs/api-routes/api-middlewares) to a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes).
+Remult is bootstrapped in a `Next.js` app by adding it the `remultServer` [API middleware](https://nextjs.org/docs/api-routes/api-middlewares) to a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes).
 
 1. Open your IDE.
 
@@ -65,27 +65,23 @@ Remult is bootstrapped in a `Next.js` app by adding it the `remultExpress` [API 
 
 4. Create an `api.ts` file in the `src/server` folder with the following code:
 
-*lib/api.ts*
+*src/server/api.ts*
 ```ts
-import { remultExpress } from 'remult/remult-express';
+import { createRemultServer } from "remult/server";
 
-export const api = remultExpress({
-    bodyParser: false
-});
+export const api = createRemultServer({})
 ```
 
-`bodyParser` is set to `false` because `Next.js` does that for us.
 
-5. Add a file named `[[...slug]].ts` in the folder `pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
+5. Add a file named `[...remult].ts` in the folder `pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
 
-*pages/api/[[...slug]].ts*
+*pages/api/[...remult].ts*
 ```ts
 import { NextApiRequest, NextApiResponse } from 'next'
-import * as util from 'util';
 import { api } from '../../src/server/api';
 
 const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
-    await util.promisify((api as any))(_req, res);
+    await api.handle(_req, res);;
 }
 
 export default handler

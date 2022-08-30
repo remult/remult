@@ -1,6 +1,5 @@
-import { DataProvider, EntityDataProvider, EntityFilter, EntityMetadata, FieldMetadata, Filter, Remult } from "..";
 import { Knex } from 'knex';
-import { FilterConsumer } from "../src/filter/filter-interfaces";
+import { Filter, FilterConsumer } from "../src/filter/filter-interfaces";
 import { dbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { Repository } from "../src/remult3";
 export declare class KnexDataProvider implements DataProvider {

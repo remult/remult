@@ -8,7 +8,7 @@ import { Done } from "./Done";
 
 import { Status } from './testModel/models';
 
-import { Remult, Allowed, retry, toPromise } from '../context';
+import { Remult, Allowed, retry, toPromise, HttpProviderBridgeToRestDataProviderHttpProvider } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/interfaces/src/dataList';
@@ -20,15 +20,16 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestDataProv
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, Fields, getEntityKey } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, Fields, getEntityKey, isAutoIncrement } from '../remult3';
 
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
 import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
-import { ValueConverters } from "../../valueConverters";
+import { ValueConverters } from "../valueConverters";
 import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import axios from "axios";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -1481,6 +1482,12 @@ describe("compound id", () => {
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
 
   });
+  it("check is auto increment", async () => {
+    let ctx = new Remult();
+    let repo = ctx.repo(CompoundIdEntity);
+    expect(isAutoIncrement(repo.metadata.idMetadata.field)).toBe(false);
+
+  });
   it("result id filter works with id", async () => {
     let ctx = new Remult();
     let repo = ctx.repo(CompoundIdEntity);
@@ -1955,7 +1962,7 @@ describe("test toPromise", () => {
 
 @Entity<CompoundIdEntity>(
   'compountIdEntity', {
-  id: x => new CompoundIdField(x.a, x.b),
+  id: x => [x.a, x.b],
 })
 class CompoundIdEntity extends EntityBase {
   @Fields.integer()
@@ -1987,7 +1994,22 @@ export class EntityWithLateBoundDbName extends EntityBase {
 }
 
 describe("test fetch", () => {
-
+  it("test remult with non default fetch function", async () => {
+    var r = new Remult(new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      return new mockResponse({ status: 200, json: async () => ({ count: 7 }) })
+    }));
+    expect(await r.repo(Categories).count()).toBe(7);
+  });
+  it("test remult with non default fetch function", async () => {
+    var r = new Remult(async (url, info) => {
+      return new mockResponse({ status: 200, json: async () => ({ count: 7 }) })
+    });
+    expect(await r.repo(Categories).count()).toBe(7);
+  });
+  it("axios uses the correct api", () => {
+    const r = new Remult(axios);
+    expect((r._dataSource as any).http instanceof HttpProviderBridgeToRestDataProviderHttpProvider).toBe(true);
+  });
   it("get", async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
       return new mockResponse({ status: 200, json: async () => 7 })

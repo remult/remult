@@ -19,4 +19,4 @@ export { Filter } from './src/filter/filter-interfaces';
 export { FilterConsumerBridgeToSqlRequest, getEntityDbNames, EntityDbNames } from './src/filter/filter-consumer-bridge-to-sql-request';
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
-export { ValueConverters } from './valueConverters';
+export { ValueConverters } from './src/valueConverters';

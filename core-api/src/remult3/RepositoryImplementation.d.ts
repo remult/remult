@@ -255,11 +255,11 @@ export declare function getValueList<T>(type: ClassType<T>): T[];
  * FieldOptions can be set in two ways:
  * @example
  * // as an object
- * .@Fields.string({ includeInApi:false })
+ * @Fields.string({ includeInApi:false })
  * title='';
  * @example
  * // as an arrow function that receives `remult` as a parameter
- * .@Fields.string((options,remult) => options.includeInApi = true)
+ * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
 export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
@@ -288,13 +288,14 @@ export declare function BuildEntity<entityType>(c: ClassType<entityType>, key: s
  *    @Fields.boolean()
  *    completed = false;
  * }
- * *EntityOptions can be set in two ways:*
+ * @note
+ * EntityOptions can be set in two ways:
  * @example
  * // as an object
- * .@Entity("tasks",{ allowApiCrud:true })
+ * @Entity("tasks",{ allowApiCrud:true })
  * @example
  * // as an arrow function that receives `remult` as a parameter
- * .@Entity("tasks", (options,remult) => options.allowApiCrud = true)
+ * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
  */
 export declare function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]): (target: any) => any;
 export declare class EntityBase {

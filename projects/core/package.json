@@ -1,11 +1,15 @@
 {
   "name": "remult",
-  "version": "0.3.3",
+  "version": "0.15.0",
   "description": "A CRUD framework for full-stack TypeScript",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "module": "esm/index.js",
   "homepage": "https://remult.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/remult/remult"
+    "url": "https://github.com/remult/remult.git",
+    "directory": "projects/core"
   },
   "license": "MIT",
   "author": {
@@ -14,6 +18,56 @@
   "dependencies": {
     "uuid": "^8.3.2",
     "reflect-metadata": "^0.1.13",
-    "tslib":"^2.3.1"
+    "tslib": "^2.3.1"
+  },
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./esm/index.js"
+    },
+    "./remult-express": {
+      "require": "./remult-express.js",
+      "import": "./esm/remult-express.js"
+    },
+    "./server": {
+      "require": "./server/index.js",
+      "import": "./esm/server/index.js"
+    },
+    "./remult-fastify": {
+      "require": "./remult-fastify.js",
+      "import": "./esm/remult-fastify.js"
+    },
+    "./remult-fresh": {
+      "require": "./remult-fresh.js",
+      "import": "./esm/remult-fresh.js"
+    },
+    "./postgres": {
+      "require": "./postgres/index.js",
+      "import": "./esm/postgres/index.js"
+    },
+    "./postgres/schema-builder": {
+      "require": "./postgres/schema-builder.js",
+      "import": "./esm/postgres/schema-builder.js"
+    },
+    "./remult-knex": {
+      "require": "./remult-knex/index.js",
+      "import": "./esm/remult-knex/index.js"
+    },
+    "./remult-mongo": {
+      "require": "./remult-mongo.js",
+      "import": "./esm/remult-mongo.js"
+    },
+    "./graphql": {
+      "require": "./graphql.js",
+      "import": "./esm/graphql.js"
+    },
+    "./src/remult3": {
+      "require": "./src/remult3/index.js",
+      "import": "./esm/src/remult3/index.js"
+    },
+    "./src/server-action": {
+      "require": "./src/server-action.js",
+      "import": "./esm/src/server-action.js"
+    }
   }
 }

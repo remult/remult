@@ -1,8 +1,8 @@
-import { ClassType } from "./classType";
-import { InputTypes } from "./inputTypes";
-import { makeTitle } from "./src/column";
-import { ValueConverter, ValueListItem } from "./src/column-interfaces";
-import { storableMember, ValueListFieldOptions } from "./src/remult3";
+import { ClassType } from "../classType";
+import { InputTypes } from "../inputTypes";
+import { makeTitle } from "./column";
+import { ValueConverter, ValueListItem } from "./column-interfaces";
+import { storableMember, ValueListFieldOptions } from "./remult3";
 
 
 
@@ -103,6 +103,8 @@ export class ValueConverters {
 
     }
     , fromDb: (val: string) => {
+      if (val === null)
+        return null;
       if (!val)
         return undefined;
       return new Date(val.substring(0, 4) + '-' + val.substring(4, 6) + '-' + val.substring(6, 8));
@@ -133,6 +135,8 @@ export class ValueConverters {
   static readonly Number: ValueConverter<number> =
     {
       fromDb: value => {
+        if (value===null)
+        return null;
         if (value !== undefined)
           return +value;
         return undefined;

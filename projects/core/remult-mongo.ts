@@ -41,9 +41,11 @@ class MongoEntityDataProvider implements EntityDataProvider {
     translateFromJson(row: any, nameProvider: dbNameProvider) {
         let result = {};
         for (const col of this.entity.fields) {
-            result[col.key] = col.valueConverter.fromDb(row[nameProvider.nameOf(col)]);
-            if (isNull(result[col.key]))
-                result[col.key] = null;
+            let val = row[nameProvider.nameOf(col)];
+            if (isNull(val))
+                val = null;
+            result[col.key] = col.valueConverter.fromDb(val);
+
         }
         return result;
     }

@@ -1,3 +1,5 @@
+
+
 /*
  * Public API Surface of remult
  */
@@ -68,8 +70,12 @@ export {
     WebSqlDataProvider
 } from './src/data-providers/web-sql-data-provider';//V
 export {
-    SqlDatabase
+    SqlDatabase,
 } from './src/data-providers/sql-database';//V
+export { CustomSqlFilterObject,CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
+
+
+
 export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-data-provider';//V
 
 //export * from './src/data-api'; //reconsider if to make internal
@@ -102,4 +108,4 @@ export { FilterConsumerBridgeToSqlRequest, getEntityDbNames,EntityDbNames } from
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
-export { ValueConverters } from './valueConverters';
+export { ValueConverters } from './src/valueConverters';

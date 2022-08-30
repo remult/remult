@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { JsonEntityStorage } from '../index';
+import { JsonDataProvider, JsonEntityStorage } from '../index';
 
 
 export class JsonEntityFileStorage implements JsonEntityStorage {
@@ -17,10 +17,9 @@ export class JsonEntityFileStorage implements JsonEntityStorage {
     }
     return fs.writeFileSync(path.join(this.folderPath, entityDbName) + '.json', json);
   }
+  constructor(private folderPath: string) { }
+}
 
-  constructor(private folderPath: string) {
-
-
-
-  }
+export class JsonFileDataProvider extends JsonDataProvider {
+  constructor(folderPath: string) { super(new JsonEntityFileStorage(folderPath)) }
 }

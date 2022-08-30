@@ -34,17 +34,16 @@ export class Task {
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
+3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `createRemultServer()` method:
 
 *src/server/api.ts*
 ```ts{2,5}
-import { remultExpress } from 'remult/remult-express';
-import { Task } from '../shared/Task';
+import { createRemultServer } from "remult/server";
+import { Task } from "../shared/Task";
 
-export const api = remultExpress({
-    entities: [Task],
-    bodyParser: false
-});
+export const api = createRemultServer({
+    entities: [Task]
+})
 ```
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
@@ -63,10 +62,10 @@ Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
 ```ts{6-17}
-import { remultExpress } from 'remult/remult-express';
-import { Task } from '../shared/Task';
+import { createRemultServer } from "remult/server";
+import { Task } from "../shared/Task";
 
-export const api = remultExpress({
+export const api = createRemultServer({
     entities: [Task],
     initApi: async remult => {
         const taskRepo = remult.repo(Task);
@@ -79,9 +78,8 @@ export const api = remultExpress({
                 { title: "Task e", completed: true }
             ]);
         }
-    },
-    bodyParser: false
-});
+    }
+})
 ```
 
 The `initApi` callback is called only once, after a database connection is established and the server is ready to perform initialization operations.

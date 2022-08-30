@@ -5,6 +5,12 @@ import * as fs from 'fs';
 var api: {
     children: member[]
 } = JSON.parse(fs.readFileSync("./dist/generate/the.json").toString());
+{
+    const z: member = JSON.parse(JSON.stringify(findType("FindFirstOptions")));
+    z.name = "FindFirstOptionsBase";
+    z.children = z.children.filter(m => m.inheritedFrom?.name.startsWith(z.name));
+    api.children.push(z);
+}
 
 class DocFile {
     s: string = '';
@@ -15,30 +21,74 @@ class DocFile {
         this.s += '# ' + name + '\n';
     }
     writeMemberComments(m: member, indent = 0) {
-        if (!m.comment)
+        if (!m.comment) {
+            switch (m.name) {
+                case "where":
+                    m.comment = {
+                        shortText: "filters the data",
+                        tags: [
+                            {
+                                tag: 'see',
+                                text: '[EntityFilter](http://remult.dev/docs/entityFilter.html)'
+                            }
+                        ]
+                    }
+                    break;
+            }
+        }
+        if (!m.comment?.shortText) {
+            this.writeLine("* **" + m.name + "**", indent);
             return;
-
-        if (m.comment.shortText) {
-            this.s += m.comment.shortText + "\n";
         }
 
-        if (m.comment.tags)
+        if (m.comment.shortText) {
+            if (indent == 0 && m.kindString != "Parameter")
+                this.writeLine(m.comment.shortText, indent);
+            else
+                this.writeLine("* **" + m.name + "** - " + m.comment.shortText, indent);
+        }
+        if (m.name == "Entity") {
+
+        }
+        if (m.comment.tags) {
+            let lastExample: Tag = undefined;
+            let tags: Tag[] = [];
             for (const t of m.comment.tags) {
-                for (let index = 0; index < 3 + indent; index++) {
-                    this.s += '#';
-                }
-                this.s += " " + t.tag + "\n";
                 if (t.tag == "example") {
-                    if (!t.text.endsWith('\n'))
-                        t.text += '\n';
-                    t.text = t.text.replace('.@', '@');
-                    t.text = "```ts" + t.text + "```\n";
+                    lastExample = t;
+                }
+                if (t.tag.startsWith("entity") || t.tag.startsWith("field")) {
+                    if (t.text.startsWith("\n   "))
+                        lastExample.text += "\n   ";
+                        else lastExample.text+="\n";
+                    lastExample.text += "@" + t.tag[0].toUpperCase() + t.tag.substring(1) + t.text;
+                    continue;
+                }
+                tags.push(t);
+            }
+
+            for (const t of tags) {
+                this.writeLine("\n\n*" + t.tag + "*", indent + 1);
+                let text = t.text;
+                if (t.tag == "example") {
+                    if (!text.endsWith('\n'))
+                        text += '\n';
+                    text = "```ts" + text + "```\n";
                 }
 
-                this.s += t.text + "\n";
+                this.writeLine(text, indent + 1);
             }
+        }
+    }
+    writeLine(what: string, indent: number) {
+        let space = '';
+        for (let index = 0; index < indent; index++) {
+            space += '   ';
+        }
+        this.s += space + what.replace(/\n/g, '\n' + space) + '\n';
     }
     writeMembers(type: member, indent = 0) {
+
 
         if (type.children) {
             try {
@@ -46,39 +96,44 @@ class DocFile {
                     type.children.sort((a, b) => a.id - b.id);
                 else
                     type.children.sort((a, b) => a.sources[0].line - b.sources[0].line)
+                type.children = [...type.children.filter(x => x.comment), ...type.children.filter(x => !x.comment)]
             } catch { }
 
             for (const m of type.children) {
                 if (m.flags.isPrivate)
                     continue;
-                for (let index = 0; index < 2 + indent; index++) {
-                    this.s += '#';
-                }
-                this.s += ' ' + m.name + "\n";
-                this.writeMemberComments(m, indent);
+                if (indent == 0)
+                    this.writeLine(header(indent + 2, m.name), indent)
+                if (!m.signatures)
+                    this.writeMemberComments(m, indent);
                 if (m.signatures) {
                     for (const s of m.signatures) {
                         this.writeMemberComments(s, indent);
-
-                        if (s.parameters?.length <= 2 && !m.flags.isStatic) {
-                            for (const p of s.parameters) {
-                                if (p.type.type == 'union') {
-                                    for (const pp of p.type.types) {
-                                        if (pp.name)
-                                            if (pp.name.endsWith("Options")) {
-                                                let o = findType(pp.name);
-                                                this.writeMembers(o, indent + 1);
-                                            }
-                                    }
-                                } else if (p.type.name)
-                                    if (p.type.name.endsWith("Options")) {
-                                        let o = findType(p.type.name);
-                                        this.writeMembers(o, indent + 1);
-                                    }
+                        {
+                            if (s.parameters && indent == 0/* to prevent the parameters of load, in find options etc... */) {
+                                this.writeLine("",indent);
+                                this.writeLine("Arguments:", indent);
+                                for (const p of s.parameters) {
+                                    this.writeMemberComments(p, indent);
+                                    if (p.type.type == 'union') {
+                                        for (const pp of p.type.types) {
+                                            if (pp.name)
+                                                if (pp.name.includes("Options")) {
+                                                    let o = findType(pp.name);
+                                                    this.writeMembers(o, indent + 1);
+                                                }
+                                        }
+                                    } else if (p.type.name)
+                                        if (p.type.name.includes("Options")) {
+                                            let o = findType(p.type.name);
+                                            this.writeMembers(o, indent + 1);
+                                        }
+                                }
                             }
 
 
                         }
+                        break;
                     }
                 }
 
@@ -141,16 +196,22 @@ catch (err) {
 }
 
 
+type Tag = {
+    tag: string;
+    text: string;
+};
+
 interface member {
-    kindString: string;
+    kindString: "Parameter";
     name: string,
-    parameters: {
+    parameters: ({
+        name: string,
         type: {
             name: string,
             type: string,
             types: { name: string }[]
         }
-    }[],
+    } & member)[],
     signatures: member[],
     sources: { line: number }[]
     flags: {
@@ -161,11 +222,19 @@ interface member {
     children: member[],
     comment: {
         shortText: string,
-        tags: {
-            tag: string,
-            text: string
-        }[]
+        tags: Tag[]
+    },
+    inheritedFrom: {
+        type: string,
+        name: string
     }
 }
 
 
+function header(depth: number, text: string) {
+    let s = '';
+    for (let index = 0; index < depth; index++) {
+        s += '#';
+    }
+    return s + ' ' + text;
+}
