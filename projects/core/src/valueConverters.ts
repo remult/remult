@@ -1,8 +1,5 @@
-import { ClassType } from "../classType";
-import { InputTypes } from "../inputTypes";
-import { makeTitle } from "./column";
-import { ValueConverter, ValueListItem } from "./column-interfaces";
-import { storableMember, ValueListFieldOptions } from "./remult3";
+import { InputTypes } from "../inputTypes.js";
+import { ValueConverter, ValueListItem } from "./column-interfaces.js";
 
 
 
@@ -135,8 +132,8 @@ export class ValueConverters {
   static readonly Number: ValueConverter<number> =
     {
       fromDb: value => {
-        if (value===null)
-        return null;
+        if (value === null)
+          return null;
         if (value !== undefined)
           return +value;
         return undefined;

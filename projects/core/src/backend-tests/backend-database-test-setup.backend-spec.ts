@@ -1,4 +1,4 @@
-import { Remult } from "../context";
+import { Remult } from "../context.js";
 import { KnexDataProvider, KnexSchemaBuilder } from '../../remult-knex';
 import * as Knex from 'knex';
 import { MongoClient } from 'mongodb';

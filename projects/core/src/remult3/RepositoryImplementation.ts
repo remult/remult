@@ -1,23 +1,22 @@
 
-import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
-import { EntityOptions } from "../entity";
-import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
-import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
-import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
-import { Sort } from "../sort";
+import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces.js";
+import { EntityOptions } from "../entity.js";
+import { CompoundIdField, LookupColumn, makeTitle } from '../column.js';
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3.js"
+import { ClassType } from "../../classType.js";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context.js";
+import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces.js";
+import { Sort } from "../sort.js";
 import { v4 as uuid } from 'uuid';
 
 
 
-import { entityEventListener } from "../__EntityValueProvider";
-import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { ValueConverters } from "../valueConverters";
-import { filterHelper } from "../filter/filter-interfaces";
-import { assign } from "../../assign";
+import { entityEventListener } from "../__EntityValueProvider.js";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces.js";
+import { ValueConverters } from "../valueConverters.js";
+import { filterHelper } from "../filter/filter-interfaces.js";
+import { assign } from "../../assign.js";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
-//import { remult } from "../remult-proxy";
 
 
 let classValidatorValidate: ((item: any, ref: {
@@ -1115,14 +1114,13 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
             }
         }
     }
-    errors: { [key: string]: string; };
-    originalValues: any;
     fields: FieldsRef<T>;
 
 }
 export class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
     constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType>, private rowBase: rowHelperBase<entityType>) {
-
+        this.target = this.settings.target;
+        this.entityRef = this.helper;
     }
     _subscribers: SubscribableImp;
     subscribe(listener: RefSubscriber): Unobserve {
@@ -1154,7 +1152,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         }
         return this.value;
     }
-    target: ClassType<any> = this.settings.target;
+    target: ClassType<any>;
 
     reportObserved() {
         this._subscribers?.reportObserved();
@@ -1236,7 +1234,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         }
         return JSON.stringify(this.metadata.valueConverter.toJson(this.rowBase.originalValues[this.metadata.key])) != JSON.stringify(this.metadata.valueConverter.toJson(val));
     }
-    entityRef: EntityRef<any> = this.helper;
+    entityRef: EntityRef<any>;
 
 
     async __performValidation() {
@@ -1300,8 +1298,13 @@ export class columnDefsImpl implements FieldMetadata {
         if (!this.inputType)
             this.inputType = this.valueConverter.inputType;
         this.caption = buildCaption(settings.caption, settings.key, remult);
-
-
+        this.options = this.settings;
+        this.target = this.settings.target;
+        this.valueConverter = this.settings.valueConverter;
+        this.allowNull = !!this.settings.allowNull;
+        this.inputType = this.settings.inputType;
+        this.key = this.settings.key;
+        this.valueType = this.settings.valueType;
 
 
     }
@@ -1329,12 +1332,12 @@ export class columnDefsImpl implements FieldMetadata {
 
 
     }
-    options: FieldOptions<any, any> = this.settings;
-    target: ClassType<any> = this.settings.target;
+    options: FieldOptions<any, any>;
+    target: ClassType<any>;
     readonly: boolean;
 
-    valueConverter = this.settings.valueConverter;
-    allowNull = !!this.settings.allowNull;
+    valueConverter;
+    allowNull;
 
     caption: string;
     get dbName() {
@@ -1350,17 +1353,17 @@ export class columnDefsImpl implements FieldMetadata {
         return this.settings.dbName;
 
     }
-    inputType = this.settings.inputType;
-    key = this.settings.key;
+    inputType;
+    key;
     get dbReadOnly() {
         return this.settings.dbReadOnly;
     };
     isServerExpression: boolean;
-    valueType = this.settings.valueType;
+    valueType;
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
 
-    options = this.entityInfo;
+    options;
 
     constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private remult: Remult, public readonly entityType: ClassType<T>, public readonly key: string) {
         if (this.options.allowApiCrud !== undefined) {
@@ -1372,6 +1375,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.options.allowApiUpdate = this.options.allowApiCrud;
             if (this.options.allowApiRead === undefined)
                 this.options.allowApiRead = this.options.allowApiCrud;
+            this.options = this.entityInfo;
         }
         if (this.options.allowApiRead === undefined)
             this.options.allowApiRead = true;

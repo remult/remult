@@ -1,11 +1,10 @@
-import { Remult } from ".";
+import { Remult } from "./index.js";
 
-import { allEntities } from "./src/context";
-import { getEntityKey } from "./src/remult3";
+import { allEntities } from "./src/context.js";
+import { getEntityKey } from "./src/remult3/index.js";
 
-import { DataApi } from "./src/data-api";
-import { RemultServer } from "./server/expressBridge";
-import { ValueConverters } from "./src/valueConverters";
+import { DataApi } from "./src/data-api.js";
+import { RemultServer } from "./server/expressBridge.js";
 
 export function remultGraphql(api: RemultServer) {
     let r = new Remult();

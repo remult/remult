@@ -1,10 +1,10 @@
 
-import { FieldMetadata } from '../src/column-interfaces';
-import { Remult, allEntities } from '../src/context';
-import { SqlDatabase } from '../src/data-providers/sql-database';
-import { getDbNameProvider } from '../src/filter/filter-consumer-bridge-to-sql-request';
-import { EntityMetadata, isAutoIncrement } from '../src/remult3';
-import { ValueConverters } from '../src/valueConverters';
+import { FieldMetadata } from '../src/column-interfaces.js';
+import { Remult, allEntities } from '../src/context.js';
+import { SqlDatabase } from '../src/data-providers/sql-database.js';
+import { getDbNameProvider } from '../src/filter/filter-consumer-bridge-to-sql-request.js';
+import { EntityMetadata, isAutoIncrement } from '../src/remult3/index.js';
+import { ValueConverters } from '../src/valueConverters.js';
 
 
 export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {

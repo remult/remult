@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { JsonDataProvider, JsonEntityStorage } from '../index';
+import { JsonDataProvider, JsonEntityStorage } from '../index.js';
 
 
 export class JsonEntityFileStorage implements JsonEntityStorage {

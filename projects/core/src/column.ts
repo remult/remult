@@ -1,11 +1,11 @@
-import { ClassType } from '../classType';
-import { assign } from '../assign';
-import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces';
+import { ClassType } from '../classType.js';
+import { assign } from '../assign.js';
+import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces.js';
 
-import { AndFilter, Filter } from './filter/filter-interfaces';
+import { AndFilter, Filter } from './filter/filter-interfaces.js';
 
 
-import { EntityFilter, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3';
+import { EntityFilter, FindOptions, getEntityRef, Repository, RepositoryImplementation, __updateEntityBasedOnWhere } from './remult3/index.js';
 
 
 

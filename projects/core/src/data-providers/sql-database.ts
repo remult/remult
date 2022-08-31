@@ -1,13 +1,12 @@
 
-import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from "../data-interfaces";
-import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
-import { CompoundIdField } from "../column";
-
-import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, dbNameProvider, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
-import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
-import { Sort, SortSegment } from '../sort';
-import { EntityMetadata, EntityFilter } from "../remult3";
-import { FieldMetadata } from "../column-interfaces";
+import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from "../data-interfaces.js";
+import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command.js";
+import { CompoundIdField } from "../column.js";
+import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, dbNameProvider, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request.js";
+import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces.js';
+import { Sort, SortSegment } from '../sort.js';
+import { EntityMetadata, EntityFilter } from "../remult3/index.js";
+import { FieldMetadata } from "../column-interfaces.js";
 
 // @dynamic
 export class SqlDatabase implements DataProvider {

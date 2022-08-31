@@ -1,11 +1,11 @@
-import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
-import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
+import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting.js";
+import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command.js";
 
 
-import { EntityMetadata, isAutoIncrement } from "../remult3";
-import { FieldMetadata } from "../column-interfaces";
-import { SqlDatabase } from "./sql-database";
-import { getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import { EntityMetadata, isAutoIncrement } from "../remult3/index.js";
+import { FieldMetadata } from "../column-interfaces.js";
+import { SqlDatabase } from "./sql-database.js";
+import { getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request.js";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {

@@ -1,10 +1,8 @@
-import { EntityOptions } from './entity';
-import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
-import { Remult, UserInfo } from './context';
-import { Filter } from './filter/filter-interfaces';
-import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
-import { SortSegment } from './sort';
-import { ErrorInfo } from './data-interfaces';
+import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces.js';
+import { Remult, UserInfo } from './context.js';
+import { Filter } from './filter/filter-interfaces.js';
+import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3/index.js';
+import { ErrorInfo } from './data-interfaces.js';
 
 export class DataApi<T = any> {
 

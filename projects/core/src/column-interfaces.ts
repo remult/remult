@@ -1,6 +1,6 @@
-import { ClassType } from '../classType';
-import { Allowed, Remult, AllowedForInstance } from './context';
-import { EntityMetadata, FieldRef } from './remult3';
+import { ClassType } from '../classType.js';
+import { Allowed, Remult, AllowedForInstance } from './context.js';
+import { EntityMetadata, FieldRef } from './remult3/index.js';
 
 
 

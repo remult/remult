@@ -1,7 +1,7 @@
-import { ClassType } from "../classType";
-import { Allowed, AllowedForInstance, ApiClient, EventDispatcher, EventSource, Remult, RemultContext, UserInfo } from "./context";
-import { DataProvider } from "./data-interfaces";
-import { Repository, RepositoryImplementation } from "./remult3";
+import { ClassType } from "../classType.js";
+import { Allowed, AllowedForInstance, ApiClient, EventDispatcher, EventSource, Remult, RemultContext, UserInfo } from "./context.js";
+import { DataProvider } from "./data-interfaces.js";
+import { Repository, RepositoryImplementation } from "./remult3/index.js";
 
 
 let defaultRemult = new Remult();

@@ -1,13 +1,13 @@
 
-import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
-import { DataProvider, ErrorInfo } from '../src/data-interfaces';
-import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
-import { ClassType } from '../classType';
-import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
-import { IdEntity } from '../src/id-entity';
+import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action.js';
+import { DataProvider, ErrorInfo } from '../src/data-interfaces.js';
+import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api.js';
+import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context.js';
+import { ClassType } from '../classType.js';
+import { Entity, Fields, getEntityKey, Repository } from '../src/remult3/index.js';
+import { IdEntity } from '../src/id-entity.js';
 import { AsyncLocalStorage } from 'async_hooks';
-import { remult, RemultProxy } from '../src/remult-proxy';
+import { remult, RemultProxy } from '../src/remult-proxy.js';
 
 
 

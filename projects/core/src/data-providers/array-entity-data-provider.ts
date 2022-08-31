@@ -1,9 +1,8 @@
-import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
-import { customDatabaseFilterToken, Filter, FilterConsumer } from '../filter/filter-interfaces';
-import { FieldMetadata } from '../column-interfaces';
-import { EntityMetadata, EntityFilter } from '../remult3';
-import { CompoundIdField } from '../column';
-import { Sort } from '../sort';
+import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces.js';
+import { customDatabaseFilterToken, Filter, FilterConsumer } from '../filter/filter-interfaces.js';
+import { FieldMetadata } from '../column-interfaces.js';
+import { EntityMetadata, EntityFilter } from '../remult3/index.js';
+import { CompoundIdField } from '../column.js';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {

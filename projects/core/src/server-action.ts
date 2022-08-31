@@ -2,21 +2,21 @@ import 'reflect-metadata';
 
 
 
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context.js';
 
 
 
 
-import { DataApiRequest, DataApiResponse } from './data-api';
+import { DataApiRequest, DataApiResponse } from './data-api.js';
 
-import { SqlDatabase } from './data-providers/sql-database';
+import { SqlDatabase } from './data-providers/sql-database.js';
 
 
-import { packedRowInfo } from './__EntityValueProvider';
-import { Filter, AndFilter } from './filter/filter-interfaces';
-import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3';
-import { FieldOptions } from './column-interfaces';
+import { packedRowInfo } from './__EntityValueProvider.js';
+import { Filter, AndFilter } from './filter/filter-interfaces.js';
+import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces.js';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3/index.js';
+import { FieldOptions } from './column-interfaces.js';
 
 
 

@@ -1,11 +1,11 @@
 
-import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
-import { DataApiRequest } from "./data-api";
-import { Action, actionInfo, serverActionField } from './server-action';
-import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
-import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
-import { ClassType } from "../classType";
+import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces.js";
+import { DataApiRequest } from "./data-api.js";
+import { Action, actionInfo, serverActionField } from './server-action.js';
+import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider.js';
+import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3/index.js";
+import { RepositoryImplementation } from "./remult3/RepositoryImplementation.js";
+import { ClassType } from "../classType.js";
 
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };

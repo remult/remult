@@ -1,6 +1,6 @@
-import { FieldMetadata } from "../column-interfaces";
-import { Remult } from "../context";
-import { EntityMetadata, EntityFilter, getEntityRef, getEntitySettings, ValueFilter } from "../remult3";
+import { FieldMetadata } from "../column-interfaces.js";
+import { Remult } from "../context.js";
+import { EntityMetadata, EntityFilter, getEntityRef, getEntitySettings, ValueFilter } from "../remult3/index.js";
 
 
 export class Filter {

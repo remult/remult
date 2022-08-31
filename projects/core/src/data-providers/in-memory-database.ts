@@ -1,7 +1,7 @@
-import {  DataProvider, EntityDataProvider } from '../data-interfaces';
-import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
-import { ArrayEntityDataProvider } from './array-entity-data-provider';
-import { EntityMetadata } from '../remult3';
+import {  DataProvider, EntityDataProvider } from '../data-interfaces.js';
+import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting.js";
+import { ArrayEntityDataProvider } from './array-entity-data-provider.js';
+import { EntityMetadata } from '../remult3/index.js';
 
 export class InMemoryDataProvider implements DataProvider, __RowsOfDataForTesting {
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {

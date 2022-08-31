@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { createRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge';
+import { createRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge.js';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {

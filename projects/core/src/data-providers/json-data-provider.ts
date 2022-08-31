@@ -1,8 +1,7 @@
-import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from '../data-interfaces';
-import { Filter } from '../filter/filter-interfaces';
-import { ArrayEntityDataProvider } from './array-entity-data-provider';
-import { EntityMetadata } from '../remult3';
-import { Sort } from '../sort';
+import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from '../data-interfaces.js';
+import { Filter } from '../filter/filter-interfaces.js';
+import { ArrayEntityDataProvider } from './array-entity-data-provider.js';
+import { EntityMetadata } from '../remult3/index.js';
 
 
 export interface JsonEntityStorage {

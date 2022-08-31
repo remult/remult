@@ -1,7 +1,7 @@
 import { MongoClient, Db, FindOptions } from 'mongodb';
 import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter } from '.';
-import { dbNameProvider, getDbNameProvider } from './src/filter/filter-consumer-bridge-to-sql-request';
-import { FilterConsumer } from './src/filter/filter-interfaces';
+import { dbNameProvider, getDbNameProvider } from './src/filter/filter-consumer-bridge-to-sql-request.js';
+import { FilterConsumer } from './src/filter/filter-interfaces.js';
 
 export class MongoDataProvider implements DataProvider {
     constructor(private db: Db, private client: MongoClient) {

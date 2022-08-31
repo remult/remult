@@ -1,11 +1,11 @@
 
 
-import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
+import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces.js';
 
-import { UrlBuilder } from '../../urlBuilder';
-import { customUrlToken, Filter } from '../filter/filter-interfaces';
-import { EntityMetadata } from '../remult3';
-import { ApiClient, buildRestDataProvider, Remult, retry } from '../context';
+import { UrlBuilder } from '../../urlBuilder.js';
+import { customUrlToken, Filter } from '../filter/filter-interfaces.js';
+import { EntityMetadata } from '../remult3/index.js';
+import { ApiClient, buildRestDataProvider, Remult, retry } from '../context.js';
 
 
 export class RestDataProvider implements DataProvider {

@@ -1,15 +1,15 @@
 
 import knex, { Knex } from 'knex';
-import { customDatabaseFilterToken, Filter, FilterConsumer } from "../src/filter/filter-interfaces";
-import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
-import { allEntities, Remult } from "../src/context";
+import { customDatabaseFilterToken, Filter, FilterConsumer } from "../src/filter/filter-interfaces.js";
+import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request.js";
+import { allEntities, Remult } from "../src/context.js";
 
-import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata } from "../src/remult3";
-import { ValueConverters } from "../src/valueConverters";
-import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from '../src/data-interfaces';
-import { FieldMetadata } from '../src/column-interfaces';
-import { CompoundIdField } from '../src/column';
-import { Sort } from '../src/sort';
+import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata } from "../src/remult3/index.js";
+import { ValueConverters } from "../src/valueConverters.js";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from '../src/data-interfaces.js';
+import { FieldMetadata } from '../src/column-interfaces.js';
+import { CompoundIdField } from '../src/column.js';
+import { Sort } from '../src/sort.js';
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {

@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod, FastifyRequest } from 'fastify';
-import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge';
+import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge.js';
 
 
 export function remultFastify(options: RemultServerOptions<FastifyRequest>): FastifyPluginCallback & RemultServer {
