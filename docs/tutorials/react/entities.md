@@ -146,10 +146,13 @@ Here's a quick overview of the different parts of the code snippet:
 
 After the browser refreshes, the list of tasks appears.
 
+## Add Styles
 
-::: tip
-Replace the content if `index.css` with the following `css` to make it look a little better
+Optionally make the app look a little better by replacing the contents of `index.css` with the following CSS:
 
+::: details Styles
+
+*index.css*
 ```css
 @charset "utf-8";
 
@@ -192,8 +195,6 @@ main>button {
 	visibility: hidden;
 }
 
-
-
 main>div>button:first-of-type {
 	color: green;
 }
@@ -202,7 +203,6 @@ div>main>div:hover>button,
 div>main>div:focus-within>button {
 	visibility: visible;
 }
-
 
 button {
 	display: block;
@@ -214,10 +214,8 @@ button {
 	text-align: center;
 	text-decoration: none;
 	display: inline-block;
-	/* font-size: 16px; */
 	padding: 8px 16px;
 	margin: 4px;
-
 	box-shadow: 0 2px 4px #0003, 0 25px 50px #0000001a;
 }
 
@@ -255,7 +253,6 @@ main {
 	margin: 8px 0;
 	position: relative;
 	box-shadow: 0 2px 4px #0003, 0 25px 50px #0000001a;
-	/* max-width: 400px; */
 	padding: 8px;
 }
 
