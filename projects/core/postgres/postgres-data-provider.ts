@@ -1,12 +1,11 @@
-
-
-import { Pool, PoolConfig, QueryResult } from 'pg';
+import { PoolConfig, QueryResult } from 'pg';
+import * as pg from 'pg';
 import { Remult } from '../src/context.js';
 import { PostgresSchemaBuilder, verifyStructureOfAllEntities } from './schema-builder.js';
 import { EntityMetadata } from '../src/remult3/index.js';
 import { SqlCommand, SqlImplementation, SqlResult } from '../src/sql-command.js';
 import { SqlDatabase } from '../src/data-providers/sql-database.js';
-
+const { Pool } = pg;
 
 
 export interface PostgresPool extends PostgresCommandSource {

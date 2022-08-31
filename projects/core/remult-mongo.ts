@@ -1,5 +1,5 @@
 import { MongoClient, Db, FindOptions } from 'mongodb';
-import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter } from '.';
+import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityMetadata, FieldMetadata, Filter } from './index.js';
 import { dbNameProvider, getDbNameProvider } from './src/filter/filter-consumer-bridge-to-sql-request.js';
 import { FilterConsumer } from './src/filter/filter-interfaces.js';
 
