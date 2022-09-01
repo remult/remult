@@ -1,5 +1,5 @@
-import { RemultServerOptions, GenericRequest } from "./server/expressBridge";
-import { Remult } from "./src/context";
+import { RemultServerOptions, GenericRequest } from "./server/expressBridge.js";
+import { Remult } from "./src/context.js";
 export declare function remultFresh<RequestType extends GenericRequest>(options: RemultServerOptions<RequestType>, response: FreshResponse): RemultFresh;
 export interface RemultFresh {
     getRemult(req: GenericRequest): Promise<Remult>;

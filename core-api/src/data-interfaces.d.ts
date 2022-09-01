@@ -1,6 +1,6 @@
-import { Sort } from './sort';
-import { Filter } from './filter/filter-interfaces';
-import { EntityMetadata, OmitEB } from './remult3';
+import { Sort } from './sort.js';
+import { Filter } from './filter/filter-interfaces.js';
+import { EntityMetadata, OmitEB } from './remult3/index.js';
 export interface DataProvider {
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;

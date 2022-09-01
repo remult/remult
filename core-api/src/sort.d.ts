@@ -1,5 +1,5 @@
-import { FieldMetadata } from "./column-interfaces";
-import { EntityMetadata, EntityOrderBy } from "./remult3";
+import { FieldMetadata } from "./column-interfaces.js";
+import { EntityMetadata, EntityOrderBy } from "./remult3/index.js";
 export declare class Sort {
     toEntityOrderBy(): EntityOrderBy<any>;
     constructor(...segments: SortSegment[]);

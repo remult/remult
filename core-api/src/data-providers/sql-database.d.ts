@@ -1,7 +1,7 @@
-import { EntityDataProvider, DataProvider } from "../data-interfaces";
-import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
-import { CustomSqlFilterBuilderFunction } from "../filter/filter-consumer-bridge-to-sql-request";
-import { EntityMetadata, EntityFilter } from "../remult3";
+import { EntityDataProvider, DataProvider } from "../data-interfaces.js";
+import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command.js";
+import { CustomSqlFilterBuilderFunction } from "../filter/filter-consumer-bridge-to-sql-request.js";
+import { EntityMetadata, EntityFilter } from "../remult3/index.js";
 export declare class SqlDatabase implements DataProvider {
     private sql;
     createCommand(): SqlCommand;

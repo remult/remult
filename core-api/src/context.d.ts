@@ -1,7 +1,7 @@
-import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
-import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
-import { ClassType } from "../classType";
+import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces.js";
+import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider.js';
+import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3/index.js";
+import { ClassType } from "../classType.js";
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | {
         toPromise(): Promise<any>;

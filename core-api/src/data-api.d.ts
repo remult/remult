@@ -1,6 +1,6 @@
-import { Remult } from './context';
-import { Repository } from './remult3';
-import { ErrorInfo } from './data-interfaces';
+import { Remult } from './context.js';
+import { Repository } from './remult3/index.js';
+import { ErrorInfo } from './data-interfaces.js';
 export declare class DataApi<T = any> {
     private repository;
     private remult;

@@ -1,9 +1,9 @@
-import { ClassType } from "../../classType";
-import { FieldMetadata } from "../column-interfaces";
-import { Unobserve } from "../context";
-import { EntityOptions as EntityOptions } from "../entity";
-import { SortSegment } from "../sort";
-import { entityEventListener } from "../__EntityValueProvider";
+import { ClassType } from "../../classType.js";
+import { FieldMetadata } from "../column-interfaces.js";
+import { Unobserve } from "../context.js";
+import { EntityOptions as EntityOptions } from "../entity.js";
+import { SortSegment } from "../sort.js";
+import { entityEventListener } from "../__EntityValueProvider.js";
 export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges(): any;

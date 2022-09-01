@@ -1,7 +1,7 @@
-import { ClassType } from '../classType';
-import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces';
-import { Filter } from './filter/filter-interfaces';
-import { EntityFilter, FindOptions, Repository, RepositoryImplementation } from './remult3';
+import { ClassType } from '../classType.js';
+import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces.js';
+import { Filter } from './filter/filter-interfaces.js';
+import { EntityFilter, FindOptions, Repository, RepositoryImplementation } from './remult3/index.js';
 export declare function makeTitle(name: string): string;
 export declare class CompoundIdField implements FieldMetadata<string> {
     fields: FieldMetadata[];

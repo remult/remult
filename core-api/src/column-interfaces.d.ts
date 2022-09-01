@@ -1,6 +1,6 @@
-import { ClassType } from '../classType';
-import { Allowed, AllowedForInstance } from './context';
-import { EntityMetadata, FieldRef } from './remult3';
+import { ClassType } from '../classType.js';
+import { Allowed, AllowedForInstance } from './context.js';
+import { EntityMetadata, FieldRef } from './remult3/index.js';
 export interface FieldOptions<entityType = any, valueType = any> {
     /**A human readable name for the field */
     caption?: string;

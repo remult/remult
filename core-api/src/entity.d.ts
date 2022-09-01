@@ -1,6 +1,6 @@
-import { Allowed, AllowedForInstance } from "./context";
-import { FieldMetadata as FieldMetadata } from './column-interfaces';
-import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef } from "./remult3";
+import { Allowed, AllowedForInstance } from "./context.js";
+import { FieldMetadata as FieldMetadata } from './column-interfaces.js';
+import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef } from "./remult3/index.js";
 export interface EntityOptions<entityType = any> {
     /**A human readable name for the entity */
     caption?: string;

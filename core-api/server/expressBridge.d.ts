@@ -1,9 +1,9 @@
-import { queuedJobInfoResponse } from '../src/server-action';
-import { DataProvider } from '../src/data-interfaces';
-import { Remult, UserInfo } from '../src/context';
-import { ClassType } from '../classType';
-import { Repository } from '../src/remult3';
-import { IdEntity } from '../src/id-entity';
+import { queuedJobInfoResponse } from '../src/server-action.js';
+import { DataProvider } from '../src/data-interfaces.js';
+import { Remult, UserInfo } from '../src/context.js';
+import { ClassType } from '../classType.js';
+import { Repository } from '../src/remult3/index.js';
+import { IdEntity } from '../src/id-entity.js';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *

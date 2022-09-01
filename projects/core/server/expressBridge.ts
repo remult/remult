@@ -59,7 +59,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
   dataProvider = dataProvider.then(async dp => {
     if (dp)
       return dp;
-    return new (await import('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
+    return new (await import('./JsonEntityFileStorage.js')).JsonFileDataProvider('./db')
   });
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {

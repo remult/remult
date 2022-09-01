@@ -1,5 +1,5 @@
 import { MongoClient, Db } from 'mongodb';
-import { DataProvider, EntityDataProvider, EntityMetadata } from '.';
+import { DataProvider, EntityDataProvider, EntityMetadata } from './index.js';
 export declare class MongoDataProvider implements DataProvider {
     private db;
     private client;

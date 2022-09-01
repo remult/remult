@@ -1,10 +1,10 @@
 import { Knex } from 'knex';
-import { Filter, FilterConsumer } from "../src/filter/filter-interfaces";
-import { dbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
-import { Remult } from "../src/context";
-import { EntityFilter, EntityMetadata } from "../src/remult3";
-import { DataProvider, EntityDataProvider } from '../src/data-interfaces';
-import { FieldMetadata } from '../src/column-interfaces';
+import { Filter, FilterConsumer } from "../src/filter/filter-interfaces.js";
+import { dbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request.js";
+import { Remult } from "../src/context.js";
+import { EntityFilter, EntityMetadata } from "../src/remult3/index.js";
+import { DataProvider, EntityDataProvider } from '../src/data-interfaces.js';
+import { FieldMetadata } from '../src/column-interfaces.js';
 export declare class KnexDataProvider implements DataProvider {
     knex: Knex;
     constructor(knex: Knex);

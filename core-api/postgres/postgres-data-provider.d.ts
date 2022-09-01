@@ -1,7 +1,7 @@
 import { PoolConfig, QueryResult } from 'pg';
-import { EntityMetadata } from '../src/remult3';
-import { SqlCommand, SqlImplementation } from '../src/sql-command';
-import { SqlDatabase } from '../src/data-providers/sql-database';
+import { EntityMetadata } from '../src/remult3/index.js';
+import { SqlCommand, SqlImplementation } from '../src/sql-command.js';
+import { SqlDatabase } from '../src/data-providers/sql-database.js';
 export interface PostgresPool extends PostgresCommandSource {
     connect(): Promise<PostgresClient>;
 }
@@ -25,4 +25,4 @@ export declare function createPostgresConnection(options?: {
     configuration?: "heroku" | PoolConfig;
     autoCreateTables?: boolean;
 }): Promise<SqlDatabase>;
-export declare function preparePostgresQueueStorage(sql: SqlDatabase): Promise<import("../server/expressBridge").EntityQueueStorage>;
+export declare function preparePostgresQueueStorage(sql: SqlDatabase): Promise<import("../server/expressBridge.js").EntityQueueStorage>;

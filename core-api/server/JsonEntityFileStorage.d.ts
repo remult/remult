@@ -1,4 +1,4 @@
-import { JsonDataProvider, JsonEntityStorage } from '../index';
+import { JsonDataProvider, JsonEntityStorage } from '../index.js';
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
     private folderPath;
     getItem(entityDbName: string): string;

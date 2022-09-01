@@ -1,2 +1,2 @@
-export * from './remult3';
-export * from './RepositoryImplementation';
+export * from './remult3.js';
+export * from './RepositoryImplementation.js';

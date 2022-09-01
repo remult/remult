@@ -1,5 +1,5 @@
-import { EntityDataProvider, DataProvider } from '../data-interfaces';
-import { EntityMetadata } from '../remult3';
+import { EntityDataProvider, DataProvider } from '../data-interfaces.js';
+import { EntityMetadata } from '../remult3/index.js';
 export interface JsonEntityStorage {
     getItem(entityDbName: string): string | null;
     setItem(entityDbName: string, json: string): any;

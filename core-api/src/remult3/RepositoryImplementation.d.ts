@@ -1,11 +1,11 @@
-import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
-import { EntityOptions } from "../entity";
-import { LookupColumn } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
-import { ClassType } from "../../classType";
-import { Remult, Unobserve } from "../context";
-import { entityEventListener } from "../__EntityValueProvider";
-import { DataProvider, EntityDataProvider } from "../data-interfaces";
+import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces.js";
+import { EntityOptions } from "../entity.js";
+import { LookupColumn } from '../column.js';
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3.js";
+import { ClassType } from "../../classType.js";
+import { Remult, Unobserve } from "../context.js";
+import { entityEventListener } from "../__EntityValueProvider.js";
+import { DataProvider, EntityDataProvider } from "../data-interfaces.js";
 import { RefSubscriber } from ".";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
@@ -129,10 +129,6 @@ export declare function getControllerRef<fieldsContainerType>(container: fieldsC
 export declare class controllerRefImpl<T = any> extends rowHelperBase<T> implements ControllerRef<T> {
     constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult);
     __performColumnAndEntityValidations(): Promise<void>;
-    errors: {
-        [key: string]: string;
-    };
-    originalValues: any;
     fields: FieldsRef<T>;
 }
 export declare class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
@@ -180,12 +176,12 @@ export declare class columnDefsImpl implements FieldMetadata {
     options: FieldOptions<any, any>;
     target: ClassType<any>;
     readonly: boolean;
-    valueConverter: ValueConverter<any>;
-    allowNull: boolean;
+    valueConverter: any;
+    allowNull: any;
     caption: string;
     get dbName(): any;
-    inputType: string;
-    key: string;
+    inputType: any;
+    key: any;
     get dbReadOnly(): boolean;
     isServerExpression: boolean;
     valueType: any;
@@ -196,7 +192,7 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     private remult;
     readonly entityType: ClassType<T>;
     readonly key: string;
-    options: EntityOptions<any>;
+    options: any;
     constructor(columnsInfo: FieldOptions[], entityInfo: EntityOptions, remult: Remult, entityType: ClassType<T>, key: string);
     get apiUpdateAllowed(): boolean;
     get apiReadAllowed(): boolean;

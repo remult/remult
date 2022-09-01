@@ -1,6 +1,6 @@
-import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
-import { Filter } from '../filter/filter-interfaces';
-import { EntityMetadata, EntityFilter } from '../remult3';
+import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces.js';
+import { Filter } from '../filter/filter-interfaces.js';
+import { EntityMetadata, EntityFilter } from '../remult3/index.js';
 export declare class ArrayEntityDataProvider implements EntityDataProvider {
     private entity;
     private rows?;

@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces.js";
 import { EntityOptions } from "../entity.js";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column.js';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3.js"
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3.js";
 import { ClassType } from "../../classType.js";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context.js";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces.js";
@@ -1366,6 +1366,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     options;
 
     constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private remult: Remult, public readonly entityType: ClassType<T>, public readonly key: string) {
+        this.options = this.entityInfo;
         if (this.options.allowApiCrud !== undefined) {
             if (this.options.allowApiDelete === undefined)
                 this.options.allowApiDelete = this.options.allowApiCrud;
@@ -1375,7 +1376,6 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.options.allowApiUpdate = this.options.allowApiCrud;
             if (this.options.allowApiRead === undefined)
                 this.options.allowApiRead = this.options.allowApiCrud;
-            this.options = this.entityInfo;
         }
         if (this.options.allowApiRead === undefined)
             this.options.allowApiRead = true;

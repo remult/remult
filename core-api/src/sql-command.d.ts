@@ -1,4 +1,4 @@
-import { EntityMetadata } from './remult3';
+import { EntityMetadata } from './remult3/index.js';
 export interface SqlImplementation {
     getLimitSqlSyntax(limit: number, offset: number): any;
     createCommand(): SqlCommand;

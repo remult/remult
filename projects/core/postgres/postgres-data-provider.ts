@@ -125,12 +125,12 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
 
     let c = new Remult();
     c.dataProvider = (sql);
-    let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
+    let JobsInQueueEntity = (await import('../server/expressBridge.js')).JobsInQueueEntity
     let e = c.repo(JobsInQueueEntity);
     await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);
     await new PostgresSchemaBuilder(sql).verifyAllColumns(e.metadata);
 
-    return new (await import('../server/expressBridge')).EntityQueueStorage(c.repo(JobsInQueueEntity));
+    return new (await import('../server/expressBridge.js')).EntityQueueStorage(c.repo(JobsInQueueEntity));
 
 
 }

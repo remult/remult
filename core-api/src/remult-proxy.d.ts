@@ -1,2 +1,2 @@
-import { Remult } from "./context";
+import { Remult } from "./context.js";
 export declare const remult: Remult;

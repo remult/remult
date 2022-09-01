@@ -1,8 +1,8 @@
-import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
-import { UrlBuilder } from '../../urlBuilder';
-import { Filter } from '../filter/filter-interfaces';
-import { EntityMetadata } from '../remult3';
-import { ApiClient } from '../context';
+import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces.js';
+import { UrlBuilder } from '../../urlBuilder.js';
+import { Filter } from '../filter/filter-interfaces.js';
+import { EntityMetadata } from '../remult3/index.js';
+import { ApiClient } from '../context.js';
 export declare class RestDataProvider implements DataProvider {
     private apiProvider;
     constructor(apiProvider: () => ApiClient);
