@@ -1291,13 +1291,6 @@ export function buildCaption(caption: string | ((remult: Remult) => string), key
 
 export class columnDefsImpl implements FieldMetadata {
     constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, remult: Remult) {
-        if (settings.serverExpression)
-            this.isServerExpression = true;
-        if (typeof (this.settings.allowApiUpdate) === "boolean")
-            this.readonly = this.settings.allowApiUpdate;
-        if (!this.inputType)
-            this.inputType = this.valueConverter.inputType;
-        this.caption = buildCaption(settings.caption, settings.key, remult);
         this.options = this.settings;
         this.target = this.settings.target;
         this.valueConverter = this.settings.valueConverter;
@@ -1305,6 +1298,13 @@ export class columnDefsImpl implements FieldMetadata {
         this.inputType = this.settings.inputType;
         this.key = this.settings.key;
         this.valueType = this.settings.valueType;
+        if (settings.serverExpression)
+            this.isServerExpression = true;
+        if (typeof (this.settings.allowApiUpdate) === "boolean")
+            this.readonly = this.settings.allowApiUpdate;
+        if (!this.inputType)
+            this.inputType = this.valueConverter.inputType;
+        this.caption = buildCaption(settings.caption, settings.key, remult);
 
 
     }
