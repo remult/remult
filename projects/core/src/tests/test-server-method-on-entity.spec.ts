@@ -83,7 +83,7 @@ class testBoolCreate123 extends EntityBase {
 }
 describe("test Server method in entity", () => {
     let c = new Remult();
-    fit("test server method on Entity", async () => {
+    it("test server method on Entity", async () => {
         let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'Noam';
         let r = await x.doIt1();
@@ -91,7 +91,7 @@ describe("test Server method in entity", () => {
         expect(r.result).toBe('hello Noam');
         expect(x.a).toBe("yael");
     });
-    fit("test server method on Entity without decorator", async () => {
+    it("test server method on Entity without decorator", async () => {
         let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'Noam';
         let r = await x.doIt1NoDecorator();

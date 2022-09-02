@@ -241,17 +241,17 @@ describe("test Server Controller basics", () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.getValFromServer()).toBe('test');
     });
-    fit("new backend method syntax static method with remult", async () => {
+    it("new backend method syntax static method with remult", async () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.staticBackendMethodWithoutDecoratorWithRemult()).toBe('test');
     });
-    fit("new backend method syntax static method", async () => {
+    it("new backend method syntax static method", async () => {
         expect(await testBasics.staticBackendMethodWithoutDecorator()).toBe(true);
     });
-    fit("new backend method syntax", async () => {
+    it("new backend method syntax", async () => {
         expect(await new testBasics(undefined).backendMethodWithoutDecorator()).toBe(true);
     });
-    fit("new backend method syntax", async () => {
+    it("new backend method syntax", async () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         const z = new testBasics(undefined);
         z.a='x';
