@@ -6,7 +6,6 @@ import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/contex
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
-import { AsyncLocalStorage } from 'async_hooks';
 import { remult, RemultProxy } from '../src/remult-proxy';
 
 
@@ -61,6 +60,29 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
       return dp;
     return new (await import('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
   });
+  if (!remultObjectStorage) {
+    dataProvider = dataProvider.then(async dp => {
+      try {
+        const asyncHooks = await import('async_hooks');
+        remultObjectStorage = new RemultAsyncLocalStorage(new asyncHooks.AsyncLocalStorage());
+      }
+      catch {
+        remultObjectStorage = new RemultAsyncLocalStorage(undefined);
+      }
+
+
+
+      (remult as RemultProxy).remultFactory = () => {
+        const r = remultObjectStorage.getRemult()
+        if (r)
+          return r;
+        else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
+      };
+      return dp;
+    });
+
+
+  }
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
       var remult = new Remult(dp);
@@ -73,7 +95,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
       return dp;
     });
   }
-  
+
   {
     let allControllers: ClassType<any>[] = [];
     if (!options.entities)
@@ -132,24 +154,33 @@ export interface GenericResponse {
   end();
 };
 
+class RemultAsyncLocalStorage {
+  constructor(private readonly remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>) {
 
-const remultObjectStorage = new AsyncLocalStorage<Remult>();
-let remultObjectStorageWasSetup = false;
+  }
+  run(remult: Remult, callback: VoidFunction) {
+    if (this.remultObjectStorage)
+      this.remultObjectStorage.run(remult, callback);
+    else
+      callback();
+  }
+  getRemult() {
+    if (!this.remultObjectStorage) {
+      throw "can't use static remult in this environment, `async_hooks` were not found";
+    }
+    return this.remultObjectStorage.getStore()
+  }
+}
+let remultObjectStorage: RemultAsyncLocalStorage;
+
+
 
 
 
 class RemultServerImplementation implements RemultServer {
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
-    if (!remultObjectStorageWasSetup) {
-      remultObjectStorageWasSetup = true;
-      (remult as RemultProxy).remultFactory = () => {
-        const r = remultObjectStorage.getStore()
-        if (r)
-          return r;
-        else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
-      };
-    }
+
 
   }
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
