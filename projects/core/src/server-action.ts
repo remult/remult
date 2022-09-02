@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, MethodHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
 
 
 
@@ -172,7 +172,7 @@ interface serverMethodOutArgs {
 
 
 
-const methodHelpers = new Map<any, MethodHelper>();
+
 const classOptions = new Map<any, ControllerOptions>();
 export function Controller(key: string) {
     return function (target) {
@@ -184,6 +184,23 @@ export function Controller(key: string) {
 
         return target;
     };
+}
+
+export function DescribeStaticBackendMethod(cls: any, methodName: string, options: BackendMethodOptions<any>, paramTypes?: any[]) {
+    const prop = Object.getOwnPropertyDescriptor(cls, methodName);
+    if (paramTypes)
+        Reflect.defineMetadata("design:paramtypes", paramTypes, cls, methodName)
+    BackendMethod(options)(cls, methodName, prop);
+    Object.defineProperty(cls, methodName, prop);
+}
+export function DescribeBackendMethod(cls: any, methodName: string, options: BackendMethodOptions<any>, paramTypes?: any[]) {
+    const prop = Object.getOwnPropertyDescriptor(cls.prototype, methodName);
+    if (!prop)
+        throw Error(`Couldn't find method ${methodName} on class ${cls.constructor.name}`)
+    if (paramTypes)
+        Reflect.defineMetadata("design:paramtypes", paramTypes, cls.prototype, methodName)
+    BackendMethod(options)(cls.prototype, methodName, prop);
+    Object.defineProperty(cls.prototype, methodName, prop);
 }
 
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
@@ -228,16 +245,13 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             x = new ClassHelper();
             classHelpers.set(target.constructor, x);
         }
-        let mh = new MethodHelper();
-        methodHelpers.set(descriptor, mh);
-        x.methods.push(mh);
         var originalMethod = descriptor.value;
         let serverAction: ActionInterface = {
             __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
 
                 let c = new Remult();
-                for (const constructor of mh.classes.keys()) {
-                    let controllerOptions = mh.classes.get(constructor);
+                for (const constructor of x.classes.keys()) {
+                    let controllerOptions = x.classes.get(constructor);
 
 
                     if (!controllerOptions.key) {
@@ -338,7 +352,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 if (allEntities.includes(target.constructor)) {
                     let defs = getEntityRef(self) as rowHelperImplementation<any>;
                     await defs.__validateEntity();
-                    let classOptions = mh.classes.get(self.constructor);
+                    let classOptions = x.classes.get(self.constructor);
                     if (!classOptions.key) {
                         classOptions.key = defs.repository.metadata.key + "_methods";
                     }
@@ -370,7 +384,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
                             protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
-                        }(mh.classes.get(self.constructor).key + "/" + key, options ? options.queue : false, options.allowed).run({
+                        }(x.classes.get(self.constructor).key + "/" + key, options ? options.queue : false, options.allowed).run({
                             args,
                             fields: await defs.toApiJson()
                         }, baseUrl, http));

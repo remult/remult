@@ -1,6 +1,6 @@
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
-import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
+import { prepareArgsToSend, Controller, BackendMethod, DescribeBackendMethod, DescribeStaticBackendMethod } from '../server-action';
 import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
 
 import { IdEntity } from '../id-entity';
@@ -102,6 +102,18 @@ class testBasics {
     static async getValFromServer(remult?: Remult) {
         return (await remult.repo(testEntity).findFirst()).name;
     }
+    static async staticBackendMethodWithoutDecorator() {
+        return isBackend();
+    }
+    static async staticBackendMethodWithoutDecoratorWithRemult(remult?: Remult) {
+        return (await remult.repo(testEntity).findFirst()).name;
+    }
+    async backendMethodWithoutDecorator() {
+        return isBackend();
+    }
+    async backendMethodWithoutDecoratorWithRemult(remult?: Remult) {
+        return (await remult.repo(testEntity).findFirst()).name+this.a;
+    }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
         if (entity === null)
@@ -119,6 +131,10 @@ class testBasics {
         return z.toString();
     }
 }
+DescribeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecorator', { allowed: true });
+DescribeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
+DescribeBackendMethod(testBasics, 'backendMethodWithoutDecorator', { allowed: true });
+DescribeBackendMethod(testBasics, 'backendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
 class Stam {
     @BackendMethod({ allowed: false })
     static async testForbidden1() {
@@ -224,6 +240,22 @@ describe("test Server Controller basics", () => {
     it("data is saved on server", async () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.getValFromServer()).toBe('test');
+    });
+    fit("new backend method syntax static method with remult", async () => {
+        await c.repo(testEntity).create({ name: 'test' }).save();
+        expect(await testBasics.staticBackendMethodWithoutDecoratorWithRemult()).toBe('test');
+    });
+    fit("new backend method syntax static method", async () => {
+        expect(await testBasics.staticBackendMethodWithoutDecorator()).toBe(true);
+    });
+    fit("new backend method syntax", async () => {
+        expect(await new testBasics(undefined).backendMethodWithoutDecorator()).toBe(true);
+    });
+    fit("new backend method syntax", async () => {
+        await c.repo(testEntity).create({ name: 'test' }).save();
+        const z = new testBasics(undefined);
+        z.a='x';
+        expect(await z.backendMethodWithoutDecoratorWithRemult()).toBe('testx');
     });
     it("test backend method caller", async () => {
         const c = new Remult({

@@ -1,7 +1,7 @@
 import { ActionTestConfig, testRestDb } from './testHelper.spec';
 import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Remult, isBackend } from '../context';
-import { actionInfo, BackendMethod } from '../server-action';
+import { actionInfo, BackendMethod, DescribeBackendMethod } from '../server-action';
 import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter, Fields } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
@@ -37,6 +37,14 @@ class testServerMethodOnEntity extends EntityBase {
             result
         }
     }
+    async doIt1NoDecorator() {
+        let result = 'hello ' + this.a;
+        this.a = 'yael';
+        return {
+            onServer: isBackend(),
+            result
+        }
+    }
     @BackendMethod({ allowed: true })
     async doItAgain() {
         expect(await this.remult.repo(testServerMethodOnEntity).count()).toBe(0);
@@ -47,6 +55,7 @@ class testServerMethodOnEntity extends EntityBase {
 
 
 }
+DescribeBackendMethod(testServerMethodOnEntity, "doIt1NoDecorator", { allowed: true, },[Remult]);
 
 @Entity<testBoolCreate123>('testBoolCreate123', (o, c) => assign(o, {
     allowApiCrud: true,
@@ -74,10 +83,18 @@ class testBoolCreate123 extends EntityBase {
 }
 describe("test Server method in entity", () => {
     let c = new Remult();
-    it("test server method on Entity", async () => {
+    fit("test server method on Entity", async () => {
         let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'Noam';
         let r = await x.doIt1();
+        expect(r.onServer).toBe(true);
+        expect(r.result).toBe('hello Noam');
+        expect(x.a).toBe("yael");
+    });
+    fit("test server method on Entity without decorator", async () => {
+        let x = c.repo(testServerMethodOnEntity).create();
+        x.a = 'Noam';
+        let r = await x.doIt1NoDecorator();
         expect(r.onServer).toBe(true);
         expect(r.result).toBe('hello Noam');
         expect(x.a).toBe("yael");
@@ -156,14 +173,14 @@ class a extends EntityBase {
 class b extends EntityBase {
     @Fields.integer()
     id: number;
-    @Field(()=>a)
+    @Field(() => a)
     a: a;
 }
 @Entity('c')
 class c extends EntityBase {
     @Fields.integer()
     id: number;
-    @Field(()=>b)
+    @Field(() => b)
     b: b;
     @BackendMethod({ allowed: true })
     async doIt() {
