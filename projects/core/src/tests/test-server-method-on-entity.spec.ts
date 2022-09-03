@@ -2,7 +2,7 @@ import { ActionTestConfig, testRestDb } from './testHelper.spec';
 import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Remult, isBackend } from '../context';
 import { actionInfo, BackendMethod, DescribeBackendMethod } from '../server-action';
-import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter, Fields } from '../remult3';
+import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter, Fields, BuildEntity } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 
@@ -10,6 +10,7 @@ import { assign } from '../../assign';
 import { Filter } from '../filter/filter-interfaces';
 import { dWithPrefilter } from './dWithPrefilter';
 import { d } from './d';
+import { remult } from '../remult-proxy';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -55,7 +56,7 @@ class testServerMethodOnEntity extends EntityBase {
 
 
 }
-DescribeBackendMethod(testServerMethodOnEntity, "doIt1NoDecorator", { allowed: true, },[Remult]);
+DescribeBackendMethod(testServerMethodOnEntity, "doIt1NoDecorator", { allowed: true, }, [Remult]);
 
 @Entity<testBoolCreate123>('testBoolCreate123', (o, c) => assign(o, {
     allowApiCrud: true,
@@ -119,7 +120,25 @@ describe("test Server method in entity", () => {
             expect(getEntityRef(x).fields.a.error).toBe("error on client");
         }
         expect(happened).toBe(false);
+    });
+    it("test backend method with adhoc entity", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
 
+            async doSomething() {
+                return this.name + isBackend();
+            }
+        }
+        BuildEntity(myClass, 'adHocEntity', {
+            id: Fields.autoIncrement(),
+            name: Fields.string(),
+            doSomething: BackendMethod({ allowed: true })
+        }, {
+        })
+        const x = new Remult().repo(myClass).create();
+        x.name = "123";
+        expect(await x.doSomething()).toBe("123true");
 
     });
     it("test validation on server", async () => {

@@ -1848,7 +1848,10 @@ export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, f
     for (const fieldKey in fields) {
         if (Object.prototype.hasOwnProperty.call(fields, fieldKey)) {
             const element = fields[fieldKey];
-            element(c.prototype, fieldKey);
+            const prop = Object.getOwnPropertyDescriptor(c.prototype, fieldKey);
+            element(c.prototype, fieldKey, prop);
+            if (prop)
+                Object.defineProperty(c.prototype, fieldKey, prop);
         }
     }
 }
