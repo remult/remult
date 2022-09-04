@@ -54,18 +54,20 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 ```
 
 
-3. Adjust the highlighted code in the api server module to only use `postgres` in production, and keep using the simple json db in our dev environment.
-   ```ts{2-5}
+3. Modify the highlighted code in the api server module to only use `Postgres` in production, and keep using the simple JSON db in our dev environment.
+
+   *src/server/api.ts*
+   ```ts{5-8}
+   //...
+
    export const api = remultExpress({
-       dataProvider: process.env["NODE_ENV"] === "production" ?
-           createPostgresConnection({
-               configuration: "heroku"
-           }) : undefined,
-       entities: [Task],
+        //...
+        dataProvider: process.env["NODE_ENV"] === "production" ?
+            createPostgresConnection({
+                configuration: "heroku"
+            }) : undefined,
+   });
    ```
-
-   
-
 
 4. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
 

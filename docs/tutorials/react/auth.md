@@ -47,6 +47,8 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ## User Authentication
 Let's add a sign-in area to the todo app, with an `input` for typing in a `username` and a sign-in `button`. The app will have two valid `username` values - *"Jane"* and *"Steve"*. After a successful sign-in, the sign-in area will be replaced by a "Hi [username]" message.
 
+### Backend setup
+
 1. Open a terminal and run the following command to install the required packages:
    
 ```sh
@@ -72,7 +74,7 @@ npm i --save-dev @types/cookie-session
 
    The `cookie-session` middleware stores session data, digitally signed using the value of the `secret` property, in an `httpOnly` cookie, sent by the browser to all subsequent API requests.
 
-3. Create a file `src/server/auth.ts` and place the following code in it:
+3. Create a file `src/server/auth.ts` for the `auth` express router and place the following code in it:
    
    *src/server/auth.ts*
    ```ts
@@ -113,7 +115,7 @@ npm i --save-dev @types/cookie-session
 
    * The `currentUser` endpoint extracts the value of the current user from the session and returns it in the API response.
 
-4. In the `src/server/index.ts`, register the `auth` router.
+4. Register the `auth` router in the main server module.
    
    *src/server/index.ts*
    ```ts{3,9}
@@ -130,35 +132,10 @@ npm i --save-dev @types/cookie-session
    //...
    ```
 
-5. In the `src/server/api.ts` set the `getUser` method to instruct remult on how to get the current user.
-   
-   *src/server/api.ts*
-   ```ts{9}
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { remult } from 'remult';
-   import { TasksController } from '../shared/TasksController';
-   
-   export const api = remultExpress({
-       entities: [Task],
-       controllers: [TasksController],
-       getUser: request => request.session!['user'],
-       initApi: async () => {
-           const taskRepo = remult.repo(Task);
-           if (await taskRepo.count() === 0) {
-               await taskRepo.insert([
-                   { title: "Task a" },
-                   { title: "Task b", completed: true },
-                   { title: "Task c" },
-                   { title: "Task d" },
-                   { title: "Task e", completed: true }
-               ]);
-           }
-       }
-   });
-   ```
+### Frontend setup
 
-6. Create a file `src/Auth.tsx` and place the following code in it
+1. Create a file `src/Auth.tsx` and place the following `Auth` component code in it:
+
    *src/Auth.tsx*
    ```ts
    import { useEffect, useState } from "react";
@@ -212,7 +189,9 @@ npm i --save-dev @types/cookie-session
    }
    export default Auth;
    ```
-7. In the `main.tsx` file, wrap the `App` component with the `Auth` component
+
+2. In the `main.tsx` file, wrap the `App` component with the `Auth` component.
+   
    *src/main.tsx*
    ```ts{4,9-11}
    import React from 'react'
@@ -229,6 +208,20 @@ npm i --save-dev @types/cookie-session
      </React.StrictMode>
    )
    ```
+
+### Connect Remult middleware
+
+Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
+
+*src/server/api.ts*
+```ts{5}
+//...
+
+export const api = remultExpress({
+    //...
+    getUser: request => request.session!['user']
+});
+```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
 

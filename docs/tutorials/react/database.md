@@ -5,6 +5,10 @@ Up until now the todo app has been using a plain JSON file to store the list of 
 See the [Connecting to a Database](../../docs/databases.md) article for the (long) list of relational and non-relational databases Remult supports.
 :::
 
+::: warning Don't have Postgres installed? Don't have to.
+Don't worry if you don't have Postgres installed locally. In the next step of the tutorial, we'll configure the app to **use Postgres in production, and keep using JSON files in our dev environment**.
+:::
+
 1. Install `postgres-node` ("pg").
 
    ```sh
@@ -12,40 +16,18 @@ See the [Connecting to a Database](../../docs/databases.md) article for the (lon
    npm i --save-dev @types/pg
    ```
 
-2. Adding the highlighted code to the `api` server module.
+2. Add the highlighted code to the `api` server module.
 
    *src/server/api.ts*
-   ```ts{5,8-10}
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { remult } from 'remult';
-   import { TasksController } from '../shared/TasksController';
+   ```ts{3,7-9}
+   //...
+
    import { createPostgresConnection } from "remult/postgres";
    
    export const api = remultExpress({
-       dataProvider: createPostgresConnection({
-           connectionString: "your connection string"
-       }),
-       entities: [Task],
-       controllers: [TasksController],
-       getUser: request => request.session!['user'],
-       initApi: async () => {
-           const taskRepo = remult.repo(Task);
-           if (await taskRepo.count() === 0) {
-               await taskRepo.insert([
-                   { title: "Task a" },
-                   { title: "Task b", completed: true },
-                   { title: "Task c" },
-                   { title: "Task d" },
-                   { title: "Task e", completed: true }
-               ]);
-           }
-       }
+        //...
+        dataProvider: createPostgresConnection({
+            connectionString: "your connection string"
+        }),
    });
    ```
-
-::: tip postgres is optional for this tutorial
-Don't worry if you don't have postgres, in the next step of the tutorial, we'll configure the app only to use postgres in production, and keep using json files in our dev environment.
-
-If you want, you can download `postgres` from [this web site](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads).
-:::
