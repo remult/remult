@@ -134,14 +134,31 @@ describe("test Server method in entity", () => {
         BuildEntity(myClass, 'adHocEntity', {
             id: Fields.autoIncrement(),
             name: Fields.string(),
-            doSomething: BackendMethod({ allowed: true })
-        }, {
+            doSomething: BackendMethod({ allowed: true }),
         })
         const x = new Remult().repo(myClass).create();
         x.name = "123";
         expect(await x.doSomething()).toBe("123true");
-
     });
+    it("test static backend method with adhoc entity", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            static async adHockDoSomething() {
+                return isBackend();
+            }
+        }
+        BuildEntity(myClass, 'adHocEntity', {
+            id: Fields.autoIncrement(),
+            name: Fields.string(),
+            static: {
+                adHockDoSomething: BackendMethod({ allowed: true }),
+            }
+        })
+        expect(await myClass.adHockDoSomething()).toBe(true);
+    });
+
     it("test validation on server", async () => {
         let x = c.repo(testServerMethodOnEntity).create();
         x.a = "error on server";

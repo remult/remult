@@ -8,23 +8,36 @@ import { BackendMethod, BackendMethodOptions } from "../server-action";
 
 
 
-export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, fields: BuildEntityFields<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
+export function BuildEntity<entityType>(c: entityType, key: string, fields: MembersAndStaticMembers<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
     Entity(key, ...options)(c);
     for (const fieldKey in fields) {
         if (Object.prototype.hasOwnProperty.call(fields, fieldKey)) {
             const element = fields[fieldKey];
-            const prop = Object.getOwnPropertyDescriptor(c.prototype, fieldKey);
-            element(c.prototype, fieldKey, prop);
-            if (prop)
-                Object.defineProperty(c.prototype, fieldKey, prop);
+            if (fieldKey === 'static') {
+                for (const staticFieldKey in element) {
+                    const staticElement = element[staticFieldKey];
+                    const prop = Object.getOwnPropertyDescriptor(c, staticFieldKey);
+                    staticElement(c, staticFieldKey, prop);
+                    if (prop)
+                        Object.defineProperty(c, staticFieldKey, prop);
+                }
+            }
+            else {
+                const prop = Object.getOwnPropertyDescriptor((c as any).prototype, fieldKey);
+                element((c as any).prototype, fieldKey, prop);
+                if (prop)
+                    Object.defineProperty((c as any).prototype, fieldKey, prop);
+            }
         }
     }
 }
+type Decorator = (a: any, b: string, c?: any) => void;
+type Members<T> = T extends new (...args: any[]) => infer R ? { [K in keyof OmitEB<R>]?: Decorator } : never;
+type StaticMembers<T> = { [K in keyof T]?: Decorator };
+
+type MembersAndStaticMembers<T> = Members<T> & { static?: StaticMembers<T> };
 
 
-export declare type BuildEntityFields<entityType> = {
-    [Properties in keyof Partial<OmitEB<entityType>>]: any
-}
 
 export function DescribeStaticBackendMethod<T>(cls: T, methodName: keyof T, options: BackendMethodOptions<any>, paramTypes?: any[]) {
     const prop = Object.getOwnPropertyDescriptor(cls, methodName);
@@ -42,3 +55,4 @@ export function DescribeBackendMethod<T>(cls: ClassType<T>, methodName: keyof T,
     BackendMethod(options)(cls.prototype, methodName as string, prop);
     Object.defineProperty(cls.prototype, methodName, prop);
 }
+
