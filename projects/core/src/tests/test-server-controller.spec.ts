@@ -1,10 +1,11 @@
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
-import { prepareArgsToSend, Controller, BackendMethod, DescribeBackendMethod, DescribeStaticBackendMethod } from '../server-action';
+import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
 import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { remult } from '../remult-proxy';
+import { DescribeBackendMethod, DescribeStaticBackendMethod } from '../remult3/DecoratorReplacer';
 
 
 @ValueListFieldType()
@@ -112,7 +113,7 @@ class testBasics {
         return isBackend();
     }
     async backendMethodWithoutDecoratorWithRemult(remult?: Remult) {
-        return (await remult.repo(testEntity).findFirst()).name+this.a;
+        return (await remult.repo(testEntity).findFirst()).name + this.a;
     }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
@@ -135,6 +136,8 @@ DescribeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecorator', {
 DescribeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
 DescribeBackendMethod(testBasics, 'backendMethodWithoutDecorator', { allowed: true });
 DescribeBackendMethod(testBasics, 'backendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
+
+
 class Stam {
     @BackendMethod({ allowed: false })
     static async testForbidden1() {
@@ -254,7 +257,7 @@ describe("test Server Controller basics", () => {
     it("new backend method syntax", async () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         const z = new testBasics(undefined);
-        z.a='x';
+        z.a = 'x';
         expect(await z.backendMethodWithoutDecoratorWithRemult()).toBe('testx');
     });
     it("test backend method caller", async () => {

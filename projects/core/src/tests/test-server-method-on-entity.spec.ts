@@ -1,8 +1,8 @@
 import { ActionTestConfig, testRestDb } from './testHelper.spec';
 import { TestDataApiResponse } from "./TestDataApiResponse";
 import { Remult, isBackend } from '../context';
-import { actionInfo, BackendMethod, DescribeBackendMethod } from '../server-action';
-import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter, Fields, BuildEntity } from '../remult3';
+import { actionInfo, BackendMethod } from '../server-action';
+import { Field, Entity, EntityBase, getFields, getEntityRef, EntityFilter, Fields } from '../remult3';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 
@@ -11,6 +11,7 @@ import { Filter } from '../filter/filter-interfaces';
 import { dWithPrefilter } from './dWithPrefilter';
 import { d } from './d';
 import { remult } from '../remult-proxy';
+import { BuildEntity, DescribeBackendMethod } from '../remult3/DecoratorReplacer';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {

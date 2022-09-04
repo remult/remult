@@ -1840,21 +1840,6 @@ interface columnInfo {
     settings: (remult: Remult) => FieldOptions
 
 }
-export declare type BuildEntityFields<entityType> = {
-    [Properties in keyof Partial<OmitEB<entityType>>]: any
-}
-export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, fields: BuildEntityFields<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
-    Entity(key, ...options)(c);
-    for (const fieldKey in fields) {
-        if (Object.prototype.hasOwnProperty.call(fields, fieldKey)) {
-            const element = fields[fieldKey];
-            const prop = Object.getOwnPropertyDescriptor(c.prototype, fieldKey);
-            element(c.prototype, fieldKey, prop);
-            if (prop)
-                Object.defineProperty(c.prototype, fieldKey, prop);
-        }
-    }
-}
 
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.

@@ -1,4 +1,5 @@
-import { Field, Entity, EntityBase, BuildEntity, Fields } from '../remult3';
+import { Field, Entity, EntityBase, Fields } from '../remult3';
+import { BuildEntity } from '../remult3/DecoratorReplacer';
 import { testAll } from './db-tests-setup';
 
 

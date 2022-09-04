@@ -186,22 +186,7 @@ export function Controller(key: string) {
     };
 }
 
-export function DescribeStaticBackendMethod(cls: any, methodName: string, options: BackendMethodOptions<any>, paramTypes?: any[]) {
-    const prop = Object.getOwnPropertyDescriptor(cls, methodName);
-    if (paramTypes)
-        Reflect.defineMetadata("design:paramtypes", paramTypes, cls, methodName)
-    BackendMethod(options)(cls, methodName, prop);
-    Object.defineProperty(cls, methodName, prop);
-}
-export function DescribeBackendMethod(cls: any, methodName: string, options: BackendMethodOptions<any>, paramTypes?: any[]) {
-    const prop = Object.getOwnPropertyDescriptor(cls.prototype, methodName);
-    if (!prop)
-        throw Error(`Couldn't find method ${methodName} on class ${cls.constructor.name}`)
-    if (paramTypes)
-        Reflect.defineMetadata("design:paramtypes", paramTypes, cls.prototype, methodName)
-    BackendMethod(options)(cls.prototype, methodName, prop);
-    Object.defineProperty(cls.prototype, methodName, prop);
-}
+
 
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
