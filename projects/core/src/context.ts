@@ -215,14 +215,12 @@ export class Remult {
 
     }
 
-    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T {
+    call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, self?: any, ...args: GetArguments<T>): ReturnType<T> {
         const z = (backendMethod[serverActionField]) as Action<any, any>;
         if (!z.doWork)
             throw Error("The method received is not a valid backend method");
         //@ts-ignore
-        return (...args: any[]) => {
-            return z.doWork(args, self, this.apiClient.url, buildRestDataProvider(this.apiClient.httpClient));
-        }
+        return z.doWork(args, self, this.apiClient.url, buildRestDataProvider(this.apiClient.httpClient));
     }
     /** The current data provider */
     dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
@@ -239,6 +237,11 @@ export class Remult {
         url: '/api'
     };
 }
+export type GetArguments<T> = T extends (
+    ...args: infer FirstArgument
+) => any
+    ? FirstArgument
+    : never
 export interface RemultContext {
 
 }

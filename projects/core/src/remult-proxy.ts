@@ -1,5 +1,5 @@
 import { ClassType } from "../classType";
-import { Allowed, AllowedForInstance, ApiClient, EventDispatcher, EventSource, Remult, RemultContext, UserInfo } from "./context";
+import { Allowed, AllowedForInstance, ApiClient, EventDispatcher, EventSource, GetArguments, Remult, RemultContext, UserInfo } from "./context";
 import { DataProvider } from "./data-interfaces";
 import { Repository, RepositoryImplementation } from "./remult3";
 
@@ -7,8 +7,8 @@ import { Repository, RepositoryImplementation } from "./remult3";
 let defaultRemult = new Remult();
 /*@internal*/
 export class RemultProxy implements Remult {
-    call<T extends (...args: any[]) => Promise<Y>, Y>(backendMethod: T, self?: any): T {
-        return this.remultFactory().call(backendMethod, self);
+    call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, self?: any, ...args: GetArguments<T>): ReturnType<T> {
+        return this.remultFactory().call(backendMethod, self, ...args);
     }
     get context(): RemultContext {
         return this.remultFactory().context;

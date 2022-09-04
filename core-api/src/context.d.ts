@@ -62,7 +62,7 @@ export declare class Remult {
     constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
     constructor(p: DataProvider);
     constructor();
-    call<T extends ((...args: any[]) => Promise<Y>), Y>(backendMethod: T, self?: any): T;
+    call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, self?: any, ...args: GetArguments<T>): ReturnType<T>;
     /** The current data provider */
     dataProvider: DataProvider;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
@@ -73,6 +73,7 @@ export declare class Remult {
     readonly context: RemultContext;
     apiClient: ApiClient;
 }
+export declare type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
 export interface RemultContext {
 }
 export interface ApiClient {

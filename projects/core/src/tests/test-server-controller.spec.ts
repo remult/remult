@@ -238,7 +238,7 @@ describe("test Server Controller basics", () => {
                 put: () => undefined
             }
         });
-        const r = (await c.call(testBasics.sf)("noam"));
+        const r = (await c.call(testBasics.sf, undefined, "noam"));
         console.log(r);
         expect(r.result).toBe("hello noam");
     });
@@ -255,7 +255,7 @@ describe("test Server Controller basics", () => {
             }
         });
         const b = new testBasics(remult);
-        const r = (await c.call(b.doIt, b)());
+        const r = (await c.call(b.doIt, b));
         console.log(r);
         expect(r.result).toBe("hello noam");
     });
