@@ -132,5 +132,4 @@ class OverviewController {
         return {};
     }
 }
-const greeterBuilderName: keyof typeof OverviewController = 'warm_greeter';
 
