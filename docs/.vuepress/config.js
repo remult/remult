@@ -149,6 +149,7 @@ module.exports = {
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],
@@ -166,6 +167,7 @@ module.exports = {
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],
@@ -183,6 +185,7 @@ module.exports = {
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],

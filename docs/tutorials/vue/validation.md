@@ -99,18 +99,21 @@ async function saveTask(task: (Task & { error?: ErrorInfo<Task> })) {
 3. Add the highlighted code line to display the error next to the task title `input`:
    
 *src/App.vue*
-```vue{7}
+```vue{10}
 <template>
-  <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed {{ hideCompleted }}
-  <hr />
-  <div v-for="task in tasks">
-    <input type="checkbox" v-model="task.completed" />
-    <input v-model="task.title" />
-    {{ task.error?.modelState?.title }}
-    <button @click="saveTask(task)">Save</button>
-    <button @click="deleteTask(task)">Delete</button>
+  <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed
+  <div>
+    <main>
+      <div v-for="task in tasks">
+        <input type="checkbox" v-model="task.completed" />
+        <input v-model="task.title" />
+        <button @click="saveTask(task)">Save</button>
+        <button @click="deleteTask(task)">Delete</button>
+        <span>{{ task.error?.modelState?.title }}</span>
+      </div>
+    </main>
+    <button @click="addTask()">Add Task</button>
   </div>
-  <button @click="addTask()">Add Task</button>
 </template>
 ```
 

@@ -38,7 +38,7 @@ npm install
 npm run dev
 ```
 
-The default React app main screen should be displayed.
+The default "Vite + React" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 

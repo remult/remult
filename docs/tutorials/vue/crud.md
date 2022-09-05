@@ -6,10 +6,10 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
 
 
 *src/App.vue*
-```vue{15-17,24-26}
+```vue{16-18,27-28}
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { remult } from './common';
+import { remult } from 'remult';
 import { Task } from './shared/Task';
 
 const taskRepo = remult.repo(Task);
@@ -17,22 +17,26 @@ const tasks = ref<Task[]>([]);
 const hideCompleted = ref(false);
 async function fetchTasks() {
   tasks.value = await taskRepo.find({
+    limit: 20,
     orderBy: { completed: "asc" },
     where: { completed: hideCompleted.value ? false : undefined }
   });
 }
 async function saveTask(task: Task) {
-  taskRepo.save(task);
+  await taskRepo.save(task);
 }
 onMounted(() => fetchTasks())
 </script>
 <template>
-  <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed {{ hideCompleted }}
-  <hr />
-  <div v-for="task in tasks">
-    <input type="checkbox" v-model="task.completed" />
-    <input v-model="task.title" />
-    <button @click="saveTask(task)">Save</button>
+  <div>
+    <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed
+    <main>
+      <div v-for="task in tasks">
+        <input type="checkbox" v-model="task.completed" />
+        <input v-model="task.title" />
+        <button @click="saveTask(task)">Save</button>
+      </div>
+    </main>
   </div>
 </template>
 ```
@@ -49,10 +53,10 @@ Make some changes and refresh the browser to verify the backend database is upda
 Add the highlighted `addTask` function and *Add Task* `button` to the `App` component:
 
 *src/App.vue*
-```vue{18-20,31}
+```vue{19-21,34}
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { remult } from './common';
+import { remult } from 'remult';
 import { Task } from './shared/Task';
 
 const taskRepo = remult.repo(Task);
@@ -60,12 +64,13 @@ const tasks = ref<Task[]>([]);
 const hideCompleted = ref(false);
 async function fetchTasks() {
   tasks.value = await taskRepo.find({
+    limit: 20,
     orderBy: { completed: "asc" },
     where: { completed: hideCompleted.value ? false : undefined }
   });
 }
 async function saveTask(task: Task) {
-  taskRepo.save(task);
+  await taskRepo.save(task);
 }
 function addTask() {
   tasks.value.push(new Task());
@@ -73,14 +78,17 @@ function addTask() {
 onMounted(() => fetchTasks())
 </script>
 <template>
-  <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed {{ hideCompleted }}
-  <hr />
-  <div v-for="task in tasks">
-    <input type="checkbox" v-model="task.completed" />
-    <input v-model="task.title" />
-    <button @click="saveTask(task)">Save</button>
+  <div>
+    <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed
+    <main>
+      <div v-for="task in tasks">
+        <input type="checkbox" v-model="task.completed" />
+        <input v-model="task.title" />
+        <button @click="saveTask(task)">Save</button>
+      </div>
+    </main>
+    <button @click="addTask()">Add Task</button>
   </div>
-  <button @click="addTask()">Add Task</button>
 </template>
 ```
 
@@ -113,10 +121,10 @@ Let's add a *Delete* button next to the *Save* button of each task in the list.
 Add the highlighted `deleteTask` function and *Delete* `button` Within the `tasks.map` iteration in the `return` section of the `App` component.
 
 *src/App.vue*
-```vue{22-25,35}
+```vue{23-26,37}
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { remult } from './common';
+import { remult } from 'remult';
 import { Task } from './shared/Task';
 
 const taskRepo = remult.repo(Task);
@@ -124,6 +132,7 @@ const tasks = ref<Task[]>([]);
 const hideCompleted = ref(false);
 async function fetchTasks() {
   tasks.value = await taskRepo.find({
+    limit: 20,
     orderBy: { completed: "asc" },
     where: { completed: hideCompleted.value ? false : undefined }
   });
@@ -142,14 +151,17 @@ async function deleteTask(task: Task) {
 onMounted(() => fetchTasks())
 </script>
 <template>
-  <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed {{ hideCompleted }}
-  <hr />
-  <div v-for="task in tasks">
-    <input type="checkbox" v-model="task.completed" />
-    <input v-model="task.title" />
-    <button @click="saveTask(task)">Save</button>
-    <button @click="deleteTask(task)">Delete</button>
+  <div>
+    <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed
+    <main>
+      <div v-for="task in tasks">
+        <input type="checkbox" v-model="task.completed" />
+        <input v-model="task.title" />
+        <button @click="saveTask(task)">Save</button>
+        <button @click="deleteTask(task)">Delete</button>
+      </div>
+    </main>
+    <button @click="addTask()">Add Task</button>
   </div>
-  <button @click="addTask()">Add Task</button>
 </template>
 ```

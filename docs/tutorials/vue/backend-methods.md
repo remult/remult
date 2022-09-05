@@ -57,20 +57,19 @@ export class TasksController {
 ```
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
-The optional `remult` argument of the static `setAll` function is intentionally omitted in the client-side calling code. In the server-side, Remult injects `@BackendMethod`-decorated functions with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
-
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
 
 *src/server/api.ts*
-```ts{3,7}
+```ts{4,8}
 import { remultExpress } from "remult/remult-express";
 import { Task } from "../shared/Task";
+import { remult } from "remult";
 import { TasksController } from "../shared/TasksController";
 
 export const api = remultExpress({
    entities: [Task],
    controllers: [TasksController],
-   initApi: async remult => {
+   initApi: async () => {
       const taskRepo = remult.repo(Task);
       if (await taskRepo.count() === 0) {
             await taskRepo.insert([
