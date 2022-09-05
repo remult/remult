@@ -132,6 +132,11 @@ On the client side, `remult` can use any standard javascript HTTP-client to call
 
 **By default, remult uses the browser's `fetch` API, and makes data API calls using the base URL `/api` (same-origin).**
 
+To use a different url, set remult's `apiClient.url` property 
+```ts
+remult.apiClient.url = 'http://localhost:3002/api'
+```
+
 Here is the code for setting up a Remult client instance:
 
 ### Using Fetch
@@ -144,9 +149,9 @@ import { remult } from 'remult';
 
 ```ts
 import axios from 'axios';
-import { Remult } from 'remult';
+import { remult } from 'remult';
 
-const remult = new Remult(axios);
+remult.apiClient.httpClient = axios;
 ```
 
 ### Using Angular HttpClient
@@ -161,10 +166,11 @@ import { Remult } from 'remult';
     imports: [
         //...
         HttpClientModule
-    ],
-    providers: [
-        { provide: Remult, useClass: Remult, deps: [HttpClient] }
-    ],
+    ]
 })
-export class Module { }
+export class AppModule {
+  constructor(http: HttpClient) {
+    remult.apiClient.httpClient = http;
+  }
+}
 ```
