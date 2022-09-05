@@ -18,9 +18,9 @@ title = '';
 This code requires adding an import of `Validators` from `remult`.
 :::
 
-2. In the `AppComponent` class, modify the `saveTask` method to catch exceptions.
+2. In the `TodoComponent` class, modify the `saveTask` method to catch exceptions.
 
-*src/app/app.component.ts*
+*src/app/todo/todo.component.ts*
 ```ts{2,5-7}
 async saveTask(task: Task) {
   try {
@@ -68,7 +68,7 @@ Let's use the `tasks` array to store errors and display them next to the relevan
 
 1. Add an `error` property of `error?: ErrorInfo<Task>` to the item type of the `tasks` array.
 
-*src/app/app.component.ts*
+*src/app/todo/todo.component.ts*
 ```ts
 tasks: (Task & { error?: ErrorInfo<Task> })[] = [];
 ```
@@ -79,9 +79,9 @@ This code requires adding an import of `ErrorInfo` **from `remult`**.
 
 2. Modify the `saveTask` function to store the errors.
 
-*src/app/app.component.ts*
+*src/app/todo/todo.component.ts*
 ```ts{1,7}
-async saveTask(task: (Task & { error?: ErrorInfo<Task> })) {
+async saveTask(task: typeof this.tasks[0]) {
   try {
     const savedTask = await this.taskRepo.save(task);
     this.tasks = this.tasks.map(t => t === task ? savedTask : t);
@@ -94,19 +94,18 @@ async saveTask(task: (Task & { error?: ErrorInfo<Task> })) {
 
 3. Add the highlighted code line to display the error next to the task title `input`:
    
-*src/app/app.component.html*
-```html{7}
-<input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
-Hide Completed
-<hr />
+*src/app/todo/todo.component.html*
+```html{9}
 <div *ngFor="let task of tasks">
-  <input type="checkbox" [(ngModel)]="task.completed">
-  <input [(ngModel)]="task.title">
-  {{task.error?.modelState?.title}}
-  <button (click)="saveTask(task)">Save</button>
-  <button (click)="deleteTask(task)">Delete</button>
+    <input
+        type="checkbox"
+        [(ngModel)]="task.completed"
+    >
+    <input [(ngModel)]="task.title">
+    <button (click)="saveTask(task)">Save</button>
+    <button (click)="deleteTask(task)">Delete</button>
+    <span>{{task.error?.modelState?.title}}</span>
 </div>
-<button (click)="addTask()">Add Task</button>
 ```
 
 The `modelState` property of the `ErrorInfo` object contains error messages for any currently invalid fields in the entity object.

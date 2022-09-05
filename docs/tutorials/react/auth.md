@@ -304,6 +304,7 @@ export const validUsers = [
     { id: "1", name: "Jane", roles: [Roles.admin] },
     { id: "2", name: "Steve", roles: [] },
 ];
+//...
 ```
 
 **Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**

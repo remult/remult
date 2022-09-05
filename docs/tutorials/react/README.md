@@ -23,7 +23,7 @@ You can either **use a starter project** to speed things up, or go through the *
 
 ## Option 1: Clone the Starter Project
 
-1. Clone the *remult-react-todo* repository from GitHub and install its dependencies.
+1. Clone the *react-vite-express-starter* repository from GitHub and install its dependencies.
 
 ```sh
 git clone https://github.com/remult/react-vite-express-starter.git remult-react-todo

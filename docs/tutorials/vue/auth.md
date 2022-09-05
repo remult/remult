@@ -178,9 +178,7 @@ npm i --save-dev @types/cookie-session
        </header>
        <div v-else>
            <header>
-               <header>
-                   Hello {{ currentUser!.name }} <button @click="signOut()   ">Sign Out</button>
-               </header>
+               Hello {{ currentUser!.name }} <button @click="signOut()   ">Sign Out</button>
            </header>
            <App />
        </div>
@@ -295,6 +293,7 @@ export const validUsers = [
     { id: "1", name: "Jane", roles: [Roles.admin] },
     { id: "2", name: "Steve", roles: [] },
 ];
+//...
 ```
 
 **Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**

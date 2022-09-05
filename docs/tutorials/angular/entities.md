@@ -33,13 +33,6 @@ export class Task {
     completed = false;
 }
 ```
-The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
-
-To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
-
-The `@Fields.uuid` decorator tells Remult to automatically generate an id using `uuid`. We mark this property as optional so we can create new `Task` objects without assigning an `id` at first, and have Remult generate one before the object's data is stored to the backend database.
-
-The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
 3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
 
@@ -53,6 +46,14 @@ export const api = remultExpress({
 });
 ```
 
+The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
+
+To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
+
+The `@Fields.uuid` decorator tells Remult to automatically generate an id using `uuid`. We mark this property as optional so we can create new `Task` objects without assigning an `id` at first, and have Remult generate one before the object's data is stored to the backend database.
+
+The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
+
 ## Seed Test Data
 
 Now that the `Task` entity is defined, we can use it to seed the database with some test data.
@@ -60,13 +61,14 @@ Now that the `Task` entity is defined, we can use it to seed the database with s
 Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
-```ts{6-17}
+```ts{3,7-18}
 import { remultExpress } from 'remult/remult-express';
 import { Task } from '../shared/Task';
+import { remult } from 'remult';
 
 export const api = remultExpress({
     entities: [Task],
-    initApi: async remult => {
+    initApi: async () => {
         const taskRepo = remult.repo(Task);
         if (await taskRepo.count() === 0) {
             await taskRepo.insert([
@@ -97,52 +99,203 @@ While remult supports [many relational and non-relational databases](https://rem
 ## Display the Task List
 Let's start developing the web app by displaying the list of existing tasks in an Angular component.
 
-1. Add the highlighted code lines to the `AppComponent` class file:
+1. Create a `Todo` component using Angular's cli
+   ```sh
+   ng g c todo
+   ```
 
-   *src/app/app.component.ts*
-   ```ts{2-3,12-20}
-   import { Component } from '@angular/core';
-   import { Remult } from 'remult';
-   import { Task } from '../shared/Task';
+2. Replace the `app.components.html` to use the `todo` component.
+
+3. *src/app/app.component.html*
+   ```html
+   <app-todo></app-todo>
+   ```
+
+4. Add the highlighted code lines to the `TodoComponent` class file:
+
+   *src/app/todo/todo.component.ts*
+   ```ts{2-3,11-20}
+   import { Component, OnInit } from '@angular/core';
+   import { remult } from 'remult';
+   import { Task } from '../../shared/Task';
    
    @Component({
-     selector: 'app-root',
-     templateUrl: './app.component.html',
-     styleUrls: ['./app.component.css']
+     selector: 'app-todo',
+     templateUrl: './todo.component.html',
+     styleUrls: ['./todo.component.css']
    })
-   export class AppComponent {
-     title = 'remult-angular-todo';
-     taskRepo = this.remult.repo(Task);
+   export class TodoComponent implements OnInit {
+     taskRepo = remult.repo(Task);
      tasks: Task[] = [];
-     
-     constructor(public remult: Remult) { }
-
+   
      ngOnInit() {
        this.fetchTasks();
      }
-     
+   
      async fetchTasks() {
        this.tasks = await this.taskRepo.find();
      }
-
    }
    ```
    
    Here's a quick overview of the different parts of the code snippet:
-   * The `remult` object will be injected to the `constructor` by Angular. We've declared it as a public field so we can use it in the HTML template later on.
    * `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
    * `tasks` is a Task array.
    * The `fetchTasks` method uses the Remult repository's [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
    * The `ngOnInit` method calls the `fetchTasks` method when the `component` is loaded.
 
-2. Replace the contents of `app.component.html` with the following HTML:
+6. Replace the contents of `todo.component.html` with the following HTML:
 
-   *src/app/app.component.html*
+   *src/app/todo/todo.component.html*
    ```html
-   <div *ngFor="let task of tasks">
-     <input type="checkbox" [checked]="task.completed">
-     {{task.title}}
+   <div>
+       <main>
+           <div *ngFor="let task of tasks">
+               <input
+                   type="checkbox"
+                   [checked]="task.completed"
+               >
+               {{task.title}}
+           </div>
+       </main>
    </div>
    ```
 
 After the browser refreshes, the list of tasks appears.
+
+## Add Styles
+
+Optionally make the app look a little better by replacing the contents of `styles.css` with the following CSS:
+
+::: details Styles
+
+*styles.css*
+```css
+@charset "utf-8";
+
+body {
+	margin: 0;
+	background: #f5f5f5;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+		'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+		sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-weight: 400;
+	color: #484848;
+	display: flex;
+	justify-content: center;
+}
+
+code {
+	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+		monospace;
+}
+
+main>div {
+	border-bottom: 1px solid #ededed;
+}
+
+main>div>button {
+	background: #f5f5f5;
+	color: red;
+	font-weight: bolder;
+	padding: 4px 8px;
+	visibility: hidden;
+}
+
+main>button {
+	background: #f5f5f5;
+	color: #484848;
+	padding: 4px 8px;
+	font-size: inherit;
+	visibility: hidden;
+}
+
+main>div>button:first-of-type {
+	color: green;
+}
+
+div>main>div:hover>button,
+div>main>div:focus-within>button {
+	visibility: visible;
+}
+
+button {
+	display: block;
+	left: 0;
+	background: #b83f45;
+	cursor: pointer;
+	border: none;
+	color: #fff;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	padding: 8px 16px;
+	margin: 4px;
+	box-shadow: 0 2px 4px #0003, 0 25px 50px #0000001a;
+}
+
+main input {
+	border: 0;
+	font-size: 18px;
+	width: 240px;
+	color: #484848;
+	margin: 8px 0;
+	margin-right: 4px;
+	padding: 4px;
+}
+
+main>input {
+	width: 273px
+}
+
+main>input:not(:placeholder-shown)+button{
+	visibility: visible;
+}
+
+input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin: 8px;
+	transform: translateY(3px);
+}
+
+input:checked+input {
+	text-decoration: line-through;
+}
+
+main {
+	background: #fff;
+	margin: 8px 0;
+	position: relative;
+	box-shadow: 0 2px 4px #0003, 0 25px 50px #0000001a;
+	padding: 8px;
+}
+
+header {
+	display: flex;
+	align-content: space-between;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 18px;
+}
+
+header>input {
+	font-size: 18px;
+	width: 270px;
+	color: #484848;
+	margin: 4px 0;
+	padding: 3px;
+}
+
+span {
+	display: block;
+	color: red;
+	font-style: italic;
+	font-size: medium;
+	display: block;
+	margin: 0 0 0 37px;
+}
+```
+:::

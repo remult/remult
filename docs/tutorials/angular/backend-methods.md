@@ -4,9 +4,9 @@ When performing operations on multiple entity objects, performance consideration
 ## Set All Tasks as Un/completed
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAll` async method to the `AppComponent` class, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add a `setAll` async method to the `TodoComponent` class, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
-   *src/app/app.component.ts*
+   *src/app/todo/todo.component.ts*
    ```ts
    async setAll(completed: boolean) {
      for (const task of await this.taskRepo.find()) {
@@ -22,7 +22,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 
 2. Add the two buttons to the return section of the `App` component. Both of the buttons' `click` events will call the `setAll` method with the appropriate value of the `completed` argument.
 
-   *src/app/app.component.html*
+   *src/app/todo/todo.component.html*
    ```html
    <div>
      <button (click)="setAll(true)">Set all as completed</button>
@@ -37,17 +37,17 @@ With the current state of the `setAll` function, each modified task being saved 
 
 A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
 
-1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAll` method of the `AppComponent`into a new, `static`, `setAll` method in the `TasksController` class, which will run on the server.
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAll` method of the `TodoComponent`into a new, `static`, `setAll` method in the `TasksController` class, which will run on the server.
 
 *src/shared/TasksController.ts*
 ```ts
-import { BackendMethod, Remult } from "remult";
+import { BackendMethod, remult } from "remult";
 import { Task } from "./Task";
 
 export class TasksController {
    @BackendMethod({ allowed: true })
-   static async setAll(completed: boolean, remult?: Remult) {
-      const taskRepo = remult!.repo(Task);
+   static async setAll(completed: boolean) {
+      const taskRepo = remult.repo(Task);
 
       for (const task of await taskRepo.find()) {
          await taskRepo.save({ ...task, completed });
@@ -57,20 +57,19 @@ export class TasksController {
 ```
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
-The optional `remult` argument of the static `setAll` function is intentionally omitted in the client-side calling code. In the server-side, Remult injects `@BackendMethod`-decorated functions with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
-
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
 
 *src/server/api.ts*
-```ts{3,7}
+```ts{4,8}
 import { remultExpress } from "remult/remult-express";
 import { Task } from "../shared/Task";
+import { remult } from "remult";
 import { TasksController } from "../shared/TasksController";
 
 export const api = remultExpress({
    entities: [Task],
    controllers: [TasksController],
-   initApi: async remult => {
+   initApi: async () => {
       const taskRepo = remult.repo(Task);
       if (await taskRepo.count() === 0) {
             await taskRepo.insert([
@@ -85,9 +84,9 @@ export const api = remultExpress({
 });
 ```
 
-3. Replace the `for` iteration in the `setAll` method of the `AppComponent`  with a call to the `setAll` method in the `TasksController`.
+3. Replace the `for` iteration in the `setAll` method of the `TodoComponent`  with a call to the `setAll` method in the `TasksController`.
 
-*src/app/app.component.ts*
+*src/app/todo/todo.component.ts*
 ```ts{2}
 async setAll(completed: boolean) {
   await TasksController.setAll(completed);
@@ -96,7 +95,7 @@ async setAll(completed: boolean) {
 ```
 
 ::: warning Import TasksController
-Remember to add an import of `TasksController` in `app.component.ts`.
+Remember to add an import of `TasksController` in `todo.component.ts`.
 :::
 
 ::: tip Note
