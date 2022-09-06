@@ -74,7 +74,7 @@ heroku create
 3. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
 
 ```sh
-heroku config:set JWT_SECRET=random-secret
+heroku config:set NEXTAUTH_SECRET=random-secret
 ```
 
 4. Provision a dev postgres database on Heroku.
