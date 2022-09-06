@@ -40,18 +40,18 @@ At this point, our starter project is up and running. We are now ready to move t
 
 ## Option 2: Step-by-step Setup
 
-### Create a React project
+### Create a Next.js project
+
 Create the new Next.js project.
 ```sh
-npx create-next-app@latest remult-nextjs-todo --typescript
+npx -y create-next-app@latest remult-nextjs-todo --typescript
 cd remult-nextjs-todo
 ```
 
-### Install required packages
-We need [axios](https://axios-http.com/) to serve as an HTTP client, and, of course, `Remult`. We'll also need `Express` as it is currently a required by `Remult` as a peer dependency (this peer dependency will be removed in future versions).
+### Install Remult
 
 ```sh
-yarn add axios remult
+yarn add remult
 ```
 
 ### Bootstrap Remult in the back-end
@@ -72,7 +72,6 @@ import { createRemultServer } from "remult/server";
 export const api = createRemultServer({})
 ```
 
-
 5. Add a file named `[...remult].ts` in the folder `pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
 
 *pages/api/[...remult].ts*
@@ -87,25 +86,7 @@ const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
 export default handler
 ```
 
-### Bootstrap Remult in the front-end
-
-In the React app we'll be using a global `Remult` object to communicate with the API server via a `Promise`-based HTTP client (in this case - `Axios`).
-
-Create a `common.ts` file in the `src/` folder with the following code:
-
-*src/common.ts*
-```ts
-import axios from "axios";
-import { Remult } from "remult";
-
-export const remult = new Remult(axios); 
-```
-
-
-### Final tweaks
-
-Our full stack starter project is almost ready. Let's complete these final configurations.
-#### Enable TypeScript decorators 
+### Enable TypeScript decorators 
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
    

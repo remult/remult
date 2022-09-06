@@ -11,7 +11,7 @@ In the `fetchTasks` function, pass an `options` argument to the `find` method ca
 *pages/index.tsx*
 ```ts{3}
 async function fetchTasks() {
-  return taskRepo.find({
+  return remult.repo(Task).find({
     limit: 20
   });
 }
@@ -32,7 +32,7 @@ Use "asc" and "desc" to determine the sort order.
 *pages/index.tsx*
 ```ts{4}
 async function fetchTasks() {
-  return taskRepo.find({
+  return remult.repo(Task).find({
     limit: 20,
     orderBy: { completed: "asc" }
   });
@@ -50,7 +50,7 @@ Let's allow the user to toggle the display of completed tasks, using server-side
 *pages/index.tsx*
 ```ts{1,5}
 async function fetchTasks(hideCompleted: boolean) {
-   return taskRepo.find({
+   return remult.repo(Task).find({
       limit: 20,
       orderBy: { completed: "asc" },
       where: { completed: hideCompleted ? false : undefined }

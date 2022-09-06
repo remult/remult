@@ -58,7 +58,7 @@ const Home: NextPage = () => {
    };
 
    const saveTask = () => {
-      taskRepo.save(task);
+      remult.repo(Task).save(task);
    };
 
    return (
@@ -107,7 +107,7 @@ const Home: NextPage = () => {
             }
 
             const saveTask = () => {
-               taskRepo.save(task);
+               remult.repo(Task).save(task);
             }
 
             return (
@@ -144,7 +144,7 @@ To fix the bug, modify the `saveTask` function and replace the saved task in the
 *pages/index.tsx*
 ```tsx
 const saveTask = async () => {
-   const savedTask = await taskRepo.save(task);
+   const savedTask = await remult.repo(Task).save(task);
    setTasks(tasks.map(t => t === task ? savedTask : t));
 };
 ```
@@ -164,12 +164,12 @@ Add the highlighted `deleteTask` function and *Delete* `button` Within the `task
    };
 
    const saveTask = async () => {
-      const savedTask = await taskRepo.save(task);
+      const savedTask = await remult.repo(Task).save(task);
       setTasks(tasks.map(t => t === task ? savedTask : t));
    };
 
    const deleteTask = async () => {
-      await taskRepo.delete(task);
+      await remult.repo(Task).delete(task);
       setTasks(tasks.filter(t => t !== task));
    };
 

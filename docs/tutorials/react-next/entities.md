@@ -104,14 +104,13 @@ Replace the contents of `pages/index.tsx` with the following code:
 ```tsx
 import type { NextPage } from 'next'
 import { useEffect, useState } from 'react';
-import { remult } from '../src/common';
+import { remult } from 'remult';
 import { Task } from '../src/shared/Task';
 
-const taskRepo = remult.repo(Task);
-
 async function fetchTasks() {
-  return taskRepo.find();
+  return remult.repo(Task).find();
 }
+
 const Home: NextPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -135,8 +134,7 @@ export default Home
 
 Here's a quick overview of the different parts of the code snippet:
 
-* `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
-* The `fetchTasks` function uses the Remult repository's [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
+* The `fetchTasks` function uses the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
 * `tasks` is a Task array React state to hold the list of tasks.
 * React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
 
