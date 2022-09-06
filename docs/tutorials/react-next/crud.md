@@ -7,7 +7,7 @@ To make the tasks in the list updatable, we'll bind the `tasks` React state to `
 1. Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `handleChange` function and `input` elements.
 
 *pages/index.tsx*
-```tsx{16-31}
+```tsx{17-32}
 const Home: NextPage = () => {
    const [tasks, setTasks] = useState<Task[]>([]);
    const [hideCompleted, setHideCompleted] = useState(false);
@@ -18,27 +18,29 @@ const Home: NextPage = () => {
 
    return (
       <div>
-         <input
-            type="checkbox"
-            checked={hideCompleted}
-            onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-         <hr />
-         {tasks.map(task => {
-            const handleChange = (values: Partial<Task>) => {
-               setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
-            };
+         <main>
+            <input
+               type="checkbox"
+               checked={hideCompleted}
+               onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+            <hr />
+            {tasks.map(task => {
+               const handleChange = (values: Partial<Task>) => {
+                  setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+               };
 
-            return (
-               <div key={task.id}>
-                  <input type="checkbox"
-                     checked={task.completed}
-                     onChange={e => handleChange({ completed: e.target.checked })} />
-                  <input
-                     value={task.title}
-                     onChange={e => handleChange({ title: e.target.value })} />
-               </div>
-            );
-         })}
+               return (
+                  <div key={task.id}>
+                     <input type="checkbox"
+                        checked={task.completed}
+                        onChange={e => handleChange({ completed: e.target.checked })} />
+                     <input
+                        value={task.title}
+                        onChange={e => handleChange({ title: e.target.value })} />
+                  </div>
+               );
+            })}
+         </main>
       </div>
    );
 }
@@ -81,7 +83,7 @@ Make some changes and refresh the browser to verify the backend database is upda
 Add the highlighted `addTask` function and *Add Task* `button` to the `Home` component:
 
 *pages/index.tsx*
-```tsx{9-11,41}
+```tsx{9-11,43}
 const Home: NextPage = () => {
    const [tasks, setTasks] = useState<Task[]>([]);
    const [hideCompleted, setHideCompleted] = useState(false);
@@ -96,32 +98,34 @@ const Home: NextPage = () => {
 
    return (
       <div>
-         <input
-            type="checkbox"
-            checked={hideCompleted}
-            onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-         <hr />
-         {tasks.map(task => {
-            const handleChange = (values: Partial<Task>) => {
-               setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
-            }
+         <main>
+            <input
+               type="checkbox"
+               checked={hideCompleted}
+               onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+            <hr />
+            {tasks.map(task => {
+               const handleChange = (values: Partial<Task>) => {
+                  setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+               }
 
-            const saveTask = () => {
-               remult.repo(Task).save(task);
-            }
+               const saveTask = () => {
+                  remult.repo(Task).save(task);
+               }
 
-            return (
-               <div key={task.id}>
-                  <input type="checkbox"
-                     checked={task.completed}
-                     onChange={e => handleChange({ completed: e.target.checked })} />
-                  <input
-                     value={task.title}
-                     onChange={e => handleChange({ title: e.target.value })} />
-                  <button onClick={saveTask}>Save</button>
-               </div>
-            );
-         })}
+               return (
+                  <div key={task.id}>
+                     <input type="checkbox"
+                        checked={task.completed}
+                        onChange={e => handleChange({ completed: e.target.checked })} />
+                     <input
+                        value={task.title}
+                        onChange={e => handleChange({ title: e.target.value })} />
+                     <button onClick={saveTask}>Save</button>
+                  </div>
+               );
+            })}
+         </main>
          <button onClick={addTask}>Add Task</button>
       </div>
    );

@@ -85,20 +85,22 @@ useEffect(() => {
 4. Add a `checkbox` input element immediately before the `tasks` map in `home/index.tsx`, bind its check state to the `hideCompleted` state, and add an `onChange` handler which calls `setHideCompleted` when the value of the checkbox is changed.
 
 *pages/index.tsx*
-```tsx{3-7}
+```tsx{4-8}
 return (
    <div>
-   <input
-      type="checkbox"
-      checked={hideCompleted}
-      onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-   <hr />
-   {tasks.map(task => (
-      <div key={task.id}>
-         <input type="checkbox" checked={task.completed} />
-         {task.title}
-      </div>
-   ))}
+      <main>
+         <input
+            type="checkbox"
+            checked={hideCompleted}
+            onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+         <hr />
+         {tasks.map(task => (
+            <div key={task.id}>
+               <input type="checkbox" checked={task.completed} />
+               {task.title}
+            </div>
+         ))}
+      </main>
    </div>
 );
 ```

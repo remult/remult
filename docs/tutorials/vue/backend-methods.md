@@ -60,27 +60,13 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
 
 *src/server/api.ts*
-```ts{4,8}
-import { remultExpress } from "remult/remult-express";
-import { Task } from "../shared/Task";
-import { remult } from "remult";
+```ts{2,6}
+//...
 import { TasksController } from "../shared/TasksController";
 
 export const api = remultExpress({
-   entities: [Task],
-   controllers: [TasksController],
-   initApi: async () => {
-      const taskRepo = remult.repo(Task);
-      if (await taskRepo.count() === 0) {
-            await taskRepo.insert([
-               { title: "Task a" },
-               { title: "Task b", completed: true },
-               { title: "Task c" },
-               { title: "Task d" },
-               { title: "Task e", completed: true }
-            ]);
-      }
-   }
+   //...
+   controllers: [TasksController]
 });
 ```
 

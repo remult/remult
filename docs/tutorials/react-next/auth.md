@@ -109,7 +109,7 @@ yarn add next-auth
 Add the highlighted code to the `Home` Next.js page:
 
 *pages/index.tsx*
-```tsx{2,7,12-22,25}
+```tsx{2,7,13-22}
 //... imports
 import { signIn, signOut, useSession } from "next-auth/react";
 
@@ -121,20 +121,22 @@ const Home: NextPage = () => {
   //,,,
 
   return (
-    <>
+    <div>
       <header>
         {session
           ? (
-            <header>
+            <>
               Hello {session?.user?.name}{" "}
               <button onClick={() => signOut()}>Sign Out</button>
-            </header>
+            </>
           )
           : <button onClick={() => signIn()}>Sign In</button>}
       </header>
-
+      
+      <main>
       //...
-    </>
+      </main>
+    </div>
   )
 }
 ```
