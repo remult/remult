@@ -148,17 +148,15 @@ Let's start developing the web app by displaying the list of existing tasks in a
 
    *src/app/todo/todo.component.html*
    ```html
-   <div>
-       <main>
-           <div *ngFor="let task of tasks">
-               <input
-                   type="checkbox"
-                   [checked]="task.completed"
-               >
-               {{task.title}}
-           </div>
-       </main>
-   </div>
+   <main>
+       <div *ngFor="let task of tasks">
+           <input
+               type="checkbox"
+               [checked]="task.completed"
+           >
+           {{task.title}}
+       </div>
+   </main>
    ```
 
 After the browser refreshes, the list of tasks appears.
@@ -216,8 +214,8 @@ main>div>button:first-of-type {
 	color: green;
 }
 
-div>main>div:hover>button,
-div>main>div:focus-within>button {
+main>div:hover>button,
+main>div:focus-within>button {
 	visibility: visible;
 }
 

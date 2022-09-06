@@ -66,6 +66,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
             createPostgresConnection({
                 configuration: "heroku"
             }) : undefined,
+        //...
    });
    ```
 
@@ -80,7 +81,8 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "noEmit": false,
-        "outDir": "dist"
+        "outDir": "dist",
+        "rootDir": "src"
     },
     "include": [
         "src/server/index.ts"

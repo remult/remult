@@ -90,8 +90,8 @@ export const api = remultExpress({
 ```ts{2}
 async setAll(completed: boolean) {
   await TasksController.setAll(completed);
-  this.fetchTasks()
-};
+  this.fetchTasks();
+}
 ```
 
 ::: warning Import TasksController

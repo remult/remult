@@ -29,5 +29,6 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
         dataProvider: createPostgresConnection({
             connectionString: "your connection string"
         }),
+        //...
    });
    ```
