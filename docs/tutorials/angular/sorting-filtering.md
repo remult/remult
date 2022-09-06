@@ -70,25 +70,22 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 4. Add a `checkbox` input element immediately before the `tasks` div in `todo.component.html`, bind its check state to the `hideCompleted` state, and add a `change` handler which calls `fetchTasks` when the value of the checkbox is changed.
 
 *src/app/todo/todo.component.html*
-```html{2-7}
-<div>
-    <input
-        type="checkbox"
-        [(ngModel)]="hideCompleted"
-        (change)="fetchTasks()"
-    >
-    Hide Completed
-    <main>
-        <div *ngFor="let task of tasks">
-            <input
-                type="checkbox"
-                [checked]="task.completed"
-            >
-            {{task.title}}
-        </div>
-    </main>
-</div>
-
+```html{1-6}
+<input
+    type="checkbox"
+    [(ngModel)]="hideCompleted"
+    (change)="fetchTasks()"
+>
+Hide Completed
+<main>
+    <div *ngFor="let task of tasks">
+        <input
+            type="checkbox"
+            [checked]="task.completed"
+        >
+        {{task.title}}
+    </div>
+</main>
 ```
 
 After the browser refreshes, a "Hide completed" checkbox appears above the task list. The user can toggle the display of uncompleted tasks using the checkbox.

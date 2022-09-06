@@ -14,25 +14,23 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
 2. Modify the contents of the `tasks` div to include the following `input` elements and a *Save* button to call the `saveTask` method.
 
    *src/app/todo/todo.component.html*
-   ```html{10-15}
-   <div>
-       <input
-           type="checkbox"
-           [(ngModel)]="hideCompleted"
-           (change)="fetchTasks()"
-       >
-       Hide Completed
-       <main>
-           <div *ngFor="let task of tasks">
-               <input
-                   type="checkbox"
-                   [(ngModel)]="task.completed"
-               >
-               <input [(ngModel)]="task.title">
-               <button (click)="saveTask(task)">Save</button>
-           </div>
-       </main>
-   </div>
+   ```html{9-14}
+   <input
+       type="checkbox"
+       [(ngModel)]="hideCompleted"
+       (change)="fetchTasks()"
+   >
+   Hide Completed
+   <main>
+       <div *ngFor="let task of tasks">
+           <input
+               type="checkbox"
+               [(ngModel)]="task.completed"
+           >
+           <input [(ngModel)]="task.title">
+           <button (click)="saveTask(task)">Save</button>
+       </div>
+   </main>
    ```
 
 Make some changes and refresh the browser to verify the backend database is updated.
@@ -50,27 +48,23 @@ addTask() {
 2. Add an *Add Task* button in the html template:
 
 *src/app/todo/todo.component.html*
-```html{21}
-<div>
-    <input
-        type="checkbox"
-        [(ngModel)]="hideCompleted"
-        (change)="fetchTasks()"
-    >
-    Hide Completed
-    <main>
-        <div *ngFor="let task of tasks">
-            <input
-                type="checkbox"
-                [(ngModel)]="task.completed"
-            >
-            <input [(ngModel)]="task.title">
-            <button (click)="saveTask(task)">Save</button>
-        </div>
-    </main>
-    <button (click)="addTask()">Add Task</button>
-</div>
-
+```html{17}
+<input
+    type="checkbox"
+    [(ngModel)]="hideCompleted"
+    (change)="fetchTasks()"
+>
+Hide Completed
+<main>
+    <div *ngFor="let task of tasks">
+        <input
+            type="checkbox"
+            [(ngModel)]="task.completed"
+        >
+        <input [(ngModel)]="task.title">
+        <button (click)="saveTask(task)">Save</button>
+    </div>
+</main>
 <button (click)="addTask()">Add Task</button>
 ```
 
@@ -113,25 +107,23 @@ async deleteTask(task: Task) {
 2. Add a *Delete* button in the html:
 
 *src/app/todo/todo.component.html*
-```html{16}
-<div>
-    <input
-        type="checkbox"
-        [(ngModel)]="hideCompleted"
-        (change)="fetchTasks()"
-    >
-    Hide Completed
-    <main>
-        <div *ngFor="let task of tasks">
-            <input
-                type="checkbox"
-                [(ngModel)]="task.completed"
-            >
-            <input [(ngModel)]="task.title">
-            <button (click)="saveTask(task)">Save</button>
-            <button (click)="deleteTask(task)">Delete</button>
-        </div>
-    </main>
-    <button (click)="addTask()">Add Task</button>
-</div>
+```html{15}
+<input
+    type="checkbox"
+    [(ngModel)]="hideCompleted"
+    (change)="fetchTasks()"
+>
+Hide Completed
+<main>
+    <div *ngFor="let task of tasks">
+        <input
+            type="checkbox"
+            [(ngModel)]="task.completed"
+        >
+        <input [(ngModel)]="task.title">
+        <button (click)="saveTask(task)">Save</button>
+        <button (click)="deleteTask(task)">Delete</button>
+    </div>
+</main>
+<button (click)="addTask()">Add Task</button>
 ```

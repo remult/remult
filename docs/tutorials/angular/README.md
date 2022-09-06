@@ -145,11 +145,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from "@angular/common/http";
 import { FormsModule } from '@angular/forms';
 
-import { TodoComponent } from './todo.component';
+import { AppComponent } from './app.component';
 
 @NgModule({
   declarations: [
-    TodoComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,
@@ -157,7 +157,7 @@ import { TodoComponent } from './todo.component';
     FormsModule
   ],
   providers: [],
-  bootstrap: [TodoComponent]
+  bootstrap: [AppComponent]
 })
 export class AppModule { }
 ```
