@@ -132,11 +132,6 @@ On the client side, `remult` can use any standard javascript HTTP-client to call
 
 **By default, remult uses the browser's `fetch` API, and makes data API calls using the base URL `/api` (same-origin).**
 
-To use a different url, set remult's `apiClient.url` property 
-```ts
-remult.apiClient.url = 'http://localhost:3002/api'
-```
-
 Here is the code for setting up a Remult client instance:
 
 ### Using Fetch
@@ -174,3 +169,17 @@ export class AppModule {
   }
 }
 ```
+
+### Changing the default API base URL
+
+By default, remult makes data API calls to routes based at the `/api` route of the origin of the client-side app. (e.g. `https://localhost:3000/api`)
+
+To use a different base URL for API calls (e.g. `https://localhost:3002/api`), set the remult object's `apiClient.url` property.
+
+```ts
+remult.apiClient.url = 'http://localhost:3002/api'
+```
+
+::: warning CORS
+Handling [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is outside the scope of Remult.
+:::
