@@ -55,7 +55,7 @@ yarn add remult
 ```
 
 ### Bootstrap Remult in the back-end
-Remult is bootstrapped in a `Next.js` app by adding it the `remultServer` [API middleware](https://nextjs.org/docs/api-routes/api-middlewares) to a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes).
+Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes), that passes the handling of requests to an object created using the `createRemultServer` function.
 
 1. Open your IDE.
 
@@ -69,7 +69,7 @@ Remult is bootstrapped in a `Next.js` app by adding it the `remultServer` [API m
 ```ts
 import { createRemultServer } from "remult/server";
 
-export const api = createRemultServer({})
+export const api = createRemultServer({});
 ```
 
 5. Add a file named `[...remult].ts` in the folder `pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
@@ -80,7 +80,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { api } from '../../src/server/api';
 
 const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
-    await api.handle(_req, res);;
+    await api.handle(_req, res);
 }
 
 export default handler
