@@ -22,7 +22,7 @@ You can either **use a starter project** to speed things up, or go through the *
 1. Clone the *remult-nextjs-todo* repository from GitHub and install its dependencies.
 
 ```sh
-git clone https://github.com/remult/remult-nextjs-todo.git
+git clone https://github.com/remult/nextjs-starter.git remult-nextjs-todo
 cd remult-nextjs-todo
 yarn
 ```
