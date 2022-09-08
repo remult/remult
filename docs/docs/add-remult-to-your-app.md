@@ -154,7 +154,7 @@ remult.apiClient.httpClient = axios;
 ```ts
 //...
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { Remult } from 'remult';
+import { remult } from 'remult';
 
 @NgModule({
     //...
