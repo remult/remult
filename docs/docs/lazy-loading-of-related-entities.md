@@ -20,7 +20,7 @@ export class Task extends IdEntity {
 ```
 
 #### Working with Lazy
-* To manually load a related entity, use it's `FieldRef`'s load method.
+* To manually load a related entity, use its `FieldRef`'s load method.
   ```ts
   await task.$.category!.load()
   ```

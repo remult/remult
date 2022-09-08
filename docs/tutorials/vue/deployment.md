@@ -113,7 +113,7 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
 ```sh
 git init
 ```
-Click enter multiple times to answer all it's questions with the default answer
+Click enter multiple times to answer all its questions with the default answer
 
 2. Create a Heroku `app`.
 
