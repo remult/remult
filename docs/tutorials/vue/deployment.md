@@ -56,24 +56,28 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 
 3. Modify the highlighted code in the api server module to only use `Postgres` in production, and keep using the simple JSON db in our dev environment.
 
-   *src/server/api.ts*
-   ```ts{5-8}
-   //...
+    *src/server/api.ts*
+    ```ts{5-8}
+    //...
 
-   export const api = remultExpress({
+    export const api = remultExpress({
         //...
         dataProvider: process.env["NODE_ENV"] === "production" ?
             createPostgresConnection({
                 configuration: "heroku"
             }) : undefined,
         //...
-   });
-   ```
+    });
+    ```
+
+    The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)
+
+    In development, the `dataProvider` function returns `undefined`, causing Remult to continue to use the default JSON-file database.
 
 4. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
 
 *tsconfig.server.json*
-```json{6-11}
+```json{6-12}
 {
    "extends": "./tsconfig.json",
    "compilerOptions": {

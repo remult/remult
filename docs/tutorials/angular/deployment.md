@@ -70,10 +70,14 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
    });
    ```
 
+   The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)
+
+   In development, the `dataProvider` function returns `undefined`, causing Remult to continue to use the default JSON-file database.
+
 4. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
 
 *tsconfig.server.json*
-```json{6-11}
+```json{6-12}
 {
    "extends": "./tsconfig.json",
    "compilerOptions": {
