@@ -23,51 +23,51 @@
   "exports": {
     ".": {
       "require": "./index.js",
-      "import": "./esm/index.js"
+      "import": "./index.js"
     },
     "./remult-express": {
       "require": "./remult-express.js",
-      "import": "./esm/remult-express.js"
+      "import": "./remult-express.js"
     },
     "./server": {
       "require": "./server/index.js",
-      "import": "./esm/server/index.js"
+      "import": "./server/index.js"
     },
     "./remult-fastify": {
       "require": "./remult-fastify.js",
-      "import": "./esm/remult-fastify.js"
+      "import": "./remult-fastify.js"
     },
     "./remult-fresh": {
       "require": "./remult-fresh.js",
-      "import": "./esm/remult-fresh.js"
+      "import": "./remult-fresh.js"
     },
     "./postgres": {
       "require": "./postgres/index.js",
-      "import": "./esm/postgres/index.js"
+      "import": "./postgres/index.js"
     },
     "./postgres/schema-builder": {
       "require": "./postgres/schema-builder.js",
-      "import": "./esm/postgres/schema-builder.js"
+      "import": "./postgres/schema-builder.js"
     },
     "./remult-knex": {
       "require": "./remult-knex/index.js",
-      "import": "./esm/remult-knex/index.js"
+      "import": "./remult-knex/index.js"
     },
     "./remult-mongo": {
       "require": "./remult-mongo.js",
-      "import": "./esm/remult-mongo.js"
+      "import": "./remult-mongo.js"
     },
     "./graphql": {
       "require": "./graphql.js",
-      "import": "./esm/graphql.js"
+      "import": "./graphql.js"
     },
     "./src/remult3": {
       "require": "./src/remult3/index.js",
-      "import": "./esm/src/remult3/index.js"
+      "import": "./src/remult3/index.js"
     },
     "./src/server-action": {
       "require": "./src/server-action.js",
-      "import": "./esm/src/server-action.js"
+      "import": "./src/server-action.js"
     }
   }
 }
