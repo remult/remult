@@ -8,8 +8,8 @@ Up until now the todo app has been using a plain JSON file to store the list of 
 1. Install `postgres-node` ("pg").
 
 ```sh
-yarn add pg
-yarn add --dev @types/pg
+npm i pg
+npm i -D @types/pg
 ```
 
 2. Adding the highlighted code to the `api` server module.

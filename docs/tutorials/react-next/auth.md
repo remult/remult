@@ -70,7 +70,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 1. Install `next-auth`:
    
 ```sh
-yarn add next-auth
+npm i next-auth
 ```
 
 2. Create the following `[...nextauth].ts` API route. 

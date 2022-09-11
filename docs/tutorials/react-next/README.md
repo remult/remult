@@ -24,14 +24,14 @@ You can either **use a starter project** to speed things up, or go through the *
 ```sh
 git clone https://github.com/remult/nextjs-starter.git remult-nextjs-todo
 cd remult-nextjs-todo
-yarn
+npm install
 ```
 
 2. Open your IDE.
 3. Open a terminal and run the `dev` npm script.
 
 ```sh
-yarn dev
+npm run dev
 ```
 
 The default Next.js app main screen should be displayed.
@@ -51,7 +51,7 @@ cd remult-nextjs-todo
 ### Install Remult
 
 ```sh
-yarn add remult
+npm i remult
 ```
 
 ### Bootstrap Remult in the back-end
@@ -101,7 +101,7 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 Open a terminal and start the app.
 
 ```sh
-yarn dev
+npm run dev
 ```
 
 The default `Next.js` main screen should be displayed.
