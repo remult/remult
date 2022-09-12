@@ -133,9 +133,7 @@ const Home: NextPage = () => {
           : <button onClick={() => signIn()}>Sign In</button>}
       </header>
       
-      <main>
       //...
-      </main>
     </div>
   )
 }
