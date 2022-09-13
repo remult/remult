@@ -6,7 +6,7 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
 
 
 *src/App.vue*
-```vue{16-18,27-28}
+```vue{16-19,28-29}
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { remult } from 'remult';
@@ -23,7 +23,8 @@ async function fetchTasks() {
   });
 }
 async function saveTask(task: Task) {
-  await taskRepo.save(task);
+  const savedTask = await taskRepo.save(task);
+  tasks.value = tasks.value.map(t => t === task ? savedTask : t);
 }
 onMounted(() => fetchTasks())
 </script>
@@ -41,11 +42,13 @@ onMounted(() => fetchTasks())
 </template>
 ```
 
-   The `handleChange` function simply replaces the `tasks` state with a new array containing all unchanged tasks and a new version of the current task that includes the modified `values`.
+::: warning Why update the task array after saving a task?
+Remult's `Repository.save` method issues either a `PUT` or a `POST` request, depending on the existence of an `id` value in the `Task` object. 
 
-   After the browser refreshes, the tasks can be renamed and marked as completed.
+In the next section of the tutorial, we'll add new tasks to the list by creating `Task` objects and saving them using the same `saveTask` function. So, to make sure a newly created task is only `POST`-ed once, we must replace it with the return value of `Repository.save`, which contains an `id`.
+:::
 
-
+After the browser refreshes, the tasks can be renamed and marked as completed.
 
 Make some changes and refresh the browser to verify the backend database is updated.
 ## Add New Tasks
@@ -53,7 +56,7 @@ Make some changes and refresh the browser to verify the backend database is upda
 Add the highlighted `addTask` function and *Add Task* `button` to the `App` component:
 
 *src/App.vue*
-```vue{19-21,34}
+```vue{20-22,35}
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { remult } from 'remult';
@@ -70,7 +73,8 @@ async function fetchTasks() {
   });
 }
 async function saveTask(task: Task) {
-  await taskRepo.save(task);
+  const savedTask = await taskRepo.save(task);
+  tasks.value = tasks.value.map(t => t === task ? savedTask : t);
 }
 function addTask() {
   tasks.value.push(new Task());
@@ -96,22 +100,6 @@ Add a few tasks and refresh the browser to verify the backend database is update
 
 ::: warning Note 
 New tasks **will not be saved to the backend** until you press the *Save* button.
-:::
-
-::: danger Wait, there's a bug in this code
-Notice that if you add a new task by clicking the *Add Task* button, click the *Save* button **multiple times**, and then refresh the browser, **multiple tasks will be added to the list instead of only one**.
-
-This is happening because the Remult `Repository.save` method issues either a `PUT` or a `POST` request, depending on the existence of an `id` value in the `Task` object. 
-
-To fix the bug, modify the `saveTask` function and replace the saved task in the `tasks` array with the object returned from `Repository.save` (which contains the `id` of the task created in the backend).
-
-*src/App.vue*
-```ts
-async function saveTask(task: Task) {
-  const savedTask = await taskRepo.save(task);
-  tasks.value = tasks.value.map(t => t === task ? savedTask : t);
-}
-```
 :::
 
 ## Delete Tasks
