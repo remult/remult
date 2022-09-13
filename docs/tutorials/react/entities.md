@@ -148,4 +148,4 @@ After the browser refreshes, the list of tasks appears.
 
 ### Add Styles
 
-If you've used the "Step-by-step Setup" option to setup your project, you can, optionally, make the app look a little better by replacing the contents of `src/index.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/master/src/index.css).
+Optionally, make the app look a little better by replacing the contents of `src/index.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).
