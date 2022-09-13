@@ -1945,9 +1945,9 @@ export class EntityBase {
     get $() { return this._.fields }
 }
 export class ControllerBase {
-
-    constructor(protected remult?: Remult) {
-
+    protected remult: Remult;
+    constructor(remult?: Remult) {
+        this.remult = remult || RepositoryImplementation.defaultRemult;
     }
     assign(values: Partial<Omit<this, keyof EntityBase>>) {
         assign(this, values);

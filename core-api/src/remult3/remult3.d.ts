@@ -127,7 +127,7 @@ export interface Repository<entityType> {
     } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
      *
-     * It also has its own paging mechanism that can be used in paging scenarios.
+     * It also has it's own paging mechanism that can be used n paging scenarios.
      *
      * The `query` method doesn't return an array (as the `find` method) and instead returns an `iteratable` `QueryResult` object
      * which supports iterations using the JavaScript `for await` statement.
