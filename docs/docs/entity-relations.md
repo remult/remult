@@ -39,7 +39,7 @@ export class Task extends IdEntity {
 }
 ```
 
-When a `Task` is loaded, it's `Category` is also automatically loaded, using a cache mechanism to prevent the reload of an already loaded `Category`. To disable that, set the `lazy` option to `true`.
+When a `Task` is loaded, its `Category` is also automatically loaded, using a cache mechanism to prevent the reload of an already loaded `Category`. To disable that, set the `lazy` option to `true`.
 For more information see [lazy loading of related entities](lazy-loading-of-related-entities)
 
 

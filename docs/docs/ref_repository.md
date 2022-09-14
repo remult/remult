@@ -218,7 +218,7 @@ Insert an item or item[] to the data source
 Arguments:
 * **item**
 ## update
-Updates an item, based on it's `id`
+Updates an item, based on its `id`
    
    
    *example*

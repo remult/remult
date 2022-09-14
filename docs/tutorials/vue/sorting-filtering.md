@@ -72,15 +72,14 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 
 *src/App.vue*
 ```vue{2-5}
-<template>
-  <input type="checkbox" 
-    v-model="hideCompleted" 
-    @change="fetchTasks()" /> Hide Completed {{ hideCompleted }}
-  <hr />
-  <div v-for="task in tasks">
-    <input type="checkbox" v-model="task.completed" />
-    {{ task.title }}
-  </div>
+  <template>
+  <div>
+    <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed 
+    <main>
+      <div v-for="task in tasks">
+        <input type="checkbox" v-model="task.completed" />
+        {{ task.title }}
+      </div>
 </template>
 ```
 

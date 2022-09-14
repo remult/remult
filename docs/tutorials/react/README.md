@@ -23,7 +23,7 @@ You can either **use a starter project** to speed things up, or go through the *
 
 ## Option 1: Clone the Starter Project
 
-1. Clone the *remult-react-todo* repository from GitHub and install its dependencies.
+1. Clone the *react-vite-express-starter* repository from GitHub and install its dependencies.
 
 ```sh
 git clone https://github.com/remult/react-vite-express-starter.git remult-react-todo
@@ -38,7 +38,7 @@ npm install
 npm run dev
 ```
 
-The default React app main screen should be displayed.
+The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
@@ -81,7 +81,7 @@ The starter API server TypeScript project contains a single module that initiali
 }
 ```
 
-3. Create a `server` folder under the `src/` folder created by Create React App.
+3. Create a `server` folder under the `src/` folder created by Vite.
 
 4. Create an `index.ts` file in the `src/server/` folder with the following code:
 
@@ -179,7 +179,7 @@ npm run dev
 
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
-The default "Vite + React" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
+The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 
 ### Setup completed

@@ -54,23 +54,30 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 ```
 
 
-3. Adjust the highlighted code in the api server module to only use `postgres` in production, and keep using the simple json db in our dev environment.
-   ```ts{2-5}
-   export const api = remultExpress({
-       dataProvider: process.env["NODE_ENV"] === "production" ?
-           createPostgresConnection({
-               configuration: "heroku"
-           }) : undefined,
-       entities: [Task],
-   ```
+3. Modify the highlighted code in the api server module to only use `Postgres` in production, and keep using the simple JSON db in our dev environment.
 
-   
+    *src/server/api.ts*
+    ```ts{5-8}
+    //...
 
+    export const api = remultExpress({
+        //...
+        dataProvider: process.env["NODE_ENV"] === "production" ?
+            createPostgresConnection({
+                configuration: "heroku"
+            }) : undefined,
+        //...
+    });
+    ```
+
+    The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)
+
+    In development, the `dataProvider` function returns `undefined`, causing Remult to continue to use the default JSON-file database.
 
 4. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
 
 *tsconfig.server.json*
-```json{7-12}
+```json{7-13}
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
@@ -78,7 +85,8 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "noEmit": false,
-        "outDir": "dist"
+        "outDir": "dist",
+        "rootDir": "src"
     },
     "include": [
         "src/server/index.ts"
@@ -110,7 +118,7 @@ In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need
 ```sh
 git init
 ```
-Click enter multiple times to answer all it's questions with the default answer
+Click enter multiple times to answer all its questions with the default answer
 
 2. Create a Heroku `app`.
 

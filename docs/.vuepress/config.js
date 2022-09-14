@@ -74,13 +74,16 @@ module.exports = {
           title: 'Getting Started',
           collapsable: false,
           children: [
-            '']
+            '',
+            'add-remult-to-your-app',
+            'crud-your-first-entity',
+            'databases',
+          ]
         },
         {
           title: 'Concepts',
           collapsable: true,
           children: [
-            'databases',
             'field-types',
             'backendMethods',
             'entity-relations',
@@ -149,6 +152,7 @@ module.exports = {
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],
@@ -166,6 +170,7 @@ module.exports = {
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],
@@ -183,6 +188,7 @@ module.exports = {
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],

@@ -2,57 +2,27 @@
 
 Let's deploy the todo app to [Heroku](https://www.heroku.com/).
 
-## Connect to Postgres
-Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
+## Connect to Heroku Postgres
 
-1. Install `postgres-node` ("pg").
-
-```sh
-yarn add pg
-yarn add --dev @types/pg
-```
-
-2. Adding the highlighted code to the `api` server module.
+Modify the highlighted code in the api server module to only use `Postgres` in production, and keep using the simple JSON db in our dev environment.
 
 *src/server/api.ts*
-```ts{5,8-12}
-import { createRemultServer } from "remult/server";
-import { AuthController } from "../shared/AuthController";
-import { Task } from "../shared/Task";
-import { TasksController } from '../shared/TasksController';
-import { createPostgresConnection } from "remult/postgres";
+```ts{5-8}
+//...
 
 export const api = createRemultServer({
-    dataProvider: async () => {
-        if (process.env["NODE_ENV"] === "production")
-            return createPostgresConnection({ configuration: "heroku" });
-        return undefined;
-    },
-    entities: [Task],
-    controllers: [TasksController, AuthController],
-    initApi: async remult => {
-        const taskRepo = remult.repo(Task);
-        if (await taskRepo.count() === 0) {
-            await taskRepo.insert([
-                { title: "Task a" },
-                { title: "Task b", completed: true },
-                { title: "Task c" },
-                { title: "Task d" },
-                { title: "Task e", completed: true }
-            ]);
-        }
-    }
-})
+    //...
+    dataProvider: process.env["NODE_ENV"] === "production" ?
+        createPostgresConnection({
+            configuration: "heroku"
+        }) : undefined,
+    //...
+});
 ```
 
 The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)
 
 In development, the `dataProvider` function returns `undefined`, causing Remult to continue to use the default JSON-file database.
-
-::: tip Learn more
-See [documentation](../../docs/databases.md) for the (long) list of relational and non-relational databases Remult supports.
-:::
-
 
 ## Deploy to Heroku
 
@@ -74,7 +44,7 @@ heroku create
 3. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
 
 ```sh
-heroku config:set JWT_SECRET=random-secret
+heroku config:set NEXTAUTH_SECRET=random-secret
 ```
 
 4. Provision a dev postgres database on Heroku.

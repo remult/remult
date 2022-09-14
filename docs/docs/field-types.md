@@ -149,7 +149,7 @@ export class Task extends IdEntity {
 There are several ready made valueConverters included in the `remult` package, which can be found in `remult/valueConverters`
 
 ## Class Fields
-Sometimes you may want a field type to be a class, you can do that, you just need to provide an implementation for it's transition from and to JSON.
+Sometimes you may want a field type to be a class, you can do that, you just need to provide an implementation for its transition from and to JSON.
 
 For example:
 ```ts{9-30}
@@ -178,7 +178,7 @@ export class Phone {
 }
 ```
 
-Alternatively you can decorate the `Phone` class with the `FieldType` decorator, so that whenever you use it, it's `valueConverter` will be used.
+Alternatively you can decorate the `Phone` class with the `FieldType` decorator, so that whenever you use it, its `valueConverter` will be used.
 ```ts{10,14-19}
 @Entity('tasks', {
     allowApiCrud: true
