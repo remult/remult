@@ -3,13 +3,16 @@ import { ClassType } from "../../classType";
 import { Remult } from "../context";
 import { Entity } from "./RepositoryImplementation";
 import { OmitEB } from "./remult3";
-import { BackendMethod, BackendMethodOptions } from "../server-action";
+import { BackendMethod, BackendMethodOptions, Controller } from "../server-action";
 
 
 
 
-export function BuildEntity<entityType>(c: entityType, key: string, fields: MembersAndStaticMembers<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
+export function describeEntity<entityType>(c: entityType, key: string, fields: MembersAndStaticMembers<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
     Entity(key, ...options)(c);
+    readDecoratorsDefinitions<entityType>(fields, c);
+}
+function readDecoratorsDefinitions<entityType>(fields: MembersAndStaticMembers<entityType>, c: entityType) {
     for (const fieldKey in fields) {
         if (Object.prototype.hasOwnProperty.call(fields, fieldKey)) {
             const element = fields[fieldKey];
@@ -31,6 +34,11 @@ export function BuildEntity<entityType>(c: entityType, key: string, fields: Memb
         }
     }
 }
+
+export function describeController<controllerType>(c: controllerType, key: string, fields: MembersAndStaticMembers<controllerType>) {
+    Controller(key)(c);
+    readDecoratorsDefinitions<controllerType>(fields, c);
+}
 type Decorator = (a: any, b: string, c?: any) => void;
 type Members<T> = T extends new (...args: any[]) => infer R ? { [K in keyof OmitEB<R>]?: Decorator } : never;
 type StaticMembers<T> = { [K in keyof T]?: Decorator };
@@ -39,14 +47,14 @@ type MembersAndStaticMembers<T> = Members<T> & { static?: StaticMembers<T> };
 
 
 
-export function DescribeStaticBackendMethod<T>(cls: T, methodName: keyof T, options: BackendMethodOptions<any>, paramTypes?: any[]) {
+export function describeStaticBackendMethod<T>(cls: T, methodName: keyof T, options: BackendMethodOptions<any>, paramTypes?: any[]) {
     const prop = Object.getOwnPropertyDescriptor(cls, methodName);
     if (paramTypes)
         Reflect.defineMetadata("design:paramtypes", paramTypes, cls, methodName as string)
     BackendMethod(options)(cls, methodName as string, prop);
     Object.defineProperty(cls, methodName, prop);
 }
-export function DescribeBackendMethod<T>(cls: ClassType<T>, methodName: keyof T, options: BackendMethodOptions<any>, paramTypes?: any[]) {
+export function describeBackendMethod<T>(cls: ClassType<T>, methodName: keyof T, options: BackendMethodOptions<any>, paramTypes?: any[]) {
     const prop = Object.getOwnPropertyDescriptor(cls.prototype, methodName);
     if (!prop)
         throw Error(`Couldn't find method ${methodName as string} on class ${cls.constructor.name}`)

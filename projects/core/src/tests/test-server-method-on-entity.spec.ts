@@ -11,7 +11,7 @@ import { Filter } from '../filter/filter-interfaces';
 import { dWithPrefilter } from './dWithPrefilter';
 import { d } from './d';
 import { remult } from '../remult-proxy';
-import { BuildEntity, DescribeBackendMethod } from '../remult3/DecoratorReplacer';
+import { describeEntity, describeBackendMethod } from '../remult3/DecoratorReplacer';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -57,7 +57,7 @@ class testServerMethodOnEntity extends EntityBase {
 
 
 }
-DescribeBackendMethod(testServerMethodOnEntity, "doIt1NoDecorator", { allowed: true, }, [Remult]);
+describeBackendMethod(testServerMethodOnEntity, "doIt1NoDecorator", { allowed: true, }, [Remult]);
 
 @Entity<testBoolCreate123>('testBoolCreate123', (o, c) => assign(o, {
     allowApiCrud: true,
@@ -131,7 +131,7 @@ describe("test Server method in entity", () => {
                 return this.name + isBackend();
             }
         }
-        BuildEntity(myClass, 'adHocEntity', {
+        describeEntity(myClass, 'adHocEntity', {
             id: Fields.autoIncrement(),
             name: Fields.string(),
             doSomething: BackendMethod({ allowed: true }),
@@ -149,7 +149,7 @@ describe("test Server method in entity", () => {
                 return isBackend();
             }
         }
-        BuildEntity(myClass, 'adHocEntity', {
+        describeEntity(myClass, 'adHocEntity', {
             id: Fields.autoIncrement(),
             name: Fields.string(),
             static: {

@@ -1,5 +1,5 @@
 import { Field, Entity, EntityBase, Fields } from '../remult3';
-import { BuildEntity } from '../remult3/DecoratorReplacer';
+import { describeEntity } from '../remult3/DecoratorReplacer';
 import { testAll } from './db-tests-setup';
 
 
@@ -14,7 +14,7 @@ describe("custom id column", () => {
             a: number;
             b: number;
         }
-        BuildEntity(type, 'custom', {
+        describeEntity(type, 'custom', {
             a: Fields.number(),
             b: Fields.number()
         }, { allowApiCrud: true })

@@ -5,7 +5,7 @@ import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3
 
 import { IdEntity } from '../id-entity';
 import { remult } from '../remult-proxy';
-import { DescribeBackendMethod, DescribeStaticBackendMethod } from '../remult3/DecoratorReplacer';
+import { describeBackendMethod, describeController, describeStaticBackendMethod } from '../remult3/DecoratorReplacer';
 
 
 @ValueListFieldType()
@@ -132,10 +132,10 @@ class testBasics {
         return z.toString();
     }
 }
-DescribeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecorator', { allowed: true });
-DescribeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
-DescribeBackendMethod(testBasics, 'backendMethodWithoutDecorator', { allowed: true });
-DescribeBackendMethod(testBasics, 'backendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
+describeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecorator', { allowed: true });
+describeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
+describeBackendMethod(testBasics, 'backendMethodWithoutDecorator', { allowed: true });
+describeBackendMethod(testBasics, 'backendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
 
 
 class Stam {
@@ -380,6 +380,42 @@ describe("test Server Controller basics", () => {
         expect(happened).toBe(false);
 
 
+    });
+    it("test backend method with adhoc entity", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            async doSomething() {
+                return this.name + isBackend();
+            }
+        }
+        describeController(myClass, 'addHocController', {
+            id: Fields.autoIncrement(),
+            name: Fields.string(),
+            doSomething: BackendMethod({ allowed: true }),
+        })
+        const x = new myClass();
+        x.name = "123";
+        expect(await x.doSomething()).toBe("123true");
+    });
+    it("test static backend method with adhoc controller", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            static async adHockDoSomething() {
+                return isBackend();
+            }
+        }
+        describeController(myClass, 'addHocController1', {
+            id: Fields.autoIncrement(),
+            name: Fields.string(),
+            static: {
+                adHockDoSomething: BackendMethod({ allowed: true }),
+            }
+        })
+        expect(await myClass.adHockDoSomething()).toBe(true);
     });
 
 });
