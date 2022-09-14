@@ -40,7 +40,7 @@ export {
     Paginator,
     CaptionTransformer
 } from './src/remult3';
-export { describeEntity as BuildEntity } from './src/remult3/DecoratorReplacer';
+export { describeEntity, describeBackendMethod, describeController, describeStaticBackendMethod } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
 export {
     DataProvider,
