@@ -26,7 +26,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
    import { createPostgresConnection } from "remult/postgres";
    
-   export const api = remultExpress({
+   export const api = createRemultServer({
         //...
         dataProvider: createPostgresConnection({
             connectionString: "your connection string"

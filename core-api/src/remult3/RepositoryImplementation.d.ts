@@ -310,7 +310,7 @@ export declare class EntityBase {
 }
 export declare class ControllerBase {
     protected remult: Remult;
-    constructor(remult: Remult);
+    constructor(remult?: Remult);
     assign(values: Partial<Omit<this, keyof EntityBase>>): this;
     get $(): FieldsRef<this>;
     get _(): ControllerRef<this>;

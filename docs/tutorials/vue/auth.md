@@ -6,7 +6,7 @@ Remult provides a flexible mechanism that enables placing **code-based authoriza
 
 **Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism, and only required to provide Remult with an object which implements the Remult `UserInfo` interface.
 
-In this tutorial, we'll use a [JWT Bearer token](https://jwt.io) authentication. JSON web tokens will be issued by the API server upon a successful simplistic sign-in (based on username without password) and sent in all subsequent API requests using an [Authorization HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization).
+In this tutorial, we'll use `Express`'s [cookie-session](https://expressjs.com/en/resources/middleware/cookie-session.html) middleware to store an authenticated user's session within a cookie. The `user` property of the session will be set by the API server upon a successful simplistic sign-in (based on username without password).
 
 ## Tasks CRUD Requires Sign-in
 This rule is implemented within the `Task` `@Entity` decorator, by modifying the value of the `allowApiCrud` property.
@@ -31,24 +31,6 @@ curl -i http://localhost:3002/api/tasks
 ```
 :::
 
-::: tip Use authorization metadata to avoid redundant api requests
-Although not necessary, it's a good idea to avoid sending `GET` api requests for tasks from our Vue app, if the current user is not authorized to access the endpoint.
-
-A simple way to achieve this is by adding the highlighted code lines to the `fetchTasks` function in `App.vue`:
-
-*src/App.vue*
-```ts{2-3}
-async function fetchTasks() {
-  if (!taskRepo.metadata.apiReadAllowed)
-    return;
-  tasks.value = await taskRepo.find({
-    limit: 20,
-    orderBy: { completed: "asc" },
-    where: { completed: hideCompleted.value ? false : undefined }
-  });
-}
-```
-:::
 
 ::: danger Authorized server-side code can still modify tasks
 Although client CRUD requests to `tasks` API endpoints now require a signed-in user, the API endpoint created for our `setAll` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAll` function still works as before**.
@@ -65,225 +47,169 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ## User Authentication
 Let's add a sign-in area to the todo app, with an `input` for typing in a `username` and a sign-in `button`. The app will have two valid `username` values - *"Jane"* and *"Steve"*. After a successful sign-in, the sign-in area will be replaced by a "Hi [username]" message.
 
-In this section, we'll be using the following packages:
-* [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) to create JSON web tokens
-* [jwt-decode](https://github.com/auth0/jwt-decode) for client-side JWT decoding.
-* [express-jwt](https://github.com/auth0/express-jwt) to read HTTP `Authorization` headers and validate JWT on the API server
+### Backend setup
 
 1. Open a terminal and run the following command to install the required packages:
    
 ```sh
-npm i jsonwebtoken jwt-decode express-jwt
-npm i --save-dev @types/jsonwebtoken 
+npm i cookie-session
+npm i --save-dev @types/cookie-session
 ```
 
-2. Modify the main server module `index.ts` to use the `express-jwt` authentication Express middleware. 
+2. Modify the main server module `index.ts` to use the `cookie-session` Express middleware. 
 
    *src/server/index.ts*
-   ```ts{3,6-10}
-   import express from 'express';
-   import { api } from './api';
-   import { expressjwt } from 'express-jwt';
+   ```ts{3,6-8}
+   //...
+
+   import session from "cookie-session";
    
    const app = express();
-   app.use(expressjwt({
-       secret: process.env['JWT_SECRET'] || "my secret",
-       credentialsRequired: false,
-       algorithms: ['HS256']
+   app.use(session({
+       secret: process.env['SESSION_SECRET'] || "my secret"
    }));
-   app.use(api);
 
-   app.listen(3002, () => console.log("Server started"));
+   //...
    ```
 
-   The `expressjwt` middleware verifies that the authentication token is valid, and extracts the user info from it to be used on the server.
+   The `cookie-session` middleware stores session data, digitally signed using the value of the `secret` property, in an `httpOnly` cookie, sent by the browser to all subsequent API requests.
 
-   `credentialsRequired` is set to `false` to allow unauthenticated API requests to reach Remult. We'll use Remult's decorators to define which resources are available for unauthenticated users and which resources require authentication.
-
-   The `algorithms` property must contain the algorithm used to sign the JWT (`HS256` is the default algorithm used by `jsonwebtoken`).
-
-3. Add the highlighted code to `common.ts`:
-
-   *src/common.ts*
-   ```ts{3,7-28}
-   import axios from 'axios';
-   import { Remult } from "remult";
-   import jwtDecode from 'jwt-decode';
-
-   export const remult = new Remult(axios);
-
-   const AUTH_TOKEN_KEY = "authToken";
-
-   export function setAuthToken(token: string | null) {
-      if (token) {
-         remult.setUser(jwtDecode(token));
-         sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-      }
-      else {
-         remult.setUser(undefined!);
-         sessionStorage.removeItem(AUTH_TOKEN_KEY);
-      }
-   }
-
-   // Initialize the auth token from session storage when the application loads
-   setAuthToken(sessionStorage.getItem(AUTH_TOKEN_KEY));
-
-   axios.interceptors.request.use(config => {
-      const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
-      if (token)
-         config.headers!["Authorization"] = "Bearer " + token;
-      return config;
-   });
-   ```
-
-   `setAuthToken` sends the decoded user information to Remult and store the token in local `sessionStorage`.
-
-   An `axios` interceptor is used to add the authorization token header to all API requests.
-
-4. Create a file `src/shared/AuthController.ts` and place the following code in it:
-
-   *src/shared/AuthController.ts*
+3. Create a file `src/server/auth.ts` for the `auth` express router and place the following code in it:
+   
+   *src/server/auth.ts*
    ```ts
-   import { BackendMethod } from 'remult';
+   import express, { Router } from "express";
 
-   export class AuthController {
-      @BackendMethod({ allowed: true })
-      static async signIn(username: string) {
-         const validUsers = [
-            { id: "1", name: "Jane", roles: [] },
-            { id: "2", name: "Steve", roles: [] }
-         ];
-         const user = validUsers.find(user => user.name === username);
+   export const auth = Router();
 
-         if (!user)
-            throw new Error("Invalid user, try 'Steve' or 'Jane'");
-         return (await import('jsonwebtoken')).sign(user, process.env['JWT_SECRET'] || "my secret");
-      }
-   }
+   auth.use(express.json());
+   
+   export const validUsers = [
+       { id: "1", name: "Jane", roles: [] },
+       { id: "2", name: "Steve", roles: [] },
+   ];
+
+   auth.post("/api/signIn", (req, res) => {
+       const user = validUsers.find((user) => user.name === req.body.username);
+       if (user) {
+           req.session!['user'] = user;
+           res.json(user);
+       } else {
+           res.status(404).json("Invalid user, try 'Steve' or 'Jane'");
+       }
+   });
+   
+   auth.post("/api/signOut", (req, res) => {
+       req.session!['user'] = null;
+       res.json("signed out");
+   });
+   
+   auth.get("/api/currentUser", (req, res) =>
+       res.json(req.session!['user'])
+   );
    ```
 
-   This (very) simplistic `signIn` function accepts a `username` argument, looks it up in a predefined dictionary of valid users, and returns a JWT string signed with a secret key. 
+   * The (very) simplistic `signIn` endpoint accepts a request body with a `username` property, looks it up in a predefined dictionary of valid users and, if found, sets the user's information to the `user` property of the request's `session`.
 
-   Since `jsonwebtoken` is used in a `BackendMethod` that is defined in shared code, it's important to exclude it from browser builds by using a dynamic import.
+   * The `signOut` endpoint clears the `user` value from the current session.
 
-::: warning JWT payload
-The payload of the JWT must contain an object which implements the Remult `UserInfo` interface, which consists of a string `id`, a string `name` and an array of string `roles`.
-:::
+   * The `currentUser` endpoint extracts the value of the current user from the session and returns it in the API response.
 
-5. Register the `AuthController` in the `controllers` array of the `options` object passed to `remultExpress()`.
+4. Register the `auth` router in the main server module.
+   
+   *src/server/index.ts*
+   ```ts{3,9}
+   //...
+
+   import { auth } from "./auth";
+   
+   const app = express();
+   app.use(session({
+       secret: process.env['TOKEN_SIGN_KEY'] || "my secret"
+   }));
+   app.use(auth);
+
+   //...
+   ```
+
+### Frontend setup
+
+1. Create a file `src/Auth.vue` and place the following `Auth` component code in it:
+
+   *src/Auth.vue*
+   ```vue
+   <script setup lang="ts">
+   import { onMounted, ref } from 'vue'
+   import type { UserInfo } from 'remult';
+   import App from './App.vue';
+   
+   const signInUsername = ref("");
+   const currentUser = ref<UserInfo>();
+   
+   const signIn = async () => {
+       const result = await fetch('/api/signIn', {
+           method: "POST",
+           headers: {
+               'Content-Type': 'application/json'
+           },
+           body: JSON.stringify({ username: signInUsername.value })
+       });
+       if (result.ok) {
+           currentUser.value = await result.json();
+           signInUsername.value = "";
+       }
+       else alert(await result.json());
+   }
+   const signOut = async () => {
+       await fetch('/api/signOut', {
+           method: "POST"
+       });
+       currentUser.value = undefined;
+   }
+   
+   onMounted(async () => {
+       currentUser.value = await fetch('/api/currentUser').then(r => r.json   ());
+   })
+   </script>
+   <template>
+       <header v-if="!currentUser">
+           <input v-model="signInUsername" placeholder="Username, try Steve    or Jane" />
+           <button @click="signIn()">Sign in</button>
+       </header>
+       <div v-else>
+           <header>
+               Hello {{ currentUser!.name }} <button @click="signOut()   ">Sign Out</button>
+           </header>
+           <App />
+       </div>
+   </template>
+
+   ```
+
+2. In the `main.vue` file, change the `rootComponent` to `Auth`.
+   
+   *src/main.ts*
+   ```ts{2,6}
+   import { createApp } from 'vue'
+   import Auth from './Auth.vue'
+   
+   import './assets/main.css'
+   
+   createApp(Auth).mount('#app')
+   ```
+
+### Connect Remult middleware
+
+Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
 
 *src/server/api.ts*
-```ts{4,8}
-import { remultExpress } from "remult/remult-express";
-import { Task } from "../shared/Task";
-import { TasksController } from "../shared/TasksController";
-import { AuthController } from "../shared/AuthController";
+```ts{5}
+//...
 
 export const api = remultExpress({
-   entities: [Task],
-   controllers: [TasksController, AuthController],
-   initApi: async remult => {
-      const taskRepo = remult.repo(Task);
-      if (await taskRepo.count() === 0) {
-            await taskRepo.insert([
-               { title: "Task a" },
-               { title: "Task b", completed: true },
-               { title: "Task c" },
-               { title: "Task d" },
-               { title: "Task e", completed: true }
-            ]);
-      }
-   }
-});   
-```
-
-6. Add a the highlighted code to the `App` component:
-
-*src/App.vue*
-```vue{4-5,40-54,58-67,82}
-<script setup lang="ts">
-import type { ErrorInfo } from 'remult';
-import { onMounted, ref } from 'vue'
-import { remult, setAuthToken } from './common';
-import { AuthController } from './shared/AuthController';
-import { Task } from './shared/Task';
-import { TasksController } from './shared/TasksController';
-
-const taskRepo = remult.repo(Task);
-const tasks = ref<(Task & { error?: ErrorInfo<Task> })[]>([]);
-const hideCompleted = ref(false);
-async function fetchTasks() {
-  if (!taskRepo.metadata.apiReadAllowed)
-    return;
-  tasks.value = await taskRepo.find({
-    orderBy: { completed: "asc" },
-    where: { completed: hideCompleted.value ? false : undefined }
-  });
-}
-async function saveTask(task: (Task & { error?: ErrorInfo<Task> })) {
-  try {
-    const savedTask = await taskRepo.save(task);
-    tasks.value = tasks.value.map(t => t === task ? savedTask : t);
-  } catch (error: any) {
-    alert(error.message);
-    task.error = error;
-  }
-}
-function addTask() {
-  tasks.value.push(new Task());
-}
-async function deleteTask(task: Task) {
-  await taskRepo.delete(task);
-  tasks.value = tasks.value.filter(t => t !== task);
-}
-async function setAll(completed: boolean) {
-  await TasksController.setAll(completed);
-  fetchTasks();
-}
-const username = ref('');
-const signIn = async () => {
-  try {
-    setAuthToken(await AuthController.signIn(username.value));
-    window.location.reload();
-  }
-  catch (error: any) {
-    alert(error.message);
-  }
-}
-
-const signOut = () => {
-  setAuthToken(null);
-  window.location.reload();
-}
-onMounted(() => fetchTasks())
-</script>
-<template>
-  <template v-if="!remult.authenticated()">
-    <p>
-      <input v-model="username" />
-      <button @click="signIn()">Sign in</button>
-    </p>
-  </template>
-  <template v-if="remult.authenticated()">
-    <p>
-      Hi {{ remult.user.name }} <button @click="signOut()">Sign out</button>
-    </p>
-    <input type="checkbox" v-model="hideCompleted" @change="fetchTasks()" /> Hide Completed {{ hideCompleted }}
-    <hr />
-    <div v-for="task in tasks">
-      <input type="checkbox" v-model="task.completed" />
-      <input v-model="task.title" />
-      {{ task.error?.modelState?.title }}
-      <button @click="saveTask(task)">Save</button>
-      <button @click="deleteTask(task)">Delete</button>
-    </div>
-    <button @click="addTask()">Add Task</button>
-    <div>
-      <button @click="setAll(true)">Set all as completed</button>
-      <button @click="setAll(false)">Set all as uncompleted</button>
-    </div>
-  </template>
-</template>
+    //...
+    getUser: request => request.session!['user']
+});
 ```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
@@ -337,14 +263,14 @@ export class Task {
 
 *src/shared/TasksController.ts*
 ```ts{3,6}
-import { Allow, BackendMethod, Remult } from "remult";
+import { Allow, BackendMethod, remult } from "remult";
 import { Task } from "./Task";
 import { Roles } from "./Roles";
 
 export class TasksController {
    @BackendMethod({ allowed: Roles.admin })
-   static async setAll(completed: boolean, remult?: Remult) {
-      const taskRepo = remult!.repo(Task);
+   static async setAll(completed: boolean) {
+      const taskRepo = remult.repo(Task);
 
       for (const task of await taskRepo.find()) {
             await taskRepo.save({ ...task, completed });
@@ -355,25 +281,19 @@ export class TasksController {
 
 4. Let's give the user *"Jane"* the `admin` role by modifying the `roles` array of her `validUsers` entry in the `signIn` function.
 
-*src/shared/AuthController.ts*
+*src/server/auth.ts*
 ```ts{2,8}
-import { BackendMethod } from 'remult';
-import { Roles } from './Roles';
+import express, { Router } from "express";
+import { Roles } from "../shared/Roles";
 
-export class AuthController {
-   @BackendMethod({ allowed: true })
-   static async signIn(username: string) {
-      const validUsers = [
-            { id: "1", name: "Jane", roles: [Roles.admin] },
-            { id: "2", name: "Steve", roles: [] }
-      ];
-      const user = validUsers.find(user => user.name === username);
+export const auth = Router();
+auth.use(express.json());
 
-      if (!user)
-            throw new Error("Invalid user, try 'Steve' or 'Jane'");
-      return (await import('jsonwebtoken')).sign(user, process.env['JWT_SECRET'] || "my secret");
-   }
-}
+export const validUsers = [
+    { id: "1", name: "Jane", roles: [Roles.admin] },
+    { id: "2", name: "Steve", roles: [] },
+];
+//...
 ```
 
 **Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**

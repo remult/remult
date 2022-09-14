@@ -1,5 +1,5 @@
-import { Remult, SqlDatabase, EntityMetadata, SqlCommand, SqlImplementation, SqlResult } from "https://cdn.skypack.dev/remult?dts";
-import { verifyStructureOfAllEntities } from "https://cdn.skypack.dev/remult/postgres/schema-builder?dts";
+import { Remult, SqlDatabase, EntityMetadata, SqlCommand, SqlImplementation, SqlResult } from "https://cdn.skypack.dev/remult@0.15.4?dts";
+import { verifyStructureOfAllEntities } from "https://cdn.skypack.dev/remult@0.15.4/postgres/schema-builder?dts";
 import { ClientOptions, ConnectionString, Pool } from "https://deno.land/x/postgres@v0.16.1/mod.ts";
 import { QueryObjectResult } from "https://deno.land/x/postgres@v0.16.1/query/query.ts";
 

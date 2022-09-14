@@ -8,7 +8,7 @@ Let's limit the number of fetched tasks to `20`.
 
 In the `fetchTasks` function, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-*src/app/app.component.ts*
+*src/app/todo/todo.component.ts*
 ```ts{3}
 async fetchTasks() {
    this.tasks = await this.taskRepo.find({
@@ -29,7 +29,7 @@ Uncompleted tasks are important and should appear above completed tasks in the t
 In the `fetchTasks` function, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
-*src/app/app.component.ts*
+*src/app/todo/todo.component.ts*
 ```ts{4}
 async fetchTasks() {
    this.tasks = await this.taskRepo.find({
@@ -45,9 +45,9 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 ## Toggle Display of Completed Tasks
 Let's allow the user to toggle the display of completed tasks, using server-side filtering.
 
-1. Add a `hideCompleted` field to the `AppComponent` class and Modify the `fetchTasks` method, and set the `where` property of the options argument of `find`:
+1. Add a `hideCompleted` field to the `TodoComponent` class and Modify the `fetchTasks` method, and set the `where` property of the options argument of `find`:
 
-*src/app/app.component.ts*
+*src/app/todo/todo.component.ts*
 ```ts{1,6}
 hideCompleted = false;
 async fetchTasks() {
@@ -67,17 +67,25 @@ Because the `completed` field is of type `boolean`, the argument is **compile-ti
 Explore the reference for a [comprehensive list of filtering options](../../docs/entityFilter.md).
 :::
 
-4. Add a `checkbox` input element immediately before the `tasks` div in `app.component.html`, bind its check state to the `hideCompleted` state, and add a `change` handler which calls `fetchTasks` when the value of the checkbox is changed.
+4. Add a `checkbox` input element immediately before the `tasks` div in `todo.component.html`, bind its check state to the `hideCompleted` state, and add a `change` handler which calls `fetchTasks` when the value of the checkbox is changed.
 
-*src/app/app.component.html*
-```html{1-3}
-<input type="checkbox" [(ngModel)]="hideCompleted" (change)="fetchTasks()" />
+*src/app/todo/todo.component.html*
+```html{1-6}
+<input
+    type="checkbox"
+    [(ngModel)]="hideCompleted"
+    (change)="fetchTasks()"
+>
 Hide Completed
-<hr />
-<div *ngFor="let task of tasks">
-  <input type="checkbox" [checked]="task.completed">
-  {{task.title}}
-</div>
+<main>
+    <div *ngFor="let task of tasks">
+        <input
+            type="checkbox"
+            [checked]="task.completed"
+        >
+        {{task.title}}
+    </div>
+</main>
 ```
 
 After the browser refreshes, a "Hide completed" checkbox appears above the task list. The user can toggle the display of uncompleted tasks using the checkbox.

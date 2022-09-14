@@ -157,7 +157,7 @@ export interface Repository<entityType> {
     */
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
-    /** Updates an item, based on it's `id`
+    /** Updates an item, based on its `id`
      * @example
      * taskRepo.update(task.id,{...task,completed:true})
     */

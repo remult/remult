@@ -50,7 +50,7 @@ export interface EntityOptions<entityType = any> {
    */
   defaultOrderBy?: EntityOrderBy<entityType>,
   /** An event that will be fired before the Entity will be saved to the database.
-  * If the `error` property of the entity's ref or any of it's fields will be set, the save will be aborted and an exception will be thrown.
+  * If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
   * this is the place to run logic that we want to run in any case before an entity is saved. 
   * @example
   * @Entity<Task>("tasks", {
