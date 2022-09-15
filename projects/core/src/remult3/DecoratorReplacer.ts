@@ -39,11 +39,11 @@ export function describeController<controllerType>(c: controllerType, key: strin
     Controller(key)(c);
     readDecoratorsDefinitions<controllerType>(fields, c);
 }
-type Decorator = (a: any, b: string, c?: any) => void;
-type Members<T> = T extends new (...args: any[]) => infer R ? { [K in keyof OmitEB<R>]?: Decorator } : never;
-type StaticMembers<T> = { [K in keyof T]?: Decorator };
+type Decorator<T = any> = (a: T, b: string, c?: any) => void;
+type Decorators<T> = T extends new (...args: any[]) => infer R ? { [K in keyof OmitEB<R>]?: Decorator } : never;
+type StaticDecorators<T> = { [K in keyof T]?: Decorator };
 
-type MembersAndStaticMembers<T> = Members<T> & { static?: StaticMembers<T> };
+type MembersAndStaticMembers<T> = Decorators<T> & { static?: StaticDecorators<T> };
 
 
 
@@ -64,3 +64,7 @@ export function describeBackendMethod<T>(cls: ClassType<T>, methodName: keyof T,
     Object.defineProperty(cls.prototype, methodName, prop);
 }
 
+export function describeClass<classType>(classType: classType, classDecorator: Decorator<classType>, members: Decorators<classType>, staticMembers: StaticDecorators<classType>) {
+    classDecorator(classType, undefined);
+    readDecoratorsDefinitions<classType>(members, classType);
+}

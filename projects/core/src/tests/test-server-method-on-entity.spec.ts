@@ -11,7 +11,7 @@ import { Filter } from '../filter/filter-interfaces';
 import { dWithPrefilter } from './dWithPrefilter';
 import { d } from './d';
 import { remult } from '../remult-proxy';
-import { describeEntity, describeBackendMethod } from '../remult3/DecoratorReplacer';
+import { describeEntity, describeBackendMethod, decorate } from '../remult3/DecoratorReplacer';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -131,6 +131,7 @@ describe("test Server method in entity", () => {
                 return this.name + isBackend();
             }
         }
+        decorate(myClass, Entity("asdfas",{}), {}, {});
         describeEntity(myClass, 'adHocEntity', {
             id: Fields.autoIncrement(),
             name: Fields.string(),
