@@ -1,10 +1,4 @@
-import { EntityOptions } from "../entity";
-import { ClassType } from "../../classType";
-import { Remult } from "../context";
 import { OmitEB } from "./remult3";
-import { BackendMethodOptions } from "../server-action";
-export declare function describeEntity<entityType>(c: entityType, key: string, fields: MembersAndStaticMembers<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]): void;
-export declare function describeController<controllerType>(c: controllerType, key: string, fields: MembersAndStaticMembers<controllerType>): void;
 declare type Decorator<T = any> = (a: T, b: string, c?: any) => void;
 declare type Decorators<T> = T extends new (...args: any[]) => infer R ? {
     [K in keyof OmitEB<R>]?: Decorator;
@@ -12,10 +6,5 @@ declare type Decorators<T> = T extends new (...args: any[]) => infer R ? {
 declare type StaticDecorators<T> = {
     [K in keyof T]?: Decorator;
 };
-declare type MembersAndStaticMembers<T> = Decorators<T> & {
-    static?: StaticDecorators<T>;
-};
-export declare function describeStaticBackendMethod<T>(cls: T, methodName: keyof T, options: BackendMethodOptions<any>, paramTypes?: any[]): void;
-export declare function describeBackendMethod<T>(cls: ClassType<T>, methodName: keyof T, options: BackendMethodOptions<any>, paramTypes?: any[]): void;
-export declare function describeClass<classType>(classType: classType, classDecorator: Decorator<classType>, members: Decorators<classType>, staticMembers: StaticDecorators<classType>): void;
+export declare function describeClass<classType>(classType: classType, classDecorator: ((x: any) => any) | undefined, members?: Decorators<classType> | undefined, staticMembers?: StaticDecorators<classType>): void;
 export {};

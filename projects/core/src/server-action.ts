@@ -135,6 +135,7 @@ export interface BackendMethodOptions<type> {
     queue?: boolean;
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
     blockUser?: boolean;
+    paramTypes?: any[];
 }
 
 export const actionInfo = {
@@ -195,6 +196,8 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             var originalMethod = descriptor.value;
 
             var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
+            if (options.paramTypes)
+                types = options.paramTypes;
             // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
             let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
@@ -225,6 +228,8 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
 
         var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
+        if (options.paramTypes)
+            types = options.paramTypes;
         let x = classHelpers.get(target.constructor);
         if (!x) {
             x = new ClassHelper();

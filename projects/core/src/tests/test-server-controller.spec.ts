@@ -5,7 +5,7 @@ import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3
 
 import { IdEntity } from '../id-entity';
 import { remult } from '../remult-proxy';
-import { describeBackendMethod, describeController, describeStaticBackendMethod } from '../remult3/DecoratorReplacer';
+import { describeClass } from '../remult3/DecoratorReplacer';
 
 
 @ValueListFieldType()
@@ -132,10 +132,18 @@ class testBasics {
         return z.toString();
     }
 }
-describeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecorator', { allowed: true });
-describeStaticBackendMethod(testBasics, 'staticBackendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
-describeBackendMethod(testBasics, 'backendMethodWithoutDecorator', { allowed: true });
-describeBackendMethod(testBasics, 'backendMethodWithoutDecoratorWithRemult', { allowed: true }, [Remult]);
+describeClass(testBasics, undefined, undefined, {
+    staticBackendMethodWithoutDecorator: BackendMethod({ allowed: true })
+});
+describeClass(testBasics, undefined, undefined, {
+    staticBackendMethodWithoutDecoratorWithRemult: BackendMethod({ allowed: true, paramTypes: [Remult] })
+});
+describeClass(testBasics, undefined, {
+    backendMethodWithoutDecorator: BackendMethod({ allowed: true })
+});
+describeClass(testBasics, undefined, {
+    backendMethodWithoutDecoratorWithRemult: BackendMethod({ allowed: true, paramTypes: [Remult] })
+});
 
 
 class Stam {
@@ -251,10 +259,10 @@ describe("test Server Controller basics", () => {
     it("new backend method syntax static method", async () => {
         expect(await testBasics.staticBackendMethodWithoutDecorator()).toBe(true);
     });
-    it("new backend method syntax", async () => {
+    it("new backend method syntax 1", async () => {
         expect(await new testBasics(undefined).backendMethodWithoutDecorator()).toBe(true);
     });
-    it("new backend method syntax", async () => {
+    it("new backend method syntax 2", async () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         const z = new testBasics(undefined);
         z.a = 'x';
@@ -390,7 +398,7 @@ describe("test Server Controller basics", () => {
                 return this.name + isBackend();
             }
         }
-        describeController(myClass, 'addHocController', {
+        describeClass(myClass, Controller('addHocController'), {
             id: Fields.autoIncrement(),
             name: Fields.string(),
             doSomething: BackendMethod({ allowed: true }),
@@ -408,12 +416,11 @@ describe("test Server Controller basics", () => {
                 return isBackend();
             }
         }
-        describeController(myClass, 'addHocController1', {
+        describeClass(myClass, Controller('addHocController1'), {
             id: Fields.autoIncrement(),
-            name: Fields.string(),
-            static: {
-                adHockDoSomething: BackendMethod({ allowed: true }),
-            }
+            name: Fields.string()
+        }, {
+            adHockDoSomething: BackendMethod({ allowed: true }),
         })
         expect(await myClass.adHockDoSomething()).toBe(true);
     });
