@@ -1,7 +1,8 @@
-import { SqlCommand } from "../sql-command";
+import { SqlCommand, SqlResult } from "../sql-command";
 import { Filter, FilterConsumer } from './filter-interfaces';
 import { FieldMetadata } from "../column-interfaces";
-import { EntityMetadata, OmitEB, Repository } from "../remult3/remult3";
+import { EntityFilter, EntityMetadata, FieldRef, OmitEB, Repository } from "../remult3/remult3";
+import { RepositoryImplementation } from "../remult3";
 
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
@@ -19,7 +20,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     return this.where;
   }
 
-  constructor(private r: SqlCommand, private nameProvider: dbNameProvider) { }
+  constructor(private r: SqlCommand, private nameProvider: EntityDbNamesBase) { }
 
   custom(key: string, customItem: any): void {
     throw new Error("Custom filter should be translated before it gets here");
@@ -51,16 +52,16 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 
   }
   isNull(col: FieldMetadata): void {
-    this.promises.push((async () => this.addToWhere(this.nameProvider.nameOf(col) + ' is null'))());
+    this.promises.push((async () => this.addToWhere(this.nameProvider.dbNameOf(col) + ' is null'))());
 
   }
   isNotNull(col: FieldMetadata): void {
-    this.promises.push((async () => this.addToWhere(this.nameProvider.nameOf(col) + ' is not null'))());
+    this.promises.push((async () => this.addToWhere(this.nameProvider.dbNameOf(col) + ' is not null'))());
   }
   isIn(col: FieldMetadata, val: any[]): void {
     this.promises.push((async () => {
       if (val && val.length > 0)
-        this.addToWhere(this.nameProvider.nameOf(col) + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(x))).join(",") + ")");
+        this.addToWhere(this.nameProvider.dbNameOf(col) + " in (" + val.map(x => this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(x))).join(",") + ")");
       else
         this.addToWhere('1 = 0 /*isIn with no values*/');
     })());
@@ -85,13 +86,13 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.promises.push((async () => {
-      this.addToWhere('lower (' + this.nameProvider.nameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
+      this.addToWhere('lower (' + this.nameProvider.dbNameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')");
     })());
   }
 
   private add(col: FieldMetadata, val: any, operator: string) {
     this.promises.push((async () => {
-      let x = this.nameProvider.nameOf(col) + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val));
+      let x = this.nameProvider.dbNameOf(col) + ' ' + operator + ' ' + this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val));
       this.addToWhere(x);
     })());
 
@@ -136,48 +137,74 @@ export class CustomSqlFilterBuilder {
   }
 }
 
-export async function getDbNameProvider(meta: EntityMetadata): Promise<dbNameProvider> {
 
-  var result = new dbNameProviderImpl();
-  for (const f of meta.fields) {
-    result.map.set(f.key, await f.getDbName());
-  }
-  result.entityName = await meta.getDbName();
-  return result;
-}
-export class dbNameProviderImpl {
 
-  map = new Map<string, string>();
-  nameOf(field: FieldMetadata<any>) {
-    return this.map.get(field.key);
-  }
-  entityName: string;
-  isDbReadonly(x: FieldMetadata) {
-    return (x.dbReadOnly || x.isServerExpression || this.nameOf(x) != x.options.dbName)
-  }
-}
-export interface dbNameProvider {
-  nameOf(field: FieldMetadata<any>): string;
-  entityName: string;
-  isDbReadonly(x: FieldMetadata): boolean;
-
+export function isDbReadonly<entityType>(field: FieldMetadata, dbNames: EntityDbNames<entityType>) {
+  return (field.dbReadOnly || field.isServerExpression || dbNames.dbNameOf(field) != field.options.dbName)
 }
 
-export declare type EntityDbNames<entityType> = {
-  [Properties in keyof Required<OmitEB<entityType>>]: string
-} & {
+export declare type EntityDbNamesBase = {
   $entityName: string,
+  dbNameOf(field: FieldMetadata<any> | string): string;
   toString(): string
 }
-export async function getEntityDbNames<entityType>(repo: Repository<entityType>): Promise<EntityDbNames<entityType>> {
-  const p = await getDbNameProvider(repo.metadata);
-  const $entityName = p.entityName
-  const result: any = {
-    $entityName,
-    toString: () => $entityName
+export declare type EntityDbNames<entityType> = {
+  [Properties in keyof Required<OmitEB<entityType>>]: string
+} & EntityDbNamesBase
+
+
+export async function dbNamesOf<entityType>(repo: Repository<entityType> | EntityMetadata<entityType>): Promise<EntityDbNames<entityType>> {
+  var meta: EntityMetadata;
+  if ((repo as Repository<entityType>).metadata)
+    meta = (repo as Repository<entityType>).metadata;
+  else meta = repo as EntityMetadata;
+
+
+  const result: EntityDbNamesBase = {
+    $entityName: await meta.getDbName(),
+    toString: () => result.$entityName,
+    dbNameOf: (field: FieldMetadata | string) => {
+      var key: string;
+      if (typeof field === "string")
+        key = field;
+      else key = field.key;
+      return result[key]
+    }
   };
-  for (const field of repo.metadata.fields) {
-    result[field.key] = p.nameOf(field)
+  for (const field of meta.fields) {
+    result[field.key] = await field.getDbName()
   }
-  return result;
+  return result as EntityDbNames<entityType>;
+}
+export async function sqlCondition<entityType>(
+  repo: Repository<entityType>,
+  condition: EntityFilter<entityType>,
+  sqlCommand?: SqlCommand) {
+  if (!sqlCommand) {
+    sqlCommand = new myDummySQLCommand();
+  }
+  var b = new FilterConsumerBridgeToSqlRequest(sqlCommand, await dbNamesOf(repo.metadata))
+  b._addWhere = false;
+  await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+  return await b.resolveWhere();
+}
+class myDummySQLCommand implements SqlCommand {
+
+  execute(sql: string): Promise<SqlResult> {
+    throw new Error("Method not implemented.");
+  }
+  addParameterAndReturnSqlToken(val: any): string {
+    if (val === null)
+      return "null";
+    if (val instanceof Date)
+      val = val.toISOString();
+    if (typeof (val) == "string") {
+      if (val == undefined)
+        val = '';
+      return '\'' + val.replace(/'/g, '\'\'') + '\'';
+    }
+    return val.toString();
+  }
+
+
 }

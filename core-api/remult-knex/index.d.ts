@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 import { Filter, FilterConsumer } from "../src/filter/filter-interfaces";
-import { dbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
+import { EntityDbNamesBase } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { Remult } from "../src/context";
 import { EntityFilter, EntityMetadata, Repository } from "../src/remult3";
 import { DataProvider, EntityDataProvider } from '../src/data-interfaces';
@@ -21,7 +21,7 @@ export declare class FilterConsumerBridgeToKnexRequest implements FilterConsumer
     promises: Promise<void>[];
     result: ((builder: Knex.QueryBuilder) => void)[];
     resolveWhere(): Promise<((builder: Knex.QueryBuilder<any, any>) => void)[]>;
-    constructor(nameProvider: dbNameProvider);
+    constructor(nameProvider: EntityDbNamesBase);
     custom(key: string, customItem: any): void;
     or(orElements: Filter[]): void;
     isNull(col: FieldMetadata): void;

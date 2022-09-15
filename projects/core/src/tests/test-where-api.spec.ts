@@ -15,7 +15,7 @@ import { DataApi } from '../data-api';
 
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider';
 import { ClassType } from '../../classType';
-import { CustomSqlFilterBuilder, getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
+import { CustomSqlFilterBuilder, dbNamesOf } from '../filter/filter-consumer-bridge-to-sql-request';
 import { entityForCustomFilter } from './entityForCustomFilter';
 
 
@@ -30,7 +30,7 @@ describe("test where stuff", () => {
         expect(await repo.count({ id: [undefined] })).toBe(0);
         expect(await repo.count({ id: [1, undefined, 3] })).toBe(2);
     });
-    
+
     it("test and", async () => {
         expect(await repo.count({ categoryName: 'yoni' })).toBe(1);
         expect(await repo.count({ categoryName: { $gte: 'yoni' } })).toBe(1);
@@ -48,7 +48,7 @@ describe("test where stuff", () => {
         expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(0);
     });
     it("test in and", async () => {
-        const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: [1,2] }, { id: [2] }] }).toJson();
+        const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: [1, 2] }, { id: [2] }] }).toJson();
         console.log(json);
         expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(1);
     });
@@ -141,8 +141,8 @@ describe("custom filter", () => {
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        const e = await getDbNameProvider(c.metadata);
-        expect(await (c.count(SqlDatabase.customFilter(async x => x.sql = e.nameOf(c.metadata.fields.id) + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
+        const e = await dbNamesOf(c.metadata);
+        expect(await (c.count(SqlDatabase.customFilter(async x => x.sql = e.id + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
         expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
@@ -171,16 +171,17 @@ describe("custom filter", () => {
         let ok = new Done();
         let z = new RestDataProvider(() => ({
             httpClient: {
-            delete: ()=>undefined,
-            get: async (url) => {
-                ok.ok();
-                expect(url).toBe('/entityForCustomFilter?__action=count&%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D');
-                return { count: 0 }
+                delete: () => undefined,
+                get: async (url) => {
+                    ok.ok();
+                    expect(url).toBe('/entityForCustomFilter?__action=count&%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D');
+                    return { count: 0 }
 
-            },
-            post: ()=>undefined,
-            put: ()=>undefined,
-        },url:''}));
+                },
+                post: () => undefined,
+                put: () => undefined,
+            }, url: ''
+        }));
         let c = new Remult();
         c.dataProvider = (z);
         await c.repo(entityForCustomFilter).count(entityForCustomFilter.filter({ oneAndThree: true }));

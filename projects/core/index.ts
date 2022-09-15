@@ -40,6 +40,7 @@ export {
     Paginator,
     CaptionTransformer
 } from './src/remult3';
+
 export { EntityOptions } from './src/entity';
 export {
     DataProvider,
@@ -72,7 +73,7 @@ export {
 export {
     SqlDatabase,
 } from './src/data-providers/sql-database';//V
-export { CustomSqlFilterObject, CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
+export { CustomSqlFilterObject, CustomSqlFilterBuilder, dbNamesOf,sqlCondition } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
 
@@ -96,7 +97,7 @@ export {
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-    ExternalHttpProvider ,
+    ExternalHttpProvider,
     Unobserve,
     UserInfo
 } from './src/context';

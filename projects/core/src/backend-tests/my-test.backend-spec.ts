@@ -9,7 +9,7 @@ import { entityWithValidations } from "../shared-tests/entityWithValidations";
 import { PostgresDataProvider } from "../../postgres";
 import { MongoDataProvider, mongoCondition } from "../../remult-mongo";
 import { SqlDatabase } from "../data-providers/sql-database";
-import { getEntityDbNames } from "../filter/filter-consumer-bridge-to-sql-request";
+import { dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 config();
 
 
@@ -123,7 +123,7 @@ testMongo("work with native mongo", async ({ remult, createEntity }) => {
 testKnexPGSqlImpl("knex with filter", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const knex = KnexDataProvider.getRawDb(remult);
-    const e = await getEntityDbNames(repo);
+    const e = await dbNamesOf(repo);
     const r = await knex(e.$entityName).count().where(await knexCondition(repo, { myId: [1, 3] }));
     expect(r[0].count).toBe('2');
 }, false);

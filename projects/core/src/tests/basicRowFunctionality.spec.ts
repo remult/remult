@@ -28,7 +28,7 @@ import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
-import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import {  FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
 
@@ -1476,7 +1476,7 @@ describe("compound id", () => {
     let ctx = new Remult();
     let repo = ctx.repo(CompoundIdEntity);
     let id = repo.metadata.idMetadata.field as CompoundIdField;
-    var n = await getDbNameProvider(repo.metadata)
+    var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: x => x,
       execute: undefined
@@ -1495,7 +1495,7 @@ describe("compound id", () => {
     let ctx = new Remult();
     let repo = ctx.repo(CompoundIdEntity);
     let id = repo.metadata.idMetadata.field as CompoundIdField;
-    var n = await getDbNameProvider(repo.metadata)
+    var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
       addParameterAndReturnSqlToken: x => x,
       execute: undefined

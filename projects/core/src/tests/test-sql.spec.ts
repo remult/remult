@@ -5,7 +5,7 @@ import { Categories } from './remult-3-entities';
 import { Entity, EntityFilter, Fields, OmitEB, Repository, RepositoryImplementation } from '../remult3';
 import { testWebSqlImpl } from './frontend-database-tests-setup.spec';
 import { entityWithValidations } from '../shared-tests/entityWithValidations';
-import { EntityDbNames, FilterConsumerBridgeToSqlRequest, getDbNameProvider, getEntityDbNames } from '../filter/filter-consumer-bridge-to-sql-request';
+import { EntityDbNames, FilterConsumerBridgeToSqlRequest, dbNamesOf, sqlCondition } from '../filter/filter-consumer-bridge-to-sql-request';
 import { SqlCommand, SqlResult } from '../sql-command';
 import { Filter } from '../filter/filter-interfaces';
 
@@ -135,14 +135,14 @@ testWebSqlImpl("work with native sql2", async ({ remult, createEntity }) => {
 }, false);
 testWebSqlImpl("test getEntityDbNames", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const e = await getEntityDbNames(repo);
+    const e = await dbNamesOf(repo);
     expect(
         `select ${e.myId}, ${e.name} from ${e}`)
         .toBe("select myId, name from entityWithValidations")
 }, false);
 testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const e = await getEntityDbNames(repo);
+    const e = await dbNamesOf(repo);
     expect(
         `select ${e.myId}, ${e.name} from ${e} where ${await sqlCondition(repo,
             {
@@ -152,35 +152,4 @@ testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
 }, false);
 
 
-async function sqlCondition<entityType>(
-    repo: Repository<entityType>,
-    condition: EntityFilter<entityType>,
-    sqlCommand?: SqlCommand) {
-    if (!sqlCommand) {
-        sqlCommand = new myDummySQLCommand();
-    }
-    var b = new FilterConsumerBridgeToSqlRequest(sqlCommand, await getDbNameProvider(repo.metadata))
-    b._addWhere = false;
-    await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
-    return await b.resolveWhere();
-}
-class myDummySQLCommand implements SqlCommand {
 
-    execute(sql: string): Promise<SqlResult> {
-        throw new Error("Method not implemented.");
-    }
-    addParameterAndReturnSqlToken(val: any): string {
-        if (val === null)
-            return "null";
-        if (val instanceof Date)
-            val = val.toISOString();
-        if (typeof (val) == "string") {
-            if (val == undefined)
-                val = '';
-            return '\'' + val.replace(/'/g, '\'\'') + '\'';
-        }
-        return val.toString();
-    }
-
-
-}

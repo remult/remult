@@ -109,9 +109,8 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     }, {
-      entityName: '',
-      nameOf: () => 'col',
-      isDbReadonly: () => false
+      $entityName: '',
+      dbNameOf: () => 'col'
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
@@ -122,9 +121,8 @@ describe("grid filter stuff", () => {
       addParameterAndReturnSqlToken: () => "",
       execute: () => { throw "rr" }
     }, {
-      entityName: '',
-      nameOf: () => 'col',
-      isDbReadonly: () => false
+      $entityName: '',
+      dbNameOf: () => 'col'
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");

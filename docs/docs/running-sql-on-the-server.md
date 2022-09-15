@@ -14,7 +14,7 @@ This can help if you want to switch sql database sometimes in the future.
 ```ts
 const repo = remult.repo(Task);
 const sql = SqlDatabase.getRawDb(remult);
-const r = await sql.execute("select count(*) as c from " + repo.metadata.options.dbName!);
+const r = await sql.execute("select count(*) as c from " +  repo.metadata.options.dbName!);
 console.log(r.rows[0].c);
 ```
 
@@ -93,9 +93,9 @@ Sometimes in our sql, we may want to use EntityFilters as sql filters, we can us
 const repo = remult.repo(Task);
 const t = await getEntityDbNames(repo);
 const sql = SqlDatabase.getRawDb(remult!);
-console.table(await 
+console.table(await command.execute(
 `select ${t.title}, ${t.completed} from ${t.$entityName}
-    where ${await sqlCondition(repo, { id: [1, 3] })}}`)
+    where ${await sqlCondition(repo, { id: [1, 3] })}}`))
 ```
 
 ### Knex

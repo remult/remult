@@ -1,7 +1,7 @@
 
 import knex, { Knex } from 'knex';
 import { customDatabaseFilterToken, Filter, FilterConsumer } from "../src/filter/filter-interfaces";
-import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
+import { EntityDbNames, dbNamesOf, isDbReadonly, EntityDbNamesBase } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities, Remult } from "../src/context";
 
 import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata, Repository, RepositoryImplementation } from "../src/remult3";
@@ -62,7 +62,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         where.__applyToConsumer(br);
         let r = await br.resolveWhere();
         const result = (
-            await this.knex(e.entityName)
+            await this.knex(e.$entityName)
                 .count().where(b => r.forEach(w => w(b))));
         var row = result[0];
         for (const key in row) {
@@ -81,11 +81,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
             }
             else {
-                cols.push(e.nameOf(x));
+                cols.push(e.dbNameOf(x));
                 colKeys.push(x);
             }
         }
-        let query = this.knex(e.entityName).select(cols);
+        let query = this.knex(e.$entityName).select(cols);
         if (options?.where) {
             const br = new FilterConsumerBridgeToKnexRequest(e);
             options.where.__applyToConsumer(br);
@@ -99,7 +99,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         if (options.orderBy) {
 
             query = query.orderBy(options.orderBy.Segments.map(s => ({
-                column: e.nameOf(s.field),
+                column: e.dbNameOf(s.field),
                 order: s.isDescending ? "desc" : "asc"
             })));
         }
@@ -132,7 +132,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
     }
     async init() {
-        return await getDbNameProvider(this.entity);
+        return await dbNamesOf(this.entity) as EntityDbNamesBase;
     }
     async update(id: any, data: any): Promise<any> {
         const e = await this.init();
@@ -147,12 +147,12 @@ class KnexEntityDataProvider implements EntityDataProvider {
         let updateObject = {};
         for (const x of this.entity.fields) {
 
-            if (e.isDbReadonly(x)) { }
+            if (isDbReadonly(x, e)) { }
 
             else if (data[x.key] !== undefined) {
                 let v = x.valueConverter.toDb(data[x.key]);
                 if (v !== undefined) {
-                    let key = await e.nameOf(x);
+                    let key = await e.dbNameOf(x);
                     updateObject[key] = v;
                 }
             }
@@ -160,7 +160,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
 
         let where = await f.resolveWhere();
-        await this.knex(e.entityName).update(updateObject).where(b => where.forEach(w => w(b)));
+        await this.knex(e.$entityName).update(updateObject).where(b => where.forEach(w => w(b)));
         return this.find({ where: Filter.fromEntityFilter(this.entity, resultFilter) }).then(y => y[0]);
     }
     async delete(id: any): Promise<void> {
@@ -168,7 +168,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         let f = new FilterConsumerBridgeToKnexRequest(e);
         Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
         let where = await f.resolveWhere();
-        await this.knex(e.entityName).delete().where(b => where.forEach(w => w(b)));
+        await this.knex(e.$entityName).delete().where(b => where.forEach(w => w(b)));
 
     }
     async insert(data: any): Promise<any> {
@@ -181,18 +181,18 @@ class KnexEntityDataProvider implements EntityDataProvider {
         let insertObject = {};
         for (const x of this.entity.fields) {
 
-            if (e.isDbReadonly(x)) { }
+            if (isDbReadonly(x, e)) { }
 
             else {
                 let v = x.valueConverter.toDb(data[x.key]);
                 if (v != undefined) {
-                    let key = await e.nameOf(x);
+                    let key = await e.dbNameOf(x);
                     insertObject[key] = v;
                 }
             }
         }
 
-        let insert = this.knex(e.entityName).insert(insertObject);
+        let insert = this.knex(e.$entityName).insert(insertObject);
         if (isAutoIncrement(this.entity.idMetadata.field)) {
             let result = await insert.returning(this.entity.idMetadata.field.key);
             let newId = result[0].id;
@@ -223,7 +223,7 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         return this.result;
     }
 
-    constructor(private nameProvider: dbNameProvider) { }
+    constructor(private nameProvider: EntityDbNamesBase) { }
 
     custom(key: string, customItem: any): void {
         throw new Error("Custom filter should be translated before it gets here");
@@ -254,14 +254,14 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         })());
     }
     isNull(col: FieldMetadata): void {
-        this.result.push(b => b.whereNull(this.nameProvider.nameOf(col)));
+        this.result.push(b => b.whereNull(this.nameProvider.dbNameOf(col)));
     }
     isNotNull(col: FieldMetadata): void {
-        this.result.push(b => b.whereNotNull(this.nameProvider.nameOf(col)));
+        this.result.push(b => b.whereNotNull(this.nameProvider.dbNameOf(col)));
     }
     isIn(col: FieldMetadata, val: any[]): void {
         this.result.push(knex =>
-            knex.whereIn(this.nameProvider.nameOf(col), val.map(x => col.valueConverter.toDb(x))))
+            knex.whereIn(this.nameProvider.dbNameOf(col), val.map(x => col.valueConverter.toDb(x))))
     }
     isEqualTo(col: FieldMetadata, val: any): void {
         this.add(col, val, "=");
@@ -285,7 +285,7 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
 
         this.result.push(b => b.whereRaw(
-            'lower (' + this.nameProvider.nameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
+            'lower (' + this.nameProvider.dbNameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
         this.promises.push((async () => {
 
         })());
@@ -293,7 +293,7 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
     private add(col: FieldMetadata, val: any, operator: string) {
 
-        this.result.push(b => b.where(this.nameProvider.nameOf(col), operator, col.valueConverter.toDb(val)))
+        this.result.push(b => b.where(this.nameProvider.dbNameOf(col), operator, col.valueConverter.toDb(val)))
 
 
 
@@ -316,7 +316,7 @@ export async function knexCondition<entityType>(
     repo: Repository<entityType>,
     condition: EntityFilter<entityType>) {
 
-    var b = new FilterConsumerBridgeToKnexRequest(await getDbNameProvider(repo.metadata))
+    var b = new FilterConsumerBridgeToKnexRequest(await dbNamesOf(repo.metadata))
     b._addWhere = false;
     await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
     let r = await b.resolveWhere();
@@ -344,16 +344,16 @@ export class KnexSchemaBuilder {
         }
     }
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
-        const e = await getDbNameProvider(entity);
-        if (! await this.knex.schema.hasTable(e.entityName)) {
+        const e: EntityDbNamesBase = await dbNamesOf(entity);
+        if (! await this.knex.schema.hasTable(e.$entityName)) {
             let cols = new Map<FieldMetadata, { name: string, readonly: boolean }>();
             for (const f of entity.fields) {
                 cols.set(f, {
-                    name: e.nameOf(f),
-                    readonly: e.isDbReadonly(f)
+                    name: e.dbNameOf(f),
+                    readonly: isDbReadonly(f, e)
                 });
             }
-            await logSql(this.knex.schema.createTable(e.entityName,
+            await logSql(this.knex.schema.createTable(e.$entityName,
                 b => {
                     for (const x of entity.fields) {
                         if (!cols.get(x).readonly || isAutoIncrement(x)) {
@@ -376,16 +376,16 @@ export class KnexSchemaBuilder {
 
 
     async addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)) {
-        let e = await getDbNameProvider(entity);
-        if (e.isDbReadonly(c(entity)))
+        let e :EntityDbNamesBase= await dbNamesOf(entity);
+        if (isDbReadonly(c(entity), e))
             return;
 
 
         let col = c(entity);
-        let colName = e.nameOf(col);
+        let colName = e.dbNameOf(col);
 
-        if (!await this.knex.schema.hasColumn(e.entityName, colName)) {
-            await this.knex.schema.alterTable(e.entityName, b => {
+        if (!await this.knex.schema.hasColumn(e.$entityName, colName)) {
+            await this.knex.schema.alterTable(e.$entityName, b => {
                 buildColumn(col, colName, b);
             });
         }
@@ -394,10 +394,10 @@ export class KnexSchemaBuilder {
 
     }
     async verifyAllColumns<T extends EntityMetadata>(entity: T) {
-        let e = await getDbNameProvider(entity);
+        let e = await dbNamesOf(entity);
         try {
             for (const col of entity.fields) {
-                if (!e.isDbReadonly(col)) {
+                if (isDbReadonly(col, e)) {
                     await this.addColumnIfNotExist(entity, () => col);
                 }
             }
