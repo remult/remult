@@ -9,6 +9,8 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    *pages/index.tsx*
    ```ts
    const setAll = async (completed: boolean) => {
+      const taskRepo = remult.repo(Task);
+
       for (const task of await taskRepo.find()) {
          await taskRepo.save({ ...task, completed });
       }
@@ -41,13 +43,13 @@ A simple way to prevent this is to expose an API endpoint for `setAll` requests,
 
 *src/shared/TasksController.ts*
 ```ts
-import { BackendMethod, Remult } from "remult";
+import { BackendMethod, remult } from "remult";
 import { Task } from "./Task";
 
 export class TasksController {
    @BackendMethod({ allowed: true })
-   static async setAll(completed: boolean, remult?: Remult) {
-      const taskRepo = remult!.repo(Task);
+   static async setAll(completed: boolean) {
+      const taskRepo = remult.repo(Task);
 
       for (const task of await taskRepo.find()) {
          await taskRepo.save({ ...task, completed });
@@ -59,30 +61,16 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 
 The optional `remult` argument of the static `setAll` function is intentionally omitted in the client-side calling code. In the server-side, Remult injects `@BackendMethod`-decorated functions with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
 
-2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
+2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `createRemultServer()`, in the server's `api` module:
 
 *src/server/api.ts*
-```ts{3,7}
-import { createRemultServer } from "remult/server";
-import { Task } from "../shared/Task";
+```ts{2,6}
+//...
 import { TasksController } from '../shared/TasksController';
 
-
 export const api = createRemultServer({
-    controllers: [TasksController],
-    entities: [Task],
-    initApi: async remult => {
-        const taskRepo = remult.repo(Task);
-        if (await taskRepo.count() === 0) {
-            await taskRepo.insert([
-                { title: "Task a" },
-                { title: "Task b", completed: true },
-                { title: "Task c" },
-                { title: "Task d" },
-                { title: "Task e", completed: true }
-            ]);
-        }
-    }
+   //...
+   controllers: [TasksController]
 })
 ```
 

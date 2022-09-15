@@ -6,7 +6,7 @@ Remult provides a flexible mechanism that enables placing **code-based authoriza
 
 **Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism, and only required to provide Remult with an object which implements the Remult `UserInfo` interface.
 
-In this tutorial, we'll use a [cookie-session](https://www.npmjs.com/package/cookie-session) authentication. The `user` property of the session will be set by the API server upon a successful simplistic sign-in (based on username without password).
+In this tutorial, we'll use `Express`'s [cookie-session](https://expressjs.com/en/resources/middleware/cookie-session.html) middleware to store an authenticated user's session within a cookie. The `user` property of the session will be set by the API server upon a successful simplistic sign-in (based on username without password).
 
 ## Tasks CRUD Requires Sign-in
 This rule is implemented within the `Task` `@Entity` decorator, by modifying the value of the `allowApiCrud` property.
@@ -47,8 +47,7 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 ## User Authentication
 Let's add a sign-in area to the todo app, with an `input` for typing in a `username` and a sign-in `button`. The app will have two valid `username` values - *"Jane"* and *"Steve"*. After a successful sign-in, the sign-in area will be replaced by a "Hi [username]" message.
 
-In this section, we'll be using the following packages:
-* [cookie-session](cookie-session) to store the signed in user information
+### Backend setup
 
 1. Open a terminal and run the following command to install the required packages:
    
@@ -57,37 +56,39 @@ npm i cookie-session
 npm i --save-dev @types/cookie-session
 ```
 
-2. Modify the main server module `index.ts` to use the `cookie-session` authentication Express middleware. 
+2. Modify the main server module `index.ts` to use the `cookie-session` Express middleware. 
 
    *src/server/index.ts*
    ```ts{3,6-8}
-   import express from "express";
-   import { api } from "./api";
+   //...
+
    import session from "cookie-session";
    
    const app = express();
    app.use(session({
        secret: process.env['SESSION_SECRET'] || "my secret"
    }));
-   app.use(api);
-   app.listen(3002, () => console.log("Server started"));
+
+   //...
    ```
 
-   The `cookie-session` middleware users cookies to manage a session, and requires a `secret` to verify that the info wasn't tempered with.
+   The `cookie-session` middleware stores session data, digitally signed using the value of the `secret` property, in an `httpOnly` cookie, sent by the browser to all subsequent API requests.
 
-3. Create a file `src/server/auth.ts` and place the following code in it:
+3. Create a file `src/server/auth.ts` for the `auth` express router and place the following code in it:
    
    *src/server/auth.ts*
    ```ts
    import express, { Router } from "express";
 
    export const auth = Router();
+
    auth.use(express.json());
    
    export const validUsers = [
        { id: "1", name: "Jane", roles: [] },
        { id: "2", name: "Steve", roles: [] },
    ];
+
    auth.post("/api/signIn", (req, res) => {
        const user = validUsers.find((user) => user.name === req.body.username);
        if (user) {
@@ -108,18 +109,18 @@ npm i --save-dev @types/cookie-session
    );
    ```
 
-   This (very) simplistic `signIn` function accepts a `username` argument, looks it up in a predefined dictionary of valid users and if found sets it to the `user` property of the request's `session`.
-   
-   
-   **This is a good place to note that with remult you are not bound to using Backend method, and can use standard express routes as we do here**
+   * The (very) simplistic `signIn` endpoint accepts a request body with a `username` property, looks it up in a predefined dictionary of valid users and, if found, sets the user's information to the `user` property of the request's `session`.
 
-4. In the `src/server/index.ts` register the `auth` route.
+   * The `signOut` endpoint clears the `user` value from the current session.
+
+   * The `currentUser` endpoint extracts the value of the current user from the session and returns it in the API response.
+
+4. Register the `auth` router in the main server module.
    
    *src/server/index.ts*
-   ```ts{4,10}
-   import express from "express";
-   import { api } from "./api";
-   import session from "cookie-session";
+   ```ts{3,9}
+   //...
+
    import { auth } from "./auth";
    
    const app = express();
@@ -127,39 +128,14 @@ npm i --save-dev @types/cookie-session
        secret: process.env['TOKEN_SIGN_KEY'] || "my secret"
    }));
    app.use(auth);
-   app.use(api);
-   app.listen(3002, () => console.log("Server started"));
+
+   //...
    ```
 
-5. In the `src/server/api.ts` set the `getUser` method to instruct remult on how to get the current user.
-   
-   *src/server/api.ts*
-   ```ts{9}
-   import { remultExpress } from 'remult/remult-express';
-   import { Task } from '../shared/Task';
-   import { remult } from 'remult';
-   import { TasksController } from '../shared/TasksController';
-   
-   export const api = remultExpress({
-       entities: [Task],
-       controllers: [TasksController],
-       getUser: request => request.session!['user'],
-       initApi: async () => {
-           const taskRepo = remult.repo(Task);
-           if (await taskRepo.count() === 0) {
-               await taskRepo.insert([
-                   { title: "Task a" },
-                   { title: "Task b", completed: true },
-                   { title: "Task c" },
-                   { title: "Task d" },
-                   { title: "Task e", completed: true }
-               ]);
-           }
-       }
-   });
-   ```
+### Frontend setup
 
-6. Create a file `src/Auth.tsx` and place the following code in it
+1. Create a file `src/Auth.tsx` and place the following `Auth` component code in it:
+
    *src/Auth.tsx*
    ```ts
    import { useEffect, useState } from "react";
@@ -213,7 +189,9 @@ npm i --save-dev @types/cookie-session
    }
    export default Auth;
    ```
-7. In the `main.tsx` file, wrap the `App` component with the `Auth` component
+
+2. In the `main.tsx` file, wrap the `App` component with the `Auth` component.
+   
    *src/main.tsx*
    ```ts{4,9-11}
    import React from 'react'
@@ -230,6 +208,20 @@ npm i --save-dev @types/cookie-session
      </React.StrictMode>
    )
    ```
+
+### Connect Remult middleware
+
+Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
+
+*src/server/api.ts*
+```ts{5}
+//...
+
+export const api = remultExpress({
+    //...
+    getUser: request => request.session!['user']
+});
+```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
 
@@ -312,6 +304,7 @@ export const validUsers = [
     { id: "1", name: "Jane", roles: [Roles.admin] },
     { id: "2", name: "Steve", roles: [] },
 ];
+//...
 ```
 
 **Sign in to the app as *"Steve"* to test that the actions restricted to `admin` users are not allowed. :lock:**

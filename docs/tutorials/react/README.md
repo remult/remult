@@ -23,10 +23,10 @@ You can either **use a starter project** to speed things up, or go through the *
 
 ## Option 1: Clone the Starter Project
 
-1. Clone the *remult-react-todo* repository from GitHub and install its dependencies.
+1. Clone the *react-vite-express-starter* repository from GitHub and install its dependencies.
 
 ```sh
-git clone https://github.com/remult/remult-react-todo.git
+git clone https://github.com/remult/react-vite-express-starter.git remult-react-todo
 cd remult-react-todo
 npm install
 ```
@@ -38,33 +38,24 @@ npm install
 npm run dev
 ```
 
-The default React app main screen should be displayed.
+The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 ## Option 2: Step-by-step Setup
 
-### Create a React project
+### Create a React project using Vite
 Create the new React project.
 ```sh
-npm create vite remult-react-todo -- --template react-ts
-```
-
-::: warning Need to install the following packages:
-If you are running create-vite for the first time, you'll get the following prompt, simply answer **y**es
-```sh
-Need to install the following packages:
-  create-vite@latest
-Ok to proceed? (y) y
-```
-:::
-
-Once completed, run:
-```sh
+npm create -y vite@latest remult-react-todo -- --template react-ts
 cd remult-react-todo
 ```
 
-In this tutorial, we'll be using the root folder created by `React` as the root folder for our server project as well.
+::: warning Run into issues scaffolding the Vite project?
+See [Vite documentation](https://vitejs.dev/guide/#scaffolding-your-first-vite-project) for help.
+:::
+
+In this tutorial, we'll be using the root folder created by `Vite` as the root folder for our server project as well.
 ### Install required packages
 We need `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the React dev server from a single command.
 ```sh
@@ -90,7 +81,7 @@ The starter API server TypeScript project contains a single module that initiali
 }
 ```
 
-3. Create a `server` folder under the `src/` folder created by Create React App.
+3. Create a `server` folder under the `src/` folder created by Vite.
 
 4. Create an `index.ts` file in the `src/server/` folder with the following code:
 
@@ -103,7 +94,18 @@ const app = express();
 app.listen(3002, () => console.log("Server started"));
 ```
 
-5. Remove `"type": "module"` entry from the `package.json` 
+::: warning Important
+Our server Node.js project is using the CommonJS module system.
+
+Therefore, it is import to **remove the `"type": "module"` entry from the `package.json` file** created by Vite.
+
+*package.json*
+```json
+"type": "module", // <- remove this
+```
+
+Don't worry, this does not cause any side-effects.
+:::
 
 ### Bootstrap Remult in the back-end
 Remult is loaded in the back-end as an `Express middleware`.
@@ -143,29 +145,21 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 "experimentalDecorators": true
 ```
 
-#### Proxy API requests from vite to the API server
+#### Proxy API requests from Vite dev server to the API server
 The react app created in this tutorial is intended to be served from the same domain as its API. 
 However, for development, the API server will be listening on `http://localhost:3002`, while the react app is served from the default `http://localhost:5173`. 
 
-We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of vite to divert all calls for `http://localhost:5173/api` to our dev API server.
+We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of Vite to divert all calls for `http://localhost:5173/api` to our dev API server.
 
 Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
 *vite.config.ts*
-```ts{7-13}
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+```ts{5}
+//...
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3002'
-      }
-    }
-  }
+  server: { proxy: { '/api': 'http://localhost:3002' } }
 })
 ```
 
@@ -177,20 +171,15 @@ export default defineConfig({
 ```json
 "dev": "concurrently -k -n \"API,WEB\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"vite\""
 ```
-2. Remove the following entry from the `package.json`  file
-*package.json*
-```json
-"type": "module"
-```
-   
-3. Open a terminal and start the app.
+  
+2. Open a terminal and start the app.
 ```sh
 npm run dev
 ```
 
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
-The default React app main screen should be displayed.
+The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 
 ### Setup completed

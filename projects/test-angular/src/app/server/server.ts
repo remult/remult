@@ -33,6 +33,7 @@ import { DataProvider } from '../../../../core/src/data-interfaces';
 import { Repository } from '../../../../core/src/remult3';
 import { BackendMethod } from '../../../../core/src/server-action';
 import fetch from 'node-fetch';
+import { remult } from '../../../../core/src/remult-proxy';
 
 
 const getDatabase = async () => {
@@ -81,25 +82,12 @@ serverInit().then(async (dataSource) => {
 
         },
         initApi: async remultParam => {
-            //SqlDatabase.LogToConsole = true;
-
-            const caller = new Remult({ url: 'http://localhost:3001/api', httpClient: axios });
-            caller.call(stam.staticBackendMethod)().then(x => console.log("ok", x)).catch(err => console.error(err))
-
-
-
-            //p.post('http://localhost:3001/api/staticBackendMethod', { args: [] }).then(x => console.log("ok", x)).catch(err => console.error(err));
-
-
+            console.log({ count: await remult.repo(stam).count() })
         }
     });
 
     app.use(express.json());
     app.use(remultApi);
-
-
-
-
 
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
@@ -129,45 +117,7 @@ serverInit().then(async (dataSource) => {
             res.send('No Result ' + req.path);
         }
     });
-    const remultHagaiSites = (async () => {
-        const info = process.env.REMOTE_HAGAI;
-        if (info) {
-            const url = info.split('|')[0];
-            const token = info.split('|')[1];
-            const remoteRemult = new Remult({
-                url: url + '/guest/api',
-                httpClient: async (url: any, info: any) => {
-                    info.headers["authorization"] = "Bearer " + token;
-                    return await fetch(url, info) as any
-                }
-                // httpClient: {
-                //     get: () => undefined,
-                //     put: () => undefined,
-                //     delete: () => undefined,
-                //     post: async (url, data) => {
-                //         const fetchResult = await fetch(url, {
-                //             method: "POST",
-                //             headers: {
-                //                 "accept": "application/json, text/plain, */*",
-                //                 "authorization": "Bearer " + token,
-                //                 "cache-control": "no-cache",
-                //                 "content-type": "application/json"
-                //             },
-                //             body: JSON.stringify(data)
-                //         }).then(x => x.json());
-                //         console.log({ fetchResult })
-                //         return fetchResult;
-                //     }
-                // }
-            })
-            try {
-                const r = await remoteRemult.call(OverviewController.getOverview)(false);
-                console.log({ r });
-            } catch (err) {
-                console.log(err);
-            }
-        }
-    })();
+
 
 
     let port = process.env.PORT || 3001;

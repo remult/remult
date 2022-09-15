@@ -4,7 +4,7 @@ import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
 import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
 
 import { IdEntity } from '../id-entity';
-import { remult } from '../remult-proxy';
+import { remult, RemultProxy } from '../remult-proxy';
 
 
 @ValueListFieldType()
@@ -238,7 +238,28 @@ describe("test Server Controller basics", () => {
                 put: () => undefined
             }
         });
-        const r = (await c.call(testBasics.sf)("noam"));
+        const r = (await c.call(testBasics.sf, undefined, "noam"));
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
+    it("test backend method caller with proxy", async () => {
+        const p = new RemultProxy(); {
+            const c = new Remult({
+                url: "xx", httpClient: {
+                    delete: () => undefined,
+                    get: () => undefined,
+                    post: async (url, data) => {
+                        expect(url).toBe("xx/sf");
+                        expect(data.args[0]).toEqual("noam");
+                        return { data: { result: "hello noam" } };
+                    },
+                    put: () => undefined
+                }
+            });
+
+            p.remultFactory = () => c;
+        }
+        const r = (await p.call(testBasics.sf, undefined, "noam"));
         console.log(r);
         expect(r.result).toBe("hello noam");
     });
@@ -255,7 +276,26 @@ describe("test Server Controller basics", () => {
             }
         });
         const b = new testBasics(remult);
-        const r = (await c.call(b.doIt, b)());
+        const r = (await c.call(b.doIt, b));
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
+    it("test backend method instance method with proxy", async () => {
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/1/doIt");
+                    return { result: { result: "hello noam" }, fields: {} };
+                },
+                put: () => undefined
+            }
+        });
+        const p = new RemultProxy();
+        p.remultFactory = () => c;
+        const b = new testBasics(remult);
+        const r = (await p.call(b.doIt, b));
         console.log(r);
         expect(r.result).toBe("hello noam");
     });
