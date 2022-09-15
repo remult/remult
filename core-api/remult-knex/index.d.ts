@@ -1,6 +1,4 @@
 import { Knex } from 'knex';
-import { Filter, FilterConsumer } from "../src/filter/filter-interfaces";
-import { EntityDbNamesBase } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { Remult } from "../src/context";
 import { EntityFilter, EntityMetadata, Repository } from "../src/remult3";
 import { DataProvider, EntityDataProvider } from '../src/data-interfaces';
@@ -15,30 +13,6 @@ export declare class KnexDataProvider implements DataProvider {
     supportsCustomFilter?: boolean;
 }
 export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
-export declare class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
-    private nameProvider;
-    _addWhere: boolean;
-    promises: Promise<void>[];
-    result: ((builder: Knex.QueryBuilder) => void)[];
-    resolveWhere(): Promise<((builder: Knex.QueryBuilder<any, any>) => void)[]>;
-    constructor(nameProvider: EntityDbNamesBase);
-    custom(key: string, customItem: any): void;
-    or(orElements: Filter[]): void;
-    isNull(col: FieldMetadata): void;
-    isNotNull(col: FieldMetadata): void;
-    isIn(col: FieldMetadata, val: any[]): void;
-    isEqualTo(col: FieldMetadata, val: any): void;
-    isDifferentFrom(col: FieldMetadata, val: any): void;
-    isGreaterOrEqualTo(col: FieldMetadata, val: any): void;
-    isGreaterThan(col: FieldMetadata, val: any): void;
-    isLessOrEqualTo(col: FieldMetadata, val: any): void;
-    isLessThan(col: FieldMetadata, val: any): void;
-    containsCaseInsensitive(col: FieldMetadata, val: any): void;
-    private add;
-    databaseCustom(databaseCustom: {
-        buildKnex: CustomKnexFilterBuilderFunction;
-    }): void;
-}
 export declare function knexCondition<entityType>(repo: Repository<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
 export declare class KnexSchemaBuilder {
     private knex;

@@ -206,7 +206,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     }
 
 }
-export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
+class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
     _addWhere = true;
     promises: Promise<void>[] = [];
