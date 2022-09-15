@@ -91,10 +91,10 @@ Sometimes in our sql, we may want to use EntityFilters as sql filters, we can us
 ### Sql
 ```ts
 const repo = remult.repo(Task);
-const t = await getEntityDbNames(repo);
+const t = await dbNamesOf(repo);
 const sql = SqlDatabase.getRawDb(remult!);
 console.table(await command.execute(
-`select ${t.title}, ${t.completed} from ${t.$entityName}
+`select ${t.title}, ${t.completed} from ${t}
     where ${await sqlCondition(repo, { id: [1, 3] })}}`))
 ```
 
