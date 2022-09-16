@@ -129,7 +129,6 @@ export class Remult {
         return r;
     }
 
-    /* @internal*/
     __enforceApiRules = false;
     user?: UserInfo;
 
