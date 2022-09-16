@@ -7,7 +7,7 @@ The `Task` entity class will be used:
 * As a model class for server-side code
 * By `remult` to generate API endpoints, API queries, and database commands
 
-The `Task` entity class we're creating will have an auto-generated UUID `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+The `Task` entity class we're creating will have an auto-generated UUID `id` field, a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
 ## Define the Model
 
@@ -61,13 +61,14 @@ Now that the `Task` entity is defined, we can use it to seed the database with s
 Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
-```ts{6-17}
+```ts{3,7-18}
 import { remultExpress } from 'remult/remult-express';
 import { Task } from '../shared/Task';
+import { remult } from 'remult';
 
 export const api = remultExpress({
     entities: [Task],
-    initApi: async remult => {
+    initApi: async () => {
         const taskRepo = remult.repo(Task);
         if (await taskRepo.count() === 0) {
             await taskRepo.insert([
@@ -98,48 +99,68 @@ While remult supports [many relational and non-relational databases](https://rem
 ## Display the Task List
 Let's start developing the web app by displaying the list of existing tasks in an Angular component.
 
-1. Add the highlighted code lines to the `AppComponent` class file:
+1. Create a `Todo` component using Angular's cli
+   ```sh
+   ng g c todo
+   ```
 
-   *src/app/app.component.ts*
-   ```ts{2-3,12-20}
-   import { Component } from '@angular/core';
-   import { Remult } from 'remult';
-   import { Task } from '../shared/Task';
+2. Replace the `app.components.html` to use the `todo` component.
+
+3. *src/app/app.component.html*
+   ```html
+   <app-todo></app-todo>
+   ```
+
+4. Add the highlighted code lines to the `TodoComponent` class file:
+
+   *src/app/todo/todo.component.ts*
+   ```ts{2-3,11-20}
+   import { Component, OnInit } from '@angular/core';
+   import { remult } from 'remult';
+   import { Task } from '../../shared/Task';
    
    @Component({
-     selector: 'app-root',
-     templateUrl: './app.component.html',
-     styleUrls: ['./app.component.css']
+     selector: 'app-todo',
+     templateUrl: './todo.component.html',
+     styleUrls: ['./todo.component.css']
    })
-   export class AppComponent {
-     title = 'remult-angular-todo';
-     constructor(public remult: Remult) { }
-     taskRepo = this.remult.repo(Task);
+   export class TodoComponent implements OnInit {
+     taskRepo = remult.repo(Task);
      tasks: Task[] = [];
-     async fetchTasks() {
-       this.tasks = await this.taskRepo.find();
-     }
+   
      ngOnInit() {
        this.fetchTasks();
+     }
+   
+     async fetchTasks() {
+       this.tasks = await this.taskRepo.find();
      }
    }
    ```
    
    Here's a quick overview of the different parts of the code snippet:
-   * The `remult` object will be injected to the `constructor` by Angular. We've declared it as a public field so we can use it in the HTML template later on.
-   * `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to    fetch and create Task entity objects.
+   * `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
    * `tasks` is a Task array.
-   * The `fetchTasks` method uses the Remult repository's [find](../../docs/ref_repository.   md#find) method to fetch tasks from the server.
+   * The `fetchTasks` method uses the Remult repository's [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
    * The `ngOnInit` method calls the `fetchTasks` method when the `component` is loaded.
 
-2. Replace the contents of `app.component.html` with the following HTML:
+6. Replace the contents of `todo.component.html` with the following HTML:
 
-   *src/app/app.component.html*
+   *src/app/todo/todo.component.html*
    ```html
-   <div *ngFor="let task of tasks">
-     <input type="checkbox" [checked]="task.completed">
-     {{task.title}}
-   </div>
+   <main>
+       <div *ngFor="let task of tasks">
+           <input
+               type="checkbox"
+               [checked]="task.completed"
+           >
+           {{task.title}}
+       </div>
+   </main>
    ```
 
 After the browser refreshes, the list of tasks appears.
+
+### Add Styles
+
+Optionally, make the app look a little better by replacing the contents of `src/styles.css` with [this CSS file](https://raw.githubusercontent.com/remult/angular-express-starter/completed-tutorial/src/styles.css).

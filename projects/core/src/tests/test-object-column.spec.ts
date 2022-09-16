@@ -12,7 +12,7 @@ describe("test object column", () => {
     var wsql = new WebSqlDataProvider("test");
     let db = new SqlDatabase(wsql);
     let remult = new Remult();
-    remult.setDataProvider(db);
+    remult.dataProvider = (db);
     async function deleteAll() {
         let e = remult.repo(ObjectColumnTest).metadata;
         await wsql.dropTable(e);
@@ -107,7 +107,7 @@ describe("test object column", () => {
 
         var mem = new InMemoryDataProvider();
         var c = new Remult();
-        c.setDataProvider(mem);
+        c.dataProvider = (mem);
 
         var x = c.repo(ObjectColumnTest).create();
         x.id = 1;

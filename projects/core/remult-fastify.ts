@@ -1,9 +1,9 @@
-import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod } from 'fastify';
-import { GenericMiddleware, GenericResponse, GenericRouter, RemultServer, buildRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge';
+import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod, FastifyRequest } from 'fastify';
+import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServer, RemultServerOptions, SpecificRoute } from './server/expressBridge';
 
 
-export function remultFastify(options: RemultServerOptions): FastifyPluginCallback & RemultServer {
-    function fastifyHandler(handler: GenericMiddleware) {
+export function remultFastify(options: RemultServerOptions<FastifyRequest>): FastifyPluginCallback & RemultServer {
+    function fastifyHandler(handler: GenericRequestHandler) {
         const response: RouteHandlerMethod = (req, res) => {
             const myRes: GenericResponse = {
                 status(statusCode) {
@@ -22,7 +22,7 @@ export function remultFastify(options: RemultServerOptions): FastifyPluginCallba
         return response;
     }
 
-    let api: RemultServer;
+    const api = createRemultServer(options);
     const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, op) => {
         //@ts-ignore
         let fastifyRouter: GenericRouter = {
@@ -49,16 +49,14 @@ export function remultFastify(options: RemultServerOptions): FastifyPluginCallba
                 return r;
             },
         };
-        api = buildRemultServer(fastifyRouter, options);
+        api.registerRouter(fastifyRouter);
+
     };
-    const getApi = () => {
-        if (!api)
-            throw "Please call fastify's register before using this method";
-        return api;
-    };
+
     return Object.assign(pluginFunction, {
-        addArea: x => getApi().addArea(x),
-        getRemult: x => getApi().getRemult(x),
-        openApiDoc: x => getApi().openApiDoc(x)
+        getRemult: x => api.getRemult(x),
+        openApiDoc: x => api.openApiDoc(x),
+        handle: (req, res) => api.handle(req, res),
+        withRemult: (req, res, next) => api.withRemult(req, res, next)
     } as RemultServer);
 }

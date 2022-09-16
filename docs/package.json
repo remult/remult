@@ -5,7 +5,7 @@
     "dev": "vuepress dev .",
     "build": "vuepress build .",
     "publish": "tools\\deploy.sh",
-    "brokenLinks": "blc http://remult.dev/ -ro --exclude http://localhost*"
+    "brokenLinks": "blc http://remult.dev/ -ro --exclude http://localhost* --exclude http://127.0.0.1*"
   },
   "devDependencies": {
     "@vuepress/plugin-google-analytics": "^1.8.2",

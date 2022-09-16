@@ -7,11 +7,6 @@ import { EntityOptions as EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 
-
-
-
-
-
 export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges();
@@ -169,7 +164,7 @@ export interface Repository<entityType> {
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
 
-    /** Updates an item, based on it's `id` 
+    /** Updates an item, based on its `id` 
      * @example
      * taskRepo.update(task.id,{...task,completed:true})
     */

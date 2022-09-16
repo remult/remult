@@ -10,6 +10,17 @@ import { SqlDatabase } from "../data-providers/sql-database";
 config();
 
 
+testPostgresImplementation("default order by", async ({ createEntity }) => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity);
+    await s.update(1, { name: "updated name" });
+    expect((await s.find()).map(x => x.myId)).toEqual([1, 2, 3, 4]);
+}, false);
+testKnexPGSqlImpl("default order by", async ({ createEntity }) => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity);
+    await s.update(1, { name: "updated name" });
+    expect((await s.find()).map(x => x.myId)).toEqual([1, 2, 3, 4]);
+}, false);
+
 
 testPostgresImplementation("sql filter", async ({ createEntity }) => {
     let s = await entityWithValidations.create4RowsInDp(createEntity);

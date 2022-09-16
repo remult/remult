@@ -9,6 +9,7 @@ import { ValueConverters } from "../src/valueConverters";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from '../src/data-interfaces';
 import { FieldMetadata } from '../src/column-interfaces';
 import { CompoundIdField } from '../src/column';
+import { Sort } from '../src/sort';
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -23,7 +24,7 @@ export class KnexDataProvider implements DataProvider {
             await action(new KnexDataProvider(t));
             await t.commit();
         }
-        catch (err){
+        catch (err) {
             await t.rollback();
             throw err;
         }
@@ -83,6 +84,9 @@ class KnexEntityDataProvider implements EntityDataProvider {
             let r = await br.resolveWhere();
             query.where(b => r.forEach(y => y(b)));
 
+        }
+        if (!options.orderBy) {
+            options.orderBy = Sort.createUniqueSort(this.entity, new Sort());
         }
         if (options.orderBy) {
 

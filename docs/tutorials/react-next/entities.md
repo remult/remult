@@ -34,17 +34,16 @@ export class Task {
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
+3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `createRemultServer()` method:
 
 *src/server/api.ts*
 ```ts{2,5}
-import { remultExpress } from 'remult/remult-express';
-import { Task } from '../shared/Task';
+import { createRemultServer } from "remult/server";
+import { Task } from "../shared/Task";
 
-export const api = remultExpress({
-    entities: [Task],
-    bodyParser: false
-});
+export const api = createRemultServer({
+    entities: [Task]
+})
 ```
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
@@ -63,10 +62,10 @@ Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
 ```ts{6-17}
-import { remultExpress } from 'remult/remult-express';
-import { Task } from '../shared/Task';
+import { createRemultServer } from "remult/server";
+import { Task } from "../shared/Task";
 
-export const api = remultExpress({
+export const api = createRemultServer({
     entities: [Task],
     initApi: async remult => {
         const taskRepo = remult.repo(Task);
@@ -79,9 +78,8 @@ export const api = remultExpress({
                 { title: "Task e", completed: true }
             ]);
         }
-    },
-    bodyParser: false
-});
+    }
+})
 ```
 
 The `initApi` callback is called only once, after a database connection is established and the server is ready to perform initialization operations.
@@ -106,14 +104,13 @@ Replace the contents of `pages/index.tsx` with the following code:
 ```tsx
 import type { NextPage } from 'next'
 import { useEffect, useState } from 'react';
-import { remult } from '../src/common';
+import { remult } from 'remult';
 import { Task } from '../src/shared/Task';
 
-const taskRepo = remult.repo(Task);
-
 async function fetchTasks() {
-  return taskRepo.find();
+  return remult.repo(Task).find();
 }
+
 const Home: NextPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -122,12 +119,14 @@ const Home: NextPage = () => {
   }, []);
   return (
     <div>
-      {tasks.map(task => (
-        <div key={task.id}>
-          <input type="checkbox" checked={task.completed} />
-          {task.title}
-        </div>
-      ))}
+      <main>
+        {tasks.map(task => (
+          <div key={task.id}>
+            <input type="checkbox" checked={task.completed} />
+            {task.title}
+          </div>
+        ))}
+      </main>
     </div>
   )
 }
@@ -137,9 +136,12 @@ export default Home
 
 Here's a quick overview of the different parts of the code snippet:
 
-* `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
-* The `fetchTasks` function uses the Remult repository's [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
+* The `fetchTasks` function uses the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
 * `tasks` is a Task array React state to hold the list of tasks.
 * React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
 
 After the browser refreshes, the list of tasks appears.
+
+### Add Styles
+
+Optionally, make the app look a little better by replacing the contents of `styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).

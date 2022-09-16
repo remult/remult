@@ -4,10 +4,10 @@ import { allEntities } from "./src/context";
 import { getEntityKey } from "./src/remult3";
 
 import { DataApi } from "./src/data-api";
-import { RemultExpressBridge } from "./server/expressBridge";
+import { RemultServer } from "./server/expressBridge";
 import { ValueConverters } from "./src/valueConverters";
 
-export function remultGraphql(api: RemultExpressBridge) {
+export function remultGraphql(api: RemultServer) {
     let r = new Remult();
     let types = '';
     let query = '';

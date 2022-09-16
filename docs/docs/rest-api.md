@@ -8,7 +8,7 @@ The API supports the following actions (we'll use the `products` entity as an ex
 | Http Method | Description | example | requires |
 | ----- | -----| ----- | ------ |
 | GET | returns an array of rows  | /api/products | allowApiRead |
-| GET | returns a single row based on it's id  | /api/products/7 | allowApiRead |
+| GET | returns a single row based on its id  | /api/products/7 | allowApiRead |
 | POST | creates a new row based on the object sent in the body, and returns the new row | /api/products | allowApiInsert  |
 | PUT | updates an existing row based on the object sent in the body and returns the result  | /api/products/7 | allowApiUpdate |
 | DELETE | deletes an existing row | /api/products/7 | allowApiDelete |

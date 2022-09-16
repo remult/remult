@@ -7,7 +7,7 @@ The `Task` entity class will be used:
 * As a model class for server-side code
 * By `remult` to generate API endpoints, API queries, and database commands
 
-The `Task` entity class we're creating will have an auto-generated UUID `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+The `Task` entity class we're creating will have an auto-generated UUID `id` field, a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
 ## Define the Model
 
@@ -61,13 +61,14 @@ Now that the `Task` entity is defined, we can use it to seed the database with s
 Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
-```ts{6-17}
+```ts{3,7-18}
 import { remultExpress } from 'remult/remult-express';
 import { Task } from '../shared/Task';
+import { remult } from 'remult';
 
 export const api = remultExpress({
     entities: [Task],
-    initApi: async remult => {
+    initApi: async () => {
         const taskRepo = remult.repo(Task);
         if (await taskRepo.count() === 0) {
             await taskRepo.insert([
@@ -104,7 +105,7 @@ Replace the contents of `src/App.vue` with the following code:
 ```vue
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { remult } from './common';
+import { remult } from 'remult';
 import { Task } from './shared/Task';
 
 const taskRepo = remult.repo(Task);
@@ -114,10 +115,14 @@ async function fetchTasks() {
 }
 onMounted(() => fetchTasks())
 </script>
-<template>
-  <div v-for="task in tasks">
-    <input type="checkbox" v-model="task.completed" />
-    {{ task.title }}
+  <template>
+  <div>
+    <main>
+      <div v-for="task in tasks">
+        <input type="checkbox" v-model="task.completed" />
+        {{ task.title }}
+      </div>
+    </main>
   </div>
 </template>
 ```
@@ -130,3 +135,7 @@ Here's a quick overview of the different parts of the code snippet:
 * Vue's `onMounted` hook is used to call `fetchTasks` once when the Vue component is loaded.
 
 After the browser refreshes, the list of tasks appears.
+
+### Add Styles
+
+Optionally, make the app look a little better by replacing the contents of `src/assets/styles.css` with [this CSS file](https://raw.githubusercontent.com/remult/vue-express-starter/after-tutorial/src/assets/main.css).

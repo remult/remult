@@ -1,12 +1,13 @@
 import * as express from 'express';
-import { buildRemultServer, RemultServerOptions } from './server/expressBridge';
+import { createRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
-    RemultServerOptions & {
+    RemultServerOptions<express.Request> & {
         bodyParser?: boolean;
         bodySizeLimit?: string;
-    }) {
+    }): express.RequestHandler & RemultServer {
     let app = express.Router();
+
     if (!options) {
         options = {};
     }
@@ -18,11 +19,14 @@ export function remultExpress(options?:
         app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
     }
 
-    const server = buildRemultServer(app, options);
+    const server = createRemultServer(options);
+    server.registerRouter(app);
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-        addArea: x => server.addArea(x)
-    });
+        registerRouter: x => server.registerRouter(x),
+        withRemult: (...args) => server.withRemult(...args)
+
+    } as RemultServer);
 
 }

@@ -1,3 +1,3 @@
-import type { FastifyPluginCallback } from 'fastify';
+import type { FastifyPluginCallback, FastifyRequest } from 'fastify';
 import { RemultServer, RemultServerOptions } from './server/expressBridge';
-export declare function remultFastify(options: RemultServerOptions): FastifyPluginCallback & RemultServer;
+export declare function remultFastify(options: RemultServerOptions<FastifyRequest>): FastifyPluginCallback & RemultServer;

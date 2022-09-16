@@ -4,7 +4,7 @@ home: true
 heroImage: /logo.png
 tagline: A CRUD framework for fullstack TypeScript
 actionText: Get Started →
-actionLink: /tutorials/react/
+actionLink: /docs/
 
 features:
 - title: API Included

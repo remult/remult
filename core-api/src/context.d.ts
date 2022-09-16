@@ -1,7 +1,8 @@
 import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
+import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
-export interface HttpProvider {
+export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | {
         toPromise(): Promise<any>;
     };
@@ -17,7 +18,7 @@ export interface HttpProvider {
 }
 export declare class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
     private http;
-    constructor(http: HttpProvider);
+    constructor(http: ExternalHttpProvider);
     post(url: string, data: any): Promise<any>;
     delete(url: string): Promise<void>;
     put(url: string, data: any): Promise<any>;
@@ -37,12 +38,7 @@ export declare class Remult {
      *
      */
     repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>;
-    /** Returns the current user's info */
-    get user(): UserInfo;
-    /** Set's the current user info */
-    setUser(info: UserInfo): Promise<void>;
-    private _user;
-    private _userChangeEvent;
+    user?: UserInfo;
     /** Checks if a user was authenticated */
     authenticated(): boolean;
     /** checks if the user has any of the roles specified in the parameters
@@ -57,30 +53,32 @@ export declare class Remult {
      * [Allowed](https://remult.dev/docs/allowed.html)
      */
     isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean;
-    /** returns a dispatcher object that fires once a user has changed*/
-    get userChange(): EventDispatcher;
-    private repCache;
     /** Creates a new instance of the `remult` object.
      *
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
      *
      * If no provider is specified, `fetch` will be used as an http provider
      */
-    constructor(provider?: HttpProvider | DataProvider);
-    /** The api Base Url to be used in all remult calls. by default it's set to `/api`.
-     *
-     * Set this property in case you want to determine a non relative api url
-     */
-    static apiBaseUrl: string;
+    constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
+    constructor(p: DataProvider);
+    constructor();
+    call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T>;
     /** The current data provider */
-    _dataSource: DataProvider;
-    /** sets the current data provider */
-    setDataProvider(dataProvider: DataProvider): void;
+    dataProvider: DataProvider;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind: (metadata: EntityMetadata, options: FindOptions<any>) => void;
     clearAllCache(): any;
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+    readonly context: RemultContext;
+    apiClient: ApiClient;
+}
+export declare type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
+export interface RemultContext {
+}
+export interface ApiClient {
+    httpClient?: ExternalHttpProvider | typeof fetch;
+    url?: string;
 }
 export declare const allEntities: ClassType<any>[];
 export interface ControllerOptions {
@@ -88,16 +86,14 @@ export interface ControllerOptions {
 }
 export declare const classHelpers: Map<any, ClassHelper>;
 export declare class ClassHelper {
-    methods: MethodHelper[];
-}
-export declare class MethodHelper {
     classes: Map<any, ControllerOptions>;
 }
+export declare function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch): RestDataProviderHttpProvider | RestDataProviderHttpProviderUsingFetch;
 export declare function setControllerSettings(target: any, options: ControllerOptions): void;
 export interface UserInfo {
     id: string;
-    name: string;
-    roles: string[];
+    name?: string;
+    roles?: string[];
 }
 export declare type Allowed = boolean | string | string[] | ((c: Remult) => boolean);
 export declare type AllowedForInstance<T> = boolean | string | string[] | ((c: Remult, entity?: T) => boolean);

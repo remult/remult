@@ -28,13 +28,13 @@ class entityWithAutoId extends EntityBase {
 describe("test json database", () => {
     let db = new JsonDataProvider(localStorage);
     let remult = new Remult();
-    remult.setDataProvider(db);
+    remult.dataProvider = (db);
     async function deleteAll1() {
         await deleteAll(remult.repo(newCategories));
     }
     it("test auto increment", async () => {
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let p = await remult.repo(entityWithAutoId).create({ name: 'a' }).save();
         expect(p.id).toBe(1);
         p = await remult.repo(entityWithAutoId).create({ name: 'b' }).save();
@@ -84,7 +84,7 @@ describe("test tasks", () => {
             setItem: (x, y) => storage = y
         });
         let cont = new Remult();
-        cont.setDataProvider(db);
+        cont.dataProvider = (db);
         let c = cont.repo(tasks);
         let t = c.create();
         t.id = 1;
