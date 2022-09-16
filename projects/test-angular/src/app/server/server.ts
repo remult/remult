@@ -133,12 +133,3 @@ class OverviewController {
     }
 }
 
-interface UserInfo {
-
-}
-
-type ApiClient = {
-    httpClient?: ExternalHttpProvider | typeof fetch;
-    url?: string;
-};
-

@@ -9,7 +9,7 @@ export {
     StringFieldOptions,
     FieldsMetadata,
     Entity,
-    BuildEntity,
+
     EntityBase,
     ControllerBase,
     FieldRef,
@@ -40,6 +40,7 @@ export {
     Paginator,
     CaptionTransformer
 } from './src/remult3';
+export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
 export {
     DataProvider,
@@ -96,7 +97,7 @@ export {
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-    ExternalHttpProvider ,
+    ExternalHttpProvider,
     Unobserve,
     UserInfo
 } from './src/context';

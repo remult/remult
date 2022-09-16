@@ -5,6 +5,7 @@ import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3
 
 import { IdEntity } from '../id-entity';
 import { remult, RemultProxy } from '../remult-proxy';
+import { describeClass } from '../remult3/DecoratorReplacer';
 
 
 @ValueListFieldType()
@@ -102,6 +103,18 @@ class testBasics {
     static async getValFromServer(remult?: Remult) {
         return (await remult.repo(testEntity).findFirst()).name;
     }
+    static async staticBackendMethodWithoutDecorator() {
+        return isBackend();
+    }
+    static async staticBackendMethodWithoutDecoratorWithRemult(remult?: Remult) {
+        return (await remult.repo(testEntity).findFirst()).name;
+    }
+    async backendMethodWithoutDecorator() {
+        return isBackend();
+    }
+    async backendMethodWithoutDecoratorWithRemult(remult?: Remult) {
+        return (await remult.repo(testEntity).findFirst()).name + this.a;
+    }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
         if (entity === null)
@@ -119,6 +132,20 @@ class testBasics {
         return z.toString();
     }
 }
+describeClass(testBasics, undefined, undefined, {
+    staticBackendMethodWithoutDecorator: BackendMethod({ allowed: true })
+});
+describeClass(testBasics, undefined, undefined, {
+    staticBackendMethodWithoutDecoratorWithRemult: BackendMethod({ allowed: true, paramTypes: [Remult] })
+});
+describeClass(testBasics, undefined, {
+    backendMethodWithoutDecorator: BackendMethod({ allowed: true })
+});
+describeClass(testBasics, undefined, {
+    backendMethodWithoutDecoratorWithRemult: BackendMethod({ allowed: true, paramTypes: [Remult] })
+});
+
+
 class Stam {
     @BackendMethod({ allowed: false })
     static async testForbidden1() {
@@ -224,6 +251,22 @@ describe("test Server Controller basics", () => {
     it("data is saved on server", async () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.getValFromServer()).toBe('test');
+    });
+    it("new backend method syntax static method with remult", async () => {
+        await c.repo(testEntity).create({ name: 'test' }).save();
+        expect(await testBasics.staticBackendMethodWithoutDecoratorWithRemult()).toBe('test');
+    });
+    it("new backend method syntax static method", async () => {
+        expect(await testBasics.staticBackendMethodWithoutDecorator()).toBe(true);
+    });
+    it("new backend method syntax 1", async () => {
+        expect(await new testBasics(undefined).backendMethodWithoutDecorator()).toBe(true);
+    });
+    it("new backend method syntax 2", async () => {
+        await c.repo(testEntity).create({ name: 'test' }).save();
+        const z = new testBasics(undefined);
+        z.a = 'x';
+        expect(await z.backendMethodWithoutDecoratorWithRemult()).toBe('testx');
     });
     it("test backend method caller", async () => {
         const c = new Remult({
@@ -385,6 +428,41 @@ describe("test Server Controller basics", () => {
         expect(happened).toBe(false);
 
 
+    });
+    it("test backend method with adhoc entity", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            async doSomething() {
+                return this.name + isBackend();
+            }
+        }
+        describeClass(myClass, Controller('addHocController'), {
+            id: Fields.autoIncrement(),
+            name: Fields.string(),
+            doSomething: BackendMethod({ allowed: true }),
+        })
+        const x = new myClass();
+        x.name = "123";
+        expect(await x.doSomething()).toBe("123true");
+    });
+    it("test static backend method with adhoc controller", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            static async adHockDoSomething() {
+                return isBackend();
+            }
+        }
+        describeClass(myClass, Controller('addHocController1'), {
+            id: Fields.autoIncrement(),
+            name: Fields.string()
+        }, {
+            adHockDoSomething: BackendMethod({ allowed: true }),
+        })
+        expect(await myClass.adHockDoSomething()).toBe(true);
     });
 
 });

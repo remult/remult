@@ -258,9 +258,6 @@ export interface ControllerOptions {
 
 export const classHelpers = new Map<any, ClassHelper>();
 export class ClassHelper {
-    methods: MethodHelper[] = [];
-}
-export class MethodHelper {
     classes = new Map<any, ControllerOptions>();
 }
 
@@ -294,11 +291,9 @@ export function setControllerSettings(target: any, options: ControllerOptions) {
     let r = target;
     while (true) {
         let helper = classHelpers.get(r);
-        if (helper) {
-            for (const m of helper.methods) {
-                m.classes.set(target, options);
-            }
-        }
+        if (!helper)
+            classHelpers.set(r, helper = new ClassHelper());
+        helper.classes.set(target, options);
         let p = Object.getPrototypeOf(r.prototype);
         if (p == null)
             break;
