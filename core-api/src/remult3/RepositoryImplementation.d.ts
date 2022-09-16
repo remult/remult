@@ -3,7 +3,7 @@ import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
-import { Remult, Unobserve } from "../context";
+import { Remult, Unobserve, AllowedForInstance } from "../context";
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { RefSubscriber } from ".";
@@ -92,6 +92,7 @@ declare abstract class rowHelperBase<T> {
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
     toApiJson(): any;
+    allowedWithUndefinedTrue(allow: AllowedForInstance<T>): boolean;
     _updateEntityBasedOnApi(body: any): Promise<void>;
 }
 export declare class rowHelperImplementation<T> extends rowHelperBase<T> implements EntityRef<T> {
