@@ -124,7 +124,7 @@ export interface ServerHandleResponse {
 }
 export interface RemultServer {
   getRemult(req: GenericRequest): Promise<Remult>;
-  openApiDoc(options: { title: string }): any;
+  openApiDoc(options: { title: string, version?: string }): any;
   registerRouter(r: GenericRouter): void;
   handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
   withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction);
