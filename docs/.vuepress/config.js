@@ -94,6 +94,7 @@ module.exports = {
           collapsable: true,
 
           children: [
+            'working-without-decorators',
             'rest-api',
             'adding-swagger',
             'adding-graphql',
