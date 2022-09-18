@@ -99,6 +99,7 @@ module.exports = {
             'adding-swagger',
             'adding-graphql',
             'lazy-loading-of-related-entities',
+            'using-remult-in-custom-backend-code',
             'using-server-only-packages',
             'running-sql-on-the-server'
           ]
