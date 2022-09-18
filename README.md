@@ -128,10 +128,8 @@ app.listen(port, () => {
 ```ts
 // frontend/code.ts
 
-import { Remult } from "remult";
+import { remult } from "remult";
 import { Product } from "../shared/product";
-
-const remult = new Remult();
 
 async function increasePriceOfTofu(priceIncrease: number) {
   const productsRepo = remult.repo(Product);
@@ -146,8 +144,8 @@ async function increasePriceOfTofu(priceIncrease: number) {
 
 ```ts
 @BackendMethod({ allowed: Allow.authenticated })
-static async increasePriceOfTofu(priceIncrease: number, remult?: Remult) {
-  const productsRepo = remult!.repo(Product);
+static async increasePriceOfTofu(priceIncrease: number) {
+  const productsRepo = remult.repo(Product);
 
   const product = await productsRepo.findFirst({ name: 'Tofu' }); // use Remult in the backend as an ORM
   product.unitPrice += priceIncrease;
