@@ -24,7 +24,7 @@ app.post('/api/customSetAll', api.withRemult, async (req, res) => {
         res.sendStatus(403);
         return;
     }
-    const taskRepo = remult!.repo(Task);
+    const taskRepo = remult.repo(Task);
     for (const task of await taskRepo.find()) {
         task.completed = req.body.completed;
         await taskRepo.save(task);
