@@ -111,6 +111,13 @@ testKnexPGSqlImpl("work with native knex2", async ({ remult, createEntity }) => 
     });
 
 }, false);
+testKnexPGSqlImpl("work with native knex3", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const knex = KnexDataProvider.getDb(remult);
+    const t =await  dbNamesOf(repo);
+    const r = await knex((await t).$entityName).select(t.myId,t.name);
+    expect(r.length).toBe(4);
+}, false);
 
 testMongo("work with native mongo", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);

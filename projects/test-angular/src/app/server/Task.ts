@@ -1,6 +1,10 @@
 import { Entity, Fields } from '../../../../core/src/remult3';
 import { Validators } from '../../../../core/src/validators';
 import { BackendMethod } from '../../../../core/src/server-action';
+import { dbNamesOf, sqlCondition } from '../../../../core/src/filter/filter-consumer-bridge-to-sql-request';
+import { remult } from '../../../../core/src/remult-proxy';
+import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
+import { KnexDataProvider } from '../../../../core/remult-knex';
 
 
 
@@ -10,7 +14,7 @@ import { BackendMethod } from '../../../../core/src/server-action';
 })
 export class Task {
     @Fields.uuid()
-    id!: string;
+    id!: number;
 
     @Fields.string({
         validate: Validators.required
@@ -22,4 +26,11 @@ export class Task {
     @BackendMethod({ allowed: false })
     static testForbidden() {
     }
+}
+
+async function test() {
+const tasks = await dbNamesOf(remult.repo(Task));
+const knex = await KnexDataProvider.getDb();
+console.table(
+    await knex(tasks.$entityName).select(tasks.title,tasks.completed));
 }

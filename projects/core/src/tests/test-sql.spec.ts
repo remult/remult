@@ -150,6 +150,17 @@ testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
             })}`)
         .toBe("select myId, name from entityWithValidations where myId in (1,3)")
 }, false);
+testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const command = SqlDatabase.getDb(remult).createCommand()
+    const e = await dbNamesOf(repo);
+    expect(
+        `select ${e.myId}, ${e.name} from ${e} where ${await sqlCondition(repo,
+            {
+                myId: [1, 3]
+            },command)}`)
+        .toBe("select myId, name from entityWithValidations where myId in (~1~,~2~)")
+}, false);
 
 
 
