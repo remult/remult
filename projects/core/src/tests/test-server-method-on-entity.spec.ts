@@ -8,6 +8,9 @@ import { DataApi } from '../data-api';
 
 import { assign } from '../../assign';
 import { dWithPrefilter } from './dWithPrefilter';
+import { d } from './d';
+import { remult } from '../remult-proxy';
+import { describeClass } from '../remult3/DecoratorReplacer';
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {
@@ -35,6 +38,14 @@ class testServerMethodOnEntity extends EntityBase {
             result
         }
     }
+    async doIt1NoDecorator() {
+        let result = 'hello ' + this.a;
+        this.a = 'yael';
+        return {
+            onServer: isBackend(),
+            result
+        }
+    }
     @BackendMethod({ allowed: true })
     async doItAgain() {
         expect(await this.remult.repo(testServerMethodOnEntity).count()).toBe(0);
@@ -45,6 +56,9 @@ class testServerMethodOnEntity extends EntityBase {
 
 
 }
+describeClass(testServerMethodOnEntity, undefined, {
+    doIt1NoDecorator: BackendMethod({ allowed: true, paramTypes: [Remult] })
+});
 
 @Entity<testBoolCreate123>('testBoolCreate123', (o, c) => assign(o, {
     allowApiCrud: true,
@@ -80,6 +94,14 @@ describe("test Server method in entity", () => {
         expect(r.result).toBe('hello Noam');
         expect(x.a).toBe("yael");
     });
+    it("test server method on Entity without decorator", async () => {
+        let x = c.repo(testServerMethodOnEntity).create();
+        x.a = 'Noam';
+        let r = await x.doIt1NoDecorator();
+        expect(r.onServer).toBe(true);
+        expect(r.result).toBe('hello Noam');
+        expect(x.a).toBe("yael");
+    });
     it("test server method on Entity", async () => {
         let x = c.repo(testServerMethodOnEntity).create();
         x.a = 'Noam';
@@ -100,9 +122,47 @@ describe("test Server method in entity", () => {
             expect(getEntityRef(x).fields.a.error).toBe("error on client");
         }
         expect(happened).toBe(false);
-
-
     });
+    it("test backend method with adhoc entity", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            async doSomething() {
+                return this.name + isBackend();
+            }
+        }
+
+        describeClass(myClass,
+            Entity('adHocEntity'), {
+            id: Fields.autoIncrement(),
+            name: Fields.string(),
+            doSomething: BackendMethod({ allowed: true }),
+        })
+        const x = new Remult().repo(myClass).create();
+        x.name = "123";
+        expect(await x.doSomething()).toBe("123true");
+    });
+    it("test static backend method with adhoc entity", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            static async adHockDoSomething() {
+                return isBackend();
+            }
+        }
+        describeClass(myClass, Entity('adHocEntity'), {
+            id: Fields.autoIncrement(),
+            name: Fields.string()
+        },
+            {
+                adHockDoSomething: BackendMethod({ allowed: true }),
+            }
+        )
+        expect(await myClass.adHockDoSomething()).toBe(true);
+    });
+
     it("test validation on server", async () => {
         let x = c.repo(testServerMethodOnEntity).create();
         x.a = "error on server";
