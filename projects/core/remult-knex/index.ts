@@ -16,7 +16,7 @@ export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
 
     }
-    static getRawDb(remult?: Remult) {
+    static getDb(remult?: Remult) {
         const r = (remult || remultContext).dataProvider as KnexDataProvider;
         if (!r.knex)
             throw "the data provider is not an KnexDataProvider";

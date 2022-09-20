@@ -17,8 +17,8 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
-    static getRawDb(remult?: Remult): ClientBase {
-        const sql = SqlDatabase.getRawDb(remult);
+    static getDb(remult?: Remult): ClientBase {
+        const sql = SqlDatabase.getDb(remult);
         const me = sql._getSourceSql() as PostgresDataProvider;
         if (!me.pool) {
             throw "the data provider is not a PostgresDataProvider";

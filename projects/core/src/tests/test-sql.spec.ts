@@ -115,14 +115,14 @@ class testErrorInFromDb {
 
 testWebSqlImpl("work with native sql", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const sql = SqlDatabase.getRawDb(remult);
+    const sql = SqlDatabase.getDb(remult);
     const r =
         await sql.execute("select count(*) as c from " + repo.metadata.options.dbName!);
     expect(r.rows[0].c).toBe(4);
 }, false);
 testWebSqlImpl("work with native sql2", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const sql = WebSqlDataProvider.getRawDb(remult);
+    const sql = WebSqlDataProvider.getDb(remult);
     await new Promise((res) => {
         sql.transaction(y => {
             y.executeSql("select count(*) as c from " + repo.metadata.options.dbName!, undefined,

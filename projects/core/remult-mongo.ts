@@ -9,7 +9,7 @@ export class MongoDataProvider implements DataProvider {
     constructor(private db: Db, private client: MongoClient) {
 
     }
-    static getRawDb(remult?: Remult) {
+    static getDb(remult?: Remult) {
         const r = (remult || remultContext).dataProvider as MongoDataProvider;
         if (!r.db)
             throw "the data provider is not a MongoDataProvider";

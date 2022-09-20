@@ -73,22 +73,22 @@ testKnexPGSqlImpl("knex filter2", async ({ createEntity }) => {
 
 testPostgresImplementation("work with native sql", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const sql = SqlDatabase.getRawDb(remult);
+    const sql = SqlDatabase.getDb(remult);
     const r =
         await sql.execute("select count(*) as c from " + repo.metadata.options.dbName!);
     expect(r.rows[0].c).toBe('4');
 }, false);
 testPostgresImplementation("work with native sql2", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const sql = PostgresDataProvider.getRawDb(remult);
+    const sql = PostgresDataProvider.getDb(remult);
     const r =
         await sql.query("select count(*) as c from " + repo.metadata.options.dbName!);
     expect(r.rows[0].c).toBe('4');
 }, false);
 testPostgresImplementation("work with native sql3", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    await SqlDatabase.getRawDb(remult)._getSourceSql().transaction(async x => {
-        const sql = PostgresDataProvider.getRawDb(new Remult(new SqlDatabase(x)));
+    await SqlDatabase.getDb(remult)._getSourceSql().transaction(async x => {
+        const sql = PostgresDataProvider.getDb(new Remult(new SqlDatabase(x)));
         const r =
             await sql.query("select count(*) as c from " + repo.metadata.options.dbName!);
         expect(r.rows[0].c).toBe('4');
@@ -98,14 +98,14 @@ testPostgresImplementation("work with native sql3", async ({ remult, createEntit
 
 testKnexPGSqlImpl("work with native knex", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const knex = KnexDataProvider.getRawDb(remult);
+    const knex = KnexDataProvider.getDb(remult);
     const r = await knex(repo.metadata.options.dbName!).count()
     expect(r[0].count).toBe('4');
 }, false);
 testKnexPGSqlImpl("work with native knex2", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     await (remult.dataProvider).transaction(async db => {
-        const sql = KnexDataProvider.getRawDb(new Remult(db));
+        const sql = KnexDataProvider.getDb(new Remult(db));
         const r = await sql(repo.metadata.options.dbName!).count()
         expect(r[0].count).toBe('4');
     });
@@ -114,7 +114,7 @@ testKnexPGSqlImpl("work with native knex2", async ({ remult, createEntity }) => 
 
 testMongo("work with native mongo", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const mongo = MongoDataProvider.getRawDb(remult);
+    const mongo = MongoDataProvider.getDb(remult);
     const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments();
     expect(r).toBe(4);
 }, false);
@@ -122,7 +122,7 @@ testMongo("work with native mongo", async ({ remult, createEntity }) => {
 
 testKnexPGSqlImpl("knex with filter", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const knex = KnexDataProvider.getRawDb(remult);
+    const knex = KnexDataProvider.getDb(remult);
     const e = await dbNamesOf(repo);
     const r = await knex(e.$entityName).count().where(await knexCondition(repo, { myId: [1, 3] }));
     expect(r[0].count).toBe('2');
@@ -130,7 +130,7 @@ testKnexPGSqlImpl("knex with filter", async ({ remult, createEntity }) => {
 
 testMongo("work with native mongo and condition", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
-    const mongo = MongoDataProvider.getRawDb(remult);
+    const mongo = MongoDataProvider.getDb(remult);
     const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments(await mongoCondition(repo, { myId: [1, 2] }))
     expect(r).toBe(2);
 }, false);
