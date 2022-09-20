@@ -52,6 +52,24 @@ app.use(remultExpress({
 * **sslInDev** - see `configuration:"heroku"`
 :::
 
+#### Using an existing Postgres connection
+```ts{13}
+import express from "express";
+import { Pool } from "pg";
+import { SqlDatabase } from "remult";
+import { PostgresDataProvider } from "remult/postgres";
+import { remultExpress } from "remult/remult-express";
+
+const pg = new Pool({
+  connectionString: "...."
+})
+
+const app = express();
+app.use(remultExpress({
+  dataProvider: new SqlDatabase(new PostgresDataProvider(pg))
+}))
+```
+
 ### Using [Knex.js](http://knexjs.org/)
 
 Install knex and node-postgres:
@@ -75,6 +93,24 @@ app.use(remultExpress({
         client: 'pg',
         connection: 'postgres://user:password@host:5432/database',
     }, true /* autoCreateTables - entities will be synced with the database. Default: false */)
+}));
+```
+
+#### Using an existing Knex connection
+```ts{13}
+import express from "express";
+import { KnexDataProvider } from "remult/remult-knex";
+import { remultExpress } from "remult/remult-express";
+import knex from 'knex';
+
+const knexDb = knex({
+  client: 'pg',
+  connection: '...'
+})
+
+const app = express();
+app.use(remultExpress({
+  dataProvider: new KnexDataProvider(knexDb)
 }));
 ```
 
