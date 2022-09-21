@@ -94,6 +94,7 @@ module.exports = {
           collapsable: true,
 
           children: [
+            'custom-options',
             'working-without-decorators',
             'rest-api',
             'adding-swagger',
@@ -113,6 +114,8 @@ module.exports = {
             'ref_remult',
             'ref_repository',
             'entityFilter',
+            'ref_entitymetadata',
+            'ref_fieldmetadata',
             'allowed',
             'ref_backendmethod',
             'ref_queryresult',
