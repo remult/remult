@@ -46,7 +46,7 @@ Follow these Steps:
    <input placeholder={taskRepo.metadata.fields.title.placeholderText}/>
    ```
 
-# Augmenting remult's `UserInfo` property
+# Augmenting `UserInfo` interface
 If you want to have more information in `remult.user` you can augment the `UserInfo` interface
 ```ts
 declare module 'remult' {
