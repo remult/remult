@@ -6,3 +6,5 @@ Determines when this `BackendMethod` can execute, see: [Allowed](https://remult.
 EXPERIMENTAL: Determines if this method should be queued for later execution
 ## blockUser
 EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running
+## paramTypes
+* **paramTypes**

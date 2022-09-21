@@ -97,18 +97,57 @@ export interface IdMetadata<entityType = any> {
 
 }
 
+/** Metadata for an `Entity`, this metadata can be used in the user interface to provide a richer UI experience  */
 export interface EntityMetadata<entityType = any> {
-    readonly idMetadata: IdMetadata<entityType>;
+    /** The Entity's key also used as it's url  */
     readonly key: string,
+    /** Metadata for the Entity's fields */
     readonly fields: FieldsMetadata<entityType>,
+    /** A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
+     * @example
+     * <h1>Create a new item in {taskRepo.metadata.caption}</h1>
+    */
     readonly caption: string;
+    /** The options send to the `Entity`'s decorator */
     readonly options: EntityOptions;
+    /** The class type of the entity */
     readonly entityType: ClassType<entityType>;
+    /** true if the current user is allowed to update an entity instance 
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * if (taskRepo.metadata.apiUpdateAllowed){
+     *   //Allow user to edit the entity
+     * }
+    */
     readonly apiUpdateAllowed: boolean;
+    /** true if the current user is allowed to read from entity
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * if (taskRepo.metadata.apiReadAllowed){
+     *   taskRepo.find()
+     * }
+     */
     readonly apiReadAllowed: boolean;
+    /** true if the current user is allowed to delete an entity instance 
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * if (taskRepo.metadata.apiDeleteAllowed){
+     *   //display delete button
+     * }
+    */
     readonly apiDeleteAllowed: boolean;
+    /** true if the current user is allowed to create an entity instance
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * if (taskRepo.metadata.apiInsertAllowed){
+     *   //display insert button
+     * }
+    */
     readonly apiInsertAllowed: boolean;
+    /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
     getDbName(): Promise<string>;
+    /** Metadata for the Entity's id */
+    readonly idMetadata: IdMetadata<entityType>;
 }
 
 export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>
@@ -182,11 +221,10 @@ export interface Repository<entityType> {
     /** returns an `entityRef` for an item returned by `create`, `find` etc... */
     getEntityRef(item: entityType): EntityRef<entityType>;
 
-    /**The metadata for the `entity` */
+    /**The metadata for the `entity` 
+     * @See [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
+    */
     metadata: EntityMetadata<entityType>;
-
-
-
 
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }

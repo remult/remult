@@ -1,3 +1,10 @@
+---
+tags:
+  - Where
+  - Filter
+  - Entity Where
+  - Entity Filter
+---
 # EntityFilter
 Used to filter the desired result set
 ### Basic example

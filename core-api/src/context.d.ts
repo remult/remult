@@ -35,9 +35,11 @@ export declare class Remult {
      * @example
      * const taskRepo = remult.repo(Task);
      * @see [Repository](https://remult.dev/docs/ref_repository.html)
-     *
+     * @param entity - the entity to use
+     * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
      */
     repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>;
+    /** Returns the current user's info */
     user?: UserInfo;
     /** Checks if a user was authenticated */
     authenticated(): boolean;
@@ -53,6 +55,8 @@ export declare class Remult {
      * [Allowed](https://remult.dev/docs/allowed.html)
      */
     isAllowedForInstance(instance: any, allowed?: AllowedForInstance<any>): boolean;
+    /** The current data provider */
+    dataProvider: DataProvider;
     /** Creates a new instance of the `remult` object.
      *
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -62,22 +66,38 @@ export declare class Remult {
     constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
     constructor(p: DataProvider);
     constructor();
+    /** Used to call a `backendMethod` using a specific `remult` object
+     * @example
+     * await remult.call(TasksController.setAll, undefined, true);
+     * @param backendMethod - the backend method to call
+     * @param classInstance - the class instance of the backend method, for static backend methods use undefined
+     * @param args - the arguments to send to the backend method
+    */
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T>;
-    /** The current data provider */
-    dataProvider: DataProvider;
+    /** The api client that will be used by `remult` to perform calls to the `api` */
+    apiClient: ApiClient;
+    /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
+    readonly context: RemultContext;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind: (metadata: EntityMetadata, options: FindOptions<any>) => void;
     clearAllCache(): any;
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
-    readonly context: RemultContext;
-    apiClient: ApiClient;
 }
 export declare type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
 export interface RemultContext {
 }
 export interface ApiClient {
+    /** The http client to use when making api calls.
+     * @example
+     * remult.apiClient.httpClient = axios;
+     * @example
+     * remult.apiClient.httpClient = httpClient;//angular http client
+     * @example
+     * remult.apiClient.httpClient = fetch; //this is the default
+     */
     httpClient?: ExternalHttpProvider | typeof fetch;
+    /** The base url to for making api calls */
     url?: string;
 }
 export declare const allEntities: ClassType<any>[];

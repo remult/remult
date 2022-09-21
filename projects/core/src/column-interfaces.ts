@@ -10,7 +10,10 @@ import { EntityMetadata, FieldRef } from './remult3';
 
 
 export interface FieldOptions<entityType = any, valueType = any> {
-    /**A human readable name for the field */
+    /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
+    * @example
+    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+    */
     caption?: string;
     /** If it can store null in the database */
     allowNull?: boolean;
@@ -19,9 +22,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
     includeInApi?: Allowed;
     /** If this field data can be updated in the api.
     * @see [allowed](http://remult.dev/docs/allowed.html)*/
-
     allowApiUpdate?: AllowedForInstance<entityType>;
-
     /** An arrow function that'll be used to perform validations on it
      * @example
      * @Fields.string({
@@ -76,21 +77,42 @@ export interface FieldOptions<entityType = any, valueType = any> {
     /** The key to be used for this field */
     key?: string;
 }
+/**Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience */
 export interface FieldMetadata<valueType = any> {
+    /** The field's member name in an object.
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * console.log(taskRepo.metadata.fields.title.key);
+     * // result: title
+     */
     readonly key: string;
-    readonly target: ClassType<valueType>;
-    readonly valueType: any;
-
+    /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
+     * @example
+     * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+     */
     readonly caption: string;
-    readonly inputType: string;
-    readonly allowNull: boolean;
-    getDbName(): Promise<string>;
-
-    readonly isServerExpression: boolean;
-    readonly dbReadOnly: boolean;
-    readonly valueConverter: ValueConverter<valueType>;
+    /** The field's value type (number,string etc...) */
+    readonly valueType: any
+    /** The options sent to this field's decorator */
     readonly options: FieldOptions;
-
+    /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
+    readonly inputType: string;
+    /** if null is allowed for this field */
+    readonly allowNull: boolean;
+    /** The class that contains this field 
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * Task == taskRepo.metadata.fields.title.target //will return true
+    */
+    readonly target: ClassType<valueType>;
+    /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+    getDbName(): Promise<string>;
+    /** Indicates if this field is based on a server express */
+    readonly isServerExpression: boolean;
+    /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc... */
+    readonly dbReadOnly: boolean;
+    /** the Value converter for this field */
+    readonly valueConverter: ValueConverter<valueType>;
 }
 export interface ValueConverter<valueType> {
     fromJson?(val: any): valueType;
