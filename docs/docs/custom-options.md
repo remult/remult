@@ -46,7 +46,7 @@ Follow these Steps:
    <input placeholder={taskRepo.metadata.fields.title.placeholderText}/>
    ```
 
-# Augmenting `UserInfo` interface
+### Augmenting `UserInfo` interface
 If you want to have more information in `remult.user` you can augment the `UserInfo` interface
 ```ts
 declare module 'remult' {
@@ -57,7 +57,7 @@ declare module 'remult' {
 }
 ```
 
-# Augmenting remult's `context` property
+### Augmenting remult's `context` property
 You can augment remult's context property in a similar way:
 ```ts
 declare module 'remult' {
