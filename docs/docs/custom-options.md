@@ -57,6 +57,11 @@ declare module 'remult' {
 }
 ```
 
+Then later in the code, you can use it just like any other `UserInfo` property
+```ts
+console.log(remult.user.phone);
+```
+
 # Augmenting remult's `context` property
 You can augment remult's context property in a similar way:
 ```ts
@@ -66,6 +71,45 @@ declare module 'remult' {
     }
 }
 ```
+
+One use case for this, is to include information from the request, and use that information in an entity or a backend method.
+
+Here's an example:
+1. Add a custom property `origin` to `RemultContext`
+   ```ts
+   declare module 'remult' {
+     export interface RemultContext {
+        origin?: string
+     }
+   }  
+   ```
+2. Set the `origin` property in the `initRequest` method in the `api.ts` file.
+   ```ts
+   export const api = remultExpress({
+     initRequest: async (_, req) => {
+         remult.context.origin = req.headers.origin;
+     },
+     entities: [Task],
+     //...
+   ```
+3. Use it anywhere in the code:
+   ```ts
+   @BackendMethod({ allowed: Roles.admin })
+   static async doSomethingImportant() {
+      console.log(remult.context.origin);
+   }
+   ```
+   or
+   ```ts
+   @Entity<Task>("tasks", {
+      saving:task=>{
+            task.lastUpdateDate = new Date();
+            task.lastUpdateUser = remult.user?.name;
+            task.lastUpdateOrigin = remult.context.origin;
+      },
+      //...
+   ```
+   
 
 
 For more info see the [Augmenting Global Properties](https://vuejs.org/guide/typescript/options-api.html#augmenting-global-properties) article in `vue.js` docs.
