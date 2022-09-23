@@ -60,7 +60,7 @@ describe("data api", () => {
         Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
         Fields.integer()(type.prototype, 'id');
         Fields.string<EntityBase>({
-            allowApiUpdate: (c, x) => x._.isNew()
+            allowApiUpdate: (x, c) => x._.isNew()
         })(type.prototype, 'val');
         let remult = new Remult();
         remult.dataProvider = (new InMemoryDataProvider());
@@ -92,7 +92,7 @@ describe("data api", () => {
         Entity('allowcolumnupdatetest', { allowApiCrud: true })(type);
         Fields.integer()(type.prototype, 'id');
         Fields.string<typeof type.prototype>({
-            allowApiUpdate: (c, x) => x.val != "yael"
+            allowApiUpdate: (x, c) => x.val != "yael"
         })(type.prototype, 'val');
         let remult = new Remult();
         remult.dataProvider = (new InMemoryDataProvider());

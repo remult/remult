@@ -181,7 +181,7 @@ export class Remult {
             }
         }
         else if (typeof (allowed) === "function") {
-            return allowed(this, instance)
+            return allowed(instance, this)
         } else return this.isAllowed(allowed as Allowed);
     }
     /* @internal */
@@ -309,17 +309,22 @@ export interface UserInfo {
 }
 
 
-export declare type Allowed = boolean | string | string[] | ((c: Remult) => boolean);
+export declare type Allowed = boolean | string | string[] | ((c?: Remult) => boolean);
 
-export declare type AllowedForInstance<T> = boolean | string | string[] | ((c: Remult, entity?: T) => boolean);
+export declare type AllowedForInstance<T> = boolean | string | string[] | ((entity?: T, c?: Remult) => boolean);
 export class Allow {
     static everyone = () => true;
-    static authenticated = (remult: Remult) => remult.authenticated();
+    static authenticated = (...args: any[]) => {
+        if (args.length > 1) {
+            return (args[1] as Remult).authenticated()
+        }
+        else if (args.length == 1) {
+            if (args[0].authenticated)
+                return args[0].authenticated();
+        }
+        return RepositoryImplementation.defaultRemult.authenticated();
+    }
 }
-
-
-
-
 
 
 

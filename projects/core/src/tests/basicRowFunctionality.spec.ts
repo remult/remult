@@ -1218,7 +1218,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>('', {
 
-      allowApiDelete: (c, t) => {
+      allowApiDelete: (t, c) => {
         return t.id == 1;
       }
     })(type);
@@ -1248,7 +1248,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>('', {
 
-      allowApiUpdate: (c, t) => {
+      allowApiUpdate: (t, c) => {
         return t.id == 1;
       }
     })(type);
@@ -1283,7 +1283,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>('', {
 
-      allowApiInsert: (c, t) => {
+      allowApiInsert: (t, c) => {
         return t.categoryName == 'ok';
       }
     })(type);
@@ -1792,7 +1792,7 @@ describe("test rest data provider translates data correctly", () => {
     let c = new Remult().repo(type);
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: ()=>undefined,
+        delete: () => undefined,
         get: async () => {
           return [
             {
@@ -1801,8 +1801,8 @@ describe("test rest data provider translates data correctly", () => {
             }
           ]
         },
-        post: ()=>undefined,
-        put: ()=>undefined
+        post: () => undefined,
+        put: () => undefined
       }
     }));
     let x = z.getEntityDataProvider(c.metadata);
@@ -1868,15 +1868,15 @@ describe("test rest data provider translates data correctly", () => {
     let done = new Done();
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: ()=>undefined,
-        get: ()=>undefined,
+        delete: () => undefined,
+        get: () => undefined,
         post: async (x, data) => {
           done.ok();
           expect(data.a).toBe(1);
           expect(data.b).toBe("2021-05-16T08:32:19.905Z");
           return data;
         },
-        put: ()=>undefined
+        put: () => undefined
       }
     }));
     let x = z.getEntityDataProvider(c.metadata);
