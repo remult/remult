@@ -1,4 +1,4 @@
-import { MongoClient, Db } from 'mongodb';
+import type { MongoClient, Db } from 'mongodb';
 import { DataProvider, EntityDataProvider, EntityFilter, EntityMetadata, Remult, Repository } from '.';
 export declare class MongoDataProvider implements DataProvider {
     private db;

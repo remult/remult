@@ -1,5 +1,5 @@
 
-import knex, { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { customDatabaseFilterToken, Filter, FilterConsumer } from "../src/filter/filter-interfaces";
 import { EntityDbNames, dbNamesOf, isDbReadonly, EntityDbNamesBase } from "../src/filter/filter-consumer-bridge-to-sql-request";
 import { allEntities, Remult } from "../src/context";
@@ -376,7 +376,7 @@ export class KnexSchemaBuilder {
 
 
     async addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)) {
-        let e :EntityDbNamesBase= await dbNamesOf(entity);
+        let e: EntityDbNamesBase = await dbNamesOf(entity);
         if (isDbReadonly(c(entity), e))
             return;
 
@@ -473,7 +473,8 @@ function logSql<T extends {
 }
 
 export async function createKnexDataProvider(config: Knex.Config, autoCreateTables = true) {
-    let k = knex(config)
+
+    let k = (await import('knex')).default(config)
     let result = new KnexDataProvider(k);
     if (autoCreateTables)
         await new KnexSchemaBuilder(k).verifyStructureOfAllEntities(new Remult(result));

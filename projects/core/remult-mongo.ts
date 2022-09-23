@@ -1,4 +1,4 @@
-import { MongoClient, Db, FindOptions } from 'mongodb';
+import type { MongoClient, Db, FindOptions } from 'mongodb';
 import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityFilter, EntityMetadata, FieldMetadata, Filter, Remult, Repository } from '.';
 import { EntityDbNames, dbNamesOf, EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request';
 import { FilterConsumer } from './src/filter/filter-interfaces';
