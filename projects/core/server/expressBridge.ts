@@ -18,7 +18,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
   queueStorage?: QueueStorage;
-  initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
+  initRequest?: (origReq: RequestType, remult: Remult) => Promise<void>;
   getUser?: (request: RequestType) => Promise<UserInfo>;
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
@@ -287,7 +287,7 @@ class RemultServerImplementation implements RemultServer {
               remult.user = (user);
           }
           if (this.options.initRequest) {
-            await this.options.initRequest(remult, req);
+            await this.options.initRequest(req, remult);
           }
 
           await what(remult, myReq, myRes, req);
