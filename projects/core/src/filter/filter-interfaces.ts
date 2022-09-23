@@ -18,7 +18,7 @@ export class Filter {
             return await filter();
         return filter;
     }
-    static createCustom<entityType>(customFilterTranslator: (unused: never, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType>(customFilterTranslator: (unused: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
     static createCustom<entityType, argsType>(customFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
     static createCustom<entityType, argsType>(customFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key = ''): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType> {
 
