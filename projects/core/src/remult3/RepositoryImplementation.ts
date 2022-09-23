@@ -1305,28 +1305,27 @@ export class columnDefsImpl implements FieldMetadata {
 
 
     }
-    dbNamePromise: Promise<string>;
-    getDbName(): Promise<string> {
-        if (this.dbNamePromise)
-            return this.dbNamePromise;
-        this.dbNamePromise = (async () => {
-
+    private _workingOnDbName = false;
+    async getDbName() {
+        if (this._workingOnDbName)
+            return "Recursive getDbName call for field '" + this.key+"'. ";
+        this._workingOnDbName = true;
+        try {
             if (this.settings.sqlExpression) {
+                let result: string;
                 if (typeof this.settings.sqlExpression === "function") {
-                    return this.settings.sqlExpression(this.entityDefs);
+                    result = await this.settings.sqlExpression(this.entityDefs);
                 } else
-                    return this.settings.sqlExpression;
+                    result = this.settings.sqlExpression;
+                if (!result)
+                    return this.settings.dbName;
+                return result;
             }
             return this.settings.dbName;
-
-        })().then(x => {
-            if (x)
-                return x;
-            return this.settings.dbName;
-
-        });
-        return this.dbNamePromise;
-
+        }
+        finally {
+            this._workingOnDbName = false;
+        }
 
     }
     options: FieldOptions<any, any> = this.settings;

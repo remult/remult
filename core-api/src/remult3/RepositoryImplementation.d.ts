@@ -174,7 +174,7 @@ export declare class columnDefsImpl implements FieldMetadata {
     private settings;
     private entityDefs;
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
-    dbNamePromise: Promise<string>;
+    private _workingOnDbName;
     getDbName(): Promise<string>;
     options: FieldOptions<any, any>;
     target: ClassType<any>;
