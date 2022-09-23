@@ -94,6 +94,7 @@ module.exports = {
           collapsable: true,
 
           children: [
+            'custom-filter',
             'working-without-decorators',
             'rest-api',
             'techniques-regarding-one-to-many-relations.md',
