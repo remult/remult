@@ -86,6 +86,19 @@ Arguments:
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
 ## sqlExpression
 Used or fields that are based on an sql expressions, instead of a physical table column
+   
+   
+   *example*
+   ```ts
+   
+   @Fields.integer({
+     sqlExpression:e=> 'length(title)'
+   })
+   titleLength = 0;
+   @Fields.string()
+   title='';
+   ```
+   
 ## dbReadOnly
 For fields that shouldn't be part of an update or insert statement
 ## valueConverter

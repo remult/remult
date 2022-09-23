@@ -51,7 +51,16 @@ export interface FieldOptions<entityType = any, valueType = any> {
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead. */
     dbName?: string;
-    /** Used or fields that are based on an sql expressions, instead of a physical table column */
+    /** Used or fields that are based on an sql expressions, instead of a physical table column 
+     * @example
+     * 
+     * @Fields.integer({
+     *   sqlExpression:e=> 'length(title)'
+     * })
+     * titleLength = 0;
+     * @Fields.string()
+     * title='';
+    */
     sqlExpression?: string | ((entity: EntityMetadata<entityType>) => string | Promise<string>);
     /** For fields that shouldn't be part of an update or insert statement */
     dbReadOnly?: boolean;
