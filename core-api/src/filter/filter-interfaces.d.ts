@@ -6,8 +6,8 @@ export declare class Filter {
     constructor(apply?: (add: FilterConsumer) => void);
     __applyToConsumer(add: FilterConsumer): void;
     static resolve<entityType>(filter: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)): Promise<EntityFilter<entityType>>;
-    static createCustom<entityType>(customFilterTranslator: (r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType>(customFilterTranslator: (unused: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(customFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
     static fromEntityFilter<T>(entity: EntityMetadata<T>, whereItem: EntityFilter<T>): Filter;
     toJson(): any;
     static entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>): any;
@@ -80,6 +80,6 @@ export declare function buildFilterFromRequestParameters(entity: EntityMetadata,
 export interface customFilterInfo<entityType> {
     customFilterInfo: {
         key: string;
-        customFilterTranslator: (r: Remult, args: any) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
+        customFilterTranslator: (args: any, r: Remult) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
     };
 }

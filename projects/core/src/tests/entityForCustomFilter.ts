@@ -14,7 +14,7 @@ export class entityForCustomFilter extends EntityBase {
         oneAndThree?: boolean;
         dbOneOrThree?: boolean;
         two?: boolean;
-    }>(async (remult, c) => {
+    }>(async (c, remult) => {
 
         let r: EntityFilter<entityForCustomFilter>[] = [];
         if (c.oneAndThree)
@@ -36,8 +36,8 @@ export class entityForCustomFilter extends EntityBase {
         return { $and: r };
     });
     static oneAndThree = Filter.createCustom<entityForCustomFilter>(() => ({ id: [1, 3] }));
-    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>((r, val) => ({ id: val }));
-    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number; }>((r, val) => ({ id: val.val }));
+    static testNumericValue = Filter.createCustom<entityForCustomFilter, number>(( val) => ({ id: val }));
+    static testObjectValue = Filter.createCustom<entityForCustomFilter, { val: number; }>(( val) => ({ id: val.val }));
 }
 
 @Entity('entityForCustomFilter1', { allowApiCrud: true })
