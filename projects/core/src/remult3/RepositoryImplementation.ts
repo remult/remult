@@ -1429,7 +1429,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
             this.dbNamePromise = Promise.resolve(this.options.sqlExpression);
         else if (typeof this.options.sqlExpression === "function") {
 
-            let r = this.options.sqlExpression(this.fields);
+            let r = this.options.sqlExpression(this);
             if (r instanceof Promise)
                 this.dbNamePromise = r;
             else if (r)

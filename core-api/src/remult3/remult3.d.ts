@@ -1,7 +1,7 @@
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
-import { EntityOptions as EntityOptions } from "../entity";
+import { EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 export interface EntityRef<entityType> extends Subscribable {

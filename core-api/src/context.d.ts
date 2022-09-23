@@ -88,7 +88,7 @@ export declare const classHelpers: Map<any, ClassHelper>;
 export declare class ClassHelper {
     classes: Map<any, ControllerOptions>;
 }
-export declare function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch): RestDataProviderHttpProviderUsingFetch | RestDataProviderHttpProvider;
+export declare function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch): RestDataProviderHttpProvider | RestDataProviderHttpProviderUsingFetch;
 export declare function setControllerSettings(target: any, options: ControllerOptions): void;
 export interface UserInfo {
     id: string;
