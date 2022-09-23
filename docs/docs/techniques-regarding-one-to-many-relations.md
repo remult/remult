@@ -9,8 +9,8 @@ import { Entity, Field, Fields, remult } from "remult";
 
 @Entity("customers", { allowApiCrud: true })
 export class Customer {
-  @Fields.autoIncrement()
-  id!: number;
+  @Fields.uuid()
+  id!: string;
   @Fields.string()
   name = '';
   @Fields.string()
@@ -19,8 +19,8 @@ export class Customer {
 
 @Entity("orders", { allowApiCrud: true })
 export class Order {
-  @Fields.autoIncrement()
-  id!: number;
+  @Fields.uuid()
+  id!: string;
   @Field(() => Customer)
   customer!: Customer
   @Fields.number()
@@ -46,7 +46,123 @@ export async function seed() {
 }
 ```
 
-### Print Customers nad Orders
+
+
+
+## Advanced Filtering
+Let's say that we want to filter all the orders of customers who are in London.
+
+### Option 1 use In Statement
+```ts
+console.table(await remult.repo(Order).find({
+  where: {
+    customer: await remult.repo(Customer).find({
+      where: {
+        city: 'London'
+      }
+    })
+  }
+}))
+```
+
+We can refactor this to a `customFilter` that will be easier to use and will run on the backend
+
+```ts
+@Entity("orders", { allowApiCrud: true })
+export class Order {
+  //...
+  static filterCity = Filter.createCustom<Order, { city: string }>(async ({ city }) => ({
+    customer: await remult.repo(Customer).find({ where: { city } })
+  }));
+}
+```
+
+And then we can use it:
+```ts
+console.table(await remult.repo(Order).find({
+  where: Order.filterCity({
+    city: 'London'
+  })
+}))
+```
+
+#### Using Sql Capabilities
+We can improve on the customFilter by using the database's in statement capabilities:
+```ts
+@Entity("orders", { allowApiCrud: true })
+export class Order {
+  //...
+  static filterCity = Filter.createCustom<Order, { city: string }>(
+    async ({ city }) => {
+      return SqlDatabase.customFilter(
+        whereFragment => {
+          whereFragment.sql =
+            `select customer in 
+            (select id 
+               from customers 
+              where city = ${whereFragment.addParameterAndReturnSqlToken(city)})`
+        });
+    });
+}
+```
+
+We can also reuse the entity definitions by using `dbNamesOf` and `sqlCondition`
+```ts
+@Entity("orders", { allowApiCrud: true })
+export class Order {
+  //...
+  static filterCity = Filter.createCustom<Order, { city: string }>(
+    async ({ city }) => {
+      const orders = await dbNamesOf(remult.repo(Order));
+      const customerRepo = remult.repo(Customer);
+      const customers = await dbNamesOf(customerRepo);
+      return SqlDatabase.customFilter(
+        async whereFragment => {
+          whereFragment.sql =
+            `${orders.customer} in 
+               (select ${customers.id} 
+                  from ${customers} 
+                 where ${await sqlCondition(customerRepo, { city })})`
+        });
+    });
+}
+```
+
+### Option 2 use SqlExpression field
+
+```ts
+@Entity("orders", { allowApiCrud: true })
+export class Order {
+  //...
+  @Fields.string<Order>({
+    sqlExpression: async orderMetadata => {
+      const order = await dbNamesOf(orderMetadata);
+      const customer = await dbNamesOf(remult.repo(Customer));
+      return `(
+        select ${customer.city}
+          from ${customer}
+         where ${customer.id} = ${order.customer}
+        )`;
+    }
+  })
+  city = '';
+}
+```
+
+* This adds a calculated `city` field to the `Order` entity that we can use to order by or filter
+
+```ts
+console.table(await remult.repo(Order).find({
+  where: {
+    city: 'London'
+  }
+}))
+```
+
+
+
+
+## Print Customers and Orders
 ```ts
 for (const customer of await remult.repo(Customer).find()) {
   console.log(customer.name);
@@ -97,27 +213,4 @@ for (const [customer, customerOrders] of customers) {
   console.log(customer.name);
   console.table(customerOrders);
 }
-```
-
-
-## Advanced Filtering
-Let's say that we want to filter all the orders of customers who are in London.
-
-### Option 1 use In Statement
-```ts
-console.table(await remult.repo(Order).find({
-  where: {
-    customer: await remult.repo(Customer).find({
-      where: {
-        city: 'London'
-      }
-    })
-  }
-}))
-```
-
-We can refactor this to a `customFilter` that will be easier to use and will run on the backend
-
-```ts
-
 ```
