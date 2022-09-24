@@ -98,11 +98,6 @@ console.log(r[0].count);
 
 Another example:
 ```ts
-
-```
-
-### Leveraging the Entity metadata
-```ts
 const tasks = await dbNamesOf(Task);
 const knex = await KnexDataProvider.getDb();
 console.table(
@@ -149,8 +144,6 @@ const r = await sql.query(`select count(*) as c from ${tasks}`);
 console.log(r.rows[0].c);
 ```
 
-> you can use the Entity Metadata and `sqlCondition` that are used in [SqlDatabase](#leveraging-the-entity-metadata)
-
 ## websql
 ```ts
 const tasks = await dbNamesOf(Task);
@@ -162,5 +155,4 @@ sql.transaction(y => {
     });
 });
 ```
-> you can use the Entity Metadata and `sqlCondition` that are used in [SqlDatabase](#leveraging-the-entity-metadata)
 
