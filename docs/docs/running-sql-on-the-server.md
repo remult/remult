@@ -84,7 +84,6 @@ This will result in the following sql:
 ```sql
 select title, completed from tasks where id in ($1, $2)
 Arguments: { '$1': 1, '$2': 3 }
-
 ```
 
 ## Knex
@@ -133,7 +132,6 @@ const mongo = MongoDataProvider.getDb();
 const r = await (await mongo.collection(tasks.$entityName))
     .countDocuments(await MongoDataProvider.mongoCondition(Task, { id: [1, 2] }));
 console.log(r);
-
 ```
 
 ## Native postgres
